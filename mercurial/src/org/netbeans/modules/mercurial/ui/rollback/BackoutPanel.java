@@ -41,8 +41,6 @@
 package org.netbeans.modules.mercurial.ui.rollback;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.LinkedHashSet;
@@ -51,7 +49,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -72,18 +69,15 @@ public class BackoutPanel extends javax.swing.JPanel {
     private Thread                          refreshViewThread;
     private RepositoryRevision              repoRev;
     private HgLogMessage[] messages;
-    private int fetchRevisionLimit = Mercurial.HG_NUMBER_TO_FETCH_DEFAULT;
-    private boolean bGettingRevisions = false;
-    File [] roots;
+
+    private static final int HG_REVERT_TARGET_LIMIT = 100;
 
     /** Creates new form ReverModificationsPanel */
-     public BackoutPanel(File repo, RepositoryRevision repoRev, File [] roots) {
+     public BackoutPanel(File repo, RepositoryRevision repoRev) {
         this.repoRev = repoRev;
-        this.roots = roots;
         repository = repo;
         refreshViewTask = rp.create(new RefreshViewTask());
         initComponents();
-        revisionsComboBox.setMaximumRowCount(Mercurial.HG_MAX_REVISION_COMBO_SIZE);
         commitMsgField.setText(
                 NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text") +  // NOI18N
                 BackoutAction.HG_BACKOUT_REVISION); // NOI18N
@@ -242,42 +236,11 @@ public class BackoutPanel extends javax.swing.JPanel {
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
     int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
-    
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
 }//GEN-LAST:event_revisionsComboBoxActionPerformed
     
-    private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;
-        boolean bGetMore = false;
-        int limit = -1;
-
-        if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"))) {
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_20_REVISIONS;
-        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"))) {
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_50_REVISIONS;
-        } else if (revStr != null && revStr.equals(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"))) {
-            bGetMore = true;
-            limit = Mercurial.HG_FETCH_ALL_REVISIONS;
-        }
-        if (bGetMore && !bGettingRevisions) {
-            fetchRevisionLimit = limit;
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-            HgProgressSupport hgProgressSupport = new HgProgressSupport() {
-                public void perform() {
-                    changesetPanel1.clearInfo();
-                    refreshRevisions();
-                }
-            };
-            hgProgressSupport.start(rp, repository.getAbsolutePath(),
-                    org.openide.util.NbBundle.getMessage(Mercurial.class, "MSG_Fetching_Revisions")); // NOI18N
-        }
-        return bGetMore;
-    }
 
     /**
      * Must NOT be run from AWT.
@@ -318,10 +281,8 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 
     private void refreshRevisions() {
-        bGettingRevisions = true;
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));        
-        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRoots, fetchRevisionLimit, logger);
+        messages = HgCommand.getLogMessages(repository.getAbsolutePath(), HG_REVERT_TARGET_LIMIT, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -337,18 +298,12 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 i++;
             }
         }
-        if(targetRevsSet.size() > 0){
-            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_20_Revisions"));
-            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_50_Revisions"));
-            targetRevsSet.add(NbBundle.getMessage(Mercurial.class, "MSG_Fetch_All_Revisions"));
-        }
         ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));
         revisionsComboBox.setModel(targetsModel);
 
         if (targetRevsSet.size() > 0 ) {
             revisionsComboBox.setSelectedIndex(0);
         }
-        bGettingRevisions = false;
     }
 
     private class RefreshViewTask implements Runnable {

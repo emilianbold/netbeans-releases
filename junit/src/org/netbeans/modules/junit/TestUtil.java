@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,14 +44,12 @@ package org.netbeans.modules.junit;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -66,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,9 +76,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 
@@ -324,50 +320,29 @@ public class TestUtil {
      * @return  list of full names of all primary Java classes
      *          within the specified package
      */
-    public static List<String> getJavaFileNames(FileObject packageFolder, ClasspathInfo cpInfo) {
+    public static List<String> getJavaFileNames(FileObject packageFolder, ClassPath classPath) {
         FileObject[] children = packageFolder.getChildren();
         if (children.length == 0) {
             return Collections.<String>emptyList();
         }
         
-        final Collection<FileObject> javaFiles = new ArrayList<FileObject>(children.length);
+        List<String> result = new ArrayList<String>(children.length);
         for (FileObject child : children) {
-            if (!child.isFolder()
-                    && child.isValid()
-                    && child.getMIMEType().equals(JAVA_MIME_TYPE)) {
-                javaFiles.add(child);
+            if (child.isFolder() || child.isVirtual()
+                    || !child.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                continue;
             }
-        }
-        if (javaFiles.isEmpty()) {
-            return Collections.<String>emptyList();
-        }
 
-        FileObject[] javaFilesArr = (javaFiles.size() == children.length)
-                                    ? children
-                                    : javaFiles.toArray(new FileObject[javaFiles.size()]);
-        final JavaSource source = JavaSource.create(cpInfo, javaFilesArr);
-        if (source == null) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.EXCEPTION,
-                    "Could not get JavaSource for files "               //NOI18N
-                            + javaFilesArr);
-            return Collections.<String>emptyList();
-        }
+            DataObject dataObject;
+            try {
+                dataObject = DataObject.find(child);
+            } catch (DataObjectNotFoundException ex) {
+                continue;
+            }
 
-        List<ElementHandle<TypeElement>> topClasses;
-        try {
-            topClasses = TopClassFinder.findMainTopClasses(source);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            topClasses = null;
-        }
-        if ((topClasses == null) || topClasses.isEmpty()) {
-            return Collections.<String>emptyList();
-        }
-            
-        final List<String> result = new ArrayList<String>(topClasses.size());
-        for (ElementHandle<TypeElement> topClassHandle : topClasses) {
-            result.add(topClassHandle.getQualifiedName());
+//XXX: retouche
+//            Resource rc = JavaModel.getResource(dataObject.getPrimaryFile());
+//            result.add(getMainJavaClass(rc).getName());
         }
         return result.isEmpty() ? Collections.<String>emptyList() : result;
     }

@@ -81,7 +81,10 @@ final class FeedbackSurvey {
         } catch (NoSuchMethodError ex) {
             Exceptions.printStackTrace(ex);
         }
-        String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL", id, mem);
+        String nbBuildNumber = System.getProperty("netbeans.buildnumber"); //NOI18N
+        if( null == nbBuildNumber )
+            nbBuildNumber=""; //NOI18N
+        String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL", id, mem, nbBuildNumber);
         if (url.length() == 0) {
             return;
         }

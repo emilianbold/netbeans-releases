@@ -692,8 +692,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_VAR_OFFSET>[ \n\r\t\\'#] {
 	yypushback(1);
 	popState();
-        if (yylength() > 0)
-            return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_VAR_OFFSET>{LABEL} {

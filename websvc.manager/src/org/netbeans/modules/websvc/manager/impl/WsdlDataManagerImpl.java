@@ -88,11 +88,6 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         WsdlData data = WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
         if (data != null) {
             WebServiceListModel.getInstance().removeWebService(data.getId());
-            try {
-                new WebServicePersistenceManager().save();
-            } catch(Exception e) {
-                //at this point, just leave it to save on ide exit 
-            }
         }
     }
 

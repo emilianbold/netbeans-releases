@@ -52,6 +52,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -67,22 +68,22 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 public class RuntimeInputAction extends GraphAction {
 
     private static final URL runtimeInputImgUrl = RuntimeInputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/RuntimeInput.png");
-    private static transient final Logger mLogger = Logger.getLogger(RuntimeInputAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(RuntimeInputAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public RuntimeInputAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND029: Runtime Inputs...");
-        this.putValue(Action.NAME, nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Runtime Inputs...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeInputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND030: Add/Edit Runtime Inputs (Shift-I)");
-        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        // Acceleratot Shift-I
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('I', InputEvent.SHIFT_DOWN_MASK ));
+        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Inputs (Cntl-I)");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        // Acceleratot Cntl-I
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('I', InputEvent.CTRL_MASK ));
     }
 
     /**

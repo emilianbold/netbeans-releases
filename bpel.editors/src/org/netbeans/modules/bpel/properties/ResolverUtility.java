@@ -32,7 +32,7 @@ import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -164,7 +164,8 @@ public final class ResolverUtility {
         }
         
         String bpelFoPath = bpelFo.getPath();
-        SourceGroup[] sourceGroupArr = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
+        SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+                ProjectConstants.SOURCES_TYPE_BPELPRO);
         for (SourceGroup srcGroup : sourceGroupArr) {
             String srcFolderName = srcGroup.getRootFolder().getPath();
             //
@@ -314,6 +315,9 @@ public final class ResolverUtility {
     
     /**
      * Returns the project Sources for the specified bpel process.
+     * Use the following line to access the SourceGroup array.
+     *  SourceGroup[] sourceGroup =
+     *  sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
      */
     public static Sources safeGetSources(Project project) {
         if (project != null) {
@@ -350,7 +354,8 @@ public final class ResolverUtility {
         //
         Sources sources = safeGetSources(project);
         if (sources != null) {
-            SourceGroup[] sourceGroupArr = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
+            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+                    ProjectConstants.SOURCES_TYPE_BPELPRO);
             //
             for (SourceGroup srcGroup : sourceGroupArr) {
                 String srcFolderName = srcGroup.getRootFolder().getPath();

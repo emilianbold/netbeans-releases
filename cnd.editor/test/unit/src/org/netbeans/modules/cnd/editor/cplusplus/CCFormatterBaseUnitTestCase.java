@@ -31,8 +31,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.Formatter;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
 
 /**
@@ -58,16 +56,7 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
     protected void setCppEditorKit(boolean isCPP){
         this.isCPP = isCPP;
     }
-
-    protected void setDefaultsOptions(){
-        if (isCPP) {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-        } else {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C));
-        }
-    }
     
-
     /**
      * Perform new-line insertion followed by indenting of the new line
      * by the formatter.

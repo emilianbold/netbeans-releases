@@ -153,7 +153,6 @@ public final class BiAnalyser {
     private boolean useSuperClass = false;
     private boolean isModified = false;
     private boolean isUpdateMode;
-    private boolean isBeanBroken;
     
     private int getIndexOfMethod(List<BiFeature.Method> al, ElementHandle<ExecutableElement> method) {
         if (method == null) return -1;
@@ -172,8 +171,6 @@ public final class BiAnalyser {
     */
     BiAnalyser ( PatternAnalyser pa, CompilationInfo javac ) throws GenerateBeanException {
         int index;
-        
-        this.isBeanBroken = !javac.getDiagnostics().isEmpty();
 
         // Try to find and analyse existing bean info
         bis = new BeanInfoSource( pa.getFileObject() );
@@ -456,20 +453,13 @@ public final class BiAnalyser {
     }
     
     void openSource() {
-        String mssg;
-        NotifyDescriptor nd;
 
         if ( bis.exists() ) {
 
             if ( !bis.isNbBeanInfo() ) {
-                if (isBeanBroken) {
-                    mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BrokenBean", this.bis.getSourceDataObject().getPrimaryFile().getNameExt());
-                    nd = new NotifyDescriptor.Message(mssg, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return;
-                }
-                mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
-                nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+                
+                String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 DialogDisplayer.getDefault().notify( nd );
                 if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
                     return;
@@ -497,15 +487,9 @@ public final class BiAnalyser {
             }
         }
         else {
-            if (isBeanBroken) {
-                mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BrokenBean", this.bis.getSourceDataObject().getPrimaryFile().getNameExt());
-                nd = new NotifyDescriptor.Message(mssg, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
             // notify user about missing beaninfo and ask if generate new one.
-            mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BeanInfoNotExists");
-            nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
+            String mssg = NbBundle.getMessage(BiAnalyser.class, "MSG_BeanInfoNotExists");
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             DialogDisplayer.getDefault().notify( nd );
             if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
                 return;
@@ -1185,9 +1169,4 @@ public final class BiAnalyser {
     public boolean isModified() {
         return this.isModified;
     }
-
-    public boolean isBeanBroken() {
-        return isBeanBroken;
-    }
-    
 }

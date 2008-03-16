@@ -58,8 +58,11 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
+import javax.swing.text.Document;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -308,8 +311,6 @@ public class FormEditor {
 	
         openForms.put(formModel, this);
 
-        Logger.getLogger("TIMER").log(Level.FINE, "FormModel", new Object[] { formDataObject.getPrimaryFile(), formModel}); // NOI18N
-
         // Force initialization of Auto Set Component Name.
         // It cannot be initialized in constructor of FormModel,
         // because it may call getResourceSupport() which
@@ -347,10 +348,7 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
-        ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
-        if (resupport.getDesignLocale() != null) {
-            resupport.updateDesignLocale();
-        }
+        getResourceSupport(); // make sure ResourceSupport is created and initialized
 
         getBindingSupport();
         formModel.fireFormLoaded();

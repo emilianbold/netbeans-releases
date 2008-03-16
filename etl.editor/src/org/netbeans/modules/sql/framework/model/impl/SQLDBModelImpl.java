@@ -72,6 +72,7 @@ import java.io.File;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -87,7 +88,7 @@ import org.openide.awt.StatusDisplayer;
  */
 public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLDBModel {
 
-    private static transient final Logger mLogger = Logger.getLogger(SQLDBModelImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLDBModelImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SQLDBModelImpl.class.getName());
     /** Initial buffer size for StringBuilder used in marshaling Databases to XML */
@@ -499,7 +500,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      */
     public DBConnectionDefinition getETLDBConnectionDefinition() throws BaseException {
         if (connectionDefinition == null) {
-            mLogger.infoNoloc(mLoc.t("EDIT114: Lazy loading connection definition for DB model{0}", getDisplayName()));
+            mLogger.infoNoloc(mLoc.t("PRSR114: Lazy loading connection definition for DB model{0}", getDisplayName()));
             connectionDefinition = createETLDBConnectionDefinition();
         }
         return connectionDefinition;
@@ -1095,7 +1096,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             try {
                 etlConnDef.setName(this.getModelName());
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT107: Exception{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR115: Exception{0}", LOG_CATEGORY), ex);
             }
         } else {
             etlConnDef = new SQLDBConnectionDefinitionImpl();

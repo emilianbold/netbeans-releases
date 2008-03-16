@@ -50,8 +50,8 @@
                api-doc="http://www.flickr.com/services/api/"
                url="org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
     
-    <description>Photo Service</description>
-    <display-name>Photo Service</display-name>
+    <description>Picture Service</description>
+    <display-name>Picture</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>

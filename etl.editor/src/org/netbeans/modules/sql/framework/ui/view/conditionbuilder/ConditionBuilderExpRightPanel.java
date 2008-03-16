@@ -95,6 +95,7 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.Valid
 import org.openide.windows.TopComponent;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
 
 /**
@@ -103,7 +104,7 @@ import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
  */
 public class ConditionBuilderExpRightPanel extends TopComponent {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderExpRightPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderExpRightPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class ConditionDocumentListener implements DocumentListener {
@@ -385,8 +386,8 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
                 errorList.addAll(ConditionBuilderUtil.filterValidations(visitor.getValidationInfoList()));
                 showSplitPaneView(logView);
             } else {
-                String nbBundle1 = mLoc.t("BUND378: Condition expression does not contain a valid predicate.");
-                String error = nbBundle1.substring(15);
+                String nbBundle1 = mLoc.t("PRSR001: Condition expression does not contain a valid predicate.");
+                String error = Localizer.parse(nbBundle1);
                 ValidationInfo info = SQLModelObjectFactory.getInstance().createValidationInfo(null, error, ValidationInfo.VALIDATION_ERROR);
                 errorList.add(info);
 
@@ -399,15 +400,15 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
             }
 
             if (errorList.size() == 0) {
-                String nbBundle2 = mLoc.t("BUND379: Condition is valid.");
-                logView.refreshView(nbBundle2.substring(15));
+                String nbBundle2 = mLoc.t("PRSR001: Condition is valid.");
+                logView.refreshView(Localizer.parse(nbBundle2));
             } else {
                 if (visitor.hasErrors(errorList)) {
-                    String nbBundle3 = mLoc.t("BUND302: Condition is not valid.");
-                    logView.refreshView(nbBundle3.substring(15));
+                    String nbBundle3 = mLoc.t("PRSR001: Condition is not valid.");
+                    logView.refreshView(Localizer.parse(nbBundle3));
                 } else {
-                    String nbBundle4 = mLoc.t("BUND381: Condition is valid, but has warnings.");
-                    logView.refreshView(nbBundle4.substring(15));
+                    String nbBundle4 = mLoc.t("PRSR001: Condition is valid, but has warnings.");
+                    logView.refreshView(Localizer.parse(nbBundle4));
                 }
                 logView.appendToView("\n");
 
@@ -420,13 +421,13 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
             }
             showSplitPaneView(logView);
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT173: Error({0})", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR153: Error({0})", LOG_CATEGORY), ex);
 
             if (ex instanceof ParseException) {
                 logView.refreshView("Condition is invalid - cannot parse text.");
             } else {
-                String nbBundle5 = mLoc.t("BUND302: Condition is not valid.");
-                logView.refreshView(nbBundle5.substring(15));
+                String nbBundle5 = mLoc.t("PRSR001: Condition is not valid.");
+                logView.refreshView(Localizer.parse(nbBundle5));
                 logView.appendToView("\n");
                 if (ex.getMessage() != null) {
                     logView.appendToView(ex.getMessage());
@@ -584,18 +585,18 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
         valArea = new JTextArea();
         valSPane.setViewportView(valArea);
 
-        String nbBundle60 = mLoc.t("BUND039: Validate");
-        JButton validationButton = new JButton(nbBundle60.substring(15));
-        validationButton.getAccessibleContext().setAccessibleName(nbBundle60.substring(15));
+        String nbBundle60 = mLoc.t("PRSR001: Validate");
+        JButton validationButton = new JButton(Localizer.parse(nbBundle60));
+        validationButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle60));
         validationButton.addActionListener(new ValidationListener());
         validationPanel.add(validationButton, BorderLayout.EAST);
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(SPLITPANE_RESIZE_WEIGHT);
         //outputView = new SQLOutputConditionView(this);
         logView = new SQLLogView();
-        String nbBundle61 = mLoc.t("BUND383: Validation");
-        logView.setName(nbBundle61.substring(15));
-        logView.getAccessibleContext().setAccessibleName(nbBundle61.substring(15));
+        String nbBundle61 = mLoc.t("PRSR001: Validation");
+        logView.setName(Localizer.parse(nbBundle61));
+        logView.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle61));
         splitPane.setTopComponent(c);
         hSplitPane.setRightComponent(splitPane);
         this.add(hSplitPane, BorderLayout.CENTER);

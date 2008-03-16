@@ -101,7 +101,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         setComponentsVisibility();
         switch (data.getWizardType()) {
             case SUITE:
-            case APPLICATION:
                 detachModuleTypeGroup();
                 break;
             case MODULE:
@@ -346,7 +345,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         int counter = 0;
         switch (getData().getWizardType()) {
             case SUITE:
-            case APPLICATION:
                 counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
                 bundlekey = "TXT_Suite"; //NOI18N
                 getData().setSuiteCounter(counter);

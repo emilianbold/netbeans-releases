@@ -145,7 +145,6 @@ public class JaxWsUtils {
 
     public static final String HANDLER_TEMPLATE = "Templates/WebServices/MessageHandler.java"; //NOI18N
     private static final String SOAP12_NAMESPACE = "http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/"; //NOI18N
-    private static final String SOAP12_VERSION = "http://www.w3.org/2003/05/soap/bindings/HTTP/";  //NOI18N
     private static final String BINDING_TYPE_ANNOTATION = "javax.xml.ws.BindingType"; //NOI18N
     private static int projectType;
     protected static final int JSE_PROJECT_TYPE = 0;
@@ -443,20 +442,6 @@ public class JaxWsUtils {
                         modifiedClass = make.addClassMember(modifiedClass, method);
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
-
-                    if (port.getSOAPVersion().equals(SOAP12_VERSION)) {  //if SOAP 1.2 binding, add BindingType annotation
-                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
-                        if (bindingElement != null) {
-                            ModifiersTree modifiersTree = modifiedClass.getModifiers();
-                            AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
-                            AnnotationTree soapVersionAnnotation = make.Annotation(
-                                    make.QualIdent(bindingElement),
-                                    Collections.<ExpressionTree>singletonList(soapVersion));
-
-                            ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
-                            workingCopy.rewrite(modifiersTree, newModifiersTree);
-                        }
-                    }
                 }
             }
 
@@ -656,19 +641,17 @@ public class JaxWsUtils {
         while (tukac.hasMoreTokens()) {
             String token = tukac.nextToken();
             if (".".equals(token)) {
-                if (result) {
+                if(result)
                     result = false;
-                } else {
+                else
                     return false;
-                }
             } else {
-                if (!Utilities.isJavaIdentifier(token)) {
+                if (!Utilities.isJavaIdentifier(token))
                     return false;
-                }
                 result = true;
             }
         }
-
+        
         return result;
     }
 
@@ -747,12 +730,7 @@ public class JaxWsUtils {
      */
     public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -847,20 +825,14 @@ public class JaxWsUtils {
     public static boolean isSoap12(FileObject implClassFo) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final String[] version = new String[1];
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController 
-
-                  
-                
-                   
-                  >   () 
-                   {
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
                 boolean foundAnnotation = false;
-                TypeElement bindingElement = controller.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
+                TypeElement bindingElement = controller.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
                 for (AnnotationMirror anMirror : annotations) {
                     if (controller.getTypes().isSameType(bindingElement.asType(), anMirror.getAnnotationType())) {
                         Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
@@ -878,7 +850,6 @@ public class JaxWsUtils {
                     }
                 }
             }
-
             public void cancel() {
             }
         };
@@ -892,23 +863,14 @@ public class JaxWsUtils {
 
     public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                   
-                   
-                   
-                  > () {
-
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                 ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
 
-                TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
+                TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION); 
                 if (bindingElement != null) {
                     AnnotationTree bindingAnnotation = null;
                     List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
@@ -916,13 +878,13 @@ public class JaxWsUtils {
                         IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
-                        if (anElement != null && anElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) {
+                        if (anElement != null && anElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
                             bindingAnnotation = an;
                             break;
                         }
                     }
                     if (isSOAP12 && bindingAnnotation == null) {
-
+  
                         ModifiersTree modifiersTree = javaClass.getModifiers();
                         AssignmentTree soapVersion = make.Assignment(make.Identifier("value"), make.Literal(SOAP12_NAMESPACE)); //NOI18N
                         AnnotationTree soapVersionAnnotation = make.Annotation(
@@ -930,8 +892,8 @@ public class JaxWsUtils {
                                 Collections.<ExpressionTree>singletonList(soapVersion));
 
                         ModifiersTree newModifiersTree = make.addModifiersAnnotation(modifiersTree, soapVersionAnnotation);
-
-                        workingCopy.rewrite(modifiersTree, newModifiersTree);
+   
+                        workingCopy.rewrite(modifiersTree, newModifiersTree); 
                     } else if (!isSOAP12 && bindingAnnotation != null) {
                         ModifiersTree modifiers = javaClass.getModifiers();
                         ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, bindingAnnotation);
@@ -942,7 +904,7 @@ public class JaxWsUtils {
                             Tree impTree = imp.getQualifiedIdentifier();
                             TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
                             TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
-                            if (impElement != null && impElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) {
+                            if (impElement != null && impElement.getQualifiedName().contentEquals(BINDING_TYPE_ANNOTATION)) { 
                                 CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
                                 workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
                                 break;
@@ -977,15 +939,13 @@ public class JaxWsUtils {
             }
         }
     }
-
-    private static void saveFile(FileObject file) throws IOException {
+    
+     private static void saveFile(FileObject file) throws IOException {
         DataObject dataObject = DataObject.find(file);
-        if (dataObject != null) {
+        if (dataObject!=null) {
             SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
-            if (cookie != null) {
-                cookie.save();
-            }
-        }
+            if (cookie!=null) cookie.save();
+        }        
     }
 
     /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
@@ -995,12 +955,7 @@ public class JaxWsUtils {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1089,12 +1044,7 @@ public class JaxWsUtils {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);

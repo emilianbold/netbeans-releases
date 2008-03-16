@@ -56,7 +56,7 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Factory for creating instances of SQLOperatorDefinition.
@@ -83,7 +83,7 @@ public class SQLOperatorFactory implements Serializable {
     /* Maps canonical operator names to applicable casting rules */
     private Map<String, CastingRule> castingRules = null;
     private SQLOperatorFactory parent;
-    private static transient final Logger mLogger = Logger.getLogger(SQLOperatorFactory.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -114,7 +114,7 @@ public class SQLOperatorFactory implements Serializable {
         try {
             parseXML(defFile);
         } catch (BaseException e) {
-            mLogger.errorNoloc(mLoc.t("EDIT088: getSQLOperatorFactory ERROR:,Failed to read the Operator Template File:"), e);
+            mLogger.errorNoloc(mLoc.t("PRSR088: getSQLOperatorFactory ERROR:,Failed to read the Operator Template File:"), e);
 
         }
     }
@@ -249,7 +249,7 @@ public class SQLOperatorFactory implements Serializable {
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT089: Failed to read the Operator TemplateFile:{0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR089: Failed to read the Operator TemplateFile:{0}", LOG_CATEGORY), e);
 
         }
     }

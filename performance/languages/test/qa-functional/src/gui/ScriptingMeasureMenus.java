@@ -58,14 +58,14 @@ public class ScriptingMeasureMenus {
 
         suite.addTest(new ScriptingNodePopup("test_RB_NodePopup"," Ruby file node popup test"));
         suite.addTest(new ScriptingNodePopup("test_RHTML_NodePopup","RHTML file node popup test"));
-        suite.addTest(new ScriptingNodePopup("test_JS_NodePopup","Java Script file node popup test"));        
-//        suite.addTest(new ScriptingNodePopup("test_YML_NodePopup","YML file node popup test"));        
-//        suite.addTest(new ScriptingNodePopup("test_JSON_NodePopup","JSON file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_CSS_NodePopup","CSS file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_BAT_NodePopup","Batch script file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_DIFF_NodePopup","Diff file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_MANIFEST_NodePopup","Manifest file node popup test"));
-//        suite.addTest(new ScriptingNodePopup("test_SH_NodePopup","Shell Script file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_YML_NodePopup","YML file node popup test"));        
+        suite.addTest(new ScriptingNodePopup("test_JS_NodePopup","Java Script file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_JSON_NodePopup","JSON file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_CSS_NodePopup","CSS file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_BAT_NodePopup","Batch script file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_DIFF_NodePopup","Diff file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_MANIFEST_NodePopup","Manifest file node popup test"));
+        suite.addTest(new ScriptingNodePopup("test_SH_NodePopup","Shell Script file node popup test"));
         
         return suite;
     }

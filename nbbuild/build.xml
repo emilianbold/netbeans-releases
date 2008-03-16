@@ -1312,17 +1312,58 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </exec>
   </target>
   
-  <target name="all-l10n-kits" depends="l10n-kit">
+  <target name="all-l10n-kits" depends="l10n-kit,bp-l10n-kit">
+    <mkdir dir="${l10n.dist.dir}/installer"/>
+    <mkdir dir="${l10n.dist.dir}/stable-uc"/>
+    <l10n topdirs="${nbroot}" modules="installer,nbi"
+                localizablefile="l10n.list" generatedfile="l10n.list.translated"
+                distdir="${l10n.dist.dir}/installer" changedfile="l10n.list.changed"
+                globalfile="l10n-global.list"
+                builddir="tmp" buildnumber="${buildnumber}"
+                excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="tmp"/>
+    <l10n topdirs="${nbroot}" modules="${nb.cluster.stableuc}"
+                localizablefile="l10n.list" generatedfile="l10n.list.translated"
+                distdir="${l10n.dist.dir}/stable-uc" changedfile="l10n.list.changed"
+                globalfile="l10n-global.list"
+                builddir="tmp" buildnumber="${buildnumber}"
+                excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="tmp"/>
   </target>
   
-  <target name="l10n-kit" depends="bootstrap,set-buildnumber,init-tasks" description="Builds the L10N kit">
+  <target name="l10n-kit" depends="bootstrap,init-module-list,set-buildnumber,init-tasks" description="Builds the L10N kit">
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
-    <mkdir dir="build"/>
-    <property name="l10n.kit" file="build/l10n.zip"/>
-    <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
+    <delete dir="${l10n.dist.dir}"/>
+    <mkdir dir="${l10n.dist.dir}/ide"/>
+    <delete dir="tmp"/>
+    <mkdir dir="tmp"/>
+    <property name="nbroot" location=".."/>
+    <l10n topdirs="${nbroot}" modules="${fixedmodules},${modules}"
+                localizablefile="l10n.list" generatedfile="l10n.list.translated"
+                distdir="${l10n.dist.dir}/ide" changedfile="l10n.list.changed"
+                globalfile="l10n-global.list"
+                builddir="tmp" buildnumber="${buildnumber}"
+                excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="tmp"/>
   </target>
 
+  <target name="bp-l10n-kit" depends="bootstrap,set-buildnumber,init-tasks">
+    <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
+             classpath="nbantext.jar"/>
+    <property name="bpcatalog-cvs.dir" location="../../bpcatalog-cvs"/>
+    <mkdir dir="${bpcatalog-cvs.dir}"/>
+    <mkdir dir="${l10n.dist.dir}/bpcatalog"/>
+    <cvs command="checkout" dest="${bpcatalog-cvs.dir}" cvsroot=":pserver:guest@cvs.dev.java.net:/cvs" package="bpcatalog" quiet="true"/>
+    <l10n topdirs="${bpcatalog-cvs.dir}" modules="bpcatalog"
+                localizablefile="l10n.list" generatedfile="l10n.list.translated"
+                distdir="${l10n.dist.dir}/bpcatalog" changedfile="l10n.list.changed"
+                globalfile="l10n-global.list"
+                builddir="tmp" buildnumber="${buildnumber}"
+                excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="tmp"/>
+  </target>
+  
     <target name="clean-untracked-files" depends="bootstrap" description="Removes files from clusters which are not listed as belonging to any NBM.">
         <taskdef name="ducf" classname="org.netbeans.nbbuild.DeleteUnreferencedClusterFiles" classpath="nbantext.jar"/>
         <mkdir dir="build"/>

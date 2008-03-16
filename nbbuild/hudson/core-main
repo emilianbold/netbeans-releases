@@ -15,16 +15,8 @@ rm -rf real.workspace
 hg clone . real.workspace || exit 1
 cd real.workspace
 
-RESULT=`pwd`/test-results.txt
-export RESULT
-rm $RESULT
-
 testmodule() {
-    if ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true; then
-        echo Test OK: $1
-    else
-        echo $1 >>$RESULT
-    fi
+    ant -f $1/build.xml test -Dtest-unit-sys-prop.ignore.random.failures=true
 }
 
 if [ "$action" = "build" ]; then

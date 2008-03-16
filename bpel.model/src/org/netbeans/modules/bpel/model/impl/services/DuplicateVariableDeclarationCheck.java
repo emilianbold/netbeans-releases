@@ -16,6 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.impl.services;
 
 import java.util.HashMap;
@@ -38,8 +42,9 @@ import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.bpel.model.api.support.ContainerIterator;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.impl.ContainerIterator;
+import org.netbeans.modules.bpel.model.impl.Utils;
+
 
 /**
  * @author ads
@@ -343,5 +348,7 @@ class ScopeInsideOnEventChecker extends ImplicitVariableCheck {
                 check( (OnEvent) parent , decl , value);
         }
         return true;
+
     }
+    
 }

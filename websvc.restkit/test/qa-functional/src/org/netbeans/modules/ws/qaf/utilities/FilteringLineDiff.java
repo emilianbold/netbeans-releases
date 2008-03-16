@@ -89,12 +89,6 @@ public class FilteringLineDiff extends LineDiff {
         if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {
             return true;
         }
-        //WA: there's some strange random issue which causes that some
-        //types are used with FQN
-        String pkg = "o.n.m.ws.qaf.rest.crud.service.";//NOI18N
-        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
-            return true;
-        }
         return false;
     }
 }

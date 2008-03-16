@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.web.core.syntax.settings;
 
+import org.netbeans.modules.web.core.syntax.settings.JspSettings;
 import org.netbeans.modules.web.core.syntax.*;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.netbeans.editor.ext.ExtSettingsNames;
@@ -51,6 +53,7 @@ import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
 import java.awt.Color;
 import java.awt.Dimension;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionSupport;
 
@@ -94,7 +97,7 @@ public class JSPOptions extends BaseOptions {
     }
   
     /** @return localized string */
-    protected @Override String getString(String s) {
+    protected String getString(String s) {
         try {
             String res = NbBundle.getBundle(JSPKit.class).getString(s);
             return (res == null) ? super.getString(s) : res;
@@ -146,7 +149,7 @@ public class JSPOptions extends BaseOptions {
             JAVADOC_PREFERRED_SIZE_PROP);
     }
     
-    protected @Override Class getDefaultIndentEngineClass() {
+    protected Class getDefaultIndentEngineClass() {
 	Class engineClass = null;
 	
 	Lookup.Template tmp = new Lookup.Template(IndentEngine.class);
@@ -163,7 +166,7 @@ public class JSPOptions extends BaseOptions {
         return (engineClass != null) ? engineClass : super.getDefaultIndentEngineClass();
     }
     
-    public @Override HelpCtx getHelpCtx() {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx (HELP_ID);
     }    
 
@@ -173,11 +176,6 @@ public class JSPOptions extends BaseOptions {
     public void setCompletionInstantSubstitution(boolean v) {
         setSettingBoolean(ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION, v,
             COMPLETION_INSTANT_SUBSTITUTION_PROP);
-    }
-
-    // maybe we should have another options class for text/x-tag too
-    protected @Override String getContentType() {
-        return JSPKit.JSP_MIME_TYPE;
-    }
+    }        
     
 }

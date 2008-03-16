@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import org.netbeans.modules.websvc.rest.support.*;
@@ -48,6 +49,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -61,7 +64,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -144,7 +146,7 @@ public class EntityClassInfo {
                 }
             }, true);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }
 
@@ -155,7 +157,7 @@ public class EntityClassInfo {
 
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
-
+      
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
 
@@ -187,7 +189,7 @@ public class EntityClassInfo {
                 }
             }, true);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }
 
@@ -317,12 +319,10 @@ public class EntityClassInfo {
 
         public boolean isId() {
             return matchAnnotation("@javax.persistence.Id") || matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
-
         }
 
         public boolean isEmbeddedId() {
             return matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
-
         }
 
         public boolean isRelationship() {
@@ -331,22 +331,18 @@ public class EntityClassInfo {
 
         public boolean isOneToOne() {
             return matchAnnotation("@javax.persistence.OneToOne"); //NOI18N
-
         }
 
         public boolean isOneToMany() {
             return matchAnnotation("@javax.persistence.OneToMany"); //NOI18N
-
         }
 
         public boolean isManyToOne() {
             return matchAnnotation("@javax.persistence.ManyToOne"); //NOI18N
-
         }
 
         public boolean isManyToMany() {
             return matchAnnotation("@javax.persistence.ManyToMany"); //NOI18N
-
         }
 
         private boolean matchAnnotation(String annotation) {

@@ -423,14 +423,14 @@ public class IconEditor extends PropertyEditorSupport
                 }
             }
             catch (URISyntaxException ex) {}
-            catch (IllegalArgumentException ex) {}
 
             if (url != null) { // treat as url
-                Icon icon = null;
                 try {
-                    icon = new ImageIcon(ImageIO.read(url));
-                } catch (IOException ex) {}
-                return new NbImageIcon(TYPE_URL, urlString, icon);
+                    Icon icon = new ImageIcon(ImageIO.read(url));
+                    return new NbImageIcon(TYPE_URL, urlString, icon);
+                } catch (IOException ex) { // should not happen
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+                }
             }
         }
         catch (MalformedURLException ex) {}

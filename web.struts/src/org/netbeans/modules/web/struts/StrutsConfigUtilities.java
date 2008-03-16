@@ -81,7 +81,6 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author petr
- * @author Po-Ting Wu
  */
 public class StrutsConfigUtilities {
     
@@ -180,10 +179,7 @@ public class StrutsConfigUtilities {
     /** Returns all configuration files for the module
      **/
     public static FileObject[] getConfigFiles(String module, FileObject dd){
-        WebModule wm = WebModule.getWebModule(dd);
-        if (wm == null)
-            return null;
-        FileObject docBase = wm.getDocumentBase();
+        FileObject docBase = WebModule.getWebModule(dd).getDocumentBase();
         if (docBase == null)
             return null;
         Servlet servlet = getActionServlet(dd);
@@ -337,10 +333,7 @@ public class StrutsConfigUtilities {
      */
     public static FileObject[] getConfigFilesFO(FileObject dd){
         if (dd != null){
-            WebModule wm = WebModule.getWebModule(dd);
-            if (wm == null)
-                return null;
-            FileObject docBase = wm.getDocumentBase();
+            FileObject docBase = WebModule.getWebModule(dd).getDocumentBase();
             if (docBase == null)
                 return null;
             Servlet servlet = getActionServlet(dd);

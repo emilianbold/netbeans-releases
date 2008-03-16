@@ -444,13 +444,11 @@ public abstract class ModelSet implements FileChangeListener {
                 // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
                 // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
                 // However this class is not part of a public package.
-                if (library.getType().equals("complib") || // NOI18N
-                    library.getType().equals("theme") || // NOI18N 
-                    library.getType().equals("j2se")) { // NOI18N
+                if (library.getType().equals("complib") || 
+                        library.getType().equals("theme")) { // NOI18N
                     if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                         for (String volumeType : volumeTypes) {
-                            if ((library.getType().equals("theme") || // NOI18N
-                                 library.getType().equals("j2se")) && // NOI18N
+                            if (library.getType().equals("theme") && // NOI18N
                                     (!volumeType.equals("classpath"))) { // NOI18N
                                 continue;
                             }

@@ -16,23 +16,28 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
+
 /**
  * @author ads
+ *
  */
-public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
+class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
     extends AbstractNamedComponentReference<T> implements SchemaReference<T>,
     BpelAttributesType
 {
 
-    public SchemaReferenceImpl( T target , Class<T> type , 
+    SchemaReferenceImpl( T target , Class<T> type , 
             AbstractDocumentComponent parent, 
             SchemaReferenceBuilder.SchemaResolver resolver ) 
     {
@@ -40,7 +45,7 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
         myResolver = resolver;
     }
 
-    public SchemaReferenceImpl( Class<T> type , AbstractDocumentComponent parent , 
+    SchemaReferenceImpl( Class<T> type , AbstractDocumentComponent parent , 
             String value ,  SchemaReferenceBuilder.SchemaResolver resolver )
     {
         super( type , parent , value );
@@ -94,4 +99,5 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
     }
     
     private  SchemaReferenceBuilder.SchemaResolver myResolver;
+    
 }

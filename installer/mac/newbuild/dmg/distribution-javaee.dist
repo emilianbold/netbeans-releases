@@ -224,11 +224,11 @@ function checkChoiceUpgradeAction() {
     <choice id="webjavaee" title="Web &amp; Java EE" description="Tools for creating Java web and enterprise applications compatible with the J2EE 1.3, J2EE 1.4, and Java EE 5 specifications. Includes support for servlets, JSPs, tag libraries, Struts, Java Persistence API, Enterprise Java Beans, JAX-WS, and Java Server Faces. Provides visual drag-and-drop application development environment." start_selected="true" start_enabled="true" start_visible="true" selected="choices.webjavaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>  
-    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>   
-    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="98273" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="9991" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat.pkg</pkg-ref>   
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="50068" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="26508" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="71008" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
     <choice id="glassfish" title="@GF_TITLE@" description="Free, open source, production-quality application server that is also the reference implementation for Java EE 5 specification." start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
     </choice>

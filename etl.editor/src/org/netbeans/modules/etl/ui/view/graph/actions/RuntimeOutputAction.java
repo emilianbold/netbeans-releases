@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -67,22 +68,22 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 public class RuntimeOutputAction extends GraphAction {
 
     private static final URL runtimeOutputImgUrl = RuntimeOutputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/RuntimeOutput.png");
-    private static transient final Logger mLogger = Logger.getLogger(RuntimeOutputAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(RuntimeOutputAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public RuntimeOutputAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND031: Runtime Outputs...");
-        this.putValue(Action.NAME,nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Runtime Outputs...");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeOutputImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND032: Add/Edit Runtime Outputs (Shift-U)");
-        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-        // Acceleratot Shift-U
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('U', InputEvent.SHIFT_DOWN_MASK));
+        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Outputs (Cntl-U)");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
+        // Acceleratot Cntl-U
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('U', InputEvent.CTRL_MASK ));
     }
 
     /**

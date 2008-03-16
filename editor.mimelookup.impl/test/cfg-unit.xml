@@ -59,18 +59,12 @@ made subject to such option by the copyright holder.
             <patternset>
                 <include name="**/*Test.class"/>
                 <exclude name="**/*MemoryTest.class"/>
-                <exclude name="**/MimeLookupPerformanceTest.class"/>
-                <exclude name="**/Depr_MimeLookupPerformanceTest.class"/>
             </patternset>
         </testset>
     </testbag>
 
     <testbag testattribs="failing" executor="code" name="testbag_2">
         <testset dir="unit/src">
-            <patternset>
-                <include name="**/MimeLookupPerformanceTest.class"/>
-                <include name="**/Depr_MimeLookupPerformanceTest.class"/>
-            </patternset>
         </testset>
     </testbag>
     

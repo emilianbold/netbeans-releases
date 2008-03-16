@@ -23,7 +23,6 @@ package org.netbeans.modules.iep.model.impl;
 import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPVisitor;
-import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -128,19 +127,6 @@ public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
             }
         }
     }
-
-    public void visitImport(Import imp) {
-        if (parent instanceof Component) {
-            if (operation == Operation.ADD) {
-                    addChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, imp);
-            } else if (operation == Operation.REMOVE) {
-                    removeChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, imp);
-            } else if (operation == null) {
-                    canAdd = true;
-            }
-        }
-    }
-    
     
     public void visitDocumentation(Documentation doc) {
     	if (parent instanceof Component) {

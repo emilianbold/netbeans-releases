@@ -65,7 +65,7 @@ class QuickFix {
 
   static Adapter get(BpelEntity entity, Reference<Referenceable> reference) {
 //out();
-//out("reference: " + reference.getClass().getName());
+//out("reference: " + reference.getClass().getName());  // todo m
 //out("         : " + reference.getType().getName());
     if (reference.getType().isAssignableFrom(VariableDeclaration.class)) {
       if (entity instanceof VariableReference) {

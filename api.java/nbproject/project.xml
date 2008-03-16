@@ -100,7 +100,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.java.classpath</package>
                 <package>org.netbeans.spi.java.classpath.support</package>
                 <package>org.netbeans.spi.java.queries</package>
-                <package>org.netbeans.spi.java.queries.support</package>
             </public-packages>
         </data>
     </configuration>

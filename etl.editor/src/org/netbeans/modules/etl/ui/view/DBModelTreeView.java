@@ -84,6 +84,7 @@ import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyViewMa
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -99,7 +100,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     private Component comp;
     private IPropertySheet propSheet;
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
-    private static transient final Logger mLogger = Logger.getLogger(DBModelTreeView.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(DBModelTreeView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static URL rootImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/root.png");
     private static URL columnImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
@@ -303,7 +304,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
                     try {
                         dge.startDrag(DragSource.DefaultCopyDrop, new ColumnTransferable(obj));
                     } catch (InvalidDnDOperationException ex) {
-                        mLogger.errorNoloc(mLoc.t("EDIT043: invalid drag and drop{0}", LOG_CATEGORY), ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR043: invalid drag and drop{0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -509,15 +510,15 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
                     SQLDBModel dbModel = (SQLDBModel) obj;
                     String dbName = dbModel.getModelName();
                     
-                    String nbBundle1 = mLoc.t("BUND156: {0} [Source]",dbName);
-                    String nbBundle2 = mLoc.t("BUND157: {0} [Target]",dbName);
+                    String nbBundle1 = mLoc.t("PRSR001: {0} [Source]",dbName);
+                    String nbBundle2 = mLoc.t("PRSR001: {0} [Target]",dbName);
                     switch (dbModel.getObjectType()) {
                         case SQLConstants.SOURCE_DBMODEL:
-                            dbName =  nbBundle1.substring(15);
+                            dbName =  Localizer.parse(nbBundle1);
                             break;
 
                         case SQLConstants.TARGET_DBMODEL:
-                            dbName =  nbBundle2.substring(15);
+                            dbName =  Localizer.parse(nbBundle2);
                             break;
 
                         default:

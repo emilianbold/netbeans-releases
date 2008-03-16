@@ -1,7 +1,7 @@
 /*
  *  CcCI3CClass
  *
- * Created on March 11, 2008, 10:43 PM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,7 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -23,9 +23,9 @@ import javax.ws.rs.ProduceMime;
 
 @Path("/CcCI3ContainerURI")
 public class CcCI3CClass {
-    @Context
+    @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI3CClass */
     public CcCI3CClass() {
     }

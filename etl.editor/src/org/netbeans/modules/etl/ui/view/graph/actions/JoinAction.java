@@ -61,6 +61,7 @@ import org.openide.NotifyDescriptor;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -73,23 +74,23 @@ public class JoinAction extends GraphAction {
 
     private static final URL joinImgUrl = ValidationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/join_view.png");
     private static final String LOG_CATEGORY = JoinAction.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(JoinAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public JoinAction() {
         // action name
-        String nbBundle1 = mLoc.t("BUND022: Create New Join...");
-        this.putValue(Action.NAME, nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Create New Join...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(joinImgUrl));
 
         // action tooltip
-        String nbBundle2 = mLoc.t("BUND023: Create New Join (Shift-J)");
-        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Create New Join (Cntl-J)");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
-        // Acceleratot Shift-J
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('J', InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-J
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('J', InputEvent.CTRL_MASK ));
     }
 
     /**
@@ -124,7 +125,7 @@ public class JoinAction extends GraphAction {
                     }
                 } catch (BaseException ex) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
-                    mLogger.errorNoloc(mLoc.t("EDIT025: error adding join view{0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR025: error adding join view{0}", LOG_CATEGORY), ex);
                 }
             }
         }

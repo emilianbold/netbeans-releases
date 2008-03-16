@@ -49,6 +49,7 @@ import org.netbeans.modules.sql.framework.model.DBColumn;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
 import org.netbeans.modules.sql.framework.model.Index;
 import org.netbeans.modules.sql.framework.model.PrimaryKey;
@@ -62,7 +63,7 @@ import org.netbeans.modules.sql.framework.model.PrimaryKey;
  */
 public abstract class FlatfileTable {
     private FlatfileDBTable mDelegate;
-    private static transient final Logger mLogger = Logger.getLogger(FlatfileTable.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileTable.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public static final Integer ZERO = new Integer(0);
 
@@ -129,8 +130,8 @@ public abstract class FlatfileTable {
      */
     public String getDescription() {
         String desc = mDelegate.getDescription();
-        String nbBundle1 = mLoc.t("BUND182: <None>");
-        return (StringUtil.isNullString(desc)) ? nbBundle1.substring(15) : desc;
+        String nbBundle1 = mLoc.t("PRSR001: <None>");
+        return (StringUtil.isNullString(desc)) ? Localizer.parse(nbBundle1) : desc;
     }
 
     /**
@@ -141,8 +142,8 @@ public abstract class FlatfileTable {
      */
     public String getSchema() {
         String schema = mDelegate.getSchema();
-        String nbBundle2 = mLoc.t("BUND182: <None>");
-        return (StringUtil.isNullString(schema)) ? nbBundle2.substring(15) : schema;
+        String nbBundle2 = mLoc.t("PRSR001: <None>");
+        return (StringUtil.isNullString(schema)) ? Localizer.parse(nbBundle2) : schema;
     }
 
     /**
@@ -153,8 +154,8 @@ public abstract class FlatfileTable {
      */
     public String getCatalog() {
         String catalog = mDelegate.getCatalog();
-        String nbBundle3 = mLoc.t("BUND182: <None>");
-        return (StringUtil.isNullString(catalog)) ? nbBundle3.substring(15) : catalog;
+        String nbBundle3 = mLoc.t("PRSR001: <None>");
+        return (StringUtil.isNullString(catalog)) ? Localizer.parse(nbBundle3) : catalog;
     }
 
     /**
@@ -273,9 +274,9 @@ public abstract class FlatfileTable {
      */
     public String getRecordDelimiter() {
         String delimiter = getProperty(PropertyKeys.RECORDDELIMITER);
-        String nbBundle4 = mLoc.t("BUND182: <None>");
+        String nbBundle4 = mLoc.t("PRSR001: <None>");
         if (delimiter == null || delimiter.length() == 0) {
-            delimiter = nbBundle4.substring(15);
+            delimiter = Localizer.parse(nbBundle4);
         } else {
             delimiter = StringUtil.escapeControlChars(delimiter);
         }

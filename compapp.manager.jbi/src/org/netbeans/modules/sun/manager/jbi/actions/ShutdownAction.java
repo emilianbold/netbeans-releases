@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Shutdownable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -67,6 +69,16 @@ public abstract class ShutdownAction extends NodeAction {
                         
                         if (shutdownable != null) {
                             shutdownable.shutdown(isForceAction());
+                            
+                            final Refreshable refreshable =
+                                    lookup.lookup(Refreshable.class);
+                            if (refreshable != null){
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        refreshable.refresh();
+                                    }
+                                });
+                            }
                         }
                     }
                 } catch (RuntimeException rex) {
@@ -85,7 +97,7 @@ public abstract class ShutdownAction extends NodeAction {
                 Lookup lookup = node.getLookup();
                 Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
                 try {
-                    if (shutdownable != null && !shutdownable.canShutdown(isForceAction())) {
+                    if (shutdownable != null && !shutdownable.canShutdown()) {
                         ret = false;
                         break;
                     }

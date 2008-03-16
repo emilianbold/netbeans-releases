@@ -81,8 +81,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  *
@@ -97,7 +95,6 @@ public class Utilities {
     public static String PLUGIN_MANAGER_CHECK_INTERVAL = "plugin.manager.check.interval";
     
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
-    public static final String TIME_OF_MODEL_INITIALIZATION = "time_of_model_initialization"; // NOI18N
     
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
@@ -164,14 +161,6 @@ public class Utilities {
         logger.log(Level.FINER, "makeUpdateCategories (" + units.size () + ") returns " + res.size ());
         return res;
     };
-
-    public static long getTimeOfInitialization () {
-        return getPreferences ().getLong (TIME_OF_MODEL_INITIALIZATION, 0);
-    }
-    
-    public static void putTimeOfInitialization (long time) {
-        getPreferences ().putLong (TIME_OF_MODEL_INITIALIZATION, time);
-    }
     
     private static List<UnitCategory> makeFirstClassUpdateCategories () {
         Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
@@ -348,53 +337,19 @@ public class Utilities {
     }
 
     public static void startAsWorkerThread(final PluginManagerUI manager, final Runnable runnableCode, final String progressDisplayName) {
-        startAsWorkerThread (manager, runnableCode, progressDisplayName, 0);
-    }
-    
-    public static void startAsWorkerThread (final PluginManagerUI manager,
-            final Runnable runnableCode,
-            final String progressDisplayName,
-            final long estimatedTime) {
         startAsWorkerThread(new Runnable() {
             public void run() {
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressDisplayName); // NOI18N                
+                ProgressHandle handle = ProgressHandleFactory.createHandle(progressDisplayName); // NOI18N                
                 JComponent progressComp = ProgressHandleFactory.createProgressComponent(handle);
                 JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent(handle);
                 
                 try {                    
                     detailLabel.setHorizontalAlignment(SwingConstants.LEFT);
                     manager.setProgressComponent(detailLabel, progressComp);
-                    handle.setInitialDelay(0);
-                    if (estimatedTime == 0) {
-                        handle.start ();                    
-                        handle.progress (progressDisplayName);
-                        runnableCode.run ();
-                    } else {
-                        assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-                        handle.start ((int) estimatedTime * 10, estimatedTime); 
-                        handle.progress (progressDisplayName, 0);
-                        final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
-                        RequestProcessor.getDefault ().post (new Runnable () {
-                            public void run () {
-                                int i = 0;
-                                while (! runnableTask.isFinished ()) {
-                                    try {
-                                        handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
-                                        Thread.sleep (100);
-                                    } catch (InterruptedException ex) {
-                                        // no worries
-                                    }
-                                }
-                            }
-                        });
-                        runnableTask.addTaskListener (new TaskListener () {
-                            public void taskFinished (Task task) {
-                                task.removeTaskListener (this);
-                                handle.finish ();
-                            }
-                        });
-                        runnableTask.waitFinished ();
-                    }
+                    handle.setInitialDelay(0);                    
+                    handle.start();                    
+                    handle.progress (progressDisplayName);
+                    runnableCode.run();
                 } finally {
                     if (handle != null) {
                         handle.finish();

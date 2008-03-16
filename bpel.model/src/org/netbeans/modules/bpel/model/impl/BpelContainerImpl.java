@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.Collection;
@@ -33,7 +34,6 @@ import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypes;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -41,7 +41,9 @@ import org.w3c.dom.NodeList;
 /**
  * @author ads
  */
-public abstract class BpelContainerImpl extends BpelEntityImpl implements BpelContainer {
+public abstract class BpelContainerImpl extends BpelEntityImpl
+        implements BpelContainer
+{
 
     protected BpelContainerImpl( BpelModelImpl model, Element e ) {
         super(model, e);
@@ -490,17 +492,6 @@ public abstract class BpelContainerImpl extends BpelEntityImpl implements BpelCo
         writeLock();
         try {
             T old = getChild(classType);
-            //
-            if (newEl == old) {
-                // See issue #129274                
-                // If the old and the new values are the same objects: 
-                //  It prevents some problems. When the old child BPEL entity 
-                //  is replaced with a new one, it is also deleted from the BPEL model.
-                //  It the old is just the same as the new, then the new turned out 
-                //  deleted as well. 
-                return;
-            }
-            //
             EntityUpdateEvent<T> event = preEntityUpdate(old, newEl, -1);
 
             setChildBefore(classType, ((BpelEntityImpl) newEl).getEntityName(),
@@ -619,7 +610,7 @@ public abstract class BpelContainerImpl extends BpelEntityImpl implements BpelCo
     class CopyKey {
     };
     
-    protected enum Multiplicity {
+    enum Multiplicity {
         SINGLE,
         UNBOUNDED
     }

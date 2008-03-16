@@ -265,35 +265,6 @@ public class PHPLexerTest extends TestCase {
         next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
 
-    public void testTokenLength () throws Exception {
-        //TokenSequence<?> ts = seqForText("<?php\n      echo \"\n                while ($row) {\n                    $ip = $row['ip'];");
-        TokenSequence<?> ts = seqForText("<?php echo \"$row['ip'];");
-        //printTokenSequence(ts, "testTokenLength"); ts.moveStart();
-        
-        next(ts, PHPTokenId.PHP_OPENTAG, "<?php");
-        
-        next(ts, PHPTokenId.WHITESPACE, " ");
-        next(ts, PHPTokenId.PHP_ECHO, "echo");
-        next(ts, PHPTokenId.WHITESPACE, " ");
-        next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"");
-        next(ts, PHPTokenId.PHP_VARIABLE, "$row");
-        next(ts, PHPTokenId.PHP_TOKEN, "[");
-        next(ts, PHPTokenId.PHP_TOKEN, "[");
-        
-//        next(ts, PHPTokenId.WHITESPACE, "\n      ");
-//        next(ts, PHPTokenId.PHP_ECHO, "echo");
-//        next(ts, PHPTokenId.WHITESPACE, " ");
-//        next(ts, PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, "\"");
-//        next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, "\n                while (");
-//        next(ts, PHPTokenId.PHP_VARIABLE, "$row");
-//        next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, ") {\n                    ");
-//        next(ts, PHPTokenId.PHP_VARIABLE, "$ip");
-//        next(ts, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, " = ");
-//        next(ts, PHPTokenId.PHP_VARIABLE, "$row");
-//        next(ts, PHPTokenId.PHP_TOKEN, "[");
-//        next(ts, PHPTokenId.PHP_TOKEN, "[");
-    }
-    
     TokenSequence<?> seqForText(String text) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, PHPTokenId.language());
         return hi.tokenSequence();

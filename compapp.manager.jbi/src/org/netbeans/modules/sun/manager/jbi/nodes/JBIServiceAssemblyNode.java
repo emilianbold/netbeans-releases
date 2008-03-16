@@ -263,10 +263,6 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         setSheet(sheet);
         firePropertySetsChange(null, null);
     }
-    
-    protected boolean needRefresh(String notificationSourceType) {
-        return false;
-    }
 
     //========================== Startable =====================================
     public boolean canStart() {
@@ -416,7 +412,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
 
     //========================== Shutdownable ==================================
-    public boolean canShutdown(boolean force) {
+    public boolean canShutdown() {
 
         boolean ret = canStop();
 
@@ -431,10 +427,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                 if (units != null) {
                     for (ServiceUnitInfo unit : units) {
                         String unitState = unit.getState();
-                        if (!ServiceUnitInfo.SHUTDOWN_STATE.equals(unitState)) {
+                        if (ServiceAssemblyInfo.STARTED_STATE.equals(unitState) ||
+                                ServiceAssemblyInfo.STOPPED_STATE.equals(unitState)) {
                             ret = true;
                             break;
-                        }                
+                        }
                     }
                 }
             }
@@ -494,9 +491,9 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
 
     //========================== Undeployable =================================
-    public boolean canUndeploy(boolean force) {
+    public boolean canUndeploy() {
         String assemblyStatus = getAssemblyState();
-        return force || canShutdown(force) ||
+        return canShutdown() ||
                 !busy && ServiceAssemblyInfo.SHUTDOWN_STATE.equals(assemblyStatus);
     }
 
@@ -508,7 +505,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         // anyway for #111623.
         clearServiceAssemblyStatusCache();
 
-        if (canShutdown(force)) {
+        if (canShutdown()) {
             shutdown(force);
         }
 

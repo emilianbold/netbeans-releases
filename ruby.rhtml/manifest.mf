@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.ruby.rhtml/1
 OpenIDE-Module-Layer: org/netbeans/modules/ruby/rhtml/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/rhtml/resources/Bundle.properties
+OpenIDE-Module-Install: org/netbeans/modules/ruby/rhtml/RhtmlModuleInstaller.class
 AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/ruby/rhtml/loaders/RhtmlDataLoader.class
