@@ -1,28 +1,28 @@
 Results for alert('foo1 with queryType=COMPLETION and nameKind=PREFIX
-CONSTRUCTO Array(arrayLength)                         Core JS
+CONSTRUCTO Array(arrayLength) : Array                 Core JS
 CONSTRUCTO Array(element0, element1, elem             Core JS
-CONSTRUCTO Boolean(val)                               Core JS
-CONSTRUCTO Boolean(value)                             Core JS
-CONSTRUCTO Date()                                     Core JS
-CONSTRUCTO Date(dateString)                           Core JS
-CONSTRUCTO Date(milliseconds)                         Core JS
+CONSTRUCTO Boolean(val) : Boolean                     Core JS
+CONSTRUCTO Boolean(value) : Boolean                   Core JS
+CONSTRUCTO Date() : Date                              Core JS
+CONSTRUCTO Date(dateString) : Date                    Core JS
+CONSTRUCTO Date(milliseconds) : Date                  Core JS
 CONSTRUCTO Date(yr_num, mo_num, day_num)              Core JS
 CONSTRUCTO Date(yr_num, mo_num, day_num,              Core JS
-CONSTRUCTO Error()                                    Core JS
-CONSTRUCTO Error(message)                             Core JS
+CONSTRUCTO Error() : Error                            Core JS
+CONSTRUCTO Error(message) : Error                     Core JS
 CONSTRUCTO Function(arg1, arg2, argN, fun             Core JS
-CONSTRUCTO Infinity()                                 Core JS
-CONSTRUCTO JavaClass()                                Core JS
-CONSTRUCTO JavaPackage()                              Core JS
-CONSTRUCTO NaN()                                      Core JS
-CONSTRUCTO Number(val)                                Core JS
-CONSTRUCTO Number(value)                              Core JS
-CONSTRUCTO Object()                                   Core JS
-CONSTRUCTO RegExp(pattern)                            Core JS
-CONSTRUCTO RegExp(pattern, flags)                     Core JS
-CONSTRUCTO String(string)                             Core JS
-CONSTRUCTO String(val)                                Core JS
-CONSTRUCTO XMLHttpRequest()                           DOM
+CONSTRUCTO Infinity() : Infinity                      Core JS
+CONSTRUCTO JavaClass() : JavaClass                    Core JS
+CONSTRUCTO JavaPackage() : JavaPackage                Core JS
+CONSTRUCTO NaN() : NaN                                Core JS
+CONSTRUCTO Number(val) : Number                       Core JS
+CONSTRUCTO Number(value) : Number                     Core JS
+CONSTRUCTO Object() : Object                          Core JS
+CONSTRUCTO RegExp(pattern) : RegExp                   Core JS
+CONSTRUCTO RegExp(pattern, flags) : RegEx             Core JS
+CONSTRUCTO String(string) : String                    Core JS
+CONSTRUCTO String(val) : String                       Core JS
+CONSTRUCTO XMLHttpRequest() : XMLHttpRequ             DOM
 CLASS      AbstractView                               DOM
 CLASS      Arguments                                  Core JS
 CLASS      Array                                      Core JS
@@ -384,14 +384,14 @@ PROPERTY   Window                                     DOM
 PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
 METHOD     eval(string)                               Object
-METHOD     hasOwnProperty(prop)                       Object
-METHOD     isPrototypeOf(object)                      Object
-METHOD     propertyIsEnumerable(prop)                 Object
-METHOD     toLocaleString()                           Object
-METHOD     toSource()                                 Object
-METHOD     toString()                                 Object
+METHOD     hasOwnProperty(prop) : Boolean             Object
+METHOD     isPrototypeOf(object) : Boolea             Object
+METHOD     propertyIsEnumerable(prop) : B             Object
+METHOD     toLocaleString() : String                  Object
+METHOD     toSource() : void                          Object
+METHOD     toString() : String                        Object
 METHOD     unwatch(prop)                              Object
-METHOD     valueOf()                                  Object
+METHOD     valueOf() : void                           Object
 METHOD     watch(prop, handler)                       Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null

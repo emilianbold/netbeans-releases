@@ -323,6 +323,9 @@ public abstract class IndexedElement extends JsElement {
     }
 
     public String getType() {
+        if (kind == ElementKind.CLASS || kind == ElementKind.PACKAGE) {
+            return null;
+        }
         int typeIndex = getAttributeSection(TYPE_INDEX);
         int endIndex = attributes.indexOf(';', typeIndex);
         if (endIndex > typeIndex) {

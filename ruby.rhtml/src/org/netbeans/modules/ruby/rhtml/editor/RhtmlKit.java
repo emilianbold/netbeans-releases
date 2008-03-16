@@ -196,17 +196,17 @@ public class RhtmlKit extends HTMLKit {
                         // See if there's anything ahead
                         int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                         if (first == -1) {
-                            doc.insertString(dotPos, "%%>", null);
+                            doc.insertString(dotPos, "%%>", null); // NOI18N
                             caret.setDot(dotPos+1);
                             return true;
                         }
                     } else if (token.id() == RhtmlTokenId.DELIMITER) {
                         String tokenText = token.text().toString();
-                        if (tokenText.endsWith("%>")) {
+                        if (tokenText.endsWith("%>")) { // NOI18N
                             // TODO - check that this offset is right
                             int tokenPos = (c == '%') ? dotPos : dotPos-1;
                             CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
-                            if (CharSequenceUtilities.textEquals(suffix, "%>")) {
+                            if (CharSequenceUtilities.textEquals(suffix, "%>")) { // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }
@@ -214,7 +214,7 @@ public class RhtmlKit extends HTMLKit {
                             // See if there's anything ahead
                             int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                             if (first == -1) {
-                                doc.insertString(dotPos, "%%>", null);
+                                doc.insertString(dotPos, "%%>", null); // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }

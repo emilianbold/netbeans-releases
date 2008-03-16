@@ -264,6 +264,16 @@ public class JsTypeAnalyzer {
                     }
                 } else if (grandChild.getType() == Token.NAME) {
                     return FunctionCache.getInstance().getType(grandChild.getString(), index);
+                } else {
+                    String type = expressionType(grandChild);
+                    if (type != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = type + "." + method; // NOI18N
+                            return FunctionCache.getInstance().getType(fqn, index);
+                        }
+                    }
                 }
             } else {
                 if (System.currentTimeMillis() > startTime+2000) {
