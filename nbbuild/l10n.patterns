@@ -1,0 +1,16 @@
+**/*.jar:**/Bundle*.properties
+**/*.jar:**/*.gif
+**/*.jar:**/*.html
+**/*.jar:**/*.png 
+**/*.jar:**/*.css
+**/*.jar:**/docs/**/*.gif
+**/*.jar:**/docs/**/*.hs
+**/*.jar:**/docs/**/*.html
+**/*.jar:**/docs/**/*.jhm
+**/*.jar:**/docs/**/*.jpeg
+**/*.jar:**/docs/**/*.jpg
+**/*.jar:**/docs/**/*.png 
+**/*.jar:**/docs/**/*.toc
+**/*.jar:**/docs/**/*.xml
+**/*.jar:**/*.url
+exclude **/Info/info.xml:

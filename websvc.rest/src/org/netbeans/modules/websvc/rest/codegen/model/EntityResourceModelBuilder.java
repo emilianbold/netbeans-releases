@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,14 +48,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean.Type;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -106,7 +104,7 @@ public class EntityResourceModelBuilder {
             model.setValid(true);
             
         } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.ALL, "build", ex);
+            Exceptions.printStackTrace(ex);
             model.setValid(false);
         }
         

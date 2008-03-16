@@ -54,6 +54,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
 import java.io.IOException;
@@ -85,11 +86,18 @@ public class TreeLoader extends LazyTreeLoader {
         context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo));
     }
     
+    public static TreeLoader instance (final Context ctx) {
+        final LazyTreeLoader tl = LazyTreeLoader.instance(ctx);
+        return (tl instanceof TreeLoader) ? (TreeLoader)tl : null;
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(TreeLoader.class.getName());
+    public  static boolean DISABLE_CONFINEMENT_TEST = false; //Only for tests!
 
     private Context context;
     private ClasspathInfo cpInfo;
     private Map<ClassSymbol, StringBuilder> couplingErrors;
+    private boolean partialReparse;
 
     private TreeLoader(Context context, ClasspathInfo cpInfo) {
         this.context = context;
@@ -98,7 +106,7 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
-        assert JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
+        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         
         if (clazz != null) {
             try {
@@ -126,9 +134,20 @@ public class TreeLoader extends LazyTreeLoader {
         }
         return false;
     }
+    
+    public final void startPartialReparse () {
+        this.partialReparse = true;
+    }
+    
+    public final void endPartialReparse () {
+        this.partialReparse = false;
+    }
 
     @Override
     public void couplingError(ClassSymbol clazz, Tree t) {
+        if (this.partialReparse) {
+            throw new CouplingAbort(clazz.classfile, t);
+        }
         StringBuilder info = new StringBuilder("\n"); //NOI18N
         switch (t.getKind()) {
             case CLASS:

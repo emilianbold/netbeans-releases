@@ -184,32 +184,29 @@ public class GenerateCodePanel extends javax.swing.JPanel
     {
         String targetFolderName = prjProps.getCodeGenFolderLocation();
         
-        if (targetFolderName == null || targetFolderName.length() == 0)
-            noTargetProject = true;
-        
-        else
+        if (targetFolderName != null && targetFolderName.length() > 0)
         {
             FileObject targetSrcFolderFO = 
                 FileUtil.toFileObject(new File(targetFolderName));
 
             if (targetSrcFolderFO == null || !targetSrcFolderFO.isValid())
             {
-                noTargetProject = true;
-            }
-            
-            else
-            {
                 targetFolderName = retrieveFolderLocationDefault(prjProps);
-
-                if (targetFolderName != null && targetFolderName.length() > 0)
-                {
-                    setTargetElementsFromFolder(targetFolderName);
-                    targetPrj = origPrj;
-                }
-                
-                else
-                    noTargetProject = true;
             }
+        }
+        else 
+        {
+            targetFolderName = retrieveFolderLocationDefault(prjProps);
+        }
+
+        if (targetFolderName != null && targetFolderName.length() > 0)
+        {
+            setTargetElementsFromFolder(targetFolderName);
+            targetPrj = origPrj;
+        }
+        else
+        {
+            noTargetProject = true;            
         }
         
         if (noTargetProject)
@@ -712,7 +709,16 @@ public class GenerateCodePanel extends javax.swing.JPanel
             return false;
         
         FileObject fo = null;
-        fo = FileUtil.toFileObject(new File(path));
+        
+        try
+        {
+            fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
+        }
+        
+        catch (IOException ex)
+        {
+            return false;
+        }
         
         if (fo == null)
             return false;

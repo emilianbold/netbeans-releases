@@ -59,6 +59,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -79,6 +80,16 @@ import org.openide.util.Exceptions;
  * @todo Use the JsCommentLexer to pull out relevant attributes -- @private and such -- and set these
  *     as function attributes.
  * @todo There are duplicate elements -- why???
+ * @todo jquery: Handle this:
+ *        // Attach a bunch of functions for handling common AJAX events
+ *        jQuery.each( "ajaxStart,ajaxStop,ajaxComplete,ajaxError,ajaxSuccess,ajaxSend".split(","), function(i,o){
+ *                jQuery.fn[o] = function(f){
+ *    jQuery.each( ("blur,focus,load,resize,scroll,unload,click,dblclick," +
+ *            "mousedown,mouseup,mousemove,mouseover,mouseout,change,select," + 
+ *            "submit,keydown,keypress,keyup,error").split(","), function(i, name){
+ * 
+ * @todo jquery- needs to preindex jquery: the stuff to register "ready" and "load" there
+ *    on document and element classes.
  * 
  * @author Tor Norbye
  */
@@ -115,10 +126,7 @@ public class JsIndexer implements Indexer {
             // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
             // or foo.uncompressed
             String name = file.getNameExt();
-if (name.indexOf("button") != -1) {
-    System.out.println("foo");
-}            
-            if (name.endsWith("-min.js")) {
+            if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) {
                 // See if we have a corresponding "un-min'ed" version in the same directory;
                 // if so, skip it
                 // Subtrack out the -min part
@@ -192,7 +200,7 @@ if (name.indexOf("button") != -1) {
     }
     
     public String getIndexVersion() {
-        return "6.111"; // NOI18N
+        return "6.112"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -244,6 +252,10 @@ if (name.indexOf("button") != -1) {
 
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
+            
+            if (file.getNameExt().startsWith("jquery-")) {
+                indexJQuery(document);
+            }
 
             // Add the fields, etc.. Recursively add the children classes or modules if any
             for (AstElement child : children) {
@@ -277,19 +289,69 @@ if (name.indexOf("button") != -1) {
             }
         }
 
+        private void indexJQuery(IndexDocument document) {
+            // TODO - pull in all those jQuery.extend calls too!
+            final String[] JQUERY_FUNCTIONS = { "ajaxStart","ajaxStop","ajaxComplete","ajaxError",
+                "ajaxSuccess","ajaxSend","blur","focus","load","resize","scroll","unload",
+                "click","dblclick","mousedown","mouseup","mousemove","mouseover",
+                "mouseout","change","select","submit","keydown","keypress","keyup","error" 
+            };
+            String in = "jQuery"; // NOI18N
+            StringBuilder sb = new StringBuilder();
+            int flags = IndexedElement.FUNCTION;
+            sb.append(IndexedElement.encode(flags));
+            sb.append(";;0;;;jQuery;"); // NOI18N
+            String signature = sb.toString();
+            
+            for (String name : JQUERY_FUNCTIONS) {
+                StringBuilder base = new StringBuilder();
+                base.append(name.toLowerCase());
+                base.append(';');                
+                if (in != null) {
+                    base.append(in);
+                }
+                base.append(';');
+                base.append(name);
+                base.append(';');
+                base.append(signature);
+                document.addPair(FIELD_BASE, base.toString(), true);
+
+                StringBuilder fqn = new StringBuilder();
+                if (in != null && in.length() > 0) {
+                    fqn.append(in.toLowerCase());
+                    fqn.append('.');
+                }
+                fqn.append(name.toLowerCase());
+                fqn.append(';');
+                fqn.append(';');
+                if (in != null && in.length() > 0) {
+                    fqn.append(in);
+                    fqn.append('.');
+                }
+                fqn.append(name);
+                fqn.append(';');
+                fqn.append(signature);
+                document.addPair(FIELD_FQN, fqn.toString(), true);
+            }
+        }
+        
         private void indexClass(AstElement element, IndexDocument document, String signature) {
             final String name = element.getName();
             document.addPair(FIELD_CLASS, name+ ";" + signature, true);
         }
 
         private String computeSignature(AstElement element) {
+            OffsetRange docRange = getDocumentationOffset(element);
+            int docOffset = -1;
+            if (docRange != OffsetRange.NONE) {
+                docOffset = docRange.getStart();
+            }
+            Map<String,String> typeMap = element.getDocProps();
+              
             // Look up compatibility
             int index = IndexedElement.FLAG_INDEX;
-            
-            int docOffset = getDocumentationOffset(element);
-            
             String compatibility = "";
-            if (file.getNameExt().startsWith("stub_")) {
+            if (file.getNameExt().startsWith("stub_")) { // NOI18N
                 int astOffset = element.getNode().getSourceStart();
                 int lexOffset = astOffset;
                 TranslatedSource source = result.getTranslatedSource();
@@ -299,9 +361,9 @@ if (name.indexOf("button") != -1) {
                 try {
                     String line = doc.getText(lexOffset,
                             Utilities.getRowEnd(doc, lexOffset)-lexOffset);
-                    int compatIdx = line.indexOf("COMPAT=");
+                    int compatIdx = line.indexOf("COMPAT="); // NOI18N
                     if (compatIdx != -1) {
-                        compatIdx += "COMPAT=".length();
+                        compatIdx += "COMPAT=".length(); // NOI18N
                         EnumSet<BrowserVersion> es = BrowserVersion.fromFlags(line.substring(compatIdx));
                         compatibility = BrowserVersion.toCompactFlags(es);
                     }
@@ -313,13 +375,21 @@ if (name.indexOf("button") != -1) {
             assert index == IndexedElement.FLAG_INDEX;
             StringBuilder sb = new StringBuilder();
             int flags = IndexedElement.getFlags(element);
+            // Add in info from documentation
+            if (typeMap != null) {
+                // Most flags are already handled by AstElement.getFlags()...
+                // Consider handling the rest too
+                if (typeMap.get("@ignore") != null) { // NOI18N
+                    flags = flags | IndexedElement.NODOC;
+                }
+            }
             if (docOffset != -1) {
                 flags = flags | IndexedElement.DOCUMENTED;
             }
             sb.append(IndexedElement.encode(flags));
             
             // Parameters
-            sb.append(";");
+            sb.append(';');
             index++;
             assert index == IndexedElement.ARG_INDEX;
             if (element instanceof FunctionAstElement) {
@@ -333,9 +403,16 @@ if (name.indexOf("button") != -1) {
                         continue;
                     } 
                     if (argIndex > 0) {
-                        sb.append(",");
+                        sb.append(',');
                     }
                     sb.append(param);
+                    if (typeMap != null) {
+                        String type = typeMap.get(param);
+                        if (type != null) {
+                            sb.append(':');
+                            sb.append(type);
+                        }
+                    }
                     argIndex++;
                 }
             }
@@ -344,7 +421,7 @@ if (name.indexOf("button") != -1) {
             sb.append(';');
             index++;
             assert index == IndexedElement.NODE_INDEX;
-            sb.append("0");
+            sb.append('0');
             //sb.append(IndexedElement.encode(element.getNode().getSourceStart()));
             
             // Documentation offset
@@ -356,24 +433,56 @@ if (name.indexOf("button") != -1) {
             }
 
             // Browser compatibility
-            sb.append(";");
+            sb.append(';');
             index++;
             assert index == IndexedElement.BROWSER_INDEX;
             sb.append(compatibility);
             
             // Types
-            sb.append(";");
+            sb.append(';');
             index++;
             assert index == IndexedElement.TYPE_INDEX;
-            if (element.getKind() == ElementKind.GLOBAL) {
-                String type = ((GlobalAstElement)element).getType();
-                if (type != null) {
-                    sb.append(type);
+            String type = element.getType();
+            if (type == Node.UNKNOWN_TYPE) {
+                type = null;
+            }
+            if (type == null) {
+                type = typeMap != null ? typeMap.get(JsCommentLexer.AT_RETURN) : null; // NOI18N
+                if (type == null) {
+                    if (file.getNameExt().startsWith("jquery-")) { // NOI18N
+                        // JQuery chains most methods such that the return values
+                        // are pretty much always jQuery. There are some exceptions...
+                        type = "jQuery"; // NOI18N
+                        String name = element.getName();
+                        if ("is".equals(name) || name.startsWith("has")) {
+                            type = "Boolean";
+                        } else if ("length".equals(name) || "index".equals(name)) {
+                            type = "Number";
+                        } else if ("get".equals(name)) {
+                            if (element.getSignature().startsWith("get(index")) {
+                                type = "Array<Element>";
+                            } else {
+                                type = "Element";
+                            }
+                        } else if ("text".equals(name) || "html".equals(name)) {
+                            type = "String";
+                        } else if ("queue".equals(name)) {
+                            type = "Array<Function>";
+                        } else if ("ajax".equals(name) || "getJSON".equals(name) ||
+                                "getScript".equals(name) || "post".equals(name)) {
+                            type = "XMLHttpRequest";
+                        } else if ("height".equals(name) || "width".equals(name)) {
+                            type = "Integer";
+                        }
+                        // TODO - utilities, and additional methods
+                    }
                 }
             }
-            // TBD
-
+            if (type != null) {
+                sb.append(type);
+            }
             sb.append(';');
+            
             String signature = sb.toString();
             return signature;
         }
@@ -409,13 +518,18 @@ if (name.indexOf("button") != -1) {
             fqn.append(';');
             fqn.append(signature);
             document.addPair(FIELD_FQN, fqn.toString(), true);
+
+            FunctionCache cache = FunctionCache.getInstance();
+            if (!cache.isEmpty()) {
+                cache.wipe(in != null && in.length() > 0 ? in + "." + name : name);
+            }
         }
         
-        private int getDocumentationOffset(AstElement element) {
+        private OffsetRange getDocumentationOffset(AstElement element) {
             int offset = element.getNode().getSourceStart();
             try {
                 if (offset > doc.getLength()) {
-                    return -1;
+                    return OffsetRange.NONE;
                 }
                 offset = Utilities.getRowStart(doc, offset);
             } catch (BadLocationException ex) {
@@ -423,9 +537,9 @@ if (name.indexOf("button") != -1) {
             }
             OffsetRange range = LexUtilities.getCommentBlock(doc, offset, true);
             if (range != OffsetRange.NONE) {
-                return range.getStart();
+                return range;
             } else {
-                return -1;
+                return OffsetRange.NONE;
             }
         }
     }

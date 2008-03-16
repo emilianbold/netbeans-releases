@@ -151,6 +151,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                                 map.put(name,f);
                             }
                         }
+                    } else {
+                        if (FULL_TRACE) System.out.println("Not Exist "+name); //NOI18N
                     }
                 }
             }
@@ -220,7 +222,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName);  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());  // NOI18N
                         continue;
                     }
                     DwarfSource source = null;

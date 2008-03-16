@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
+import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -102,6 +103,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         };
         SourceFilesPanel sourceFilesPanel = new SourceFilesPanel();
         JPanel panel = new JPanel();
+        panel.setPreferredSize(new Dimension(700, 380));
         panel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

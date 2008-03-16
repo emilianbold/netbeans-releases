@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -167,22 +163,26 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testReformatArrayInitializerWithNewline2() {
+    
+    public void testOperatorEQformatting() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int[][] foo4 =  {\n" +
-                "{1, 2, 3},\n" +
-                "{3,4,5},\n" +
-                "{7,8,9}\n" +
-                "};\n" +
-                "\n");
+                "class real_c_float\n" +
+                "{\n" +
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
         reformat();
-        assertDocumentText("Incorrect array initializer with newline reformatting",
-                "int[][] foo4 = {\n" +
-                "    {1, 2, 3},\n" +
-                "    {3, 4, 5},\n" +
-                "    {7, 8, 9}\n" +
-                "};\n" +
-                "\n");
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
+                "{\n" +
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
+                "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
+                "    }\n" +
+                "};\n");
     }
 }
