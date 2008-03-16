@@ -319,6 +319,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return 0;
     }
     
+    @SuppressWarnings("unchecked")
     private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 

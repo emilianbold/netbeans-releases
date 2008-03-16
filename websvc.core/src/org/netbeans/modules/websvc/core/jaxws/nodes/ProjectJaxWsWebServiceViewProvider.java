@@ -37,37 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.queries.support;
+package org.netbeans.modules.websvc.core.jaxws.nodes;
 
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.queries.SFBQImpl2Result;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.openide.util.Parameters;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.core.ProjectWebServiceView;
+import org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider;
 
 /**
- * Base class for {@link SourceForBinaryQueryImplementation2} which need to delegate
- * to other {@link SourceForBinaryQueryImplementation}.
- * @since 1.16
- * @author Tomas Zezula
+ *
+ * @author Ajit
  */
-public abstract class SourceForBinaryQueryimplementation2Base implements SourceForBinaryQueryImplementation2 {
+public class ProjectJaxWsWebServiceViewProvider implements ProjectWebServiceViewProvider {
 
-    /**
-     * Creates a wrapper for {@link SourceForBinaryQuery.Result}. This method
-     * should be used by delegating {@link SourceForBinaryQueryImplementation2}
-     * which need to delegate to {@link SourceForBinaryQueryImplementation}. 
-     * @param result returned by {@link SourceForBinaryQueryImplementation},
-     * When result is already instanceof {@link SourceForBinaryQueryImplementation2.Result}
-     * it's returned without wrapping.
-     * @return a {@link SourceForBinaryQueryImplementation2.Result}.
-     */
-    protected final Result asResult (SourceForBinaryQuery.Result result) {
-        Parameters.notNull("result", result);   //NOI18N
-        if (result instanceof Result) {
-            return (Result) result;
-        }
-        else {
-            return new SFBQImpl2Result(result);
-        }
+    public ProjectWebServiceView createProjectWebServiceView(Project p) {
+        return new ProjectJaxWsWebServiceView(p);
     }
+
 }

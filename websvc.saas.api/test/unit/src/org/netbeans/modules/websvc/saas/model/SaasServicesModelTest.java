@@ -141,7 +141,7 @@ public class SaasServicesModelTest extends NbTestCase {
         }
         OutputStream out = wadl.getOutputStream();
         try {
-            FileUtil.copy(getClass().getResourceAsStream("application.wadl.xml"), out);
+            FileUtil.copy(getClass().getResourceAsStream("application.wadl"), out);
         } finally {
             out.close();
         }

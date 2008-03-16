@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.MultiWSDLComponentReference;
+import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -62,7 +65,7 @@ public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorCo
     }
     
     public NamedComponentReference<PortType> getPortType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return resolveGlobalReference(PortType.class, ATTR_PORTTYPE);
     }
 
     public void setPortType(NamedComponentReference<PortType> value) {
@@ -70,19 +73,89 @@ public class MultiWSDLComponentReferenceOperatorComponentImpl extends OperatorCo
     }
 
     public NamedComponentReference<Operation> getOperation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String v = getAttribute(ATTR_OPERATION);
+        if(v == null) {
+            return null;
+        }
+        
+        NamedComponentReference<PortType> ptRef = getPortType();
+        if(ptRef != null) {
+            
+            PortType pt = ptRef.get();
+            if(pt != null) {
+                Collection<Operation> ops = pt.getOperations();
+                Iterator<Operation> it = ops.iterator();
+                Operation matchingOp = null;
+                
+                while(it.hasNext()) {
+                    Operation op = it.next();
+                    if(v.equals(op.getName())) {
+                        matchingOp = op;
+                        break;
+                    }
+                }
+                
+                if(matchingOp != null) {
+                    return matchingOp.createReferenceTo(matchingOp, Operation.class);
+                }
+            }
+        }
+        
+        return null;
+        //return resolveGlobalReference(Operation.class, ATTR_OPERATION);
     }
 
     public void setOperation(NamedComponentReference<Operation> value) {
-        setAttribute(OPERATION, ATTR_PORTTYPE, value);
+       if(value != null) {
+            Operation op = value.get();
+            if(op != null) {
+                setAttribute(OPERATION, ATTR_OPERATION, op.getName());
+            }
+       } else {
+        setAttribute(OPERATION, ATTR_OPERATION, value);
+       }
     }
 
     public NamedComponentReference<Message> getMessage() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String v = getAttribute(ATTR_MESSAGE);
+        if(v == null) {
+            return null;
+        }
+        
+        NamedComponentReference<Operation> opRef = getOperation();
+        if(opRef != null) {
+            Operation op = opRef.get();
+            if(op != null) {
+                Input input = op.getInput();
+                if(input != null){
+                    NamedComponentReference<Message> msgRef = input.getMessage();
+                    if(msgRef != null) {
+                        Message msg = msgRef.get();
+                        if(msg!=null && v.equals(msg.getName())) {
+                            return msgRef;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
+//        return resolveGlobalReference(Message.class, ATTR_MESSAGE);
     }
 
     public void setMessage(NamedComponentReference<Message> value) {
-        setAttribute(MESSAGE, ATTR_PORTTYPE, value);
+        if(value != null) {
+            Message msg = value.get();
+            if(msg != null) {
+                setAttribute(MESSAGE, ATTR_MESSAGE, msg.getName());
+            }
+       } else {
+        setAttribute(MESSAGE, ATTR_MESSAGE, value);
+       }
+        
     }
 
+    
+
+    
 }
