@@ -31,6 +31,8 @@ Some other cases to check:
   <% normal %>
   <%= normalexpr %>
   <%# comment %>
+  <%%>
+  <%=%>
   html
   <div></div>
 .e.o.f.

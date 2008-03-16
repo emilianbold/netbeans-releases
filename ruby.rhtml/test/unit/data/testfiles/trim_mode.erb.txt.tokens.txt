@@ -21,8 +21,8 @@ DELIMITER       "%>", st=0
 HTML            "\n    ", la=2, st=0
 DELIMITER       "%", la=1, st=9
 RUBY            " end", la=1, st=0
-HTML            "\n\n    Thanks for your patience.\n\n    James Edward Gray II\n\nSome other cases to check:\n\n  Lines containing % should not be treated as Ruby\n  %% this is a normal line, not a Ruby line\n  ", la=3, st=0
-DELIMITER       "<%%", st=3
+HTML            "\n\n    Thanks for your patience.\n\n    James Edward Gray II\n\nSome other cases to check:\n\n  Lines containing % should not be treated as Ruby\n  %% this is a normal line, not a Ruby line\n  ", la=4, st=0
+DELIMITER       "<%%", la=1, st=3
 RUBY            " double_percents_should_be_cancelled ", la=3, st=3
 DELIMITER       "%%>", st=0
 HTML            "\n  ", la=3, st=0
@@ -36,6 +36,12 @@ DELIMITER       "%>", st=0
 HTML            "\n  ", la=3, st=0
 DELIMITER       "<%#", st=5
 RUBYCOMMENT     " comment ", la=2, st=5
+DELIMITER       "%>", st=0
+HTML            "\n  ", la=4, st=0
+DELIMITER       "<%", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n  ", la=3, st=0
+DELIMITER       "<%=", st=7
 DELIMITER       "%>", st=0
 HTML            "\n  html\n  <div></div>", la=1, st=0
 ----- EOF -----
