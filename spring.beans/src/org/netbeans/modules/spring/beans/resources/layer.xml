@@ -124,11 +124,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="spring-framework-2.5.xml" url="spring-framework-2.5.xml"/>
-        </folder>
-    </folder>
     <folder name="Plugins">
         <folder name="XML">
             <folder name="UserCatalogs">
