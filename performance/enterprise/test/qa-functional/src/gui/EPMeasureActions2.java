@@ -55,10 +55,9 @@ public class EPMeasureActions2  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
-//        suite.addTest(new WatchProjects("testInitGCProjects"));
+        suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
-//Memory Leak issue 129434, moved OpenSchemaView to 4th testbag
-//        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
 
 //TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
         
@@ -67,8 +66,7 @@ public class EPMeasureActions2  {
         suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
         suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
         suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
-// No objects to track reported when OpenSchemaView is disabled
-//        suite.addTest(new WatchProjects("testGCProjects"));
+        suite.addTest(new WatchProjects("testGCProjects"));
         return suite;
     }
     

@@ -1,123 +1,127 @@
 deepest:GLOBAL:[]:ESCAPED{deepest}:
 i:GLOBAL:[]:ESCAPED{i}:
 Droppables:CLASS:[]:ESCAPED{Droppables}:
-  activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{drop}}) : ESCAPED{void}:
-  add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  deactivate:METHOD:[]:ESCAPED{deactivate}(PARAMETERS{ESCAPED{drop}}) : ESCAPED{void}:
-  drops:PROPERTY:[]:ESCAPED{drops} : ESCAPED{Array}:
-  findDeepestChild:METHOD:[]:ESCAPED{findDeepestChild}(PARAMETERS{ESCAPED{drops}}) : ESCAPED{void}:
-  fire:METHOD:[]:ESCAPED{fire}(PARAMETERS{ESCAPED{event}, ESCAPED{element}}) : ESCAPED{void}:
-  isAffected:METHOD:[]:ESCAPED{isAffected}(PARAMETERS{ESCAPED{point}, ESCAPED{element}, ESCAPED{drop}}) : ESCAPED{void}:
-  isContained:METHOD:[]:ESCAPED{isContained}(PARAMETERS{ESCAPED{element}, ESCAPED{drop}}) : ESCAPED{void}:
-  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  reset:METHOD:[]:ESCAPED{reset} : ESCAPED{void}:
-  show:METHOD:[]:ESCAPED{show}(PARAMETERS{ESCAPED{point}, ESCAPED{element}}) : ESCAPED{void}:
+  activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{drop}}):
+  add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{element}}):
+  deactivate:METHOD:[]:ESCAPED{deactivate}(PARAMETERS{ESCAPED{drop}}):
+  drops:PROPERTY:[]:ESCAPED{drops}:
+  findDeepestChild:METHOD:[]:ESCAPED{findDeepestChild}(PARAMETERS{ESCAPED{drops}}):
+  fire:METHOD:[]:ESCAPED{fire}(PARAMETERS{ESCAPED{event}, ESCAPED{element}}):
+  isAffected:METHOD:[]:ESCAPED{isAffected}(PARAMETERS{ESCAPED{point}, ESCAPED{element}, ESCAPED{drop}}):
+  isContained:METHOD:[]:ESCAPED{isContained}(PARAMETERS{ESCAPED{element}, ESCAPED{drop}}):
+  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{element}}):
+  reset:METHOD:[]:ESCAPED{reset}:
+  show:METHOD:[]:ESCAPED{show}(PARAMETERS{ESCAPED{point}, ESCAPED{element}}):
 options:CLASS:[]:ESCAPED{options}:
-  constraint:PROPERTY:[]:ESCAPED{constraint} : ESCAPED{String}:
+  constraint:PROPERTY:[]:ESCAPED{constraint}:
   containment:PROPERTY:[]:ESCAPED{containment}:
-  dropOnEmpty:PROPERTY:[]:ESCAPED{dropOnEmpty} : ESCAPED{Boolean}:
+  dropOnEmpty:PROPERTY:[]:ESCAPED{dropOnEmpty}:
   element:PROPERTY:[]:ESCAPED{element}:
-  endeffect:METHOD:[]:ESCAPED{endeffect}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  format:PROPERTY:[]:ESCAPED{format} : ESCAPED{RegExp}:
+  endeffect:METHOD:[]:ESCAPED{endeffect}(PARAMETERS{ESCAPED{element}}):
   format:PROPERTY:[]:ESCAPED{format}:
-  ghosting:PROPERTY:[]:ESCAPED{ghosting} : ESCAPED{Boolean}:
-  greedy:PROPERTY:[]:ESCAPED{greedy} : ESCAPED{Boolean}:
-  handle:PROPERTY:[]:ESCAPED{handle} : ESCAPED{Boolean}:
-  handle:PROPERTY:[]:ESCAPED{handle} : ESCAPED{Boolean}:
+  format:PROPERTY:[]:ESCAPED{format}:
+  ghosting:PROPERTY:[]:ESCAPED{ghosting}:
+  greedy:PROPERTY:[]:ESCAPED{greedy}:
+  handle:PROPERTY:[]:ESCAPED{handle}:
+  handle:PROPERTY:[]:ESCAPED{handle}:
   hoverclass:PROPERTY:[]:ESCAPED{hoverclass}:
   hoverclass:PROPERTY:[]:ESCAPED{hoverclass}:
   name:PROPERTY:[]:ESCAPED{name}:
   onChange:PROPERTY:[]:ESCAPED{onChange}:
   onUpdate:PROPERTY:[]:ESCAPED{onUpdate}:
-  only:PROPERTY:[]:ESCAPED{only} : ESCAPED{Boolean}:
   only:PROPERTY:[]:ESCAPED{only}:
-  overlap:PROPERTY:[]:ESCAPED{overlap} : ESCAPED{String}:
-  revert:PROPERTY:[]:ESCAPED{revert} : ESCAPED{Boolean}:
-  reverteffect:METHOD:[]:ESCAPED{reverteffect}(PARAMETERS{ESCAPED{element}, ESCAPED{top_offset}, ESCAPED{left_offset}}) : ESCAPED{void}:
-  scroll:PROPERTY:[]:ESCAPED{scroll} : ESCAPED{Boolean}:
-  scroll:PROPERTY:[]:ESCAPED{scroll} : ESCAPED{Boolean}:
-  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity} : ESCAPED{Number}:
-  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity} : ESCAPED{Number}:
-  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed} : ESCAPED{Number}:
-  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed} : ESCAPED{Number}:
-  snap:PROPERTY:[]:ESCAPED{snap} : ESCAPED{Boolean}:
-  starteffect:METHOD:[]:ESCAPED{starteffect}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  tag:PROPERTY:[]:ESCAPED{tag} : ESCAPED{String}:
+  only:PROPERTY:[]:ESCAPED{only}:
+  overlap:PROPERTY:[]:ESCAPED{overlap}:
+  revert:PROPERTY:[]:ESCAPED{revert}:
+  reverteffect:METHOD:[]:ESCAPED{reverteffect}(PARAMETERS{ESCAPED{element}, ESCAPED{top_offset}, ESCAPED{left_offset}}):
+  scroll:PROPERTY:[]:ESCAPED{scroll}:
+  scroll:PROPERTY:[]:ESCAPED{scroll}:
+  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity}:
+  scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity}:
+  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed}:
+  scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed}:
+  snap:PROPERTY:[]:ESCAPED{snap}:
+  starteffect:METHOD:[]:ESCAPED{starteffect}(PARAMETERS{ESCAPED{element}}):
   tag:PROPERTY:[]:ESCAPED{tag}:
-  tree:PROPERTY:[]:ESCAPED{tree} : ESCAPED{Boolean}:
-  tree:PROPERTY:[]:ESCAPED{tree} : ESCAPED{Boolean}:
-  treeTag:PROPERTY:[]:ESCAPED{treeTag} : ESCAPED{String}:
+  tag:PROPERTY:[]:ESCAPED{tag}:
+  tree:PROPERTY:[]:ESCAPED{tree}:
+  tree:PROPERTY:[]:ESCAPED{tree}:
   treeTag:PROPERTY:[]:ESCAPED{treeTag}:
-  zindex:PROPERTY:[]:ESCAPED{zindex} : ESCAPED{Number}:
+  treeTag:PROPERTY:[]:ESCAPED{treeTag}:
+  zindex:PROPERTY:[]:ESCAPED{zindex}:
 Draggables:CLASS:[]:ESCAPED{Draggables}:
-  _cacheObserverCallbacks:METHOD:[]:ESCAPED{_cacheObserverCallbacks} : ESCAPED{void}:
-  activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{draggable}}) : ESCAPED{void}:
-  addObserver:METHOD:[]:ESCAPED{addObserver}(PARAMETERS{ESCAPED{observer}}) : ESCAPED{void}:
-  deactivate:METHOD:[]:ESCAPED{deactivate} : ESCAPED{void}:
-  drags:PROPERTY:[]:ESCAPED{drags} : ESCAPED{Array}:
-  endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
-  keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
-  notify:METHOD:[]:ESCAPED{notify}(PARAMETERS{ESCAPED{eventName}, ESCAPED{draggable}, ESCAPED{event}}) : ESCAPED{void}:
-  observers:PROPERTY:[]:ESCAPED{observers} : ESCAPED{Array}:
-  register:METHOD:[]:ESCAPED{register}(PARAMETERS{ESCAPED{draggable}}) : ESCAPED{void}:
-  removeObserver:METHOD:[]:ESCAPED{removeObserver}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  unregister:METHOD:[]:ESCAPED{unregister}(PARAMETERS{ESCAPED{draggable}}) : ESCAPED{void}:
-  updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
-Draggable:CLASS:[]:ESCAPED{Draggable}:
+  _cacheObserverCallbacks:METHOD:[]:ESCAPED{_cacheObserverCallbacks}:
+  activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{draggable}}):
+  addObserver:METHOD:[]:ESCAPED{addObserver}(PARAMETERS{ESCAPED{observer}}):
+  deactivate:METHOD:[]:ESCAPED{deactivate}:
+  drags:PROPERTY:[]:ESCAPED{drags}:
+  endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}):
+  keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}):
+  notify:METHOD:[]:ESCAPED{notify}(PARAMETERS{ESCAPED{eventName}, ESCAPED{draggable}, ESCAPED{event}}):
+  observers:PROPERTY:[]:ESCAPED{observers}:
+  register:METHOD:[]:ESCAPED{register}(PARAMETERS{ESCAPED{draggable}}):
+  removeObserver:METHOD:[]:ESCAPED{removeObserver}(PARAMETERS{ESCAPED{element}}):
+  unregister:METHOD:[]:ESCAPED{unregister}(PARAMETERS{ESCAPED{draggable}}):
+  updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}):
+Draggable.Draggable:CLASS:[]:ESCAPED{Draggable.Draggable}:
   Draggable:CONSTRUCTOR:[]:ESCAPED{Draggable}:
-  _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}) : ESCAPED{void}:
-  currentDelta:METHOD:[]:ESCAPED{currentDelta} : ESCAPED{Array}:
+Draggable.initialize:CLASS:[]:ESCAPED{Draggable.initialize}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}):
+Draggable:CLASS:[]:ESCAPED{Draggable}:
+  _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
+  currentDelta:METHOD:[]:ESCAPED{currentDelta}:
   delta:PROPERTY:[]:ESCAPED{delta}:
-  destroy:METHOD:[]:ESCAPED{destroy} : ESCAPED{void}:
-  dragging:PROPERTY:[]:ESCAPED{dragging} : ESCAPED{Boolean}:
-  draw:METHOD:[]:ESCAPED{draw}(PARAMETERS{ESCAPED{point}}) : ESCAPED{void}:
+  destroy:METHOD:[]:ESCAPED{destroy}:
+  dragging:PROPERTY:[]:ESCAPED{dragging}:
+  draw:METHOD:[]:ESCAPED{draw}(PARAMETERS{ESCAPED{point}}):
   element:PROPERTY:[]:ESCAPED{element}:
-  endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
+  endDrag:METHOD:[]:ESCAPED{endDrag}(PARAMETERS{ESCAPED{event}}):
   eventMouseDown:PROPERTY:[]:ESCAPED{eventMouseDown}:
-  finishDrag:METHOD:[]:ESCAPED{finishDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{success}}) : ESCAPED{void}:
+  finishDrag:METHOD:[]:ESCAPED{finishDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{success}}):
   handle:PROPERTY:[]:ESCAPED{handle}:
-  initDrag:METHOD:[]:ESCAPED{initDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}}) : ESCAPED{Draggable}:
-  keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
+  initDrag:METHOD:[]:ESCAPED{initDrag}(PARAMETERS{ESCAPED{event}}):
+  keyPress:METHOD:[]:ESCAPED{keyPress}(PARAMETERS{ESCAPED{event}}):
   options:PROPERTY:[]:ESCAPED{options}:
-  scroll:METHOD:[]:ESCAPED{scroll} : ESCAPED{void}:
-  startDrag:METHOD:[]:ESCAPED{startDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
-  startScrolling:METHOD:[]:ESCAPED{startScrolling}(PARAMETERS{ESCAPED{speed}}) : ESCAPED{void}:
-  stopScrolling:METHOD:[]:ESCAPED{stopScrolling} : ESCAPED{void}:
-  updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}) : ESCAPED{void}:
-SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
+  scroll:METHOD:[]:ESCAPED{scroll}:
+  startDrag:METHOD:[]:ESCAPED{startDrag}(PARAMETERS{ESCAPED{event}}):
+  startScrolling:METHOD:[]:ESCAPED{startScrolling}(PARAMETERS{ESCAPED{speed}}):
+  stopScrolling:METHOD:[]:ESCAPED{stopScrolling}:
+  updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}, ESCAPED{pointer}}):
+SortableObserver.SortableObserver:CLASS:[]:ESCAPED{SortableObserver.SortableObserver}:
   SortableObserver:CONSTRUCTOR:[]:ESCAPED{SortableObserver}:
+SortableObserver.initialize:CLASS:[]:ESCAPED{SortableObserver.initialize}:
+  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}):
+SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
   element:PROPERTY:[]:ESCAPED{element}:
-  initialize:CONSTRUCTOR:[]:ESCAPED{initialize}(PARAMETERS{ESCAPED{element}, ESCAPED{observer}}) : ESCAPED{SortableObserver}:
   lastValue:PROPERTY:[]:ESCAPED{lastValue}:
   observer:PROPERTY:[]:ESCAPED{observer}:
-  onEnd:METHOD:[]:ESCAPED{onEnd} : ESCAPED{void}:
-  onStart:METHOD:[]:ESCAPED{onStart} : ESCAPED{void}:
+  onEnd:METHOD:[]:ESCAPED{onEnd}:
+  onStart:METHOD:[]:ESCAPED{onStart}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:
-  _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
-  _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}) : ESCAPED{void}:
-  _findRootElement:METHOD:[]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  _tree:METHOD:[]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}) : ESCAPED{void}:
-  create:METHOD:[]:ESCAPED{create}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  destroy:METHOD:[]:ESCAPED{destroy}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  findElements:METHOD:[]:ESCAPED{findElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}) : ESCAPED{void}:
-  findTreeElements:METHOD:[]:ESCAPED{findTreeElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}) : ESCAPED{void}:
-  mark:METHOD:[]:ESCAPED{mark}(PARAMETERS{ESCAPED{dropon}, ESCAPED{position}}) : ESCAPED{void}:
-  onEmptyHover:METHOD:[]:ESCAPED{onEmptyHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}) : ESCAPED{void}:
-  onHover:METHOD:[]:ESCAPED{onHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}) : ESCAPED{void}:
-  options:METHOD:[]:ESCAPED{options}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  sequence:METHOD:[]:ESCAPED{sequence}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  serialize:METHOD:[]:ESCAPED{serialize}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  setSequence:METHOD:[]:ESCAPED{setSequence}(PARAMETERS{ESCAPED{element}, ESCAPED{new_sequence}}) : ESCAPED{void}:
+  _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}):
+  _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}):
+  _findRootElement:METHOD:[]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}):
+  _tree:METHOD:[]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}):
+  create:METHOD:[]:ESCAPED{create}(PARAMETERS{ESCAPED{element}}):
+  destroy:METHOD:[]:ESCAPED{destroy}(PARAMETERS{ESCAPED{element}}):
+  findElements:METHOD:[]:ESCAPED{findElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  findTreeElements:METHOD:[]:ESCAPED{findTreeElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):
+  mark:METHOD:[]:ESCAPED{mark}(PARAMETERS{ESCAPED{dropon}, ESCAPED{position}}):
+  onEmptyHover:METHOD:[]:ESCAPED{onEmptyHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}):
+  onHover:METHOD:[]:ESCAPED{onHover}(PARAMETERS{ESCAPED{element}, ESCAPED{dropon}, ESCAPED{overlap}}):
+  options:METHOD:[]:ESCAPED{options}(PARAMETERS{ESCAPED{element}}):
+  sequence:METHOD:[]:ESCAPED{sequence}(PARAMETERS{ESCAPED{element}}):
+  serialize:METHOD:[]:ESCAPED{serialize}(PARAMETERS{ESCAPED{element}}):
+  setSequence:METHOD:[]:ESCAPED{setSequence}(PARAMETERS{ESCAPED{element}, ESCAPED{new_sequence}}):
   sortables:PROPERTY:[]:ESCAPED{sortables}:
-  tree:METHOD:[]:ESCAPED{tree}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
-  unmark:METHOD:[]:ESCAPED{unmark} : ESCAPED{void}:
+  tree:METHOD:[]:ESCAPED{tree}(PARAMETERS{ESCAPED{element}}):
+  unmark:METHOD:[]:ESCAPED{unmark}:
 options_for_draggable:CLASS:[]:ESCAPED{options_for_draggable}:
   constraint:PROPERTY:[]:ESCAPED{constraint}:
   ghosting:PROPERTY:[]:ESCAPED{ghosting}:
   handle:PROPERTY:[]:ESCAPED{handle}:
-  revert:PROPERTY:[]:ESCAPED{revert} : ESCAPED{Boolean}:
-  reverteffect:METHOD:[]:ESCAPED{reverteffect}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
+  revert:PROPERTY:[]:ESCAPED{revert}:
+  reverteffect:METHOD:[]:ESCAPED{reverteffect}(PARAMETERS{ESCAPED{element}}):
   scroll:PROPERTY:[]:ESCAPED{scroll}:
   scrollSensitivity:PROPERTY:[]:ESCAPED{scrollSensitivity}:
   scrollSpeed:PROPERTY:[]:ESCAPED{scrollSpeed}:
@@ -133,19 +137,19 @@ options_for_tree:CLASS:[]:ESCAPED{options_for_tree}:
   onHover:PROPERTY:[]:ESCAPED{onHover}:
   overlap:PROPERTY:[]:ESCAPED{overlap}:
 child:CLASS:[]:ESCAPED{child}:
-  children:PROPERTY:[]:ESCAPED{children} : ESCAPED{Array}:
+  children:PROPERTY:[]:ESCAPED{children}:
   container:PROPERTY:[]:ESCAPED{container}:
   element:PROPERTY:[]:ESCAPED{element}:
   id:PROPERTY:[]:ESCAPED{id}:
   parent:PROPERTY:[]:ESCAPED{parent}:
   position:PROPERTY:[]:ESCAPED{position}:
 root:CLASS:[]:ESCAPED{root}:
-  children:PROPERTY:[]:ESCAPED{children} : ESCAPED{Array}:
+  children:PROPERTY:[]:ESCAPED{children}:
   container:PROPERTY:[]:ESCAPED{container}:
   id:PROPERTY:[]:ESCAPED{id}:
   parent:PROPERTY:[]:ESCAPED{parent}:
-  position:PROPERTY:[]:ESCAPED{position} : ESCAPED{Number}:
+  position:PROPERTY:[]:ESCAPED{position}:
 Element:CLASS:[]:ESCAPED{Element}:
-  findChildren:METHOD:[STATIC]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}) : ESCAPED{void}:
-  isParent:METHOD:[STATIC]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}) : ESCAPED{void}:
-  offsetSize:METHOD:[STATIC]:ESCAPED{offsetSize}(PARAMETERS{ESCAPED{element}, ESCAPED{type}}) : ESCAPED{void}:
+  findChildren:METHOD:[STATIC]:ESCAPED{findChildren}(PARAMETERS{ESCAPED{element}, ESCAPED{only}, ESCAPED{recursive}, ESCAPED{tagName}}):
+  isParent:METHOD:[STATIC]:ESCAPED{isParent}(PARAMETERS{ESCAPED{child}, ESCAPED{element}}):
+  offsetSize:METHOD:[STATIC]:ESCAPED{offsetSize}(PARAMETERS{ESCAPED{element}, ESCAPED{type}}):

@@ -56,11 +56,14 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -229,13 +232,13 @@ public class PersistenceHelper {
                     
                     //transformer.transform(source, new StreamResult(System.out));
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 } finally {
                     if (os != null) {
                         try {
                             os.close();
                         } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
                     
@@ -262,15 +265,15 @@ public class PersistenceHelper {
             is = fobj.getInputStream();
             document = builder.parse(is);
         } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
             
@@ -299,7 +302,7 @@ public class PersistenceHelper {
             builder = factory.newDocumentBuilder();
             builder.setEntityResolver(new SunWebDTDResolver());
         } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
         return builder;

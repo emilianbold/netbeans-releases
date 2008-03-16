@@ -46,6 +46,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -54,6 +56,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -148,7 +151,7 @@ public class ProjectTestRestServicesAction extends AbstractAction implements Pre
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
         } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         return p;
     }

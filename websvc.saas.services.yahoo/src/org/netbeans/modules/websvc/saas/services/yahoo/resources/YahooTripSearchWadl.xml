@@ -9,7 +9,7 @@
     <grammars/>
     <resources base="http://travel.yahooapis.com/TripService/V1.1">
        <resource path="tripSearch">
-            <method name="GET" id="tripSearch">
+            <method name="GET" id="yahoo.TripSearch">
                 <doc xml:lang="en"> 
                     The Yahoo! Travel Trip Search service enables your applications to use a Yahoo!
                     API to search for public trip plans that were 
@@ -75,7 +75,7 @@
             </method>
         </resource>
 		<resource path="getTrip">
-            <method name="GET" id="getTrip">
+            <method name="GET" id="yahoo.getTrip">
                 <doc xml:lang="en"> 
 					The Yahoo! Travel Get Trip service enables your application to use a Yahoo! API to get detailed
 					information about a trip that were created with the Yahoo! Travel Trip Planner at

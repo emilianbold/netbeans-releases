@@ -50,6 +50,7 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.windows.TopComponent;
 
 public class ETLEditorViewMultiViewDesc extends Object
@@ -58,7 +59,7 @@ public class ETLEditorViewMultiViewDesc extends Object
     private static final long serialVersionUID = 2580263536201519563L;
     public static final String PREFERRED_ID = "etl-designview";
     private ETLDataObject etlDataObject;
-    private static transient final Logger mLogger = Logger.getLogger(ETLEditorViewMultiViewDesc.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLEditorViewMultiViewDesc.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public ETLEditorViewMultiViewDesc() {
@@ -87,8 +88,8 @@ public class ETLEditorViewMultiViewDesc extends Object
     }
 
     public String getDisplayName() {
-        String nbBundle1 = mLoc.t("BUND176: Design");
-        return nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Design");
+        return Localizer.parse(nbBundle1);
     }
 
     public MultiViewElement createElement() {

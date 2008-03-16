@@ -238,38 +238,29 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public boolean canConnect(TreePath treePath, SourcePin source, 
             TargetPin target, TreePath oldTreePath, Link oldLink) 
     {
-    
         if (oldTreePath != null && !oldTreePath.equals(treePath)) {
             // Reconnect
             // link to another graph is not allowed for a while
-            if (!(oldLink.getSource() instanceof TreeSourcePin)) {
-                return false;
-            }
+            return false;
         }
         Boolean result = true;
         SourcePin oldSource = null;
         TargetPin oldTarget = null;
-         if (oldLink != null) {
-//          oldGraph = oldLink.getGraph();
+        if (oldLink != null) {
             oldSource = oldLink.getSource();
             oldTarget = oldLink.getTarget();
- //           oldLink.disconnect();
             oldLink.setSource(null);
             oldLink.setTarget(null);
         }
-       
         if (target instanceof Graph) {
-       
             if (!mRightTreeModel.isConnectable(treePath)) {
                 result = false;
             }
-       
             //
             if (((Graph) target).hasOutgoingLinks()) {
                 // The target tree node already has a connected link
                 result = false;
             }
-       
         }
         //
         if (source instanceof TreeSourcePin) {
@@ -317,7 +308,6 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         }
         //
         if (oldLink != null) {
-//            oldGraph.addLink(oldLink);
             oldLink.setSource(oldSource);
             oldLink.setTarget(oldTarget);
         }
@@ -416,11 +406,6 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         } else {
             oldLink.setSource(source);
             oldLink.setTarget(target);
-            if (oldTreePath != treePath) {
-                resultGraph.addLink(oldLink);
-                fireGraphChanged(oldTreePath);
-                mRightTreeModel.fireTreeChanged(this, oldTreePath);
-            }
         }
         //
         fireGraphChanged(treePath);
@@ -590,12 +575,6 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
         }
         //
-        TreePath oldTreePath = graphSubset.getTreePath();
-        if (oldTreePath != treePath) {
-            fireGraphChanged(oldTreePath);
-            mRightTreeModel.fireTreeChanged(this, oldTreePath);
-        }
-        
         fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }

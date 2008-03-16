@@ -289,17 +289,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             Properties props = persistenceUnit.getProperties();
             if (props != null){
                 Property[] properties = props.getProperty2();
-                String url = null;
+                String url = "custom";
                 Provider provider = ProviderUtil.getProvider(persistenceUnit);
                 for (int i = 0; i < properties.length; i++) {
                     String key = properties[i].getName();
-                    if (provider.getJdbcUrl().equals(key)) {
+                    if (key.equals(provider.getJdbcUrl())) {
                         url = properties[i].getValue();
                         break;
                     }
-                }
-                if (url == null) {
-                    url = NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_CustomConnection");
                 }
                 jdbcComboBox.addItem(url);
                 jdbcComboBox.setSelectedItem(url);

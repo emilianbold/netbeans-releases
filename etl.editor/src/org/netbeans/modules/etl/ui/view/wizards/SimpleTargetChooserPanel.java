@@ -28,7 +28,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * DOCUMENT ME!
@@ -44,7 +44,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
     private WizardDescriptor.Panel bottomPanel;
     private WizardDescriptor wizard;
     private boolean isFolder;
-    private static transient final Logger mLogger = Logger.getLogger(SimpleTargetChooserPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SimpleTargetChooserPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -131,19 +131,19 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
-            String nbBundle1 = mLoc.t("BUND084: The target folder does not exist.");
-            return nbBundle1.substring(15); // NOI18N
+            String nbBundle1 = mLoc.t("PRSR001: The target folder does not exist.");
+            return Localizer.parse(nbBundle1); // NOI18N
         }
 
         // target filesystem should be writable
         if (!targetFolder.canWrite()) {
-            String nbBundle2 = mLoc.t("BUND085: The target folder is read-only.");
-            return nbBundle2.substring(15); // NOI18N
+            String nbBundle2 = mLoc.t("PRSR001: The target folder is read-only.");
+            return Localizer.parse(nbBundle2); // NOI18N
         }
 
         if (existFileName(targetFolder, relFileName)) {
-            String nbBundle3 = mLoc.t("BUND086: The file {0} already exists.", newObjectName);
-            return nbBundle3.substring(15); // NOI18N
+            String nbBundle3 = mLoc.t("PRSR001: The file {0} already exists.", newObjectName);
+            return Localizer.parse(nbBundle3); // NOI18N
         }
 
         // all ok
@@ -243,16 +243,16 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         // this name is used in NewFileWizard to modify the title
         Object substitute = gui.getClientProperty("NewEtlWizard_Title"); // NOI18N
 
-        String nbBundle4 = mLoc.t("BUND059: Choose File Type");
-        String nbBundle5 = mLoc.t("BUND088: Name and Location");
+        String nbBundle1 = mLoc.t("PRSR001: Choose File Type");
+        String nbBundle2 = mLoc.t("PRSR001: Name and Location");
         if (substitute != null) {
             wizard.putProperty("NewEtlWizard_Title", substitute); // NOI18N
         }
         wizard.putProperty(
                 "WizardPanel_contentData",
                 new String[]{ // NOI18N
-            nbBundle4.substring(15), // NOI18N
-            nbBundle5.substring(15)}); // NOI18N
+            Localizer.parse(nbBundle1), // NOI18N
+            Localizer.parse(nbBundle2)        }); // NOI18N
 
         if (bottomPanel != null) {
             bottomPanel.readSettings(settings);

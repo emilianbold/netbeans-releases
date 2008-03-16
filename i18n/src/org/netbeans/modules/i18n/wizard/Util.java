@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,20 +41,9 @@
 
 package org.netbeans.modules.i18n.wizard;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -66,17 +55,11 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.openide.awt.Mnemonics;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
 
 /**
  * Bundle access, ...
  *
  * @author  Petr Kuzel
- * @author  Marian Petras
  */
 final class Util extends org.netbeans.modules.i18n.Util {
     
@@ -255,78 +238,6 @@ final class Util extends org.netbeans.modules.i18n.Util {
         public int hashCode() {
             return System.identityHashCode(this);
         }
-    }
-
-    /**
-     * @author  Marian Petras
-     */
-    static void layoutSelectResourcePanel(final Container thePanel,
-                                          final String instructionsText,
-                                          final String selectionLabelText,
-                                          final Component selectionComp,
-                                          final JButton button1,
-                                          final JButton button2) {
-        JTextArea instructions = new JTextArea();
-        JLabel lblSelection = new JLabel();
-
-        instructions.setColumns(20);
-        instructions.setEditable(false);
-        instructions.setLineWrap(true);
-        instructions.setText(instructionsText);
-        instructions.setWrapStyleWord(true);
-        instructions.setDisabledTextColor(new JLabel().getForeground());
-        instructions.setEnabled(false);
-        instructions.setOpaque(false);
-
-        lblSelection.setLabelFor(selectionComp);
-        Mnemonics.setLocalizedText(lblSelection, selectionLabelText);
-
-        JScrollPane scrollPane = new JScrollPane(selectionComp);
-
-        Container filesSelection = new JPanel();
-        GroupLayout layout = new GroupLayout(filesSelection);
-        filesSelection.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(LEADING)
-            .add(lblSelection)
-            .add(layout.createSequentialGroup()
-                .add(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
-                .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(button1)
-                    .add(button2)))
-        );
-
-        layout.linkSize(new Component[] {button1, button2},
-                        GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
-                .add(lblSelection)
-                .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(button1)
-                        .addPreferredGap(RELATED)
-                        .add(button2))))
-        );
-
-        LayoutStyle layoutStyle = layout.getLayoutStyle();
-        if (layoutStyle == null) {
-            layoutStyle = LayoutStyle.getSharedInstance();
-        }
-
-        BorderLayout mainLayout = new BorderLayout();
-        thePanel.setLayout(mainLayout);
-        thePanel.add(instructions, BorderLayout.PAGE_START);
-        thePanel.add(filesSelection, BorderLayout.CENTER);
-        mainLayout.setVgap(layoutStyle.getPreferredGap(instructions,
-                                                       lblSelection,
-                                                       UNRELATED,
-                                                       SwingConstants.NORTH,
-                                                       thePanel));
     }
 
 }

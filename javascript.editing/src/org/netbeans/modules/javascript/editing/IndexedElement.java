@@ -383,8 +383,6 @@ public abstract class IndexedElement extends JsElement {
     public static final int GLOBAL = 1 << 6;
     /** This is a constructor */
     public static final int CONSTRUCTOR = 1 << 7;
-    /** This is a deprecated */
-    public static final int DEPRECATED = 1 << 8;
 
     /** Return a string (suitable for persistence) encoding the given flags */
     public static String encode(int flags) {
@@ -421,21 +419,15 @@ public abstract class IndexedElement extends JsElement {
 
         ElementKind k = element.getKind();
         if (k == ElementKind.CONSTRUCTOR) {
-            value = value | CONSTRUCTOR;
+            value += CONSTRUCTOR;
         }
         if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
-            value = value | FUNCTION;
+            value += FUNCTION;
         } else if (k == ElementKind.GLOBAL) {
-            value = value | GLOBAL;
+            value += GLOBAL;
         }
         if (element.getModifiers().contains(Modifier.STATIC)) {
-            value = value | STATIC;
-        }
-        if (element.getModifiers().contains(Modifier.DEPRECATED)) {
-            value = value | DEPRECATED;
-        }
-        if (element.getModifiers().contains(Modifier.PRIVATE)) {
-            value = value | PRIVATE;
+            value += STATIC;
         }
 
         return value;
@@ -468,10 +460,6 @@ public abstract class IndexedElement extends JsElement {
     public boolean isConstructor() {
         return (flags & CONSTRUCTOR) != 0;
     }
-
-    public boolean isDeprecated() {
-        return (flags & DEPRECATED) != 0;
-    }
     
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
@@ -495,9 +483,6 @@ public abstract class IndexedElement extends JsElement {
         }
         if ((flags & NODOC) != 0) {
             sb.append("|NODOC");
-        }
-        if ((flags & DEPRECATED) != 0) {
-            sb.append("|DEPRECATED");
         }
 
         if (sb.length() > 0) {

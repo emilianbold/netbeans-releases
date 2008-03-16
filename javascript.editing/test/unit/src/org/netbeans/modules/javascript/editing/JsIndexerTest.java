@@ -91,21 +91,16 @@ public class JsIndexerTest extends JsTestBase {
         if (value == null) {
             return value;
         }
-        int index = -1;
-        if (JsIndexer.FIELD_BASE.equals(key) ||JsIndexer.FIELD_FQN.equals(key)) {
-            index = IndexedElement.FLAG_INDEX;
-        } else if (JsIndexer.FIELD_CLASS.equals(key)) {
-            index = 1;
-        }
-        if (index != -1) {
+        if (JsIndexer.FIELD_BASE.equals(key) ||
+                JsIndexer.FIELD_FQN.equals(key)) {
             // Decode the attributes
             int attributeIndex = 0;
-            for (int i = 0; i < index; i++) {
+            for (int i = 0; i < IndexedElement.FLAG_INDEX; i++) {
                 attributeIndex = value.indexOf(';', attributeIndex+1);
             }
             int flags = IndexedElement.decode(value, attributeIndex+1,0);
             String desc = IndexedElement.decodeFlags(flags);
-            value = value.substring(0, attributeIndex) + ";" + desc + value.substring(value.indexOf(';', attributeIndex+1));
+            value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
         }
 
         return value;
@@ -428,13 +423,5 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testYahoo() throws Exception {
         checkIndexer("testfiles/yui.js");
-    }
-    
-    public void testYahooAnim() throws Exception {
-        checkIndexer("testfiles/yui-anim.js");
-    }
-    
-    public void testTypes2() throws Exception {
-        checkIndexer("testfiles/types2.js");
     }
 }

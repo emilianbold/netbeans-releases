@@ -40,22 +40,13 @@
  */
 package org.netbeans.api.java.source;
 
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -63,7 +54,6 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -117,7 +107,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         this.element = element;
         this.typeMirrors = typeArguments;
     }
-    
+
     /**
      * Factory method for creating {@link TypeMirrorHandle}.
      * @param {@link TypeMirror} for which the {@link TypeMirrorHandle} should be created.
@@ -129,14 +119,6 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * {@link TypeKind}.
      */
     public static <T extends TypeMirror> TypeMirrorHandle<T> create(T tm) {
-        return create(tm, new HashMap<TypeMirror, TypeMirrorHandle>());
-    }
-    
-    private static <T extends TypeMirror> TypeMirrorHandle<T> create(T tm, Map<TypeMirror, TypeMirrorHandle> map) {
-        TypeMirrorHandle<T> handle = map.get(tm);
-        if (handle != null)
-            return handle;
-        map.put(tm, new TypeMirrorHandle(null, null, null));
         TypeKind kind = tm.getKind();
         ElementHandle<? extends Element> element = null;
         List<TypeMirrorHandle<? extends TypeMirror>> typeMirrors = null;
@@ -172,28 +154,28 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 }
                 if (genericOuter) {
                     typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>(targs.size() + 1);
-                    typeMirrors.add(create(dt.getEnclosingType(), map));
+                    typeMirrors.add(create(dt.getEnclosingType()));
                 } else {
                     typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>(targs.size());
                 }
                 for (TypeMirror ta : targs)
-                    typeMirrors.add(create(ta, map));
+                    typeMirrors.add(create(ta));
                 break;
             case ARRAY:
-                typeMirrors = Collections.<TypeMirrorHandle<? extends TypeMirror>>singletonList(create(((ArrayType)tm).getComponentType(), map));
+                typeMirrors = Collections.<TypeMirrorHandle<? extends TypeMirror>>singletonList(TypeMirrorHandle.create(((ArrayType)tm).getComponentType()));
                 break;
             case TYPEVAR:
                 TypeVariable tv = (TypeVariable)tm;
                 element = ElementHandle.create(tv.asElement());
                 typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>();
-                typeMirrors.add(tv.getLowerBound() != null ? create(tv.getLowerBound(), map) : null);
-                typeMirrors.add(tv.getUpperBound() != null ? create(tv.getUpperBound(), map) : null);
+                typeMirrors.add(tv.getLowerBound() != null ? TypeMirrorHandle.create(tv.getLowerBound()) : null);
+                typeMirrors.add(tv.getUpperBound() != null ? TypeMirrorHandle.create(tv.getUpperBound()) : null);
                 break;
             case WILDCARD:
                 WildcardType wt = (WildcardType)tm;
                 typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>();
-                typeMirrors.add(wt.getExtendsBound() != null ? create(wt.getExtendsBound(), map) : null);
-                typeMirrors.add(wt.getSuperBound() != null ? create(wt.getSuperBound(), map) : null);
+                typeMirrors.add(wt.getExtendsBound() != null ? TypeMirrorHandle.create(wt.getExtendsBound()) : null);
+                typeMirrors.add(wt.getSuperBound() != null ? TypeMirrorHandle.create(wt.getSuperBound()) : null);
                 break;
             case ERROR:
                 ErrorType et = (ErrorType)tm;
@@ -202,9 +184,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
             default:
                 throw new IllegalArgumentException("Currently unsupported TypeKind: " + tm.getKind());
         }
-        handle = new TypeMirrorHandle(kind, element, typeMirrors);
-        map.get(tm).typeMirrors = Collections.singletonList(handle);
-        return handle;
+        return new TypeMirrorHandle(kind, element, typeMirrors);
     }
     
     /**
@@ -215,19 +195,6 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * resolved in this {@link javax.tools.CompilationTask}.
      */
     public T resolve(CompilationInfo info) {
-        return resolve(info, new HashMap<TypeMirrorHandle, PlaceholderType>());
-    }
-    
-    private T resolve(CompilationInfo info, Map<TypeMirrorHandle, PlaceholderType> map) {
-        if (kind == null) {
-            TypeMirrorHandle handle = typeMirrors.get(0);
-            PlaceholderType pt = map.get(handle);
-            if (pt == null) {
-                pt = new PlaceholderType();
-                map.put(handle, pt);
-            }
-            return pt.delegate != null ? (T)pt.delegate : (T)pt;
-        }
         switch (kind) {
             case BOOLEAN:
             case BYTE:
@@ -254,74 +221,51 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty() && !te.getModifiers().contains(Modifier.STATIC);
                 TypeMirror outer = null;
                 if (genericOuter) {
-                    outer = it.hasNext() ? it.next().resolve(info, map) : null;
+                    outer = it.hasNext() ? it.next().resolve(info) : null;
                     if (outer == null || outer.getKind() != TypeKind.DECLARED)
                         return null;
                 }
                 List<TypeMirror> resolvedTypeArguments = new ArrayList<TypeMirror>();
                 while(it.hasNext()) {
-                    TypeMirror resolved = it.next().resolve(info, map);
+                    TypeMirror resolved = it.next().resolve(info);
                     if (resolved == null)
                         return null;
                     resolvedTypeArguments.add(resolved);
                 }
-                DeclaredType dt = outer != null ? info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
-                        : info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
-                PlaceholderType pt = map.get(this);
-                if (pt != null) {
-                    pt.delegate = (Type)dt;
-                    new Visitor().visitClassType((ClassType)dt, null);
-                }
-                return (T)dt;
+                return outer != null ? (T)info.getTypes().getDeclaredType((DeclaredType)outer, te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]))
+                        : (T)info.getTypes().getDeclaredType(te, resolvedTypeArguments.toArray(new TypeMirror[resolvedTypeArguments.size()]));
             case ARRAY:
-                TypeMirror resolved = typeMirrors.get(0).resolve(info, map);
+                TypeMirror resolved = typeMirrors.get(0).resolve(info);
                 if (resolved == null)
                     return null;
-                ArrayType at = info.getTypes().getArrayType(resolved);
-                pt = map.get(this);
-                if (pt != null) {
-                    pt.delegate = (Type)at;
-                    new Visitor().visitArrayType((Type.ArrayType)at, null);
-                }
-                return (T)at;
+                return (T)info.getTypes().getArrayType(resolved);
             case TYPEVAR:
                 Element e = element.resolve(info);
-                if (!(e instanceof TypeSymbol))
+                if (!(e instanceof com.sun.tools.javac.code.Symbol.TypeSymbol))
                     return null;
                 TypeMirrorHandle<? extends TypeMirror> lBound = typeMirrors.get(0);
-                TypeMirror lowerBound = lBound != null ? lBound.resolve(info, map) : null;
+                TypeMirror lowerBound = lBound != null ? lBound.resolve(info) : null;
                 TypeMirrorHandle<? extends TypeMirror> uBound = typeMirrors.get(1);
-                TypeMirror upperBound = uBound != null ? uBound.resolve(info, map) : null;
-                TypeVar tv = new TypeVar((TypeSymbol)e, (Type)upperBound, (Type)lowerBound);
-                pt = map.get(this);
-                if (pt != null) {
-                    pt.delegate = tv;
-                    new Visitor().visitTypeVar(tv, null);
-                }
-                return (T)tv;
+                TypeMirror upperBound = uBound != null ? uBound.resolve(info) : null;
+                return (T)new com.sun.tools.javac.code.Type.TypeVar((com.sun.tools.javac.code.Symbol.TypeSymbol)e,
+                        (com.sun.tools.javac.code.Type)lowerBound, (com.sun.tools.javac.code.Type)upperBound);
             case WILDCARD:
                 TypeMirrorHandle<? extends TypeMirror> eBound = typeMirrors.get(0);
-                TypeMirror extendsBound = eBound != null ? eBound.resolve(info, map) : null;
+                TypeMirror extendsBound = eBound != null ? eBound.resolve(info) : null;
                 TypeMirrorHandle<? extends TypeMirror> sBound = typeMirrors.get(1);
-                TypeMirror superBound = sBound != null ? sBound.resolve(info, map) : null;
-                WildcardType wt = info.getTypes().getWildcardType(extendsBound, superBound);
-                pt = map.get(this);
-                if (pt != null) {
-                    pt.delegate = (Type)wt;
-                    new Visitor().visitWildcardType((Type.WildcardType)wt, null);
-                }
-                return (T)wt;
+                TypeMirror superBound = sBound != null ? sBound.resolve(info) : null;
+                return (T)info.getTypes().getWildcardType(extendsBound, superBound);
             case ERROR:
                 e = element.resolve(info);
                 if (e == null) {
                     String[] signatures = element.getSignature();
                     assert signatures.length == 1;
                     Context context = info.impl.getJavacTask().getContext();
-                    return (T)new Type.ErrorType(Name.Table.instance(context).fromString(signatures[0]), Symtab.instance(context).rootPackage); 
+                    return (T)new com.sun.tools.javac.code.Type.ErrorType(Name.Table.instance(context).fromString(signatures[0]), Symtab.instance(context).rootPackage); 
                 }
-                if (!(e instanceof ClassSymbol))
+                if (!(e instanceof com.sun.tools.javac.code.Symbol.ClassSymbol))
                     return null;
-                return (T)new com.sun.tools.javac.code.Type.ErrorType((ClassSymbol)e);
+                return (T)new com.sun.tools.javac.code.Type.ErrorType((com.sun.tools.javac.code.Symbol.ClassSymbol)e);
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }
@@ -339,54 +283,5 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
     
     ElementHandle<? extends Element> getElementHandle() {
         return element;
-    }
-    
-    private static class PlaceholderType extends Type implements ReferenceType {
-
-        private Type delegate = null;
-        
-        public PlaceholderType() {
-            super(TypeTags.UNKNOWN, null);
-        }       
-    }
-    
-    private static class Visitor extends DefaultTypeVisitor<Void, Void> {
-
-        public Void visitType(Type t, Void s) {
-            return null;
-        }
-
-        @Override
-        public Void visitArrayType(Type.ArrayType t, Void s) {
-            t.elemtype.accept(this, s);
-            return null;
-        }
-
-        @Override
-        public Void visitClassType(ClassType t, Void s) {
-            for (com.sun.tools.javac.util.List<Type> l = t.typarams_field; l.nonEmpty(); l = l.tail)
-                l.head.accept(this, s);
-            return null;
-        }
-
-        @Override
-        public Void visitTypeVar(TypeVar t, Void s) {
-            if (t.bound instanceof PlaceholderType)
-                t.bound = ((PlaceholderType)t.bound).delegate;
-            else
-                t.bound.accept(this, s);
-            if (t.lower instanceof PlaceholderType)
-                t.lower = ((PlaceholderType)t.lower).delegate;
-            else
-                t.lower.accept(this, s);
-            return null;
-        }
-
-        @Override
-        public Void visitWildcardType(Type.WildcardType t, Void s) {
-            t.type.accept(this, s);
-            t.bound.accept(this, s);
-            return null;
-        }
     }
 }

@@ -73,10 +73,7 @@ public class ElementUtilitiesTest extends JsTestBase {
                 "@param {Object/Array} values The bla bla bloo (i.e. {0}) or an",
                 "object (i.e. {foo: 'bar'})",
                 "@param {Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)",
-                "@return {HTMLElement/Axt.Element} The new node or Alement",
-                "@private",
-                "@constructor",
-                "@deprecated"
+                "@return {HTMLElement/Axt.Element} The new node or Alement"
                 );
 
         assertEquals(expected, comments);

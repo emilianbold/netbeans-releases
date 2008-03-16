@@ -41,27 +41,19 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.FunctionNode;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
-import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
-import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
-import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
  *
  * @author Tor Norbye
  */
 public class AstElement extends JsElement {
-    public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
 
     protected List<AstElement> children;
@@ -71,12 +63,9 @@ public class AstElement extends JsElement {
     protected CompilationInfo info;
     protected String signature;
     protected ElementKind kind;
-    protected String type;
-    protected Map<String,String> docProps;
-    protected String fqn;
 
     @SuppressWarnings("unchecked")
-    protected Set<Modifier> modifiers;
+    protected Set<Modifier> modifiers = Collections.EMPTY_SET;
 
     AstElement(CompilationInfo info, Node node) {
         this.info = info;
@@ -101,36 +90,20 @@ public class AstElement extends JsElement {
     public Node getNode() {
         return node;
     }
-    
-    public Map<String,String> getDocProps() {
-        return docProps;
-    }
 
-    public String getFqn() {
-        if (fqn == null) {
-            assert name != null;
-            if (in != null && in.length() > 0) {
-                fqn = in + "." + name;
-            } else {
-                fqn = name;
-            }
+    public void setName(String name, String in) {
+        // Prototype.js hack
+        if ("Element.Methods".equals(in)) { // NOI18N
+            in = "Element"; // NOI18N
         }
-        return fqn;
+
+        this.name = name;
+        this.in = in;
     }
     
-    void setDocProps(Map<String,String> docProps) {
-        this.docProps = docProps;
-    }
-
     public String getName() {
         if (name == null) {
-            if (fqn != null) {
-                int dot = fqn.lastIndexOf('.');
-                if (dot != -1) {
-                    name = fqn.substring(dot+1);
-                    in = fqn.substring(0, dot);
-                }
-            } else if (node.getType() == Token.VAR) {
+            if (node.getType() == Token.VAR) {
                 // Must pull the name out of the child
                 if (node.hasChildren()) {
                     Node child = node.getFirstChild();
@@ -153,7 +126,7 @@ public class AstElement extends JsElement {
         }
         return in;
     }
-    
+
     void setKind(ElementKind kind) {
         this.kind = kind;
     }
@@ -188,125 +161,23 @@ public class AstElement extends JsElement {
     
     @Override
     public Set<Modifier> getModifiers() {
-        if (modifiers == null) {
-            boolean deprecated = false, priv = false, constructor = false;
-            if (docProps != null) {
-                if (docProps.containsKey("@deprecated")) { // NOI18N
-                    deprecated = true;
-                }
-                if (docProps.containsKey("@private")) { // NOI18N
-                    priv = true;
-                }
-                if (docProps.containsKey("@constructor")) { // NOI18N
-                    constructor = true;
-                }
-                if (docProps.containsKey("@return")) { // NOI18N
-                    type = docProps.get("@return"); // NOI18N
-                }
-                if (deprecated || priv || constructor) {
-                    modifiers = EnumSet.noneOf(Modifier.class);
-                    if (deprecated) {
-                        modifiers.add(Modifier.DEPRECATED);
-                    }
-                    if (priv) {
-                        modifiers.add(Modifier.PRIVATE);
-                    }
-                    if (constructor) {
-                        kind = ElementKind.CONSTRUCTOR;
-                    }
-                } else {
-                    modifiers = NONE;
-                }
-            } else {
-                modifiers = NONE;
-            }
-        }
-        
         return modifiers;
-    }
-    
-    void markStatic() {
-        getModifiers();
-        if (modifiers == NONE) {
-            modifiers = STATIC;
-        } else {
-            modifiers = EnumSet.copyOf(modifiers);
-            modifiers.add(Modifier.STATIC);
-        }
     }
     
     void setModifiers(Set<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
     
-    private void initDocProps(CompilationInfo info) {
-        if (node == null) {
-            return;
-        }
-
-        // Look for parameter hints etc.
-        BaseDocument doc = LexUtilities.getDocument(info, true);
-        if (doc != null) {
-            TokenSequence<? extends JsCommentTokenId> ts = AstUtilities.getCommentFor(info, doc, node);
-
-            if (ts != null) {
-                Map<String, String> typeMap = JsCommentLexer.findFunctionTypes(ts);
-                if (typeMap != null) {
-                    docProps = typeMap;
-                }
-            }
-        }
-    }
-    
-    public static AstElement createElement(CompilationInfo info, Node node, String name, String in, AnalysisResult result) {
-        assert node.element == null : node; // Don't expect to be called multiple times on the same element
-        AstElement js = AstElement.getElement(info, node);
-
-        if ("Element.Methods".equals(in)) { // NOI18N
-            in = "Element"; // NOI18N
-        }
-
-        js.name = name;
-        js.in = in;
-
-        return js;
-    }
-    
     public static AstElement getElement(CompilationInfo info, Node node) {
-        if (node.element != null) {
-            return (AstElement)node.element;
-        }
-
         switch (node.getType()) {
-        case Token.FUNCTION:
-            if (node instanceof FunctionNode) {
-                AstElement element = new FunctionAstElement(info, (FunctionNode) node);
-                element.initDocProps(info);
-                node.element = element;
-                return element;
-            } else {
-                // Fall through
-            }
-        default:
-            AstElement element = new AstElement(info, node);
-            element.initDocProps(info);
-            node.element = element;
-            return element;
+            case Token.FUNCTION:
+                if (node instanceof FunctionNode) {
+                    return new FunctionAstElement(info, (FunctionNode) node);
+                } else {
+                    // Fall through
+                }
+            default:
+                return new AstElement(info, node);
         }
-    }
-
-    void setType(String type) {
-        this.type = type;
-    }
-
-    public String getType() {
-        if (type == null) {
-            type = node.nodeType;
-            if (node.nodeType == null) {
-                getModifiers();
-            }
-        }
-        
-        return type;
     }
 }

@@ -254,9 +254,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     File f = FileUtil.toFile(toRename);
                     assertNotNull(f);
                     assertNotNull(FileUtil.toFileObject(f));
-                    if (!Boolean.getBoolean("ignore.random.failures")) {
-                        assertSame(toRename, FileUtil.toFileObject(f));
-                    }                                                                
+                    assertSame(toRename, FileUtil.toFileObject(f));
+
                     assertTrue(f.exists());
                     FileObject delegate = FileBasedFileSystem.getFileObject(f);
                     assertNotNull(delegate);
@@ -348,9 +347,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
                         File f = FileUtil.toFile(toRename);
                         assertNotNull(f);
                         assertNotNull(FileUtil.toFileObject(f));
-                        if (!Boolean.getBoolean("ignore.random.failures")) {
-                            assertSame(toRename, FileUtil.toFileObject(f));
-                        }                        
+                        assertSame(toRename, FileUtil.toFileObject(f));
+
                         assertTrue(f.exists());
                         FileObject delegate = FileBasedFileSystem.getFileObject(f);
                         assertNotNull(delegate);

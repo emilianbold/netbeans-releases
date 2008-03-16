@@ -56,7 +56,7 @@ import org.openide.nodes.Node;
  */
 /*package-local*/ class ClassViewModel {
     
-    private static final boolean showLibs = ClassViewModel.getBoolean("cnd.classview.sys-includes", true); // NOI18N
+    private static final boolean showLibs = Boolean.getBoolean("cnd.classview.sys-includes"); // NOI18N
     
     private ClassViewUpdater updater;
     private ChildrenUpdater childrenUpdater;
@@ -193,15 +193,7 @@ import org.openide.nodes.Node;
         }
         return res;
     }
-
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if( text != null ) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    } 
-
+    
     private void dump(Project[] projects) {
         if( Diagnostic.DEBUG ) {
             Diagnostic.trace("Dumping projects:"); // NOI18N

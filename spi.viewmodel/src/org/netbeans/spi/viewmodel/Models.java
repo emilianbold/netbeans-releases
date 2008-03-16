@@ -62,7 +62,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -285,17 +284,16 @@ public final class Models {
             TreeModel etm = new EmptyTreeModel();
             treeModels = Collections.singletonList(etm);
         }
-        DefaultTreeExpansionModel defaultExpansionModel = null;
         if (treeExpansionModels.isEmpty()) {
             TreeExpansionModel tem = defaultExpansionModels.get(models);
             if (tem == null) {
-                tem = defaultExpansionModel = new DefaultTreeExpansionModel();
+                tem = new DefaultTreeExpansionModel();
                 defaultExpansionModels.put(models, tem);
             }
             treeExpansionModels = Collections.singletonList(tem);
         }
         
-        CompoundModel cm = new CompoundModel (
+        return new CompoundModel (
             createCompoundTreeModel (
                 new DelegatingTreeModel (treeModels),
                 treeModelFilters
@@ -316,10 +314,6 @@ public final class Models {
             ),
             propertiesHelpID
         );
-        if (defaultExpansionModel != null) {
-            defaultExpansionModel.setCompoundModel(cm);
-        }
-        return cm;
     }
     
     private static <T> void revertOrder(List<T> filters) {
@@ -1624,7 +1618,8 @@ public final class Models {
     
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
-        private CompoundModel cm;
+        private Set<Object> expandedNodes = new WeakSet<Object>();
+        private Set<Object> collapsedNodes = new WeakSet<Object>();
         
         /**
          * Defines default state (collapsed, expanded) of given node.
@@ -1634,7 +1629,16 @@ public final class Models {
          */
         public boolean isExpanded (Object node) 
         throws UnknownTypeException {
-            return DefaultTreeExpansionManager.get(cm).isExpanded(node);
+            synchronized (this) {
+                if (expandedNodes.contains(node)) {
+                    return true;
+                }
+                if (collapsedNodes.contains(node)) {
+                    return false;
+                }
+            }
+            // Default behavior follows:
+            return false;
         }
 
         /**
@@ -1643,7 +1647,10 @@ public final class Models {
          * @param node a expanded node
          */
         public void nodeExpanded (Object node) {
-            DefaultTreeExpansionManager.get(cm).setExpanded(node);
+            synchronized (this) {
+                expandedNodes.add(node);
+                collapsedNodes.remove(node);
+            }
         }
 
         /**
@@ -1652,11 +1659,10 @@ public final class Models {
          * @param node a collapsed node
          */
         public void nodeCollapsed (Object node) {
-            DefaultTreeExpansionManager.get(cm).setCollapsed(node);
-        }
-
-        private void setCompoundModel(CompoundModel cm) {
-            this.cm = cm;
+            synchronized (this) {
+                collapsedNodes.add(node);
+                expandedNodes.remove(node);
+            }
         }
         
     }

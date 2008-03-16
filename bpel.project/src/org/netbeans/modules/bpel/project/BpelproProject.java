@@ -52,7 +52,6 @@ import org.openide.filesystems.FileLock;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
@@ -97,8 +96,9 @@ import org.w3c.dom.Text;
  */
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/bpel/project/resources/bpelProject.png")); // NOI18N
-
+    public static final String SOURCES_TYPE_BPELPRO = "BIZPRO";
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
+    
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-bpel-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.bpel.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
@@ -164,10 +164,10 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
         
-        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         
-        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", Utils.SOURCES_TYPE_BPELPRO, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_BPELPRO, srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}",
                 org.netbeans.modules.xml.catalogsupport.ProjectConstants.SOURCES_TYPE_XML,
                 srcJavaLabel, null, null);

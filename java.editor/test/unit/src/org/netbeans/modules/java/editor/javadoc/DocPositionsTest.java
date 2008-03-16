@@ -41,7 +41,6 @@ package org.netbeans.modules.java.editor.javadoc;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
-import java.lang.ref.WeakReference;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestSuite;
@@ -62,12 +61,6 @@ public class DocPositionsTest extends JavadocTestSupport {
 //        suite.addTest(new DocPositionsTest("testGetTag"));
 //        suite.addTest(new DocPositionsTest("getTagSpan"));
         return suite;
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        DocPositions.isTestMode = true;
     }
     
     public void testGetTag() throws Exception {
@@ -100,8 +93,6 @@ public class DocPositionsTest extends JavadocTestSupport {
         DocPositions positions = DocPositions.get(info, javadoc, jdts);
         Tag[] inlineTags = javadoc.inlineTags();
         Tag[] tags = javadoc.tags();
-        // enforce GC
-        assertGC("", new WeakReference<Object>(new Object()));
         
         what = "{@link String} GUG";
         offset = code.indexOf(what);
@@ -119,10 +110,10 @@ public class DocPositionsTest extends JavadocTestSupport {
         offset = code.indexOf(what);
         offsetEnd = code.indexOf("@param m1");
         tag = positions.getTag(offset);
-        assertNotNull(logPositions(code, offset, positions), tag);
-        assertEquals(logPositions(code, offset, positions), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
+        assertNotNull(insertPointer(code, offset), tag);
+        assertEquals(insertPointer(code, offset), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
         int[] span = positions.getTagSpan(tag);
-        assertNotNull(logPositions(code, offset, positions), span);
+        assertNotNull(insertPointer(code, offset), span);
         assertTrue(logPositions(code, offset, offsetEnd, span), offset == span[0] && offsetEnd == span[1]);
         
         what = "@param m1";
@@ -162,43 +153,8 @@ public class DocPositionsTest extends JavadocTestSupport {
         offsetEnd = offset + what.length();
         tag = positions.getTag(offset + 2);
 //        assertEquals(logPositions(code, offset, offsetEnd, inlineTags[1], tag), inlineTags[1], tag);
-        assertNotNull(logPositions(code, offset, positions), tag);
-        assertEquals(logPositions(code, offset, positions), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
-    }
-    
-    public void testGarbageCollection() throws Exception {
-        String code = 
-                "package p;\n" +
-                "class C {\n" +
-                "    /**\n" +
-                "     * @return return description {@code unclosed in return\n" +
-                "     */\n" +
-                "    int m(int m1) {\n" +
-                "        return 0;\n" +
-                "    }\n" +
-                "}\n";
-        prepareTest(code);
-        
-        String what = "@return";
-        int offset = code.indexOf(what);
-        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
-        assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
-        assertTrue(jdts.moveNext());
-        assertNotNull(insertPointer(code, offset), jdts);
-        
-        DocPositions positions = DocPositions.get(info, javadoc, jdts);
-        Tag tag = positions.getTag(offset);
-        assertNotNull(tag);
-        WeakReference<Tag> wtag = new WeakReference<Tag>(tag);
-        
-        tag = null;
-        javadoc = null;
-        jdts = null;
-        positions = null;
-        info = null;
-        assertGC("tag", wtag);
-        
+        assertNotNull(insertPointer(code, offset), tag);
+        assertEquals(insertPointer(code, offset), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
     }
     
     private static String logPositions(String code, int begin, int end, Tag exp, Tag found) {
@@ -232,7 +188,4 @@ public class DocPositionsTest extends JavadocTestSupport {
                 "\nexpected: '" + expSnipped + "', result: '" + resSnipped + "'";
     }
 
-    private static String logPositions(String code, int offset, DocPositions dp) {
-        return insertPointer(code, offset) + '\n' + dp;
-    }
 }

@@ -41,7 +41,6 @@
 package org.netbeans.modules.javascript.editing.lexer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +60,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.JsMimeResolver;
-import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -100,20 +98,6 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.IF);
         INDENT_WORDS.add(JsTokenId.ELSE);
         INDENT_WORDS.add(JsTokenId.WHILE);
-    }
-
-    public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
-        try {
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            if (doc == null && forceOpen) {
-                doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
-            }
-            
-            return doc;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
     }
 
     private LexUtilities() {
@@ -216,10 +200,6 @@ public class LexUtilities {
     }
 
     public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset) {
-        return getPositionedSequence(doc, offset, true);
-    }
-    
-    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack) {
         TokenSequence<?extends JsTokenId> ts = getJsTokenSequence(doc, offset);
 
         if (ts != null) {
@@ -235,9 +215,7 @@ public class LexUtilities {
                 throw e;
             }
 
-            if (!lookBack && !ts.moveNext()) {
-                return null;
-            } else if (lookBack && !ts.moveNext() && !ts.movePrevious()) {
+            if (!ts.moveNext() && !ts.movePrevious()) {
                 return null;
             }
             
@@ -273,15 +251,6 @@ public class LexUtilities {
         return 0;
     }
 
-    
-    public static Token<?extends JsTokenId> findNextNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
-        return findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
-    }
-
-    public static Token<?extends JsTokenId> findPreviousNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
-        return findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
-    }
-    
     public static Token<?extends JsTokenId> findNext(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
         if (ignores.contains(ts.token().id())) {
             while (ts.moveNext() && ignores.contains(ts.token().id())) {}

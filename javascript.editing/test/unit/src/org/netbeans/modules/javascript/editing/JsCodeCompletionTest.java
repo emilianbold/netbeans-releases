@@ -229,10 +229,10 @@ public class JsCodeCompletionTest extends JsTestBase {
             }
 
             @Override
-            public void appendText(String text, int fromInclusive, int toExclusive) {
-                sb.append(text, fromInclusive, toExclusive);
+            public void appendText(String text) {
+                sb.append(text);
             }
-            
+
             @Override
             public void emphasis(boolean start) {
             }

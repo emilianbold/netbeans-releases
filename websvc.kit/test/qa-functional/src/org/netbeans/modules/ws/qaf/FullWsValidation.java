@@ -67,7 +67,6 @@ public class FullWsValidation extends NbTestCase {
         suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
         suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
         suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testRefreshClient"));  //NOI18N
         suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
         suite.addTest(new EjbWsValidation("testCreateNewWs")); //NOI18N
         suite.addTest(new EjbWsValidation("testAddOperation")); //NOI18N
@@ -78,19 +77,16 @@ public class FullWsValidation extends NbTestCase {
         suite.addTest(new EjbWsValidation("testCallWsOperationInJavaClass")); //NOI18N
         suite.addTest(new EjbWsValidation("testWsFromEJBinClientProject")); //NOI18N
         suite.addTest(new EjbWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new EjbWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
         suite.addTest(new EjbWsValidation("testDeployWsClientProject")); //NOI18N
         suite.addTest(new AppClientWsValidation("testCreateWsClient")); //NOI18N
         suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
         suite.addTest(new AppClientWsValidation("testCallWsOperationInJavaClass")); //NOI18N
         suite.addTest(new AppClientWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new AppClientWsValidation("testRefreshClient"));  //NOI18N
         suite.addTest(new AppClientWsValidation("testRunWsClientProject")); //NOI18N
         suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N
         suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N
         suite.addTest(new JavaSEWsValidation("testFixClientLibraries")); //NOI18N
         suite.addTest(new JavaSEWsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new JavaSEWsValidation("testRefreshClientAndReplaceWSDL"));  //NOI18N
         suite.addTest(new JavaSEWsValidation("testRunWsClientProject")); //NOI18N
         suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
         suite.addTest(new EjbWsValidation("testUndeployProjects")); //NOI18N

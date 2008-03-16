@@ -58,16 +58,16 @@ import org.openide.util.NbBundle;
 public class CCFormatSupport extends ExtFormatSupport {
 
     private TokenContextPath tokenContextPath;
-    private CodeStyle codeStyle;
+    private CodeStyle.Language language;
 
-    public CCFormatSupport(FormatWriter formatWriter) {
-        this(formatWriter, CCTokenContext.contextPath);
+    public CCFormatSupport(CodeStyle.Language language, FormatWriter formatWriter) {
+        this(language, formatWriter, CCTokenContext.contextPath);
     }
 
-    private CCFormatSupport(FormatWriter formatWriter, TokenContextPath tokenContextPath) {
+    private CCFormatSupport(CodeStyle.Language language, FormatWriter formatWriter, TokenContextPath tokenContextPath) {
         super(formatWriter);
         this.tokenContextPath = tokenContextPath;
-        this.codeStyle = CodeStyle.getDefault(formatWriter.getDocument());
+        this.language = language;
     }
 
     public TokenContextPath getTokenContextPath() {
@@ -688,22 +688,6 @@ public class CCFormatSupport extends ExtFormatSupport {
         return getTokenIndent(token, false);
     }   
     
-    private int getRightIndent(){
-        int i = getShiftWidth();
-        if (isHalfIndentNewlineBeforeBrace()){
-            return i/2;
-        }
-        return i;
-    }
-
-    private int getRightIndentDeclaration(){
-        int i = getShiftWidth();
-        if (isHalfIndentNewlineBeforeBraceDeclaration()){
-            return i/2;
-        }
-        return i;
-    }
-    
     /**
      * Find the indentation for the first token on the line.
      * The given token is also examined in some cases.
@@ -733,9 +717,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.WHILE_ID:
                             case CCTokenContext.ELSE_ID:
                                 indent = getTokenIndent(stmt);
-                                if (isHalfIndentNewlineBeforeBrace()){
-                                    indent += getShiftWidth()/2;
-                                }
                                 break;
                                 
                             case CCTokenContext.LBRACE_ID:
@@ -782,21 +763,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                         // the right brace must be indented to the first
                         // non-whitespace char - forceFirstNonWhitespace=true
                         indent = getTokenIndent(t, forceFirstNonWhitespace);
-                        switch (t.getTokenID().getNumericID()){
-                            case CCTokenContext.FOR_ID:
-                            case CCTokenContext.IF_ID:
-                            case CCTokenContext.WHILE_ID:
-                            case CCTokenContext.DO_ID:
-                            case CCTokenContext.ELSE_ID:
-                            case CCTokenContext.TRY_ID:
-                            case CCTokenContext.ASM_ID:
-                            case CCTokenContext.CATCH_ID:
-                            case CCTokenContext.SWITCH_ID:
-                                if (isHalfIndentNewlineBeforeBrace()){
-                                    indent += getShiftWidth()/2;
-                                }
-                                break;
-                        }
                     } else { // no matching left brace
                         indent = getTokenIndent(token); // leave as is
                     }
@@ -809,8 +775,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = getTokenIndent(swss);
                         if (indentCasesFromSwitch()) {
                             indent += getShiftWidth();
-                        } else if (isHalfIndentNewlineBeforeBrace()) {
-                            indent += getShiftWidth()/2;
                         }
                     }
                     break;
@@ -865,22 +829,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         if (lbss == null) {
                             lbss = t;
                         }
-                        switch (lbss.getTokenID().getNumericID()){
-                            case CCTokenContext.FOR_ID:
-                            case CCTokenContext.IF_ID:
-                            case CCTokenContext.WHILE_ID:
-                            case CCTokenContext.DO_ID:
-                            case CCTokenContext.ELSE_ID:
-                            case CCTokenContext.TRY_ID:
-                            case CCTokenContext.ASM_ID:
-                            case CCTokenContext.CATCH_ID:
-                            case CCTokenContext.SWITCH_ID:
-                                indent = getTokenIndent(lbss) + getShiftWidth();
-                                break;
-                            default:
-                                indent = getTokenIndent(lbss) + getRightIndentDeclaration();
-                                break;
-                        }
+                        indent = getTokenIndent(lbss) + getShiftWidth();
                         break;
 
                     case CCTokenContext.RBRACE_ID:
@@ -891,7 +840,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.COLON_ID:
                         TokenItem ttt = getVisibility(t);
                         if (ttt != null){
-                            indent = getTokenIndent(ttt) + getRightIndentDeclaration();
+                            indent = getTokenIndent(ttt) + getShiftWidth();
                         } else {
                             ttt = findAnyToken(t, null,
                                     new TokenID[] {CCTokenContext.CASE,
@@ -905,7 +854,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 if (id == CCTokenContext.QUESTION_ID) {
                                     indent = getTokenIndent(ttt) + getShiftWidth();
                                 } else if (id == CCTokenContext.CASE_ID || id == CCTokenContext.DEFAULT_ID){
-                                    indent = getTokenIndent(ttt) + getRightIndent();
+                                    indent = getTokenIndent(ttt) + getShiftWidth();
                                 } else {
                                     indent = getTokenIndent(t);// + getShiftWidth();
                                 }
@@ -917,11 +866,9 @@ public class CCFormatSupport extends ExtFormatSupport {
 			break;
 
                     case CCTokenContext.QUESTION_ID:
-                        indent = getTokenIndent(t) + getShiftWidth();
-                        break;
                     case CCTokenContext.DO_ID:
                     case CCTokenContext.ELSE_ID:
-                        indent = getTokenIndent(t) + getRightIndent();
+                        indent = getTokenIndent(t) + getShiftWidth();
                         break;
 
                     case CCTokenContext.RPAREN_ID:
@@ -936,7 +883,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 case CCTokenContext.IF_ID:
                                 case CCTokenContext.WHILE_ID:
                                     // Indent one level
-                                    indent = getTokenIndent(rpmt) + getRightIndent();
+                                    indent = getTokenIndent(rpmt) + getShiftWidth();
                                     break;
                                 }
                             }
@@ -1397,7 +1344,7 @@ public class CCFormatSupport extends ExtFormatSupport {
     }
 
     private CodeStyle getCodeStyle(){
-        return this.codeStyle;
+        return CodeStyle.getDefault(language);
     }
 
     public boolean getFormatSpaceBeforeMethodCallParenthesis() {
@@ -1414,19 +1361,11 @@ public class CCFormatSupport extends ExtFormatSupport {
     }
 
     public boolean getFormatNewlineBeforeBrace() {
-        return getCodeStyle().getFormatNewlineBeforeBrace() != CodeStyle.BracePlacement.SAME_LINE;
-    }
-
-    public boolean isHalfIndentNewlineBeforeBrace() {
-        return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+        return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE;
     }
 
     public boolean getFormatNewlineBeforeBraceDeclaration() {
-        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() != CodeStyle.BracePlacement.SAME_LINE;
-    }
-
-    public boolean isHalfIndentNewlineBeforeBraceDeclaration() {
-        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE;
     }
     
     public boolean getFormatLeadingStarInComment() {

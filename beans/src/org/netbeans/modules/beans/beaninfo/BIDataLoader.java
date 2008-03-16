@@ -88,16 +88,13 @@ final class BIDataLoader extends UniFileLoader {
 
     @Override
     protected FileObject findPrimaryFile(FileObject fo) {
-        return isBeanInfo(fo)? fo: null;
-    }
-    
-    public static boolean isBeanInfo(FileObject fo) {
         String name;
-        return fo != null
-                && !fo.isFolder()
+        return !fo.isFolder()
                 && (name = fo.getName()).length() > BEANINFO_SFX.length()
                 && name.endsWith(BEANINFO_SFX)
-                && "java".equals(fo.getExt()); // NOI18N
+                && "java".equals(fo.getExt()) // NOI18N
+                ? fo
+                : null;
     }
     
 }

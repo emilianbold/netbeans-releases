@@ -13,8 +13,6 @@ public interface Component extends IEPComponent {
         
         static final String PROPERTY_CHILD = "property";
         
-        static final String IMPORT_CHILD = "import";
-        
         static final String DOCUMENTATION_CHILD = "documentation";
         
 	static final String NAME_PROPERTY = "name";

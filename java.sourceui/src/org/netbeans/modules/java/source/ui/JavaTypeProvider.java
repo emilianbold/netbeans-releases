@@ -285,8 +285,10 @@ public class JavaTypeProvider implements TypeProvider {
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
         Set<ElementHandle<TypeElement>> names = null;
         
+        boolean scanInProgress;
+        do {
         // is scan in progress? If so, provide a message to user.
-        boolean scanInProgress = RepositoryUpdater.getDefault().isScanInProgress();
+        scanInProgress = RepositoryUpdater.getDefault().isScanInProgress();
         if (scanInProgress) {
             // ui message
             String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
@@ -351,6 +353,23 @@ public class JavaTypeProvider implements TypeProvider {
             }
             add += System.currentTimeMillis() - time;
         }
+        // nothing found, wait a while and restart the task
+        // again.
+        if (scanInProgress && types.isEmpty()) {
+            if (RepositoryUpdater.getDefault().isScanInProgress()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    LOGGER.fine(ex.getMessage());
+                }
+            }
+            res.setMessage(null);
+        } else {
+            // finish the loop, results available
+            scanInProgress = false;
+        }
+        
+        } while (scanInProgress);
         
         if ( !isCanceled ) {            
             time = System.currentTimeMillis();

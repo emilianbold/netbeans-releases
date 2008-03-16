@@ -1,7 +1,7 @@
 /*
  *  CI1Cl
  *
- * Created on March 11, 2008, 10:42 PM
+ * Created on February 19, 2008, 7:17 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,14 +9,14 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.PathParam;
 import org.codehaus.jettison.json.JSONString;
 
 /**
@@ -26,9 +26,9 @@ import org.codehaus.jettison.json.JSONString;
  */
 
 public class CI1Cl {
-    @Context
+    @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CI1Cl */
     public CI1Cl() {
     }
@@ -40,7 +40,7 @@ public class CI1Cl {
      */
     @GET
     @ProduceMime("application/json")
-    public JSONString getJson(@PathParam("CI1URI")
+    public JSONString getJson(@UriParam("CI1URI")
     String CI1URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -54,7 +54,7 @@ public class CI1Cl {
      */
     @PUT
     @ConsumeMime("application/json")
-    public void putJson(@PathParam("CI1URI")
+    public void putJson(@UriParam("CI1URI")
     String CI1URI, JSONString content) {
     }
 
@@ -63,7 +63,7 @@ public class CI1Cl {
      * @param CI1URI resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("CI1URI")
+    public void delete(@UriParam("CI1URI")
     String CI1URI) {
     }
 }

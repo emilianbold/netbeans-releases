@@ -77,6 +77,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -89,7 +90,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinMainPanel extends JPanel {
 
     private static final String LOG_CATEGORY = JoinMainPanel.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(JoinMainPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinMainPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private ListTransferPanel listPanel;
     private JTabbedPane bottomTabPane;
@@ -165,9 +166,9 @@ public class JoinMainPanel extends JPanel {
             JPanel labelPnl = new JPanel();
             labelPnl.setLayout(new BorderLayout());
             
-            String nbBundle1 = mLoc.t("BUND468: Select which tables you would like to join.");
-            JLabel joinLabel = new JLabel(nbBundle1.substring(15));
-            joinLabel.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Select which tables you would like to join.");
+            JLabel joinLabel = new JLabel(Localizer.parse(nbBundle1));
+            joinLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
 
             labelPnl.add(joinLabel, BorderLayout.NORTH);
             labelPnl.add(new JSeparator(), BorderLayout.SOUTH);
@@ -177,10 +178,10 @@ public class JoinMainPanel extends JPanel {
         }
 
         // initialize list transfer panel
-        String nbBundle2 = mLoc.t("BUND469: Available Tables:");
-        String nbBundle3 = mLoc.t("BUND075: Selected Tables:");
-        listPanel = new ListTransferPanel(this, nbBundle2.substring(15),
-                nbBundle3.substring(15), sources, targets);
+        String nbBundle2 = mLoc.t("PRSR001: Available Tables:");
+        String nbBundle3 = mLoc.t("PRSR001: Selected Tables:");
+        listPanel = new ListTransferPanel(this, Localizer.parse(nbBundle2),
+                Localizer.parse(nbBundle3), sources, targets);
 
         // set the target list to allow continuous selection for up and down purpose
         listPanel.getDestinationJList().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -205,13 +206,13 @@ public class JoinMainPanel extends JPanel {
 
         // initalize join preview panel which is the first tab
         previewPanel = new JoinPreviewPanel(this);
-        String nbBundle4 = mLoc.t("BUND289: Preview");
-        previewPanel.setName(nbBundle4.substring(15));
-        previewPanel.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
+        String nbBundle4 = mLoc.t("PRSR001: Preview");
+        previewPanel.setName(Localizer.parse(nbBundle4));
+        previewPanel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
         // initialize select table column panel
         tableColumnPanel = new TableColumnTreePanel(new ArrayList());
-        String nbBundle5 = mLoc.t("BUND429: Select Columns");
-        tableColumnPanel.setName(nbBundle5.substring(15));
+        String nbBundle5 = mLoc.t("PRSR001: Select Columns");
+        tableColumnPanel.setName(Localizer.parse(nbBundle5));
 
         // add these above two panel as tabs to bottom tab panel
         bottomTabPane.add(previewPanel);
@@ -610,7 +611,7 @@ public class JoinMainPanel extends JPanel {
             refreshPreview = true;
 
         } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT159: cannot clone existing SQLJoinView{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR179: cannot clone existing SQLJoinView{0}", LOG_CATEGORY), ex);
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 
@@ -641,7 +642,7 @@ public class JoinMainPanel extends JPanel {
             this.listPanel.addToDestination(sTable);
 
         } catch (CloneNotSupportedException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT180: Join View model is corrupted.{0}{1}", ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR180: Join View model is corrupted.{0}{1}", ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE), ex);
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 

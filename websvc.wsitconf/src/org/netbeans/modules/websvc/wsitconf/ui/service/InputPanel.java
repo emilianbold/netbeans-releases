@@ -286,8 +286,10 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(signedChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Signed")); // NOI18N
+        signedChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(endorsingChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Endorsing")); // NOI18N
+        endorsingChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -299,7 +301,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                     .add(layout.createSequentialGroup()
                         .add(tokenComboLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tokenCombo, 0, 306, Short.MAX_VALUE)
+                        .add(tokenCombo, 0, 278, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
@@ -326,13 +328,6 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                 .add(targetsButton)
                 .addContainerGap())
         );
-
-        tokenComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_AuthTokenCombo_ACSD")); // NOI18N
-        tokenCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_AuthTokenCombo_ACSN")); // NOI18N
-        tokenCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_AuthTokenCombo_ACSD")); // NOI18N
-        targetsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_MsgParts_ACSD")); // NOI18N
-        signedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_Signed_ACSD")); // NOI18N
-        endorsingChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_InputPanel_Endorsing_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void targetsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetsButtonActionPerformed

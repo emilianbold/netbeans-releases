@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * NetBeans node extension that represents a flatfile or field for purposes of configuring
@@ -64,7 +64,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class FlatfileNode extends BeanNode implements Comparable {
 
-    private static transient final Logger mLogger = Logger.getLogger(FlatfileNode.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -353,7 +353,7 @@ public class FlatfileNode extends BeanNode implements Comparable {
      */
     public void updateUserObject() {
         // XXX Update user object.
-        mLogger.infoNoloc(mLoc.t("EDIT083: Current state of user object:{0}", userObject));
+        mLogger.infoNoloc(mLoc.t("PRSR083: Current state of user object:{0}", userObject));
     }
 
     /**

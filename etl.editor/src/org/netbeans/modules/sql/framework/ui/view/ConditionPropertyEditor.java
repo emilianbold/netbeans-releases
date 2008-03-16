@@ -66,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 
 /**
@@ -75,7 +76,7 @@ import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
  */
 public class ConditionPropertyEditor extends PropertyEditorSupport implements IPropertyEditor {
 
-    private static transient final Logger mLogger = Logger.getLogger(ConditionPropertyEditor.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionPropertyEditor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public static class Validation extends ConditionPropertyEditor {
@@ -203,7 +204,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
             try {
                 this.conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
             } catch (CloneNotSupportedException ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT196: error cloning the condition {0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR196: error cloning the condition {0}", LOG_CATEGORY), ex);
                 return;
             }
 
@@ -219,7 +220,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     warnForInvalidCondition();
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT197: Error finding root predicate from text condition{0}", text), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR197: Error finding root predicate from text condition{0}", text), ex);
                 warnForInvalidCondition();
             }
 
@@ -230,7 +231,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     this.property.setValue(this.conditionContainer);
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT198: Error occurred in setting the property value for condition{0}from joinview table.", text), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR198: Error occurred in setting the property value for condition{0}from joinview table.", text), ex);
             }
         }
     }
@@ -277,9 +278,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
     }
 
     private void warnForInvalidCondition() {
-        String nbBundle1 = mLoc.t("BUND484: The condition is not valid.Make sure you correct it.");
+        String nbBundle1 = mLoc.t("PRSR001: The condition is not valid.Make sure you correct it.");
         DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(nbBundle1.substring(15),
+                new NotifyDescriptor.Message(Localizer.parse(nbBundle1),
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 }

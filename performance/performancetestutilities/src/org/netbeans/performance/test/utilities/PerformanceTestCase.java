@@ -46,7 +46,6 @@ import java.awt.Window;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import junit.framework.AssertionFailedError;
@@ -291,8 +290,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 ", Wait_after_open="+WAIT_AFTER_OPEN+
                 ", Wait_after_close="+WAIT_AFTER_CLOSE+
                 ", Wait_paint="+WAIT_PAINT+
-                ", Max_iteration="+MAX_ITERATION+
-                ", logMemory="+logMemory);
+                ", Max_iteration="+MAX_ITERATION);
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
 
@@ -350,7 +348,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
 
                 }catch(Exception exc){ // catch for prepare(), open()
-                    log("------- [ " + i + " ] ---------------- Exception rises while measuring performance: " + exc);
+                    log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
                     exceptionDuringMeasurement = exc;
@@ -367,7 +365,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         waitNoEvent(WAIT_AFTER_CLOSE);
 
                     }catch(Exception e){ // catch for close()
-                        log("------- [ " + i + " ] ---------------- Exception rises while closing tested component: " + e);
+                        log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
                         exceptionDuringMeasurement = e;
@@ -383,7 +381,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             closeAllDialogs();
             tr.add(tr.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
-            log("----------------------- Exception rises while shuting down / initializing: " + e);
+            log("----------------------- Exception rises while shuting down / initializing:"+e.getMessage());
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
@@ -394,7 +392,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
+            throw new Error("Exception {" + exceptionDuringMeasurement.getMessage() + "} rises during measurement.", exceptionDuringMeasurement);
 
         compare(measuredTime);
 
@@ -833,56 +831,45 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * </ul>
      * @return measured time
      */
-    public long getMeasuredTime() {
-        for (int attempt = 0; ; attempt++) {
+    public long getMeasuredTime(){
+        ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
+        ActionTracker.Tuple end = tr.getCurrentEvents().getFirst();
+        
+        for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+            int code = tuple.getCode();
             
-            ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
-            ActionTracker.Tuple end = tr.getCurrentEvents().getFirst();
-            
-            try {                
-                for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
-                    int code = tuple.getCode();
-
-                    // start 
-                    if (code == MY_START_EVENT) {
-                        start = tuple;
-                    } else if(MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
-                            ( code == ActionTracker.TRACK_START
-                            || code == track_mouse_event  // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
-                            || code == ActionTracker.TRACK_KEY_PRESS
-                            )) {
-                        start = tuple;
-
-                    //end 
-                    } else if (code == MY_END_EVENT) {
-                        end = tuple;
-                    } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
-                            ( code == ActionTracker.TRACK_PAINT
-                            || code == ActionTracker.TRACK_FRAME_SHOW
-                            || code == ActionTracker.TRACK_DIALOG_SHOW
-                            || code == ActionTracker.TRACK_COMPONENT_SHOW
-                            )) {
-                        end = tuple;
-                    }
-                }
-            } catch (ConcurrentModificationException cme) {
-                // It's okay to get it there, we just need to restart calculation                
-                if (attempt == 10) {
-                    throw new Error("Can't calculate result of measureTime for 10 iterations due to " + cme, cme);
-                }
-                continue;
+            // start 
+            if (code == MY_START_EVENT) {
+                start = tuple;
+            } else if(MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
+                    ( code == ActionTracker.TRACK_START
+                    || code == track_mouse_event  // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
+                    || code == ActionTracker.TRACK_KEY_PRESS
+                    )) {
+                start = tuple;
+                
+            //end 
+            } else if (code == MY_END_EVENT) {
+                end = tuple;
+            } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
+                    ( code == ActionTracker.TRACK_PAINT
+                    || code == ActionTracker.TRACK_FRAME_SHOW
+                    || code == ActionTracker.TRACK_DIALOG_SHOW
+                    || code == ActionTracker.TRACK_COMPONENT_SHOW
+                    )) {
+                end = tuple;
             }
-            
-            start.setMeasured(true);
-            end.setMeasured(true);
-
-            long result = end.getTimeMillis() - start.getTimeMillis();
-
-            if (result < 0 || start.getTimeMillis() == 0) {
-                throw new IllegalStateException("Measuring failed, because we start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0");
-            }
-            return result;
         }
+
+        start.setMeasured(true);
+        end.setMeasured(true);
+        
+        long result = end.getTimeMillis() - start.getTimeMillis();
+        
+        if (result < 0 || start.getTimeMillis() == 0) {
+            throw new IllegalStateException("Measuring failed, because we start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0");
+        }
+        return result;
     }
 
     /**
@@ -1027,7 +1014,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected void getScreenshotOfMeasuredIDEInTimeOfMeasurement(int i){
         try {
             if(testedComponentOperator==null){
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
             }else{
                 java.awt.Point locationOnScreen = testedComponentOperator.getLocationOnScreen();
                 java.awt.Rectangle bounds = testedComponentOperator.getBounds();
@@ -1035,7 +1022,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 java.awt.Rectangle screen_size = new java.awt.Rectangle(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
 
                 if(bounds_new.height > screen_size.height/2 || bounds_new.width > screen_size.width/2)
-                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.BW_MODE);
                 else
                     PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
                 //System.err.println("XX "+rm.getRepaintedArea());

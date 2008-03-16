@@ -119,12 +119,6 @@ public class JsTypeAnalyzerTest extends JsTestBase {
         assertEquals(null, instance.getType("unknown"));
     }
 
-//    public void testReturnTypes() throws Exception {
-//        JsTypeAnalyzer instance = getAnalyzer("testfiles/types2.js", "alert(^mycall);", true);
-//
-//        assertEquals("HTMLElement|Axt.Element", instance.getType("call"));
-//    }
-//    
     //public void testGetReturnType1() throws Exception {
     //    JsTypeAnalyzer instance = getAnalyzer("testfiles/types2.js", "^alert(mycall)", true);
     //

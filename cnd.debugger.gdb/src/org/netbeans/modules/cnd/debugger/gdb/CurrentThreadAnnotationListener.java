@@ -75,15 +75,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     public void propertyChange(PropertyChangeEvent e) {
         if (e.getPropertyName().equals(DebuggerManager.PROP_CURRENT_ENGINE)) {
             updateCurrentDebugger();
-            annotate(false);
+            annotate();
         } else if (e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_THREAD)) {
-            annotate(false);
+            annotate();
         } else if (e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME)) {
-            annotate(false);
+            annotate();
         } else if (e.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
-            annotate(false);
+            annotate();
         } else if (e.getPropertyName().equals(GdbDebugger.DIS_UPDATE)) {
-            annotate((Boolean)e.getOldValue());
+            annotate();
         } 
     }
 
@@ -115,7 +115,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     /**
      * Annotates current thread or removes annotations.
      */
-    private void annotate(boolean dis) {
+    private void annotate() {
         if (currentDebugger == null) {
             return;
         }
@@ -127,7 +127,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         
         // 2) show current place
-        currentDebugger.showCurrentSource(dis);
+        currentDebugger.showCurrentSource();
 
         // 3) annotate current line & stack
         annotateCallStack(currentDebugger.getCallStack());

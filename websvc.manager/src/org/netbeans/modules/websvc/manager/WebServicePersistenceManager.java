@@ -82,7 +82,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
     private File websvcDir = new File(WebServiceManager.WEBSVC_HOME);
     private File websvcRefFile = new File(websvcDir, "websvc_ref.xml");
     private List<WebServiceDescriptor> descriptorsToWrite = null;
-    private boolean imported = true;
+    private boolean imported = false;
     
     public void setImported(boolean v) {
         imported = v;

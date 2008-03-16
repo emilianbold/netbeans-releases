@@ -82,6 +82,7 @@ import java.util.Set;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.PrimaryKey;
 import org.netbeans.modules.sql.framework.ui.utils.TableSorter;
@@ -106,7 +107,7 @@ public class ResultSetTablePanel extends JPanel {
     private Map<String, String> changes = new LinkedHashMap<String, String>();
     private Map<String, List> valuesList = new LinkedHashMap<String, List>();
     private Map<String, List> typesList = new LinkedHashMap<String, List>();
-    private static transient final Logger mLogger = Logger.getLogger(ResultSetTablePanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ResultSetTablePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class DataTableModel extends DefaultTableModel {
@@ -259,8 +260,8 @@ public class ResultSetTablePanel extends JPanel {
 
     private static class NullObjectCellRenderer extends DefaultTableCellRenderer {
 
-        static String nbBundle1 = mLoc.t("BUND356: <NULL>");
-        static final String NULL_LABEL = nbBundle1.substring(15);
+        static String nbBundle1 = mLoc.t("PRSR001: <NULL>");
+        static final String NULL_LABEL = Localizer.parse(nbBundle1);
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -574,7 +575,7 @@ public class ResultSetTablePanel extends JPanel {
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT146: Failed to set up table model({0})", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR146: Failed to set up table model({0})", LOG_CATEGORY), e);
         }
 
         return sorter;
@@ -766,7 +767,7 @@ public class ResultSetTablePanel extends JPanel {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT147: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR147: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
         }
     }
 
@@ -783,7 +784,7 @@ public class ResultSetTablePanel extends JPanel {
                 columnWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT147: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR148: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
         }
         return columnWidthList;
     }

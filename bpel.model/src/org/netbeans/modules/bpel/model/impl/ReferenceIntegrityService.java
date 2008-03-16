@@ -16,6 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.Collection;
@@ -34,7 +38,6 @@ import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.impl.services.InnerEventDispatcherAdapter;
 import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 
 /**
  * This is service that reponsible for reference integrity in OM. There are

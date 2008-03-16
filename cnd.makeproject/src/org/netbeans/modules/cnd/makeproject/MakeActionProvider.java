@@ -775,24 +775,11 @@ public class MakeActionProvider implements ActionProvider {
         boolean cRequired = conf.hasCFiles(pd);
         boolean cppRequired = conf.hasCPPFiles(pd);
         boolean fRequired = CppSettings.getDefault().isFortranEnabled() && conf.hasFortranFiles(pd);
-        boolean runBTA = false;
         
         if (validated) {
             return lastValidation;
         }
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals(CompilerFlavor.Unknown.toString())) {
-            // Confiiguration was created with unknown tool set. Use the now default one.
-            csname = CppSettings.getDefault().getCompilerSetName();
-            cs = CompilerSetManager.getDefault().getCompilerSet(csname);
-            if (cs == null) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(csconf.getOption());
-            }
-            if (cs == null && CompilerSetManager.getDefault().getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault().getCompilerSet(0);
-            }
-            runBTA = true;
-        }
-        else if (csconf.isValid()) {
+        if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
         } else {
@@ -800,7 +787,7 @@ public class MakeActionProvider implements ActionProvider {
             CompilerFlavor flavor = null;
             if (csconf.getFlavor() != null) {
                 flavor = CompilerFlavor.toFlavor(csconf.getFlavor());
-                }
+            }
             else {
                 flavor = CompilerFlavor.GNU;
             }
@@ -809,6 +796,7 @@ public class MakeActionProvider implements ActionProvider {
             csconf.setValid();
         }
         
+        boolean runBTA = false;
         
         // Check for a valid make program
         file = new File(cs.getTool(Tool.MakeTool).getPath());

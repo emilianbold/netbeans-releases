@@ -52,6 +52,7 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
@@ -64,7 +65,7 @@ import org.netbeans.modules.sql.framework.common.utils.DBURL;
  * @author Ahimanikya Satapathy
  */
 public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
-    private static transient final Logger mLogger = Logger.getLogger(SelectDatabaseVisualPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectDatabaseVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private boolean populated;
     private SelectDatabasePanel owner;
@@ -98,10 +99,10 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         }
     }
 
-    String nbBundle1 = mLoc.t("BUND228: Choose Mashup Database");
+    String nbBundle1 = mLoc.t("PRSR001: Choose Mashup Database");
     @Override
     public String getName() {
-        return nbBundle1.substring(15);
+        return Localizer.parse(nbBundle1);
     }
 
     public String getSelectedDatabase() {
@@ -143,8 +144,8 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
         if (databasesCombo.getItemCount() != 0) {
             this.populated = true;
         } else {
-            String nbBundle2 = mLoc.t("BUND229: No Mashup Database found.");
-            error.setText(nbBundle2.substring(15));
+            String nbBundle2 = mLoc.t("PRSR001: No Mashup Database found.");
+            error.setText(Localizer.parse(nbBundle2));
             this.populated = false;
         }
     }

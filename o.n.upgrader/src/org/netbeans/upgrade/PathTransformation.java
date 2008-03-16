@@ -61,9 +61,7 @@ public class PathTransformation {
 
         boolean i118364 = path.startsWith("Templates/Classes/");//NOI18N
         if (i118364) {
-            if (!version.startsWith("6")) {
-                return transformTemplatePath118364(path);
-            }
+            return transformTemplatePath118364(path);
         }
         
         return path;

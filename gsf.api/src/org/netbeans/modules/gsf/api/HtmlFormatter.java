@@ -59,10 +59,7 @@ public abstract class HtmlFormatter {
     }
     public abstract void reset();
     public abstract void appendHtml(String html);
-    public void appendText(String text) {
-        appendText(text, 0, text.length());
-    }
-    public abstract void appendText(String text, int fromInclusive, int toExclusive);
+    public abstract void appendText(String text);
 
     public abstract void emphasis(boolean start);
     public abstract void name(ElementKind kind, boolean start);

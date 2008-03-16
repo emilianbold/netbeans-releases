@@ -93,11 +93,6 @@ public class OpenProjectListTest extends NbTestCase {
         super (testName);
     }
 
-    @Override
-    protected Level logLevel() {
-        return Level.FINE;
-    }
-
     protected void setUp () throws Exception {
         super.setUp ();
         MockServices.setServices(TestSupport.TestProjectFactory.class);

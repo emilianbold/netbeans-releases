@@ -9,7 +9,7 @@
 
 package Templates.Classes;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -19,7 +19,7 @@ import javax.ws.rs.core.UriInfo;
  */
 
 public class __NAME__ {
-    @Context
+    @HttpContext
     private UriInfo context;
 
     /** Creates a new instance of __NAME__ */

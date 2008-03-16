@@ -16,14 +16,21 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.api.references;
 
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
+
 /**
  * @author ads
+ *
  */
 public interface SchemaReference<T extends ReferenceableSchemaComponent>
-    extends NamedComponentReference<T>, Reference<T> {
+    extends NamedComponentReference<T>, Reference<T>
+{
 }

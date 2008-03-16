@@ -458,8 +458,6 @@ public class J2MEProjectGenerator {
         assert projectLocationFile != null : "FileUtil.toFile convertion failed for: " + projectLocation;  //NOI18N
         final ArrayList<String> configurations = new ArrayList<String>();
         final Project prj = ProjectManager.getDefault().findProject(projectLocation);
-        ProjectManager.getDefault().saveProject(prj);
-
         if (callback != null)
             callback.doPostGeneration(prj, h, projectLocation, projectLocationFile, configurations);
         if (! configurations.isEmpty()) {

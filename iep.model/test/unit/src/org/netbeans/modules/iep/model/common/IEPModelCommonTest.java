@@ -7,10 +7,8 @@
 
 package org.netbeans.modules.iep.model.common;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,8 +48,8 @@ public class IEPModelCommonTest extends TestCase {
     }
     
     public void testModification () throws Exception {
-        URL url = IEPModelCommonTest.class.getResource("data/empty.iep");
-        URI wfFile = url.toURI();
+       	URI wfFile = getClass().getResource("data/test.iep").toURI();
+    	InputStream is = getClass().getResourceAsStream("data/test.iep");
     	IEPModelProvider provider = new IEPModelProviderInsideIde ();
     	IEPModel model = provider.getWLMModel(wfFile);
     	
@@ -76,9 +74,9 @@ public class IEPModelCommonTest extends TestCase {
         model.endTransaction();
         
         //assert child components on the root component
-        assertEquals(1, model.getPlanComponent().getChildComponents().size());
+        assertEquals(5, model.getPlanComponent().getChildComponents().size());
         
-        Component c = model.getPlanComponent().getChildComponents().get(0);
+        Component c = model.getPlanComponent().getChildComponents().get(4);
         assertEquals(component, c);
         
     }
@@ -86,16 +84,15 @@ public class IEPModelCommonTest extends TestCase {
     
     
     public void testCreateModel()  throws Exception{
-        URL url = IEPModelCommonTest.class.getResource("data/test.iep");
-    	URI wfFile = url.toURI();
-//    	InputStream is = getClass().getResourceAsStream("data/test.iep");
-//    	InputSource source = new InputSource (is);
-//    	Element rootEl = XmlUtil.createDocument(true, source).getDocumentElement();
+    	URI wfFile = getClass().getResource("data/test.iep").toURI();
+    	InputStream is = getClass().getResourceAsStream("data/test.iep");
+    	InputSource source = new InputSource (is);
+    	Element rootEl = XmlUtil.createDocument(true, source).getDocumentElement();
     	IEPModelProvider provider = new IEPModelProviderInsideIde ();
     	IEPModel model = provider.getWLMModel(wfFile);
        	model.sync();
     	assertNotNull(model);
-//    	IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);
+    	IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);
         
         //assert properites on the root component
         assertEquals(1, model.getPlanComponent().getProperties().size());
@@ -130,7 +127,7 @@ public class IEPModelCommonTest extends TestCase {
         assertEquals("Schemas", schemaComponent.getTitle());
         assertEquals("/IEP/Model/Plan|Schemas", schemaComponent.getType());
         List<Component> schemaComponentChildren = schemaComponent.getChildComponents();
-        assertEquals(6, schemaComponentChildren.size());
+        assertEquals(0, schemaComponentChildren.size());
         
         
         Component componentOperators  = childComponents.get(2);
@@ -139,7 +136,7 @@ public class IEPModelCommonTest extends TestCase {
         assertEquals("/IEP/Model/Plan|Operators", componentOperators.getType());
         
         List<Component> operatorComponentChildren = componentOperators.getChildComponents();
-        assertEquals(9, operatorComponentChildren.size());
+        assertEquals(16, operatorComponentChildren.size());
         
         Component componentRelationAggregatorOperator  = operatorComponentChildren.get(0);
         assertEquals("o0", componentRelationAggregatorOperator.getName());
@@ -177,12 +174,12 @@ public class IEPModelCommonTest extends TestCase {
          //6
          Property relationAggregatorComponentProperty6 = relationAggregatorComponentProperties.get(5);
          assertEquals("inputSchemaIdList", relationAggregatorComponentProperty6.getName());
-         assertEquals("schema1", relationAggregatorComponentProperty6.getValue());
+         assertEquals("", relationAggregatorComponentProperty6.getValue());
          
          //7
          Property relationAggregatorComponentProperty7 = relationAggregatorComponentProperties.get(6);
          assertEquals("outputSchemaId", relationAggregatorComponentProperty7.getName());
-         assertEquals("schema2", relationAggregatorComponentProperty7.getValue());
+         assertEquals("", relationAggregatorComponentProperty7.getValue());
          
          //8
          Property relationAggregatorComponentProperty8 = relationAggregatorComponentProperties.get(7);
@@ -232,17 +229,17 @@ public class IEPModelCommonTest extends TestCase {
          //17
          Property relationAggregatorComponentProperty17 = relationAggregatorComponentProperties.get(16);
          assertEquals("fromColumnList", relationAggregatorComponentProperty17.getName());
-         assertEquals("GapWindow0.PRICE", relationAggregatorComponentProperty17.getValue());
+         assertEquals("", relationAggregatorComponentProperty17.getValue());
          
          //18
          Property relationAggregatorComponentProperty18 = relationAggregatorComponentProperties.get(17);
          assertEquals("toColumnList", relationAggregatorComponentProperty18.getName());
-         assertEquals("PRICE", relationAggregatorComponentProperty18.getValue());
+         assertEquals("", relationAggregatorComponentProperty18.getValue());
          
          //19
          Property relationAggregatorComponentProperty19 = relationAggregatorComponentProperties.get(18);
          assertEquals("groupByColumnList", relationAggregatorComponentProperty19.getName());
-         assertEquals("GapWindow0.PRICE", relationAggregatorComponentProperty19.getValue());
+         assertEquals("", relationAggregatorComponentProperty19.getValue());
          
          //20
          Property relationAggregatorComponentProperty20 = relationAggregatorComponentProperties.get(19);
@@ -257,7 +254,7 @@ public class IEPModelCommonTest extends TestCase {
         assertEquals("/IEP/Model/Plan|Links", linksComponent.getType());
         
         List<Component> linksComponentChildren = linksComponent.getChildComponents();
-        assertEquals(7, linksComponentChildren.size());
+        assertEquals(6, linksComponentChildren.size());
         
         Component linksComponentLink0  = linksComponentChildren.get(0);
         assertEquals("link0", linksComponentLink0.getName());

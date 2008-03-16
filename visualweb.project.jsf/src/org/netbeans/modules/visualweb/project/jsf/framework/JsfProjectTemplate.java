@@ -117,15 +117,9 @@ public class JsfProjectTemplate extends ProjectTemplate {
                 if (fileName.equals("${" + JsfProjectConstants.SRC_DIR + "}")) {
                     FileObject src = JsfProjectUtils.getSourceRoot(project);
                     fileName = FileUtil.getRelativePath(project.getProjectDirectory(), src);
-                    if (fileName == null) {
-                        fileName = "src/java"; // NOI18N
-                    }
                 } else if (fileName.equals("${" + JsfProjectConstants.WEB_DOCBASE_DIR + "}")) {
                     FileObject webDocbase = JsfProjectUtils.getDocumentRoot(project);
                     fileName = FileUtil.getRelativePath(project.getProjectDirectory(), webDocbase);
-                    if (fileName == null) {
-                        fileName = "web"; // NOI18N
-                    }
                 } else if (fileName.equals("${" + JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE + "}")) {
                     fileName = getBeanPackage();
                     if (fileName == null) {

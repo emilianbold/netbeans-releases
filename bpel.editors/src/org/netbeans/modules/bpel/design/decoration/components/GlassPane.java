@@ -311,16 +311,6 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     }
 
     private void hidePane() {
-        if (getParent() == null) {
-          return;
-        }
-//System.out.println();
-//System.out.println();
-//System.out.println("getParent() 1: " + getParent());
-//System.out.println();
-//System.out.println("getParent() 2: " + getParent().getParent());
-//System.out.println();
-//System.out.println("getParent() 3: " + getParent().getParent().getParent());
         DesignView designView = (DesignView) (getParent().getParent().getParent());
         designView.getOverlayView().remove(this);
         

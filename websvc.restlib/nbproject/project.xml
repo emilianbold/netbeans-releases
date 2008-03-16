@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/comresrcgen.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/grizzly-http-webserver-1.7.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/grizzly-http-webserver-1.7.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsp-api-2.0-20040521.jar/</runtime-relative-path>

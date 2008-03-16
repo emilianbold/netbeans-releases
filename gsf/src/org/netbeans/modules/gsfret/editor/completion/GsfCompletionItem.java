@@ -112,7 +112,6 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
         }
 
-        @Override
         public boolean instantSubstitution(JTextComponent component) {
 //            ElementKind kind = item.getKind();
 //            return !(kind == ElementKind.CLASS || kind == ElementKind.MODULE);
@@ -127,17 +126,14 @@ public abstract class GsfCompletionItem implements CompletionItem {
             return item.getInsertPrefix();
         }
 
-        @Override
         protected String getLeftHtmlText() {
             return item.getLhsHtml();
         }
-
-        @Override
+        
         public String toString() {
             return item.getName();
         }
-
-        @Override
+        
         protected String getRightHtmlText() {
             String rhs = item.getRhsHtml();
 
@@ -261,7 +257,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //        }
 
     
-        @Override
+    
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
             String template = item.getCustomInsertTemplate();
             if (template != null) {
@@ -477,7 +473,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
     private static String truncateRhs(String rhs, int left) {
         if (rhs != null) {
-            final int MAX_SIZE = 80;
+            final int MAX_SIZE = 40;
             int size = MAX_SIZE-left;
             if (size < 10) {
                 size = 10;

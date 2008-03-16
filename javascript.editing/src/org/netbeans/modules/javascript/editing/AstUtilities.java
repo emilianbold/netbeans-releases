@@ -108,7 +108,7 @@ public class AstUtilities {
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
-    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
+    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, FunctionNode node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
         if (lexOffset == -1) {
@@ -597,13 +597,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 }
             }
             
-            if (parentType == Token.NAME) {
-                // Only accept "class" definitions here, e.g "var Foo = "...
-                String n = parent.getString();
-                if (Character.isUpperCase(n.charAt(0))) {
-                    name = n;
-                }
-            } else if (parentType == Token.OBJECTLIT) {
+            if (parentType == Token.OBJECTLIT) {
                 // Foo.Bar = { foo : function() }
                 // We handle object literals but skip the ones
                 // that don't have an associated name. This must
@@ -638,12 +632,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             
             if (name != null) {
-                // See if we're inside a with-statement
-                String in = getSurroundingWith(parent);
-                if (in != null) {
-                    name = in + "." + name; // NOI18N
-                }
-                
                 // Determine is instance
                 // function Foo() {} is an instance, Foo.Bar = function() is not.
                 boolean instance = wasThis || name.indexOf('.') == -1;
@@ -813,12 +801,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         
         return result;
     }
-
-    public static String getJoinedName(Node node) {
-        StringBuilder sb = new StringBuilder();
-        addName(sb, node);
-        return sb.toString();
-    }
+    
     
     public static boolean addName(StringBuilder sb, Node node) {
         switch (node.getType()) {
@@ -916,106 +899,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             node = node.getParentNode();
         }
-        return null;
-    }
-    
-    public static String getExpressionType(Node node) {
-        // XXX See also JsTypeAnalyzer.expressionType
-        String type;
-        switch (node.getType()) {
-        case Token.FALSE:
-        case Token.TRUE:
-        case Token.NE:
-        case Token.EQ:
-        case Token.LT:
-        case Token.GT:
-        case Token.LE:
-        case Token.GE:
-        case Token.AND:
-        case Token.OR:
-        case Token.NOT:
-            type = "Boolean"; // NOI18N
-            break;
-        case Token.NUMBER:
-            type = "Number"; // NOI18N
-            break;
-        case Token.STRING:
-            if ("undefined".equals(node.getString())) {
-                type = Node.UNKNOWN_TYPE;
-            } else {
-                type = "String"; // NOI18N
-            }
-            break;
-        case Token.REGEXP:
-            type = "RegExp"; // NOI18N
-            break;
-        case Token.ARRAYLIT:
-            // TODO - iterate over the children to see if I can compute
-            // the type of the children, e.g. Array<Number> for something
-            // like  [0,1,2]
-            type = "Array"; // NOI18N
-            break;
-        case Token.FUNCTION:
-            type = "Function"; // NOI18N
-            break;
-        case Token.UNDEFINED:
-            type = "Undefined";
-            break;
-        case Token.VOID:
-            type = "void"; // NOI18N
-            break;
-        case Token.NEW: {
-            Node first = AstUtilities.getFirstChild(node);
-            if (first != null) {
-                type = AstUtilities.getJoinedName(first);
-            } else {
-                type = Node.UNKNOWN_TYPE;
-            }
-            break;
-        }
-        case Token.GETPROP: {
-            type = AstUtilities.getJoinedName(node);
-            int dot = type.lastIndexOf('.');
-            if (dot != -1) {
-                // "foo.bar" is not a type, but "Foo.Bar" is, as is "foo"
-                // (because many "classes" like jMaki start with a lowercase
-                // letter so I can't just filter on these.)
-                if (!Character.isUpperCase(type.charAt(dot+1))) {
-                    type = null;
-                }
-            }
-            break;
-        }
-        default:
-            type = Node.UNKNOWN_TYPE;
-        }
-        return type;
-    }
-    
-    public static String getSurroundingWith(Node node) {
-        Node n = node;
-        for (; n != null; n = n.getParentNode()) {
-            int t = n.getType();
-            if (t == Token.FUNCTION) {
-                break;
-            }
-            if (t == Token.WITH) {
-                // Find enterwith node
-                Node p = n.getParentNode().getFirstChild();
-                while (p != null && p.getNext() != n) {
-                    p = p.getNext();
-                }
-                if (p != null && p.getType() == Token.ENTERWITH && p.getFirstChild() != null) {
-                    String in = AstUtilities.getJoinedName(p.getFirstChild());
-                    if (in != null && in.length() > 0) {
-                        return in;
-                    }
-                }
-
-                break;
-            }
-        }
-        
         return null;
     }
 }

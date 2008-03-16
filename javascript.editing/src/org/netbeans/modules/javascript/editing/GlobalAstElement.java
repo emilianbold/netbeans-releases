@@ -66,23 +66,61 @@ public class GlobalAstElement extends AstElement {
         return Character.isUpperCase(getName().charAt(0)) ? 
             ElementKind.CLASS : ElementKind.GLOBAL;
     }
-
-    @Override
+    
     public String getType() {
-        if (type == null) {
-            type = node.nodeType;
-            if (type == null) {
-                Node first = node.getFirstChild();
-                if (first != null && first.getType() == Token.NEW) {
-                    type = AstUtilities.getExpressionType(first);
-                }
-            }
-            
-            if ("Object".equals(type)) { // NOI18N
-                type = Node.UNKNOWN_TYPE;
+        Node first = node.getFirstChild();
+        if (first != null && first.getType() == Token.NEW) {
+            return expressionType(first);
+        }
+        return null;
+    }
+    
+    /** Called on AsgnNodes to compute RHS
+     * See also JsAnalyzer.expressionType!
+     */
+    private String expressionType(Node node) {
+        switch (node.getType()) {
+        case Token.NUMBER:
+            return "Number";
+        case Token.STRING:
+            return "String";
+        case Token.REGEXP:
+            return "RegExp";
+        case Token.TRUE:
+        case Token.FALSE:
+            return "Boolean";
+        case Token.ARRAYLIT:
+            return "Array";
+        case Token.FUNCTION:
+            return "Function";
+        case Token.NEW: {
+            Node first = AstUtilities.getFirstChild(node);
+            if (first.getType() == Token.NAME) {
+                return first.getString();
+            } else {
+                return expressionType(first);
             }
         }
-        
-        return type;
+        //        case Token.NAME: {
+        //            String name = node.getString();
+        //            return types.get(name);
+        //        }
+        case Token.GETPROP: {
+            Node first = AstUtilities.getFirstChild(node);
+            String secondStr = AstUtilities.getSecondChild(node).getString();
+            if (first.getType() == Token.NAME) {
+               return first.getString()+"."+secondStr; // NOI18N
+            } else {
+                String lhsType = expressionType(first);
+                if (lhsType != null) {
+                    return lhsType+"."+secondStr; // NOI18N
+                } else {
+                    return null;
+                }
+            }
+        }
+        default:
+            return null;
+        }
     }
 }
