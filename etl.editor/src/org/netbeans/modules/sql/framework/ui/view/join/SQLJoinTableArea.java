@@ -54,7 +54,7 @@ import org.openide.NotifyDescriptor;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -62,7 +62,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class SQLJoinTableArea extends SQLSourceTableArea {
 
-    private static transient final Logger mLogger = Logger.getLogger(SQLJoinTableArea.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinTableArea.class.getName());
     
     private static transient final Localizer mLoc = Localizer.get();
     /** Creates a new instance of SQLJoinTableArea
@@ -85,16 +85,16 @@ public class SQLJoinTableArea extends SQLSourceTableArea {
             SQLJoinView joinView = (SQLJoinView) joinViewNode.getDataObject();
 
             if (joinView.getSourceTables().size() <= 2) {
-                String nbBundle1 = mLoc.t("BUND475: Cannot remove table {0} from join view.A join view always requires at least two tables.",sTable.getName());
-                NotifyDescriptor d = new NotifyDescriptor.Message(nbBundle1.substring(15), NotifyDescriptor.INFORMATION_MESSAGE);
+                String nbBundle1 = mLoc.t("PRSR001: Cannot remove table {0} from join view.A join view always requires at least two tables.",sTable.getName());
+                NotifyDescriptor d = new NotifyDescriptor.Message(Localizer.parse(nbBundle1), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
             }
 
             try {
                 if (joinViewNode.isTableColumnMapped(sTable)) {
-                    String nbBundle2 = mLoc.t("BUND476: Table {0} has some mappings defined which will be lost.Do you really want to remove this table?",sTable.getName());
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(nbBundle2.substring(15), NotifyDescriptor.WARNING_MESSAGE);
+                    String nbBundle2 = mLoc.t("PRSR001: Table {0} has some mappings defined which will be lost.Do you really want to remove this table?",sTable.getName());
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(Localizer.parse(nbBundle2), NotifyDescriptor.WARNING_MESSAGE);
                     Object response = DialogDisplayer.getDefault().notify(d);
                     if (response.equals(NotifyDescriptor.OK_OPTION)) {
                         joinViewNode.removeTable(sTable);

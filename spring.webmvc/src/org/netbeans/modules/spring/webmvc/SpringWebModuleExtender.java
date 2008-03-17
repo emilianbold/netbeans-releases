@@ -53,10 +53,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +66,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -92,9 +89,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -289,14 +283,14 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject jsp = webInf.createFolder("jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
-            DataFolder webInfDO = DataFolder.findFolder(webInf);
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
+            copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
-            configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
+            configFile = copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet"); // NOI18N
+            configFile = copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml")); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
 
@@ -339,17 +333,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
         public Set<FileObject> getFilesToOpen() {
             return filesToOpen;
-        }
-
-        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
-            FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
-            DataObject templateDO = DataObject.find(templateFO);
-            Map<String, Object> values = new HashMap<String, Object>();
-            // This is needed, because all XML files have a virtual charset that
-            // detects the encoding of the file, and createFromTemplate() uses the
-            // name of that charset (ALWAYS "UTF-8") as the encoding value.
-            values.put("encoding", FileEncodingQuery.getEncoding(targetDO.getPrimaryFile()).name()); // NOI18N
-            return templateDO.createFromTemplate(targetDO, fileName, values).getPrimaryFile();
         }
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {

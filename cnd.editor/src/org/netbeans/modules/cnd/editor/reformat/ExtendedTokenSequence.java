@@ -285,21 +285,19 @@ public class ExtendedTokenSequence {
                     }
                 }
                 CppTokenId id = ts.token().id();
-                switch (id){
-                    case BLOCK_COMMENT:
-                    case DOXYGEN_COMMENT:
-                        if (ts.token().text().toString().indexOf('\n')>=0) {
+                if (id == NEW_LINE){
+                    return true;
+                } else if ( id == LINE_COMMENT){
+                    // skip
+                } else if (ts.token().id() != WHITESPACE){
+                    return false;
+                }
+                if (diff != null){
+                    if (diff.after != null){
+                        if (diff.after.hasNewLine()) {
                             return true;
                         }
-                        break;
-                    case ESCAPED_WHITESPACE:
-                    case NEW_LINE:
-                    case LINE_COMMENT:
-                        return true;
-                    case WHITESPACE:
-                        break;
-                    default:
-                        return false;
+                    }
                 }
             }
         } finally {

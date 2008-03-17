@@ -16,23 +16,27 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.impl.references;
 
 import org.netbeans.modules.bpel.model.api.references.Reference;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.bpel.model.api.references.MappedReference;
 
 /**
  * @author ads
+ *
  */
-public abstract class AbstractNamedComponentReference<T extends NamedReferenceable> extends
+abstract class AbstractNamedComponentReference<T extends NamedReferenceable> extends
         org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference<T>
         implements Reference<T>, MappedReference
 {
 
-    public AbstractNamedComponentReference( T referenced, Class<T> referencedType, 
+    AbstractNamedComponentReference( T referenced, Class<T> referencedType, 
             AbstractDocumentComponent parent )
     {
         super(referenced ,referencedType, parent);
@@ -41,7 +45,7 @@ public abstract class AbstractNamedComponentReference<T extends NamedReferenceab
         }
     }
 
-    public AbstractNamedComponentReference( Class<T> referencedType, 
+    AbstractNamedComponentReference( Class<T> referencedType, 
             AbstractDocumentComponent parent, String ref )
     {
         super(referencedType, parent , ref);
@@ -87,7 +91,7 @@ public abstract class AbstractNamedComponentReference<T extends NamedReferenceab
         isResolved = true;
     }
     
-    public AbstractDocumentComponent getParent(){
+    protected AbstractDocumentComponent getParent(){
         return super.getParent();
     }
     
@@ -99,5 +103,8 @@ public abstract class AbstractNamedComponentReference<T extends NamedReferenceab
     }
     
     private boolean isResolved;
+    
     private Attribute myAttribute;
+
+
 }

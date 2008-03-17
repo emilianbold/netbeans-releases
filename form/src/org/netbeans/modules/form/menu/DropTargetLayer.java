@@ -211,8 +211,7 @@ class DropTargetLayer extends JComponent {
         //JComponent selected = null;//canvas.getSelectedComponent();
         for(RADComponent rad : canvas.getSelectedRADComponents()) {
             if(rad != null) {
-                Object o = canvas.formDesigner.getComponent(rad);
-                JComponent selected = (o instanceof JComponent) ? (JComponent)o : null;
+                JComponent selected = (JComponent) canvas.formDesigner.getComponent(rad);
                 drawSelectedComponent(g2, selected, rad);
             }
         }

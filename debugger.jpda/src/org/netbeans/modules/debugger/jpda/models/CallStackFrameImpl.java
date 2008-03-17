@@ -286,9 +286,6 @@ public class CallStackFrameImpl implements CallStackFrame {
         try {
             String className = getStackFrame ().location ().declaringType ().name ();
             com.sun.jdi.LocalVariable lv = getStackFrame ().visibleVariableByName(name);
-            if (lv == null) {
-                return null;
-            }
             Value v = getStackFrame ().getValue (lv);
             LocalVariable local = (LocalVariable) debugger.getLocalVariable(lv, v);
             if (local instanceof Local) {

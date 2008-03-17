@@ -9,7 +9,7 @@
     <grammars/>
     <resources base="http://local.yahooapis.com/MapsService/V1">	
                 <resource path="trafficData">
-            <method name="GET" id="trafficData">
+            <method name="GET" id="yahoo.trafficData">
                 <doc xml:lang="en">The Yahoo Traffic Service method, trafficData, provides parameters
                     that support getting traffic information for a location based on 
                     street name, city, state, zip code, or a combination of latitude and longitude. You  

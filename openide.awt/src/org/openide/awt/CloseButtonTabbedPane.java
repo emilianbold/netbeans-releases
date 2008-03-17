@@ -300,9 +300,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (pressedCloseButtonIndex >= 0
         && pressedCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(pressedCloseButtonIndex);
-            if (r != null) {
-                repaint(r.x, r.y, r.width + 2, r.height + 2);
-            }
+            repaint(r.x, r.y, r.width + 2, r.height + 2);
 
             JComponent c = _getJComponentAt(pressedCloseButtonIndex);
             if( c != null )
@@ -314,9 +312,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (pressedCloseButtonIndex >= 0
         && pressedCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(pressedCloseButtonIndex);
-            if (r != null) {
-                repaint(r.x, r.y, r.width + 2, r.height + 2);
-            }
+            repaint(r.x, r.y, r.width + 2, r.height + 2);
             setMouseOverCloseButtonIndex(-1);
             setToolTipTextAt(pressedCloseButtonIndex, null);
         }
@@ -329,9 +325,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (mouseOverCloseButtonIndex >= 0
         && mouseOverCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(mouseOverCloseButtonIndex);
-            if (r != null) {
-                repaint(r.x, r.y, r.width + 2, r.height + 2);
-            }
+            repaint(r.x, r.y, r.width + 2, r.height + 2);
             JComponent c = _getJComponentAt(mouseOverCloseButtonIndex);
             if( c != null )
                 setToolTipTextAt(mouseOverCloseButtonIndex, c.getToolTipText());
@@ -342,9 +336,7 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         if (mouseOverCloseButtonIndex >= 0
         && mouseOverCloseButtonIndex < getTabCount()) {
             Rectangle r = getCloseButtonBoundsAt(mouseOverCloseButtonIndex);
-            if (r != null) {
-                repaint(r.x, r.y, r.width + 2, r.height + 2);
-            }
+            repaint(r.x, r.y, r.width + 2, r.height + 2);
             setPressedCloseButtonIndex(-1);
             setToolTipTextAt(mouseOverCloseButtonIndex, null);
         }
@@ -402,7 +394,10 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             super.fireStateChanged();
         } catch( ArrayIndexOutOfBoundsException e ) {
             if( Utilities.isMac() ) {
-                //#126651 - JTabbedPane is buggy on Mac OS
+                //JTabbedPane is buggy on Mac OS
+                Exceptions.attachLocalizedMessage(e,
+                    "Suppressed AIOOBE bug in Apple's implementation of JTabbedPane"); //NOI18N
+                Logger.getAnonymousLogger().log(Level.INFO, null, e);
             } else {
                 throw e;
             }

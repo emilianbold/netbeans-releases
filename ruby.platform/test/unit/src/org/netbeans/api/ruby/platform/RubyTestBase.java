@@ -113,7 +113,7 @@ public abstract class RubyTestBase extends NbTestCase {
         FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
         libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
         FileObject interpreter = bin.createData("ruby" + suffix);
-        String[] binaries = { "irb", "gem", "rdoc" };
+        String[] binaries = { "rdoc", "gem" };
         for (String binary : binaries) {
             bin.createData(binary + suffix);
         }

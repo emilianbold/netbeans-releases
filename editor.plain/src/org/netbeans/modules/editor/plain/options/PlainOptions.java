@@ -86,7 +86,4 @@ public class PlainOptions extends BaseOptions {
         }
     }
 
-    protected String getContentType() {
-        return PlainKit.PLAIN_MIME_TYPE;
-    }
 }

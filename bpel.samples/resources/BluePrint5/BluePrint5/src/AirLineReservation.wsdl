@@ -47,31 +47,38 @@
     </types>
     
     <message name="AirlineReservation">
-        <part name="reserveAirlinePart" element="ns:reserve"></part>
+        <part name="reserveAirlinePart"
+              element="ns:reserve"></part>
     </message>
     
     <message name="AirlineReservationStatus">
-        <part name="status" element="ns:reserveStatus"></part>
+        <part name="status"
+              element="ns:reserveStatus"></part>
     </message>
     
     <portType name="AirlineReservationPortType">
         <operation name="reserveAirline">
-            <input name="reserveMesg" message="tns:AirlineReservation"></input>
+            <input name="reserveMesg"
+                   message="tns:AirlineReservation"></input>
         </operation>
     </portType>
     
     <portType name="AirlineStatusPortType">
         <operation name="sendAirlineStatus">
-            <input name="statusMesg" message="tns:AirlineReservationStatus"></input>
+            <input name="statusMesg"
+                   message="tns:AirlineReservationStatus"></input>
         </operation>
     </portType>
     
-    <binding name="AirlineReservationBinding" type="tns:AirlineReservationPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="AirlineReservationBinding"
+             type="tns:AirlineReservationPortType">
+        <soap:binding style="document"
+                      transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveAirline">
             <soap:operation style="document"/>
             <input name="reserveMesg">
-                <soap:body parts="reserveAirlinePart" use="literal"/>
+                <soap:body parts="reserveAirlinePart"
+                           use="literal"/>
             </input>
         </operation>
     </binding>
@@ -83,7 +90,8 @@
         <operation name="sendAirlineStatus">
             <soap:operation style="document"/>
             <input name="statusMesg">
-                <soap:body parts="status" use="literal"/>
+                <soap:body parts="status"
+                           use="literal"/>
             </input>
         </operation>
     </binding>

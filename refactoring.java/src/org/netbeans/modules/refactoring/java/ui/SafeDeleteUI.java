@@ -42,11 +42,10 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -56,6 +55,7 @@ import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -69,9 +69,9 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     
-    private final Object[] elementsToDelete;
-    
     private final SafeDeleteRefactoring refactoring;
+    
+    private Object[] elementsToDelete;
     
     private SafeDeletePanel panel;
     
@@ -99,6 +99,11 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(elementsToDelete));
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));
+    }
+
+    public SafeDeleteUI(NonRecursiveFolder nonRecursiveFolder) {
+        refactoring = new SafeDeleteRefactoring(Lookups.fixed(nonRecursiveFolder));
+        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
     }
     
     /**
@@ -129,6 +134,11 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
 //                return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", 
 //                        ((Resource)elementsToDelete[0]).getName()); // NOI18N
 //        }
+        NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        if (folder != null) {
+            return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDelPkg", folder); // NOI18N
+        }
+        
         return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N
     }
     
@@ -145,7 +155,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
-            panel = new SafeDeletePanel(refactoring, Arrays.asList(elementsToDelete), regulardelete, parent);
+            panel = new SafeDeletePanel(refactoring, regulardelete, parent);
         return panel;
     }
     
@@ -173,17 +183,6 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     
     //Helper methods------------------
     
-    private String getString(String key) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(SafeDeleteUI.class);
-        }
-        return bundle.getString(key);
-    }
-    
-    private String getString(String key, Object value) {
-        return new MessageFormat(getString(key)).format(new Object[] {value});
-    }
-
     public boolean isRefactoringBypassRequired() {
         return panel.isRegularDelete();
     }

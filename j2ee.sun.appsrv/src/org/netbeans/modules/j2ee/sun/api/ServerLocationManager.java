@@ -60,7 +60,6 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 
 public class ServerLocationManager  {
@@ -78,7 +77,7 @@ public class ServerLocationManager  {
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     private static final String JAR_BRIGDES_DEFINITION_LAYER="/J2EE/SunAppServer/Bridge"; //NOI18N
     private static Map serverLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
-
+    
     private static void updatePluginLoader(File platformLocation, ExtendedClassLoader loader) throws Exception{
         try {
             java.io.File f = platformLocation;
@@ -378,38 +377,4 @@ public class ServerLocationManager  {
         }
         return version;
     }
-
-    /**
-     * Does this Sun AppServer install have an update center launcher?
-     * 
-     * @param asInstallRoot appserver install location
-     * @return true if update center launcher was located, false otherwise.
-     */
-    public static boolean hasUpdateCenter(File asInstallRoot) {
-        return getUpdateCenterLauncher(asInstallRoot) != null;
-    }
-    
-    /**
-     * Locate update center launcher within the glassfish installation
-     *   [installRoot]/updatecenter/bin/updatetool[.BAT]
-     * 
-     * @param asInstallRoot appserver install location
-     * @return File reference to launcher, or null if not found.
-     */
-    public static File getUpdateCenterLauncher(File asInstallRoot) {
-        File result = null;
-        if(asInstallRoot != null && asInstallRoot.exists()) {
-            File updateCenterBin = new File(asInstallRoot, "updatecenter/bin"); // NOI18N
-            if(updateCenterBin.exists()) {
-                String launcher = "updatetool"; // NOI18N
-                if(Utilities.isWindows()) {
-                    launcher += ".BAT"; // NOI18N
-                }
-                File launcherPath = new File(updateCenterBin, launcher);
-                result = (launcherPath.exists()) ? launcherPath : null;
-            }
-        }
-        return result;
-    }
-    
 }

@@ -41,8 +41,6 @@ package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,10 +48,8 @@ import javax.xml.bind.JAXBException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
-import org.netbeans.modules.websvc.saas.model.wadl.Include;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.netbeans.modules.websvc.saas.util.Xsd2Java;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -69,9 +65,6 @@ public class WadlSaas extends Saas {
     private Application wadlModel;
     private List<WadlSaasResource> resources;
     private FileObject wadlFile;
-    private List<FileObject> schemaFiles;
-    private List<FileObject> jaxbJars;
-    private List<FileObject> jaxbSourceJars;
     
     public WadlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
@@ -177,15 +170,6 @@ public class WadlSaas extends Saas {
     private void toStateReady() {
         try {
             getWadlModel();
-            setState(State.RETRIEVED);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            setState(State.UNINITIALIZED);
-            return;
-        }
-        
-        try {
-            compileSchemas();
             setState(State.READY);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -227,69 +211,5 @@ public class WadlSaas extends Saas {
         wadlModel = null;
         resources = null;
         toStateReady(false);
-    }
-    
-    private boolean compileSchemas() throws IOException {
-        assert wadlModel != null;
-        jaxbJars = new ArrayList<FileObject>();
-        jaxbSourceJars = new ArrayList<FileObject>();
-        for (FileObject xsdFile : getLocalSchemaFiles()) {
-            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName());
-            if (! xjCompiler.compile()) {
-                return false;
-            }
-            jaxbJars.add(xjCompiler.getJaxbJarFile());
-            jaxbSourceJars.add(xjCompiler.getJaxbSourceJarFile());
-        }
-        
-        return true;
-    }
-    
-    public List<FileObject> getLocalSchemaFiles() throws IOException {
-        if (wadlModel == null) {
-            throw new IllegalStateException("Should transition state to at least RETRIEVED");
-        }
-        FileObject wadlDir = getLocalWadlFile().getParent();
-        schemaFiles = new ArrayList<FileObject>();
-        for (Include include : wadlModel.getGrammars().getInclude()) {
-            String uri = include.getHref();
-            FileObject schemaFile = wadlDir.getFileObject(uri);
-            if (schemaFile == null) {
-                try {
-                    URI xsdUri = new URI(getUrl()).resolve(uri);
-                    String dirPath = SaasUtil.dirOnlyPath(uri);
-                    schemaFile = SaasUtil.saveResourceAsFile(wadlDir, dirPath, xsdUri.getPath());
-                } catch(URISyntaxException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-            schemaFiles.add(schemaFile);
-        }
-        return schemaFiles;
-    }
-
-    public List<FileObject> getLibraryJars() {
-        List<FileObject> result = new ArrayList(super.getLibraryJars());
-        if (jaxbJars == null) {
-            try {
-                compileSchemas();
-                result.addAll(jaxbJars);
-            } catch(IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return result;
-    }
-    
-    public List<FileObject> getJaxbSourceJars() {
-        if (jaxbSourceJars == null) {
-            try {
-                compileSchemas();
-                return Collections.unmodifiableList(jaxbSourceJars);
-            } catch(IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return Collections.emptyList();
     }
 }

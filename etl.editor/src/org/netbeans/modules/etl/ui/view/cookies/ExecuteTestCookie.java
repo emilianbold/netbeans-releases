@@ -69,7 +69,7 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Encapsulates access control and execution of test eTL process on a selected
@@ -87,7 +87,7 @@ public class ExecuteTestCookie implements Node.Cookie {
     private SQLLogView logView;
     private long startTime;
     private long endTime;
-    private static transient final Logger mLogger = Logger.getLogger(ExecuteTestCookie.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ExecuteTestCookie.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -143,29 +143,29 @@ public class ExecuteTestCookie implements Node.Cookie {
                 logView.appendToView(errMsg + NL);
             }
 
-            String nbBundle1 = mLoc.t("BUND003: Execution started.");
-            logView.appendToView(nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Execution started.");
+            logView.appendToView(Localizer.parse(nbBundle1));
 
             startTime = System.currentTimeMillis();
             RunEngineWorkerThread runEThread = new RunEngineWorkerThread(execModel);
             DataObjectHelper.setWaitCursor();
             
-            String nbBundle2 = mLoc.t("BUND004: Executing");
-            String title = nbBundle2.substring(15);
-            String nbBundle3 = mLoc.t("BUND005: Executing, please wait...");
-            String msg = nbBundle3.substring(15);
+            String nbBundle2 = mLoc.t("PRSR001: Executing");
+            String title = Localizer.parse(nbBundle2);
+            String nbBundle3 = mLoc.t("PRSR001: Executing, please wait...");
+            String msg = Localizer.parse(nbBundle3);
             UIUtil.startProgressDialog(title, msg);
             runEThread.start();
         } catch (Exception e) {
-            String nbBundle4 = mLoc.t("BUND006: Execution failed:{0}",e.getMessage());
-            String msg = nbBundle4.substring(15);
+            String nbBundle4 = mLoc.t("PRSR001: Execution failed:{0}",e.getMessage());
+            String msg = Localizer.parse(nbBundle4);
             // Ensure progress bar dialog box is removed from display even if listener
             // never gets the message that engine is done.
             SwingUtilities.invokeLater(new CloseProgressBarTask());
 
             logView.appendToView(msg);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-            mLogger.errorNoloc(mLoc.t("EDIT011: Problem in executing engine."), e);
+            mLogger.errorNoloc(mLoc.t("PRSR011: Problem in executing engine."), e);
         }
     }
 
@@ -185,19 +185,19 @@ public class ExecuteTestCookie implements Node.Cookie {
          */
         public synchronized void executionPerformed(ETLEngineExecEvent event) {
             if ((event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) || (event.getStatus() == ETLEngine.STATUS_COLLAB_EXCEPTION)) {
-                mLogger.infoNoloc(mLoc.t("EDIT012: eTL engine execution completed..."));
+                mLogger.infoNoloc(mLoc.t("PRSR012: eTL engine execution completed..."));
                 // Ensure GUI change occurs in the event-dispatch thread.
                 SwingUtilities.invokeLater(new CloseProgressBarTask());
                 try {
                     endTime = System.currentTimeMillis();
                     StringBuilder msgBuf = new StringBuilder(100);
-                    String nbBundle5 = mLoc.t("BUND007: Execution completed successfully.{0}",NL);
-                    String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ? nbBundle5.substring(15) : "MSG_executed_errors"; // No I18N
-                    String nbBundle11 = mLoc.t("BUND008: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}");
-                    String nbBundle20 = mLoc.t("BUND009: {0}",msg);
-                    msgBuf.append(nbBundle20.substring(15));
-                    String nbBundle6 = mLoc.t("BUND010: Execution time: {0}.{1} seconds.{2}",new Long((endTime - startTime) / 1000),new Long((endTime - startTime) % 1000),NL);
-                    msgBuf.append(nbBundle6.substring(15));
+                    String nbBundle5 = mLoc.t("PRSR001: Execution completed successfully.{0}",NL);
+                    String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ? Localizer.parse(nbBundle5) : "MSG_executed_errors"; // No I18N
+                    String nbBundle11 = mLoc.t("PRSR001: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}");
+                    String nbBundle20 = mLoc.t("PRSR001: {0}",msg);
+                    msgBuf.append(Localizer.parse(nbBundle20));
+                    String nbBundle6 = mLoc.t("PRSR001: Execution time: {0}.{1} seconds.{2}",new Long((endTime - startTime) / 1000),new Long((endTime - startTime) % 1000),NL);
+                    msgBuf.append(Localizer.parse(nbBundle6));
                     logView.appendToView(msgBuf.toString());
                     if (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) {
                         int rowsProcessed = 0;
@@ -209,7 +209,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msgBuf.toString(), NotifyDescriptor.INFORMATION_MESSAGE));
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT013: Problem while handling ETLEngineExecEvent for current execution."), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR013: Problem while handling ETLEngineExecEvent for current execution."), ex);
                 } finally {
                     // Ensure dialog box is removed from display - should be harmless if called twice.
                     SwingUtilities.invokeLater(new CloseProgressBarTask());
@@ -221,10 +221,10 @@ public class ExecuteTestCookie implements Node.Cookie {
 
         public void updateOutputMessage(ETLEngineLogEvent evt) {
             if (evt != null && logView != null) {
-                String nbBundle7 = mLoc.t("BUND011: {0}: {1}",evt.getSourceName(),evt.getLogMessage());
-                String msg = nbBundle7.substring(15);
+                String nbBundle7 = mLoc.t("PRSR001: {0}: {1}",evt.getSourceName(),evt.getLogMessage());
+                String msg = Localizer.parse(nbBundle7);
                 logView.appendToView(msg);
-                mLogger.infoNoloc(mLoc.t("EDIT014: evt.getLogLevel(){0}", msg));
+                mLogger.infoNoloc(mLoc.t("PRSR014: evt.getLogLevel(){0}", msg));
             }
         }
     }
@@ -263,7 +263,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                     }
                     throwableList = engine.getContext().getThrowableList();
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("EDIT015: Exception: "), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR015: Exception: "), ex);
                     throwableList.add(ex);
                 } finally {
                     Thread.currentThread().setContextClassLoader(origLoader);
@@ -271,8 +271,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                 }
             } else {
                 throwableList.add(new BaseException("No eTL collaboration model to execute"));
-                String nbBundle8 = mLoc.t("BUND012: Execution failed: ");
-                logView.appendToView(nbBundle8.substring(15));
+                String nbBundle8 = mLoc.t("PRSR001: Execution failed: ");
+                logView.appendToView(Localizer.parse(nbBundle8));
             }
 
             return "";
@@ -292,16 +292,16 @@ public class ExecuteTestCookie implements Node.Cookie {
                     Throwable t = (Throwable) iter.next();
                     String detailMsg = t.getMessage();
                     if (StringUtil.isNullString(detailMsg)) {
-                        String nbBundle9 = mLoc.t("BUND013: Execution with unknown error.  Please review messages.log under netbeans user home directory for more details. completed with unknown error.  Please review messages.log under netbeans user home directory for more details.");
-                        detailMsg = nbBundle9.substring(15);
+                        String nbBundle9 = mLoc.t("PRSR001: Execution with unknown error.  Please review messages.log under netbeans user home directory for more details. completed with unknown error.  Please review messages.log under netbeans user home directory for more details.");
+                        detailMsg = Localizer.parse(nbBundle9);
                     }
 
                     detailMsg.trim();
                     msgBuf.append(iter.nextIndex()).append(". ").append(detailMsg).append(NL);
                 }
 
-                String nbBundle10 = mLoc.t("BUND008: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}",new Integer(throwableList.size()),msgBuf.toString());
-                String msg = nbBundle10.substring(15);
+                String nbBundle10 = mLoc.t("PRSR001: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}",new Integer(throwableList.size()),msgBuf.toString());
+                String msg = Localizer.parse(nbBundle10);
                 logView.appendToView(msg);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
             }
@@ -316,10 +316,10 @@ public class ExecuteTestCookie implements Node.Cookie {
         private void writeToAppLog(List throwables) {
             if (throwables.size() != 0) {
                 ListIterator iter = throwables.listIterator();
-                mLogger.infoNoloc(mLoc.t("EDIT016: Exceptions caught during engine execution:{0}", logCategory));
+                mLogger.infoNoloc(mLoc.t("PRSR016: Exceptions caught during engine execution:{0}", logCategory));
                 while (iter.hasNext()) {
                     Throwable t = (Throwable) iter.next();
-                    mLogger.errorNoloc(mLoc.t("EDIT017: > Exception{0}", Integer.toString(iter.nextIndex())), t);
+                    mLogger.errorNoloc(mLoc.t("PRSR017: > Exception{0}", Integer.toString(iter.nextIndex())), t);
                 }
             }
         }
@@ -342,7 +342,7 @@ public class ExecuteTestCookie implements Node.Cookie {
                 File workingFolder = new File(ETLScriptBuilderModel.ETL_DESIGN_WORK_FOLDER);
                 deleteFile(workingFolder);
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT018: Error deleting working folder.{0}", logCategory), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR018: Error deleting working folder.{0}", logCategory), ex);
             }
         }
     }

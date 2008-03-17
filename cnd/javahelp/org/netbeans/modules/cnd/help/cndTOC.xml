@@ -17,11 +17,8 @@
 			<tocitem text="Configuring C and C++ Build Tools" target="ConfiguringBuildTools" />
 			<tocitem text="Configuring C and C++ Project Settings" target="Configuring" />
 			<tocitem text="Configuring C and C++ Parsing Settings" target="ConfiguringParsingSettings" />
-			<tocitem text="Configuring C and C++ Code Style" target="CofiguringCodeStyle" />
-			<tocitem text="Configuring C and C++ Semantic Highlighting" target="ConfiguringSemanticHighlighting" />
-			<tocitem text="Configuring C and C++ File Extensions" target="ConfiguringFileExtensions" />
 			<tocitem text="Configuring Code Assistance" target="CodeAssistance" />
-			<tocitem text="Deleting a C or C++ Project" target="DeletingCorC++Project" />
+			<tocitem text="Deleting  a C or C++ Project" target="DeletingCorC++Project" />
 			<tocitem text="Moving, Copying, or Renaming a C or C++ Project" target="MovingCorC++Project" />
 			<tocitem text="Creating a Makefile" target="CreatingMakefile" />
 			<tocitem text="Setting Project Properties" target="SettingProjectProperties" />
@@ -60,8 +57,6 @@
 				<tocitem text="Going to a Type" target="GoToType" />
 				<tocitem text="Using the Classes Window" target="UsingClassView" />
 				<tocitem text="Using the Navigator Window" target="UsingNavigator" />
-				<tocitem text="Finding Class, Method, and Field Usages" target="FindingUsages" />
-				<tocitem text="Usages Window" target="UsagesWindow" />
 				<tocitem text="Using the Type Hierarchy Window" target="TypeView" />
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
 				<tocitem text="Folding Blocks of Code" target="CandC++CodeFolding" />
@@ -82,9 +77,7 @@
 					<tocitem text="Starting a Local C or C++ Debugging Session" target="StartingLocalDebuggingSession" />
 					<tocitem text="SteppingThrough Your C or C++ Program" target="SteppingThroughCorC++" />
 					<tocitem text="Finishing a C or C++ Debugging Session" target="FinishingCorC++DebugSession" />
-					<tocitem text="Attaching the Debugger to a Running Process" target="Attaching" />
 				</tocitem>
-				<tocitem text="Debugging Threads" target="Threads" />
 				<tocitem text="Viewing C and C++ Program Information">
 					<tocitem text="C and C++ Variables and Expressions in the IDE" />
 					<tocitem text="Using the C or C++ Call Stack" target="UsingCorC++CallStack" />

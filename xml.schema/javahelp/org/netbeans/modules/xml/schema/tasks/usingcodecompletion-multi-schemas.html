@@ -6,12 +6,12 @@
 <html>
 <head>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<title>Using Code Completion in XML Documents Constrained by Multiple XML Schemas</title>
+<title>Using Code Completion in XML Instance Documents Constrained by Multiple XML Schema Files</title>
 </head>
 <body>
-<h2>Using Code Completion in XML Documents Constrained by Multiple XML Schemas</h2>
+<h2>Using Code Completion in XML Instance Documents Constrained by Multiple XML Schema Files</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You can constrain an XML instance document by more than one schema file if at least one of the schema files has an <tt>xsd:any</tt> or an <tt>xsd:anyAttribute</tt>, known as wildcards. When using these wildcards, the IDE will limit the information in the code completion box by namespace. Both <tt>xsd:any</tt> and <tt>xsd:anyAttribute</tt> come with an optional <tt>namespace</tt> attribute. The following table shows how the IDE substitutes wildcards based on the <tt>namespace</tt> attribute value.</p>
+<p>You can constrain an XML instance document by more than one schema file if at least one of the schema files has a <tt>xsd:any</tt> or a <tt>xsd:anyAttribute</tt>, known as wildcards. When using these wildcards, the IDE will limit the information in the code completion box by namespace. Both <tt>xsd:any</tt> and <tt>xsd:anyAttribute</tt> come with an optional <tt>namespace</tt> attribute. The following table shows how the IDE substitutes wildcards based on the <tt>namespace</tt> attribute value.</p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tr valign="top">
 <th align="left"><tt>namespace</tt> value</th>
@@ -48,7 +48,7 @@
   &lt; <i>(current cursor position)</i>
 &lt;/a:RootA&gt;
 </pre>
-<p>In this example, <tt>RootA</tt> is one of the root elements defined in the schema <tt>A.xsd</tt>. If <tt>RootA</tt> had a <tt>xsd:any</tt> child element, then at the cursor position you would see items appearing from various namespaces as per substitution rule shown in the table above. The same applies for <tt>xsd:anyAttribute</tt>.</p>
+<p>In this example, <tt>RootA</tt> is one of the root elements defined in schema <tt>A.xsd</tt>. If <tt>RootA</tt> had a <tt>xsd:any</tt> child element, then at the cursor position you would see items appearing from various namespaces as per substitution rule shown in the table above. The same applies for <tt>xsd:anyAttribute</tt>.</p>
 <h3>Rules and Restrictions</h3>
 <ul>
 <li><b>Definition of <tt>xsd:any</tt> or <tt>xsd:anyAttribute</tt>.</b><br>

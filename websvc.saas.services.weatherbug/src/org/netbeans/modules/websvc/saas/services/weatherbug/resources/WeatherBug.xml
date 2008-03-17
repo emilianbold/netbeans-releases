@@ -47,12 +47,12 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://weather.weatherbug.com/corporate/products/API/help.aspx"
+               api-doc="http://www.weatherbug.com/howto/api/APIOverview.htm"
                url="org/netbeans/modules/websvc/saas/services/weatherbug/resources/WeatherBugWadl.xml">
 
-    <description>Weather Report Service</description>
+    <description>WeatherBug Service</description>
     
-    <display-name>Weather Report Service</display-name>
+    <display-name>WeatherBug</display-name>
 
     <saas-metadata>
 
@@ -67,9 +67,8 @@
 
     </saas-metadata>
 
-    <!--
     <methods>
         <method name="liveWeatherRSS" href="#WeatherBug.LiveWeatherRSS"/>
     </methods>
-    -->
+
 </saas-services>

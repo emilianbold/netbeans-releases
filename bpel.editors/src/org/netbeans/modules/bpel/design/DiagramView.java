@@ -96,19 +96,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
        // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
 
-     @Override
-    public void print(Graphics g) {
-        designView.setPrintMode(true);
-        super.print(g);
-        designView.setPrintMode(false);
-    }
-    
-    
-    @Override
-    protected void printComponent(Graphics g) {
-        paintContent(g, getDesignView().getCorrectedZoom(), true);
-    }
-    
+   
     private void paintContent(Graphics g, double zoom, boolean printMode) {
 
         Pattern root = getDesignView().getModel().getRootPattern();
@@ -260,9 +248,6 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
 
     public Point convertPointToParent(FPoint point) {
         Point result = convertDiagramToScreen(point);
-        if (designView.getPrintMode()) {
-            return result;
-        }
         Component c = this;
         while (c != getDesignView()) {
             result.x += c.getX();
@@ -275,9 +260,6 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     public FPoint convertPointFromParent(Point point) {
         Component c = this;
         Point result = new Point(point);
-        if (designView.getPrintMode()) {
-            return this.convertScreenToDiagram(result);
-        }
         while (c != getDesignView()) {
             result.x -= c.getX();
             result.y -= c.getY();
@@ -285,6 +267,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         }
 
         return this.convertScreenToDiagram(result);
+
     }
 
     public Insets getAutoscrollInsets() {

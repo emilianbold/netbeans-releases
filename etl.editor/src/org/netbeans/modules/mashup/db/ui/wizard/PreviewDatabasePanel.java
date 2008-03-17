@@ -59,6 +59,7 @@ import org.openide.WizardDescriptor;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -72,7 +73,7 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
         ActionListener, WizardDescriptor.FinishablePanel {
     
     private PreviewDatabaseVisualPanel component;
-    private static transient final Logger mLogger = Logger.getLogger(PreviewDatabasePanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(PreviewDatabasePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** Creates a new instance of PreviewDatabasePanel */
     public PreviewDatabasePanel() {
@@ -103,8 +104,8 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
     }
     
     public String getStepLabel() {
-        String nbBundle1 = mLoc.t("BUND226: Preview Flat File Database Definition");
-        return nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Preview Flat File Database Definition");
+        return Localizer.parse(nbBundle1);
     }
     
     public String getTitle() {

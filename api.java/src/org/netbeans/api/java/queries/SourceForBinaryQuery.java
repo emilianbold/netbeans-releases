@@ -43,20 +43,13 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.java.queries.SFBQImpl2Result;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
-import org.openide.util.Parameters;
-import org.openide.util.WeakListeners;
 
 /**
  * The query is used for finding sources for binaries.
@@ -85,7 +78,13 @@ public class SourceForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findSourceRoots (URL binaryRoot) {
-        checkPreconditions (binaryRoot);
+        if (FileUtil.isArchiveFile(binaryRoot)) {
+            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
+                "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
+        }
+        if (!binaryRoot.toExternalForm().endsWith("/")) {
+            throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
+        }
         for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result result = impl.findSourceRoots(binaryRoot);
             if (result != null) {
@@ -97,54 +96,6 @@ public class SourceForBinaryQuery {
         }
         LOG.log(Level.FINE, "findSourceRoots({0}) -> nil", binaryRoot);
         return EMPTY_RESULT;
-    }
-    
-    /**
-     * Returns the source root for given binary root (for example, src folder for jar file or build folder).
-     * In addition to the original {@link SourceForBinaryQuery#findSourceRoots(java.net.URL)} it provides 
-     * information if the source root(s) should be preferred over the binaries used by the java infrastructure.
-     * Most of the clients don't need this information, so thay can use the original
-     * {@link SourceForBinaryQuery#findSourceRoots(java.net.URL)} method.
-     * @param binaryRoot the ClassPath root of compiled files.
-     * @return a result object encapsulating the answer (never null)
-     * @since 1.15
-     */
-    public static Result2 findSourceRoots2 (URL binaryRoot) {
-        checkPreconditions (binaryRoot);
-        for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
-            Result2 result = null;
-            if (impl instanceof SourceForBinaryQueryImplementation2) {
-                SourceForBinaryQueryImplementation2.Result _result = ((SourceForBinaryQueryImplementation2)impl).findSourceRoots2(binaryRoot);
-                if (_result != null) {                    
-                    result = new Result2(_result);
-                }
-            }
-            else {
-                Result _result = impl.findSourceRoots(binaryRoot);
-                if (_result != null) {
-                    result = new Result2(new SFBQImpl2Result(_result));
-                }
-            }
-            if (result != null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "findSourceRoots2({0}) -> {1} from {2}", new Object[] {binaryRoot, Arrays.asList(result.getRoots()), impl});
-                }
-                return result;
-            }
-        }
-        LOG.log(Level.FINE, "findSourceRoots2({0}) -> nil", binaryRoot);
-        return EMPTY_RESULT2;
-        
-    }
-    
-    private static void checkPreconditions (final URL binaryRoot) {
-        if (FileUtil.isArchiveFile(binaryRoot)) {
-            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
-                "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
-        }
-        if (!binaryRoot.toExternalForm().endsWith("/")) {
-            throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
-        }
     }
     
     /**
@@ -173,65 +124,7 @@ public class SourceForBinaryQuery {
         
     }
     
-    /**
-     * Result of finding sources, encapsulating the answer as well as the
-     * ability to listen to it.
-     * In addition to the Result it provides information if the source root(s)
-     * should be preferred over the binaries used by the java infrastructure.
-     * Most of the clients don't need this information, so thay can use the
-     * original {@link Result}.
-     * @since 1.15
-     */
-    public static class Result2 implements Result {
-        
-        SourceForBinaryQueryImplementation2.Result delegate;
-        //@GuardedBy(this)
-        private ChangeListener spiListener;
-        private final ChangeSupport changeSupport;
-        
-        private Result2 (final  SourceForBinaryQueryImplementation2.Result result) {
-            assert result != null;
-            this.delegate = result;
-            this.changeSupport = new ChangeSupport(this);
-        }
-
-        public FileObject[] getRoots() {
-            return this.delegate.getRoots();
-        }
-
-        public void addChangeListener(ChangeListener l) {
-            Parameters.notNull("l", l);     //NOI18N
-            synchronized (this) {
-                if (this.spiListener == null) {
-                    this.spiListener = new ChangeListener() {
-                        public void stateChanged(ChangeEvent e) {
-                            changeSupport.fireChange();
-                        }
-                    };
-                    this.delegate.addChangeListener(WeakListeners.change(this.spiListener, this.delegate));
-                }
-            }
-            this.changeSupport.addChangeListener(l);
-        }
-
-        public void removeChangeListener(ChangeListener l) {
-            Parameters.notNull("l", l);
-            this.changeSupport.removeChangeListener(l);
-        }
-
-        /**
-         * This method is used by the java infrastructure to find out whether the
-         * sources should be preferred over the binaries.
-         * @see SourceForBinaryQueryImplementation2
-         * @return true if sources should be used by the java infrastructure
-         */
-        public boolean preferSources() {
-            return this.delegate.preferSources();
-        }
-    }
-    
     private static final Result EMPTY_RESULT = new EmptyResult();
-    private static final Result2 EMPTY_RESULT2 = new Result2 (new SFBQImpl2Result(EMPTY_RESULT));
     private static final class EmptyResult implements Result {
         private static final FileObject[] NO_ROOTS = new FileObject[0];
         EmptyResult() {}

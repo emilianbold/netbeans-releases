@@ -49,7 +49,7 @@
     <grammars/> 
     <resources base="http://www.youtube.com/">
 	<resource path="api2_rest">
-	    <method name="GET" id="listByTag">
+	    <method name="GET" id="youtube.listByTag">
 		<doc xml:lang="en">
 		    Lists all videos that have the specified tag. 
 		    
@@ -85,7 +85,7 @@
 		<response>
 		</response>
 	    </method>
-	    <method name="GET" id="listFeatured">
+	    <method name="GET" id="youtube.listFeatured">
 		<doc xml:lang="en">
 		    Lists the most recent 25 videos that have been featured on the front page of the YouTube site.
 		    
@@ -108,7 +108,7 @@
 		<response>
 		</response>
 	    </method>
-	    <method name="GET" id="listPopular">
+	    <method name="GET" id="youtube.listPopular">
 		<doc xml:lang="en">
 		    Lists the most popular videos in the specified time range.
                     
@@ -136,7 +136,7 @@
 		<response>
 		</response>
 	    </method>
-	    <method name="GET" id="getDetails">
+	    <method name="GET" id="youtube.getDetails">
 		<doc xml:lang="en">
 		    Displays the details for a video.
 		    

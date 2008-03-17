@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import javax.swing.text.Document;

@@ -9,9 +9,9 @@
 
 package o.n.m.qa.test;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.PUT;
@@ -26,7 +26,7 @@ import javax.ws.rs.Path;
  */
 
 public class ItemResource {
-    @Context
+    @HttpContext
     private UriInfo context;
 
     /** Creates a new instance of ItemResource */
@@ -40,7 +40,7 @@ public class ItemResource {
      */
     @GET
     @ProduceMime("application/xml")
-    public String getXml(@PathParam("name")
+    public String getXml(@UriParam("name")
     String name) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -54,7 +54,7 @@ public class ItemResource {
      */
     @PUT
     @ConsumeMime("application/xml")
-    public void putXml(@PathParam("name")
+    public void putXml(@UriParam("name")
     String name, String content) {
     }
 
@@ -63,7 +63,7 @@ public class ItemResource {
      * @param name resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("name")
+    public void delete(@UriParam("name")
     String name) {
     }
 }

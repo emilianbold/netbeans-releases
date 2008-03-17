@@ -40,6 +40,15 @@ INDENT "{:}"
 INDENT "(:)"
 INDENT "\\s*(((if|while)\\s*\\(|else\\s*|else\\s+if\\s*\\(|for\\s*\\(.*\\))[^{;]*)"
 
+# error highlighting
+MARK:ERROR: {
+    type:"Error";
+    message:"Syntax error.";
+}
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
 
 # code completion
 COMPLETION:keyword, operator, identifier, whitespace: {

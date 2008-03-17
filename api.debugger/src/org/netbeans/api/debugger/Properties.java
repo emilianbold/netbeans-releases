@@ -795,10 +795,6 @@ public abstract class Properties {
         public Object[] getArray (String propertyName, Object[] defaultValue) {
             synchronized(impl) {
                 String arrayType = impl.getProperty (propertyName + ".array_type", null);
-                if (arrayType == null) {
-                    ErrorManager.getDefault().log("Unknown array type for "+propertyName);
-                    return defaultValue;
-                }
                 Properties p = getProperties (propertyName);
                 int l = p.getInt ("length", -1);
                 if (l < 0) return defaultValue;

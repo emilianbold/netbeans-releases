@@ -47,36 +47,47 @@
     </types>
 
     <message name="InventoryMessage">
-        <part name="inventoryPart" element="inv:inventory"></part>
+        <part name="inventoryPart"
+              element="inv:inventory"></part>
     </message>
     
     <message name="inventoryFault">
-        <part name="faultInfo" type="xsd:string"></part>
+        <part name="faultInfo"
+              type="xsd:string"></part>
     </message>
     
     <message name="POMessage">
-        <part name="purchaseOrder" element="po:purchaseOrder"></part>
+        <part name="purchaseOrder"
+              element="po:purchaseOrder"></part>
     </message>
     
     <portType name="inventoryPortType">
         <operation name="inventoryService">
-            <input name="purchaseOrder" message="tns:POMessage"></input>
-            <output name="inventoryStatus" message="tns:InventoryMessage"></output>
-            <fault name="inventoryFaultType" message="tns:inventoryFault"></fault>
+            <input name="purchaseOrder"
+                   message="tns:POMessage"></input>
+            <output name="inventoryStatus"
+                    message="tns:InventoryMessage"></output>
+            <fault name="inventoryFaultType"
+                   message="tns:inventoryFault"></fault>
         </operation>
     </portType>
     
-    <binding name="inventoryBinding" type="tns:inventoryPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="inventoryBinding"
+             type="tns:inventoryPortType">
+        <soap:binding style="document"
+                      transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="inventoryService">
             <input name="purchaseOrder">
-                <soap:body parts="purchaseOrder" use="literal"/>
+                <soap:body parts="purchaseOrder"
+                           use="literal"/>
             </input>
             <output name="inventoryStatus">
-                <soap:body parts="inventoryPart" use="literal"/>
+                <soap:body parts="inventoryPart"
+                           use="literal"/>
             </output>
             <fault name="inventoryFaultType">
-                <soap:fault name="faultInfo" use="literal"/>
+                <soap:fault name="faultInfo"
+                            use="literal"/>
             </fault>
         </operation>
     </binding>

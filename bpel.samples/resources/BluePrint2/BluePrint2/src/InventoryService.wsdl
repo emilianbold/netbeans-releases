@@ -60,13 +60,15 @@
     
     <portType name="inventoryPortType">
         <operation name="inventoryService">
-            <input name="purchaseOrder" message="tns:POMessage"></input>
+            <input name="purchaseOrder"
+                   message="tns:POMessage"></input>
         </operation>
     </portType>
     
     <portType name="inventoryServiceCallbackPortType">
         <operation name="inventoryServiceResponse">
-            <input name="inventoryResponse" message="tns:InventoryMessage"></input>
+            <input name="inventoryResponse"
+                   message="tns:InventoryMessage"></input>
         </operation>
     </portType>
     
@@ -76,7 +78,8 @@
                       transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="inventoryService">
             <input name="purchaseOrder">
-                <soap:body parts="purchaseOrder" use="literal"/>
+                <soap:body parts="purchaseOrder"
+                           use="literal"/>
             </input>
         </operation>
     </binding>
@@ -106,7 +109,8 @@
         </port>
     </service>
     
-    <vprop:property name="orderID" type="xsd:int"/>
+    <vprop:property name="orderID"
+                   type="xsd:int"/>
     
     <vprop:propertyAlias propertyName="tns:orderID"
                         messageType="tns:POMessage"

@@ -170,11 +170,6 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN";
     public static final String SUN_EJBJAR_300_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-0.dtd";  
-
-    public static final String SUN_EJBJAR_301_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD Application Server 9.1.1 EJB 3.0//EN";
-    public static final String SUN_EJBJAR_301_DTD_SYSTEM_ID =
-        "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-1.dtd";
     
     /**
      * Application Client: Sun ONE App Server specific dtd info.

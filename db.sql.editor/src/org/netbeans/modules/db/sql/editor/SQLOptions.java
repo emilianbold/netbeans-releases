@@ -90,8 +90,4 @@ public class SQLOptions extends BaseOptions {
             return super.getString(key);
         }
     }
-
-    protected String getContentType() {
-        return SQLEditorKit.MIME_TYPE;
-    }
 }

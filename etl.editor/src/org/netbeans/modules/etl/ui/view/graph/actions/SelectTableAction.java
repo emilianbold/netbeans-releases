@@ -50,6 +50,7 @@ import javax.swing.KeyStroke;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
@@ -63,23 +64,23 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 public class SelectTableAction extends GraphAction {
 
     private static final URL selTableImgUrl = SelectTableAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/select_tables.png");
-    private static transient final Logger mLogger = Logger.getLogger(SelectTableAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SelectTableAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND033: Select Tables...");
-        this.putValue(Action.NAME, nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Select Tables...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(selTableImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("BUND034: Select Source And Target Tables (Shift-S)");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Select Source And Target Tables (Cntl-S)");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
 
-        // Acceleratot Shift-S
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.SHIFT_DOWN_MASK));
+        // Acceleratot Cntl-S
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK ));
     }
 
     /**
