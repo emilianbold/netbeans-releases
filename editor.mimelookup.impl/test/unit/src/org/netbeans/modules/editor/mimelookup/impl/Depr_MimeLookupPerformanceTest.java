@@ -152,7 +152,6 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         gc(); gc();
         assertSize("", size + 3000, lookup); // 3000 is threshold
     }
-    */
     
     public void testClassLookup() throws IOException{
         MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
@@ -187,6 +186,7 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         gc();
         assertSize("", size, lookup);
     }
+    */
     
     
     
