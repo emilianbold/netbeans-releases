@@ -45,20 +45,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
@@ -137,25 +136,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             if (prop != null) {
                 for (String piece : PropertyUtils.tokenizePath(prop)) {
                     File f = PropertyUtils.resolveFile(this.projectFolder, piece);
-                    try {
-                        URL entry = f.toURI().toURL();
-                        if (FileUtil.isArchiveFile(entry) || (f.isFile() && f.length()<4)) {    //XXX: Not yet closed archive file
-                            entry = FileUtil.getArchiveRoot(entry);
-                        } else if (!f.exists()) {
-                            // if file does not exist (e.g. build/classes folder
-                            // was not created yet) then corresponding File will
-                            // not be ended with slash. Fix that.
-                            assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
-                            entry = new URL(entry.toExternalForm() + "/"); // NOI18N
-                        }
-                        else if (f.isFile()) {
-                            ErrorManager.getDefault().log(ErrorManager.ERROR,"ProjectClassPathImplementation: file: "+f.getAbsolutePath()
-                            +" is not a valid archive file.");   //NOI18N
-                            continue;
-                        }
+                    URL entry = FileUtil.urlForArchiveOrDir(f);
+                    if (entry != null) {
                         result.add(ClassPathSupport.createResource(entry));
-                    } catch (MalformedURLException mue) {
-                        assert false : mue;
+                    } else {
+                        Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");
                     }
                 }
             }
