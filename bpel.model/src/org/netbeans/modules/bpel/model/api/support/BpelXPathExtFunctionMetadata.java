@@ -318,7 +318,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
 
         public Icon getIcon() {
-            return IconLoader.getIcon("doMarshal", IMAGE_FOLDER_NAME); // NOI18N
+            return IconLoader.getIcon("marshal", IMAGE_FOLDER_NAME); // NOI18N
         }
         
         public String getDisplayName() {
@@ -377,7 +377,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
 
         public Icon getIcon() {
-            return IconLoader.getIcon("doUnMarshal", IMAGE_FOLDER_NAME); // NOI18N
+            return IconLoader.getIcon("unmarshal", IMAGE_FOLDER_NAME); // NOI18N
         }
         
         public String getDisplayName() {
@@ -575,5 +575,4 @@ public interface BpelXPathExtFunctionMetadata {
         }
         
     };
-    
 }

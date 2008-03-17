@@ -63,6 +63,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.diff.MergeVisualizer;
+import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
 
@@ -144,6 +145,8 @@ public class ResolveConflictsExecutor {
         final StreamSource s1;
         final StreamSource s2;
         Charset encoding = FileEncodingQuery.getEncoding(fo);
+        Utils.associateEncoding(file, f1);
+        Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
