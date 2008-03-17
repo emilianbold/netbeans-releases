@@ -49,8 +49,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -64,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -165,8 +164,6 @@ public class EntityClassInfo {
             if (fieldInfo.isId()) {
                 idFieldInfo = fieldInfo;
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -217,9 +214,6 @@ public class EntityClassInfo {
             } else {
                 fieldInfo.setType(fieldType.toString());
             }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
     

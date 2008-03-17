@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.websvc.rest.codegen.model;
 
-<<<<<<< /export/home/nam/main/websvc.rest/src/org/netbeans/modules/websvc/rest/codegen/model/EntityResourceModelBuilder.java.orig.
+import org.openide.util.Exceptions;
+
 import java.io.IOException;
-||||||| /tmp/EntityResourceModelBuilder.java~base.iaLMES
-=======
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
->>>>>>> /tmp/EntityResourceModelBuilder.java~other.81Idch
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -58,7 +55,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean.Type;
-import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.Util;
@@ -123,7 +119,7 @@ public class EntityResourceModelBuilder {
             model.setValid(true);
             
         } catch (Exception ex) {
-            Logger.getLogger(getClass().getName()).log(Level.ALL, "build", ex);
+            Exceptions.printStackTrace(ex);
             model.setValid(false);
         }
         
