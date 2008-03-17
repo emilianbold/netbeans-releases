@@ -39,12 +39,21 @@
 
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Locale;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Import;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
 
@@ -99,6 +108,66 @@ public class ImportImpl extends IEPComponentBase implements Import {
     public Component getParentComponent() {
         return (Component) getParent();
     }
-
+    
+    public WSDLModel getImportedWSDLModel() throws CatalogModelException {
+        DocumentModel m = resolveImportedModel();
+        if (m instanceof WSDLModel) {
+            return (WSDLModel) m;
+        } else {
+            String msg = NbBundle.getMessage(ImportImpl.class, "MSG_CANNOT_LOAD_WSDL", getLocation());
+            throw new CatalogModelException(msg);
+        }
+    }
+    
+    public WSDLModel resolveToWSDLModel() throws CatalogModelException {
+        DocumentModel m = resolveImportedModel();
+        if (m instanceof WSDLModel) {
+            return (WSDLModel) m;
+        } else {
+            return null;
+        }
+    }
+    
+    public SchemaModel resolveToSchemaModel() throws CatalogModelException {
+        DocumentModel m = resolveImportedModel();
+        if (m instanceof SchemaModel) {
+            return (SchemaModel) m;
+        } else {
+            return null;
+        }
+    }
+    
+    public DocumentModel resolveImportedModel() throws CatalogModelException {
+        ModelSource ms = resolveModel(getLocation());
+        
+        String location = getLocation().toLowerCase(Locale.US);
+        if (location.endsWith(".wsdl")) { //NOI18N
+            return loadAsWSDL(ms);
+        } else if (location.endsWith(".xsd")) { //NOI18N
+            return loadAsSchema(ms);
+        } else {
+            DocumentModel m = loadAsWSDL(ms);
+            if (m == null) {
+                m = loadAsSchema(ms);
+            }
+            return m;
+        }
+    }
+    
+    private WSDLModel loadAsWSDL(ModelSource ms) {
+        WSDLModel m = WSDLModelFactory.getDefault().getModel(ms);
+        if (m != null && m.getState() == DocumentModel.State.NOT_WELL_FORMED) {
+            return null;
+        }
+        return m;
+    }
+    
+    private SchemaModel loadAsSchema(ModelSource ms) {
+        SchemaModel m = SchemaModelFactory.getDefault().getModel(ms);
+        if (m != null && m.getState() == DocumentModel.State.NOT_WELL_FORMED) {
+            return null;
+        }
+        return m;
+    }
     
 }
