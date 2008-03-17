@@ -11,7 +11,6 @@ import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
-import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
@@ -33,191 +32,191 @@ import org.openide.util.NbBundle;
 
 public class IEPSemanticsVisitor implements IEPVisitor {
 
-    private List<ResultItem> mResultItems = new ArrayList<ResultItem>();
+	private List<ResultItem> mResultItems = new ArrayList<ResultItem>();
     private Validation mValidation;
     private List<Model> mValidatedModels;
     private Validator mValidator;
+    
     private static Logger mLogger = Logger.getLogger(IEPSemanticsVisitor.class.getName());
-
-    /** Creates a new instance of IEPSemanticsVisitor */
+    
+	/** Creates a new instance of IEPSemanticsVisitor */
     public IEPSemanticsVisitor(Validator validator, Validation validation, List<Model> validatedModels) {
         mValidator = validator;
         mValidation = validation;
         mValidatedModels = validatedModels;
-
-
+        
+        
     }
-
+    
     public List<ResultItem> getResultItems() {
         return mResultItems;
     }
+    
+	public void visitComponent(Component component) {
+		List<Property> properties = component.getProperties();
+		Iterator<Property> it = properties.iterator();
+		
+		while(it.hasNext()) {
+			Property property = it.next();
+			visitProperty(property);
+			
+		}
+		
+		//validate all child components
+		List<Component> childComponents = component.getChildComponents();
+		Iterator<Component> itC = childComponents.iterator();
+		
+		while(itC.hasNext()) {
+			Component child = itC.next();
+			child.accept(this);
+		}
+		
+	}
 
-    public void visitComponent(Component component) {
-        List<Property> properties = component.getProperties();
-        Iterator<Property> it = properties.iterator();
-
-        while (it.hasNext()) {
-            Property property = it.next();
-            visitProperty(property);
-
-        }
-
-        //validate all child components
-        List<Component> childComponents = component.getChildComponents();
-        Iterator<Component> itC = childComponents.iterator();
-
-        while (itC.hasNext()) {
-            Component child = itC.next();
-            child.accept(this);
-        }
-
-    }
-
-    public void visitProperty(Property property) {
-        org.netbeans.modules.iep.model.lib.TcgPropertyType propertyType = property.getPropertyType();
-        if (propertyType.isRequired() && (property.getValue() == null || property.getValue().equals(""))) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultValidator.property_is_required_but_undefined", property.getName());
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, property, message);
-            mResultItems.add(item);
-        }
-
-
+	public void visitProperty(Property property) {
+		org.netbeans.modules.iep.model.lib.TcgPropertyType propertyType = property.getPropertyType();
+        if (propertyType.isRequired()&& (property.getValue() == null || property.getValue().equals(""))) {
+	        	String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultValidator.property_is_required_but_undefined", property.getName());
+				ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, property, message);
+				mResultItems.add(item);	
+        	}
+        
+        
         if (propertyType.isRequired() && property.getValue().equals(propertyType.getDefaultValue())) {
             Object defVal = propertyType.getDefaultValue();
             String strVal = propertyType.getType().format(defVal);
             String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultValidator.property_uses_default_value", property.getName()) + " (" + strVal + ")";
-
+            
             ResultItem item = new ResultItem(mValidator, Validator.ResultType.WARNING, property, message);
-            mResultItems.add(item);
+			mResultItems.add(item);
         }
-    }
+	}
 
-    public void visitImport(Import imp) {
-        
-    }
-
-    
     public void visitDocumentation(Documentation doc) {
+       
     }
 
-    public void visitComponent(LinkComponent component) {
-    }
+	public void visitComponent(LinkComponent component) {
+		
+	}
 
-    public void visitLinkComponentContainer(LinkComponentContainer component) {
-        visitComponent(component);
-    }
+	public void visitLinkComponentContainer(LinkComponentContainer component) {
+		visitComponent(component);
+	}
 
-    public void visitOperatorComponent(OperatorComponent component) {
-        visitComponent(component);
-
-        doDefaultOperatorValidation(component);
-
-
+	public void visitOperatorComponent(OperatorComponent component) {
+		visitComponent(component);
+		
+		doDefaultOperatorValidation(component);
+        
+        
         //do operator specific validation
-        OperatorValidatorFactory factory = OperatorValidatorFactory.getDefault(mValidator);
+        OperatorValidatorFactory factory  = OperatorValidatorFactory.getDefault(mValidator);
         OperatorValidator validator = factory.newOperatorValidator(component);
-        if (validator != null) {
-            List<ResultItem> results = validator.validate(component);
-            if (results != null) {
-                mResultItems.addAll(results);
-            }
+        if(validator != null) {
+        	List<ResultItem> results = validator.validate(component);
+        	if(results != null) {
+        		mResultItems.addAll(results);
+        	}
         }
+        
+	}
 
-    }
-
-    private void doDefaultOperatorValidation(OperatorComponent component) {
-        Property isGlobal = component.getProperty(OperatorComponent.PROP_ISGLOBAL);
-        Boolean isGlobalBool = (Boolean) isGlobal.getPropertyType().getType().parse(isGlobal.getValue());
+	private void doDefaultOperatorValidation(OperatorComponent component) {
+		Property isGlobal = component.getProperty(OperatorComponent.PROP_ISGLOBAL);
+		Boolean isGlobalBool = (Boolean) isGlobal.getPropertyType().getType().parse(isGlobal.getValue());
         if (!isGlobalBool.booleanValue()) {
-            return;
+        	return;
         }
-
+        
         Property glbID = component.getProperty(OperatorComponent.PROP_GLOBALID);
         if (glbID.getValue() == null || glbID.getValue().trim().equals("")) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.property_must_be_defined_for_a_global_entity");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
+        	String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.property_must_be_defined_for_a_global_entity");
+			ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+			mResultItems.add(item);
         }
-    }
+	}
+	public void visitOperatorComponentContainer(OperatorComponentContainer component) {
+		visitComponent(component);
+	}
 
-    public void visitOperatorComponentContainer(OperatorComponentContainer component) {
-        visitComponent(component);
-    }
+	public void visitPlanComponent(PlanComponent component) {
+		OperatorComponentContainer opContainer = component.getOperatorComponentContainer();
+		if(opContainer == null) {
+			String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_operator_required");
+			ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+			mResultItems.add(item);
+		} else {
+		
+			List<OperatorComponent> operators =  opContainer.getAllOperatorComponent();
+			Iterator<OperatorComponent> it = operators.iterator();
+			
+			while(it.hasNext()) {
+				OperatorComponent operator = it.next();
+				operator.accept(this);
+			}
+		}
+		
+		
+		IEPModel model = component.getModel();
+		
+		//inputs
+		List<InputOperatorComponent> inputs = model.getInputList();
+		if(inputs.size() == 0) {
+			String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
+			ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+			mResultItems.add(item);
+			
+		}
+		
+		//outputs
+		List<OutputOperatorComponent> outputs = model.getOutputList();
+		if(outputs.size() == 0) {
+			String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
+			ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+			mResultItems.add(item);
+		}
+		
+		visitComponent(component);
+	}
 
-    public void visitPlanComponent(PlanComponent component) {
-        OperatorComponentContainer opContainer = component.getOperatorComponentContainer();
-        if (opContainer == null) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_operator_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
-        } else {
+	public void visitSchemaComponentContainer(SchemaComponentContainer component) {
+		visitComponent(component);
+	}
 
-            List<OperatorComponent> operators = opContainer.getAllOperatorComponent();
-            Iterator<OperatorComponent> it = operators.iterator();
+	public void visitSchemaComponent(SchemaComponent component) {
+		visitComponent(component);
+		
+		List<SchemaAttribute> attrs = component.getSchemaAttributes();
+		Iterator<SchemaAttribute> it = attrs.iterator();
+		
+		while(it.hasNext()) {
+			SchemaAttribute sa = it.next();
+			visitSchemaAttribute(sa);
+		}
+		
+	}
 
-            while (it.hasNext()) {
-                OperatorComponent operator = it.next();
-                operator.accept(this);
-            }
-        }
+	public void visitLinkComponent(LinkComponent component) {
+		visitComponent(component);
+		
+	}
 
-
-        IEPModel model = component.getModel();
-
-        //inputs
-        List<InputOperatorComponent> inputs = model.getInputList();
-        if (inputs.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_input_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
-
-        }
-
-        //outputs
-        List<OutputOperatorComponent> outputs = model.getOutputList();
-        if (outputs.size() == 0) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultOperatorValidator.atleast_one_output_required");
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
-        }
-
-        visitComponent(component);
-    }
-
-    public void visitSchemaComponentContainer(SchemaComponentContainer component) {
-        visitComponent(component);
-    }
-
-    public void visitSchemaComponent(SchemaComponent component) {
-        visitComponent(component);
-
-        List<SchemaAttribute> attrs = component.getSchemaAttributes();
-        Iterator<SchemaAttribute> it = attrs.iterator();
-
-        while (it.hasNext()) {
-            SchemaAttribute sa = it.next();
-            visitSchemaAttribute(sa);
-        }
-
-    }
-
-    public void visitLinkComponent(LinkComponent component) {
-        visitComponent(component);
-
-    }
-
-    public void visitSchemaAttribute(SchemaAttribute component) {
-        visitComponent(component);
-
-        String size = component.getAttributeSize();
-        String type = component.getAttributeType();
-
+	public void visitSchemaAttribute(SchemaAttribute component) {
+		visitComponent(component);
+		
+		String size = component.getAttributeSize();
+		String type = component.getAttributeType();
+		
         //size is required for VARCHAR and optional for everything else
-        if ("VARCHAR".equals(type) && (size == null || size.trim().equals(""))) {
-            String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultValidator.property_is_required_but_undefined", SchemaAttribute.PROP_SIZE);
-            ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-            mResultItems.add(item);
-        }
-
-    }
+    	if("VARCHAR".equals(type) && (size == null || size.trim().equals(""))) {
+    		String message = NbBundle.getMessage(IEPSemanticsVisitor.class, "DefaultValidator.property_is_required_but_undefined", SchemaAttribute.PROP_SIZE);
+			ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+			mResultItems.add(item);
+    	}
+    	
+	}
+        
+        
+		
 }

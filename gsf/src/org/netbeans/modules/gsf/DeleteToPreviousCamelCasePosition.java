@@ -41,7 +41,7 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
@@ -52,8 +52,10 @@ public final class DeleteToPreviousCamelCasePosition extends SelectPreviousCamel
         // XXX Why does this get called so many times?        
         super(deletePreviousCamelCasePosition, originalAction);
     }
-    protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getDocument().remove(offset, textComponent.getCaretPosition() - offset);
+    @Override
+    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+        super.moveToNewOffset(textComponent, offset);
+        textComponent.replaceSelection("");
     }
 }
 

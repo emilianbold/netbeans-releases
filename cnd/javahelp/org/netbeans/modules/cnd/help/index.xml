@@ -131,14 +131,4 @@
 	<indexitem text="GoToInclude" target="GoToInclude" />
 	<indexitem text="GoToDeclaration" target="GoToDeclaration1" />
 	<indexitem text="GoToType" target="GoToType" />
-	<indexitem text="UsagesWindow" target="org.netbeans.modules.refactorig.spi.impl.RefactoringPanelContainer.find-usages-null" />
-	<indexitem text="FindingUsages" target="FindingUsages" />
-	<indexitem text="FindUsagesDialog" target="org.netbeans.modules.refactoring.spi.impl.RefactoringPaelContaier.find-usages" />
-	<indexitem text="CandC++ThreadsWindow" target="CandC++ThreadsWindow" />
-	<indexitem text="Threads" target="Threads" />
-	<indexitem text="Attaching" target="Attaching" />
-	<indexitem text="CofiguringCodeStyle" target="CofiguringCodeStyle" />
-	<indexitem text="ConfiguringSemanticHighlighting" target="ConfiguringSemanticHighlighting" />
-	<indexitem text="ConfiguringFileExtensions" target="ConfiguringFileExtensions" />
-	<indexitem text="CandC++DisassemblyWIndow" target="CandC++DisassemblyWIndow" />
 </index>

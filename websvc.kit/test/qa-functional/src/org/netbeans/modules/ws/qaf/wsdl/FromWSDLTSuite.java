@@ -98,8 +98,6 @@ public class FromWSDLTSuite extends WsValidation {
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
-        suite.addTest(new FromWSDLTSuite("testRefreshService"));
-        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
         return suite;
     }
     
@@ -150,16 +148,6 @@ public class FromWSDLTSuite extends WsValidation {
         jtfo.waitText("#"); //NOI18N
         op.finish();
         waitForWsImport("(wsimport-service-" + name); //NOI18N
-    }
-    
-    @Override
-     public void testRefreshService() {
-        refreshWSDL("service","AddNumbersService[AddNumbersPort]",false);
-    }
-    
-    @Override
-    public void testRefreshServiceAndReplaceWSDL() {
-        refreshWSDL("service","AddNumbersService[AddNumbersPort]",true);
     }
 
 }

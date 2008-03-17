@@ -96,7 +96,6 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
                 JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                JavaOptions.INDENT_ENGINE_PROP,
                 JavaOptions.SHOW_DEPRECATED_MEMBERS_PROP,
         } : new String [] {
                 JavaOptions.FAST_IMPORT_PACKAGE_PROP,
@@ -105,7 +104,6 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
                 JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                JavaOptions.INDENT_ENGINE_PROP,
         };
         
         setHidden(hidden);

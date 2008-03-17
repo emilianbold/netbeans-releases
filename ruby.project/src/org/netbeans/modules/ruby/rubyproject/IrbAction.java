@@ -87,7 +87,7 @@ public class IrbAction extends AbstractAction {
         if (platform == null) {
             platform = RubyPlatformManager.getDefaultPlatform();
         }
-        String irbPath = platform.getIRB();
+        String irbPath = platform.findExecutable("irb"); // NOI18N
         if (irbPath == null) {
             return false;
         }

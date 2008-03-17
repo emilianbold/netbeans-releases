@@ -42,6 +42,7 @@ package org.netbeans.modules.sql.framework.ui.output.dataview;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLObject;
@@ -52,7 +53,7 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
  */
 public class JoinOperatorDataPanel extends DataOutputPanel {
 
-    private static transient final Logger mLogger = Logger.getLogger(JoinOperatorDataPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinOperatorDataPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public JoinOperatorDataPanel(SQLJoinOperator etlObject, SQLDefinition sqlDefinition) {
@@ -65,12 +66,12 @@ public class JoinOperatorDataPanel extends DataOutputPanel {
 
     public void generateResult(SQLObject aTable) {
         this.table = aTable;
-        String nbBundle1 = mLoc.t("BUND350: Data: {0}", table.getDisplayName());
-        this.setName(nbBundle1.substring(15));
-        String nbBundle2 = mLoc.t("BUND351: Loading Data");
-        String title = nbBundle2.substring(15);
-        String nbBundle3 = mLoc.t("BUND352: Loading from database, please wait...");
-        String msg = nbBundle3.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Data: {0}", table.getDisplayName());
+        this.setName(Localizer.parse(nbBundle1));
+        String nbBundle2 = mLoc.t("PRSR001: Loading Data");
+        String title = Localizer.parse(nbBundle2);
+        String nbBundle3 = mLoc.t("PRSR001: Loading from database, please wait...");
+        String msg = Localizer.parse(nbBundle3);
         UIUtil.startProgressDialog(title, msg);
         generateSelectAllTableData();
     }

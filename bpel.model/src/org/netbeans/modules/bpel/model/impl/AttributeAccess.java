@@ -37,14 +37,14 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.support.EnumValue;
-import org.netbeans.modules.bpel.model.api.references.MappedReference;
-import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
-import org.netbeans.modules.bpel.model.api.support.Utils.Pair;
+import org.netbeans.modules.bpel.model.impl.Utils.Pair;
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
 import org.netbeans.modules.bpel.model.impl.references.BpelReferenceBuilder;
+import org.netbeans.modules.bpel.model.impl.references.MappedReference;
+import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReference;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReferenceBuilder;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
@@ -56,12 +56,13 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+
 
 /**
  * This is "utility" class that incapuslate inside itself
  * all attribute logic.   
  * @author ads
+ *
  */
 class AttributeAccess {
 

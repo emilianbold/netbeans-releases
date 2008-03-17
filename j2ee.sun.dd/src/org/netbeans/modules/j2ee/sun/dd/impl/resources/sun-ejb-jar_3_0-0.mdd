@@ -30,38 +30,11 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceDescription</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageDestination</import>
 		<dtd-name>enterprise-beans</dtd-name>
 		<bean-name>EnterpriseBeans</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans</implements>
-                <user-code>
-                    public void setPropertyElement(int index, org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement getPropertyElement(int index) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public int sizePropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public void setPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement[] value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement[] getPropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public int addPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public int removePropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                    public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement newPropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_0_0);
-                    }
-                </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>name</dtd-name>

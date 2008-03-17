@@ -143,8 +143,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .add(dispatcherMappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -180,22 +180,19 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(includeJstlCheckBox)
-                .addContainerGap(506, Short.MAX_VALUE))
+                .addContainerGap(488, Short.MAX_VALUE))
         );
         libPanelLayout.setVerticalGroup(
             libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(libPanelLayout.createSequentialGroup()
                 .add(15, 15, 15)
                 .add(includeJstlCheckBox)
-                .addContainerGap(351, Short.MAX_VALUE))
+                .addContainerGap(352, Short.MAX_VALUE))
         );
-
-        includeJstlCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.includeJstlCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
 
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
-        tabbedPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.tabbedPanel.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void includeJstlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeJstlCheckBoxActionPerformed

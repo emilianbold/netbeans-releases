@@ -41,16 +41,12 @@
 
 package org.netbeans.modules.cnd.navigation.classhierarchy;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
@@ -62,9 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class HierarchyNode extends AbstractCsmNode{
     private CsmClass object;
-    private CsmProject project;
     private HierarchyModel model;
-    private CharSequence uin;
     
     public HierarchyNode(CsmClass element, HierarchyModel model, HierarchyChildren parent) {
         this(element, new HierarchyChildren(element, model, parent), model, false);
@@ -79,35 +73,26 @@ public class HierarchyNode extends AbstractCsmNode{
         }
         object = element;
         this.model = model;
-        uin = object.getUniqueName();
-        project = object.getContainingFile().getProject();
     }
     
     public CsmObject getCsmObject() {
-        if (!object.isValid()) {
-            CsmDeclaration d = project.findDeclaration(uin);
-            if (d instanceof CsmClass) {
-                object = (CsmClass) d;
-            }
-        }
         return object;
     }
     
     @Override
     public Action getPreferredAction() {
-        CsmClass obj = (CsmClass)getCsmObject();
-        if (obj.isValid()) {
-            if (CsmKindUtilities.isOffsetable(obj)){
-                return new GoToClassAction((CsmOffsetable)obj, model.getCloseWindowAction());
+        if (object.isValid()) {
+            if (CsmKindUtilities.isOffsetable(object)){
+                return new GoToClassAction((CsmOffsetable)object, model.getCloseWindowAction());
             }
         }
-        return new EmptyAction();
+        return null;
     }
 
     @Override
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
-        if (action != null && !(action instanceof EmptyAction)){
+        if (action != null){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
             list.add(null);
@@ -121,24 +106,5 @@ public class HierarchyNode extends AbstractCsmNode{
 
     private String getString(String key) {
         return NbBundle.getMessage(HierarchyNode.class, key);
-    }
-
-    class EmptyAction implements Action{
-        public Object getValue(String key) {
-            return null;
-        }
-        public void putValue(String key, Object value) {
-        }
-        public void setEnabled(boolean b) {
-        }
-        public boolean isEnabled() {
-            return true;
-        }
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-        }
-        public void actionPerformed(ActionEvent e) {
-        }
     }
 }

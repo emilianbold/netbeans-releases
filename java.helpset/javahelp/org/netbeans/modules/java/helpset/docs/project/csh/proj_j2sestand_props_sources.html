@@ -39,16 +39,26 @@ the order of classpath elements.
 <li>All of the source roots are packaged into the same JAR file and share the same classpath.
 <li>If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects.
 </ul>
-<p>You can use the Source/Binary Format combo box at the bottom of the Sources page to set the Java platform version that the generated Java code should be compatible with. This setting corresponds to the javac -source option.
+<p>You can use the Source Level combo box at the bottom of the Sources page to set the Java platform version that the generated Java code should be compatible with. This setting corresponds to the javac -source option.
 
 <ul class="note">
-<li>Specifying the source/binary format does not change the Java platform whose libraries and executables are used to compile and run your project. To set the Java platform that is used for compiling and running your project, click Libraries and set the Java Platform setting accordingly. You cannot set the source/binary format of a project to a higher release than the project's Java platform.
+<li>Specifying the Source Level does not change the Java platform whose libraries and executables are used to compile and run your project. To set the Java platform that is used for compiling and running your project, click Libraries and set the Java Platform setting accordingly. You cannot set the Source Level of a project to a higher release than the project's Java platform.
 </ul>
+
+<p><b>Test Packages Folders</b></p>
+<p>You can use this pane to specify the folder that the IDE uses when creating JUnit tests. 
+By default, when you create a project the IDE creates a test packages folder called <tt>test</tt> with the label Test Packages.
+Use the buttons to the right of the list to remove the selected folder or to specify the folder that the IDE uses when creating tests.
+You can also modify the Label field to change how the folder is displayed in the Projects window.</p>
+<p>To create JUnit tests with the IDE, a project must have a test packages folder.
+If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and 
+then use this pane to designate the new folder as the test packages folder.</p>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="../../project/proj_stand_about.html">About Standard Projects</a></dd>
     <dd><a href="../proj_free_about.html">About Free-Form Projects</a> </dd>
+    <dd><a href="../../junit/junit_creatingtests.html">Creating a JUnit Test</a> </dd>
     <dd>Standard Java SE Project Properties Dialog Box:</dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_libraries.html">Libraries</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_compiling.html">Compiling</a></dd>

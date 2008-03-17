@@ -148,6 +148,6 @@ public abstract class SourceFileMap {
         if (j2eeModule == null) {
             throw new NullPointerException();
         }
-        return J2eeModuleAccessor.getDefault().getJ2eeModuleProvider(j2eeModule).getSourceFileMap();
+        return J2eeModuleAccessor.DEFAULT.getJ2eeModuleProvider(j2eeModule).getSourceFileMap();
     }
 }

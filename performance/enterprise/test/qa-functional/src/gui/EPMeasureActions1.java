@@ -44,6 +44,7 @@ package gui;
 
 import org.netbeans.junit.NbTestSuite;
 import gui.actions.*;
+import gui.setup.EnterpriseSetupTest;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -55,6 +56,9 @@ public class EPMeasureActions1  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
+        // TODO: Remove this workaround
+        suite.addTest(new EnterpriseSetupTest("closeAllModal"));
+
         suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new CreateBPELmodule("measureTime", "Create BPEL module"));
         suite.addTest(new CreateCompositeApplication("measureTime", "Create Composite Application"));

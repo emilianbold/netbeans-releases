@@ -301,26 +301,25 @@ public class ElementJavadoc {
                         if (returnTags.length == 0) {
                             inheritedReturnTags = new ArrayList<Tag>();
                         } else {
-                            List<Tag> tags = new ArrayList<Tag>();
                             for(Tag tag : returnTags) {
                                 for(Tag t : tag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(t.kind())) {
                                         if (inheritedReturnTags == null)
                                             inheritedReturnTags = new ArrayList<Tag>();
                                     }
-                                    tags.add(t);
                                 }
                             }
-                            returnTags = tags.toArray(new Tag[tags.size()]);
                         }
                     }
                     Set<Integer> paramPos = new HashSet<Integer>();
-                    Map<Integer, List<Tag>> paramTags = null;
+                    List<ParamTag> paramTags = null;
+                    Map<Integer, List<Tag>> paramInlineTags = null;
                     Map<Integer, ParamTag> inheritedParamTags = null;
                     Map<Integer, List<Tag>> inheritedParamInlineTags = null;
                     Parameter[] parameters = mdoc.parameters();
                     if (parameters.length > 0) {
-                        paramTags = new LinkedHashMap<Integer, List<Tag>>();
+                        paramTags = new ArrayList<ParamTag>();
+                        paramInlineTags = new HashMap<Integer, List<Tag>>();
                         for (int i = 0; i < parameters.length; i++)
                             paramPos.add(i);
                     }
@@ -328,7 +327,8 @@ public class ElementJavadoc {
                         Integer pos = paramPos(mdoc, tag);
                         if (paramPos.remove(pos)) {
                             List<Tag> tags = new ArrayList<Tag>();
-                            paramTags.put(pos, tags);
+                            paramTags.add(tag);
+                            paramInlineTags.put(pos, tags);
                             for(Tag t : tag.inlineTags()) {
                                 if (INHERIT_DOC_TAG.equals(t.kind())) {
                                     if (inheritedParamTags == null)
@@ -356,7 +356,6 @@ public class ElementJavadoc {
                     for (Type exc : mdoc.thrownExceptionTypes())
                         throwsTypes.add(exc.typeName());
                     for(ThrowsTag tag : mdoc.throwsTags()) {
-                        throwsTypes.remove(tag.exceptionName());
                         List<Tag> tags = new ArrayList<Tag>();
                         throwsTags.add(tag);
                         throwsInlineTags.put(tag.exceptionName(), tags);
@@ -381,7 +380,7 @@ public class ElementJavadoc {
                     if (inheritedTags != null && inheritedTags.isEmpty() ||
                             inheritedReturnTags != null && inheritedReturnTags.isEmpty() ||
                             paramPos != null && !paramPos.isEmpty() ||
-                            throwsTypes != null && !throwsTypes.isEmpty())
+                            throwsTypes != null && !throwsTags.isEmpty())
                         inheritedDocFor(mdoc, mdoc.containingClass(), inheritedTags, inheritedReturnTags,
                                 paramPos, inheritedParamTags, inheritedParamInlineTags,
                                 throwsTypes, inheritedThrowsTags, inheritedThrowsInlineTags);
@@ -417,12 +416,13 @@ public class ElementJavadoc {
                     }
                     List<Integer> ppos = new ArrayList<Integer>();
                     if (inheritedParamTags != null && !inheritedParamTags.isEmpty()) {
-                        for (Integer pos : paramTags.keySet()) {
+                        for (ParamTag paramTag : paramTags) {
+                            Integer pos = paramPos(mdoc, paramTag);
                             ppos.add(pos);
-                            ParamTag paramTag = inheritedParamTags.remove(pos);
+                            inheritedParamTags.remove(pos);
                             List<Tag> tags = inheritedParamInlineTags.get(pos);
                             if (tags != null && !tags.isEmpty()) {
-                                List<Tag> inTags = paramTags.get(paramTag.parameterName());
+                                List<Tag> inTags = paramInlineTags.get(paramTag.parameterName());
                                 inTags.clear();
                                 for (Tag tag : paramTag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(tag.kind()))
@@ -436,7 +436,7 @@ public class ElementJavadoc {
                             ppos.add(pos);
                             List<Tag> tags = inheritedParamInlineTags.get(pos);
                             if (tags != null && !tags.isEmpty())
-                                paramTags.put(pos, tags);
+                                paramInlineTags.put(pos, tags);
                         }
                     }
                     if (inheritedThrowsTags != null && !inheritedThrowsTags.isEmpty()) {
@@ -465,7 +465,8 @@ public class ElementJavadoc {
                         sb.append(getDeprecatedTag(eu, doc));
                         sb.append(inlineTags(eu, doc, inlineTags));
                         sb.append("</p><p>"); //NOI18N
-                        sb.append(getMethodTags(eu, mdoc, returnTags, paramTags,
+                        sb.append(getMethodTags(eu, mdoc, returnTags,
+                                ppos, paramInlineTags,
                                 throwsTags, throwsInlineTags));
                         sb.append("</p>"); //NOI18N
                         return sb.toString();
@@ -715,7 +716,8 @@ public class ElementJavadoc {
         }
     } 
     
-    private CharSequence getMethodTags(ElementUtilities eu, MethodDoc doc, Tag[] returnTags, Map<Integer, List<Tag>> paramInlineTags,
+    private CharSequence getMethodTags(ElementUtilities eu, MethodDoc doc, Tag[] returnTags,
+            List<Integer> paramPos, Map<Integer, List<Tag>> paramInlineTags,
             List<ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags) {
         StringBuilder ret = new StringBuilder();
         if (returnTags.length > 0) {
@@ -723,9 +725,9 @@ public class ElementJavadoc {
             ret.append("<br>"); //NOI18N
         }
         StringBuilder par = new StringBuilder();
-        if (paramInlineTags != null) {
+        if (paramPos != null) {
             Parameter[] parameters = doc.parameters();
-            for (Integer pos : paramInlineTags.keySet()) {
+            for (Integer pos : paramPos) {
                 par.append("<code>").append(parameters[pos].name()).append("</code>"); //NOI18N
                 List<Tag> tags = paramInlineTags.get(pos);
                 Tag[] its = tags.toArray(new Tag[tags.size()]);                

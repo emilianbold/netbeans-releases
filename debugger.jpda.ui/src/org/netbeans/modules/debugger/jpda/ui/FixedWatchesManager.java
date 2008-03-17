@@ -116,8 +116,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
                     return false;
                 }
                 String type = v.getType ();
-                return "".equals(type)        ||
-                        "boolean".equals(type)||
+                return "boolean".equals(type) ||
                         "byte".equals (type)  || 
                         "char".equals (type)  || 
                         "short".equals (type) ||

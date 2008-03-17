@@ -70,8 +70,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     private static final String project_name = "VisualWebProject";
     private ProjectsTabOperator pto;
-    private Node projectRoot;
-    
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
@@ -140,12 +138,11 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         return null; //new EditorOperator(docname+"_"+(index)+suffix);
     }
     
-    @Override
     public void initialize(){
 	log("::initialize::");
         pto = ProjectsTabOperator.invoke();
                 
-        projectRoot = null;
+        Node projectRoot = null;
         try {
             projectRoot = pto.getProjectRootNode(project_name);
             projectRoot.select();
@@ -158,14 +155,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     public void prepare(){
         log("::prepare::");
 
-        try {
-            projectRoot = pto.getProjectRootNode(project_name);
-            projectRoot.select();
-            
-        } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
-            fail("Cannot find and select project root node");
-        }
-        
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         
         // create exactly (full match) and case sensitively comparing comparator
@@ -189,7 +178,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         waitNoEvent(1000);
     }
 
-    @Override
     public void close(){
         log("::close");
         try {
@@ -235,7 +223,6 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log(":: cleanup passed");
     }
     
-    @Override
     public void shutdown() {
         log("::shutdown");
         super.shutdown();

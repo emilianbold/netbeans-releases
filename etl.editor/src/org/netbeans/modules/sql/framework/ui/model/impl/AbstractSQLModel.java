@@ -72,6 +72,7 @@ import org.netbeans.modules.sql.framework.ui.undo.SQLUndoManager;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -80,7 +81,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel {
 
     private static final String LOG_CATEGORY = AbstractSQLModel.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(AbstractSQLModel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(AbstractSQLModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     protected UndoableEditSupport editSupport = new UndoableEditSupport();
     protected boolean isDirty = false;
@@ -466,7 +467,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                mLogger.errorNoloc(mLoc.t("EDIT141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
+                mLogger.errorNoloc(mLoc.t("PRSR141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
                 throw e;
             }
         }

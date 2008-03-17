@@ -247,10 +247,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     * @param searchByName if true and the resolving through the import sections fails
     *   the finder is asked to find the class just by the given name
     */
-    public CsmClassifier getClassFromName(String className, boolean searchByName) {
+    public CsmClass getClassFromName(String className, boolean searchByName) {
         refreshJavaImport();
         // XXX handle primitive type
-        CsmClassifier ret = null;
+        CsmClass ret = null;
 //        CsmClass ret = JavaCompletion.getPrimitiveClass(className);
 //        if (ret == null) {
 //            
@@ -260,8 +260,9 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             if (isUnknownInclude(className)) return null;    
             List clsList = getFinder().findClasses(null, className, true, false);
             if (clsList != null && clsList.size() > 0) {
-                if (!clsList.isEmpty()) { // more matching classes
-                    ret = (CsmClassifier)clsList.get(0); // get the first one
+                if (clsList.size() > 0 &&
+                    (clsList.get(0) instanceof CsmClass)) { // more matching classes
+                    ret = (CsmClass)clsList.get(0); // get the first one
                 }
             }
 
@@ -751,7 +752,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 }
                 
                 if (innerClass==null){
-                    CsmClassifier cls = sup.getClassFromName(decType, true);
+                    CsmClass cls = sup.getClassFromName(decType, true);
                     if (cls != null) {
 //                        varMap.put(decVarName, JavaCompletion.getType(cls, decArrayDepth));
                         varMap.put(decVarName, cls);

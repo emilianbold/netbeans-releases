@@ -303,11 +303,7 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         
         return ret;
     }   
-    
-    protected boolean needRefresh(String notificationSourceType) {
-        return notificationSourceType.equals("ServiceAssembly"); // NOI18N
-    }
-        
+
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JBIServiceAssembliesNode.class);

@@ -44,17 +44,29 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -152,7 +164,9 @@ public class TypeUtil {
         String[] pairs = value.split(",");
         for (String s : pairs) {
             String pair[] = s.split("=");
-            result.put(pair[0], pair[1]);
+            if (pair.length == 2) {
+                result.put(pair[0], pair[1]);
+            }
         }
         return result;
     }
@@ -188,6 +202,71 @@ public class TypeUtil {
             String qualifiedName = getQualifiedClassName(name, context);
             if (qualifiedName != null) {
                 return Util.getType(project, qualifiedName);
+            }
+        }
+        return null;
+    }
+
+    public static List<TypeElement> getAnnotatedTypeElementsFromClasspath(
+            final ClasspathInfo cpi, final String annotationType) {
+        
+        final List<TypeElement> result = new ArrayList<TypeElement>();
+        JavaSource source = JavaSource.create(cpi, new FileObject[0]);
+        final Set<ElementHandle<TypeElement>> handles[] = new Set[1];
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController controller) throws Exception {
+                    handles[0] = cpi.getClassIndex().getDeclaredTypes("\\w*", NameKind.REGEXP, EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES));
+                    if (handles[0] != null) {
+                        for (ElementHandle<TypeElement> h : handles[0]) {
+                            String qn = h.getQualifiedName();
+                            if (qn.startsWith("java.") ||
+                                h.getQualifiedName().startsWith("javax.") ||
+                                h.getQualifiedName().startsWith("sun.") ||
+                                h.getQualifiedName().startsWith("com.sun.") ||
+                                h.getQualifiedName().startsWith("org.apache.") ||
+                                h.getQualifiedName().startsWith("org.netbeans.")) {
+                                continue;
+                            }
+                            TypeElement te = h.resolve(controller);
+                            if (te == null) {
+                                continue;
+                            }
+                            for (AnnotationMirror am : te.getAnnotationMirrors()) {
+                                if (am.getAnnotationType().toString().equals(annotationType)) {
+                                    result.add(te);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
+    }
+
+    public static List<TypeElement> getAnnotatedTypeElementsFromClasspath(Project project, String annotationType) {
+        SourceGroup[] sgs = SourceGroupSupport.getJavaSourceGroups(project);
+        ClasspathInfo cpi = ClasspathInfo.create(sgs[0].getRootFolder());
+        return getAnnotatedTypeElementsFromClasspath(cpi, annotationType);
+    }
+
+    public static Annotation getJpaTableAnnotation(Class c) {
+        for (Annotation ann : c.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.PERSISTENCE_TABLE)) {
+                return ann;
+            }
+        }
+        return null;
+    }
+
+    public static Annotation getJpaEntityAnnotation(Class c) {
+        for (Annotation ann : c.getAnnotations()) {
+            if (ann.annotationType().getName().equals(Constants.PERSISTENCE_ENTITY)) {
+                return ann;
             }
         }
         return null;

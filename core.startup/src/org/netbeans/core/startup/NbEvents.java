@@ -44,7 +44,6 @@ package org.netbeans.core.startup;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -137,16 +136,12 @@ final class NbEvents extends Events {
             // No need to print anything. ModuleSystem.deployTestModule prints
             // its own stuff (it needs to be printed synchronously to console
             // in order to appear in the output window). But status text is OK.
-            // Fix for IZ#81566 - I18N: need to localize status messages for module dev
-            String msg = MessageFormat.format(
-                    NbBundle.getMessage(NbEvents.class, 
-                            "TEXT_start_deploy_test_module" ), (File)args[0]); // NOI18N
-            setStatusText( msg ); 
-        } else if (message == FINISH_DEPLOY_TEST_MODULE) {
-            // Fix for IZ#81566 - I18N: need to localize status messages for module dev
+            // Again no need for I18N as this is only for module developers.
             setStatusText(
-                    NbBundle.getMessage(NbEvents.class,  
-                    		"TEXT_finish_deploy_test_module")); // NOI18N
+                "Deploying test module in " + (File)args[0] + "..."); // NOI18N
+        } else if (message == FINISH_DEPLOY_TEST_MODULE) {
+            setStatusText(
+                "Finished deploying test module."); // NOI18N
         } else if (message == FAILED_INSTALL_NEW) {
             Set<Module> modules = NbCollections.checkedSetByCopy((Set) args[0], Module.class, true);
             {

@@ -27,7 +27,7 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Builds ETL process flow and delegates to appropriate ETLStrategyBuilder as required.
@@ -37,7 +37,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class ETLProcessFlowGeneratorFactory {
 
-    private static transient final Logger mLogger = Logger.getLogger(ETLProcessFlowGeneratorFactory.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLProcessFlowGeneratorFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     public static ETLProcessFlowGenerator getCollabFlowGenerator(SQLDefinition sqlDefinition, boolean overridingConnDefs) throws BaseException {
@@ -88,14 +88,16 @@ public class ETLProcessFlowGeneratorFactory {
 
     public static void validateExecutionMode(SQLDefinition sqlDef) throws BaseException {
         if (sqlDef.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_STAGING) {
-            String nbBundle1 = mLoc.t("BUND001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+
             if (sqlDef.requiresPipelineProcess()) {
-                String desc =  nbBundle1.substring(15).trim();
+                String nbBundle1 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc =  Localizer.parse(nbBundle1);
                 throw new BaseException(desc);
             }
 
             if (PatternFinder.isSourceAndTargetAreInternalButDifferent(sqlDef)) {
-                String desc = nbBundle1.substring(15).trim();
+                String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc = Localizer.parse(nbBundle2);
                 throw new BaseException(desc);
             }
         }

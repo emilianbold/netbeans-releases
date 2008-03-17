@@ -30,7 +30,7 @@ package org.netbeans.modules.xml.xpath.ext.schema;
  */
 public class InvalidNamespaceException extends Exception {
 
-    // private static final long serialVersionUID = 2249869832631885258L;
+    private static final long serialVersionUID = 2249869832631885258L;
 
     /**
      * Empty-argument Constructor for this exception class.

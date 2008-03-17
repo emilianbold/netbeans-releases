@@ -167,47 +167,40 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testLabelIndentHalf() {
+    public void testBlankLineAfterEndLineComment() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "int foo()\n" +
+                "namespace AC\n" +
                 "{\n" +
-                "  start: while(true){\n" +
-                "int i = 0;\n" +
-                "goto start;\n" +
-                "end:\n" +
-                "if(true){\n" +
-                "foo();\n" +
-                "second:\n" +
-                "foo();\n" +
-                "}\n" +
-                "}\n" +
-                "}\n");
-        reformat();
-        assertDocumentText("Incorrect label half indent",
-                "int foo()\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
                 "{\n" +
-                "start:\n" +
-                "  while (true)\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
                 "    {\n" +
-                "      int i = 0;\n" +
-                "      goto start;\n" +
-                "end:\n" +
-                "      if (true)\n" +
-                "        {\n" +
-                "          foo();\n" +
-                "second:\n" +
-                "          foo();\n" +
-                "        }\n" +
                 "    }\n" +
-                "}\n");
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect blak line after end line comment",
+                "namespace AC\n" +
+                "{\n" +
+                "\n" +
+                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
+                "{\n" +
+                "public:\n" +
+                "    int number;\n" +
+                "    char** cc;\n" +
+                "\n" +
+                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    {\n" +
+                "    }\n" +
+                "} FAR ct_data;\n" +
+                "}\n"
+                );
     }
-
 }

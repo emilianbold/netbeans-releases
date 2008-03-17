@@ -52,7 +52,7 @@
 
     <description>Google Accounts Service</description>
     
-    <display-name>Accounts Service</display-name>
+    <display-name>GoogleAccounts</display-name>
 
     <saas-metadata>
 

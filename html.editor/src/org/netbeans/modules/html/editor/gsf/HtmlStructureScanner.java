@@ -41,13 +41,13 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -159,13 +159,6 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle.getName();
         }
 
-        public String getSortText() {
-            //return getName();
-            // Use position-based sorting text instead; alphabetical sorting in the
-            // outline (the default) doesn't really make sense for HTML tag names
-            return Integer.toHexString(10000+(int)getPosition());
-        }
-
         public String getHtml() {
             return getName();
         }
@@ -235,10 +228,6 @@ public class HtmlStructureScanner implements StructureScanner {
 
         public long getEndPosition() {
             return HtmlStructureScanner.documentPosition(handle.node().endOffset(), source);
-        }
-
-        public ImageIcon getCustomIcon() {
-            return null;
         }
 
     }

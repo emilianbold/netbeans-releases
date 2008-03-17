@@ -144,6 +144,7 @@
 	<mapID target="CodeAssistanceWizardP5" url="WorkingWithCandC++Projects/CodeAssistanceWizardP5.html"/>
 	<mapID target="ConfiguringBuildTools" url="WorkingWithCandC++Projects/ConfiguringBuildTools.html"/>
 	<mapID target="ConfiguringParsingSettings" url="WorkingWithCandC++Projects/ConfiguringParsingSettings.html"/>
+	<mapID target="ResolveBuildTools" url="CandC++ProjectBasics/ResolveBuildTools.html"/>
 	<mapID target="ProjectPropsDebugging" url="WorkingWithCandC++Projects/ProjectPropsDebugging.html"/>
 	<mapID target="ProjectPropsMake" url="WorkingWithCandC++Projects/ProjectPropsMake.html"/>
 	<mapID target="ProjectPropsParser" url="WorkingWithCandC++Projects/ProjectPropsParser.html"/>
@@ -178,23 +179,4 @@
 	<mapID target="compiler_paths" url="CreatingMakefile/compiler_paths.html"/>
 	<mapID target="cnd.optionsDialog" url="CandC++ProjectBasics/CandC++Options.html"/>
 	<mapID target="ProjectPropsArchiverGeneral" url="WorkingWithCandC++Projects/ProjectPropsArchiverGeneral.html"/>
-	<mapID target="ArchiverOptions" url="CandC++ProjectBasics/ArchiverOptions.html"/>
-	<mapID target="EvaluatingCorC++Expression" url="CandC++ProjectBasics/EvaluatingCorC++Expression.html"/>
-	<mapID target="org.netbeans.modules.refactorig.spi.impl.RefactoringPanelContainer.find-usages-null" url="EditingSourceFiles/UsagesWindow.html"/>
-	<mapID target="FindingUsages" url="EditingSourceFiles/FindingUsages.html"/>
-	<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPaelContaier.find-usages" url="EditingSourceFiles/FindUsagesDialog.html"/>
-	<mapID target="CandC++ThreadsWindow" url="CandC++ProjectBasics/CandC++ThreadsWindow.html"/>
-	<mapID target="Threads" url="CandC++ProjectBasics/Threads.html"/>
-	<mapID target="collapse" url="images/collapse.png"/>
-	<mapID target="logical" url="images/logical.png"/>
-	<mapID target="next" url="images/next.png"/>
-	<mapID target="physical" url="images/physical.png"/>
-	<mapID target="previous" url="images/previous.png"/>
-	<mapID target="UsagesWindow" url="EditingSourceFiles/UsagesWindow.html"/>
-	<mapID target="Attaching" url="CandC++ProjectBasics/Attaching.html"/>
-	<mapID target="CofiguringCodeStyle" url="WorkingWithCandC++Projects/ConfiguringCodeStyle.html"/>
-	<mapID target="ConfiguringSemanticHighlighting" url="WorkingWithCandC++Projects/ConfiguringSemanticHighlighting.html"/>
-	<mapID target="ConfiguringFileExtensions" url="WorkingWithCandC++Projects/ConfiguringFileExtensions.html"/>
-	<mapID target="CandC++Options" url="CandC++ProjectBasics/CandC++Options.html"/>
-	<mapID target="CandC++DisassemblyWIndow" url="CandC++ProjectBasics/CandC++DisassemblyWIndow.html"/>
 </map>

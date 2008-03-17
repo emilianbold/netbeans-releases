@@ -239,12 +239,12 @@ public class PackageCatalogArtifacts {
                     }
                 }
             }
+            
             if (localUri != null) {
-                // # 130092
-                localUri = localUri.replace("\\", "/"); // NOI18N
                 catalogWriter.println("    <system systemId=\"" + ns + "\" uri=\"" + localUri + "\"/>");
             }
         }
+        
         catalogWriter.println("</catalog>");
         catalogWriter.flush();
         catalogWriter.close();

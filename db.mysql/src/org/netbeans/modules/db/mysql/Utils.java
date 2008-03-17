@@ -156,13 +156,4 @@ public class Utils {
 
         DialogDisplayer.getDefault().notify(ndesc);
     }
-    
-    /**
-     * See if two strings are equal, taking into account possibility of
-     * null
-     */
-    public static boolean stringEquals(String str1, String str2) {
-        return  (str1 == null && str2 == null) ||
-                (str2 != null && str1 != null && str1.equals(str2));
-    }
 }

@@ -156,7 +156,7 @@ public class PathController implements ActionListener, ListSelectionListener, Li
             Object path = pluginsPath.nextElement();
             buffer.append(path.toString());
             if(pluginsPath.hasMoreElements())
-                buffer.append(File.pathSeparator);
+                buffer.append(System.getProperty( "path.separator" ));// NOI18N
         }
         return buffer.toString();
     }
@@ -175,7 +175,7 @@ public class PathController implements ActionListener, ListSelectionListener, Li
     }
     
     public static DefaultListModel createModel(String items) {
-        StringTokenizer tk = new StringTokenizer(items,File.pathSeparator);
+        StringTokenizer tk = new StringTokenizer(items,",");// NOI18N
         DefaultListModel model = new DefaultListModel();
         while(tk.hasMoreTokens()) {
             String path = tk.nextToken();

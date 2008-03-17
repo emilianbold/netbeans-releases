@@ -99,9 +99,9 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     }
 
     public void storeSettings(Object settings) {
-//        SchemaComponent sc = component.getSelectedSchemaComponent();
-//        
-//        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY, sc);
+        SchemaComponent sc = component.getSelectedSchemaComponent();
+        
+        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY, sc);
     }
     
     class MyPropertyChangeListener implements PropertyChangeListener {

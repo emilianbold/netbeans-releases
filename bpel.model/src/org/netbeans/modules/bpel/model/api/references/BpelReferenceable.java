@@ -16,6 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.api.references;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -28,4 +32,5 @@ import org.netbeans.modules.xml.xam.Referenceable;
  * @author ads
  */
 public interface BpelReferenceable extends Referenceable, BpelEntity {
+
 }

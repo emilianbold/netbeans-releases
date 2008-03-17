@@ -632,7 +632,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }
         
         protected String getMenuItemText () {
-            return NbBundle.getBundle(ToggleCommentAction.class).getString(
+            return NbBundle.getBundle(UncommentAction.class).getString(
                 "toggle_comment_main_menu_item"); //NOI18N
         }
 

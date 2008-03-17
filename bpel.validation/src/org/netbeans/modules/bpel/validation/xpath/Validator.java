@@ -63,9 +63,9 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -118,6 +118,14 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName != null && fromName.equals(toName)) {
       return;
     }
+    /*todo r
+    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
+      return;
+    }
+    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
+      return;
+    }
+    */
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }

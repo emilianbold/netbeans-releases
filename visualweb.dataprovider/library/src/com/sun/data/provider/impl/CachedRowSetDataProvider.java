@@ -88,8 +88,6 @@ import com.sun.sql.rowset.CachedRowSetX;
 import com.sun.sql.rowset.SyncResolverX;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 /**
  * <p>{@link TableDataProvider} implementation that wraps a <code>CachedRowSet</code>.
@@ -1471,20 +1469,16 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                                  
                                 metaDataFilename = filename;
                                 metaData = getCachedRowSet().getMetaData();                                
-                                mdSerializer.serialize(metaData, filename);                                                                
+                                mdSerializer.serialize(metaData, filename);
                                 refreshMetaDataFile = false;
                             } else {
                                 // Deserialize file now that it is available                                                    
                                 metaData = new MetaDataDeserializer().deserialize(filename);
-                            }  
-                            // bind data source name
-                            new InitialContext().lookup(cachedRowSet.getDataSourceName());
+                            }                            
                         }
                     }                                       
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
-                } catch (NamingException ne) {
-                    throw new RuntimeException(ne);
                 }
             }
         }

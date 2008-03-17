@@ -31,14 +31,15 @@ import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
-import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
+import org.netbeans.modules.bpel.model.impl.references.MappedReference;
 import org.netbeans.modules.bpel.model.impl.services.InnerEventDispatcherAdapter;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+
 
 /**
  * 
@@ -56,6 +57,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  * if it is subject of event ) and notify listeners of model about changes.
  * 
  * @author ads
+ *
  */
 public class ImportChangeHandlingService extends InnerEventDispatcherAdapter {
     
@@ -321,3 +323,4 @@ public class ImportChangeHandlingService extends InnerEventDispatcherAdapter {
         }
     }
 }
+

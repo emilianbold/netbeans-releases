@@ -48,7 +48,7 @@ import javax.swing.AbstractListModel;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class represents model for SQLCaseArea
@@ -58,7 +58,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 public class CaseListModel extends AbstractListModel {
 
     private Vector listItems = new Vector();
-    private static transient final Logger mLogger = Logger.getLogger(CaseListModel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(CaseListModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of CaseListModel */
@@ -133,8 +133,8 @@ public class CaseListModel extends AbstractListModel {
         }
 
         if (!listItems.contains(val)) {
-            String nbBundle1 = mLoc.t("BUND407: Cannot remove selected when condition.");
-            throw new BaseException(nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Cannot remove selected when condition.");
+            throw new BaseException(Localizer.parse(nbBundle1));
         }
 
         int idx = listItems.indexOf(val);

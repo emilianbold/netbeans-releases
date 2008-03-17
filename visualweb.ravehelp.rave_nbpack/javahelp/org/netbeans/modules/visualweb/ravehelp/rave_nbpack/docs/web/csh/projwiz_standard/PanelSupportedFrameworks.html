@@ -44,6 +44,7 @@ want to use to provide a structure for your web application. </p>
                 <param name="textColor" value="blue">
             </object>
     <p>If you select the JavaServer Faces checkbox, you can set the default Java package, JSF servlet name, and servlet  URL mapping.</p>
+            
 </li>
 
 
@@ -51,7 +52,7 @@ want to use to provide a structure for your web application. </p>
 
 
 
-      <li><b>JavaServer Faces.</b> Specifies that you want the IDE to
+  <li><b>JavaServer Faces.</b> Specifies that you want the IDE to
 	  provide the JSF libraries and create the following files for
 	   your application:
             <ul>
@@ -59,13 +60,13 @@ want to use to provide a structure for your web application. </p>
                 <li><tt>faces-config.xml</tt></li>
             </ul>
             For details, see:
-            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://java.sun.com/j2ee/javaserverfaces/">
                 <param name="text" value="<html><u>http://java.sun.com/j2ee/javaserverfaces/</u></html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
-            </object>
-            <p>If you select the JavaServer Faces checkbox, you can set the JSF servlet name and servlet URL mapping in the Configuration tab. In the Libraries tab, you can specify which registered libraries to use. You can also create a new library and choose whether  libraries can be appended. </p>
+  </object>
+            <p>If you select the JavaServer Faces checkbox, you can set the JSF servlet name and servlet URL mapping.</p>
             <p>If you choose Visual Web JavaServer Faces or JavaServer Faces, you can also choose the following options:</p>
             <ul>
                 <li><b>Validate XML.</b> If selected, JSF XML files are validated by the server when the application is deployed.
@@ -74,74 +75,28 @@ want to use to provide a structure for your web application. </p>
                 <li><b>Verify Objects.</b> If selected, JSF objects are created and verified by the server when the application is deployed.
                     Selecting this option can increase deployment time.
                 This option is deselected by default.</li></ul>
-      </li>
-			
-      <li><b>Spring Web MVC</b> Specifies that you want the IDE to provide the 
-                Spring libraries and create the following files for your application:
-                <ul>
-                    <li><tt>web/WEB-INF/applicationContext.xml</tt></li>
-                    <li><tt>web/WEB-INF/[dispatcher]-servlet.xml</tt></li>
-                    <li><tt>web/WEB-INF/redirect.jsp</tt></li>
-                    <li><tt>web/WEB-INF/jsp/index.jsp</tt></li>
-                </ul>
-                
-                <p>If you select the Spring Web MVC checkbox, you can set the default dispatcher name 
-                    and mapping.</p>
-                
-                <ul class="note">
-                    <li>Dispatcher mappings are based on the Java Servlet Specification Section SRV.11.2. 
-                        In the web application deployment descriptor, the following syntax is used to 
-                        define standard mappings:
-
-                        <ul>
-                            <li>A string beginning with a '<tt>/</tt>' character and ending with a '<tt>/*</tt>' 
-                                postfix is used for path mapping.</li>
-                            <li>A string beginning with a '<tt>*.</tt>' prefix is used as an extension
-                                mapping.</li>
-                            <li>A string containing only the '<tt>/</tt>' character indicates the default 
-                                servlet of the application. In this case the servlet path is the requested 
-                                URI minus the context path and the path info is <tt>null</tt>.</li>
-                            <li>All other strings are used for exact matches only.</li>
-                        </ul>
-                    </li>
-                </ul>           
-
-                <p>When you click Finish, the project is created in your file system and opened in the 
-                    IDE. The following libraries are automatically added to the project's classpath:</p>
-                    
-                <ul>
-                    <li><tt>spring-2.5.jar</tt></li>
-                    <li><tt>spring-webmvc-2.5.jar</tt></li>
-                    <li><tt>commons-logging-1.1.jar</tt></li>
-                    <li><tt>jstl.jar</tt> (optional)</li>
-                    <li><tt>standard.jar</tt> (optional)</li>                    
-                </ul>    
-                    
-                    
-                <p>You can view the project's logical structure in the Projects window and its file 
-                    structure in the Files window.</p>
-      </li>            
-            
-      <li><b>Struts</b> Specifies that you want the IDE to
+    
+            </li>
+                <li><b>Struts</b> Specifies that you want the IDE to
               provide the Struts libraries and create the following files for
               your application:
-                  <ul>
+        <ul>
             <li><tt>welcomeStruts.jsp</tt></li>
             <li><tt>struts-config.xml</tt></li>
             <li><tt>tiles-defs.xml</tt></li>
             <li><tt>validator-rules.xml</tt></li>
             <li><tt>ApplicationResource.properties</tt></li>
-                  </ul>
-                  For details, see:
-                  <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        </ul>
+        For details, see:
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
             <param name="content" value="http://struts.apache.org/">
             <param name="text" value="<html><u>http://struts.apache.org</u></html>">
             <param name="textFontSize" value="medium">
             <param name="textColor" value="blue">
           </object>
-                  <p>If you select the Struts 1.2.9 checkbox, you can set the servlet name and URL pattern. 
+        <p>If you select the Struts checkbox, you can set the servlet name and URL pattern. 
         You can also set the application resource and specify whether the IDE adds Struts TLDs.</p>
-                </li>
+</li>
 </ul>
 <p>When you click Finish, the project is created in your filesystem and opened in the IDE. 
 You can view its logical structure in the Projects window and its file structure in the Files window.</p>

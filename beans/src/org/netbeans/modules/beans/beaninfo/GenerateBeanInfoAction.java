@@ -128,9 +128,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         performer.analyzePatterns();
 
         performer.waitFinished();
-        if (performer.bia != null) {
-            performer.bia.openSource();
-        }
+        performer.bia.openSource();
     }
 
     @Override
@@ -200,7 +198,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         
         public boolean isModelModified() {
             waitFinished();
-            return bia != null? bia.isModified(): false;
+            return bia.isModified();
         }
         
         public void run() {
@@ -277,7 +275,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         }
         
         private void generateSourcesImpl() {
-            if (!isCancelled() && bia != null && !bia.isBeanBroken()) {
+            if (!isCancelled()) {
                 bia.regenerateSource();
             }
         }

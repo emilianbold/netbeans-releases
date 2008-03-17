@@ -390,9 +390,6 @@ public final class EarProjectProperties {
     
     private static void setNewServerInstanceValue(String newServInstID, Project project, 
             EditableProperties projectProps, EditableProperties privateProps) {
-
-        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
-
         String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
         if (oldServInstID != null) {
             J2eePlatform oldJ2eePlatform = Deployment.getDefault().getJ2eePlatform(oldServInstID);

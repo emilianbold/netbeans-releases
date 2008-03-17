@@ -58,6 +58,8 @@ import org.netbeans.junit.ide.ProjectSupport;
  * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
  *    - where to find jmaki.nbm (default is to download nbm from:
  *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
+ * "plugins.rest.forceUninstall=true"
+ *    - unistall jMaki plugin even if it has not been installed by tests
  * 
  * @author lukas
  */
@@ -69,13 +71,11 @@ public class JMakiTest extends CStubsTSuite {
 
     @Override
     public void setUp() throws Exception {
-        if (!Boolean.getBoolean("plugins.jmaki.skip")) {
-            super.setUp();
-            try {
-                Class.forName("org.netbeans.modules.sun.jmaki.Installer");
-            } catch (ClassNotFoundException ex) {
-                fail("jMaki is not installed.");
-            }
+        super.setUp();
+        try {
+            Class.forName("org.netbeans.modules.sun.jmaki.Installer");
+        } catch (ClassNotFoundException ex) {
+            fail("jMaki is not installed.");
         }
     }
 
@@ -96,11 +96,11 @@ public class JMakiTest extends CStubsTSuite {
         addJMakiFrameWork();
         createStubs("FromEntities"); //NOI18N
     }
-
+    
     public void testJMakiTestsSkipped() {
         //nothing to do
     }
-
+    
     private void addJMakiFrameWork() {
         // open project properties
         getProjectRootNode().properties();

@@ -19,7 +19,7 @@
 		http://code.google.com/apis/accounts/AuthForInstalledApps.html
 	    </doc>
 	    <resource path="ClientLogin">
-		<method name="POST" id="accounts_clientLogin">
+		<method name="POST" id="google.accounts_ClientLogin">
 		    <request>
 			<representation mediaType="application/x-www-form-urlencoded">
 			    <param name="accountType" type="xsd:string" style="query" required="false">

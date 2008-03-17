@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
-<title>Standard Java SE Project Properties Dialog Box: Compiling Sources</title>
+<title>Standard Java SE Project Properties Dialog Box: Compiling</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
@@ -14,8 +14,7 @@
 <p>The Compiling  panel 
   	enables you to 
   	set general compilation options for your project.
-To add any additional compiler options, enter them in a space-separated
-	list in the Additional Compiler Options text field. You open the Standard
+You open the Standard
 	Java SE Project Properties dialog box by right-clicking any
    <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
   		<param name="content" value="./glossary_standard.html">
@@ -30,6 +29,23 @@ To add any additional compiler options, enter them in a space-separated
   		<param name="textColor" value="blue">
 	</object>
 &nbsp;node and choosing Properties.
+
+<p>The Compiling panel includes the following options:</p>
+<ul>
+<li><b>Generate Debugging Info</b>. If selected, the compiled classes will 
+include information necessary for stopping at breakpoints and stepping through 
+the application with the debugger.</li>
+<li><b>Report Uses of Deprecated APIs</b>. If selected, you are notified in 
+the compilation output of any deprecated APIs that you code uses.</li>
+<li><b>Track Java Dependencies</b>. If selected, the IDE makes sure to use 
+the latest version of any project dependencies every time you build or run your
+project. This full dependency check can make the build process 
+significantly slower for large projects. If you leave
+this option unchecked, you can still have the full dependency check 
+performed by building your project with the Clean and Build command.</li>
+<li><b>Additional Compiler Options</b>. Enter any additional compiler options that you 
+need in a space-separated list.</li>
+</ul>
 
 <p>For more information on compiler options, see:</p>
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

@@ -47,20 +47,6 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
-    <change id="Actions.MenuText">
-        <api name="awt"/>
-        <summary>Actions can have "menuText" and "popupText" properties</summary>
-        <version major="7" minor="1"/>
-        <date day="12" month="3" year="2008"/>
-        <author login="jtulach"/>
-        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="yes" deletion="no" modification="no"/>
-        <description>
-        In order to allow dynamic names of actions, the <a href="@TOP@/org/openide/awt/Actions.html#connect(javax.swing.JMenuItem,%20javax.swing.Action,%20boolean)">Actions.connect</a>
-        method now understands additional properties that influence the text 
-        of menu items or popup menu items build for this action.
-        </description>
-        <class package="org.openide.awt" name="Actions"/>
-    </change>
     <change id="SpinButton.RepeatThread">
         <api name="awt"/>
         <summary>Hidden field SpinButton.rt made accessible</summary>

@@ -309,7 +309,6 @@ made subject to such option by the copyright holder.
                 <project>../../libs.ini4j</project>
                 <project>../../libs.javacapi</project>
                 <project>../../libs.javacimpl</project>
-                <project>../../libs.javacup</project>
                 <project>../../libs.jna</project>
                 <project>../../libs.jsch</project>
                 <project>../../libs.jsr223</project>
@@ -387,12 +386,6 @@ made subject to such option by the copyright holder.
                 <project>../../options.api</project>
                 <project>../../options.editor</project>
                 <project>../../options.keymap</project>
-                <project>../../php.dbgp</project>
-                <project>../../php.doc</project>
-                <project>../../php.editor</project>
-                <project>../../php.kit</project>
-                <project>../../php.project</project>
-                <project>../../php.rt</project>
                 <project>../../print</project>
                 <project>../../profiler</project>
                 <project>../../profiler.attach</project>
@@ -600,11 +593,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.kit</project>
                 <project>../../websvc.manager</project>
                 <project>../../websvc.metro.samples</project>
-                <project>../../websvc.rest</project>
-                <project>../../websvc.rest.samples</project>
-                <project>../../websvc.restapi</project>
-                <project>../../websvc.restkit</project>
-                <project>../../websvc.restlib</project>
                 <project>../../websvc.saas.api</project>
                 <project>../../websvc.saas.codegen</project>
                 <project>../../websvc.saas.services.amazon</project>

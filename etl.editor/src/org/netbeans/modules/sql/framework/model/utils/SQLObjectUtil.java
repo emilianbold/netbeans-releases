@@ -85,6 +85,7 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.HashMap;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
@@ -103,7 +104,7 @@ public class SQLObjectUtil {
     public static final String FILE_LOC = "FILE_LOC";
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLObjectUtil.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(SQLObjectUtil.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public static Map<String, String> getTableMetaData(SQLDBTable table) throws SQLException, BaseException {
@@ -392,7 +393,7 @@ public class SQLObjectUtil {
                 }
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT124: Error while retrieving file name{0}", SQLDefinition.class.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR124: Error while retrieving file name{0}", SQLDefinition.class.getName()), ex);
         } finally {
             try {
                 if (conn != null) {
@@ -407,7 +408,7 @@ public class SQLObjectUtil {
 
     public static String generateFFRuntimeInputName(String prefix, SQLDBTable table) {
         String genName = prefix + "_" + table.getUniqueTableName();
-        mLogger.infoNoloc(mLoc.t("EDIT125: table name{0} for table", genName, table.getName()));
+        mLogger.infoNoloc(mLoc.t("PRSR125: table name{0} for table", genName, table.getName()));
         return genName;
     }
 
@@ -420,7 +421,7 @@ public class SQLObjectUtil {
             sysName = sysName.substring(0, 18);
         }
 
-        mLogger.infoNoloc(mLoc.t("EDIT126: temp table name{0} for table", sysName, tableName));
+        mLogger.infoNoloc(mLoc.t("PRSR126: temp table name{0} for table", sysName, tableName));
         return sysName;
     }
 
@@ -432,7 +433,7 @@ public class SQLObjectUtil {
             sysName = sysName.substring(0, 18);
         }
 
-        mLogger.infoNoloc(mLoc.t("EDIT126: temp table name{0} for table", sysName, tableName));
+        mLogger.infoNoloc(mLoc.t("PRSR127: temp table name{0} for table", sysName, tableName));
         return sysName;
     }
 
@@ -843,7 +844,7 @@ public class SQLObjectUtil {
                 jmd.addInput(SQLJoinOperator.LEFT, left);
                 jmd.addInput(SQLJoinOperator.RIGHT, right);
             } catch (BaseException sqlEx) {
-                mLogger.errorNoloc(mLoc.t("EDIT128: Failed to create auto-join{0}", LOG_CATEGORY), sqlEx);
+                mLogger.errorNoloc(mLoc.t("PRSR128: Failed to create auto-join{0}", LOG_CATEGORY), sqlEx);
 
                 jmd = null;
             }

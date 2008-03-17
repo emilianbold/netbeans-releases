@@ -48,54 +48,65 @@
     </types>
     
     <message name="HotelReservation">
-        <part name="reserveHotelPart" element="ns:reserve"></part>
+        <part name="reserveHotelPart"
+              element="ns:reserve"></part>
     </message>
     
     <message name="HotelReservationStatus">
-        <part name="status" element="ns:reserveStatus"></part>
+        <part name="status"
+              element="ns:reserveStatus"></part>
     </message>
     
     <portType name="HotelReservationPortType">
         <operation name="reserveHotel">
-            <input name="reserveMesg" message="tns:HotelReservation"></input>
+            <input name="reserveMesg"
+                   message="tns:HotelReservation"></input>
         </operation>
     </portType>
     
     <portType name="HotelStatusPortType">
         <operation name="sendHotelStatus">
-            <input name="statusMesg" message="tns:HotelReservationStatus"></input>
+            <input name="statusMesg"
+                   message="tns:HotelReservationStatus"></input>
         </operation>
     </portType>
     
     <binding name="HotelReservationBinding"
              type="tns:HotelReservationPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <soap:binding style="document"
+                      transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserveHotel">
             <soap:operation style="document"/>
             <input name="reserveMesg">
-                <soap:body parts="reserveHotelPart" use="literal"/>
+                <soap:body parts="reserveHotelPart"
+                           use="literal"/>
             </input>
         </operation>
     </binding>
     
-    <binding name="HotelReservationStatusBinding" type="tns:HotelStatusPortType">
-        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="HotelReservationStatusBinding"
+             type="tns:HotelStatusPortType">
+        <soap:binding style="document"
+                      transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="sendHotelStatus">
             <soap:operation style="document"/>
             <input name="statusMesg">
-                <soap:body parts="status" use="literal"/>
+                <soap:body parts="status"
+                           use="literal"/>
             </input>
         </operation>
     </binding>
     
     <service name="HotelService">
-        <port name="HotelServicePort" binding="tns:HotelReservationBinding">
+        <port name="HotelServicePort"
+              binding="tns:HotelReservationBinding">
             <soap:address location="http://localhost:18181/wsdl/HotelService/ServiceLocation"/>
         </port>
     </service>
     
     <service name="HotelStatusService">
-        <port name="HotelStatusServicePort" binding="tns:HotelReservationStatusBinding">
+        <port name="HotelStatusServicePort"
+              binding="tns:HotelReservationStatusBinding">
             <soap:address location="http://localhost:18181/wsdl/HotelStatusService/ServiceLocation"/>
         </port>
     </service>

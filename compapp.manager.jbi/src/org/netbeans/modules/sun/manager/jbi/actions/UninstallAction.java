@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Uninstallable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -59,15 +63,32 @@ public abstract class UninstallAction extends NodeAction {
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                try {                    
+                try {
+                    // a set of nodes that need refreshing
+                    final Set<Node> parentNodes = new HashSet<Node>();
+                    
                     for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
                         Uninstallable uninstallable = lookup.lookup(Uninstallable.class);
                         
                         if (uninstallable != null) {
+                            parentNodes.add(node.getParentNode());
                             uninstallable.uninstall(isForceAction());
                         }
-                    }                    
+                    }
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            for (Node parentNode : parentNodes) {
+                                final Refreshable refreshable =
+                                        parentNode.getLookup().lookup(Refreshable.class);
+                                if (refreshable != null){
+                                    refreshable.refresh();
+                                }
+                            }
+                        }
+                    });
+                    
                 } catch (RuntimeException rex) {
                     //gobble up exception
                 }

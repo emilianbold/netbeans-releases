@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Case operator used when we want to do a join and lookup
@@ -73,7 +73,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 public class SQLCaseOperatorImpl extends SQLConnectableObjectImpl implements SQLCaseOperator {
 
     private static final String DEFAULT = "default"; // NOI18N
-    private static transient final Logger mLogger = Logger.getLogger(SQLCaseOperatorImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLCaseOperatorImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     /**
@@ -90,8 +90,8 @@ public class SQLCaseOperatorImpl extends SQLConnectableObjectImpl implements SQL
         super();
         this.type = SQLConstants.CASE;
 
-        String nbBundle1 = mLoc.t("BUND297: default");
-        String dispName = nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: default");
+        String dispName = Localizer.parse(nbBundle1);
         SQLInputObject input = new SQLInputObjectImpl(DEFAULT, dispName, null);
         this.inputMap.put(DEFAULT, input);
     }

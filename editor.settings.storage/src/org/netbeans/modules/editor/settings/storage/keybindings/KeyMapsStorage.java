@@ -158,10 +158,9 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         // these characters do not work on MAC, Alt should be coded as 'O'
                         // and Ctrl as 'D'
                         int idx = key.indexOf('-'); //NOI18N
-                        String proccessedFilePath = getProcessedFile().getPath();
-                        if (idx != -1 && (key.charAt(0) == 'A' || key.charAt(0) == 'C') && !proccessedFilePath.endsWith("-mac.xml")) { //NOI18N
+                        if (idx != -1 && (key.charAt(0) == 'A' || key.charAt(0) == 'C')) { //NOI18N
                             LOG.warning("The keybinding '" + key + //NOI18N
-                                "' in " + proccessedFilePath + " may not work correctly on Mac. " + //NOI18N
+                                "' in " + getProcessedFile().getPath() + " may not work correctly on Mac. " + //NOI18N
                                 "Keybindings starting with Alt or Ctrl should " + //NOI18N
                                 "be coded with latin capital letters 'O' " + //NOI18N
                                 "or 'D' respectively. For details see org.openide.util.Utilities.stringToKey()."); //NOI18N

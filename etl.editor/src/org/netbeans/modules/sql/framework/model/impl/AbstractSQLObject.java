@@ -58,7 +58,7 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This basic class provides sql framework functionality to all SQLObjects
@@ -70,7 +70,7 @@ public abstract class AbstractSQLObject implements SQLObject {
     /* Log4J category string */
 
     private static final String LOG_CATEGORY = AbstractSQLObject.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(AbstractSQLObject.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(AbstractSQLObject.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * Map of attributes; used by concrete implementations to store class-specific fields
@@ -134,7 +134,7 @@ public abstract class AbstractSQLObject implements SQLObject {
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
                     // log me
-                    mLogger.errorNoloc(mLoc.t("EDIT105: Failed to copy source objects{0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR105: Failed to copy source objects{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -238,7 +238,7 @@ public abstract class AbstractSQLObject implements SQLObject {
         try {
             strType = TagParserUtility.getStringType(this.getObjectType());
         } catch (BaseException e) {
-            mLogger.infoNoloc(mLoc.t("EDIT106: Failed to get type attr.{0}", LOG_CATEGORY));
+            mLogger.infoNoloc(mLoc.t("PRSR106: Failed to get type attr.{0}", LOG_CATEGORY));
             strType = "UNKNOWN_TYPE";
         }
         StringBuilder buffer = new StringBuilder();
