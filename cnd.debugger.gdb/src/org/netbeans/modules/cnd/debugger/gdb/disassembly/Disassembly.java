@@ -86,6 +86,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private CallStackFrame lastFrame = null;
     private boolean withSource = true;
     private boolean opened = false;
+    private boolean opening = false;
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
@@ -254,9 +255,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
+        final boolean dis = opening;
+        opening = false;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateAnnotations(false);
+                updateAnnotations(dis);
             }
         });
     }
@@ -443,6 +446,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {
+                dis.opening = true;
                 dis.opened = true;
                 dis.reloadDis(true, false);
             }
