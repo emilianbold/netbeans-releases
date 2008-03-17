@@ -40,6 +40,7 @@ package org.netbeans.modules.hibernate.framework;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -54,6 +55,7 @@ import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -68,7 +70,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     private HibernateConfigurationPanel configPanel = null;
     private final static String DEFAULT_CONFIG_FILENAME = "hibernate.cfg";
-    
     private final String sessionName = "name";
     private final String dialect = "hibernate.dialect";
     private final String driver = "hibernate.connection.driver_class";
@@ -102,7 +103,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     @Override
     public void update() {
-        
+
     }
 
     @Override
@@ -117,7 +118,37 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         try {
             SourceGroup[] javaSourceGroup = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
-            FileObject targetFolder = javaSourceGroup[0].getRootFolder();
+            if (javaSourceGroup != null && javaSourceGroup.length != 0) {
+                FileObject targetFolder = javaSourceGroup[0].getRootFolder();
+                CreateHibernateConfiguration createHibernateConfiguration =
+                        new CreateHibernateConfiguration(targetFolder, enclosingProject);
+                targetFolder.getFileSystem().runAtomicAction(createHibernateConfiguration);
+
+                return createHibernateConfiguration.getCreatedFiles();
+            }
+
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.EMPTY_SET;
+    }
+
+    private class CreateHibernateConfiguration implements FileSystem.AtomicAction {
+
+        private FileObject targetFolder;
+        private Project enclosingProject;
+        private Set<FileObject> createdFilesSet = new LinkedHashSet<FileObject>();
+
+        public CreateHibernateConfiguration(FileObject targetFolder, Project enclosingProject) {
+            this.targetFolder = targetFolder;
+            this.enclosingProject = enclosingProject;
+        }
+
+        public Set<FileObject> getCreatedFiles() {
+            return createdFilesSet;
+        }
+
+        public void run() throws IOException {
             DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
             FileObject templateFileObject = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Hibernate/Hibernate.cfg.xml");  //NOI18N
             DataObject templateDataObject = DataObject.find(templateFileObject);
@@ -127,10 +158,10 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                     targetDataFolder,
                     DEFAULT_CONFIG_FILENAME);
             SessionFactory sFactory = new SessionFactory();
-            
+
             sFactory.setAttributeValue(sessionName, configPanel.getSessionName());
             int row = 0;
-            
+
             if (configPanel.getSelectedDialect() != null && !"".equals(configPanel.getSelectedDialect())) {
                 row = sFactory.addProperty2(configPanel.getSelectedDialect());
                 sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);
@@ -158,12 +189,10 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
             System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+            createdFilesSet.add(newOne.getPrimaryFile());
 
-            return Collections.singleton(hdo.getPrimaryFile());
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.EMPTY_SET;
         }
     }
 }
+
+
