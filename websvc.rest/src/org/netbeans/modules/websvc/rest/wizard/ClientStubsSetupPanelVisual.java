@@ -593,10 +593,7 @@ private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 }//GEN-LAST:event_wadlTextFieldKeyTyped
     
     private boolean validateWadlFile(final String fileName) {
-        String name = fileName.replaceAll(File.separator, "/");
-        if(!name.startsWith("/"))
-            name = "/"+name;
-        File f = new File(name);
+        File f = new File(fileName);
         boolean isValid = false;
         try {
             if(f.isFile()) {
