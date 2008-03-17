@@ -62,9 +62,9 @@ public class FolderOrderIllegalTest extends NbTestCase {
         LOG = Logger.getLogger("org.openide.loaders.FolderList." + getName());
     }
     public void testRenameBehaviour() throws Exception {
-        if (Boolean.getBoolean("ignore.random.failures")) {
-            return;
-        }
+//        if (Boolean.getBoolean("ignore.random.failures")) {
+//            return;
+//        }
         File dir = new File(getWorkDir(), "dir");
         dir.mkdirs();
         File old = new File(getWorkDir(), "old");
@@ -107,6 +107,6 @@ public class FolderOrderIllegalTest extends NbTestCase {
         DataObject[] arr = f.getChildren();
         
         String txt = Arrays.toString(arr).replaceAll(", ", "\n");
-        assertEquals("Just 9:\n" + txt, 9, arr.length);//fail("OK:\n" + txt);
+        assertEquals("All 10:\n" + txt, 10, arr.length);//fail("OK:\n" + txt);
     }
 }
