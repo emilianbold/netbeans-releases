@@ -41,13 +41,14 @@
 
 package org.netbeans.modules.masterfs;
 
+import java.io.File;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import javax.swing.event.ChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -62,7 +63,7 @@ import org.openide.util.NbPreferences;
  * 
  * This class has hidden dependency on IDESettings in module org.netbeans.core.
  */ 
-public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation {
+public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2 {
     static GlobalVisibilityQueryImpl INSTANCE;
     private final ChangeSupport cs = new ChangeSupport(this);
     
@@ -84,6 +85,11 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     public boolean isVisible(FileObject file) {
         return isVisible(file.getNameExt());
     }
+    
+    public boolean isVisible(File file) {
+        return isVisible(file.getName());
+    }
+    
 
     boolean isVisible(final String fileName) {
         Pattern pattern = getIgnoreFilesPattern();
@@ -127,5 +133,6 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
             }
         });                
         return retval;
-    }    
+    }
+
 }

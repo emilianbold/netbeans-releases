@@ -104,6 +104,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+      <change id="FileBasedIsVisible">
+        <api name="general"/>
+        <summary>VisibilityQuery.isVisible(File) added</summary>
+        <version major="1" minor="12"/>
+        <date day="24" month="3" year="2008"/>
+        <author login="mkleint"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+          <p>
+             Added new method VisibilityQuery.isVisible(File). 
+             It queries all VisibilityQueryImplementation instances found in global lookup.
+             If such instance implements VisibilityQueryImplementation2, it's isVisible(File) method is used directly. 
+             If not, it attempts to delegate to the isVisible(FileObject) method. That might not work for non-existing files.
+             All implementations of VisibilityQueryImplementation are encouraged to upgrade to VisibilityQueryImplementation2.
+          </p>
+        </description>
+        <class package="org.netbeans.api.queries" name="VisibilityQuery"/>
+        <class package="org.netbeans.spi.queries" name="VisibilityQueryImplementation2"/>
+        <issue number="95974"/>
+      </change>
+        
       <change id="FileEncodingQueryOnDefaultFS">
         <api name="general"/>
         <summary>Default Encoding of System File System is always UTF-8</summary>
