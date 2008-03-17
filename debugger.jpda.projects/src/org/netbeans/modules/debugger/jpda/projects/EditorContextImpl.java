@@ -496,9 +496,14 @@ public class EditorContextImpl extends EditorContext {
      */
     public String getCurrentURL () {
         synchronized (currentLock) {
+            if (currentURL != null) {
+                return currentURL;
+            }
+        }
+        DataObject[] nodes = (DataObject[])resDataObject.allInstances().toArray(new DataObject[0]);
+        // Lookup, as a side-effect, can call lookup listeners and do whatever it wants. Do not call under a lock.
+        synchronized (currentLock) {
             if (currentURL == null) {
-                DataObject[] nodes = (DataObject[])resDataObject.allInstances().toArray(new DataObject[0]);
-
                 currentURL = "";
                 if (nodes.length != 1)
                     return currentURL;
@@ -869,6 +874,21 @@ public class EditorContextImpl extends EditorContext {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = ci.getTrees().getTree(elm);
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                    { // Find the method name
+                                        String text = ci.getText();
+                                        int l = text.length();
+                                        char c = 0;
+                                        while (pos < l && (c = text.charAt(pos)) != '(' && c != ')') pos++;
+                                        if (pos >= l) {
+                                            // We went somewhere wrong. Re-initialize original values
+                                            c = 0;
+                                            pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                        }
+                                        if (c == '(') {
+                                            pos--;
+                                            while (pos > 0 && Character.isWhitespace(text.charAt(pos))) pos--;
+                                        }
+                                    }
                                     EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
                                     result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
                                 }

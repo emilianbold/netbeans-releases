@@ -167,7 +167,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemSuiteComponentProject() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -217,7 +217,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemLocalizedNames() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -291,7 +291,7 @@ public class LayerUtilsTest extends LayerTestBase {
             TestBase.createJar(new File(new File(new File(platformDir, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, new Manifest());
             NbPlatform.addPlatform("testplatform", platformDir, "Test Platform");
             File suiteDir = new File(getWorkDir(), "testSuite");
-            SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform");
+            SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform", false);
             File moduleDir = new File(suiteDir, "testModule");
             NbModuleProjectGenerator.createSuiteComponentModule(
                     moduleDir,

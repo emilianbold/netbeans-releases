@@ -74,7 +74,7 @@ public class Tool {
         getString("CCompiler"), // NOI18N
         getString("CCCompiler"), // NOI18N
         getString("FortranCompiler"), // NOI18N
-        getString("Assembler"), // NOI18N
+        //getString("Assembler"), // NOI18N // Noy yet
         getString("CustomBuildTool"), // NOI18N
     };
     

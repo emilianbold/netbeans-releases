@@ -276,9 +276,7 @@ public class CasaHelper {
         if (casaFO == null) {
             return;
         }
-           
-        File casaFile = FileUtil.toFile(casaFO);
-        
+                   
         try {
             boolean modified = false; // whether casa is modified
             
@@ -286,7 +284,7 @@ public class CasaHelper {
             factory.setNamespaceAware(true);
             factory.setValidating(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document casaDocument = builder.parse(casaFile);
+            Document casaDocument = builder.parse(casaFO.getInputStream());
 
             Element sus = (Element) casaDocument.getElementsByTagName(
                     CasaConstants.CASA_SERVICE_UNITS_ELEM_NAME).item(0);

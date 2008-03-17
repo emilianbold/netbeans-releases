@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -167,40 +163,26 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testBlankLineAfterEndLineComment() {
+    
+    public void testOperatorEQformatting() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "namespace AC\n" +
+                "class real_c_float\n" +
                 "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
         reformat();
-        assertDocumentText("Incorrect blak line after end line comment",
-                "namespace AC\n" +
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
                 "{\n" +
                 "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    const real_c_float & operator=(long l)\n" +
                 "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
                 "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "};\n");
     }
 }

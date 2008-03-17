@@ -260,11 +260,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public CsmClassifier getClassifier() {
-        CsmClassifier res = getClassifier(null);
-        if (isInstantiation() && CsmKindUtilities.isTemplate(res) && !((CsmTemplate)res).getTemplateParameters().isEmpty()) {
-            res = (CsmClassifier)Instantiation.create((CsmTemplate)res, this);
-        }
-        return res;
+        return getClassifier(null);
     }
 
     public CharSequence getClassifierText() {
@@ -274,7 +270,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
-            return classifier;
+            // skip
         } else {
             _setClassifier(null);
             if (qname != null) {
@@ -282,8 +278,12 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             } else if (classifierText.length() > 0) {
                 _setClassifier(renderClassifier(new CharSequence[] { classifierText }, parent ));
             }
+            classifier = _getClassifier();
         }
-        return _getClassifier();
+        if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
+            classifier = (CsmClassifier)Instantiation.create((CsmTemplate)classifier, this);
+        }
+        return classifier;
     }
     
     private CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {

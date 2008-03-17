@@ -56,15 +56,6 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
     }
 
     @Override
-    public void setName(String name, String in) {
-        // Prototype.js hack
-        if ("Element.Methods".equals(in)) { // NOI18N
-            in = "Element"; // NOI18N
-        }
-        super.setName(name, in);
-    }
-
-    @Override
     public String toString() {
         return "JsFunctionElement:" + getSignature();
     }
