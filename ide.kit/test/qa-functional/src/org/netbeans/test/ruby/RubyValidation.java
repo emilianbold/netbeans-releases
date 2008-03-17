@@ -152,16 +152,19 @@ public class RubyValidation extends JellyTestCase {
     
     /** Test run Ruby file
      * - find main.rb in editor
-     * - call "Run File" popup action in editor
+     * - call "Run "main.rb"" popup action in editor
      * - wait for main.rb output tab
      * - check "Hello World" is printed out
      */
     public void testRunRubyFile() {
         // wait main.rb is opened in editor
         EditorOperator editor = new EditorOperator("main.rb"); // NOI18N
-        // "Run File"
-        String runFileItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_RunSingleAction_Name", new Integer[] {0});
-        // call "Run File" in editor
+        // "Run "main.rb""
+        String runFileItem = Bundle.getStringTrimmed(
+                "org.netbeans.modules.project.ui.actions.Bundle",
+                "LBL_RunSingleAction_Name",
+                new Object[]{new Integer(1), "main.rb"});
+        // call "Run "main.rb"" in editor
         new Action(null, runFileItem).perform(editor);
         // check message in output tab
         new OutputTabOperator("main.rb").waitText("Hello World"); // NOI18N
@@ -222,8 +225,8 @@ public class RubyValidation extends JellyTestCase {
         viewsOper.setText("myview");
         generatorOper.ok();
         
-        // wait 60 second
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 60000);
+        // wait 180 second
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
         
         String filename = "myapp_controller.rb"; // NOI18N
         new EditorOperator(filename);

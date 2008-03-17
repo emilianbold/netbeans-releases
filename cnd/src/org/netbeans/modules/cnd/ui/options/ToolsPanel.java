@@ -90,7 +90,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -184,6 +183,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             jLabel1.setVisible(false); // Required Tools label!
             jPanel1.setVisible(false); // Required Tools panel!
         }
+        
+        btBaseDirectory.setEnabled(false);
+        btCVersion.setEnabled(false);
+        btCppVersion.setEnabled(false);
+        btFortranVersion.setEnabled(false);
+        btMakeVersion.setEnabled(false);
+        btGdbVersion.setEnabled(false);
+        btVersions.setEnabled(false);
+        tfMakePath.setEnabled(false);
+        tfGdbPath.setEnabled(false);
+        btVersions.setEnabled(false);
         
         if (model.enableRequiredCompilerCB()) {
             cbCRequired.setEnabled(true);
@@ -284,8 +294,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 update(false, csm.getCompilerSets().get(index));
             else if (index > 0)
                 update(false, csm.getCompilerSets().get(index-1));
-            else
+            else {
+                tfBaseDirectory.setText(""); // NOI18N
+                btBaseDirectory.setEnabled(false);
+                cbFamily.removeAllItems();
+                tfCPath.setText(""); // NOI18N
+                tfCppPath.setText(""); // NOI18N
+                tfFortranPath.setText(""); // NOI18N
+                tfMakePath.setText(""); // NOI18N
+                tfGdbPath.setText(""); // NOI18N
                 update(false);
+            }
             changed = true;
         }
 //        int idx = lstDirlist.getSelectedIndex();
@@ -322,6 +341,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private void setSelectedAsDefault() {
         CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
         csm.setDefault(cs);
+        changed = true;
         update(false);
         
     }
@@ -569,6 +589,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCRequired.setVisible(model.showRequiredBuildTools());
         cbFortranRequired.setVisible(model.showRequiredBuildTools() && CppSettings.getDefault().isFortranEnabled());
         
+//        if (model.showRequiredTools()) {
+//            errorTextArea.setForeground(Color.RED);
+//        }
+//        else {
+//            errorTextArea.setForeground(Color.YELLOW);
+//        }
+        
         if (doInitialize) {
             // Set Default
             if (!csm.getCompilerSets().isEmpty()) {
@@ -650,6 +677,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //        Tool fortranSelection = null;
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
+            btBaseDirectory.setEnabled(true);
             cbFamily.removeAllItems();
             List<CompilerFlavor> list = CompilerFlavor.getFlavors();
             for (CompilerFlavor cf : list)
@@ -658,6 +686,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         else {
             tfBaseDirectory.setText(""); // NOI18N
+            btBaseDirectory.setEnabled(false);
             cbFamily.removeAllItems();
             return;
         }
@@ -872,34 +901,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 //            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
-            
-            CompilerSetManager.setDefault(csm);
-//            model.setPath(dirlist);
-//            model.setMakeName(tfMakeCommand.getText());
-//            model.setMakePath(tfMakePath.getText());
-            cs.getTool(Tool.MakeTool).setPath(tfMakePath.getText());
-            cs.getTool(Tool.DebuggerTool).setPath(tfGdbPath.getText());
-            cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
-            cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
-            cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
-//            model.setGdbName(tfGdbCommand.getText());
-//            model.setGdbPath(tfGdbPath.getText());
-            model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
-            model.setSelectedCompilerSetName(cs.getName());
-//            if (cSelections.get(cs.getName()) != null) {
-//                model.setCCompilerName(cSelections.get(cs.getName()));
-//            }
-//            if (cppSelections.get(cs.getName()) != null) {
-//                model.setCppCompilerName(cppSelections.get(cs.getName()));
-//            }
-//            if (fortranSelections.get(cs.getName()) != null) {
-//                model.setFortranCompilerName(fortranSelections.get(cs.getName()));
-//            }
-            currentCompilerSet = cs;
-            fireCompilerSetChange();
-            fireCompilerSetModified();
-            
+            if (cs != null) {
+                cs.getTool(Tool.MakeTool).setPath(tfMakePath.getText());
+                cs.getTool(Tool.DebuggerTool).setPath(tfGdbPath.getText());
+                cs.getTool(Tool.CCompiler).setPath(tfCPath.getText());
+                cs.getTool(Tool.CCCompiler).setPath(tfCppPath.getText());
+                cs.getTool(Tool.FortranCompiler).setPath(tfFortranPath.getText());
+                model.setCompilerSetName(csm.getDefaultCompilerSet().getName());
+                model.setSelectedCompilerSetName(cs.getName());
+            }
             csm.saveToDisk();
+            CompilerSetManager.setDefault(csm);
+            currentCompilerSet = cs;
+//            fireCompilerSetChange();
+//            fireCompilerSetModified();
         }
         
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
@@ -946,7 +961,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @return Returns true if all data is valid
      */
     public boolean dataValid() {
-        
+        if (csm.getCompilerSets().size() == 0) {
+            valid = false;
+            firePropertyChange(PROP_VALID, !valid, valid);
+            return false;
+        }
         if (updating || changingCompilerSet) {
             return true;
         } else {
@@ -1032,14 +1051,27 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return changed;
     }
     
-    /**
-     * Post version information for tools not considered part of a CompilerSet (make and gdb).
-     *
-     * @param name The name of the tool (no directory information)
-     * @param path The absolute path of the tool
-     */
-    private void postVersionInfo(String name, String path) {
-        postVersionInfo(CompilerFlavor.Unknown, name, path);
+    String getToolVersion(Tool tool, JTextField tf) {
+        StringBuilder version = new StringBuilder();
+        
+        version.append(tool.getDisplayName() + ": "); // NOI18N
+        if (isPathFieldValid(tf)) {
+            String path = tf.getText();
+            if (!IpeUtils.isPathAbsolute(path)) {
+                path = Path.findCommand(path);
+            }
+            String v = postVersionInfo(tool.getFlavor(), path);
+            if (v != null) {
+                version.append(v);
+            }
+            else {
+                version.append(getString("TOOL_VERSION_NOT_FOUND"));
+            }
+        }
+        else {
+            version.append(getString("TOOL_NOT_FOUND"));
+        }
+        return version.toString();
     }
     
     /**
@@ -1049,7 +1081,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * @param name The name of the tool (no directory information)
      * @param path The absolute path of the tool
      */
-    private void postVersionInfo(CompilerFlavor flavor, String name, String path) {
+    private String postVersionInfo(CompilerFlavor flavor, String path) {
+        String version = null;
+        if (path == null)
+            return null;
         File file = new File(path);
         if (file.exists()) {
             try {
@@ -1057,12 +1092,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (fo != null) {
                     String mime = fo.getMIMEType();
                     if (mime.startsWith("application/x-exe") || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
-                        RequestProcessor.getDefault().post(new VersionCommand(flavor, name, path));
+                        VersionCommand versionCommand = new VersionCommand(flavor, path);
+                        version = versionCommand.getVersion();
                     }
                 }
             } catch (IOException ex) {
             }
         }
+        return version;
     }
     
 //    private void addRemoveUserTool(JComboBox jc, Tool selected, int kind) {
@@ -1252,8 +1289,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         
         if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
+                boolean cbRemoveEnabled;
+                if (model.showRequiredTools()) {
+                    cbRemoveEnabled = lstDirlist.getSelectedIndex() >= 0;
+                }
+                else {
+                    cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
+                }
                 changeCompilerSet((CompilerSet)lstDirlist.getSelectedValue());
-                btRemove.setEnabled(csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0);
+                btRemove.setEnabled(cbRemoveEnabled);
                 duplicateButton.setEnabled(lstDirlist.getSelectedIndex() >= 0);
                 btDown.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet)lstDirlist.getSelectedValue()).isDefault());
             }
@@ -1886,18 +1930,19 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }// </editor-fold>//GEN-END:initComponents
 
 private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btVersionsActionPerformed
-    if (isPathFieldValid(tfMakePath))
-        postVersionInfo(tfMakePath.getText(), tfMakePath.getText());
-    if (isPathFieldValid(tfGdbPath))
-        postVersionInfo(tfGdbPath.getText(), tfGdbPath.getText());
-    if (isPathFieldValid(tfCppPath))
-        postVersionInfo(tfCppPath.getText(), tfCppPath.getText());
-    if (isPathFieldValid(tfCPath))
-        postVersionInfo(tfCPath.getText(), tfCPath.getText());
-    if (isPathFieldValid(tfFortranPath))
-        postVersionInfo(tfFortranPath.getText(), tfFortranPath.getText());
+    StringBuilder versions = new StringBuilder();
     
-                    
+    versions.append("\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCompiler), tfCPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
+    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+    
+    NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
+
+    nd.setTitle(NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo_Title"));
+    DialogDisplayer.getDefault().notify(nd);
 }//GEN-LAST:event_btVersionsActionPerformed
 
 private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btBaseDirectoryActionPerformed
@@ -1927,41 +1972,46 @@ private void btBaseDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//G
     
 }//GEN-LAST:event_btBaseDirectoryActionPerformed
 
-private void selectCompiler(JTextField tf) {
+private boolean selectCompiler(JTextField tf, Tool tool) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
-        NotifyDescriptor nb = new NotifyDescriptor.Message("Only compilers within base directory are allowed", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+        NotifyDescriptor nb = new NotifyDescriptor.Message(getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(nb);
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    tool.setPath(tf.getText());
+    fireCompilerSetChange();
+    fireCompilerSetModified();
+    return true;
 }
 
-private void selectTool(JTextField tf) {
+private boolean selectTool(JTextField tf) {
     String seed = tfBaseDirectory.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
-        return;
+        return false;
     }
     tf.setText(fileChooser.getSelectedFile().getPath());
+    return true;
 }
 
 private void btCVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCVersionActionPerformed
-    selectCompiler(tfCPath);
+    selectCompiler(tfCPath, currentCompilerSet.getTool(Tool.CCompiler));
 }//GEN-LAST:event_btCVersionActionPerformed
 
 private void btCppVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCppVersionActionPerformed
-    selectCompiler(tfCppPath);
+    selectCompiler(tfCppPath, currentCompilerSet.getTool(Tool.CCCompiler));
 }//GEN-LAST:event_btCppVersionActionPerformed
 
 private void btFortranVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFortranVersionActionPerformed
-    selectCompiler(tfFortranPath);
+    selectCompiler(tfFortranPath, currentCompilerSet.getTool(Tool.FortranCompiler));
 }//GEN-LAST:event_btFortranVersionActionPerformed
 
 private void btMakeVersionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeVersionActionPerformed
@@ -1982,6 +2032,9 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return;
     }
     CompilerSetManager newCsm = new CompilerSetManager();
+    if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName() == CompilerSet.None) {
+        newCsm.remove(newCsm.getCompilerSets().get(0));
+    }
     List<CompilerSet> list = csm.getCompilerSets();
     for (CompilerSet cs : list) {
         if (!cs.isAutoGenerated()) {
@@ -1992,13 +2045,25 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     CompilerSet defaultCS = csm.getDefaultCompilerSet();
     if (defaultCS != null)
         defaultName = defaultCS.getName();
+    String selectedName = null;
+    CompilerSet selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
+    if (selectedCS != null)
+        selectedName = selectedCS.getName();
     csm = newCsm;
     CompilerSet defaultCompilerSet = csm.getCompilerSet(defaultName);
     if (defaultCompilerSet != null) {
         csm.setDefault(defaultCompilerSet);
     }
+    if (selectedName != null) {
+        selectedCS = csm.getCompilerSet(selectedName);
+    }
     changed = true;
-    update(false);
+    if (selectedCS != null) {
+        update(false, selectedCS);
+    }
+    else {
+        update(false);
+    }
 }//GEN-LAST:event_btRestoreActionPerformed
     
     

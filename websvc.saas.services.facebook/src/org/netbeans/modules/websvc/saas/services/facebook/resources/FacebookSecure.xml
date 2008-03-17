@@ -50,12 +50,15 @@
                api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookSecureWadl.xml">
     
-    <description>Facebook Secure Service</description>
-    <display-name>Facebook Secure</display-name>
+    <description>Session Service</description>
+    <display-name>Session Service</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
         <group name="Facebook"/>
+        <authentication profile="SaaSServices/Facebook/profile.properties">
+            <api-key id="api_key"/>
+        </authentication>
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

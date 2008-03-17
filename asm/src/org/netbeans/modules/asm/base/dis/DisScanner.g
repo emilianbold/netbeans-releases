@@ -361,7 +361,8 @@ Ident                  { boolean wasLetters = false; }:
                        ( ( ( 'g'..'z' |
                               'G'..'Z' |
                               '.'      |
-                              '_'                                    
+                              '_'      |
+                              '~'
                              ) { wasLetters = true; }
                            )
                            |

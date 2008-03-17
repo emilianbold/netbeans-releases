@@ -1,7 +1,7 @@
 /*
  *  CcCI1Cl
  *
- * Created on February 19, 2008, 7:17 PM
+ * Created on March 11, 2008, 10:41 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,14 +9,14 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.PathParam;
 import org.codehaus.jettison.json.JSONString;
 
 /**
@@ -26,9 +26,9 @@ import org.codehaus.jettison.json.JSONString;
  */
 
 public class CcCI1Cl {
-    @HttpContext
+    @Context
     private UriInfo context;
-
+    
     /** Creates a new instance of CcCI1Cl */
     public CcCI1Cl() {
     }
@@ -40,7 +40,7 @@ public class CcCI1Cl {
      */
     @GET
     @ProduceMime("application/json")
-    public JSONString getJson(@UriParam("CcCI1URI")
+    public JSONString getJson(@PathParam("CcCI1URI")
     String CcCI1URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -54,7 +54,7 @@ public class CcCI1Cl {
      */
     @PUT
     @ConsumeMime("application/json")
-    public void putJson(@UriParam("CcCI1URI")
+    public void putJson(@PathParam("CcCI1URI")
     String CcCI1URI, JSONString content) {
     }
 
@@ -63,7 +63,7 @@ public class CcCI1Cl {
      * @param CcCI1URI resource URI parameter
      */
     @DELETE
-    public void delete(@UriParam("CcCI1URI")
+    public void delete(@PathParam("CcCI1URI")
     String CcCI1URI) {
     }
 }

@@ -118,8 +118,8 @@
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 
-                <file name="Settings.settings" url="resources/COptions.settings"/>
-                <file name="EditorKit.instance">
+                 <file name="Settings.settings" url="resources/COptions.settings"/>
+                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="beaninfo" boolvalue="false"/>

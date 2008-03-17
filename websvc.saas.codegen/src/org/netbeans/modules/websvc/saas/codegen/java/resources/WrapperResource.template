@@ -10,13 +10,15 @@
 package Templates.Classes;
 
 import javax.ws.rs.Path;
+import javax.annotation.Resource;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.ProduceMime;
-import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.WebApplicationException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * REST Web Service
@@ -25,8 +27,14 @@ import javax.ws.rs.WebApplicationException;
  */
 
 public class __NAME__ {
-    @HttpContext
+    @Resource
     private UriInfo context;
+
+    @Resource
+    HttpServletRequest request;
+    
+    @Resource
+    HttpServletResponse response;
 
     /** Creates a new instance of __NAME__ */
     public __NAME__() {

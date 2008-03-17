@@ -55,6 +55,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.jdesktop.beansbinding</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -401,10 +409,6 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/AbsoluteLayout.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/beansbinding-1.2.1.jar</runtime-relative-path>
-                <binary-origin>external/beansbinding-1.2.1.jar</binary-origin>
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>release/sources</package-root>

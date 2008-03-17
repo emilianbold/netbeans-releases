@@ -153,6 +153,7 @@ import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
+import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -1303,7 +1304,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis ();
-                currentInfo.getJavacTask().analyze();
+                JavacTaskImpl jti = currentInfo.getJavacTask();
+                PostFlowAnalysis.analyze(jti.analyze(), jti.getContext());
                 currentPhase = Phase.RESOLVED;
                 long end = System.currentTimeMillis ();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
@@ -2007,7 +2009,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     private static void handleAddRequest (final Request nr) {
         assert nr != null;
-        requests.add (nr);
+        //Issue #102073 - removed running task which is readded is not performed
+        synchronized (INTERNAL_LOCK) {            
+            toRemove.remove(nr.task);
+            requests.add (nr);
+        }
         JavaSource.Request request = currentRequest.getTaskToCancel(nr.priority);
         try {
             if (request != null) {
@@ -2707,75 +2713,88 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final int firstInner = fav.firstInner;
             final int noInner = fav.noInner;
-            final Context ctx = task.getContext();        
-            final Log l = Log.instance(ctx);
-            l.startPartialReparse();
-            final JavaFileObject prevLogged = l.useSource(cu.getSourceFile());
-            JCBlock block;
+            final Context ctx = task.getContext();
+            final TreeLoader treeLoader = TreeLoader.instance(ctx);
+            if (treeLoader != null) {
+                treeLoader.startPartialReparse();
+            }
             try {
-                DiagnosticListener dl = ctx.get(DiagnosticListener.class);
-                assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
-                ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
-                long start = System.currentTimeMillis();
-                block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
-                }
-                assert block != null;
-                fav.reset();
-                fav.scan(block, null);
-                final int newNoInner = fav.noInner;
-                if (fav.hasLocalClass || noInner != newNoInner) {
+                final Log l = Log.instance(ctx);
+                l.startPartialReparse();
+                final JavaFileObject prevLogged = l.useSource(cu.getSourceFile());
+                JCBlock block;
+                try {
+                    DiagnosticListener dl = ctx.get(DiagnosticListener.class);
+                    assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
+                    ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
+                    long start = System.currentTimeMillis();
+                    block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
                     if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.finer("Skeep reparse method (new local classes): " + fo);   //NOI18N
+                        LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
                     }
-                    return false;
-                }
-                long end = System.currentTimeMillis();                
-                if (fo != null) {
-                    logTime (fo,Phase.PARSED,(end-start));
-                }
-                final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
-                final int delta = newEndPos - origEndPos;
-                final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
-                final TranslatePosVisitor tpv = new TranslatePosVisitor(orig, endPos, delta);
-                tpv.scan(cu, null);
-                ((JCMethodDecl)orig).body = block;
-                if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
-                    start = System.currentTimeMillis();
-                    task.reattrMethodBody(orig, block);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.finer("Resolved method in: " + fo);     //NOI18N
+                    assert block != null;
+                    fav.reset();
+                    fav.scan(block, null);
+                    final int newNoInner = fav.noInner;
+                    if (fav.hasLocalClass || noInner != newNoInner) {
+                        if (LOGGER.isLoggable(Level.FINER)) {
+                            LOGGER.finer("Skeep reparse method (new local classes): " + fo);   //NOI18N
+                        }
+                        return false;
                     }
-                    if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
-                        final JSFlowListener fl = JSFlowListener.instance(ctx);
-                        if (fl != null && fl.hasFlowCompleted(fo)) {
-                            if (LOGGER.isLoggable(Level.FINER)) {
-                                final List<? extends Diagnostic> diag = ci.getDiagnostics();
-                                if (!diag.isEmpty()) {
-                                    LOGGER.finer("Reflow with errors: " + fo + " " + diag);     //NOI18N
-                                }                            
-                            }
-                            TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
-                            Tree t = tp.getParentPath().getLeaf();
-                            task.reflowMethodBody(cu, (ClassTree) t, orig);
-                            if (LOGGER.isLoggable(Level.FINER)) {
-                                LOGGER.finer("Reflowed method in: " + fo); //NOI18N
+                    long end = System.currentTimeMillis();                
+                    if (fo != null) {
+                        logTime (fo,Phase.PARSED,(end-start));
+                    }
+                    final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
+                    final int delta = newEndPos - origEndPos;
+                    final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
+                    final TranslatePosVisitor tpv = new TranslatePosVisitor(orig, endPos, delta);
+                    tpv.scan(cu, null);
+                    ((JCMethodDecl)orig).body = block;
+                    if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
+                        start = System.currentTimeMillis();
+                        task.reattrMethodBody(orig, block);
+                        if (LOGGER.isLoggable(Level.FINER)) {
+                            LOGGER.finer("Resolved method in: " + fo);     //NOI18N
+                        }
+                        if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
+                            final JSFlowListener fl = JSFlowListener.instance(ctx);
+                            if (fl != null && fl.hasFlowCompleted(fo)) {
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    final List<? extends Diagnostic> diag = ci.getDiagnostics();
+                                    if (!diag.isEmpty()) {
+                                        LOGGER.finer("Reflow with errors: " + fo + " " + diag);     //NOI18N
+                                    }                            
+                                }
+                                TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
+                                Tree t = tp.getParentPath().getLeaf();
+                                task.reflowMethodBody(cu, (ClassTree) t, orig);
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    LOGGER.finer("Reflowed method in: " + fo); //NOI18N
+                                }
                             }
                         }
+                        end = System.currentTimeMillis();
+                        if (fo != null) {
+                            logTime (fo, Phase.ELEMENTS_RESOLVED,0L);
+                            logTime (fo,Phase.RESOLVED,(end-start));
+                        }
                     }
-                    end = System.currentTimeMillis();
-                    if (fo != null) {
-                        logTime (fo, Phase.ELEMENTS_RESOLVED,0L);
-                        logTime (fo,Phase.RESOLVED,(end-start));
-                    }
+                    ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
+                } finally {
+                    l.endPartialReparse();
+                    l.useSource(prevLogged);
                 }
-                ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
+                jfoProvider.update(ci.jfo);
             } finally {
-                l.endPartialReparse();
-                l.useSource(prevLogged);
+              if (treeLoader != null) {
+                  treeLoader.endPartialReparse();
+              }  
             }
-            jfoProvider.update(ci.jfo);
+        } catch (CouplingAbort ca) {
+            //Needs full reparse
+            return false;
         } catch (Throwable t) {
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;

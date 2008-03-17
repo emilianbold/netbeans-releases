@@ -42,6 +42,7 @@
 
 package gui.actions;
 
+import java.awt.event.InputEvent;
 import java.io.File;
 
 import javax.swing.tree.TreePath;
@@ -98,19 +99,21 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
     public void prepare() {
         log(":: prepare");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        diag = new Node(pNode,"Model"+"|"+"org"+"|"+"gjt"+"|"+"sp"+"|"+"jedit"+"|"+"gui"+"|"+testDiagramName);
-        diag.select();
-        new EventTool().waitNoEvent(1000);
+        Node diag1 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|AbbrevEditor");        
+        Node diag2 = new Node(pNode,"Model|org|gjt|sp|jedit|gui|ViewRegisters");        
         JTreeOperator projectTree = new ProjectsTabOperator().tree();
- 
-        TreePath[] arrTreePath ;
-        arrTreePath=new TreePath[35] ;
-        for (int i=0; i<arrTreePath.length ;i++) {
-        arrTreePath[i]=projectTree.getPathForRow(35+i);
-    }  
-         projectTree.callPopupOnPaths(arrTreePath);   
-         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
-         selectMenu.pushMenu("Create Diagram From Selected Elements");
+
+        TreePath path1 = diag1.getTreePath();
+        TreePath path2 = diag2.getTreePath();
+        
+        projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
+        new EventTool().waitNoEvent(500);
+        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
+        new EventTool().waitNoEvent(500);
+        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
+
+        JPopupMenuOperator selectMenu = new JPopupMenuOperator();
+        selectMenu.pushMenu("Create Diagram From Selected Elements");
 
         create_diag = new NbDialogOperator("Create New Diagram");
         new EventTool().waitNoEvent(1000);
