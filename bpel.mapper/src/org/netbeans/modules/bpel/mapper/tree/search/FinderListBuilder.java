@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.XPathPredicate;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
@@ -43,7 +41,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -96,13 +93,6 @@ public class FinderListBuilder {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         XPathVariable var = varRef.getVariable();
-        // Variable could be deleted but the reference no.
-        // issue 128684
-        if (var == null) {
-            Logger.getLogger(FinderListBuilder.class.getName()).log(Level.INFO, 
-                    NbBundle.getMessage(FinderListBuilder.class, "LOG_MSG_VAR_NULL", varRef)); //NOI18N
-            return finderList;
-        }
         assert var instanceof XPathBpelVariable;
         XPathBpelVariable bpelVar = (XPathBpelVariable)var;
         VariableDeclaration varDecl = bpelVar.getVarDecl();

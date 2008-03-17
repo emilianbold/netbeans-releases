@@ -55,6 +55,7 @@ import com.sun.sql.framework.jdbc.SQLPart;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -66,7 +67,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
     private static final String LOG_CATEGORY = PipelinedStrategyBuilderImpl.class.getName();
     private static final MessageManager msgMgr = MessageManager.getManager(ETLTaskNode.class);
-    private static transient final Logger mLogger = Logger.getLogger(PipelinedStrategyBuilderImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(PipelinedStrategyBuilderImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     protected AxionDB db;
     protected Map linkTableMap;
@@ -147,7 +148,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        mLogger.infoNoloc(mLoc.t("EDIT004: Looping through target tables:{0}", LOG_CATEGORY));
+        mLogger.infoNoloc(mLoc.t("PRSR008: Looping through target tables:{0}", LOG_CATEGORY));
         checkTargetConnectionDefinition(context);
 
         TargetTable tt = context.getTargetTable();

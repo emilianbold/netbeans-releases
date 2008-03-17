@@ -118,14 +118,12 @@ abstract class DefaultParser  extends DefaultHandler {
             parser.setErrorHandler(this);
             parser.setContentHandler(this);
 
-            
-            try {
-                // ignore wrong encoding, for example
-                parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", 
-                        true);  //NOI18N
-            } catch (SAXException ignore) {
-                // parsing may be slower :-(
-            }
+//            try {
+//                // do not read DTD
+//                parser.setFeature("http://xml.org/sax/features/external-parameter-entities", false);  //NOI18N
+//            } catch (SAXException ignore) {
+//                // parsing may be slower :-(
+//            }
 
             InputSource in = new InputSource();                
             is = fo.getInputStream();

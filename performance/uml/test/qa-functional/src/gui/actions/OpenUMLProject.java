@@ -47,7 +47,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.WizardOperator;
 
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -107,7 +106,6 @@ public class OpenUMLProject extends org.netbeans.performance.test.utilities.Perf
     
     public void close(){
         ProjectSupport.closeProject(projectName);
-        new EventTool().waitNoEvent(2000);
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     

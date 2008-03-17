@@ -43,18 +43,22 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,7 +67,12 @@ import org.openide.filesystems.FileObject;
  * @author nam
  */
 public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
-
+    
+    private JavaSource loginJS;
+    private FileObject loginFile;
+    private JavaSource callbackJS;
+    private FileObject callbackFile;
+    
     public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
@@ -75,7 +84,11 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
 
         preGenerate();
         
+        //Create Authenticator classes
         createAuthenticatorClass();
+        
+        //Create Authorization classes
+        createAuthorizationClasses();
         
         createSaasServiceClass();
         addSaasServiceMethod();
@@ -103,21 +116,70 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
 
         return new HashSet<FileObject>(Arrays.asList(result));
     }
-
+    
+    /**
+     *  Create Authorization Classes
+     */
+    @Override
+    public void createAuthorizationClasses() throws IOException {
+        List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
+        final String[] parameters = getGetParamNames(filterParams);
+        final Object[] paramTypes = getGetParamTypes(filterParams);
+        Util.createSessionKeyAuthorizationClassesForWeb(
+            getBean(), getProject(),
+            getGroupName(), getSaasServicePackageName(), getSaasServiceFolder(), 
+            loginJS, loginFile, 
+            callbackJS, callbackFile,
+            parameters, paramTypes
+        );
+    }
+    
+    
+    @Override
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+            return Util.getAuthenticatorMethodParametersForWeb();
+        else
+            return super.getAuthenticatorMethodParameters();
+    }
+    
+    @Override
+    protected List<ParameterInfo> getServiceMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+            return Util.getServiceMethodParametersForWeb(getBean());
+        else
+            return super.getServiceMethodParameters();
+    }
+    
+    @Override
+    protected String getLoginBody(WadlSaasBean bean, 
+            String groupName, String paramVariableName) throws IOException {
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+            return null;
+        return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
+    }
+    
+    @Override
+    protected String getTokenBody(WadlSaasBean bean, 
+            String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
+        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+            return null;
+        return Util.createSessionKeyTokenBodyForWeb(bean, groupName, paramVariableName,
+                saasServicePkgName);
+    }
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
-        String paramDecl = "";
+        //String paramDecl = "";
         String converterName = getConverterName();
         
-        //Evaluate query parameters
-        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-        paramUse += getHeaderOrParameterUsage(filterParams);
-        paramDecl += getHeaderOrParameterDeclaration(filterParams);
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        filterParams = super.getServiceMethodParameters();
+        //paramDecl += getHeaderOrParameterDeclaration(filterParams);
 
-        if(paramUse.endsWith(", "))
-            paramUse = paramUse.substring(0, paramUse.length()-2);
-        
         String methodBody = "";
         methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
         methodBody += "        try {\n";
@@ -144,5 +206,10 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
             }
         });
         result.commit();
+    }
+
+    @Override
+    protected String getSessionKeyLoginArguments() {
+        return Util.getSessionKeyLoginArgumentsForWeb();
     }
 }

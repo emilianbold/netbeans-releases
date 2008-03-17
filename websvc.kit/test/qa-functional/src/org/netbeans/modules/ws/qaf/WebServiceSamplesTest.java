@@ -74,10 +74,8 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
     public void testCalculatorApp() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.metro.samples.Bundle", "Templates/Project/Samples/Metro/Calculator");
         createProject(sampleName, getProjectType(), null);
-        checkMissingServer("CalculatorApp"); //NOI18N
         deployProject("CalculatorApp"); //NOI18N
         deployedApps[0] = true;
-        checkMissingServer("CalculatorClientApp"); //NOI18N
         deployProject("CalculatorClientApp"); //NOI18N
         deployedApps[1] = true;
     }
@@ -85,10 +83,8 @@ public class WebServiceSamplesTest extends WebServicesTestBase {
     public void testSecureCalculatorApp() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.metro.samples.Bundle", "Templates/Project/Samples/Metro/SecureCalculator");
         createProject(sampleName, getProjectType(), null);
-        checkMissingServer("SecureCalculatorApp"); //NOI18N
         deployProject("SecureCalculatorApp"); //NOI18N
         deployedApps[2] = true;
-        checkMissingServer("SecureCalculatorClientApp"); //NOI18N
         deployProject("SecureCalculatorClientApp"); //NOI18N
         deployedApps[3] = true;
     }

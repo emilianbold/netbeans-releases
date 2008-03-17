@@ -564,32 +564,6 @@ public class FileStatusCache {
     }
     
     /**
-     * Refreshes status of the specified file or a specified directory. 
-     *
-     * @param file
-     */
-    public void refreshAll(File root) {
-        if (root.isDirectory()) {
-            File repository = Mercurial.getInstance().getTopmostManagedParent(root);
-            if (repository == null) {
-                return;
-            }
-            Map<File, FileInformation> interestingFiles;
-            try {
-                interestingFiles = HgCommand.getInterestingStatus(repository, root);
-                for (File file : interestingFiles.keySet()) {
-                    FileInformation fi = interestingFiles.get(file);
-                    Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi, interestingFiles);
-                }
-            } catch (HgException ex) {
-                Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
-            }
-        } else {
-            refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        }
-    }
-    /**
      * Refreshes information about a given file or directory ONLY if its status is already cached. The
      * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases.
      *
@@ -601,7 +575,7 @@ public class FileStatusCache {
     }
     
     /**
-     * Refreshes status of the specified file or all files inside the 
+     * Refreshes status of the specfified file or all files inside the 
      * specified directory. 
      *
      * @param file

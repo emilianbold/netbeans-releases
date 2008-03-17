@@ -61,9 +61,9 @@ public class Strip implements PropertyChangeListener {
     private File repository;
     
     /** Creates a new instance of Strip */
-    public Strip(File repository, File [] roots) {
+    public Strip(File repository) {
         this.repository = repository;
-        panel = new StripPanel(repository, roots);
+        panel = new StripPanel(repository);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(Strip.class, "CTL_StripForm_Action_Strip")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Strip.class, "ACSD_StripForm_Action_Strip")); // NOI18N

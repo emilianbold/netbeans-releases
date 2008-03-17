@@ -217,7 +217,7 @@ public class CompilerSet2Configuration {
         StringBuilder ret = new StringBuilder();
         ret.append(getOption());
         if (getFlavor() != null) {
-            ret.append("|"); // NOI18N
+            ret.append("|");
             ret.append(getFlavor());
         }
         return ret.toString();

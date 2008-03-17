@@ -38,6 +38,7 @@ import java.io.IOException;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.ConfigureParametersAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -61,7 +62,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class ETLDataLoader extends UniFileLoader {
     public static final String PROP_EXTENSIONS = "extensions"; // NOI18N
-    private static transient final Logger mLogger = Logger.getLogger(ETLDataLoader.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLDataLoader.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
 //        if we use text/*xml mime type then data editor support 
@@ -92,8 +93,8 @@ public class ETLDataLoader extends UniFileLoader {
     
     
     protected String defaultDisplayName () {
-        String nbBundle1 = mLoc.t("BUND153: ETL Data Loader");
-        return nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: ETL Data Loader");
+        return Localizer.parse(nbBundle1);
     }
 
     protected SystemAction[] defaultActions () {

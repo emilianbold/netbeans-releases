@@ -767,12 +767,6 @@ public class SelectPanel extends JPanel implements SharedConstants {
             return;
         }
         
-        //stop any cell editing IZ129687
-        TableCellEditor editor = mTable.getCellEditor();
-        if(editor != null) {
-        	editor.stopCellEditing();
-        }
-        
         int rowCount = mTableModel.getRowCount();
         // at least one attribute must be defined
         if (rowCount < 1) {

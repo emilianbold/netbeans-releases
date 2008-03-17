@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -61,7 +62,7 @@ public class PhysicalTable {
     private static boolean SKIP_CONNECTION_URL = false;
     //Preferably one of the two should be true to assert two tables are equal.
     private static boolean SKIP_DB_NAME = true;
-    private static transient final Logger mLogger = Logger.getLogger(PhysicalTable.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(PhysicalTable.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -139,7 +140,7 @@ public class PhysicalTable {
 
         if (!(other instanceof PhysicalTable)) {
             eql = false;
-            mLogger.infoNoloc(mLoc.t("EDIT101: Class cast request for:{0}", other));
+            mLogger.infoNoloc(mLoc.t("PRSR101: Class cast request for:{0}", other));
         } else {
             otherTable = (PhysicalTable) other;
         }

@@ -16,9 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/**
+ *
+ */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.List;
+
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.netbeans.modules.bpel.model.api.ElseIf;
@@ -27,11 +32,12 @@ import org.netbeans.modules.bpel.model.api.If;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypesEnum;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.w3c.dom.Element;
+
 
 /**
  * @author ads
+ *
  */
 public class IfImpl extends ConditionalActivity implements If {
 
@@ -217,4 +223,5 @@ public class IfImpl extends ConditionalActivity implements If {
         }
         return super.getMultiplicity(entity);
     }
+
 }

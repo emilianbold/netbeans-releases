@@ -18,6 +18,7 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
+
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
 xmlns:plnk="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"
 targetNamespace="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.debugger.jpda.util;
 
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
@@ -149,11 +148,7 @@ public class Operator {
                             }
                             eventSet = eventQueue.remove ();
                             if (logger.isLoggable(Level.FINE)) {
-                                try {
-                                    logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
-                                } catch (ObjectCollectedException ocex) {
-                                    ErrorManager.getDefault().notify(ocex);
-                                }
+                                logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
                             }
                         } catch (InterruptedException iexc) {
                             synchronized (Operator.this) {

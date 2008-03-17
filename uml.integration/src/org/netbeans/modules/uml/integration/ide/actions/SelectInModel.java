@@ -52,7 +52,7 @@ package org.netbeans.modules.uml.integration.ide.actions;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.project.ProjectUtil;
-import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
+//import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -132,7 +132,9 @@ public final class SelectInModel extends CookieAction {
 			if (proj == null ) 
 				return false;
 			
-			return UMLJavaAssociationUtil.getAssociatedUMLProject(proj) == null ? false : true; 
+			/* NB60TBD546 return UMLJavaAssociationUtil.getAssociatedUMLProject(proj) == null ? false : true; 
+			 */
+			return false;
 		}
 		
 		return (IElement) activatedNodes[0].getCookie(IElement.class) == null ? false : true;
@@ -150,7 +152,8 @@ public final class SelectInModel extends CookieAction {
 		if (proj == null )
 			return null;
 		
-		return UMLJavaAssociationUtil.getAssociatedUMLProject(proj); 
+		/* NB60TBD return UMLJavaAssociationUtil.getAssociatedUMLProject(proj); */
+		return null;		
 	}
 
 }

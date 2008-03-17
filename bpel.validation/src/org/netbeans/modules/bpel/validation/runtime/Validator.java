@@ -51,7 +51,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -61,7 +60,6 @@ import org.netbeans.modules.bpel.model.api.CatchAll;
 import org.netbeans.modules.bpel.model.api.Compensate;
 import org.netbeans.modules.bpel.model.api.CompensationHandler;
 import org.netbeans.modules.bpel.model.api.Correlation;
-import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
@@ -163,7 +161,17 @@ public final class Validator extends BpelValidator {
           return;
         }
       }
-      addWarning("FIX_Correlating_Activity", container); // NOI18N
+      addWarning("FIX_Correlating_Activity", container);
+    }
+
+    private CreateInstanceActivity getCreateInstanceActivity(Component component) {
+      if (component instanceof CreateInstanceActivity) {
+        return (CreateInstanceActivity) component;
+      }
+      if (component.getParent() instanceof CreateInstanceActivity) {
+        return (CreateInstanceActivity) component.getParent();
+      }
+      return null;
     }
 
     @Override
@@ -188,6 +196,7 @@ public final class Validator extends BpelValidator {
         if (value != null) {
             addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
         }
+        // check whether the URI is valid.
         checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
         checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
     }
@@ -235,6 +244,7 @@ public final class Validator extends BpelValidator {
         if (catchAll != null ) {
             addElementsInParentError(invoke, catchAll);
         }
+        // Rule: <fromPart>, <toPart> is not supported.
         if (invoke.getFromPartContaner() != null) {
             addElementsInParentError(invoke, FROM_PARTS);
         }
@@ -360,9 +370,12 @@ public final class Validator extends BpelValidator {
     public void visit(Receive receive) {
         super.visit(receive);
 
+        // Rule: <fromPart>, <toPart> is not supported.
         if (receive.getFromPartContaner()!= null ) {
             addElementsInParentError(receive, FROM_PARTS);
         }
+        
+        // Rule: MessageExchange not supported.
         if (receive.getMessageExchange() != null) {
             addWarning(FIX_ATTRIBUTE, receive, Receive.MESSAGE_EXCHANGE);
         }
@@ -371,11 +384,14 @@ public final class Validator extends BpelValidator {
     
     @Override
     public void visit(Reply reply) {
+        
         super.visit(reply);
-
+        // Rule: <fromPart>, <toPart> is not supported.
         if(reply.getToPartContaner() != null ) {
             addElementsInParentError(reply, TO_PARTS);
         }
+        
+        // Rule: MessageExchange not supported.
         if(reply.getMessageExchange() != null) {
             addWarning(FIX_ATTRIBUTE, reply, Reply.MESSAGE_EXCHANGE);
         }
@@ -384,9 +400,12 @@ public final class Validator extends BpelValidator {
     
     @Override
     public void visit(OnEvent onEvent) {
+        // Rule: <fromPart>, <toPart> is not supported.
         if(onEvent.getFromPartContaner() != null ) {  
             addElementsInParentError(onEvent, FROM_PARTS);
         }
+        
+        // Rule: MessageExchange not supported.
         if(onEvent.getMessageExchange() != null) {
             addWarning(FIX_ATTRIBUTE, onEvent, OnEvent.MESSAGE_EXCHANGE);
         }
@@ -395,9 +414,11 @@ public final class Validator extends BpelValidator {
     
     @Override
     public void visit(OnMessage onMessage) {
+        // Rule: <fromPart>, <toPart> is not supported.
         if(onMessage.getFromPartContaner() != null ) {
             addElementsInParentError(onMessage, FROM_PARTS);
         }
+        // Rule: MessageExchange not supported.
         if(onMessage.getMessageExchange() != null) {
             addWarning(FIX_ATTRIBUTE, onMessage, OnMessage.MESSAGE_EXCHANGE);
         }

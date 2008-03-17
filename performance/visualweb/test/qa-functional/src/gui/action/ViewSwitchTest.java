@@ -49,8 +49,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -81,11 +79,12 @@ public class ViewSwitchTest extends org.netbeans.performance.test.utilities.Perf
     public void initialize() {
         log("::initialize");  
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();  
+        pto = ProjectsTabOperator.invoke();
+           
     }
     
     public void prepare() {
-        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);         
+        
         OpenTestPage();          
         testPage.switchToJSPView();
         editorOperator = EditorWindowOperator.getEditor(pageToOpen); 
@@ -109,8 +108,7 @@ public class ViewSwitchTest extends org.netbeans.performance.test.utilities.Perf
     public void close() {
         log("::close");
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        repaintManager().resetRegionFilters();
-        testPage.closeDiscard();
+        //repaintManager().resetRegionFilters();        
         EditorOperator.closeDiscardAll();          
     }
 
@@ -123,14 +121,6 @@ public class ViewSwitchTest extends org.netbeans.performance.test.utilities.Perf
         testPage = WebFormDesignerOperator.findWebFormDesignerOperator(pageToOpen);
 
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
-    }
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));
-        return suite;
-    }    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());        
     }
 
 }

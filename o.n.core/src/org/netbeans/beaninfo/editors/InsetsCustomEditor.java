@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 * @author   Ian Formanek
 * @version  1.00, 01 Sep 1998
 */
-public class InsetsCustomEditor extends IntegerCustomEditor {
+public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyChangeListener, KeyListener {
     static final long serialVersionUID =-1472891501739636852L;
    
     //XXX this is just a copy of RectangleEditor with the fields and value 
@@ -69,11 +69,13 @@ public class InsetsCustomEditor extends IntegerCustomEditor {
     //ArrayOfIntSupport for custom editors, which would just produce the
     //required number of fields
     
+    private HashMap<JTextField,JLabel> labelMap = new HashMap<JTextField,JLabel>();
+    private PropertyEnv env;
     /** Initializes the Form */
     public InsetsCustomEditor(InsetsEditor editor, PropertyEnv env) {
-        super( env );
-        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-        env.addPropertyChangeListener(this);
+        this.env=env;
+        this.env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        this.env.addPropertyChangeListener(this);
 
         initComponents ();
         this.editor = editor;
@@ -109,11 +111,10 @@ public class InsetsCustomEditor extends IntegerCustomEditor {
         
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CustomRectangleEditor"));
 
-        setPanel(jPanel2);
-        getMap().put(widthField,widthLabel);
-        getMap().put(xField,xLabel);
-        getMap().put(yField,yLabel);
-        getMap().put(heightField,heightLabel);
+        labelMap.put(widthField,widthLabel);
+        labelMap.put(xField,xLabel);
+        labelMap.put(yField,yLabel);
+        labelMap.put(heightField,heightLabel);
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -233,7 +234,7 @@ public class InsetsCustomEditor extends IntegerCustomEditor {
     }
 
 
-    protected void updateValues () {
+    private void updateRectangle () {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
@@ -245,6 +246,61 @@ public class InsetsCustomEditor extends IntegerCustomEditor {
         }
     }
 
+    public void keyPressed(java.awt.event.KeyEvent e) {
+    }    
+
+    public void keyReleased(java.awt.event.KeyEvent e) {
+        if (checkValues()) {
+            updateRectangle();
+        }
+    }
+    
+    public void keyTyped(java.awt.event.KeyEvent e) {
+    }
+    
+    private boolean checkValues() {
+        Component[] c = jPanel2.getComponents();
+        boolean valid=true;
+        for (int i=0; i < c.length; i++) {
+            if (c[i] instanceof JTextField) {
+                valid &= validFor((JTextField) c[i]);
+            }
+        }
+        if (env != null) {
+           env.setState(valid ? env.STATE_VALID : env.STATE_INVALID);
+        }
+        return valid;
+    }
+    
+    private boolean validFor(JTextField c) {
+        String s = c.getText().trim();
+        try {
+            Integer.parseInt(s);
+            handleValid(c);
+            return true;
+        } catch (NumberFormatException e) {
+            handleInvalid(c);
+            return false;
+        }
+    }
+    
+    private void handleInvalid(JTextField c) {
+        c.setForeground(getErrorColor());
+        labelMap.get(c).setForeground(getErrorColor());
+    }
+    
+    private void handleValid(JTextField c) {
+        c.setForeground(getForeground());
+        labelMap.get(c).setForeground(getForeground());
+    }
+    
+    private Color getErrorColor() {
+        Color c=UIManager.getColor("nb.errorForeground");
+        if (c == null) {
+            c = Color.RED;
+        }
+        return c;
+    }
     
     // Variables declaration - do not modify
     private javax.swing.JPanel jPanel2;

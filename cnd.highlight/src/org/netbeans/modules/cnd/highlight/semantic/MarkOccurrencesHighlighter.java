@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingO
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -143,42 +142,24 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         }
         
         if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
-            Document doc = getDocument();
-            
-            if (doc == null) {
-                clean();
-                return;
-            }
-            
-            CsmFile file = getCsmFile();
-            FileObject fo = CsmUtilities.getFileObject(file);
-            int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
-            
-            HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength()-1);
-            while(hs.moveNext()) {
-                if (lastPosition >= hs.getStartOffset() && lastPosition <= hs.getEndOffset()) {
-                    // cursor is still in the marked area, so previous result is valid
+            Collection<CsmReference> out = getOccurences();
+            if (out == null) {
+                if (SemanticHighlightingOptions.getKeepMarks()) {
                     return;
                 }
+                out = Collections.<CsmReference>emptyList();
             }
-            
-            Collection<CsmReference> out = getOccurences(file, lastPosition);
-            if (out.isEmpty()) {
-                if (!SemanticHighlightingOptions.getKeepMarks()) {
-                    clean();
-                }
-            } else {
-                OffsetsBag obag = new OffsetsBag(doc);
-                obag.clear();
+            clean();
+            Document doc = getDocument();
+            OffsetsBag obag = new OffsetsBag(doc);
 
-                for (CsmReference csmReference : out) {
-                    obag.addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-                }
-
-                getHighlightsBag(doc).setHighlights(obag);
-                OccurrencesMarkProvider.get(doc).setOccurrences(
-                        OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
+            obag.clear();
+            for (CsmReference csmReference : out) {
+                obag.addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
             }
+            getHighlightsBag(doc).setHighlights(obag);
+            OccurrencesMarkProvider.get(doc).setOccurrences(
+                    OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
         } else if (phase == Phase.CLEANUP) {
             clean();
         } 
@@ -188,23 +169,26 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         return valid;
     }
     
-/*    private Collection<CsmReference> getOccurences() {
+    private Collection<CsmReference> getOccurences() {
         Collection<CsmReference> out = null;
         CsmFile file = getCsmFile();
+        if (file != null && file.isParsed() && getDocument() != null ) {
             FileObject fo = CsmUtilities.getFileObject(file);
             assert fo != null;
             out = getOccurences(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
+//            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
+//            if (ref!=null && ref.getReferencedObject()!=null) {
+//                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
+//            }
         }
         return out;
-    }*/
+    }
     
     /* package-local */ static Collection<CsmReference> getOccurences(CsmFile file, int position) {
-        Collection<CsmReference> out = Collections.<CsmReference>emptyList();
-        if (file != null && file.isParsed() ) {
-            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
-            if (ref!=null && ref.getReferencedObject()!=null) {
-                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
-            }
+        Collection<CsmReference> out = null;
+        CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
+        if (ref!=null && ref.getReferencedObject()!=null) {
+            out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
         }
         return out;
     }

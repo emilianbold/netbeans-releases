@@ -69,7 +69,6 @@ made subject to such option by the copyright holder.
             <patternset>
                 <!-- this includes all tests testing layers -->
                 <include name="**/ValidateLayer*Test.class"/> 
-                <include name="**/ValidateLayer*Test.class"/> 
                 
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>

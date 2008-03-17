@@ -76,10 +76,6 @@ public final class DocPositions {
     
     // context that should be descarded after resolve()
     private Env env;
-    
-    // test properties
-    static boolean isTestMode = false;
-    String tokenSequenceDump;
 
     public static final DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
         return DocPositionsManager.get(javac).get(javadoc, jdts);
@@ -173,16 +169,7 @@ public final class DocPositions {
             } else {
                 blockSectionStart = 0;
             }
-        } catch (Throwable t) {
-            // for debug purposes
-            tokenSequenceDump = String.valueOf(env.jdts);
-            throw new IllegalStateException(
-                    '\'' + env.javadoc.getRawCommentText() + "'\n" + this.toString(), // NOI18N
-                    t);
         } finally {
-            if (isTestMode) {
-                tokenSequenceDump = String.valueOf(env.jdts);
-            }
             env = null;
         }
     }
@@ -341,7 +328,6 @@ public final class DocPositions {
         } else {
             sb.append(" Not resolved yet."); // NOI18N
         }
-        sb.append("\ntoken sequence dump: " + tokenSequenceDump);
         return sb.toString();
     }
     

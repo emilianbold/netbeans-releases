@@ -58,7 +58,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -72,16 +72,16 @@ import org.openide.util.WeakListeners;
  * Finds the locations of sources for various libraries.
  * @since 1.5
  */
-public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
+public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new HashMap<URL,SourceForBinaryQueryImplementation2.Result>();
+    private final Map/*<URL,SourceForBinaryQuery.Result>*/ cache = new HashMap();
     private final Map/*<URL,URL>*/ normalizedURLCache = new HashMap();
 
     /** Default constructor for lookup. */
     public J2eePlatformSourceForBinaryQuery() {}
 
-    public SourceForBinaryQueryImplementation2.Result findSourceRoots2 (URL binaryRoot) {
-        SourceForBinaryQueryImplementation2.Result res = this.cache.get (binaryRoot);
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
         if (res != null) {
             return res;
         }
@@ -122,10 +122,6 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
         return null;
     }
     
-    public SourceForBinaryQuery.Result findSourceRoots (final URL binaryRoot) {
-        return this.findSourceRoots2(binaryRoot);
-    }
-    
     
     private URL getNormalizedURL (URL url) {
         //URL is already nornalized, return it
@@ -164,7 +160,7 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
     }
     
     
-    private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
         
         private LibraryImplementation lib;
         private URL entry;
@@ -234,10 +230,6 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
             while (it.hasNext ()) {
                 ((ChangeListener)it.next()).stateChanged(event);
             }
-        }
-
-        public boolean preferSources() {
-            return false;
         }
         
     }

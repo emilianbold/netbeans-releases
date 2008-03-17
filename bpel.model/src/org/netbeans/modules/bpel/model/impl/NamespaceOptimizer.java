@@ -41,11 +41,11 @@ import org.netbeans.modules.bpel.model.impl.services.MarkBuilderElement;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent.PrefixAttribute;
-import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
 
 /**
  * @author ads
@@ -493,6 +493,7 @@ public class NamespaceOptimizer extends InnerEventDispatcherAdapter {
         }
         
         private String myKey;
+        
         private String myValue;
     }
 }

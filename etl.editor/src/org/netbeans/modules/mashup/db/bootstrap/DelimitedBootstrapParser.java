@@ -61,6 +61,7 @@ import net.java.hulp.i18n.Logger;
 
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Extends base class to provide delimited-file implementation of FlatfileBootstrapParser.
@@ -73,7 +74,7 @@ import org.netbeans.modules.etl.logger.Localizer;
  */
 public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
 
-    private static transient final Logger mLogger = Logger.getLogger(DelimitedBootstrapParser.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(DelimitedBootstrapParser.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class CharTokenizer {
@@ -340,7 +341,7 @@ public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
 
             return colList;
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT050: Failed to read and parse the file {0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR050: Failed to read and parse the file {0}", LOG_CATEGORY), e);
             throw new FlatfileDBException("Failed to read and parse the sample file." + e.getMessage());
         } finally {
             FS.closeInputStream(data);

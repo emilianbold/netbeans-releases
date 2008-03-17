@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,8 +55,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.text.JTextComponent;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -252,33 +252,30 @@ public final class GuiUtils {
      * @param  text  text of the label
      * @return  created multi-line text component
      */
-    public static JTextComponent createMultilineLabel(String text) {
-        return createMultilineLabel(text, null);
-    }
-
-    /**
-     * Creates a text component to be used as a multi-line, automatically
-     * wrapping label.
-     * <p>
-     * <strong>Restriction:</strong><br>
-     * The component may have its preferred size very wide.
-     *
-     * @param  text  text of the label
-     * @param  color  desired color of the label,
-     *                or {@code null} if the default color should be used
-     * @return  created multi-line text component
-     */
-    public static JTextComponent createMultilineLabel(String text, Color color) {
+    public static JComponent createMultilineLabel(String text) {
         JTextArea textArea = new JTextArea(text);
         textArea.setEditable(false);
+        textArea.setFocusable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setEnabled(false);
-        textArea.setOpaque(false);
         textArea.setColumns(25);
-        textArea.setDisabledTextColor((color != null)
-                                      ? color
-                                      : new JLabel().getForeground());
+        
+        Color color;
+        
+        color = UIManager.getColor("Label.background");                 //NOI18N
+        if (color == null) {
+            color = UIManager.getColor("Panel.background");             //NOI18N
+        }
+        if (color != null) {
+            textArea.setBackground(color);
+        } else {
+            textArea.setOpaque(false);
+        }
+        
+        color = UIManager.getColor("Label.foreground");                 //NOI18N
+        if (color != null) {
+            textArea.setForeground(color);
+        }
         
         return textArea;
     }

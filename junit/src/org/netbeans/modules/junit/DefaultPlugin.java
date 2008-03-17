@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,8 +69,6 @@ import javax.swing.JRadioButton;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -820,23 +818,27 @@ public final class DefaultPlugin extends JUnitPlugin {
                     = (filesToTest != null)
                       && (filesToTest.length != 0)
                       && ((filesToTest.length > 1) || !filesToTest[0].isData());
+            final boolean useAnnotations;
             switch (junitVer) {
                 case JUNIT3:
                     templateId = "PROP_junit3_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit3_testSuiteTemplate" //NOI18N
                                       : null;
+                    useAnnotations = TestUtil.areAnnotationsSupported(targetRoot);
                     break;
                 case JUNIT4:
                     templateId = "PROP_junit4_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit4_testSuiteTemplate" //NOI18N
                                       : null;
+                    useAnnotations = true;
                     break;
                 default:
                     assert false;
                     templateId = null;
                     suiteTemplateId = null;
+                    useAnnotations = false;
                     break;
             }
             DataObject doTestTempl = (templateId != null)
@@ -853,7 +855,9 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
             
             Map<String, Boolean> templateParams = createTemplateParams(params);
-            setAnnotationsSupport(targetRoot, junitVer, templateParams);
+            if (useAnnotations) {
+                templateParams.put(templatePropUseAnnotations, useAnnotations);
+            }
 
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
@@ -1678,7 +1682,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     private static CreationResults createSingleTest(
                 FileObject sourceFile,
-                String requestedTestClassName,
+                String testClassName,
                 final TestCreator testCreator,
                 final Map<String, ? extends Object> templateParams,
                 DataObject templateDataObj,
@@ -1709,23 +1713,31 @@ public final class DefaultPlugin extends JUnitPlugin {
             result.addSkipped(nonTestable);
         }
         if (!testable.isEmpty()) {
-            /* used only if (requestedTestClassName != null): */
-            boolean mainClassProcessed = false;
+            String packageName = TestUtil.getPackageName(ClassPath.getClassPath(sourceFile, ClassPath.SOURCE).getResourceName(sourceFile, '.', false));
+
+            /* used only if (testClassName != null): */
+            boolean defClassProcessed = false;
 
             try {
                 for (ElementHandle<TypeElement> clsToTest : testable) {
-                    String testClassName;
-                    String srcClassNameFull = clsToTest.getQualifiedName();
-                    if ((requestedTestClassName != null)
-                            && !mainClassProcessed
-                            && TestUtil.getSimpleName(srcClassNameFull)
-                                   .equals(sourceFile.getName())) {
-                        testClassName = requestedTestClassName;
-                        mainClassProcessed = true;
+                    String testResourceName;
+                    String srcClassNameShort
+                            = TestUtil.getSimpleName(clsToTest.getQualifiedName());
+                    if (testClassName == null) {
+                        testResourceName = TestUtil.getTestClassFullName(
+                                                srcClassNameShort, packageName);
+                        testClassName = testResourceName.replace('/', '.');
+                    } else if (!defClassProcessed
+                               && srcClassNameShort.equals(sourceFile.getName())) {
+                        testResourceName = testClassName.replace('.', '/');
+                        defClassProcessed = true;
                     } else {
-                        testClassName = TestUtil.getTestClassName(srcClassNameFull);
+                        if (packageName == null) {
+                            packageName = TestUtil.getPackageName(testClassName);
+                        }
+                        testResourceName = TestUtil.getTestClassFullName(
+                                                srcClassNameShort, packageName);
                     }
-                    String testResourceName = testClassName.replace('.', '/');
 
                     /* find or create the test class DataObject: */
                     DataObject testDataObj = null;
@@ -1955,20 +1967,35 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 final FileObject targetFolder,
                                 final String suiteName,
                                 final Map<CreateTestParam, Object> params) {
-        final Map<String, Boolean> templateParams = createTemplateParams(params);
-        setAnnotationsSupport(targetFolder, junitVer, templateParams);
+        return createSuiteTest(targetRootFolder,
+                               targetFolder,
+                               suiteName,
+                               params,
+                               createTemplateParams(params));
+    }
+
+    /**
+     *
+     */
+    public DataObject createSuiteTest(
+                                final FileObject targetRootFolder,
+                                final FileObject targetFolder,
+                                final String suiteName,
+                                final Map<CreateTestParam, Object> params,
+                                final Map<String, ? extends Object> templateParams) {
         TestCreator testCreator = new TestCreator(params, junitVer);
-        final ClasspathInfo cpInfo = ClasspathInfo.create(targetRootFolder);
+        ClassPath testClassPath = ClassPathSupport.createClassPath(
+                new FileObject[] {targetRootFolder});
         List<String> testClassNames = TestUtil.getJavaFileNames(targetFolder,
-                                                                cpInfo);
+                                                                testClassPath);
         
         final String templateId;
         switch (junitVer) {
             case JUNIT3:
-                templateId = "PROP_junit3_testSuiteTemplate";           //NOI18N
+                templateId = "PROP_junit3_testClassTemplate";           //NOI18N
                 break;
             case JUNIT4:
-                templateId = "PROP_junit4_testSuiteTemplate";           //NOI18N
+                templateId = "PROP_junit4_testClassTemplate";           //NOI18N
                 break;
             default:
                 assert false;
@@ -1988,7 +2015,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                    testCreator,
                                    templateParams,
                                    doSuiteTempl,
-                                   cpInfo.getClassPath(PathKind.SOURCE),
+                                   testClassPath,
                                    new LinkedList<String>(testClassNames),
                                    null,            //parent suite
                                    null);           //progress indicator
@@ -2024,45 +2051,6 @@ public final class DefaultPlugin extends JUnitPlugin {
                     DataFolder.findFolder(root),
                     clazz,
                     templateParams);
-    }
-
-    /**
-     * Determines whether annotations should be used in test classes in the
-     * given folder when generating the given type of JUnit tests.
-     * If annotations are supported, adds this information to the map of
-     * template parameters.
-     * 
-     * @param  testFolder  target folder for generated test classes
-     * @param  junitVer  type of generated JUnit tests
-     * @param  templateParams  map of template params to store
-     *                         the information to
-     * @return  {@code true} if it was detected that annotations are supported;
-     *          {@code false} otherwise
-     */
-    private static boolean setAnnotationsSupport(
-                                        FileObject testFolder,
-                                        JUnitVersion junitVer,
-                                        Map<String, Boolean> templateParams) {
-        if (!testFolder.isFolder()) {
-            throw new IllegalArgumentException("not a folder");         //NOI18N
-        }
-
-        final boolean supported;
-        switch (junitVer) {
-            case JUNIT3:
-                supported = TestUtil.areAnnotationsSupported(testFolder);
-                break;
-            case JUNIT4:
-                supported = true;
-                break;
-            default:
-                supported = false;
-                break;
-        }
-        if (supported) {
-            templateParams.put(templatePropUseAnnotations, supported);
-        }
-        return supported;
     }
 
     /**

@@ -73,7 +73,7 @@ public class J2eeModuleFactory {
         if (impl == null) {
             throw new NullPointerException();
         }
-        return J2eeModuleAccessor.getDefault().createJ2eeModule(impl);
+        return J2eeModuleAccessor.DEFAULT.createJ2eeModule(impl);
     }
     
     /**

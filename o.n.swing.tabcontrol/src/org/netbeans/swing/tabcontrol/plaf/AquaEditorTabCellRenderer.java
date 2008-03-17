@@ -89,7 +89,7 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     public Dimension getPadding() {
         Dimension d = super.getPadding();
-        d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 26 : 18;
+        d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 26 : 13;
         return d;
     }
     

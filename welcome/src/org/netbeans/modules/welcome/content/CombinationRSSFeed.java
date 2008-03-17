@@ -42,7 +42,6 @@
 package org.netbeans.modules.welcome.content;
 
 import java.io.IOException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,6 +56,7 @@ import org.netbeans.modules.welcome.content.RSSFeed.ErrorCatcher;
 import org.netbeans.modules.welcome.content.RSSFeed.FeedHandler;
 import org.netbeans.modules.welcome.content.RSSFeed.FeedItem;
 import org.openide.xml.XMLUtil;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -86,14 +86,14 @@ public class CombinationRSSFeed extends RSSFeed {
         reader.setContentHandler( handler );
         reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
         reader.setErrorHandler( new ErrorCatcher() );
-        reader.parse( findInputSource(new URL(url1)) );
+        reader.parse( new InputSource(url1) );
 
         ArrayList<FeedItem> res = new ArrayList<FeedItem>( 2*getMaxItemCount() );
         res.addAll( handler.getItemList() );
 
         handler = new FeedHandler( getMaxItemCount() );
         reader.setContentHandler( handler );
-        reader.parse( findInputSource(new URL(url2)) );
+        reader.parse( new InputSource(url2) );
 
         res.addAll( handler.getItemList() );
 

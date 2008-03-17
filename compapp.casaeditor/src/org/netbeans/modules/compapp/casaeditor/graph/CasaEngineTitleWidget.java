@@ -94,7 +94,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
     
     private ImageWidget configureWidget;
     private ImageWidget minimizeWidget;
-//    private ImageWidget mProjectIconImageWidget;
+    private ImageWidget mProjectIconImageWidget;
     private LabelWidget mNameWidget;
     private LabelWidget typeWidget;
     
@@ -132,9 +132,9 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
         configureWidget = new ImageWidget(scene);
         mTitleWidget.addChild(configureWidget);
         
-//        mProjectIconImageWidget = new ImageWidget(scene);
-//        mProjectIconImageWidget.setImage(DEFAULT_ICON);
-//        mTitleWidget.addChild(mProjectIconImageWidget);
+        mProjectIconImageWidget = new ImageWidget(scene);
+        mProjectIconImageWidget.setImage(DEFAULT_ICON);
+        mTitleWidget.addChild(mProjectIconImageWidget);
         
         mNameWidget = new LabelWidget(scene);
         mNameWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
@@ -184,14 +184,14 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
         mNameWidget.setLabel(label);
     }
     
-//    public void setComponentName(String compName) {
-//        Image image = ServiceUnitNode.getProjectIconImage(compName);
-//        mProjectIconImageWidget.setImage(image);
-//    }
-//        
-//    public void setIcon(Image image) {
-//        mProjectIconImageWidget.setImage(image);
-//    }
+    public void setComponentName(String compName) {
+        Image image = ServiceUnitNode.getProjectIconImage(compName);
+        mProjectIconImageWidget.setImage(image);
+    }
+        
+    public void setIcon(Image image) {
+        mProjectIconImageWidget.setImage(image);
+    }
     
     public boolean getConfigurationStatus(){
         return mConfigurationStatus;

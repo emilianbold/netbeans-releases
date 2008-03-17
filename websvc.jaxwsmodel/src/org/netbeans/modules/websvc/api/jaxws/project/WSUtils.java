@@ -50,20 +50,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -82,7 +77,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -96,8 +90,6 @@ public class WSUtils {
             "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_3.dtd";
     
     private static final String ENDORSED_DIR_PROPERTY="jaxws.endorsed.dir"; //NOI18N
-    private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
-    
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
      * that are recursively imported by this wsdl)
@@ -347,7 +339,7 @@ public class WSUtils {
             if (lock!=null) lock.releaseLock();
         }
         retrieveJaxWsFromResource(projectDir);
-        return projectDir.getFileObject(JAX_WS_XML_PATH);
+        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
     }
     
     /** Set jaxws.endorsed.dir property for wsimport, wsgen tasks
@@ -456,79 +448,6 @@ public class WSUtils {
                 }
             });
         } catch (MutexException ex) {
-        }
-    }
-    
-    private static final String DEFAULT_PACKAGE_NAME="org.netbeans.ws"; //NOI18N
-    
-    private static String getPackageNameFromNamespace(String ns) {
-        String base = ns;
-        int doubleSlashIndex = ns.indexOf("//"); //NOI18N
-        if (doubleSlashIndex >=0) {
-            base = ns.substring(doubleSlashIndex+2);
-        } else {
-            int colonIndex = ns.indexOf(":");
-            if (colonIndex >=0) base = ns.substring(colonIndex+1);
-        }
-        StringTokenizer tokens = new StringTokenizer(base,"/"); //NOI18N
-        if (tokens.countTokens() > 0) {
-            List<String> packageParts = new ArrayList<String>();
-            List<String> nsParts = new ArrayList<String>();
-            while (tokens.hasMoreTokens()) {
-                String part = tokens.nextToken();
-                if (part.length() >= 0) {
-                    nsParts.add(part);
-                }
-            }
-            if (nsParts.size() > 0) {
-                StringTokenizer tokens1 = new StringTokenizer(nsParts.get(0),"."); //NOI18N
-                int countTokens = tokens1.countTokens();
-                if (countTokens > 0) {
-                    List<String> list = new ArrayList<String>();
-                    while(tokens1.hasMoreTokens()) {
-                        list.add(tokens1.nextToken());
-                    }
-                    for (int i=countTokens-1; i>=0; i--) {
-                        packageParts.add(list.get(i).toLowerCase());
-                    }
-                } else {
-                    return DEFAULT_PACKAGE_NAME;
-                }
-                for (int i=1; i<nsParts.size(); i++) {
-                    packageParts.add(nsParts.get(i).toLowerCase());
-                }
-                StringBuffer buf = new StringBuffer(packageParts.get(0));
-                for (int i=1;i<packageParts.size();i++) {
-                    buf.append("."+packageParts.get(i));
-                }
-                return buf.toString();
-            }
-        }
-        return DEFAULT_PACKAGE_NAME;
-        
-    }
-    
-    public static String getPackageNameForWsdl(File wsdl) {
-        WsdlNamespaceHandler handler = new WsdlNamespaceHandler();
-        try {
-            handler.parse(wsdl);
-        } catch (ParserConfigurationException ex) {
-            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            ErrorManager.getDefault().log(ex.getLocalizedMessage());
-        } catch (SAXException ex) {
-            System.out.println("SAX = "+ex.getMessage());
-            if (WsdlNamespaceHandler.SAX_PARSER_FINISHED_OK.equals(ex.getMessage())) {
-                // THIS IS OK, parser finished correctly
-            } else {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            }
-        }
-        String targetNamespace = handler.getTargetNamespace();
-        if (targetNamespace != null) {
-            return getPackageNameFromNamespace(targetNamespace);
-        } else {
-            return null;
         }
     }
     

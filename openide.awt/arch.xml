@@ -458,14 +458,9 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="exec-component">
-  <ul>
-   <li>
-    <api name="menuText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect(javax.swing.JMenuItem,%20javax.swing.Action,%20boolean)"/>
-   </li>
-   <li>
-    <api name="popupText" category="stable" type="export" group="property" url="@TOP@/org/openide/awt/Actions.html#connect(javax.swing.JMenuItem,%20javax.swing.Action,%20boolean)"/>
-   </li>
-  </ul>
+  <p>
+   XXX no answer for exec-component
+  </p>
  </answer>
 
 

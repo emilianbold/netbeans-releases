@@ -50,5 +50,5 @@ public interface Uninstallable {
 
     public void uninstall(boolean force);
 
-    public boolean canUninstall(boolean force);
+    public boolean canUninstall();
 }

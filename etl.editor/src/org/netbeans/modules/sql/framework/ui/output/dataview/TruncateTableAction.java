@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
@@ -73,7 +74,7 @@ import org.openide.NotifyDescriptor.Message;
  */
 class TruncateTableAction extends AbstractAction {
 
-    private static transient final Logger mLogger = Logger.getLogger(TruncateTableAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(TruncateTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     DataOutputPanel outer;
 
@@ -83,17 +84,17 @@ class TruncateTableAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        String nbBundle1 = mLoc.t("BUND357: Truncate contents of table {0}?", outer.table.getDisplayName());
-        String confirmMsg = nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Truncate contents of table {0}?", outer.table.getDisplayName());
+        String confirmMsg = Localizer.parse(nbBundle1);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
             return;
         }
-        String nbBundle2 = mLoc.t("BUND358: Truncating Table");
-        String title = nbBundle2.substring(15);
-        String nbBundle3 = mLoc.t("BUND359: Truncating Table from database, please wait...");
-        String msg = nbBundle3.substring(15);
+        String nbBundle2 = mLoc.t("PRSR001: Truncating Table");
+        String title = Localizer.parse(nbBundle2);
+        String nbBundle3 = mLoc.t("PRSR001: Truncating Table from database, please wait...");
+        String msg = Localizer.parse(nbBundle3);
         UIUtil.startProgressDialog(title, msg);
 
         if (outer.truncateButton != null) {
@@ -160,7 +161,7 @@ class TruncateTableAction extends AbstractAction {
                 this.cntRs = stmtCount.executeQuery(countSql);
             } catch (Exception t) {
                 this.ex = t;
-                mLogger.errorNoloc(mLoc.t("EDIT149: Could not truncate output for target aTable{0}", DataOutputPanel.class.getName()), t);
+                mLogger.errorNoloc(mLoc.t("PRSR149: Could not truncate output for target aTable{0}", DataOutputPanel.class.getName()), t);
 
             }
 
@@ -172,12 +173,12 @@ class TruncateTableAction extends AbstractAction {
         public void finished() {
             UIUtil.stopProgressDialog();
             if (this.ex != null) {
-                String nbBundle4 = mLoc.t("BUND360: Failed to truncate table {0}.Cause: {1}",tTable.getDisplayName(),ex.getMessage());
-                String errorMsg = nbBundle4.substring(15);
+                String nbBundle4 = mLoc.t("PRSR001: Failed to truncate table {0}.Cause: {1}",tTable.getDisplayName(),ex.getMessage());
+                String errorMsg = Localizer.parse(nbBundle4);
                 DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
             } else {
-                String nbBundle5 = mLoc.t("BUND361: Table {0} truncated.",tTable.getDisplayName());
-                String informMsg = nbBundle5.substring(15);
+                String nbBundle5 = mLoc.t("PRSR001: Table {0} truncated.",tTable.getDisplayName());
+                String informMsg = Localizer.parse(nbBundle5);
                 DialogDisplayer.getDefault().notify(new Message(informMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             }
 
@@ -218,7 +219,7 @@ class TruncateTableAction extends AbstractAction {
                         factory.shutdown(conn, false, null);
                     }
                 } catch (Exception t) {
-                    mLogger.errorNoloc(mLoc.t("EDIT170: Could not commit truncate action for target aTable...{0}", DataOutputPanel.class.getName()), t);
+                    mLogger.errorNoloc(mLoc.t("PRSR150: Could not commit truncate action for target aTable...{0}", DataOutputPanel.class.getName()), t);
 
                 } finally {
                     outer.queryView.revalidate();

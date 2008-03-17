@@ -44,6 +44,7 @@ import java.util.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.xml.text.indent.XMLIndentEngine;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 
 /**
@@ -77,7 +78,7 @@ public class XMLOptions extends AbstractBaseOptions {
         super (XMLKit.class, "xml"); // NOI18N
     }
 
-    protected @Override Class getDefaultIndentEngineClass () {
+    protected Class getDefaultIndentEngineClass () {
         return XMLIndentEngine.class;
     }
     
@@ -128,7 +129,7 @@ public class XMLOptions extends AbstractBaseOptions {
      * Get coloring, possibly remap setting from previous versions
      * to new one.
      */
-    public @Override Map getColoringMap() {
+    public Map getColoringMap() {
         Map colors = super.getColoringMap();
         
         synchronized (this) {
@@ -152,9 +153,4 @@ public class XMLOptions extends AbstractBaseOptions {
             return colors;
         }
     }
-    
-    protected @Override String getContentType() {
-        return XMLKit.MIME_TYPE;
-    }
-    
 }

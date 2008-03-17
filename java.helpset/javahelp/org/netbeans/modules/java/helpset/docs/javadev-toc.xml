@@ -199,13 +199,6 @@
     <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
     </tocitem>     
     
-    <tocitem text="Using the Spring Framework">
-        <tocitem text="About Spring Framework Support" target="spring.framework.about"/>
-	<tocitem text="Adding Spring Support to a Project" target="spring.framework.add"/>
-	<tocitem text="Creating a Spring Configuration File" target="spring.framework.create"/>
-	<tocitem text="Organizing Spring Configuration Files" target="spring.framework.organize"/>
-    </tocitem>
-    
     <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />

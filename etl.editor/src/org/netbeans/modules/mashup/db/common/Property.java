@@ -47,7 +47,7 @@ import java.util.Map;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Simple class to bind property key, type, current value, required flag and (optional)
@@ -78,7 +78,7 @@ public class Property implements Cloneable, Comparable {
 
     /* Current property value */
     private Object value;
-    private static transient final Logger mLogger = Logger.getLogger(Property.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(Property.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new default instance of Property */
@@ -266,7 +266,7 @@ public class Property implements Cloneable, Comparable {
             Constructor constr = type.getConstructor(new Class[]{String.class});
             this.defaultValue = constr.newInstance(new Object[]{cooked});
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT052: Could not construct default value of type {0}with parameter = {1}", type, def), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR052: Could not construct default value of type {0}with parameter = {1}", type, def), ex);
             defaultValue = null;
         }
     }

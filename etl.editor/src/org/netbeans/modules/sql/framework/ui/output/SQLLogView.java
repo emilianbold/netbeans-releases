@@ -59,6 +59,7 @@ import javax.swing.SwingUtilities;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.windows.TopComponent;
 
 /**
@@ -72,13 +73,13 @@ public class SQLLogView extends TopComponent implements IMessageView, ETLOutputP
     private JButton refreshButton;
     private ActionListener aListener;
     private JButton[] btn = new JButton[1];
-    private static transient final Logger mLogger = Logger.getLogger(SQLLogView.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLLogView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of SQLLogView */
     public SQLLogView() {
-        String nbBundle1 = mLoc.t("BUND160: Execution Log");
-        String viewLabel = nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Execution Log");
+        String viewLabel = Localizer.parse(nbBundle1);
         this.setName(viewLabel);
         this.setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
@@ -86,8 +87,8 @@ public class SQLLogView extends TopComponent implements IMessageView, ETLOutputP
         //add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/rerun.png");
         refreshButton = new JButton(new ImageIcon(url));
-        String nbBundle2 = mLoc.t("BUND363: Refresh Log");
-        refreshButton.setToolTipText(nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Refresh Log");
+        refreshButton.setToolTipText(Localizer.parse(nbBundle2));
         refreshButton.getAccessibleContext().setAccessibleName(viewLabel);
         refreshButton.addActionListener(aListener);
         btn[0] = refreshButton;

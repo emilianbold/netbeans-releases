@@ -60,12 +60,15 @@ import org.openide.util.NbBundle;
 /**
 * @author   Ian Formanek
 */
-public class RectangleCustomEditor extends IntegerCustomEditor {
+public class RectangleCustomEditor extends javax.swing.JPanel
+implements KeyListener, PropertyChangeListener {
     static final long serialVersionUID =-9015667991684634296L;
    
+    private HashMap<JTextField, JLabel> labelMap = new HashMap<JTextField, JLabel>();
+    private PropertyEnv env;
     /** Initializes the Form */
     public RectangleCustomEditor(RectangleEditor editor, PropertyEnv env) {
-        super( env );
+        this.env=env;
         initComponents ();
         this.editor = editor;
         Rectangle rectangle = (Rectangle)editor.getValue ();
@@ -100,11 +103,10 @@ public class RectangleCustomEditor extends IntegerCustomEditor {
         
         getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CustomRectangleEditor"));
 
-        setPanel(jPanel2);
-        getMap().put(widthField,widthLabel);
-        getMap().put(xField,xLabel);
-        getMap().put(yField,yLabel);
-        getMap().put(heightField,heightLabel);
+        labelMap.put(widthField,widthLabel);
+        labelMap.put(xField,xLabel);
+        labelMap.put(yField,yLabel);
+        labelMap.put(heightField,heightLabel);
 //        HelpCtx.setHelpIDString (this, RectangleCustomEditor.class.getName ());
 
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
@@ -221,8 +223,8 @@ public class RectangleCustomEditor extends IntegerCustomEditor {
 
     }
 
-    @Override
-    protected void updateValues () {
+
+    private void updateRectangle () {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
@@ -233,9 +235,65 @@ public class RectangleCustomEditor extends IntegerCustomEditor {
             // [PENDING beep]
         }
     }
+
+    public void keyPressed(java.awt.event.KeyEvent e) {
+    }    
+
+    public void keyReleased(java.awt.event.KeyEvent e) {
+        if (checkValues()) {
+            updateRectangle();
+        }
+    }
+    
+    public void keyTyped(java.awt.event.KeyEvent e) {
+    }
+    
+    private boolean checkValues() {
+        Component[] c = jPanel2.getComponents();
+        boolean valid=true;
+        for (int i=0; i < c.length; i++) {
+            if (c[i] instanceof JTextField) {
+                valid &= validFor((JTextField) c[i]);
+            }
+        }
+        if (env != null) {
+           env.setState(valid ? env.STATE_NEEDS_VALIDATION : env.STATE_INVALID);
+        }
+        return valid;
+    }
+    
+    private boolean validFor(JTextField c) {
+        String s = c.getText().trim();
+        try {
+            Integer.parseInt(s);
+            handleValid(c);
+            return true;
+        } catch (NumberFormatException e) {
+            handleInvalid(c);
+            return false;
+        }
+    }
+    
+    private void handleInvalid(JTextField c) {
+        c.setForeground(getErrorColor());
+        findLabelFor(c).setForeground(getErrorColor());
+    }
+    
+    private void handleValid(JTextField c) {
+        c.setForeground(getForeground());
+        findLabelFor(c).setForeground(getForeground());
+    }
+    
+    private Color getErrorColor() {
+        Color c=UIManager.getColor("nb.errorForeground");
+        if (c == null) {
+            c = Color.RED;
+        }
+        return c;
+    }
     
     private JLabel findLabelFor(JTextField c) {
-        return getMap().get(c);
+        return labelMap.get(c);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

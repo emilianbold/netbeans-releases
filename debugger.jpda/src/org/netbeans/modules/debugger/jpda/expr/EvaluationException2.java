@@ -170,8 +170,6 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String[] { params[0].toString() };
         else if (reason.equals("fieldOnNull"))
             msgParams = new String[] { params[0].toString() };
-        else if (reason.equals("arrayIsNull"))
-            msgParams = new String[] { params[0].toString() };
         else if (reason.equals("unsupported"))
             msgParams = new String[] { node.toString() };
         else if (reason.equals("errorneous"))

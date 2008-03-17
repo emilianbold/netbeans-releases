@@ -1,23 +1,16 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<!--
-*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
-*     Use is subject to license terms.
--->
 <html>
     <head>
-        <title>About Mercurial Support</title>
+        <title>About Mercurial</title>
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
         <h2>About Mercurial Support</h2>
         
-        <p>Mercurial is a fast, lightweight Source Control Management system designed for 
-            efficient handling of very large distributed projects. Unlike CVS and Subversion, 
-            Mercurial works with distributed repositories which are commonly used in many 
-            open source projects today and support distributed development without any 
-            centralized control.
+        <p>Mercurial is a fast, lightweight Source Control Management system designed for efficient handling 
+            of very large distributed projects.
+            Unlike CVS and Subversion, Mercurial works with distributed repositories which are commonly used 
+            in many OpenSource projects today and support distributed development without any centralised control.
         </p>
         
         <p>The IDE's Mercurial Plugin support enables you to manage changes to version-controlled 
@@ -31,7 +24,7 @@
         <ul>
             <li>Better support for distributed teams by removing a centralized bottle neck.</li>
             <li>Better scalability with large numbers of concurrent users.</li>
-            <li>After the initial clone, faster to work with, independent of a user's network infrastructure.</li>
+            <li>After the initial clone, faster to work with, independent of a users network infrastructure.</li>
         </ul>            
             
         <h3>Mercurial Visualization Features</h3>
@@ -48,12 +41,12 @@
         </ul>
         
         <p>The IDE's Mercurial support is similar in style to the IDE's Subversion support. 
-            The main difference is as Mercurial is a distributed revision control system, you 
-            typically begin by <em>cloning</em> an external repository to work with. This
-            clone is a complete copy of the repository including the revision history. You
-            can clone this local copy as often as you like, and when you want to you can push
-            your changes back to the original repository provided you have permissions, or 
-            <em>export</em> your changes and send them to the owner if you do not.
+            The main difference is as Mercurial is a distributed revision
+            control system, you typically begin by Cloning an external repository to work with. This
+            Clone is a complete copy of the repository including the revision history. You
+            can Clone this local copy as often as you like and when you want to you can push
+            your changes back to the original repository if you have permissions, or Export
+            your changes and send them to the owner if you do not.
         </p>
         
         <p>For further documentation on the Mercurial Plugin support and Mercurial itself, see 
@@ -83,7 +76,6 @@
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
                 </object></li>
-                
             <li>Mercurial Tutorial:<br>
                 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.selenic.com/mercurial/wiki/index.cgi/Tutorial">
@@ -91,7 +83,6 @@
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
                 </object></li>   
-                
             <li>Mercurial Man Pages:<br>
                 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.selenic.com/mercurial/wiki/index.cgi/ManPages">
@@ -99,7 +90,6 @@
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
                 </object></li>   
-                
             <li>Distributed Revision Control with Mercurial:<br>
                 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://hgbook.red-bean.com/hgbook.html">
@@ -107,9 +97,22 @@
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
                 </object></li>
+          
             </ul>
             
         <hr><small><a href="credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>
+<!--
+Tip: to create a link which will open in an external web browser, try:
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/">
+    <param name="text" value="<html><u>http://www.netbeans.org/</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
+To create a link to a help set from another module, you need to know the code name base and path, e.g.:
+<a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a>
+(This link will behave sanely if that module is disabled or missing.)
+-->

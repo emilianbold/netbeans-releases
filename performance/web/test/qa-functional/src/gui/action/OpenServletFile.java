@@ -95,9 +95,9 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
     
     public void testOpeningServletFile(){
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 6000;
        //repaintManager().setOnlyEditor(true);
-//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
@@ -107,8 +107,10 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
     
     public void testOpeningJavaFile(){
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 6000;
         //repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
         fileName = "Main.java";
@@ -140,8 +142,6 @@ public class OpenServletFile extends WebPerformanceTestCase {
         }
         log("------------------------- after popup invocation ------------");
         try {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {

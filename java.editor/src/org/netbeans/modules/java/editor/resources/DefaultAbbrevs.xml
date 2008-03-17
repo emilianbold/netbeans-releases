@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${IT}.next();
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -115,7 +115,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${LIST instanceof="java.util.List" default="lst"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${LIST}.get(${IDX});
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${VECTOR instanceof="java.util.Vector" default="vct"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${VECTOR}.elementAt(${IDX});
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="fore" contexts="BLOCK,CASE">
         <code>
 <![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -164,7 +164,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
@@ -173,23 +173,23 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[while(${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
-   ${selection}${cursor}
+   ${selection line}${cursor}
 }
 ]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="iff" contexts="BLOCK,CASE" descriptionId="CT_iff">
         <code>
-<![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
-   ${selection}${cursor}
+<![CDATA[if (${EXP instanceof="java.lang.Boolean" default="exp"}) {
+   ${selection line}${cursor}
 }
 ]]>
         </code>
     </codetemplate>
     <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE" descriptionId="CT_ifelse">
         <code>
-<![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
-   ${selection}${cursor}
+<![CDATA[if (${EXP instanceof="java.lang.Boolean" default="exp"}) {
+   ${selection line}${cursor}
 } else {
 }
 ]]>
@@ -197,8 +197,8 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE">
         <code>
-<![CDATA[while (${EXP instanceof="boolean" default="exp"}) { 
-   ${selection}${cursor}
+<![CDATA[while (${EXP instanceof="java.lang.Boolean" default="exp"}) { 
+   ${selection line}${cursor} 
 }
 ]]>
         </code>
@@ -206,8 +206,8 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE">
         <code>
 <![CDATA[do { 
-   ${selection}${cursor}
-} while (${EXP instanceof="boolean" default="exp"});
+   ${selection line}${cursor} 
+} while (${EXP instanceof="java.lang.Boolean" default="exp"});
 ]]>
         </code>
     </codetemplate>
@@ -215,7 +215,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[${RUNN_TYPE type="java.lang.Runnable" default="Runnable" editable=false} ${RUNN newVarName default="r"} = new ${RUNN_TYPE}() {
    public void run() {
-     ${selection}${cursor}
+       ${selection line}${cursor}
    }
 };
 ]]>
@@ -224,7 +224,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE">
         <code>
 <![CDATA[try {
-   ${selection}${cursor}
+   ${selection line}${cursor}
 } catch (${EX_TYPE uncaughtExceptionType default="Exception"} ${EX newVarName default="e"}) {
 }
 ]]>

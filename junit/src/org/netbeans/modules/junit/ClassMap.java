@@ -171,6 +171,8 @@ final class ClassMap {
                             Element methodElement = trees.getElement(methodTreePath);
                             for (AnnotationMirror annMirror : methodElement.getAnnotationMirrors()) {
                                 Element annElem = annMirror.getAnnotationType().asElement();
+                                assert annElem.getKind() == ElementKind.ANNOTATION_TYPE;
+                                assert annElem instanceof TypeElement;
                                 String fullName = ((TypeElement) annElem).getQualifiedName().toString();
                                 if (fullName.startsWith(JUNIT4_PKG_PREFIX)) {
                                     String shortName = fullName.substring(JUNIT4_PKG_PREFIX.length());
