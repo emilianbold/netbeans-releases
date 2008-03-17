@@ -42,18 +42,19 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Code generator for Accessing Saas services.
@@ -74,7 +75,11 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
 
         preGenerate();
         
+        //Create Authenticator classes
         createAuthenticatorClass();
+        
+        //Create Authorization classes
+        createAuthorizationClasses();
         
         createSaasServiceClass();
         addSaasServiceMethod();
@@ -91,18 +96,39 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
+    /**
+     *  Create Authorization Frame
+     */
+    @Override
+    public void createAuthorizationClasses() throws IOException {
+        if (getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
+            try {
+                String authFileName = getAuthorizationFrameClassName();
+                FileObject authorizationFile;
+                JavaSource authorizationJS = JavaSourceHelper.createJavaSource(
+                        TEMPLATES_SAAS + Constants.SERVICE_AUTHORIZATION_FRAME+".java",
+                        getSaasServiceFolder(), getSaasServicePackageName(), authFileName);// NOI18n
+                Set<FileObject> files = new HashSet<FileObject>(authorizationJS.getFileObjects());
+                if (files != null && files.size() > 0) {
+                    authorizationFile = files.iterator().next();
+                }
+            } catch (Exception ex) {
+                throw new IOException(
+                    NbBundle.getMessage(AbstractGenerator.class,
+                    "MSG_CreateAuthFrameFailed", ex)); // NOI18N
+            }
+        }
+    }
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-        paramUse += getHeaderOrParameterUsage(filterParams);
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-
-        if(paramUse.endsWith(", "))
-            paramUse = paramUse.substring(0, paramUse.length()-2);
         
         String methodBody = "try {\n";
         methodBody += paramDecl + "\n";

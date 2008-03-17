@@ -73,6 +73,7 @@ public class LeftTree extends JTree implements
     private LeftTreeEventHandler eventHandler;
     public JComponent scrollPaneWrapper;
     public JScrollPane scrollPane;
+    private boolean printMode = false;
 
     /** Creates a new instance of LeftTree */
     public LeftTree(Mapper mapper) {
@@ -294,6 +295,36 @@ public class LeftTree extends JTree implements
         }
 
         getMapper().getLinkTool().paintLeftTree(this, g);
+    }
+    
+    @Override
+    public void repaint(long tm, int x, int y, int width, int height) {
+        super.repaint(tm, x, y, width, height);
+        if (mapper == null) { return; }
+        
+        Canvas canvas = mapper.getCanvas();
+        if (canvas == null) { return; }
+        
+        canvas.repaint();
+    }
+
+//    @Override
+//    public void print(Graphics g) {
+//        printMode = true;
+//        super.print(g);
+//        printMode = false;
+//    }
+
+    @Override
+    public int getY() {
+        if (printMode) {
+            return 0;
+        }
+        return super.getY();
+    }
+    
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
     }
 
     private int connectedEdges(int row, TreePath treePath,

@@ -25,13 +25,12 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.CompositeActivity;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.w3c.dom.Element;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 
 /**
  * @author ads
  */
-public abstract class CompositeActivityImpl extends ActivityImpl implements
-        CompositeActivity
-{
+public abstract class CompositeActivityImpl extends ActivityImpl implements CompositeActivity {
 
     CompositeActivityImpl( BpelModelImpl model, Element e ) {
         super(model, e);
@@ -144,5 +143,4 @@ public abstract class CompositeActivityImpl extends ActivityImpl implements
         }
         return super.getChildType(entity);
     }
-
 }

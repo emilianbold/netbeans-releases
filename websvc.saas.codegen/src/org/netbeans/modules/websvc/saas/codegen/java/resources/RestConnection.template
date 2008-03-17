@@ -103,6 +103,23 @@ public class RestConnection {
         return connect(headers, data);
     }
     
+    /**
+     * Used by post method whose contents are like form input
+     */
+    public String post(String[][] params) throws IOException {
+        return post(null, params);
+    }
+
+    /**
+     * Used by post method whose contents are like form input
+     */
+    public String post(String[][] headers, String[][] params) throws IOException {
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded");
+        String data = encodeParams(params);
+        return connect(headers, data.getBytes("UTF-8"));
+    }
+
     public String delete() throws IOException {
         return delete(null);
     }
@@ -180,6 +197,10 @@ public class RestConnection {
     }
 
     private String encodeUrl(String baseUrl, String[][] params) {
+        return baseUrl + encodeParams(params);
+    }
+    
+    private String encodeParams(String[][] params) {
         String p = "";
 
         if (params != null) {
@@ -200,7 +221,7 @@ public class RestConnection {
             }
         }
 
-        return baseUrl + p;
+        return p;
     }
 
     private void setHeaders(String[][] headers) {
