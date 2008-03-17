@@ -215,6 +215,9 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineMethodParams));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineCallArgs));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineArrayInit));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineFor));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineIfCondition));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineWhileCondition));
         sheet.put(set);
 
         set = new Sheet.Set();
@@ -587,6 +590,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jLabel2, gridBagConstraints);
 
+        languagesComboBox.setMinimumSize(new java.awt.Dimension(50, 18));
+        languagesComboBox.setPreferredSize(new java.awt.Dimension(50, 22));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -596,8 +601,10 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(300);
+        jSplitPane1.setOpaque(false);
 
         oprionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        oprionsPanel.setOpaque(false);
         oprionsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(styleComboBox);
@@ -615,12 +622,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         oprionsPanel.add(styleComboBox, gridBagConstraints);
 
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        categoryPanel.setOpaque(false);
         categoryPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -641,13 +649,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         oprionsPanel.add(manageStyles, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(oprionsPanel);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        previewPanel.setOpaque(false);
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setViewportView(previewPane);

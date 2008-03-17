@@ -112,8 +112,8 @@ public class MenuEditLayer extends JPanel {
     private static final boolean USE_NEW_ITEM_COLOR_SWITCHING = false;
     
     /* === public and package level fields. these should probably become getters and setters  ===*/
-    public VisualDesignerPopupFactory hackedPopupFactory = null;
-    public FormDesigner formDesigner;
+    VisualDesignerPopupFactory hackedPopupFactory = null;
+    FormDesigner formDesigner;
     JLayeredPane layers;
     JComponent glassLayer;
     DropTargetLayer dropTargetLayer;
