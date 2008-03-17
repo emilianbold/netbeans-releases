@@ -1,7 +1,7 @@
 /*
  * PersistenceService.java
  *
- * Created on November 27, 2007, 2:08 AM
+ * Created on March 11, 2008, 10:39 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -47,7 +47,7 @@ public class PersistenceService {
     
     /**
      * Returns an instance of PersistenceService.
-     * 
+     *
      * @return an instance of PersistenceService
      */
     public static PersistenceService getInstance() {
@@ -60,7 +60,7 @@ public class PersistenceService {
     
     /**
      * Refreshes the state of the given entity from the database.
-     * 
+     *
      * @param entity the entity to refresh
      */
     public void refreshEntity(Object entity) {
@@ -69,7 +69,7 @@ public class PersistenceService {
     
     /**
      * Merges the state of the given entity into the current persistence context.
-     * 
+     *
      * @param entity the entity to merge
      * @return the merged entity
      */
@@ -79,7 +79,7 @@ public class PersistenceService {
     
     /**
      * Makes the given entity managed and persistent.
-     * 
+     *
      * @param entity the entity to persist
      */
     public void persistEntity(Object entity) {
@@ -88,7 +88,7 @@ public class PersistenceService {
     
     /**
      * Removes the entity instance.
-     * 
+     *
      * @param entity the entity to remove
      */
     public void removeEntity(Object entity) {
@@ -110,7 +110,7 @@ public class PersistenceService {
     
     /**
      * Returns an instance of Query for executing a named query.
-     * 
+     *
      * @param query the named query
      * @return an instance of Query
      */
@@ -120,7 +120,7 @@ public class PersistenceService {
     
     /**
      * Returns an instance of Query for executing a query.
-     * 
+     *
      * @param query the query string
      * @return an instance of Query
      */
@@ -133,7 +133,7 @@ public class PersistenceService {
      */
     public void beginTx() {
         EntityTransaction tx = em.getTransaction();
-
+        
         if (!tx.isActive()) {
             tx.begin();
         }
