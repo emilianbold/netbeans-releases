@@ -594,8 +594,13 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addFields(copy, getParamNames(params),
-                        getParamTypeNames(params), getParamValues(params), modifier);
+                List<ParameterInfo> addList = new ArrayList<ParameterInfo>();
+                for(ParameterInfo p: params) {
+                    if(JavaSourceHelper.getField(copy, getParameterName(p, true, true, true)) == null)
+                        addList.add(p);
+                }
+                JavaSourceHelper.addFields(copy, getParamNames(addList),
+                        getParamTypeNames(addList), getParamValues(addList), modifier);
             }
         });
         result.commit();
