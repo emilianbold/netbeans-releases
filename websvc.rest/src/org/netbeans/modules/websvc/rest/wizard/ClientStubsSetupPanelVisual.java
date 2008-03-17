@@ -239,8 +239,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     continue;
                 }
                 ProjectInformation pInfo = ProjectUtils.getInformation(p);
-                listModel.addElement(pInfo);
-                changed = true;
+                if(!listModel.contains(pInfo)) {
+                    listModel.addElement(pInfo);
+                    changed = true;
+                }
             } catch(IOException ioe) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
             }
