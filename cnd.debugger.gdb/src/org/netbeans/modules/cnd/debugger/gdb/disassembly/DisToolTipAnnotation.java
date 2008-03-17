@@ -84,10 +84,13 @@ public class DisToolTipAnnotation extends Annotation {
 
         try {
             StyledDocument doc = ec.openDocument();
-            JEditorPane ep = getCurrentEditor();
+            // getCurrentEditor can be locked if called during disassembly update
+            // disabled until the solution is found
+            /*JEditorPane ep = getCurrentEditor();
             if (ep == null) {
                 return null;
-            }
+            }*/
+            JEditorPane ep = null;
             String register = getRegister(doc, ep, NbDocument.findLineOffset(doc,
                     lp.getLine().getLineNumber()) + lp.getColumn());
             if (register == null) {
@@ -111,12 +114,14 @@ public class DisToolTipAnnotation extends Annotation {
 
     private static String getRegister(StyledDocument doc, JEditorPane ep, int offset) {
         String t = null;
-        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+        // getCurrentEditor can be locked if called during disassembly update
+        // disabled until the solution is found
+        /*if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
             t = ep.getSelectedText();
         }
         if (t != null) {
             return t;
-        }
+        }*/
         
         int line = NbDocument.findLineNumber(doc, offset);
         int col = NbDocument.findLineColumn(doc, offset);
