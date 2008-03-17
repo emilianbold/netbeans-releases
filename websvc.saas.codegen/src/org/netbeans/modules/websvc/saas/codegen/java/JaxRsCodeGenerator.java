@@ -180,7 +180,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         String fixedCode = "";
         for (ParameterInfo param : getBean().getInputParameters()) {
             if(param.isFixed())
-                fixedCode +=  "String " + getParameterName(param) + " = \"" + findParamValue(param) + "\";\n";
+                fixedCode +=  "String " + getVariableName(param.getName()) + " = \"" + findParamValue(param) + "\";\n";
         }
         String pathParamsCode = "";
         if(getBean().getTemplateParameters() != null && getBean().getTemplateParameters().size() > 0)

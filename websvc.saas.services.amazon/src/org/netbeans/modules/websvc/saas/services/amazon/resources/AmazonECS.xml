@@ -62,7 +62,7 @@
         </group>
 
         <authentication profile="SaaSServices/AmazonECS/profile.properties">
-            <api-key id="dev_id"/>
+            <api-key id="AWSAccessKeyId"/>
         </authentication>
 
     </saas-metadata>
