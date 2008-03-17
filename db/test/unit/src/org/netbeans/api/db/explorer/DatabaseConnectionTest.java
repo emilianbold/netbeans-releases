@@ -64,7 +64,7 @@ public class DatabaseConnectionTest extends TestBase {
         Util.deleteConnectionFiles();
         Util.deleteDriverFiles();
 
-        JDBCDriver driver = createDriver();
+        JDBCDriver driver = Util.createDummyDriver();
         assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
 
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
@@ -82,7 +82,7 @@ public class DatabaseConnectionTest extends TestBase {
         Util.deleteDriverFiles();
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         
-        JDBCDriver driver = createDriver();
+        JDBCDriver driver = Util.createDummyDriver();
         assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
 
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
@@ -99,7 +99,7 @@ public class DatabaseConnectionTest extends TestBase {
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         assertEquals(0, JDBCDriverManager.getDefault().getDrivers().length);
         
-        JDBCDriver driver = createDriver();
+        JDBCDriver driver = Util.createDummyDriver();
         
         DatabaseConnection dbconn = DatabaseConnection.create(
                     driver, "jdbc:bar:localhost", 
@@ -110,13 +110,5 @@ public class DatabaseConnectionTest extends TestBase {
         
         ConnectionManager.getDefault().removeConnection(dbconn);
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
-    }
-    
-    private JDBCDriver createDriver() throws Exception {
-        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", 
-                "org.bar.BarDriver", new URL[]{ new URL("file://foo/path/foo.jar")});
-        JDBCDriverManager.getDefault().addDriver(driver);
-                
-        return driver;
-    }
+    }    
 }

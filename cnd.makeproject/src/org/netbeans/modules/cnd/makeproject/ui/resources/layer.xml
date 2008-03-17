@@ -167,22 +167,9 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-cnd-makeproject-MakeOptions.settings" url="MakeOptions.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
     </folder>
     
-    <!--
-    <folder name="UI">
-        <folder name="Services">
-            <folder name="Building">
-                <file name="org-netbeans-modules-cnd-makeproject-MakeOptions.shadow">
-                    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-makeproject-MakeOptions.settings"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    -->
-
     <folder name="Actions">
         <folder name="Project">
             <!-- Project operations -->

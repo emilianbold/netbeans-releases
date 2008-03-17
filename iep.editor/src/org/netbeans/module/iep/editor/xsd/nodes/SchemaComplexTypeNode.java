@@ -5,13 +5,27 @@
 
 package org.netbeans.module.iep.editor.xsd.nodes;
 
+import org.netbeans.module.iep.editor.xsd.nodes.images.NodeIcons;
+import org.netbeans.modules.xml.axi.ContentModel;
+
 /**
  *
  * @author radval
  */
-public class SchemaComplexTypeNode extends AbstractSchemaArtifactNode {
+public class SchemaComplexTypeNode extends AbstractSchemaArtifactNode implements SelectableTreeNode  {
 
-    public SchemaComplexTypeNode(Object userObject) {
-        super(userObject);
+   private boolean mSelected;
+ 
+    public SchemaComplexTypeNode(ContentModel cModel) {
+        super(cModel);
+    }
+    
+    
+    public boolean isSelected() {
+        return mSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.mSelected = selected;
     }
 }

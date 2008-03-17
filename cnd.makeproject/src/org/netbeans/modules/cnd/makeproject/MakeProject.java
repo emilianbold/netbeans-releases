@@ -169,10 +169,30 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[]{new Info(), aux, helper.createCacheDirectoryProvider(), spp, new MakeActionProvider(this), new MakeLogicalViewProvider(this, spp), new MakeCustomizerProvider(this, projectDescriptorProvider), new MakeArtifactProviderImpl(), new //new CustomActionsHookImpl(),
-        ProjectXmlSavedHookImpl(), new ProjectOpenedHookImpl(), new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())), new MakeSources(this, helper), new AntProjectHelperProvider(), projectDescriptorProvider, new MakeProjectConfigurationProvider(this, projectDescriptorProvider), new NativeProjectProvider(this, projectDescriptorProvider), new RecommendedTemplatesImpl(), new MakeProjectOperations(this), new FolderSearchInfo(projectDescriptorProvider), new MakeProjectType
-
-        ()});
+        return Lookups.fixed(new Object[]{
+            new Info(),
+            aux,
+            helper.createCacheDirectoryProvider(),
+            spp,
+            new MakeActionProvider(this),
+            new MakeLogicalViewProvider(this, spp),
+            new MakeCustomizerProvider(this, projectDescriptorProvider),
+            new MakeArtifactProviderImpl(),
+            new //new CustomActionsHookImpl(),
+            ProjectXmlSavedHookImpl(),
+            new ProjectOpenedHookImpl(),
+            new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
+            new MakeSources(this, helper),
+            new AntProjectHelperProvider(),
+            projectDescriptorProvider,
+            new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
+            new NativeProjectProvider(this, projectDescriptorProvider),
+            new RecommendedTemplatesImpl(),
+            new MakeProjectOperations(this),
+            new FolderSearchInfo(projectDescriptorProvider),
+            new MakeProjectType(),
+            new MakeProjectEncodingQueryImpl(projectDescriptorProvider)
+        });
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {

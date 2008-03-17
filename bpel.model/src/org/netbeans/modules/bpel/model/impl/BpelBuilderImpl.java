@@ -722,8 +722,6 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
         return new ServiceRefImpl( this );
     }
 
-
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.bpel.model.api.BPELElementsBuilder#createToPartContainer()
      */
@@ -787,19 +785,14 @@ public class BpelBuilderImpl implements BPELElementsBuilder {
     }
     
     private ActivityBuilder getActivityBuilder( ActivityDescriptor descr ){
-        return ActivityBuilderHolder.ACTIVITY_BUILDERS.get( descr.getType() );
+        return ACTIVITY_BUILDERS.get( descr.getType() );
     }
 
     private BpelModelImpl myModel;
-
     private ChangeEventSupport mySupport;
-    
-}
+    private static final Map<ActivityType,ActivityBuilder> PRIVATE_BUILDERS = new HashMap<ActivityType,ActivityBuilder>();
+    private static final Map<ActivityType,ActivityBuilder> ACTIVITY_BUILDERS = Collections.unmodifiableMap( PRIVATE_BUILDERS );
 
-class ActivityBuilderHolder {
-    private static final Map<ActivityType,ActivityBuilder> PRIVATE_BUILDERS = new
-        HashMap<ActivityType,ActivityBuilder>();
-    
     static {
         PRIVATE_BUILDERS.put( ActivityType.EMPTY, new EmptyBuilder() );
         PRIVATE_BUILDERS.put( ActivityType.INVOKE, new InvokeBuilder());
@@ -820,350 +813,344 @@ class ActivityBuilderHolder {
         PRIVATE_BUILDERS.put( ActivityType.REPEAT_UNTIL, new RepeatUntilBuilder());
         PRIVATE_BUILDERS.put( ActivityType.RETHROW, new RethrowBuilder());
         PRIVATE_BUILDERS.put( ActivityType.VALIDATE, new ValidateBuilder());
-        PRIVATE_BUILDERS.put( ActivityType.COMPENSATE_SCOPE, 
-                new CompensateScopeBuilder());
-    }
-    
-    static final Map<ActivityType,ActivityBuilder> ACTIVITY_BUILDERS = 
-        Collections.unmodifiableMap( PRIVATE_BUILDERS );
-}
-
-interface ActivityBuilder {
-    
-    /**
-     * @param type Type of activity for which should be built activity.
-     * @return Is this builder is applicable for type in argument.
-     */
-    boolean isApplicable( ActivityType type );
-    
-    /**
-     * @param builder Common elements builder.
-     * @return Instantiated activity.
-     */
-    ExtendableActivity build( BpelBuilderImpl builder );
-    
-    /**
-     * @return Type for which this builder is applicable.
-     */
-    ActivityType getType();
-    
-    /**
-     * Creates element in <code>mode</code> with specified peer <code>element</code>. 
-     * @param model OM model.
-     * @param element DOM element.
-     * @return Instatiated activity.
-     */
-    BpelEntity build( BpelModelImpl model , Element element );
-}
-
-abstract class AbstractBuilder implements ActivityBuilder {
-    
-    public boolean isApplicable( ActivityType type ){
-        return getType() == type;
-    }
-}
-
-class EmptyBuilder extends AbstractBuilder {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createEmpty();
+        PRIVATE_BUILDERS.put( ActivityType.COMPENSATE_SCOPE, new CompensateScopeBuilder());
     }
 
-    public ActivityType getType() {
-        return ActivityType.EMPTY;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new EmptyImpl( model , element );
-    }
-}
-
-class InvokeBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createInvoke();
-    }
-
-    public ActivityType getType() {
-        return ActivityType.INVOKE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new InvokeImpl( model , element );
-    }
-}
-
-class ReceiveBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createReceive();
+    public static interface ActivityBuilder {
+        
+        /**
+         * @param type Type of activity for which should be built activity.
+         * @return Is this builder is applicable for type in argument.
+         */
+        boolean isApplicable( ActivityType type );
+        
+        /**
+         * @param builder Common elements builder.
+         * @return Instantiated activity.
+         */
+        ExtendableActivity build( BpelBuilderImpl builder );
+        
+        /**
+         * @return Type for which this builder is applicable.
+         */
+        ActivityType getType();
+        
+        /**
+         * Creates element in <code>mode</code> with specified peer <code>element</code>. 
+         * @param model OM model.
+         * @param element DOM element.
+         * @return Instatiated activity.
+         */
+        BpelEntity build( BpelModelImpl model , Element element );
     }
 
-    public ActivityType getType() {
-        return ActivityType.RECEIVE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ReceiveImpl( model , element );
-    }
-}
-
-class ReplyBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createReply();
+    static abstract class AbstractBuilder implements ActivityBuilder {
+        
+        public boolean isApplicable( ActivityType type ){
+            return getType() == type;
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.REPLY;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ReplyImpl( model , element );
-    }
-}
+    public static class EmptyBuilder extends AbstractBuilder {
 
-class AssignBuilder extends AbstractBuilder  {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createEmpty();
+        }
 
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createAssign();
-    }
-
-    public ActivityType getType() {
-        return ActivityType.ASSIGN;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new AssignImpl( model , element );
+        public ActivityType getType() {
+            return ActivityType.EMPTY;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new EmptyImpl( model , element );
+        }
     }
 
-}
+    public static class InvokeBuilder extends AbstractBuilder  {
 
-class WaitBuilder extends AbstractBuilder {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createInvoke();
+        }
 
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createWait();
+        public ActivityType getType() {
+            return ActivityType.INVOKE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new InvokeImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.WAIT;
-    }
-    
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new WaitImpl(model, element);
-    }
-}
+    public static class ReceiveBuilder extends AbstractBuilder  {
 
-class ThrowBuilder extends AbstractBuilder  {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createReceive();
+        }
 
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createThrow();
+        public ActivityType getType() {
+            return ActivityType.RECEIVE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ReceiveImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.THROW;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ThrowImpl( model , element );
-    }
-}
+    public static class ReplyBuilder extends AbstractBuilder  {
 
-class ExitBuilder extends AbstractBuilder {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createReply();
+        }
 
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createExit();
-    }
-
-    public ActivityType getType() {
-        return ActivityType.EXIT;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ExitImpl( model , element );
-    }
-}
-
-class FlowBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createFlow();
+        public ActivityType getType() {
+            return ActivityType.REPLY;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ReplyImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.FLOW;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new FlowImpl( model , element );
-    }
-}
-
-class WhileBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createWhile();
-    }
-
-    public ActivityType getType() {
-        return ActivityType.WHILE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new WhileImpl( model , element );
-    }
-}
-class SequenceBuilder extends AbstractBuilder  {
+    public static class AssignBuilder extends AbstractBuilder  {
 
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createSequence();
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createAssign();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.ASSIGN;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new AssignImpl( model , element );
+        }
+
     }
 
-    public ActivityType getType() {
-        return ActivityType.SEQUENCE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new SequenceImpl( model , element );
-    }
-}
+    public static class WaitBuilder extends AbstractBuilder {
 
-class ScopeBuilder extends AbstractBuilder  {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createWait();
+        }
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createScope();
-    }
-
-    public ActivityType getType() {
-        return ActivityType.SCOPE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ScopeImpl( model , element );
-    }
-}
-
-class PickBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createPick();
+        public ActivityType getType() {
+            return ActivityType.WAIT;
+        }
+        
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new WaitImpl(model, element);
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.PICK;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new PickImpl( model , element );
-    }
-}
-class CompensateBuilder extends AbstractBuilder {
+    public static class ThrowBuilder extends AbstractBuilder  {
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createCompensate();
-    }
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createThrow();
+        }
 
-    public ActivityType getType() {
-        return ActivityType.COMPENSATE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new CompensateImpl( model , element );
-    }
-}
-class ForEachBuilder extends AbstractBuilder  {
-
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createForEach();
+        public ActivityType getType() {
+            return ActivityType.THROW;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ThrowImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.FOR_EACH;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ForEachImpl( model , element );
-    }
-}
-class IfBuilder extends AbstractBuilder  {
+    public static class ExitBuilder extends AbstractBuilder {
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createIf();
-    }
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createExit();
+        }
 
-    public ActivityType getType() {
-        return ActivityType.IF;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new IfImpl( model , element );
-    }
-}
-
-class RepeatUntilBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createRepeatUntil();
+        public ActivityType getType() {
+            return ActivityType.EXIT;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ExitImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.REPEAT_UNTIL;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new RepeatUntilImpl( model , element );
-    }
-    
-}
-class RethrowBuilder extends AbstractBuilder  {
+    public static class FlowBuilder extends AbstractBuilder  {
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createRethrow();
-    }
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createFlow();
+        }
 
-    public ActivityType getType() {
-        return ActivityType.RETHROW;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ReThrowImpl( model , element );
-    }
-}
-
-class ValidateBuilder extends AbstractBuilder  {
-
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createValidate();
+        public ActivityType getType() {
+            return ActivityType.FLOW;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new FlowImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.VALIDATE;
-    }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new ValidateImpl( model , element );
-    }
-}
+    public static class WhileBuilder extends AbstractBuilder  {
 
-class CompensateScopeBuilder extends AbstractBuilder  {
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createWhile();
+        }
 
-    public ExtendableActivity build( BpelBuilderImpl builder ) {
-        return builder.createCompensateScope();
+        public ActivityType getType() {
+            return ActivityType.WHILE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new WhileImpl( model , element );
+        }
     }
 
-    public ActivityType getType() {
-        return ActivityType.COMPENSATE_SCOPE;
+    public static class SequenceBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createSequence();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.SEQUENCE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new SequenceImpl( model , element );
+        }
     }
-    
-    public BpelEntity build( BpelModelImpl model, Element element ) {
-        return new CompensateScopeImpl( model , element );
+
+    public static class ScopeBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createScope();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.SCOPE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ScopeImpl( model , element );
+        }
     }
-    
+
+    public static class PickBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createPick();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.PICK;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new PickImpl( model , element );
+        }
+    }
+
+    public static class CompensateBuilder extends AbstractBuilder {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createCompensate();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.COMPENSATE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new CompensateImpl( model , element );
+        }
+    }
+
+    public static class ForEachBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createForEach();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.FOR_EACH;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ForEachImpl( model , element );
+        }
+    }
+
+    public static class IfBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createIf();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.IF;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new IfImpl( model , element );
+        }
+    }
+
+    public static class RepeatUntilBuilder extends AbstractBuilder  {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createRepeatUntil();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.REPEAT_UNTIL;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new RepeatUntilImpl( model , element );
+        }
+    }
+
+    public static class RethrowBuilder extends AbstractBuilder {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createRethrow();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.RETHROW;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ReThrowImpl( model , element );
+        }
+    }
+
+    public static class ValidateBuilder extends AbstractBuilder {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createValidate();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.VALIDATE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new ValidateImpl( model , element );
+        }
+    }
+
+    public static class CompensateScopeBuilder extends AbstractBuilder {
+
+        public ExtendableActivity build( BpelBuilderImpl builder ) {
+            return builder.createCompensateScope();
+        }
+
+        public ActivityType getType() {
+            return ActivityType.COMPENSATE_SCOPE;
+        }
+        
+        public BpelEntity build( BpelModelImpl model, Element element ) {
+            return new CompensateScopeImpl( model , element );
+        }
+    }
 }

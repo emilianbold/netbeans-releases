@@ -50,6 +50,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -97,7 +98,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
         
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         editorOperator.setCaretPosition(8, 1);        
-        //repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         waitNoEvent(2000);        
     }
 
@@ -110,7 +111,7 @@ public class TypingInScriptingEditor extends org.netbeans.performance.test.utili
     @Override
     public void close() {
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        //repaintManager().resetRegionFilters();        
+        repaintManager().resetRegionFilters();        
         EditorOperator.closeDiscardAll();
         
     }

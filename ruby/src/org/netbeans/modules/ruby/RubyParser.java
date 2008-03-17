@@ -44,11 +44,6 @@ import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringBufferInputStream;
-import java.io.StringReader;
-import org.jruby.util.ByteList;
-import org.jruby.lexer.yacc.ByteListLexerSource;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -76,7 +71,6 @@ import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
-import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -523,12 +517,54 @@ public final class RubyParser implements Parser {
             }
 
             ParserConfiguration configuration = new ParserConfiguration(0, true, false, true);
-            //LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
-            // This doesn't work -- so use lame StringBufferInputStream approach instead for now
-            //ByteList byteList = ByteList.create(source);
-            //LexerSource lexerSource = ByteListLexerSource.getSource(fileName, byteList, null, configuration);
-            StringBufferInputStream input = new StringBufferInputStream(source);
-            LexerSource lexerSource = LexerSource.getSource(fileName, input, null, configuration);
+            InputStream is;
+            
+            // As of JRuby 1.1, JRuby processes the input byte by byte. Unfortunately, the byte
+            // offsets are the ones used for node offsets - which don't correspond to the character
+            // offsets I need when for example UTF8 encoding the bytes. This breaks semantic
+            // highlighting offsets etc.
+            // For that reason, I'm just truncating the bytes down to 255 now (using ? in place of
+            // other unicode chars). This doesn't affect the parser since the symbols aren't
+            // unicode safe anyway. See issue #129985 for more.
+            //
+            //try {
+                //LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
+                // This doesn't work -- so use lame StringBufferInputStream approach instead for now
+                //ByteList byteList = ByteList.create(source);
+                //LexerSource lexerSource = ByteListLexerSource.getSource(fileName, byteList, null, configuration);
+                //byte[] bytes = source.getBytes("UTF8");
+                //is = new ByteArrayInputStream(bytes);
+            //} catch (UnsupportedEncodingException ex) {
+            //    Exceptions.printStackTrace(ex);
+            //    is = new StringBufferInputStream(source);
+            //}
+            final String data = source;
+            final int length = data.length();
+            is = new InputStream() {
+                int offset = 0;
+                
+                @Override
+                public int read() throws IOException {
+                    if (offset == length) {
+                        return -1;
+                    }
+                    
+                    int c = data.charAt(offset++);
+                    
+                    // Truncate values at c. This is wrong, but if I process
+                    // bytes properly UTF8 encoded, then all my source offsets on nodes
+                    // end up wrong! Unicode chars cannot show up in symbols anyway,
+                    // just in strings where I don't actually care what the string is.
+                    if (c > 255) {
+                        c = '?';
+                    }
+                    
+                    return c;
+                }
+                
+            };
+            
+            LexerSource lexerSource = LexerSource.getSource(fileName, is, null, configuration);
             result = parser.parse(configuration, lexerSource);
         } catch (SyntaxException e) {
             int offset = e.getPosition().getStartOffset();
@@ -715,7 +751,7 @@ public final class RubyParser implements Parser {
         }
     }
     
-public static class RubyError implements Error {
+    public static class RubyError implements Error {
         private final String displayName;
         private final ID id;
         private final FileObject file;
