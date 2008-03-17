@@ -61,15 +61,21 @@ import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -84,7 +90,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Kvashin
  */
-public class ModelSupport implements PropertyChangeListener {
+public class ModelSupport implements PropertyChangeListener, FileChangeListener {
     
     private static ModelSupport instance = new ModelSupport();
     
@@ -124,6 +130,11 @@ public class ModelSupport implements PropertyChangeListener {
     
     public void setModel(ModelImpl model) {
         this.theModel = model;
+        if( model == null ) {
+            FileUtil.addFileChangeListener(this);
+        } else {
+            FileUtil.removeFileChangeListener(this);
+        }
     }
     
     public void startup() {
@@ -605,5 +616,61 @@ public class ModelSupport implements PropertyChangeListener {
             return false;
         }
     }
+
+    /** 
+     * FileChangeListener implementation.  
+     */
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileAttributeChanged %s\n", fe);
+    }
+
+    /** FileChangeListener implementation. Fired when a new file is created. */
+    public void fileDataCreated(FileEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileDataCreated %s\n", fe);
+    }
+
+    /** FileChangeListener implementation. Fired when a file is deleted. */
+    public void fileDeleted(FileEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileDeleted %s\n", fe);
+    }
+
+    /** FileChangeListener implementation. Fired when a new folder is created. */
+    public void fileFolderCreated(FileEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileFolderCreated %s\n", fe);
+    }
+
+    /** FileChangeListener implementation. Fired when a file is renamed. */
+    public void fileRenamed(FileRenameEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileRenamed %s\n", fe);
+    }
+
+    /** FileChangeListener implementation. Fired when a file is changed. */
+    public void fileChanged(FileEvent fe) {
+        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileChanged %s\n", fe);
+        ModelImpl model = theModel;
+        if( model == null ) {
+            return;
+        }
+        FileObject fo = fe.getFile();
+        if( isCOrCpp(fo) ) {
+            CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+            for (int i = 0; i < files.length; i++) {
+                FileImpl file = (FileImpl) files[i];
+                file.getProjectImpl().onFileExternalChange(file);
+            }
+        }
+    }
+
     
+    private boolean isCOrCpp(FileObject fo) {
+        // FIXUP: we'd better use org.netbeans.modules.cnd.MIMENames
+        // but don't want to make a depen
+        //MIMENames.
+        String mime = fo.getMIMEType();
+        if( mime == null ) {
+            mime = FileUtil.getMIMEType(fo);
+            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("MIME resolved: %s\n", mime);
+        }
+        return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) || MIMENames.C_MIME_TYPE.equals(mime);
+    }
 }
