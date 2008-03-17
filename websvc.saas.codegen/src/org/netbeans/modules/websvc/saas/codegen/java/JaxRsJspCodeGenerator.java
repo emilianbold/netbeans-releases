@@ -42,14 +42,18 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
@@ -58,33 +62,36 @@ import org.openide.filesystems.FileObject;
  *
  * @author ayubskhan
  */
-public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
+public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
 
     private JavaSource loginJS;
     private FileObject loginFile;
     private JavaSource callbackJS;
     private FileObject callbackFile;
+    private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
     
-    public JaxRsServletCodeGenerator(JTextComponent targetComponent,
+    public JaxRsJspCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
+        setSubresourceLocatorUriTemplate(findSubresourceLocatorUriTemplate());
+        jspSpecialNamesMap.put("page", "page1");
     }
     
     /**
-     *  Create Authorization Frame
+     *  Insert the Saas client call
      */
     @Override
-    public void createAuthorizationClasses() throws IOException {
-        List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
-        final String[] parameters = getGetParamNames(filterParams);
-        final Object[] paramTypes = getGetParamTypes(filterParams);
-        Util.createSessionKeyAuthorizationClassesForWeb(
-            getBean(), getProject(),
-            getGroupName(), getSaasServicePackageName(), getSaasServiceFolder(), 
-            loginJS, loginFile, 
-            callbackJS, callbackFile,
-            parameters, paramTypes
-        );
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        Util.checkScanning();
+        try {
+            String code = "";
+            code = "\n<%\n"; // NOI18n
+            code += getCustomMethodBody()+"\n";
+            code += "%>\n";// NOI18n
+            insert(code, getTargetComponent(), true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
     }
     
     @Override
@@ -93,15 +100,15 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        filterParams = super.getServiceMethodParameters();
+        filterParams = renameJspParameterNames(super.getServiceMethodParameters());
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
         
         String methodBody = "";
         methodBody += "             try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "                 String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "                 String result = " + getSaasServicePackageName() + "." + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
         methodBody += "             } catch (java.io.IOException ex) {\n";
         methodBody += "                 //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
@@ -111,41 +118,46 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
         return methodBody;
     }
     
-    @Override
-    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
-            return Util.getAuthenticatorMethodParametersForWeb();
-        else
-            return super.getAuthenticatorMethodParameters();
+    private List<ParameterInfo> renameJspParameterNames(List<ParameterInfo> params) {
+        List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
+        int count = 1;
+        for(ParameterInfo p:params) {
+            String newName = jspSpecialNamesMap.get(getParameterName(p));
+            if(newName != null) {
+                ParameterInfo clone = clone(p, newName, p.getType());
+                returnParams.add(clone);
+            } else {
+                returnParams.add(p);
+            }
+        }
+        return returnParams;
     }
     
-    @Override
-    protected List<ParameterInfo> getServiceMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
-            return Util.getServiceMethodParametersForWeb(getBean());
-        else
-            return super.getServiceMethodParameters();
+    private ParameterInfo clone(ParameterInfo p, String name, Class type) {
+        ParameterInfo clone = new ParameterInfo(name, type);
+        clone.setFixed(p.getFixed());
+        clone.setStyle(p.getStyle());
+        clone.setDefaultValue(p.getDefaultValue());
+        clone.setIsApiKey(p.isApiKey());  
+        clone.setId(p.getId());  
+        clone.setIsRequired(p.isRequired());
+        clone.setIsRepeating(p.isRepeating());
+        clone.setIsSessionKey(p.isSessionKey());
+        clone.setOption(p.getOption());
+        return clone;
     }
     
-    @Override
-    protected String getLoginBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
+    public String findSubresourceLocatorUriTemplate() {
+        String subresourceLocatorUriTemplate = getAvailableUriTemplate();
+        if (!subresourceLocatorUriTemplate.endsWith("/")) {
+            //NOI18N
+            subresourceLocatorUriTemplate += "/"; //NOI18N
+        }
+        return subresourceLocatorUriTemplate;
     }
     
-    @Override
-    protected String getTokenBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyTokenBodyForWeb(bean, groupName, paramVariableName,
-                saasServicePkgName);
-    }
-    
-    @Override
-    protected String getSessionKeyLoginArguments() {
-        return Util.getSessionKeyLoginArgumentsForWeb();
+    private String getAvailableUriTemplate() {
+        String uriTemplate = Inflector.getInstance().camelize(getBean().getShortName(), true);
+        return uriTemplate;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.saas.codegen.java;
 
-import java.io.IOException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+package org.netbeans.modules.websvc.rest.codegen.model;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
- * Code generator factory for REST services wrapping WADL-based web service.
  *
  * @author nam
  */
-public class JaxRsCodeGeneratorFactory {
+public class RuntimeEntityClassInfo extends EntityClassInfo {
 
-    public static JaxRsCodeGenerator create(JTextComponent targetComponent, 
-            FileObject targetFO, WadlSaasMethod method) throws IOException {
-        JaxRsCodeGenerator codegen = null;
-        try {
-            DataObject d = DataObject.find(targetFO);
-            if(Util.isRestJavaFile(d)) {
-                codegen = new JaxRsResourceClassCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else if(Util.isServlet(d)) {
-                codegen = new JaxRsServletCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else if(Util.isJsp(d)) {
-                codegen = new JaxRsJspCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else {
-                codegen = new JaxRsJavaClientCodeGenerator(
-                                targetComponent, targetFO, method);
-            }
-        } catch (DataObjectNotFoundException ex) {
-            throw new IOException(ex.getMessage());
-        }
-        return codegen;
+    public RuntimeEntityClassInfo(RuntimeJpaEntity entity, Project project, 
+            EntityResourceModelBuilder builder) {
+        
+        super(entity, project, builder, null);
+        setName(getName(entity));
+        setPackageName(getPackageName(entity));
+        setType(getType(entity));
+    }
+
+    static String getName(RuntimeJpaEntity entity) {
+        return entity.getTypeElement().getSimpleName().toString();
+    }
+    
+    static String getPackageName(RuntimeJpaEntity entity) {
+        String name = getName(entity);
+        String qualified = entity.getTypeElement().getQualifiedName().toString();
+        String pack = qualified.substring(0, qualified.length()-name.length()-1);
+        return pack;
+    }
+    
+    static String getType(RuntimeJpaEntity entity) {
+        return entity.getTypeElement().getQualifiedName().toString();
+    }
+    
+    @Override
+    protected void extractFields(Project project) {
+        super.extractFields(getEntity().getTypeElement());
+    }
+
+    @Override
+    protected void extractPKFields(Project project) {
+        super.extractPKFields(getEntity().getTypeElement());
+    }
+
+    @Override
+    public RuntimeJpaEntity getEntity() {
+        return (RuntimeJpaEntity) super.getEntity();
     }
 }

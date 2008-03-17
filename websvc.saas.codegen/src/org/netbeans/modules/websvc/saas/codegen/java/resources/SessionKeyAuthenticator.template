@@ -29,8 +29,6 @@ public class __NAME__ {
 
     private static String apiKey;
     private static String secret;
-    private static String sessionKey;
-    private static String sessionSecret;
     
     static {
         try {
@@ -48,12 +46,8 @@ public class __NAME__ {
         return apiKey;
     }
 
-    public static String getSessionKey() {
-        return sessionKey;
-    }
-
     public static String sign(String[][] params) {
-        return sign(sessionSecret, params);
+        return sign(secret, params);
     }
 
     private static String sign(String secret,
