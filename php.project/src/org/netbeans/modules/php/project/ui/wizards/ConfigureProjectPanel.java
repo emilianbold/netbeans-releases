@@ -45,7 +45,6 @@ import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -59,6 +58,8 @@ import org.openide.util.Utilities;
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
         SourcesPanelVisual.WebFolderNameProvider, ChangeListener {
+
+    static final LocalServer DEFAULT_LOCAL_SERVER;
 
     static final String DEFAULT_SOURCE_FOLDER = "web"; // NOI18N
 
@@ -79,6 +80,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
     private final String[] steps;
+
+    static {
+        String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
+                File.separator, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
+        DEFAULT_LOCAL_SERVER = new LocalServer(null, null, msg, false);
+    }
 
     public ConfigureProjectPanel(String[] steps) {
         this.steps = steps;
@@ -191,7 +198,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     static boolean isProjectFolder(LocalServer localServer) {
-        return SourcesPanelVisual.isProjectFolder(localServer);
+        return DEFAULT_LOCAL_SERVER.equals(localServer);
     }
 
     public String getWebFolderName() {
@@ -246,7 +253,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private MutableComboBoxModel getLocalServers() {
         return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
     }
-    
+
     private String getUrl() {
         String url = (String) descriptor.getProperty(URL);
         if (url == null) {
@@ -326,7 +333,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 return err;
             }
         }
-        
+
         String url = sourcesPanelVisual.getUrl();
         if (!SourcesPanelVisual.isValidUrl(url)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");

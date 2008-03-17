@@ -48,6 +48,8 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.MutableComboBoxModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -75,6 +77,41 @@ public final class Utils {
             return FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath();
         }
         return null;
+    }
+
+    public static void browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName) {
+        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+        String newLocation = browseLocationAction(parent, ls.getDocumentRoot());
+        if (newLocation == null) {
+            return;
+        }
+
+        String projectLocation = new File(newLocation, newSubfolderName).getAbsolutePath();
+        for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
+            LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
+            if (projectLocation.equals(element.getSrcRoot())) {
+                localServerComboBox.setSelectedIndex(i);
+                return;
+            }
+        }
+        LocalServer localServer = new LocalServer(newLocation, projectLocation);
+        localServerComboBoxModel.addElement(localServer);
+        localServerComboBox.setSelectedItem(localServer);
+        sortComboBoxModel(localServerComboBoxModel);
+    }
+
+    public static void locateLocalServerAction() {
+        // XXX
+        String message = "Not implemented yet."; // NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                message,
+                message,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     public static List getAllItems(final JComboBox comboBox) {
