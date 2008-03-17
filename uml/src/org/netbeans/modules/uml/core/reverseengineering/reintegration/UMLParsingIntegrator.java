@@ -832,10 +832,11 @@ public class UMLParsingIntegrator
         Node foundNode = null;
         try
         {
+
             // Attempt to get the value of the @name attribute. It QUITE possible that xml attribute
             // doesn't exist...
             String value = XMLManip.getAttributeValue(prototypeNode, "name"); // NOI18N
-            if (value != null)
+             if (value != null)
             {
                 // We've got a name, so let's see if we get lucky...
                 String query = ".//*[@name=\""; // NOI18N
@@ -878,7 +879,7 @@ public class UMLParsingIntegrator
         }
         return foundNode;
     }
-    
+
     public void ensureXMLAttrValues(String query, Node childInDestinationNamespace, Node elmentBeingInjected, String attrName)
     {
         try
@@ -917,7 +918,26 @@ public class UMLParsingIntegrator
             String query = ".//"; // NOI18N
             query += elementName;
             query += "/ancestor::*[2]"; // NOI18N
-            List nodes = childInDestinationNamespace.selectNodes(query);
+  
+            Element destination = (childInDestinationNamespace instanceof Element) 
+                                  ? (Element) childInDestinationNamespace 
+                                    : null;
+            String destNodeName = "";
+            if (destination != null) 
+            {
+                destNodeName = destination.getQualifiedName();
+            }
+            List nodes;
+            if (destination != null && isNodeContainer(destNodeName)) 
+            {
+                nodes = new ArrayList();
+                nodes.add(childInDestinationNamespace);
+            }
+            else
+            {
+                nodes = childInDestinationNamespace.selectNodes(query);
+            }
+            //List nodes = childInDestinationNamespace.selectNodes(query);
             if (nodes != null)
             {
                 int num = nodes.size();
@@ -926,7 +946,17 @@ public class UMLParsingIntegrator
                     Node node = (Node) nodes.get(x);
                     if (node != null)
                     {
-                        Node foundNode = findElement(node, elementBeingInjected);
+                        //Node foundNode = findElement(node, elementBeingInjected);
+                        Node foundNode;
+                        if (destination != null && isNodeContainer(destNodeName)) 
+                        {
+                            foundNode = elementBeingInjected;
+                        }
+                        else 
+                        {
+                            foundNode = findElement(node, elementBeingInjected);
+                        }
+
                         if (foundNode != null)
                         {
                             // Now get the owned element and move it to the foundNode
@@ -993,13 +1023,18 @@ public class UMLParsingIntegrator
             query += attrName;
             query += "]";
             
-            ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
-            
-            // Make sure to check the current element as well
-            
             Element element = (childInDestinationNamespace instanceof Element) ? (Element) childInDestinationNamespace : null;
-            ;
-            
+            String destNodeName = "";
+            if (element != null) 
+            {
+                destNodeName = element.getQualifiedName();
+            }
+            if ( ! (element != null && isNodeContainer(destNodeName))) 
+            {
+                ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
+            }
+
+            // Make sure to check the current element as well                        
             if (element != null)
             {
                 Attribute attr = element.attribute(attrName);
@@ -4772,12 +4807,14 @@ public class UMLParsingIntegrator
             
             if (element != null)
             {
+                UMLXMLManip.replaceReferencesIndexCreate(m_FragDocument);
                 Element docElement = m_FragDocument.getRootElement();
                 
                 if (docElement != null)
                 {
                     injectElementsIntoNamespace(element, docElement);
                 }
+                UMLXMLManip.replaceReferencesIndexDrop(m_FragDocument);
             }
         }
         

@@ -43,10 +43,10 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:attribute name="basedir">.</xsl:attribute>
             <description>Builds, tests, and runs the project <xsl:value-of select="$name"/>.</description>
             <import file="nbproject/build-impl.xml"/>
-            <!--target name="post-init">
+            <target name="post-init">
         		<property name="module.install.dir" value="${{module.install.dir}}"/>
                         <property name="netbeans.home" value="${{netbeans.home}}"/>
-    		</target-->
+    		</target>
 
             <xsl:comment><![CDATA[
 
@@ -110,16 +110,17 @@ Microsystems, Inc. All Rights Reserved.
 
             <target name="-init-caps" if="no.netbeans.home">
                 <xsl:attribute name="if">no.netbeans.home</xsl:attribute>
-
+                <property file="${{netbeans.home}}/../moduleCluster.properties"/>
                 <property file="${{basedir}}/nbproject/private/private.properties"/>
-                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform6"/>
+                <!--property name="netbeans.home" value="${{caps.netbeans.home}}/platform6"/-->
                 <property name="netbeans.user" value="${{caps.netbeans.user}}"/>
                 <property name="from.commandline" value="true"/>
             </target>
 
             <target name="pre-init">
                 <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
-
+                <property name="netbeans.dest.dir" location="${{netbeans.home}}\..\"/>
+                <property file="${{netbeans.home}}/../moduleCluster.properties"/>
                 <echo>netbeans.home: ${netbeans.home}</echo>
                 <echo>netbeans.user: ${netbeans.user}</echo>
             </target>

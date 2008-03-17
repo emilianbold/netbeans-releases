@@ -55,6 +55,7 @@ import org.openide.filesystems.*;
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Shows basic conflict resolver UI.
@@ -143,6 +144,8 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         final StreamSource s1;
         final StreamSource s2;
         Charset encoding = FileEncodingQuery.getEncoding(fo);
+        Utils.associateEncoding(file, f1);
+        Utils.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,

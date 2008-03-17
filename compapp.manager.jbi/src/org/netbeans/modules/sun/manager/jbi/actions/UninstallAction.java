@@ -84,7 +84,7 @@ public abstract class UninstallAction extends NodeAction {
                 Uninstallable uninstallable = 
                         node.getLookup().lookup(Uninstallable.class);                
                 try {
-                    if (uninstallable != null && !uninstallable.canUninstall()) {
+                    if (uninstallable != null && !uninstallable.canUninstall(isForceAction())) {
                         ret = false;
                         break;
                     }
@@ -97,6 +97,7 @@ public abstract class UninstallAction extends NodeAction {
         return ret;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

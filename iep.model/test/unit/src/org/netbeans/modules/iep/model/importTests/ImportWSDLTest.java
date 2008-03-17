@@ -8,32 +8,21 @@
 package org.netbeans.modules.iep.model.importTests;
 
 import org.netbeans.modules.iep.model.common.*;
-import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
 import org.netbeans.modules.iep.model.Component;
-import org.netbeans.modules.iep.model.IEPComponent;
-import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.impl.IEPComponentFactoryImpl;
-import org.netbeans.modules.iep.model.util.XmlUtil;
 
-import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  *
- * 
+ * @author radval
  */
 public class ImportWSDLTest extends TestCase {
     
@@ -66,6 +55,13 @@ public class ImportWSDLTest extends TestCase {
         assertEquals("http://schemas.xmlsoap.org/wsdl/", imp.getImportType());
         assertEquals("http://j2ee.netbeans.org/wsdl/PurchaseOrder", imp.getNamespace());
         assertEquals("PurchaseOrder.wsdl", imp.getLocation());
+        
+        //FileObject wsdlFileObject = ModelHelper.resolveWSDLFileObject(model, imp);
+        //ModelSource source = TestCatalogModel.getDefault().getModelSource(wsdlFileObject.getURL().toURI());
+        //WSDLModel wsdlModel = ModelHelper.getWSDLModel(source);
+        WSDLModel wsdlModel = imp.getImportedWSDLModel();
+        assertNotNull(wsdlModel);
+        
         
         //assert properites on the root component
         assertEquals(1, model.getPlanComponent().getProperties().size());

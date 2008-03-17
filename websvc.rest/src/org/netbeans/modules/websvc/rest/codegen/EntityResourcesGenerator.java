@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -226,7 +227,6 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 classes.add(getRefConverterType(bean));
             }
         }
-        
         classes.add(getPersistenceServiceClassType());
         classes.add(getUriResolverClassType());
         
@@ -285,7 +285,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 converterFolder = FileUtil.createFolder(new File(sourceRootDir, converterFolderPath));
             }
         } catch (IOException ex) {
-            throw new IllegalArgumentException(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -314,7 +314,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -338,7 +338,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -410,7 +410,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -452,7 +452,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -496,7 +496,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -520,7 +520,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             result.commit();
             
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -561,7 +561,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -599,7 +599,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             
             result.commit();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     

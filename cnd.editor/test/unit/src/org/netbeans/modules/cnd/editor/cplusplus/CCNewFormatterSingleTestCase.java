@@ -164,46 +164,25 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testLabelIndentHalf() {
+    public void testOperatorEQformatting() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int foo()\n" +
+                "class real_c_float\n" +
                 "{\n" +
-                "  start: while(true){\n" +
-                "int i = 0;\n" +
-                "goto start;\n" +
-                "end:\n" +
-                "if(true){\n" +
-                "foo();\n" +
-                "second:\n" +
-                "foo();\n" +
-                "}\n" +
-                "}\n" +
-                "}\n");
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
         reformat();
-        assertDocumentText("Incorrect label half indent",
-                "int foo()\n" +
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
                 "{\n" +
-                "start:\n" +
-                "  while (true)\n" +
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
                 "    {\n" +
-                "      int i = 0;\n" +
-                "      goto start;\n" +
-                "end:\n" +
-                "      if (true)\n" +
-                "        {\n" +
-                "          foo();\n" +
-                "second:\n" +
-                "          foo();\n" +
-                "        }\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
                 "    }\n" +
-                "}\n");
+                "};\n");
     }
-
 }
