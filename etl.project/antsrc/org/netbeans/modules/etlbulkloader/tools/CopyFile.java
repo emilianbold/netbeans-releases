@@ -11,8 +11,8 @@ package org.netbeans.modules.etlbulkloader.tools;
 import java.io.*;
 import java.util.zip.*;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Command line program to copy a file to another directory.
@@ -30,7 +30,7 @@ public class CopyFile {
     private static boolean verify = true;
     private static int override = OVERWRITE_ALWAYS;
     
-    private static transient final Logger mLogger = Logger.getLogger(CopyFile.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(CopyFile.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public static Long copyFile(File srcFile, File destFile)

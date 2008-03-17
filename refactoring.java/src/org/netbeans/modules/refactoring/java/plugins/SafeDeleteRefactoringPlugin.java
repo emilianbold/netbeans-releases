@@ -232,11 +232,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         //This class expects too many details from SafeDeleteRefactoring
         //But there's no other go I guess.
         grips.clear();
-        for (final FileObject f : refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+        for (final FileObject f: lookupJavaFileObjects()) {
             JavaSource source = JavaSource.forFileObject(f);
-            if (source == null) {
-                continue;
-            }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
                     public void cancel() {

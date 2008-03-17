@@ -51,7 +51,6 @@ made subject to such option by the copyright holder.
                 <package>com.sun.esb.management.api.configuration</package>
                 <package>com.sun.esb.management.api.deployment</package>
                 <package>com.sun.esb.management.api.installation</package>
-                <package>com.sun.esb.management.api.notification</package>
                 <package>com.sun.esb.management.api.performance</package>
                 <package>com.sun.esb.management.api.runtime</package>
                 <package>com.sun.esb.management.base.services</package>

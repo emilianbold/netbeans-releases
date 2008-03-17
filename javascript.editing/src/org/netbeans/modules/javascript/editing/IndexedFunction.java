@@ -119,4 +119,8 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
         return parameters;
     }
+
+    public boolean isDeprecated() {
+        return false;
+    }
 }

@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -61,7 +60,6 @@ import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
-import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.system.cleaner.ProcessOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.progress.Progress;
@@ -80,8 +78,7 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
 public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
-    private boolean checkQuota = true;
-    private File quotaExecutable = null;
+    
     
     private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
         System.getProperty("user.home"),
@@ -422,122 +419,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         if ((file == null) || file.getPath().equals("")) {
             return 0;
         } else {
-            long freeSpace = getFreeSpace0(file.getPath());
-            if(checkQuota) {
-                // #123587 Disk space check should take into account user quota
-                try {
-                    LogManager.indent();                    
-                    long freeSpaceQuota = getFreeSpaceUsingQuota(file);
-                    if(freeSpaceQuota!=-1L) {
-                        LogManager.log("... free space (due to the quote) is " + freeSpaceQuota + ", physical is : " + freeSpace);                        
-                        freeSpace = freeSpaceQuota;                        
-                    }
-                } catch (IOException e) {
-                    LogManager.log("... quota check is disabled");
-                    checkQuota = false;
-                } finally {
-                    LogManager.unindent();
-                }
-            }
-            return freeSpace;
-        }
-    }
-    
-    private long getFreeSpaceUsingQuota(File file) throws IOException {
-        String path = file.getAbsolutePath();
-        try {
-            path = file.getCanonicalPath();
-        } catch (IOException e) {
-            LogManager.log(e);
-        }
-
-        LogManager.log("Checking free space with quota in " + path);
-        try {
-            setEnvironmentVariable("LANG", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_COLLATE", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_CTYPE", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_MESSAGES", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_MONETARY", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_NUMERIC", "C", EnvironmentScope.PROCESS, false);
-            setEnvironmentVariable("LC_TIME", "C", EnvironmentScope.PROCESS, false);
-        } catch (NativeException e) {
-            LogManager.log(e);
-        }
-        if (quotaExecutable == null) {
-            for (String q : QUOTA_LOCATIONS) {
-                final File f = new File(q);
-                if (FileUtils.exists(f)) {
-                    quotaExecutable = f;
-                    break;
-                }
-            }
-            if (quotaExecutable == null) {
-                LogManager.log("... no quota executable found");
-                throw new IOException();
-            }
-        }
-        ExecutionResults results;
-        try {
-            results = SystemUtils.executeCommand(quotaExecutable.getPath(), "-v");
-        } catch (IOException e) {
-            LogManager.log("... error occured when running quota executable", e);
-            throw e;
-        }
-
-        final String[] lines = StringUtils.splitByLines(results.getStdOut());
-
-        if (lines.length <= 2) {
-            LogManager.log("... no quota set for the user (number of lines in output less that 3)");
-            throw new IOException();
-        }
-        // Usual format is the following
-        // Disk quotas for <userid> (<uid>):
-        // Filesystem  usage  quota  limit  timeleft  files  quota  limit   timeleft
-        // /home/<userid> 943880  0 1577704           18992    0      0   
-        // /home/<userid2> 943880  0 1577704      1    18992    0      0     1
-        List<Pair<String, Long>> pathSpace = new ArrayList<Pair<String, Long>>();
-
-        try {
-            for (int i = 2; i < lines.length; i++) {
-                String s = lines[i].trim();
-                if (s.startsWith(File.separator) && s.indexOf(StringUtils.SPACE) != -1) {
-                    String quotedPath = s.substring(0, s.indexOf(StringUtils.SPACE));
-                    String[] numbers = s.substring(s.indexOf(StringUtils.SPACE) + 1).
-                            trim().split("[ |\t]+");
-                    if (numbers.length < 6) {
-                        LogManager.log("...cannot parse the quota numbers [" + numbers.length + "]");
-                        throw new IOException();
-                    }
-
-                    final long limit = new Long(numbers[2]).longValue();
-                    final long usage = new Long(numbers[0]).longValue();
-                    final long freespace = (limit - usage) * 1024;
-
-                    if (limit > 0 && freespace >= 0) {
-                        pathSpace.add(new Pair<String, Long>(quotedPath, freespace));
-                    }
-                }
-            }
-            if (pathSpace.size() == 0) {
-                LogManager.log("... no quota set for the user (no paths in quota output)");
-                throw new IOException();
-            }
-            String longestPath = StringUtils.EMPTY_STRING;
-            long freespace = -1L;
-            for (Pair<String, Long> p : pathSpace) {
-                final String s = p.getFirst();
-                if (s.length() > longestPath.length() && path.startsWith(s)) {
-                    longestPath = s;
-                    freespace = p.getSecond().longValue();
-                }
-            }
-            return freespace;
-        } catch (NumberFormatException e) {
-            LogManager.log("...cannot parse the quota numbers", e);
-            throw new IOException();
-        } catch (PatternSyntaxException e) {
-            LogManager.log("...cannot parse the quota numbers", e);
-            throw new IOException();
+            return getFreeSpace0(file.getPath());
         }
     }
     
@@ -788,11 +670,6 @@ public abstract class UnixNativeUtils extends NativeUtils {
         super.initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_UNIX);
         super.initializeForbiddenFiles(files);
     }
-    private static final String [] QUOTA_LOCATIONS = {
-      "/usr/sbin/quota", //NOI18N
-      "/usr/bin/quota",  //NOI18N    
-      "/sbin/quota",     //NOI18N
-      "/bin/quota",      //NOI18N
-    };
+    
     private static final byte [] ELF_BYTES = new byte[]{'\177','E','L','F'};
 }

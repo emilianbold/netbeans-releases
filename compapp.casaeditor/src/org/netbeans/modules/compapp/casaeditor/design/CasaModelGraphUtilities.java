@@ -58,7 +58,6 @@ import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
-import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.WaitMessageHandler;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
@@ -283,39 +282,27 @@ public class CasaModelGraphUtilities {
             int x,
             int y)
     {
-        CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);        
+        CasaNodeWidgetEngine sesuWidget = (CasaNodeWidgetEngine) scene.addNode(su);
         
-        boolean showEndpointGroup = CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE();
+        // mapping process names to endpoint lists
+        Map<String, List<CasaEndpointRef>> process2EndpointRefMap =
+                new HashMap<String, List<CasaEndpointRef>>();
+                
+        buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
+        buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
         
-        if (showEndpointGroup) {
-            // mapping process names to endpoint lists
-            Map<String, List<CasaEndpointRef>> process2EndpointRefMap =
-                    new HashMap<String, List<CasaEndpointRef>>();
-
-            buildProcess2EndpointMap(process2EndpointRefMap, su.getProvides());
-            buildProcess2EndpointMap(process2EndpointRefMap, su.getConsumes());
-            
-            for (String processName : process2EndpointRefMap.keySet()) {
-                if (!processName.equals(NULL_PROCESS_NAME)) {
-                    List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
-                    CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
-                    createProcess(su, endpoint, scene, false);
-                }
-
+        for (String processName : process2EndpointRefMap.keySet()) {
+            if (!processName.equals(NULL_PROCESS_NAME)) {
                 List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
-                for (CasaEndpointRef endpointRef : endpointRefs) {
-                    createPin(su, endpointRef, endpointRef.getDisplayName(), scene, false);
-                }
-            }  
-        } else {
-            for (CasaProvides provides : su.getProvides()) {
-                createPin(su, provides, provides.getDisplayName(), scene, false);
+                CasaEndpoint endpoint = endpointRefs.get(0).getEndpoint().get();
+                createProcess(su, endpoint, scene, false);
             }
-            for (CasaConsumes consumes : su.getConsumes()) {
-                createPin(su, consumes, consumes.getDisplayName(), scene, false);
+            
+            List<CasaEndpointRef> endpointRefs = process2EndpointRefMap.get(processName);
+            for (CasaEndpointRef endpointRef : endpointRefs) {
+                createPin(su, endpointRef, endpointRef.getDisplayName(), scene, false);
             }
-        }
-        
+        }        
         sesuWidget.doneAddingWidget();
         
         scene.validate();
@@ -382,17 +369,9 @@ public class CasaModelGraphUtilities {
             CasaServiceEngineServiceUnit sesu,
             CasaNodeWidget widget)
     {
-//        String unitName = sesu.getUnitName();
-//        String compName = sesu.getComponentName();
-//        widget.setNodeProperties(unitName, compName);
-        
         String unitName = sesu.getUnitName();
-        String type = sesu.getComponentName();
-        type = JbiDefaultComponentInfo.getDisplayName(type).toUpperCase();
-        if (type.endsWith("SERVICEENGINE")) {  // NOI18N
-           type = type.substring(0, type.length() - 13);
-       }
-        widget.setNodeProperties(unitName, type);
+        String compName = sesu.getComponentName();
+        widget.setNodeProperties(unitName, compName);
     }
 
     private static String getShortNameInUpperCase(String str) {

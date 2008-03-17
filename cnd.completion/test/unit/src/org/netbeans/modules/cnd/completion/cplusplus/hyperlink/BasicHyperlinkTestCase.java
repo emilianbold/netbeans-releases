@@ -51,11 +51,6 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
-    public void testParamWithoutSpace() throws Exception {
-        performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
-        performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)
-    }
-    
     public void testFileLocalVariable() throws Exception {
         performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
         performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;

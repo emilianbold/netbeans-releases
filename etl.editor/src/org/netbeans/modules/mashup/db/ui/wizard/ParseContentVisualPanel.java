@@ -8,7 +8,7 @@ package org.netbeans.modules.mashup.db.ui.wizard;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
  *
  * @author  karthikeyan s
@@ -16,7 +16,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 public class ParseContentVisualPanel extends javax.swing.JPanel {
     
     private ParseContentPanel owner;
-    private static transient final Logger mLogger = Logger.getLogger(ParseContentVisualPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ParseContentVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** Creates new form ParseContentVisualPanel */
     public ParseContentVisualPanel(ParseContentPanel panel) {
@@ -25,8 +25,8 @@ public class ParseContentVisualPanel extends javax.swing.JPanel {
     }
     
     public String getName() {
-        String nbBundle1 = mLoc.t("BUND219: Import Table MetaData");
-        return nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Import Table MetaData");
+        return Localizer.parse(nbBundle1);
     }
     
     /** This method is called from within the constructor to

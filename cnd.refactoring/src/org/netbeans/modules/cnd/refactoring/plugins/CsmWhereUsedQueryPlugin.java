@@ -108,7 +108,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (isFindUsages()) {
             if (CsmKindUtilities.isFile(referencedObject)) {
                 fireProgressListenerStart(ProgressEvent.START, 2);
-                res = processIncludeQuery((CsmFile)referencedObject);
+                processIncludeQuery((CsmFile)referencedObject);
             } else {
                 Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
                 CsmFile startFile = getCsmFile(startReferenceObject);     

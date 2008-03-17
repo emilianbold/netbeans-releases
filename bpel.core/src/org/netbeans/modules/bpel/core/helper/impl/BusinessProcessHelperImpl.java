@@ -16,6 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+/*
+ * BusinessProcessHelperImpl.java Created on October 12, 2005, 2:22 PM To change
+ * this template, choose Tools | Template Manager and open the template in the
+ * editor.
+ */
+
 package org.netbeans.modules.bpel.core.helper.impl;
 
 import java.io.File;
@@ -37,16 +44,20 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 
 /**
  * @author Praveen
  * @author ads
  */
-public class BusinessProcessHelperImpl extends Object implements BusinessProcessHelper {
+public class BusinessProcessHelperImpl extends Object implements
+        BusinessProcessHelper
+{
     
-    public BusinessProcessHelperImpl(BPELDataObject businessProcessDataObject) {
+    public BusinessProcessHelperImpl(
+            BPELDataObject businessProcessDataObject )
+    {
         super();
         myDataObject = businessProcessDataObject;
     }
@@ -54,10 +65,16 @@ public class BusinessProcessHelperImpl extends Object implements BusinessProcess
     /** {@inheritDoc} */
     public Collection<FileObject> getWSDLFilesInProject() {
         Collection<FileObject> wsdlFiles = new ArrayList<FileObject>();
-        FileObject projectDir = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile()).getProjectDirectory();
-        Project project = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+
+        FileObject projectDir = FileOwnerQuery.getOwner(
+                getDataObject().getPrimaryFile())
+                .getProjectDirectory();
+
+        Project project = FileOwnerQuery
+                .getOwner(getDataObject().getPrimaryFile());
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroup = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
+        SourceGroup[] sourceGroup = sources
+                .getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
 
         for (int i = 0; i < sourceGroup.length; i++) {
             Enumeration<? extends FileObject> filesInProject = sourceGroup[i]
@@ -76,10 +93,16 @@ public class BusinessProcessHelperImpl extends Object implements BusinessProcess
     /** {@inheritDoc} */
     public Collection<FileObject> getSchemaFilesInProject() {
         Collection<FileObject> schemaFiles = new ArrayList<FileObject>();
-        FileObject projectDir = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile()).getProjectDirectory();
-        Project project = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+
+        FileObject projectDir = FileOwnerQuery.getOwner(
+                getDataObject().getPrimaryFile())
+                .getProjectDirectory();
+
+        Project project = FileOwnerQuery
+                .getOwner(getDataObject().getPrimaryFile());
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroup = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
+        SourceGroup[] sourceGroup = sources
+                .getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
 
         // Enumeration<FileObject> filesInProject =
         // projectDir.getChildren(true);
@@ -94,12 +117,14 @@ public class BusinessProcessHelperImpl extends Object implements BusinessProcess
                 }
             }
         }
+
         return schemaFiles;
     }
 
     /** {@inheritDoc} */
     @Deprecated
     public WSDLModel getWSDLModelFromUri( URI uri ) {
+        //deprecated
         return null;
     }
 

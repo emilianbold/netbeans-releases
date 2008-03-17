@@ -43,13 +43,11 @@ package org.netbeans.modules.editor.options;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
-import org.netbeans.modules.editor.lib.KitsTracker;
 
 /**
 * Options for the base editor kit
@@ -67,14 +65,13 @@ public class OptionSupport extends SystemOption {
 
     private String typeName;
 
-    private String mimeType;
     
     private HashMap initializerValuesMap;
     
     private transient SettingsInitializer settingsInitializer;
     
     private static final HashMap kitClass2Type = new HashMap();
-
+    
 
 
     /** Construct new option support. The pair [kitClass, typeName]
@@ -117,28 +114,6 @@ public class OptionSupport extends SystemOption {
         return typeName;
     }
     
-    /**
-     * <b>ALWAYS OVERWRITE THIS AND PROVIDE VALID MIME TYPE!</b>
-     * @return The mime type for this BaseOptions instance.
-     */
-    protected String getContentType() {
-        if (mimeType == null) {
-            for(String s : KitsTracker.getInstance().getMimeTypes()) {
-                if (s.toLowerCase().contains(typeName.toLowerCase())) {
-                    mimeType = s;
-                    break;
-                }
-            }
-        }
-        
-        if (mimeType == null) {
-            BaseKit kit = BaseKit.getKit(getKitClass());
-            mimeType = kit.getContentType();
-        }
-        
-        return mimeType;
-    }
-    
     public static String getTypeName(Class kitClass) {
         return (String)kitClass2Type.get(kitClass);
     }
@@ -148,14 +123,7 @@ public class OptionSupport extends SystemOption {
     }
 
     Settings.KitAndValue[] getSettingValueHierarchy(String settingName) {
-        boolean reset = setContextMimeType();
-        try {
-            return Settings.getValueHierarchy(kitClass, settingName);
-        } finally {
-            if (reset) {
-                resetContextMimeType();
-            }
-        }
+        return Settings.getValueHierarchy(kitClass, settingName);
     }
 
     /** Get the value of the setting from the <code>Settings</code>
@@ -163,14 +131,7 @@ public class OptionSupport extends SystemOption {
      */
     public Object getSettingValue(String settingName) {
         NbEditorSettingsInitializer.init();
-        boolean reset = setContextMimeType();
-        try {
-            return Settings.getValue(kitClass, settingName);
-        } finally {
-            if (reset) {
-                resetContextMimeType();
-            }
-        }
+        return Settings.getValue(kitClass, settingName);
     }
 
     /** Get the value of the boolean setting from the <code>Settings</code>
@@ -211,28 +172,13 @@ public class OptionSupport extends SystemOption {
             return; // no change
         }
 
-        boolean reset = setContextMimeType();
-        try {
-            Settings.setValue(kitClass, settingName, newValue);
-        } finally {
-            if (reset) {
-                resetContextMimeType();
-            }
-        }
+        Settings.setValue(kitClass, settingName, newValue);
     }
 
     
     public void doSetSettingValue(String settingName, Object newValue, String propertyName) {
         initializerValuesMap.put(settingName, newValue);
-        
-        boolean reset = setContextMimeType();
-        try {
-            Settings.setValue(kitClass, settingName, newValue);
-        } finally {
-            if (reset) {
-                resetContextMimeType();
-            }
-        }
+        Settings.setValue(kitClass, settingName, newValue);
     }
     
     
@@ -310,19 +256,5 @@ public class OptionSupport extends SystemOption {
         
     } // End of SettingsInitializer class
 
-    /* package */ boolean setContextMimeType() {
-        String ctx = getContentType();
-        if (ctx != null && ctx.length() > 0 && 
-            getClass() != BaseOptions.class && getClass() != OptionSupport.class)
-        {
-            KitsTracker.getInstance().setContextMimeType(ctx);
-            return true;
-        } else {
-            return false;
-        }
-    }
 
-    /* package */ void resetContextMimeType() {
-        KitsTracker.getInstance().setContextMimeType(null);
-    }
 }

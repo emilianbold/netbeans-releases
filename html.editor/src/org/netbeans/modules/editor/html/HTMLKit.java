@@ -141,24 +141,12 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         super.install(c);
         c.setTransferHandler(new HTMLTransferHandler());
     }
-    
-    protected DeleteCharAction createDeletePrevAction() {
-        return new HTMLDeleteCharAction(deletePrevCharAction, false);
-    }
-    
-    protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
-        return new HTMLDefaultKeyTypedAction();
-    }
 
-    protected InsertBreakAction createInsertBreakAction() {
-        return new HTMLInsertBreakAction();
-    }
-    
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[]{
-            createInsertBreakAction(),
-            createDefaultKeyTypedAction(),
-            createDeletePrevAction(),
+            new HTMLInsertBreakAction(),
+            new HTMLDefaultKeyTypedAction(),
+            new HTMLDeleteCharAction(deletePrevCharAction, false),
             new HTMLDeleteCharAction(deleteNextCharAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),

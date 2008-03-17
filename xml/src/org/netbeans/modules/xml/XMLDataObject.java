@@ -120,7 +120,10 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
     
     @Override
     public final Lookup getLookup() {
-        return getCookieSet().getLookup();
+        return Lookups.fixed( new Object[]{
+                    super.getLookup(), 
+                    this
+                    });
     }
 
     /**

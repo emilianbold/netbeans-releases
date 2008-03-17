@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Upgradeable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -65,6 +67,16 @@ public class UpgradeAction extends NodeAction {
                 public void run() {
                     try {
                         upgradeable.upgrade();
+                        
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                Refreshable refreshable =
+                                        lookup.lookup(Refreshable.class);
+                                if (refreshable != null){
+                                    refreshable.refresh();
+                                }
+                            }
+                        });
                     } catch (RuntimeException rex) {
                         //gobble up exception
                     }
@@ -77,7 +89,6 @@ public class UpgradeAction extends NodeAction {
         return activatedNodes != null && activatedNodes.length == 1;
     }
     
-    @Override
     protected boolean asynchronous() {
         return false;
     }

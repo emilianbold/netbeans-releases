@@ -249,13 +249,4 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testCompletionForStaticFunctions4() throws Exception {
         super.performTest("static.cc", 23, 1);
     }
-
-    public void testRestrictPointers1() throws Exception {
-        super.performTest("restrict.cc", 15, 5);
-    }
-
-    public void testRestrictPointers2() throws Exception {
-        super.performTest("restrict.c", 15, 5);
-    }
-    
 }

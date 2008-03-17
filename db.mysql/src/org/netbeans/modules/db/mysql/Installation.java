@@ -68,7 +68,7 @@ public interface Installation {
     /**
      * Returns true if this installation is valid for the current OS
      */
-    public boolean isInstalled();
+    public boolean isValidOnCurrentOS();
 
     /**
      * @return the command to administer this installation.  This is normally
@@ -95,5 +95,20 @@ public interface Installation {
      * @return the default port number for the server
      */
     public String getDefaultPort();
+    
+    /**
+     * Given a full path to a command, get an installation definition.  
+     * This is for when the installation path may not be the default one.  
+     * The use case for this
+     * is if the user manually specifies a path to the start command; we can
+     * then use this to determine the values for the other commands.
+     * 
+     * @param command the full path to the command
+     * @param cmdType the type of command
+     * 
+     * @return an Installation which is correct based on the given command,
+     *   or null if it was not a valid command
+     */
+    public Installation getInstallation(String command, Command cmdType);
 }
 

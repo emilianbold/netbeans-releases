@@ -93,7 +93,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestLSA tlsa = new TestLSA( lookup );
-	assertFalse("TestLSA has no DataObject and is disabled", tlsa.isEnabled ());
+	assertTrue ("TestLSA action is enabled.", tlsa.isEnabled ());
 	tlsa.refreshCounter = 0;
 	
         lookup.change(d1);
@@ -101,42 +101,20 @@ public class LookupSensitiveActionTest extends NbTestCase {
         lookup.change(d2);
         lookup.change(d1);
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
-	assertTrue("TestLSA action is enabled.", tlsa.isEnabled ());
-        assertEquals( "One check is needed", 1, tlsa.refreshCounter );
         
                 
         TestPropertyChangeListener tpcl = new TestPropertyChangeListener();
         tlsa.addPropertyChangeListener( tpcl );
-        assertEquals( "Listener does not trigger any checks", 1, tlsa.refreshCounter );
-        tlsa.refreshCounter = 0;
-        
         lookup.change(d2);
-        assertEquals( "Refresh should be called once more", 1, tlsa.refreshCounter );
+        assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );
         
-        assertTrue("Enabled2", tlsa.isEnabled());
         
         tlsa.clear();
         tpcl.clear();
         lookup.change(d3);
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );        
-        
-        lookup.change();
-        assertFalse("Enabled3.1", tlsa.isEnabled());
-        tlsa.removePropertyChangeListener( tpcl );
-        assertFalse("Enabled3.2", tlsa.isEnabled());
-
-        tlsa.clear();
-        tpcl.clear();
-        lookup.change(d2);
-        assertEquals( "Refresh should not be called", 0, tlsa.refreshCounter );
-        assertEquals( "No One event should be fired", 0, tpcl.getEvents().size() );        
-
-        assertTrue("Enabled4", tlsa.isEnabled());
-        
-        assertEquals( "Refresh should be called now", 1, tlsa.refreshCounter );
-        assertEquals( "No listener no event", 0, tpcl.getEvents().size() );        
         
     }
     
@@ -188,10 +166,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
             
             if (dobj != null) {
 		putValue( Action.NAME, dobj.getName() );
-                setEnabled(true);
-	    } else {
-                setEnabled(false);
-            }
+	    }
             
         }
         

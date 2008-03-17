@@ -58,8 +58,6 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.util.Exceptions;
 
 //TODO: JDK problems with URL, URI, File conversion for UNC
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 /*
 There must be consistently called conversion from FileUtil and URLMapper.
 new File (URI.create (fo.getURL ().toExternalForm ())) is typical scenario that leads to this
@@ -114,18 +112,28 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = FileUtil.normalizeFile(new File(url.toURI()));
+            final String host = url.getHost();
+            final String f = url.getFile();
+            //TODO: UNC workaround     
+            //TODO: string concatenation
+            if (host != null && host.trim().length() != 0) {
+                file = new File("////" + host + f);//NOI18N    
+            } else {
+                if (f.startsWith("//")) {
+                    file = new File(f);
+                } else {
+                    file = new File(new URI(url.toExternalForm()));
+                }
+            }
         } catch (URISyntaxException e) {
-            StringBuilder sb = new StringBuilder();            
-            sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
-            IllegalArgumentException iax = new IllegalArgumentException(sb.toString());
-            if (Utilities.isWindows() && url.getAuthority() != null) {
-                Exceptions.attachLocalizedMessage(iax,NbBundle.getMessage(FileBasedURLMapper.class, "MSG_UNC_PATH"));//NOI18N
-            }            
-            Exceptions.printStackTrace(iax);
-            return null;
+            file = new File(url.getFile());
+            if (!FileChangedManager.getInstance().exists(file)) {
+                final StringBuffer sb = new StringBuffer();
+                sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append(']');//NOI18N
+                Exceptions.printStackTrace(new IllegalArgumentException(sb.toString()));
+                return null;
+            }
         }
-        
         retVal = FileBasedFileSystem.getInstance().getFileObject(file, FileObjectFactory.Caller.ToFileObject);
         return new FileObject[]{retVal};
     }

@@ -283,7 +283,6 @@ public class JsCodeCompletion implements Completable {
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
-            Call call = Call.getCallType(doc, th, lexOffset);
 
             // Carry completion context around since this logic is split across lots of methods
             // and I don't want to pass dozens of parameters from method to method; just pass
@@ -302,7 +301,7 @@ public class JsCodeCompletion implements Completable {
             request.queryType = queryType;
             request.fileObject = fileObject;
             request.anchor = lexOffset - prefix.length();
-            request.call = call;
+            request.call = Call.getCallType(doc, th, lexOffset);
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
@@ -329,6 +328,8 @@ public class JsCodeCompletion implements Completable {
                 final Node closest = path.leaf();
                 request.root = root;
                 request.node = closest;
+                
+                addLocals(proposals, request);
             }
 
             completeKeywords(proposals, request);
@@ -336,19 +337,11 @@ public class JsCodeCompletion implements Completable {
             if (root == null) {
                 return proposals;
             }
-
             // Try to complete "new" RHS
             if (completeNew(proposals, request)) {
                return proposals;
             }
 
-            if (call.getLhs() != null || request.call.getPrevCallParenPos() != -1) {
-                completeObjectMethod(proposals, request);
-                return proposals;
-            }
-
-            addLocals(proposals, request);
-            
             if (completeObjectMethod(proposals, request)) {
                 return proposals;
             }
@@ -892,7 +885,6 @@ public class JsCodeCompletion implements Completable {
         String prefix = request.prefix;
         int astOffset = request.astOffset;
         int lexOffset = request.lexOffset;
-        Node root = request.root;
         TokenHierarchy<Document> th = request.th;
         BaseDocument doc = request.doc;
         AstPath path = request.path;
@@ -919,7 +911,7 @@ public class JsCodeCompletion implements Completable {
             if ((call == Call.LOCAL) || (call == Call.NONE)) {
                 return false;
             }
-            
+
             // If we're not sure we're only looking for a method, don't abort after this
             boolean done = call.isMethodExpected();
 
@@ -929,33 +921,6 @@ public class JsCodeCompletion implements Completable {
 
             String type = call.getType();
             String lhs = call.getLhs();
-
-            if (call.getPrevCallParenPos() != -1) {
-                // It's some sort of call
-                assert call.getType() == null;
-                assert call.getLhs() == null;
-                
-                // Try to figure out the call in question
-                int callEndAstOffset = AstUtilities.getAstOffset(info, call.getPrevCallParenPos());
-                if (callEndAstOffset != -1) {
-                    AstPath callPath = new AstPath(root, callEndAstOffset);
-                    Iterator<Node> it = callPath.leafToRoot();
-                    while (it.hasNext()) {
-                        Node callNode = it.next();
-                        if (callNode.getType() == org.mozilla.javascript.Token.FUNCTION) {
-                            break;
-                        } else if (callNode.getType() == org.mozilla.javascript.Token.CALL) {
-                            Node method = AstUtilities.findLocalScope(node, path);
-
-                            if (method != null) {
-                                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
-                                type = analyzer.getType(callNode);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
 
             if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
@@ -1796,26 +1761,11 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(true);
             }
-            boolean strike = indexedElement != null && indexedElement.isDeprecated();
-            if (strike) {
-                formatter.deprecated(true);
-            }
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
-            if (strike) {
-                formatter.deprecated(false);
-            }
             if (emphasize) {
                 formatter.emphasis(false);
-            }
-
-            if (indexedElement != null) {
-                String type = indexedElement.getType();
-                if (type != null && type != Node.UNKNOWN_TYPE) {
-                    formatter.appendHtml(" : "); // NOI18N
-                    formatter.appendText(type);
-                }
             }
 
             return formatter.getText();
@@ -1824,7 +1774,7 @@ public class JsCodeCompletion implements Completable {
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
-            
+
             String in = element.getIn();
 
             if (in != null) {
@@ -1903,9 +1853,6 @@ public class JsCodeCompletion implements Completable {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
             boolean strike = !SupportedBrowsers.getInstance().isSupported(function.getCompatibility());
-            if (!strike && function.isDeprecated()) {
-                strike = true;
-            }
             if (strike) {
                 formatter.deprecated(true);
             }
@@ -1919,10 +1866,7 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(false);
             }
-            if (strike) {
-                formatter.deprecated(false);
-            }
-            
+
             Collection<String> parameters = function.getParameters();
 
             formatter.appendHtml("("); // NOI18N
@@ -1932,18 +1876,7 @@ public class JsCodeCompletion implements Completable {
 
                 while (it.hasNext()) { // && tIt.hasNext()) {
                     formatter.parameters(true);
-                    String param = it.next();
-                    int typeIndex = param.indexOf(':');
-                    if (typeIndex != -1) {
-                        formatter.type(true);
-                        formatter.appendText(param, typeIndex+1, param.length());
-                        formatter.type(false);
-                        formatter.appendHtml(" ");
-                        
-                        formatter.appendText(param, 0, typeIndex);
-                    } else {
-                        formatter.appendText(param);
-                    }
+                    formatter.appendText(it.next());
                     formatter.parameters(false);
 
                     if (it.hasNext()) {
@@ -1953,13 +1886,11 @@ public class JsCodeCompletion implements Completable {
 
             }
             formatter.appendHtml(")"); // NOI18N
-
-            if (indexedElement != null && indexedElement.getType() != null && 
-                    indexedElement.getType() != Node.UNKNOWN_TYPE &&
-                    indexedElement.getKind() != ElementKind.CONSTRUCTOR) {
-                formatter.appendHtml(" : ");
-                formatter.appendText(indexedElement.getType());
+            
+            if (strike) {
+                formatter.deprecated(false);
             }
+            
             
             return formatter.getText();
         }
@@ -1991,12 +1922,7 @@ public class JsCodeCompletion implements Completable {
                 sb.append("js-cc-"); // NOI18N
                 sb.append(Integer.toString(id++));
                 sb.append(" default=\""); // NOI18N
-                int typeIndex = paramDesc.indexOf(':');
-                if (typeIndex != -1) {
-                    sb.append(paramDesc, 0, typeIndex);
-                } else {
-                    sb.append(paramDesc);
-                }
+                sb.append(paramDesc);
                 sb.append("\""); // NOI18N
                 sb.append("}"); //NOI18N
                 if (i < paramCount-1) {

@@ -73,7 +73,6 @@ import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -596,7 +595,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
                     out.close();
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            e.printStackTrace();
                 }
             }
 
@@ -671,7 +670,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                                     try {
                                         os.close();
                                     } catch(IOException ex) {
-                                        Exceptions.printStackTrace(ex);
                                     }
                                 }
                             }
@@ -684,7 +682,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 try {
                     zip.close();
                 } catch(IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -1052,13 +1049,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     if(child.isEntity()) //child is a Entity and has a non-generic converter
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+" +
                             "this."+childName+".getUri()+'\", \""+childRepName+"\":" +
-                            ":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"},'+\n");
+                            "{\"$\":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"}},'+\n");
                     else
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"},'+\n");
                 }else if(child.isRoot()) {
                     sb.append("         this."+childName+".toString()+','+\n");
                 }else
-                    sb.append("         '\""+childName+"\":\"'+this."+childName+"+'\",'+\n");
+                    sb.append("         '\""+childName+"\":{\"$\":\"'+this."+childName+"+'\"},'+\n");
             }
             return sb.toString();
         }

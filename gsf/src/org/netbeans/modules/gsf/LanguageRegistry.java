@@ -370,7 +370,7 @@ public class LanguageRegistry implements Iterable<Language> {
         String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
         if (mimeType != null) {
             Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-            if (language != null && (result.size() == 0 || result.get(result.size()-1) != language))  {
+            if (language != null) {
                 result.add(language);
             }
         }

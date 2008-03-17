@@ -198,8 +198,7 @@ public class HgVersioningTopComponent extends TopComponent {
     }
 
     public int getPersistenceType() {
-        // #129268: Need VCSContext to be persistable for this to be set to PERSISTENCE_ALWAYS
-        return TopComponent.PERSISTENCE_NEVER; 
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
     
     /** replaces this in object stream */

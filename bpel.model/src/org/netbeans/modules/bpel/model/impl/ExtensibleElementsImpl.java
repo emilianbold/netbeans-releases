@@ -70,23 +70,17 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       
       if (content == null) {
         if (sizeOfDocumentations() != 0) {
-//System.out.println(" remove");
           removeDocumentation(0);
         }
       }
       else {
-        Documentation documentation;
+        Documentation documentation = getBpelModel().getBuilder().createDocumentation();
+        documentation.setContent(content);
 
-        if (sizeOfDocumentations() == 0) {
-          documentation = getBpelModel().getBuilder().createDocumentation();
-          documentation.setContent(content);
-//System.out.println(" insert");
-          insertDocumentation(documentation, 0);
+        if (sizeOfDocumentations() != 0) {
+          removeDocumentation(0);
         }
-        else {
-          documentation = getDocumentation(0);
-          documentation.setContent(content);
-        }
+        insertDocumentation(documentation, 0);
       }
     }
 

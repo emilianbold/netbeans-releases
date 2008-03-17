@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -136,6 +137,7 @@ public final class OpenProjectList {
     private static final int NUM_TEMPLATES = 15;
     
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
+    private static final Level LOG_LEVEL = Level.FINE;
     
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
 
@@ -226,9 +228,9 @@ public final class OpenProjectList {
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
         private LinkedList<Project> toOpenProjects = new LinkedList<Project>();
-        private List<Project> lazilyOpenedProjects;
+        private List<Project> openedProjects;
         private List<String> recentTemplates;
-        private Project lazyMainProject;
+        private Project mainProject;
         private Lookup.Result<FileObject> currentFiles;
         private int entered;
         private final Lock enteredGuard = new ReentrantLock();
@@ -248,7 +250,6 @@ public final class OpenProjectList {
         }
         
         public void run() {
-            LOGGER.log(Level.FINE, "LoadOpenProjects.run: {0}", action); // NOI18N
             switch (action) {
                 case 0: 
                     action = 1;
@@ -281,27 +282,22 @@ public final class OpenProjectList {
         }
         
         private void updateGlobalState() {
-            LOGGER.log(Level.FINER, "updateGlobalState"); // NOI18N
             synchronized (INSTANCE) {
-                INSTANCE.openProjects = lazilyOpenedProjects;
-                INSTANCE.mainProject = lazyMainProject;
+                INSTANCE.openProjects = openedProjects;
+                INSTANCE.mainProject = mainProject;
                 INSTANCE.getRecentTemplates().addAll(recentTemplates);
-                LOGGER.log(Level.FINER, "updateGlobalState, applied"); // NOI18N
             }
             
-            INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], lazilyOpenedProjects.toArray(new Project[0]));
+            INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
-
-            LOGGER.log(Level.FINER, "updateGlobalState, done, notified"); // NOI18N
         }
             
         private void loadOnBackground() {
-            lazilyOpenedProjects = new ArrayList<Project>();
+            openedProjects = new ArrayList<Project>();
             List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
             toOpenProjects.addAll(URLs2Projects(URLs));
             Project[] inital;
             synchronized (toOpenProjects) {
-                LOGGER.log(Level.FINER, "loadOnBackground {0}", toOpenProjects); // NOI18N
                 inital = toOpenProjects.toArray(new Project[0]);
             }
             recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
@@ -314,7 +310,7 @@ public final class OpenProjectList {
                     try {
                         if ( mainProjectURL != null && 
                              mainProjectURL.equals( p.getProjectDirectory().getURL() ) ) {
-                            lazyMainProject = p;
+                            mainProject = p;
                         }
                     }
                     catch( FileStateInvalidException e ) {
@@ -329,21 +325,11 @@ public final class OpenProjectList {
                         break;
                     }
                     p = toOpenProjects.remove();
-                    LOGGER.log(Level.FINER, "after remove {0}", toOpenProjects); // NOI18N
                 }
-                LOGGER.log(Level.FINE, "about to open a project {0}", p); // NOI18N
-                if (notifyOpened(p)) {
-                    lazilyOpenedProjects.add(p);
-                    LOGGER.log(Level.FINE, "notify opened {0}", p); // NOI18N
-                    PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_REPLACE, null, p);
-                    pchSupport.firePropertyChange(ev);
-                    LOGGER.log(Level.FINE, "property change notified {0}", p); // NOI18N
-                } else {
-                    // opened failed, remove main project if same.
-                    if (lazyMainProject == p) {
-                        lazyMainProject = null;
-                    }
-                }
+                openedProjects.add(p);
+                notifyOpened(p);
+                PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_REPLACE, null, p);
+                pchSupport.firePropertyChange(ev);
             }
 
             if (inital != null) {
@@ -499,8 +485,8 @@ public final class OpenProjectList {
         
         long end = System.currentTimeMillis();
         
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "opening projects took: " + (end - start) + "ms");
+        if (LOGGER.isLoggable(LOG_LEVEL)) {
+            LOGGER.log(LOG_LEVEL, "opening projects took: " + (end - start) + "ms");
         }
     }
     
@@ -917,8 +903,7 @@ public final class OpenProjectList {
     }
     
     
-    private static boolean notifyOpened(Project p) {
-        boolean ok = true;
+    private static void notifyOpened(Project p) {
         for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
             ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
             
@@ -929,15 +914,12 @@ public final class OpenProjectList {
                 // Do not try to call its close hook if its open hook already failed:
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
-                ok = false;
             } catch (Error e) {
                 LOGGER.log(Level.WARNING, null, e);
                 INSTANCE.openProjects.remove(p);
                 INSTANCE.removeModuleInfo(p);
-                ok = false;
             }
         }
-        return ok;
     }
     
     private static void notifyClosed(Project p) {
@@ -1134,8 +1116,8 @@ public final class OpenProjectList {
             this.size = size;
             recentProjects = new ArrayList<ProjectReference>( size );
             recentProjectsInfos = new ArrayList<UnloadedProjectInformation>(size);
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "created a RecentProjectList: size=" + size);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "created a RecentProjectList: size=" + size);
             }
         }
         
@@ -1144,8 +1126,8 @@ public final class OpenProjectList {
             
             if ( index == -1 ) {
                 // Project not in list
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "add new recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "add new recent project: " + p);
                 }
                 if ( recentProjects.size() == size ) {
                     // Need some space for the newly added project
@@ -1163,8 +1145,8 @@ public final class OpenProjectList {
                 }
             }
             else {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "re-add recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "re-add recent project: " + p);
                 }
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
@@ -1184,8 +1166,8 @@ public final class OpenProjectList {
         public boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "remove recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "remove recent project: " + p);
                 }
                 recentProjects.remove( index );
                 recentProjectsInfos.remove(index);
@@ -1197,11 +1179,8 @@ public final class OpenProjectList {
         public void refresh() {
             assert recentProjects.size() == recentProjectsInfos.size();
             boolean refresh = false;
-            Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
-            Iterator<UnloadedProjectInformation> recentProjectsInfosIter = recentProjectsInfos.iterator();
-            while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
-                ProjectReference prjRef = recentProjectsIter.next();
-                recentProjectsInfosIter.next();
+            int index = 0;
+            for (ProjectReference prjRef : recentProjects) {
                 URL url = prjRef.getURL();
                 FileObject prjDir = null;
                 try {
@@ -1220,14 +1199,17 @@ public final class OpenProjectList {
                 
                 if (prj == null) { // externally deleted project probably
                     refresh = true;
-                    if (prjDir != null && prjDir.isFolder()) {
-                        prjDir.removeFileChangeListener(nbprojectDeleteListener);
-                    }
-                    recentProjectsIter.remove();
-                    recentProjectsInfosIter.remove();
+                    break;
+                } else if (prjDir.getFileObject("nbproject") == null || !prjDir.getFileObject("nbproject").isValid()) {
+                    prjDir.removeFileChangeListener(nbprojectDeleteListener);
+                    refresh = true;
+                    break;
                 }
+                index++;
             }
             if (refresh) {
+                recentProjects.remove(index);
+                recentProjectsInfos.remove(index);
                 pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                 save();
             }
@@ -1242,24 +1224,24 @@ public final class OpenProjectList {
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "removing dead recent project: " + p);
+                    if (LOGGER.isLoggable(LOG_LEVEL)) {
+                        LOGGER.log(LOG_LEVEL, "removing dead recent project: " + p);
                     }
                 }
                 else {
                     result.add( p );
                 }
             }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "recent projects: " + result);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent projects: " + result);
             }
             return result;
         }
         
         public boolean isEmpty() {
             boolean empty = recentProjects.isEmpty();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "recent projects empty? " + empty);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent projects empty? " + empty);
             }
             return empty;
         }
@@ -1268,8 +1250,8 @@ public final class OpenProjectList {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "recent project list load: " + URLs);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent project list load: " + URLs);
             }
             recentProjects.clear();
             for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
@@ -1308,8 +1290,8 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "recent project list save: " + URLs);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent project list save: " + URLs);
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
             int listSize = recentProjectsInfos.size();
@@ -1371,8 +1353,8 @@ public final class OpenProjectList {
                     projectURL = p.getProjectDirectory().getURL();                
                 }
                 catch( FileStateInvalidException e ) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "FSIE getting URL for project: " + p.getProjectDirectory());
+                    if (LOGGER.isLoggable(LOG_LEVEL)) {
+                        LOGGER.log(LOG_LEVEL, "FSIE getting URL for project: " + p.getProjectDirectory());
                     }
                 }
             }
@@ -1392,8 +1374,8 @@ public final class OpenProjectList {
                     }
                 }
                 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "no active project reference for " + projectURL);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "no active project reference for " + projectURL);
                 }
                 if ( projectURL != null ) {                    
                     FileObject dir = URLMapper.findFileObject( projectURL );
@@ -1402,23 +1384,23 @@ public final class OpenProjectList {
                             p = ProjectManager.getDefault().findProject( dir );
                             if ( p != null ) {
                                 projectReference = new WeakReference<Project>( p ); 
-                                if (LOGGER.isLoggable(Level.FINE)) {
-                                    LOGGER.log(Level.FINE, "found " + p);
+                                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                                    LOGGER.log(LOG_LEVEL, "found " + p);
                                 }
                                 return p;
                             }
                         }       
                         catch ( IOException e ) {
                             // Ignore invalid folders
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.log(Level.FINE, "could not load recent project from " + projectURL);
+                            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                                LOGGER.log(LOG_LEVEL, "could not load recent project from " + projectURL);
                             }
                         }
                     }
                 }
                 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "no recent project in " + projectURL);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "no recent project in " + projectURL);
                 }
                 return null; // Empty reference                
             }
@@ -1469,7 +1451,9 @@ public final class OpenProjectList {
         
         @Override
         public void fileDeleted(FileEvent fe) {
-            recentProjects.refresh();
+            if (fe.getFile().getName().equals("nbproject")) {
+                recentProjects.refresh();
+            }
         }
         
     }

@@ -67,6 +67,7 @@ import com.nwoods.jgo.JGoText;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -78,7 +79,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLTableArea.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(SQLTableArea.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private TableModel dataModel;
 
@@ -322,7 +323,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
             //first try to remove column refs
             removeColumnReference(column);
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT178: Error making column invisible, unable to remove column references{0}", column.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR178: Error making column invisible, unable to remove column references{0}", column.getName()), ex);
             throw ex;
 
         }

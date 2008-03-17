@@ -70,9 +70,4 @@ public class IndexedPackage extends IndexedElement {
 
         return signature;
     }
-    
-    @Override
-    public String getType() {
-        return null;
-    }
 }

@@ -50,49 +50,51 @@
                api-doc="http://www.flickr.com/services/api/"
                url="org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrWadl.xml">
     
-    <description>Photo Service</description>
-    <display-name>Photo Service</display-name>
+    <description>Picture Service</description>
+    <display-name>Picture</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
         <group name="Flickr"/>
         
         <authentication profile="SaaSServices/Facebook/profile.properties">
-            <session-key api-id="api_key">
-                <sign>
+            <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
+                <sign id="apiSig">
                     <params>
                         <param name="method" type="string" required="true"/>
-                        <param name="api_key" type="string" required="true"/>
-                        <param name="auth_token" type="string" required="true"/>
+                        <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
+                        <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
                     </params>
                 </sign>
                 <login>
-                    <sign>
+                    <sign id="apiSig">
                         <params>
                             <param name="method" type="string" required="true"/>
                             <param name="api_key" type="string" required="true"/>
-                            <param name="frob" type="string" required="true"/>
+                            <param id="frob={frob}" name="frob" type="string" required="true"/>
                         </params>
                     </sign>
-                    <method id="token={token}" name="login" href="#flickr.auth_getToken"/>
+                    <method id="auth_token={token}" name="login" href="#flickr.auth_getToken"/>
                 </login>
-                <token>
-                    <sign>
+                <token id="frob">
+                    <sign id="apiSig">
                         <params>
                             <param name="method" type="string" required="true"/>
                             <param name="api_key" type="string" required="true"/>
                         </params>
                     </sign>
                     <method id="frob={frob}" name="getFrob" href="#flickr.auth_getFrob"/>
-                    <frame url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}&amp;frob={token}&amp;api_sig={apiSig}">
-                        <sign>
+                    <prompt>
+                        <desktop url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}&amp;frob={frob}&amp;api_sig={apiSig}"/>
+                        <web url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}"/>
+                        <sign id="apiSig">
                             <params>
                                 <param name="frob" type="string" required="true"/>
                                 <param name="api_key" type="string" required="true"/>
                                 <param name="perms" type="string" required="true" default="write"/>
                             </params>
                         </sign>
-                    </frame>
+                    </prompt>
                 </token>
                 <logout/>
             </session-key>

@@ -235,18 +235,11 @@ public final class MultiViewPeer  {
     }
     
     boolean requestFocusInWindow() {
-        // somehow this may be called when model is null
-        if (model == null) {
-            return false;
-        }
         return model.getActiveElement().getVisualRepresentation().requestFocusInWindow();
     }
     
     void requestFocus() {
-        // somehow this may be called when model is null
-        if (model != null) {
-            model.getActiveElement().getVisualRepresentation().requestFocus();
-        }
+        model.getActiveElement().getVisualRepresentation().requestFocus();
     }
     
     /**

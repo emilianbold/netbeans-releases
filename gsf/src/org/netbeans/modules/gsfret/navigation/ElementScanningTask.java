@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -126,14 +125,6 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             }
             public long getEndPosition() {
                 return Long.MAX_VALUE;
-            }
-
-            public ImageIcon getCustomIcon() {
-                return null;
-            }
-            
-            public String getSortText() {
-                return null;
             }
         };
         

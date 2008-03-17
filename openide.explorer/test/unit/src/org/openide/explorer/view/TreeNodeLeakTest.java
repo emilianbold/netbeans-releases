@@ -41,10 +41,18 @@
 
 package org.openide.explorer.view;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
@@ -103,20 +111,13 @@ public final class TreeNodeLeakTest extends NbTestCase {
             } catch (PropertyVetoException pve) {
                 fail(pve.getMessage());
             }
+            root.getChildren().remove( new Node[] {toSelect[0], toSelect[3]});
         }});
-        clearAWTQueue();
-        root.getChildren().remove(new Node[] {toSelect[0], toSelect[3]});
-        clearAWTQueue();
+        EventQueue.invokeAndWait(new Runnable() { public void run() {}});
 
         WeakReference wr = new WeakReference(toSelect[0]);
         toSelect = null;
         assertGC("Node freed", wr);
-    }
-    
-    void clearAWTQueue() throws Exception {
-        for (int i = 0; i < 2; i++) {
-            EventQueue.invokeAndWait(new Runnable() { public void run() {}});
-        }
     }
     
     

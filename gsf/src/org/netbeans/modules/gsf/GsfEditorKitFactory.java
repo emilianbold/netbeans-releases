@@ -118,7 +118,19 @@ public class GsfEditorKitFactory {
      *
      */
     public GsfEditorKit kit() {
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+
         return new GsfEditorKit();
+    }
+
+    private static Language getLanguage(BaseDocument doc) {
+        String mimeType = (String)doc.getProperty("mimeType");
+
+        if (mimeType != null) {
+            return LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        }
+
+        return null;
     }
 
     public static Action findAction(Action [] actions, String name) {

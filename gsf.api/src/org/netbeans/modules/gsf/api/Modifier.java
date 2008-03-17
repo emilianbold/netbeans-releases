@@ -46,5 +46,5 @@ package org.netbeans.modules.gsf.api;
  * @author Tor Norbye
  */
 public enum Modifier {
-    PUBLIC, STATIC, PROTECTED, PRIVATE, DEPRECATED
+    PUBLIC, STATIC, PROTECTED, PRIVATE
 }

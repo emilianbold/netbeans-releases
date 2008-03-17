@@ -1,40 +1,45 @@
-cb:METHOD:[]:ESCAPED{cb}(PARAMETERS{ESCAPED{res}}) : ESCAPED{void}:
+cb:METHOD:[]:ESCAPED{cb}(PARAMETERS{ESCAPED{res}}):
 fp:METHOD:[]:ESCAPED{fp}(PARAMETERS{ESCAPED{e}}):
-gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}) : ESCAPED{Boolean}:
-gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
 gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}):
-ff:METHOD:[]:ESCAPED{ff} : ESCAPED{Boolean}:
-retFunc:METHOD:[]:ESCAPED{retFunc}(PARAMETERS{ESCAPED{root}}) : ESCAPED{Array|void}:
+gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}):
+gcs:METHOD:[]:ESCAPED{gcs}(PARAMETERS{ESCAPED{node}}):
+ff:METHOD:[]:ESCAPED{ff}:
 retFunc:METHOD:[]:ESCAPED{retFunc}(PARAMETERS{ESCAPED{root}}):
 retFunc:METHOD:[]:ESCAPED{retFunc}(PARAMETERS{ESCAPED{root}}):
-setValue:METHOD:[]:ESCAPED{setValue}(PARAMETERS{ESCAPED{obj}, ESCAPED{name}, ESCAPED{value}}) : ESCAPED{void}:
+retFunc:METHOD:[]:ESCAPED{retFunc}(PARAMETERS{ESCAPED{root}}):
+setValue:METHOD:[]:ESCAPED{setValue}(PARAMETERS{ESCAPED{obj}, ESCAPED{name}, ESCAPED{value}}):
 getValue:METHOD:[]:ESCAPED{getValue}(PARAMETERS{ESCAPED{n}}):
+getValue:METHOD:[]:ESCAPED{getValue}(PARAMETERS{ESCAPED{r}}):
 getStyle:METHOD:[]:ESCAPED{getStyle}(PARAMETERS{ESCAPED{node}, ESCAPED{p}}):
 fn:GLOBAL:[]:ESCAPED{fn}:
+left:GLOBAL:[]:ESCAPED{left}:
+top:GLOBAL:[]:ESCAPED{top}:
+width:GLOBAL:[]:ESCAPED{width}:
+height:GLOBAL:[]:ESCAPED{height}:
 _config:CLASS:[]:ESCAPED{_config}:
-  delayMozLoadingFix:PROPERTY:[]:ESCAPED{delayMozLoadingFix} : ESCAPED{Boolean}:
-  isDebug:PROPERTY:[]:ESCAPED{isDebug} : ESCAPED{Boolean}:
-  libraryScriptUri:PROPERTY:[]:ESCAPED{libraryScriptUri} : ESCAPED{String}:
-  preventBackButtonFix:PROPERTY:[]:ESCAPED{preventBackButtonFix} : ESCAPED{Boolean}:
+  delayMozLoadingFix:PROPERTY:[]:ESCAPED{delayMozLoadingFix}:
+  isDebug:PROPERTY:[]:ESCAPED{isDebug}:
+  libraryScriptUri:PROPERTY:[]:ESCAPED{libraryScriptUri}:
+  preventBackButtonFix:PROPERTY:[]:ESCAPED{preventBackButtonFix}:
 dojo.version:CLASS:[]:ESCAPED{dojo.version}:
-  flag:PROPERTY:[]:ESCAPED{flag} : ESCAPED{String}:
-  major:PROPERTY:[]:ESCAPED{major} : ESCAPED{Number}:
-  minor:PROPERTY:[]:ESCAPED{minor} : ESCAPED{Number}:
-  patch:PROPERTY:[]:ESCAPED{patch} : ESCAPED{Number}:
+  flag:PROPERTY:[]:ESCAPED{flag}:
+  major:PROPERTY:[]:ESCAPED{major}:
+  minor:PROPERTY:[]:ESCAPED{minor}:
+  patch:PROPERTY:[]:ESCAPED{patch}:
   revision:PROPERTY:[]:ESCAPED{revision}:
   toString:METHOD:[]:ESCAPED{toString}:
 dojo:CLASS:[]:ESCAPED{dojo}:
-  _Line:METHOD:[]:ESCAPED{_Line}(PARAMETERS{ESCAPED{start}, ESCAPED{end}}) : ESCAPED{void}:
-  _Url:METHOD:[]:ESCAPED{_Url} : ESCAPED{void}:
+  _Line:METHOD:[]:ESCAPED{_Line}(PARAMETERS{ESCAPED{start}, ESCAPED{end}}):
+  _Url:METHOD:[]:ESCAPED{_Url}:
   _abs:METHOD:[]:ESCAPED{_abs}(PARAMETERS{ESCAPED{node}, ESCAPED{includeScroll}}):
-  _callLoaded:METHOD:[]:ESCAPED{_callLoaded} : ESCAPED{void}:
-  _connect:METHOD:[]:ESCAPED{_connect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{context}, ESCAPED{method}}) : ESCAPED{Array}:
-  _connect:METHOD:[]:ESCAPED{_connect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{context}, ESCAPED{method}, ESCAPED{dontFix}}) : ESCAPED{Array}:
+  _callLoaded:METHOD:[]:ESCAPED{_callLoaded}:
+  _connect:METHOD:[]:ESCAPED{_connect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{context}, ESCAPED{method}}):
+  _connect:METHOD:[]:ESCAPED{_connect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{context}, ESCAPED{method}, ESCAPED{dontFix}}):
   _defaultEasing:METHOD:[]:ESCAPED{_defaultEasing}(PARAMETERS{ESCAPED{n}}):
   _delegate:METHOD:[]:ESCAPED{_delegate}(PARAMETERS{ESCAPED{obj}, ESCAPED{props}}):
-  _destroyElement:METHOD:[]:ESCAPED{_destroyElement}(PARAMETERS{ESCAPED{node}}) : ESCAPED{void}:
-  _disconnect:METHOD:[]:ESCAPED{_disconnect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{handle}, ESCAPED{listener}}) : ESCAPED{void}:
-  _disconnect:METHOD:[]:ESCAPED{_disconnect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{handle}, ESCAPED{listener}}) : ESCAPED{void}:
+  _destroyElement:METHOD:[]:ESCAPED{_destroyElement}(PARAMETERS{ESCAPED{node}}):
+  _disconnect:METHOD:[]:ESCAPED{_disconnect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{handle}, ESCAPED{listener}}):
+  _disconnect:METHOD:[]:ESCAPED{_disconnect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{handle}, ESCAPED{listener}}):
   _docScroll:METHOD:[]:ESCAPED{_docScroll}:
   _escapeString:METHOD:[]:ESCAPED{_escapeString}(PARAMETERS{ESCAPED{str}}):
   _fade:METHOD:[]:ESCAPED{_fade}(PARAMETERS{ESCAPED{args}}):
@@ -44,7 +49,7 @@ dojo:CLASS:[]:ESCAPED{dojo}:
   _getBorderBox:METHOD:[]:ESCAPED{_getBorderBox}(PARAMETERS{ESCAPED{node}, ESCAPED{computedStyle}}):
   _getBorderExtents:METHOD:[]:ESCAPED{_getBorderExtents}(PARAMETERS{ESCAPED{n}, ESCAPED{computedStyle}}):
   _getContentBox:METHOD:[]:ESCAPED{_getContentBox}(PARAMETERS{ESCAPED{node}, ESCAPED{computedStyle}}):
-  _getIeDispatcher:METHOD:[]:ESCAPED{_getIeDispatcher} : ESCAPED{Function}:
+  _getIeDispatcher:METHOD:[]:ESCAPED{_getIeDispatcher}:
   _getIeDocumentElementOffset:METHOD:[]:ESCAPED{_getIeDocumentElementOffset}:
   _getMarginBox:METHOD:[]:ESCAPED{_getMarginBox}(PARAMETERS{ESCAPED{node}, ESCAPED{computedStyle}}):
   _getMarginExtents:METHOD:[]:ESCAPED{_getMarginExtents}(PARAMETERS{ESCAPED{n}, ESCAPED{computedStyle}}):
@@ -52,44 +57,44 @@ dojo:CLASS:[]:ESCAPED{dojo}:
   _getPadBorderExtents:METHOD:[]:ESCAPED{_getPadBorderExtents}(PARAMETERS{ESCAPED{n}, ESCAPED{computedStyle}}):
   _getPadExtents:METHOD:[]:ESCAPED{_getPadExtents}(PARAMETERS{ESCAPED{n}, ESCAPED{computedStyle}}):
   _getProp:METHOD:[]:ESCAPED{_getProp}(PARAMETERS{ESCAPED{parts}, ESCAPED{create}, ESCAPED{context}}):
-  _hitchArgs:METHOD:[]:ESCAPED{_hitchArgs}(PARAMETERS{ESCAPED{scope}, ESCAPED{method}}) : ESCAPED{Function}:
-  _ioAddQueryToUrl:METHOD:[]:ESCAPED{_ioAddQueryToUrl}(PARAMETERS{ESCAPED{ioArgs}}) : ESCAPED{void}:
-  _ioCancelAll:METHOD:[]:ESCAPED{_ioCancelAll} : ESCAPED{void}:
+  _hitchArgs:METHOD:[]:ESCAPED{_hitchArgs}(PARAMETERS{ESCAPED{scope}, ESCAPED{method}}):
+  _ioAddQueryToUrl:METHOD:[]:ESCAPED{_ioAddQueryToUrl}(PARAMETERS{ESCAPED{ioArgs}}):
+  _ioCancelAll:METHOD:[]:ESCAPED{_ioCancelAll}:
   _ioSetArgs:METHOD:[]:ESCAPED{_ioSetArgs}(PARAMETERS{ESCAPED{args}, ESCAPED{canceller}, ESCAPED{okHandler}, ESCAPED{errHandler}}):
   _isBodyLtr:METHOD:[]:ESCAPED{_isBodyLtr}:
-  _loadInit:METHOD:[]:ESCAPED{_loadInit}(PARAMETERS{ESCAPED{e}}) : ESCAPED{void}:
+  _loadInit:METHOD:[]:ESCAPED{_loadInit}(PARAMETERS{ESCAPED{e}}):
   _loadPath:METHOD:[]:ESCAPED{_loadPath}(PARAMETERS{ESCAPED{relpath}, ESCAPED{module}, ESCAPED{cb}}):
-  _loadUri:METHOD:[]:ESCAPED{_loadUri}(PARAMETERS{ESCAPED{uri}, ESCAPED{cb}}) : ESCAPED{Boolean}:
+  _loadUri:METHOD:[]:ESCAPED{_loadUri}(PARAMETERS{ESCAPED{uri}, ESCAPED{cb}}):
   _loadUriAndCheck:METHOD:[]:ESCAPED{_loadUriAndCheck}(PARAMETERS{ESCAPED{uri}, ESCAPED{moduleName}, ESCAPED{cb}}):
   _mixin:METHOD:[]:ESCAPED{_mixin}(PARAMETERS{ESCAPED{obj}, ESCAPED{props}}):
-  _modulesLoaded:METHOD:[]:ESCAPED{_modulesLoaded} : ESCAPED{void}:
-  _setBox:METHOD:[]:ESCAPED{_setBox}(PARAMETERS{ESCAPED{node}, ESCAPED{l}, ESCAPED{t}, ESCAPED{w}, ESCAPED{h}, ESCAPED{u}}) : ESCAPED{void}:
-  _setContentSize:METHOD:[]:ESCAPED{_setContentSize}(PARAMETERS{ESCAPED{node}, ESCAPED{widthPx}, ESCAPED{heightPx}, ESCAPED{computedStyle}}) : ESCAPED{void}:
-  _setMarginBox:METHOD:[]:ESCAPED{_setMarginBox}(PARAMETERS{ESCAPED{node}, ESCAPED{leftPx}, ESCAPED{topPx}, ESCAPED{widthPx}, ESCAPED{heightPx}, ESCAPED{computedStyle}}) : ESCAPED{void}:
+  _modulesLoaded:METHOD:[]:ESCAPED{_modulesLoaded}:
+  _setBox:METHOD:[]:ESCAPED{_setBox}(PARAMETERS{ESCAPED{node}, ESCAPED{l}, ESCAPED{t}, ESCAPED{w}, ESCAPED{h}, ESCAPED{u}}):
+  _setContentSize:METHOD:[]:ESCAPED{_setContentSize}(PARAMETERS{ESCAPED{node}, ESCAPED{widthPx}, ESCAPED{heightPx}, ESCAPED{computedStyle}}):
+  _setMarginBox:METHOD:[]:ESCAPED{_setMarginBox}(PARAMETERS{ESCAPED{node}, ESCAPED{leftPx}, ESCAPED{topPx}, ESCAPED{widthPx}, ESCAPED{heightPx}, ESCAPED{computedStyle}}):
   _toArray:METHOD:[]:ESCAPED{_toArray}(PARAMETERS{ESCAPED{obj}, ESCAPED{offset}, ESCAPED{startWith}}):
-  _toPixelValue:METHOD:[]:ESCAPED{_toPixelValue}(PARAMETERS{ESCAPED{element}, ESCAPED{value}}) : ESCAPED{Boolean}:
+  _toPixelValue:METHOD:[]:ESCAPED{_toPixelValue}(PARAMETERS{ESCAPED{element}, ESCAPED{value}}):
   _toPixelValue:METHOD:[]:ESCAPED{_toPixelValue}(PARAMETERS{ESCAPED{element}, ESCAPED{avalue}}):
-  _usesBorderBox:METHOD:[]:ESCAPED{_usesBorderBox}(PARAMETERS{ESCAPED{node}}) : ESCAPED{Boolean}:
-  addClass:METHOD:[]:ESCAPED{addClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}) : ESCAPED{void}:
-  addOnLoad:METHOD:[]:ESCAPED{addOnLoad}(PARAMETERS{ESCAPED{obj}, ESCAPED{functionName}}) : ESCAPED{void}:
-  addOnUnload:METHOD:[]:ESCAPED{addOnUnload}(PARAMETERS{ESCAPED{obj}, ESCAPED{functionName}}) : ESCAPED{void}:
+  _usesBorderBox:METHOD:[]:ESCAPED{_usesBorderBox}(PARAMETERS{ESCAPED{node}}):
+  addClass:METHOD:[]:ESCAPED{addClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}):
+  addOnLoad:METHOD:[]:ESCAPED{addOnLoad}(PARAMETERS{ESCAPED{obj}, ESCAPED{functionName}}):
+  addOnUnload:METHOD:[]:ESCAPED{addOnUnload}(PARAMETERS{ESCAPED{obj}, ESCAPED{functionName}}):
   animateProperty:METHOD:[]:ESCAPED{animateProperty}(PARAMETERS{ESCAPED{args}}):
   blendColors:METHOD:[]:ESCAPED{blendColors}(PARAMETERS{ESCAPED{start}, ESCAPED{end}, ESCAPED{weight}, ESCAPED{obj}}):
-  body:METHOD:[]:ESCAPED{body} : ESCAPED{Boolean}:
+  body:METHOD:[]:ESCAPED{body}:
   byId:METHOD:[]:ESCAPED{byId}(PARAMETERS{ESCAPED{id}, ESCAPED{doc}}):
   byId:METHOD:[]:ESCAPED{byId}(PARAMETERS{ESCAPED{id}, ESCAPED{doc}}):
   clone:METHOD:[]:ESCAPED{clone}(PARAMETERS{ESCAPED{o}}):
   colorFromArray:METHOD:[]:ESCAPED{colorFromArray}(PARAMETERS{ESCAPED{a}, ESCAPED{obj}}):
   colorFromHex:METHOD:[]:ESCAPED{colorFromHex}(PARAMETERS{ESCAPED{color}, ESCAPED{obj}}):
-  colorFromRgb:METHOD:[]:ESCAPED{colorFromRgb}(PARAMETERS{ESCAPED{color}, ESCAPED{obj}}) : ESCAPED{Boolean}:
-  colorFromString:METHOD:[]:ESCAPED{colorFromString}(PARAMETERS{ESCAPED{str}, ESCAPED{obj}}) : ESCAPED{Boolean}:
+  colorFromRgb:METHOD:[]:ESCAPED{colorFromRgb}(PARAMETERS{ESCAPED{color}, ESCAPED{obj}}):
+  colorFromString:METHOD:[]:ESCAPED{colorFromString}(PARAMETERS{ESCAPED{str}, ESCAPED{obj}}):
   connect:METHOD:[]:ESCAPED{connect}(PARAMETERS{ESCAPED{obj}, ESCAPED{event}, ESCAPED{context}, ESCAPED{method}, ESCAPED{dontFix}}):
   connectPublisher:METHOD:[]:ESCAPED{connectPublisher}(PARAMETERS{ESCAPED{topic}, ESCAPED{obj}, ESCAPED{event}}):
   contentBox:METHOD:[]:ESCAPED{contentBox}(PARAMETERS{ESCAPED{node}, ESCAPED{box}}):
   coords:METHOD:[]:ESCAPED{coords}(PARAMETERS{ESCAPED{node}, ESCAPED{includeScroll}}):
   declare:METHOD:[]:ESCAPED{declare}(PARAMETERS{ESCAPED{className}, ESCAPED{superclass}, ESCAPED{props}}):
-  disconnect:METHOD:[]:ESCAPED{disconnect}(PARAMETERS{ESCAPED{handle}}) : ESCAPED{void}:
-  exists:METHOD:[]:ESCAPED{exists}(PARAMETERS{ESCAPED{name}, ESCAPED{obj}}) : ESCAPED{Boolean}:
+  disconnect:METHOD:[]:ESCAPED{disconnect}(PARAMETERS{ESCAPED{handle}}):
+  exists:METHOD:[]:ESCAPED{exists}(PARAMETERS{ESCAPED{name}, ESCAPED{obj}}):
   extend:METHOD:[]:ESCAPED{extend}(PARAMETERS{ESCAPED{constructor}, ESCAPED{props}}):
   fadeIn:METHOD:[]:ESCAPED{fadeIn}(PARAMETERS{ESCAPED{args}}):
   fadeOut:METHOD:[]:ESCAPED{fadeOut}(PARAMETERS{ESCAPED{args}}):
@@ -99,45 +104,45 @@ dojo:CLASS:[]:ESCAPED{dojo}:
   formToQuery:METHOD:[]:ESCAPED{formToQuery}(PARAMETERS{ESCAPED{formNode}}):
   fromJson:METHOD:[]:ESCAPED{fromJson}(PARAMETERS{ESCAPED{json}}):
   getObject:METHOD:[]:ESCAPED{getObject}(PARAMETERS{ESCAPED{name}, ESCAPED{create}, ESCAPED{context}}):
-  hasClass:METHOD:[]:ESCAPED{hasClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}) : ESCAPED{Boolean}:
+  hasClass:METHOD:[]:ESCAPED{hasClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}):
   hitch:METHOD:[]:ESCAPED{hitch}(PARAMETERS{ESCAPED{scope}, ESCAPED{method}}):
-  isAlien:METHOD:[]:ESCAPED{isAlien}(PARAMETERS{ESCAPED{it}}) : ESCAPED{Boolean}:
-  isArray:METHOD:[]:ESCAPED{isArray}(PARAMETERS{ESCAPED{it}}) : ESCAPED{Boolean}:
-  isArrayLike:METHOD:[]:ESCAPED{isArrayLike}(PARAMETERS{ESCAPED{it}}) : ESCAPED{Boolean}:
-  isDescendant:METHOD:[]:ESCAPED{isDescendant}(PARAMETERS{ESCAPED{node}, ESCAPED{ancestor}}) : ESCAPED{Boolean|Number}:
+  isAlien:METHOD:[]:ESCAPED{isAlien}(PARAMETERS{ESCAPED{it}}):
+  isArray:METHOD:[]:ESCAPED{isArray}(PARAMETERS{ESCAPED{it}}):
+  isArrayLike:METHOD:[]:ESCAPED{isArrayLike}(PARAMETERS{ESCAPED{it}}):
+  isDescendant:METHOD:[]:ESCAPED{isDescendant}(PARAMETERS{ESCAPED{node}, ESCAPED{ancestor}}):
   isFunction:METHOD:[]:ESCAPED{isFunction}:
-  isObject:METHOD:[]:ESCAPED{isObject}(PARAMETERS{ESCAPED{it}}) : ESCAPED{Boolean}:
-  isString:METHOD:[]:ESCAPED{isString}(PARAMETERS{ESCAPED{it}}) : ESCAPED{Boolean}:
-  loaded:METHOD:[]:ESCAPED{loaded} : ESCAPED{void}:
+  isObject:METHOD:[]:ESCAPED{isObject}(PARAMETERS{ESCAPED{it}}):
+  isString:METHOD:[]:ESCAPED{isString}(PARAMETERS{ESCAPED{it}}):
+  loaded:METHOD:[]:ESCAPED{loaded}:
   marginBox:METHOD:[]:ESCAPED{marginBox}(PARAMETERS{ESCAPED{node}, ESCAPED{box}}):
   mixin:METHOD:[]:ESCAPED{mixin}(PARAMETERS{ESCAPED{obj}, ESCAPED{props}}):
   moduleUrl:METHOD:[]:ESCAPED{moduleUrl}(PARAMETERS{ESCAPED{module}, ESCAPED{url}}):
   objectToQuery:METHOD:[]:ESCAPED{objectToQuery}(PARAMETERS{ESCAPED{map}}):
   partial:METHOD:[]:ESCAPED{partial}(PARAMETERS{ESCAPED{method}}):
   place:METHOD:[]:ESCAPED{place}(PARAMETERS{ESCAPED{node}, ESCAPED{refNode}, ESCAPED{position}}):
-  platformRequire:METHOD:[]:ESCAPED{platformRequire}(PARAMETERS{ESCAPED{modMap}}) : ESCAPED{void}:
+  platformRequire:METHOD:[]:ESCAPED{platformRequire}(PARAMETERS{ESCAPED{modMap}}):
   provide:METHOD:[]:ESCAPED{provide}(PARAMETERS{ESCAPED{resourceName}}):
-  publish:METHOD:[]:ESCAPED{publish}(PARAMETERS{ESCAPED{topic}, ESCAPED{args}}) : ESCAPED{void}:
+  publish:METHOD:[]:ESCAPED{publish}(PARAMETERS{ESCAPED{topic}, ESCAPED{args}}):
   queryToObject:METHOD:[]:ESCAPED{queryToObject}(PARAMETERS{ESCAPED{str}}):
   rawXhrPost:METHOD:[]:ESCAPED{rawXhrPost}(PARAMETERS{ESCAPED{args}}):
   rawXhrPut:METHOD:[]:ESCAPED{rawXhrPut}(PARAMETERS{ESCAPED{args}}):
-  registerModulePath:METHOD:[]:ESCAPED{registerModulePath}(PARAMETERS{ESCAPED{module}, ESCAPED{prefix}}) : ESCAPED{void}:
-  removeClass:METHOD:[]:ESCAPED{removeClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}) : ESCAPED{void}:
+  registerModulePath:METHOD:[]:ESCAPED{registerModulePath}(PARAMETERS{ESCAPED{module}, ESCAPED{prefix}}):
+  removeClass:METHOD:[]:ESCAPED{removeClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}}):
   require:METHOD:[]:ESCAPED{require}(PARAMETERS{ESCAPED{moduleName}, ESCAPED{omitModuleCheck}}):
-  requireIf:METHOD:[]:ESCAPED{requireIf}(PARAMETERS{ESCAPED{condition}, ESCAPED{resourceName}}) : ESCAPED{void}:
-  requireLocalization:METHOD:[]:ESCAPED{requireLocalization}(PARAMETERS{ESCAPED{moduleName}, ESCAPED{bundleName}, ESCAPED{locale}, ESCAPED{availableFlatLocales}}) : ESCAPED{void}:
-  setContext:METHOD:[]:ESCAPED{setContext}(PARAMETERS{ESCAPED{globalObject}, ESCAPED{globalDocument}}) : ESCAPED{void}:
+  requireIf:METHOD:[]:ESCAPED{requireIf}(PARAMETERS{ESCAPED{condition}, ESCAPED{resourceName}}):
+  requireLocalization:METHOD:[]:ESCAPED{requireLocalization}(PARAMETERS{ESCAPED{moduleName}, ESCAPED{bundleName}, ESCAPED{locale}, ESCAPED{availableFlatLocales}}):
+  setContext:METHOD:[]:ESCAPED{setContext}(PARAMETERS{ESCAPED{globalObject}, ESCAPED{globalDocument}}):
   setObject:METHOD:[]:ESCAPED{setObject}(PARAMETERS{ESCAPED{name}, ESCAPED{value}, ESCAPED{context}}):
-  setSelectable:METHOD:[]:ESCAPED{setSelectable}(PARAMETERS{ESCAPED{node}, ESCAPED{selectable}}) : ESCAPED{void}:
-  stopEvent:METHOD:[]:ESCAPED{stopEvent}(PARAMETERS{ESCAPED{evt}}) : ESCAPED{void}:
-  stopEvent:METHOD:[]:ESCAPED{stopEvent}(PARAMETERS{ESCAPED{evt}}) : ESCAPED{void}:
+  setSelectable:METHOD:[]:ESCAPED{setSelectable}(PARAMETERS{ESCAPED{node}, ESCAPED{selectable}}):
+  stopEvent:METHOD:[]:ESCAPED{stopEvent}(PARAMETERS{ESCAPED{evt}}):
+  stopEvent:METHOD:[]:ESCAPED{stopEvent}(PARAMETERS{ESCAPED{evt}}):
   style:METHOD:[]:ESCAPED{style}(PARAMETERS{ESCAPED{node}, ESCAPED{style}, ESCAPED{value}}):
-  subscribe:METHOD:[]:ESCAPED{subscribe}(PARAMETERS{ESCAPED{topic}, ESCAPED{context}, ESCAPED{method}}) : ESCAPED{Array}:
+  subscribe:METHOD:[]:ESCAPED{subscribe}(PARAMETERS{ESCAPED{topic}, ESCAPED{context}, ESCAPED{method}}):
   toJson:METHOD:[]:ESCAPED{toJson}(PARAMETERS{ESCAPED{it}, ESCAPED{prettyPrint}, ESCAPED{_indentStr}}):
-  toggleClass:METHOD:[]:ESCAPED{toggleClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}, ESCAPED{condition}}) : ESCAPED{void}:
+  toggleClass:METHOD:[]:ESCAPED{toggleClass}(PARAMETERS{ESCAPED{node}, ESCAPED{classStr}, ESCAPED{condition}}):
   trim:METHOD:[]:ESCAPED{trim}(PARAMETERS{ESCAPED{str}}):
-  unloaded:METHOD:[]:ESCAPED{unloaded} : ESCAPED{void}:
-  unsubscribe:METHOD:[]:ESCAPED{unsubscribe}(PARAMETERS{ESCAPED{handle}}) : ESCAPED{void}:
+  unloaded:METHOD:[]:ESCAPED{unloaded}:
+  unsubscribe:METHOD:[]:ESCAPED{unsubscribe}(PARAMETERS{ESCAPED{handle}}):
   withDoc:METHOD:[]:ESCAPED{withDoc}(PARAMETERS{ESCAPED{documentObject}, ESCAPED{callback}, ESCAPED{thisObject}, ESCAPED{cbArguments}}):
   withGlobal:METHOD:[]:ESCAPED{withGlobal}(PARAMETERS{ESCAPED{globalObject}, ESCAPED{callback}, ESCAPED{thisObject}, ESCAPED{cbArguments}}):
   xhrDelete:METHOD:[]:ESCAPED{xhrDelete}(PARAMETERS{ESCAPED{args}}):
@@ -147,143 +152,143 @@ dojo:CLASS:[]:ESCAPED{dojo}:
 d:CLASS:[]:ESCAPED{d}:
   _filterQueryResult:METHOD:[]:ESCAPED{_filterQueryResult}(PARAMETERS{ESCAPED{nodeList}, ESCAPED{simpleFilter}}):
   _getText:METHOD:[]:ESCAPED{_getText}(PARAMETERS{ESCAPED{uri}, ESCAPED{fail_ok}}):
-  _isDocumentOk:METHOD:[]:ESCAPED{_isDocumentOk}(PARAMETERS{ESCAPED{http}}) : ESCAPED{Boolean}:
+  _isDocumentOk:METHOD:[]:ESCAPED{_isDocumentOk}(PARAMETERS{ESCAPED{http}}):
   _xhrObj:METHOD:[]:ESCAPED{_xhrObj}:
-  experimental:METHOD:[]:ESCAPED{experimental} : ESCAPED{void}:
+  experimental:METHOD:[]:ESCAPED{experimental}:
   query:METHOD:[]:ESCAPED{query}(PARAMETERS{ESCAPED{query}, ESCAPED{root}}):
 dojo._Url:CLASS:[]:ESCAPED{dojo._Url}:
-  toString:METHOD:[]:ESCAPED{toString} : ESCAPED{uri}:
+  toString:METHOD:[]:ESCAPED{toString}:
 TMP:CLASS:[]:ESCAPED{TMP}:
-  TMP:CONSTRUCTOR:[]:ESCAPED{TMP} : ESCAPED{TMP}:
+  TMP:CONSTRUCTOR:[]:ESCAPED{TMP}:
 dojo._listener:CLASS:[]:ESCAPED{dojo._listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
-  getDispatcher:METHOD:[]:ESCAPED{getDispatcher} : ESCAPED{Function}:
-  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}) : ESCAPED{void}:
+  getDispatcher:METHOD:[]:ESCAPED{getDispatcher}:
+  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}):
 dojo.Deferred:CLASS:[]:ESCAPED{dojo.Deferred}:
-  Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}) : ESCAPED{dojo.Deferred}:
+  Deferred:CONSTRUCTOR:[]:ESCAPED{Deferred}(PARAMETERS{ESCAPED{canceller}}):
 dojo.Color:CLASS:[]:ESCAPED{dojo.Color}:
-  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}) : ESCAPED{dojo.Color}:
+  Color:CONSTRUCTOR:[]:ESCAPED{Color}(PARAMETERS{ESCAPED{color}}):
 dojo.Color.named:CLASS:[]:ESCAPED{dojo.Color.named}:
-  aqua:PROPERTY:[]:ESCAPED{aqua} : ESCAPED{Array}:
-  black:PROPERTY:[]:ESCAPED{black} : ESCAPED{Array}:
-  blue:PROPERTY:[]:ESCAPED{blue} : ESCAPED{Array}:
-  fuchsia:PROPERTY:[]:ESCAPED{fuchsia} : ESCAPED{Array}:
-  gray:PROPERTY:[]:ESCAPED{gray} : ESCAPED{Array}:
-  green:PROPERTY:[]:ESCAPED{green} : ESCAPED{Array}:
-  lime:PROPERTY:[]:ESCAPED{lime} : ESCAPED{Array}:
-  maroon:PROPERTY:[]:ESCAPED{maroon} : ESCAPED{Array}:
-  navy:PROPERTY:[]:ESCAPED{navy} : ESCAPED{Array}:
-  olive:PROPERTY:[]:ESCAPED{olive} : ESCAPED{Array}:
-  purple:PROPERTY:[]:ESCAPED{purple} : ESCAPED{Array}:
-  red:PROPERTY:[]:ESCAPED{red} : ESCAPED{Array}:
-  silver:PROPERTY:[]:ESCAPED{silver} : ESCAPED{Array}:
-  teal:PROPERTY:[]:ESCAPED{teal} : ESCAPED{Array}:
-  white:PROPERTY:[]:ESCAPED{white} : ESCAPED{Array}:
-  yellow:PROPERTY:[]:ESCAPED{yellow} : ESCAPED{Array}:
+  aqua:PROPERTY:[]:ESCAPED{aqua}:
+  black:PROPERTY:[]:ESCAPED{black}:
+  blue:PROPERTY:[]:ESCAPED{blue}:
+  fuchsia:PROPERTY:[]:ESCAPED{fuchsia}:
+  gray:PROPERTY:[]:ESCAPED{gray}:
+  green:PROPERTY:[]:ESCAPED{green}:
+  lime:PROPERTY:[]:ESCAPED{lime}:
+  maroon:PROPERTY:[]:ESCAPED{maroon}:
+  navy:PROPERTY:[]:ESCAPED{navy}:
+  olive:PROPERTY:[]:ESCAPED{olive}:
+  purple:PROPERTY:[]:ESCAPED{purple}:
+  red:PROPERTY:[]:ESCAPED{red}:
+  silver:PROPERTY:[]:ESCAPED{silver}:
+  teal:PROPERTY:[]:ESCAPED{teal}:
+  white:PROPERTY:[]:ESCAPED{white}:
+  yellow:PROPERTY:[]:ESCAPED{yellow}:
 dojo._event_listener:CLASS:[]:ESCAPED{dojo._event_listener}:
   _fixCallback:METHOD:[]:ESCAPED{_fixCallback}(PARAMETERS{ESCAPED{name}, ESCAPED{fp}}):
-  _fixCallback:METHOD:[]:ESCAPED{_fixCallback}(PARAMETERS{ESCAPED{fp}}) : ESCAPED{Function}:
+  _fixCallback:METHOD:[]:ESCAPED{_fixCallback}(PARAMETERS{ESCAPED{fp}}):
   _fixEvent:METHOD:[]:ESCAPED{_fixEvent}(PARAMETERS{ESCAPED{evt}, ESCAPED{sender}}):
   _normalizeEventName:METHOD:[]:ESCAPED{_normalizeEventName}(PARAMETERS{ESCAPED{name}}):
-  _setKeyChar:METHOD:[]:ESCAPED{_setKeyChar}(PARAMETERS{ESCAPED{evt}}) : ESCAPED{void}:
+  _setKeyChar:METHOD:[]:ESCAPED{_setKeyChar}(PARAMETERS{ESCAPED{evt}}):
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{node}, ESCAPED{name}, ESCAPED{fp}}):
-  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{node}, ESCAPED{event}, ESCAPED{handle}}) : ESCAPED{void}:
+  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{node}, ESCAPED{event}, ESCAPED{handle}}):
 dojo.keys:CLASS:[]:ESCAPED{dojo.keys}:
-  ALT:PROPERTY:[]:ESCAPED{ALT} : ESCAPED{Number}:
-  BACKSPACE:PROPERTY:[]:ESCAPED{BACKSPACE} : ESCAPED{Number}:
-  CAPS_LOCK:PROPERTY:[]:ESCAPED{CAPS_LOCK} : ESCAPED{Number}:
-  CLEAR:PROPERTY:[]:ESCAPED{CLEAR} : ESCAPED{Number}:
-  CTRL:PROPERTY:[]:ESCAPED{CTRL} : ESCAPED{Number}:
-  DELETE:PROPERTY:[]:ESCAPED{DELETE} : ESCAPED{Number}:
-  DOWN_ARROW:PROPERTY:[]:ESCAPED{DOWN_ARROW} : ESCAPED{Number}:
-  END:PROPERTY:[]:ESCAPED{END} : ESCAPED{Number}:
-  ENTER:PROPERTY:[]:ESCAPED{ENTER} : ESCAPED{Number}:
-  ESCAPE:PROPERTY:[]:ESCAPED{ESCAPE} : ESCAPED{Number}:
-  F1:PROPERTY:[]:ESCAPED{F1} : ESCAPED{Number}:
-  F10:PROPERTY:[]:ESCAPED{F10} : ESCAPED{Number}:
-  F11:PROPERTY:[]:ESCAPED{F11} : ESCAPED{Number}:
-  F12:PROPERTY:[]:ESCAPED{F12} : ESCAPED{Number}:
-  F13:PROPERTY:[]:ESCAPED{F13} : ESCAPED{Number}:
-  F14:PROPERTY:[]:ESCAPED{F14} : ESCAPED{Number}:
-  F15:PROPERTY:[]:ESCAPED{F15} : ESCAPED{Number}:
-  F2:PROPERTY:[]:ESCAPED{F2} : ESCAPED{Number}:
-  F3:PROPERTY:[]:ESCAPED{F3} : ESCAPED{Number}:
-  F4:PROPERTY:[]:ESCAPED{F4} : ESCAPED{Number}:
-  F5:PROPERTY:[]:ESCAPED{F5} : ESCAPED{Number}:
-  F6:PROPERTY:[]:ESCAPED{F6} : ESCAPED{Number}:
-  F7:PROPERTY:[]:ESCAPED{F7} : ESCAPED{Number}:
-  F8:PROPERTY:[]:ESCAPED{F8} : ESCAPED{Number}:
-  F9:PROPERTY:[]:ESCAPED{F9} : ESCAPED{Number}:
-  HELP:PROPERTY:[]:ESCAPED{HELP} : ESCAPED{Number}:
-  HOME:PROPERTY:[]:ESCAPED{HOME} : ESCAPED{Number}:
-  INSERT:PROPERTY:[]:ESCAPED{INSERT} : ESCAPED{Number}:
-  LEFT_ARROW:PROPERTY:[]:ESCAPED{LEFT_ARROW} : ESCAPED{Number}:
-  LEFT_WINDOW:PROPERTY:[]:ESCAPED{LEFT_WINDOW} : ESCAPED{Number}:
-  NUMPAD_0:PROPERTY:[]:ESCAPED{NUMPAD_0} : ESCAPED{Number}:
-  NUMPAD_1:PROPERTY:[]:ESCAPED{NUMPAD_1} : ESCAPED{Number}:
-  NUMPAD_2:PROPERTY:[]:ESCAPED{NUMPAD_2} : ESCAPED{Number}:
-  NUMPAD_3:PROPERTY:[]:ESCAPED{NUMPAD_3} : ESCAPED{Number}:
-  NUMPAD_4:PROPERTY:[]:ESCAPED{NUMPAD_4} : ESCAPED{Number}:
-  NUMPAD_5:PROPERTY:[]:ESCAPED{NUMPAD_5} : ESCAPED{Number}:
-  NUMPAD_6:PROPERTY:[]:ESCAPED{NUMPAD_6} : ESCAPED{Number}:
-  NUMPAD_7:PROPERTY:[]:ESCAPED{NUMPAD_7} : ESCAPED{Number}:
-  NUMPAD_8:PROPERTY:[]:ESCAPED{NUMPAD_8} : ESCAPED{Number}:
-  NUMPAD_9:PROPERTY:[]:ESCAPED{NUMPAD_9} : ESCAPED{Number}:
-  NUMPAD_DIVIDE:PROPERTY:[]:ESCAPED{NUMPAD_DIVIDE} : ESCAPED{Number}:
-  NUMPAD_ENTER:PROPERTY:[]:ESCAPED{NUMPAD_ENTER} : ESCAPED{Number}:
-  NUMPAD_MINUS:PROPERTY:[]:ESCAPED{NUMPAD_MINUS} : ESCAPED{Number}:
-  NUMPAD_MULTIPLY:PROPERTY:[]:ESCAPED{NUMPAD_MULTIPLY} : ESCAPED{Number}:
-  NUMPAD_PERIOD:PROPERTY:[]:ESCAPED{NUMPAD_PERIOD} : ESCAPED{Number}:
-  NUMPAD_PLUS:PROPERTY:[]:ESCAPED{NUMPAD_PLUS} : ESCAPED{Number}:
-  NUM_LOCK:PROPERTY:[]:ESCAPED{NUM_LOCK} : ESCAPED{Number}:
-  PAGE_DOWN:PROPERTY:[]:ESCAPED{PAGE_DOWN} : ESCAPED{Number}:
-  PAGE_UP:PROPERTY:[]:ESCAPED{PAGE_UP} : ESCAPED{Number}:
-  PAUSE:PROPERTY:[]:ESCAPED{PAUSE} : ESCAPED{Number}:
-  RIGHT_ARROW:PROPERTY:[]:ESCAPED{RIGHT_ARROW} : ESCAPED{Number}:
-  RIGHT_WINDOW:PROPERTY:[]:ESCAPED{RIGHT_WINDOW} : ESCAPED{Number}:
-  SCROLL_LOCK:PROPERTY:[]:ESCAPED{SCROLL_LOCK} : ESCAPED{Number}:
-  SELECT:PROPERTY:[]:ESCAPED{SELECT} : ESCAPED{Number}:
-  SHIFT:PROPERTY:[]:ESCAPED{SHIFT} : ESCAPED{Number}:
-  SPACE:PROPERTY:[]:ESCAPED{SPACE} : ESCAPED{Number}:
-  TAB:PROPERTY:[]:ESCAPED{TAB} : ESCAPED{Number}:
-  UP_ARROW:PROPERTY:[]:ESCAPED{UP_ARROW} : ESCAPED{Number}:
+  ALT:PROPERTY:[]:ESCAPED{ALT}:
+  BACKSPACE:PROPERTY:[]:ESCAPED{BACKSPACE}:
+  CAPS_LOCK:PROPERTY:[]:ESCAPED{CAPS_LOCK}:
+  CLEAR:PROPERTY:[]:ESCAPED{CLEAR}:
+  CTRL:PROPERTY:[]:ESCAPED{CTRL}:
+  DELETE:PROPERTY:[]:ESCAPED{DELETE}:
+  DOWN_ARROW:PROPERTY:[]:ESCAPED{DOWN_ARROW}:
+  END:PROPERTY:[]:ESCAPED{END}:
+  ENTER:PROPERTY:[]:ESCAPED{ENTER}:
+  ESCAPE:PROPERTY:[]:ESCAPED{ESCAPE}:
+  F1:PROPERTY:[]:ESCAPED{F1}:
+  F10:PROPERTY:[]:ESCAPED{F10}:
+  F11:PROPERTY:[]:ESCAPED{F11}:
+  F12:PROPERTY:[]:ESCAPED{F12}:
+  F13:PROPERTY:[]:ESCAPED{F13}:
+  F14:PROPERTY:[]:ESCAPED{F14}:
+  F15:PROPERTY:[]:ESCAPED{F15}:
+  F2:PROPERTY:[]:ESCAPED{F2}:
+  F3:PROPERTY:[]:ESCAPED{F3}:
+  F4:PROPERTY:[]:ESCAPED{F4}:
+  F5:PROPERTY:[]:ESCAPED{F5}:
+  F6:PROPERTY:[]:ESCAPED{F6}:
+  F7:PROPERTY:[]:ESCAPED{F7}:
+  F8:PROPERTY:[]:ESCAPED{F8}:
+  F9:PROPERTY:[]:ESCAPED{F9}:
+  HELP:PROPERTY:[]:ESCAPED{HELP}:
+  HOME:PROPERTY:[]:ESCAPED{HOME}:
+  INSERT:PROPERTY:[]:ESCAPED{INSERT}:
+  LEFT_ARROW:PROPERTY:[]:ESCAPED{LEFT_ARROW}:
+  LEFT_WINDOW:PROPERTY:[]:ESCAPED{LEFT_WINDOW}:
+  NUMPAD_0:PROPERTY:[]:ESCAPED{NUMPAD_0}:
+  NUMPAD_1:PROPERTY:[]:ESCAPED{NUMPAD_1}:
+  NUMPAD_2:PROPERTY:[]:ESCAPED{NUMPAD_2}:
+  NUMPAD_3:PROPERTY:[]:ESCAPED{NUMPAD_3}:
+  NUMPAD_4:PROPERTY:[]:ESCAPED{NUMPAD_4}:
+  NUMPAD_5:PROPERTY:[]:ESCAPED{NUMPAD_5}:
+  NUMPAD_6:PROPERTY:[]:ESCAPED{NUMPAD_6}:
+  NUMPAD_7:PROPERTY:[]:ESCAPED{NUMPAD_7}:
+  NUMPAD_8:PROPERTY:[]:ESCAPED{NUMPAD_8}:
+  NUMPAD_9:PROPERTY:[]:ESCAPED{NUMPAD_9}:
+  NUMPAD_DIVIDE:PROPERTY:[]:ESCAPED{NUMPAD_DIVIDE}:
+  NUMPAD_ENTER:PROPERTY:[]:ESCAPED{NUMPAD_ENTER}:
+  NUMPAD_MINUS:PROPERTY:[]:ESCAPED{NUMPAD_MINUS}:
+  NUMPAD_MULTIPLY:PROPERTY:[]:ESCAPED{NUMPAD_MULTIPLY}:
+  NUMPAD_PERIOD:PROPERTY:[]:ESCAPED{NUMPAD_PERIOD}:
+  NUMPAD_PLUS:PROPERTY:[]:ESCAPED{NUMPAD_PLUS}:
+  NUM_LOCK:PROPERTY:[]:ESCAPED{NUM_LOCK}:
+  PAGE_DOWN:PROPERTY:[]:ESCAPED{PAGE_DOWN}:
+  PAGE_UP:PROPERTY:[]:ESCAPED{PAGE_UP}:
+  PAUSE:PROPERTY:[]:ESCAPED{PAUSE}:
+  RIGHT_ARROW:PROPERTY:[]:ESCAPED{RIGHT_ARROW}:
+  RIGHT_WINDOW:PROPERTY:[]:ESCAPED{RIGHT_WINDOW}:
+  SCROLL_LOCK:PROPERTY:[]:ESCAPED{SCROLL_LOCK}:
+  SELECT:PROPERTY:[]:ESCAPED{SELECT}:
+  SHIFT:PROPERTY:[]:ESCAPED{SHIFT}:
+  SPACE:PROPERTY:[]:ESCAPED{SPACE}:
+  TAB:PROPERTY:[]:ESCAPED{TAB}:
+  UP_ARROW:PROPERTY:[]:ESCAPED{UP_ARROW}:
 dojo._ie_listener:CLASS:[]:ESCAPED{dojo._ie_listener}:
   add:METHOD:[]:ESCAPED{add}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{listener}}):
-  handlers:PROPERTY:[]:ESCAPED{handlers} : ESCAPED{Array}:
-  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}) : ESCAPED{void}:
+  handlers:PROPERTY:[]:ESCAPED{handlers}:
+  remove:METHOD:[]:ESCAPED{remove}(PARAMETERS{ESCAPED{source}, ESCAPED{method}, ESCAPED{handle}}):
 del:CLASS:[]:ESCAPED{del}:
   _synthesizeEvent:METHOD:[]:ESCAPED{_synthesizeEvent}(PARAMETERS{ESCAPED{evt}, ESCAPED{props}}):
 faux:CLASS:[]:ESCAPED{faux}:
-  preventDefault:METHOD:[]:ESCAPED{preventDefault} : ESCAPED{void}:
-  stopPropagation:METHOD:[]:ESCAPED{stopPropagation} : ESCAPED{void}:
+  preventDefault:METHOD:[]:ESCAPED{preventDefault}:
+  stopPropagation:METHOD:[]:ESCAPED{stopPropagation}:
 identifierMap:CLASS:[]:ESCAPED{identifierMap}:
-  Down:PROPERTY:[]:ESCAPED{Down} : ESCAPED{dk.DOWN_ARROW}:
-  Left:PROPERTY:[]:ESCAPED{Left} : ESCAPED{dk.LEFT_ARROW}:
-  PageDown:PROPERTY:[]:ESCAPED{PageDown} : ESCAPED{dk.PAGE_DOWN}:
-  PageUp:PROPERTY:[]:ESCAPED{PageUp} : ESCAPED{dk.PAGE_UP}:
-  Right:PROPERTY:[]:ESCAPED{Right} : ESCAPED{dk.RIGHT_ARROW}:
-  Up:PROPERTY:[]:ESCAPED{Up} : ESCAPED{dk.UP_ARROW}:
+  Down:PROPERTY:[]:ESCAPED{Down}:
+  Left:PROPERTY:[]:ESCAPED{Left}:
+  PageDown:PROPERTY:[]:ESCAPED{PageDown}:
+  PageUp:PROPERTY:[]:ESCAPED{PageUp}:
+  Right:PROPERTY:[]:ESCAPED{Right}:
+  Up:PROPERTY:[]:ESCAPED{Up}:
 _pixelNamesCache:CLASS:[]:ESCAPED{_pixelNamesCache}:
-  height:PROPERTY:[]:ESCAPED{height} : ESCAPED{Boolean}:
-  left:PROPERTY:[]:ESCAPED{left} : ESCAPED{Boolean}:
-  top:PROPERTY:[]:ESCAPED{top} : ESCAPED{Boolean}:
-  width:PROPERTY:[]:ESCAPED{width} : ESCAPED{Boolean}:
+  height:PROPERTY:[]:ESCAPED{height}:
+  left:PROPERTY:[]:ESCAPED{left}:
+  top:PROPERTY:[]:ESCAPED{top}:
+  width:PROPERTY:[]:ESCAPED{width}:
 _nilExtents:CLASS:[]:ESCAPED{_nilExtents}:
-  h:PROPERTY:[]:ESCAPED{h} : ESCAPED{Number}:
-  l:PROPERTY:[]:ESCAPED{l} : ESCAPED{Number}:
-  t:PROPERTY:[]:ESCAPED{t} : ESCAPED{Number}:
-  w:PROPERTY:[]:ESCAPED{w} : ESCAPED{Number}:
+  h:PROPERTY:[]:ESCAPED{h}:
+  l:PROPERTY:[]:ESCAPED{l}:
+  t:PROPERTY:[]:ESCAPED{t}:
+  w:PROPERTY:[]:ESCAPED{w}:
 ret:CLASS:[]:ESCAPED{ret}:
-  x:PROPERTY:[]:ESCAPED{x} : ESCAPED{Number}:
-  y:PROPERTY:[]:ESCAPED{y} : ESCAPED{Number}:
+  x:PROPERTY:[]:ESCAPED{x}:
+  y:PROPERTY:[]:ESCAPED{y}:
 dojo.NodeList:CLASS:[]:ESCAPED{dojo.NodeList}:
-  NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList} : ESCAPED{dojo.NodeList}:
+  NodeList:CONSTRUCTOR:[]:ESCAPED{NodeList}:
 currentPart:CLASS:[]:ESCAPED{currentPart}:
-  attrs:PROPERTY:[]:ESCAPED{attrs} : ESCAPED{Array}:
-  classes:PROPERTY:[]:ESCAPED{classes} : ESCAPED{Array}:
+  attrs:PROPERTY:[]:ESCAPED{attrs}:
+  classes:PROPERTY:[]:ESCAPED{classes}:
   id:PROPERTY:[]:ESCAPED{id}:
   oper:PROPERTY:[]:ESCAPED{oper}:
-  pseudos:PROPERTY:[]:ESCAPED{pseudos} : ESCAPED{Array}:
+  pseudos:PROPERTY:[]:ESCAPED{pseudos}:
   query:PROPERTY:[]:ESCAPED{query}:
   tag:PROPERTY:[]:ESCAPED{tag}:
 _cp:CLASS:[]:ESCAPED{_cp}:
@@ -297,18 +302,18 @@ xPathAttrs:CLASS:[]:ESCAPED{xPathAttrs}:
   |=:METHOD:[]:ESCAPED{|=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
   ~=:METHOD:[]:ESCAPED{~=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
 attrs:CLASS:[]:ESCAPED{attrs}:
-  $=:METHOD:[]:ESCAPED{$=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
-  *=:METHOD:[]:ESCAPED{*=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
-  =:METHOD:[]:ESCAPED{=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
-  ^=:METHOD:[]:ESCAPED{^=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
-  |=:METHOD:[]:ESCAPED{|=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
-  ~=:METHOD:[]:ESCAPED{~=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}) : ESCAPED{Function}:
+  $=:METHOD:[]:ESCAPED{$=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
+  *=:METHOD:[]:ESCAPED{*=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
+  =:METHOD:[]:ESCAPED{=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
+  ^=:METHOD:[]:ESCAPED{^=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
+  |=:METHOD:[]:ESCAPED{|=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
+  ~=:METHOD:[]:ESCAPED{~=}(PARAMETERS{ESCAPED{attr}, ESCAPED{value}}):
 pseudos:CLASS:[]:ESCAPED{pseudos}:
-  empty:METHOD:[]:ESCAPED{empty}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}) : ESCAPED{Function}:
-  first-child:METHOD:[]:ESCAPED{first-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}) : ESCAPED{Function}:
-  last-child:METHOD:[]:ESCAPED{last-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}) : ESCAPED{Function}:
-  not:METHOD:[]:ESCAPED{not}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}) : ESCAPED{Function}:
-  nth-child:METHOD:[]:ESCAPED{nth-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}) : ESCAPED{Function|void}:
+  empty:METHOD:[]:ESCAPED{empty}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
+  first-child:METHOD:[]:ESCAPED{first-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
+  last-child:METHOD:[]:ESCAPED{last-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
+  not:METHOD:[]:ESCAPED{not}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
+  nth-child:METHOD:[]:ESCAPED{nth-child}(PARAMETERS{ESCAPED{name}, ESCAPED{condition}}):
 _queryFuncCache:CLASS:[]:ESCAPED{_queryFuncCache}:
   *:PROPERTY:[]:ESCAPED{*}:
   >:METHOD:[]:ESCAPED{>}(PARAMETERS{ESCAPED{root}}):
@@ -316,18 +321,15 @@ dojo._contentHandlers:CLASS:[]:ESCAPED{dojo._contentHandlers}:
   javascript:METHOD:[]:ESCAPED{javascript}(PARAMETERS{ESCAPED{xhr}}):
   json:METHOD:[]:ESCAPED{json}(PARAMETERS{ESCAPED{xhr}}):
   json-comment-filtered:METHOD:[]:ESCAPED{json-comment-filtered}(PARAMETERS{ESCAPED{xhr}}):
-  text:METHOD:[]:ESCAPED{text}(PARAMETERS{ESCAPED{xhr}}) : ESCAPED{void}:
-  xml:METHOD:[]:ESCAPED{xml}(PARAMETERS{ESCAPED{xhr}}) : ESCAPED{void}:
+  text:METHOD:[]:ESCAPED{text}(PARAMETERS{ESCAPED{xhr}}):
+  xml:METHOD:[]:ESCAPED{xml}(PARAMETERS{ESCAPED{xhr}}):
 ioArgs:CLASS:[]:ESCAPED{ioArgs}:
   args:PROPERTY:[]:ESCAPED{args}:
   url:PROPERTY:[]:ESCAPED{url}:
 _d:CLASS:[]:ESCAPED{_d}:
-  _ioWatch:METHOD:[]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}) : ESCAPED{void}:
+  _ioWatch:METHOD:[]:ESCAPED{_ioWatch}(PARAMETERS{ESCAPED{dfd}, ESCAPED{validCheck}, ESCAPED{ioCheck}, ESCAPED{resHandle}}):
 runner:CLASS:[]:ESCAPED{runner}:
-  run:METHOD:[]:ESCAPED{run} : ESCAPED{void}:
+  run:METHOD:[]:ESCAPED{run}:
 dojo._Animation:CLASS:[]:ESCAPED{dojo._Animation}:
-  _startTimer:METHOD:[]:ESCAPED{_startTimer} : ESCAPED{void}:
-  _stopTimer:METHOD:[]:ESCAPED{_stopTimer} : ESCAPED{void}:
-PropLine:CLASS:[]:ESCAPED{PropLine}:
-  PropLine:CONSTRUCTOR:[]:ESCAPED{PropLine}(PARAMETERS{ESCAPED{properties}}) : ESCAPED{PropLine}:
-  getValue:METHOD:[]:ESCAPED{getValue}(PARAMETERS{ESCAPED{r}}):
+  _startTimer:METHOD:[]:ESCAPED{_startTimer}:
+  _stopTimer:METHOD:[]:ESCAPED{_stopTimer}:

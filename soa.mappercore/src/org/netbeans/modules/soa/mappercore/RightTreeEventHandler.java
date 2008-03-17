@@ -24,10 +24,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
-import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
@@ -129,34 +126,12 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
 
     public void mouseDragged(MouseEvent e) {
         if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
-            
             LeftTree leftTree = getLeftTree();
             LinkTool linkTool = getMapper().getLinkTool();
-            Transferable transferable = null;
-            Link link = null;
-            for (int i = initialTargetGraph.getLinkCount() - 1; i >= 0; i--) {
-                if (initialTargetGraph.getLink(i).getTarget() instanceof Graph) {
-                    link = initialTargetGraph.getLink(i);
-                }
-            }
-            if (link != null) {
-                if (link.getSource() instanceof TreeSourcePin) {
-                    TreeSourcePin source = (TreeSourcePin) link.getSource();
-                    transferable = linkTool.activateOutgoing(source, 
-                            link, initialPath);
-                }
-                if (link.getSource() instanceof Vertex) {
-                    Vertex vertex = (Vertex) link.getSource();
-                    transferable = linkTool.activateOutgoing(initialPath, vertex);
-                }
-                    
-            } else {
-                transferable = linkTool.activateIngoing(
+            Transferable transferable = linkTool.activateIngoing(
                     initialPath, initialTargetGraph, null);
-            }
-            if (transferable != null) {
-                startDrag(initialEvent, transferable, MOVE);
-            }
+
+            startDrag(initialEvent, transferable, MOVE);
             reset();
         }
     }

@@ -403,6 +403,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
 
                 public void run() {
                     final ClassMemberPanel cmp = ClassMemberPanel.getInstance();
+                    assert cmp != null : "Calling select on non activated (deactivated) NavigatorPanel!"; //NOI18N
                     if (cmp != null) {
                         cmp.selectElement(eh);
                     }                    

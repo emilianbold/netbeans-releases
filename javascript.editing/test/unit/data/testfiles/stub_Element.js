@@ -2,12 +2,12 @@
 * <p>This chapter provides a brief reference for the general methods, properties, and events available to most HTML and XML elements in the Gecko DOM.
 * </p><p>Various W3C specifications apply to elements:
 * </p>
-* <ul><li> <a href="http://www.w3.org/TR/DOM-Level-2-Core/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Core/">DOM Core Specification</a>Ñdescribes the core interfaces shared by most DOM objects in HTML and XML documents
-* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-HTML/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-HTML/">DOM HTML Specification</a>Ñdescribes interfaces for objects in HTML and XHTML documents that build on the core specification
-* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-Events/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/">DOM Events Specification</a>Ñdescribes events shared by most DOM objects, building on the DOM Core and <a href="http://www.w3.org/TR/DOM-Level-2-Views/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Views/">Views</a> specifications
+* <ul><li> <a href="http://www.w3.org/TR/DOM-Level-2-Core/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Core/">DOM Core Specification</a>â€”describes the core interfaces shared by most DOM objects in HTML and XML documents
+* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-HTML/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-HTML/">DOM HTML Specification</a>â€”describes interfaces for objects in HTML and XHTML documents that build on the core specification
+* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-Events/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/">DOM Events Specification</a>â€”describes events shared by most DOM objects, building on the DOM Core and <a href="http://www.w3.org/TR/DOM-Level-2-Views/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Views/">Views</a> specifications
 * </li></ul>
 * <p>The articles listed here span the above and include links to the appropriate W3C DOM specification.
-* </p><p>While these interfaces are generally shared by most HTML and XML elements, there are more specialized interfaces for particular objects listed in the DOM HTML SpecificationÑfor example the <a href="table" shape="rect" title="DOM:table">HTML Table Element</a> and <a href="form" shape="rect" title="DOM:form">HTML Form Element</a> interfaces.
+* </p><p>While these interfaces are generally shared by most HTML and XML elements, there are more specialized interfaces for particular objects listed in the DOM HTML Specificationâ€”for example the <a href="table" shape="rect" title="DOM:table">HTML Table Element</a> and <a href="form" shape="rect" title="DOM:form">HTML Form Element</a> interfaces.
 * </p>
 * 
 * <h2> <span> Properties </span></h2>
@@ -33,37 +33,37 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.className" shape="rect" title="DOM:element.className">className</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the class of the element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.clientHeight" shape="rect" title="DOM:element.clientHeight">clientHeight</a></code></td>
 * <td colspan="1" rowspan="1">The inner height of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.clientLeft" shape="rect" title="DOM:element.clientLeft">clientLeft</a></code></td>
 * <td colspan="1" rowspan="1">The width of the left border of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.clientTop" shape="rect" title="DOM:element.clientTop">clientTop</a></code></td>
 * <td colspan="1" rowspan="1">The width of the top border of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.clientWidth" shape="rect" title="DOM:element.clientWidth">clientWidth</a></code></td>
 * <td colspan="1" rowspan="1">The inner width of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.dir" shape="rect" title="DOM:element.dir">dir</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the directionality of the element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
 * </tr>
 * <tr>
@@ -75,19 +75,19 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.id" shape="rect" title="DOM:element.id">id</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the id of the element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.innerHTML" shape="rect" title="DOM:element.innerHTML">innerHTML</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the markup and content of the element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.lang" shape="rect" title="DOM:element.lang">lang</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the language of an element's attributes, text, and element contents.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
@@ -99,7 +99,7 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.localName" shape="rect" title="DOM:element.localName">localName</a></code></td>
 * <td colspan="1" rowspan="1">The local part of the qualified name of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
@@ -111,13 +111,13 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.name" shape="rect" title="DOM:element.name">name</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the name attribute of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.namespaceURI" shape="rect" title="DOM:element.namespaceURI">namespaceURI</a></code></td>
 * <td colspan="1" rowspan="1">The namespace URI of this node, or <code>null</code> if it is unspecified.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
@@ -129,31 +129,31 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.nodeName" shape="rect" title="DOM:element.nodeName">nodeName</a></code></td>
 * <td colspan="1" rowspan="1">The name of the node.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.nodeType" shape="rect" title="DOM:element.nodeType">nodeType</a></code></td>
 * <td colspan="1" rowspan="1">A number representing the type of the node. Is always equal to <code>1</code> for DOM elements.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.nodeValue" shape="rect" title="DOM:element.nodeValue">nodeValue</a></code></td>
 * <td colspan="1" rowspan="1">The value of the node. Is always equal to <code>null</code> for DOM elements.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.offsetHeight" shape="rect" title="DOM:element.offsetHeight">offsetHeight</a></code></td>
 * <td colspan="1" rowspan="1">The height of an element, relative to the layout.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.offsetLeft" shape="rect" title="DOM:element.offsetLeft">offsetLeft</a></code></td>
 * <td colspan="1" rowspan="1">The distance from this element's left border to its <code>offsetParent</code>'s left border.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
@@ -165,13 +165,13 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.offsetTop" shape="rect" title="DOM:element.offsetTop">offsetTop</a></code></td>
 * <td colspan="1" rowspan="1">The distance from this element's top border to its <code>offsetParent</code>'s top border.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.offsetWidth" shape="rect" title="DOM:element.offsetWidth">offsetWidth</a></code></td>
 * <td colspan="1" rowspan="1">The width of an element, relative to the layout.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
@@ -195,7 +195,7 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.prefix" shape="rect" title="DOM:element.prefix">prefix</a></code></td>
 * <td colspan="1" rowspan="1">The namespace prefix of the node, or <code>null</code> if no prefix is specified.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
@@ -207,25 +207,25 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.scrollHeight" shape="rect" title="DOM:element.scrollHeight">scrollHeight</a></code></td>
 * <td colspan="1" rowspan="1">The scroll view height of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.scrollLeft" shape="rect" title="DOM:element.scrollLeft">scrollLeft</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the left scroll offset of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.scrollTop" shape="rect" title="DOM:element.scrollTop">scrollTop</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the top scroll offset of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.scrollWidth" shape="rect" title="DOM:element.scrollWidth">scrollWidth</a></code></td>
 * <td colspan="1" rowspan="1">The scroll view width of an element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
@@ -237,19 +237,19 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.tabIndex" shape="rect" title="DOM:element.tabIndex">tabIndex</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the position of the element in the tabbing order.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.tagName" shape="rect" title="DOM:element.tagName">tagName</a></code></td>
 * <td colspan="1" rowspan="1">The name of the tag for the given element.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.textContent" shape="rect" title="DOM:element.textContent">textContent</a></code></td>
 * <td colspan="1" rowspan="1">Gets/sets the textual contents of an element and all its descendants.</td>
-* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * </table>
@@ -261,7 +261,7 @@
 * <th colspan="1" rowspan="1">Availability</th>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="DOM:element.addEventListener" shape="rect" title="DOM:element.addEventListener">addEventListener</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">listener</a>, <a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="DOM:element.addEventListener" shape="rect" title="DOM:element.addEventListener">addEventListener</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">listener</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
 * Register an event handler to a specific event type on the element.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="event" shape="rect" title="DOM:event">All</a></small></td>
@@ -285,7 +285,7 @@
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.cloneNode" shape="rect" title="DOM:element.cloneNode">cloneNode</a>( <a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">deep</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.cloneNode" shape="rect" title="DOM:element.cloneNode">cloneNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">deep</a> )</code>
 * Clone a node, and optionally, all of its contents.</td>
 * <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
@@ -293,7 +293,7 @@
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.dispatchEvent" shape="rect" title="DOM:element.dispatchEvent">dispatchEvent</a>( <a href="event" shape="rect" title="DOM:event">event</a> )</code>
 * Dispatch an event to this node in the DOM.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
@@ -303,25 +303,25 @@
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getAttribute" shape="rect" title="DOM:element.getAttribute">getAttribute</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttribute" shape="rect" title="DOM:element.getAttribute">getAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve the value of the named attribute from the current node.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNS" shape="rect" title="DOM:element.getAttributeNS">getAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNS" shape="rect" title="DOM:element.getAttributeNS">getAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve the value of the attribute with the specified name and namespace, from the current node.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNode" shape="rect" title="DOM:element.getAttributeNode">getAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNode" shape="rect" title="DOM:element.getAttributeNode">getAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve the node representation of the named attribute from the current node.</td>
 * <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">Attr</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNodeNS" shape="rect" title="DOM:element.getAttributeNodeNS">getAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNodeNS" shape="rect" title="DOM:element.getAttributeNodeNS">getAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve the node representation of the attribute with the specified name and namespace, from the current node.</td>
 * <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">Attr</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
@@ -332,39 +332,39 @@
 * <th colspan="1" rowspan="1">Availability</th>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagName" shape="rect" title="DOM:element.getElementsByTagName">getElementsByTagName</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagName" shape="rect" title="DOM:element.getElementsByTagName">getElementsByTagName</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve a set of all descendant elements, of a particular tag name, from the current element.</td>
 * <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=NodeSet&amp;action=edit" shape="rect" title="DOM:NodeSet">NodeSet</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagNameNS" shape="rect" title="DOM:element.getElementsByTagNameNS">getElementsByTagNameNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagNameNS" shape="rect" title="DOM:element.getElementsByTagNameNS">getElementsByTagNameNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Retrieve a set of all descendant elements, of a particular tag name and namespace, from the current element.</td>
 * <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=NodeSet&amp;action=edit" shape="rect" title="DOM:NodeSet">NodeSet</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.hasAttribute" shape="rect" title="DOM:element.hasAttribute">hasAttribute</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.hasAttribute" shape="rect" title="DOM:element.hasAttribute">hasAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Check if the element has the specified attribute, or not.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.hasAttributeNS" shape="rect" title="DOM:element.hasAttributeNS">hasAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.hasAttributeNS" shape="rect" title="DOM:element.hasAttributeNS">hasAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Check if the element has the specified attribute, in the specified namespace, or not.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.hasAttributes" shape="rect" title="DOM:element.hasAttributes">hasAttributes</a>()</code>
 * Check if the element has any attributes, or not.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
 * <td colspan="1" rowspan="1"><code><a href="element.hasChildNodes" shape="rect" title="DOM:element.hasChildNodes">hasChildNodes</a>()</code>
 * Check if the element has any child nodes, or not.</td>
-* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
@@ -380,13 +380,13 @@
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.removeAttribute" shape="rect" title="DOM:element.removeAttribute">removeAttribute</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttribute" shape="rect" title="DOM:element.removeAttribute">removeAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Remove the named attribute from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNS" shape="rect" title="DOM:element.removeAttributeNS">removeAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNS" shape="rect" title="DOM:element.removeAttributeNS">removeAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Remove the attribute with the specified name and namespace, from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
@@ -397,7 +397,7 @@
 * <th colspan="1" rowspan="1">Availability</th>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNode" shape="rect" title="DOM:element.removeAttributeNode">removeAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNode" shape="rect" title="DOM:element.removeAttributeNode">removeAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
 * Remove the node representation of the named attribute from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
@@ -409,7 +409,7 @@
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.removeEventListener" shape="rect" title="DOM:element.removeEventListener">removeEventListener</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">handler</a>, <a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.removeEventListener" shape="rect" title="DOM:element.removeEventListener">removeEventListener</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">handler</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
 * Removes an event listener from the element.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="event" shape="rect" title="DOM:event">All</a></small></td>
@@ -421,31 +421,31 @@
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.scrollIntoView" shape="rect" title="DOM:element.scrollIntoView">scrollIntoView</a>( <a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">alignWithTop</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollIntoView" shape="rect" title="DOM:element.scrollIntoView">scrollIntoView</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">alignWithTop</a> )</code>
 * Scrolls the page until the element gets into the view.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.setAttribute" shape="rect" title="DOM:element.setAttribute">setAttribute</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttribute" shape="rect" title="DOM:element.setAttribute">setAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
 * Set the value of the named attribute from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNS" shape="rect" title="DOM:element.setAttributeNS">setAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNS" shape="rect" title="DOM:element.setAttributeNS">setAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
 * Set the value of the attribute with the specified name and namespace, from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNode" shape="rect" title="DOM:element.setAttributeNode">setAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNode" shape="rect" title="DOM:element.setAttributeNode">setAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
 * Set the node representation of the named attribute from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
 * </tr>
 * <tr>
-* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNodeNS" shape="rect" title="DOM:element.setAttributeNodeNS">setAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNodeNS" shape="rect" title="DOM:element.setAttributeNodeNS">setAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
 * Set the node representation of the attribute with the specified name and namespace, from the current node.</td>
 * <td colspan="1" rowspan="1">-</td>
 * <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
@@ -526,7 +526,7 @@
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-var Element = Object.extend(new Node(), {
+var Element = {
   // This is just a stub for a builtin native JavaScript object.
 /**
 * <h2> <span> Summary </span></h2>
@@ -535,9 +535,9 @@ var Element = Object.extend(new Node(), {
 * <h2> <span> Syntax </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve"><i>target</i>.addEventListener(<i>type</i>, <i>listener</i>, <i>useCapture</i>);
 * </pre>
-* <dl><dt style="font-weight:bold"> typeÊ</dt><dd> A string representing the event type to listen for.
-* </dd><dt style="font-weight:bold"> listenerÊ</dt><dd> The object that receives a notification when an event of the specified type occurs. This must be an object implementing the <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener"><code>EventListener</code></a> interface, or simply a JavaScript <a href="http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Guide:Functions" shape="rect" title="Core JavaScript 1.5 Guide:Functions">function</a>.
-* </dd><dt style="font-weight:bold"> useCaptureÊ</dt><dd> If <code>true</code>, <code>useCapture</code> indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered <code>listener</code> before being dispatched to any <code>EventTarget</code>s beneath it in the DOM tree. Events which are bubbling upward through the tree will not trigger a listener designated to use capture. See <a href="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow">DOM Level 3 Events</a> for a detailed explanation.
+* <dl><dt style="font-weight:bold"> typeÂ </dt><dd> A string representing the event type to listen for.
+* </dd><dt style="font-weight:bold"> listenerÂ </dt><dd> The object that receives a notification when an event of the specified type occurs. This must be an object implementing the <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener"><code>EventListener</code></a> interface, or simply a JavaScript <a href="http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Guide:Functions" shape="rect" title="Core JavaScript 1.5 Guide:Functions">function</a>.
+* </dd><dt style="font-weight:bold"> useCaptureÂ </dt><dd> If <code>true</code>, <code>useCapture</code> indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered <code>listener</code> before being dispatched to any <code>EventTarget</code>s beneath it in the DOM tree. Events which are bubbling upward through the tree will not trigger a listener designated to use capture. See <a href="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-3-Events/events.html#Events-flow">DOM Level 3 Events</a> for a detailed explanation.
 * </dd></dl>
 * <h2> <span> Example </span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
@@ -591,7 +591,7 @@ var Element = Object.extend(new Node(), {
 * <p>If multiple identical <code>EventListener</code>s are registered on the same <code>EventTarget</code> with the same parameters, the duplicate instances are discarded. They do not cause the <code>EventListener</code> to be called twice, and since the duplicates are discarded, they do not need to be removed manually with the <a href="element.removeEventListener" shape="rect" title="DOM:element.removeEventListener">removeEventListener</a> method.
 * </p>
 * <h3> <span> The value of <code>this</code> </span></h3>
-* <p>Attaching a function using <code>addEventListener()</code> changes the value of <code>this</code>Ñnote that the value of <code>this</code> is passed to a function from the caller.
+* <p>Attaching a function using <code>addEventListener()</code> changes the value of <code>this</code>â€”note that the value of <code>this</code> is passed to a function from the caller.
 * </p><p>In the example above, the value of <code>this</code> within <code>modifyText()</code> when called from the onclick event is a reference to the table 't'.  If the onclick handler is added in the HTML source:
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
@@ -615,7 +615,7 @@ var Element = Object.extend(new Node(), {
 * <p><code>addEventListener()</code> was introduced with the DOM 2 <a href="http://www.w3.org/TR/DOM-Level-2-Events" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events">Events</a> specification. Before then, events were attached as follows:
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
-* // Using a function referenceÑnote lack of '()'
+* // Using a function referenceâ€”note lack of '()'
 * el.onclick = modifyText;
 * 
 * // Using a function expression
@@ -624,7 +624,7 @@ var Element = Object.extend(new Node(), {
 * };
 * </pre>
 * <p>This method replaces the existing <code>onclick</code> event handler(s) on the element if there are any.  Similarly for other 'on' events such as <code>onblur</code>, <code>onkeypress</code>, and so on.
-* </p><p>Because it was essentially part of DOM 0, this method is very widely supported and requires no special crossÐbrowser code; hence it is normally used to attach events dynamically unless the extra features of <code>addEventListener()</code> are needed.
+* </p><p>Because it was essentially part of DOM 0, this method is very widely supported and requires no special crossâ€“browser code; hence it is normally used to attach events dynamically unless the extra features of <code>addEventListener()</code> are needed.
 * </p>
 * <h2> <span> Specification </span></h2>
 * <p><a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget-addEventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget-addEventListener">DOM Level 2 Events: addEventListener</a>
@@ -857,8 +857,8 @@ className: undefined,
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">element.click()
 * </pre>
 * <h2> <span>Notes </span></h2>
-* <p>The click method is intended to be used with INPUT elements of type button, checkbox, radio, reset or submit.  Gecko does not implement the click method on other elements that might be expected to respond to mouseÐclicks such as links (A elements), nor will it necessarily fire the click event of other elements.
-* </p><p>NonÐGecko DOMs may behave differently.
+* <p>The click method is intended to be used with INPUT elements of type button, checkbox, radio, reset or submit.  Gecko does not implement the click method on other elements that might be expected to respond to mouseâ€“clicks such as links (A elements), nor will it necessarily fire the click event of other elements.
+* </p><p>Nonâ€“Gecko DOMs may behave differently.
 * </p><p>When a click is used with elements that support it (e.g. one of the INPUT types listed above), it also fires the element's click event which will bubble up to elements higher up the document tree (or event chain) and fire their click events too.  However, bubbling of a click event will not cause an A element to initiate navigation as if a real mouse-click had been received.
 * </p>
 * <h2> <span>Specification </span></h2>
@@ -882,7 +882,7 @@ click: function() {
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var <var>h</var> = <var>element</var>.clientHeight;
 * </pre>
 * <p><var>h</var> is an integer representing the <code>clientHeight</code> of <var>element</var> in pixels.
-* </p><p><code>clientHeight</code> is readÐonly.
+* </p><p><code>clientHeight</code> is readâ€“only.
 * </p>
 * <h2> <span> Example </span></h2>
 * <div id="offsetContainer" style="margin: 26px 0px; background-color: rgb(255, 255, 204); border: 4px dashed black; color: black; position: absolute; left: 260px;"><div id="idDiv" style="margin: 24px 29px; border: 24px black solid; padding: 0px 28px; width: 199px; height: 102px; overflow: auto; background-color: white; font-size: 13px!important; font-family: Arial, sans-serif;"><p id="PaddingTopLabel" style="text-align: center; font-style: italic; font-weight: bold; font-size: 13px!important; font-family: Arial, sans-serif; margin: 0px;">padding-top</p>
@@ -918,7 +918,7 @@ clientHeight: undefined,
 * <div style="border: 1px solid #818151; background-color: #FFFFE1; font-weight: bold; text-align: center; padding: 0px 10px 0px 10px; margin: 10px 0px 10px 0px;"><p style="margin: 4px 0px 4px 0px;">This article covers features introduced in <a href="http://developer.mozilla.org/en/docs/Firefox_3_for_developers" shape="rect" title="Firefox 3 for developers">Firefox 3</a></p></div>
 * 
 * <h2> <span>Summary</span></h2>
-* <p>The width of the left border of an element in pixels. It includes the width of the vertical scrollbar if the text direction of the element is rightÐtoÐleft and if there is an overflow causing a left vertical scrollbar to be rendered. <code>clientLeft</code> does not include the left margin or the left padding. <code>clientLeft</code> is read-only.
+* <p>The width of the left border of an element in pixels. It includes the width of the vertical scrollbar if the text direction of the element is rightâ€“toâ€“left and if there is an overflow causing a left vertical scrollbar to be rendered. <code>clientLeft</code> does not include the left margin or the left padding. <code>clientLeft</code> is read-only.
 * </p><p><a href="http://developer.mozilla.org/en/docs/Gecko" shape="rect" title="Gecko">Gecko</a>-based applications support <code>clientLeft</code> starting with Gecko 1.9 (<a href="http://developer.mozilla.org/en/docs/Firefox_3" shape="rect" title="Firefox 3">Firefox 3</a>, implemented in <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=111207" rel="nofollow" shape="rect" title="https://bugzilla.mozilla.org/show_bug.cgi?id=111207">bug 111207</a>). This property is not supported in Firefox 2 and earlier.
 * </p>
 * <h2> <span>Syntax</span></h2>
@@ -938,7 +938,7 @@ clientHeight: undefined,
 * </p>
 * <h2> <span>Notes</span></h2>
 * <p><code>clientLeft</code> was first introduced in the MS IE DHTML object model.
-* </p><p>The position of the vertical scrollbar in rightÐtoÐleft text direction set on the element will depend on the <a href="http://kb.mozillazine.org/Layout.scrollbar.side" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/Layout.scrollbar.side"><i>layout.scrollbar.side</i> preference</a>
+* </p><p>The position of the vertical scrollbar in rightâ€“toâ€“left text direction set on the element will depend on the <a href="http://kb.mozillazine.org/Layout.scrollbar.side" rel="nofollow" shape="rect" title="http://kb.mozillazine.org/Layout.scrollbar.side"><i>layout.scrollbar.side</i> preference</a>
 * </p>
 * <h2> <span>References</span></h2>
 * <ul><li> <a href="http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/clientleft.asp?frame=true" rel="nofollow" shape="rect" title="http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/clientleft.asp?frame=true">MSDN's clientLeft definition</a>
@@ -992,7 +992,7 @@ clientTop: undefined,
 * <h2> <span>Syntax and values</span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var <var>intElemClientWidth</var> = <var>element</var>.clientWidth;
 * </pre>
-* <p><var>intElemClientWidth</var> is an integer corresponding to the <b>clientWidth</b> of <var>element</var> in pixels.  <b>clientWidth</b> is readÐonly.
+* <p><var>intElemClientWidth</var> is an integer corresponding to the <b>clientWidth</b> of <var>element</var> in pixels.  <b>clientWidth</b> is readâ€“only.
 * </p><p>
 * </p>
 * <h2> <span>Example</span></h2>
@@ -1105,7 +1105,7 @@ dir: undefined,
 * evt.<a href="event.initMouseEvent" shape="rect" title="DOM:event.initMouseEvent">initMouseEvent</a>("click", true, true, window,
 * 0, 0, 0, 0, 0, false, false, false, false, 0, null);
 * var cb = document.getElementById("checkbox");
-* var canceled =Ê!cb.<strong>dispatchEvent</strong>(evt);
+* var canceled =Â !cb.<strong>dispatchEvent</strong>(evt);
 * if(canceled) {
 * // A handler called preventDefault
 * alert("canceled");
@@ -1340,7 +1340,7 @@ getAttribute: function(attributeName) {
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-getAttributeNS: function(namespace, name) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+getAttributeNS: function(namespace, name) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1468,7 +1468,7 @@ getAttributeNode: function(attrName) { // COMPAT=IE6|IE7|FF1|FF2|FF3|OPERA|SAFAR
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-getAttributeNodeNS: function(namespace, nodeName) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+getAttributeNodeNS: function(namespace, nodeName) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1503,7 +1503,7 @@ getAttributeNodeNS: function(namespace, nodeName) { // COMPAT=IE7|FF1|FF2|FF3|OP
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-getBoundingClientRect: function() { // COMPAT=FF3
+getBoundingClientRect: function() {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1543,7 +1543,7 @@ getBoundingClientRect: function() { // COMPAT=FF3
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-getClientRects: function() { // COMPAT=FF3
+getClientRects: function() {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1625,7 +1625,7 @@ getElementsByTagName: function(tagName) {
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-getElementsByTagNameNS: function(namespaceURI, localName) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+getElementsByTagNameNS: function(namespaceURI, localName) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1759,7 +1759,7 @@ hasAttribute: function(attName) { // COMPAT=FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KO
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-hasAttributeNS: function(namespace, localName) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+hasAttributeNS: function(namespace, localName) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -1791,7 +1791,7 @@ hasAttributes: function() { // COMPAT=FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
 },
 /**
 * <h2> <span>Summary</span></h2>
-* <p><b>hasChildNodes</b> returns a <a href="http://developer.mozilla.org/en/docs/Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a> value indicating whether the current <a href="element" shape="rect" title="DOM:element">element</a> has <a href="element.childNodes" shape="rect" title="DOM:element.childNodes">child nodes</a> or not.
+* <p><b>hasChildNodes</b> returns a <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a> value indicating whether the current <a href="element" shape="rect" title="DOM:element">element</a> has <a href="element.childNodes" shape="rect" title="DOM:element.childNodes">child nodes</a> or not.
 * </p>
 * <h2> <span>Syntax </span></h2>
 * <p><code>result</code> = element.hasChildNodes()
@@ -1806,7 +1806,7 @@ hasAttributes: function() { // COMPAT=FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
 * }
 * </pre>
 * <div>
-* <p>Note that <code>element.hasChildNodes</code>, without the parenthesises, will return the hasChildNodes <a href="http://developer.mozilla.org/en/docs/Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">Function</a>, and not a Boolean.
+* <p>Note that <code>element.hasChildNodes</code>, without the parenthesises, will return the hasChildNodes <a href="http://developer.mozilla.org/en/docs/Global_Objects:Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">Function</a>, and not a Boolean.
 * </p>
 * </div>
 * <h2> <span>Specification </span></h2>
@@ -1875,7 +1875,7 @@ id: undefined,
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">document.body.innerHTML = "";  // Replaces body content with an empty string.
 * </pre>
-* <p>The innerHTML property of many types of elementsÑincluding BODY or HTMLÑcan be returned or replaced.  It can be used to view the source of a page that has been modified dynamically:
+* <p>The innerHTML property of many types of elementsâ€”including BODY or HTMLâ€”can be returned or replaced.  It can be used to view the source of a page that has been modified dynamically:
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
 * // Copy and paste into address bar as a single line
@@ -1883,7 +1883,7 @@ id: undefined,
 * 
 * </pre>
 * <p>As there is no public specification for this property, implementations differ widely.  For example, when text is entered into a text input, IE will change the value attribute of the input's innerHTML property but Gecko browsers do not.
-* </p><p>It should never be used to write parts of a tableÑW3C DOM methods should be used for thatÑthough it can be used to write an entire table or the contents of a cell.
+* </p><p>It should never be used to write parts of a tableâ€”W3C DOM methods should be used for thatâ€”though it can be used to write an entire table or the contents of a cell.
 * </p>
 * <h2> <span>Specification</span></h2>
 * <p>DOM Level 0. Not part of any standard.
@@ -1954,7 +1954,7 @@ innerHTML: undefined,
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">parentDiv.insertBefore(sp1, sp2.nextSibling);
 * </pre>
-* <p>If <code>sp2</code> does not have a next sibling it must be the last childÑ<code>sp2.nextSibling</code> will return <code>null</code> so <code>sp1</code> will be inserted at the end of the child nodes list (i.e. immediately after <code>sp2</code>).
+* <p>If <code>sp2</code> does not have a next sibling it must be the last childâ€”<code>sp2.nextSibling</code> will return <code>null</code> so <code>sp1</code> will be inserted at the end of the child nodes list (i.e. immediately after <code>sp2</code>).
 * </p>
 * <h2> <span> Specification </span></h2>
 * <p><a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-952280727" rel="nofollow" shape="rect" title="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-952280727">insertBefore </a>
@@ -2433,7 +2433,7 @@ nodeName: undefined,
 * <p>This example checks if the first node inside the document element is a comment node, and if it is not, displays a message.
 * </p>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var node = document.documentElement.firstChild;
-* if(node.nodeTypeÊ!= Node.COMMENT_NODE)
+* if(node.nodeTypeÂ != Node.COMMENT_NODE)
 * alert("You should comment your code well!");
 * </pre>
 * <h2> <span> Specification </span></h2>
@@ -2828,7 +2828,7 @@ onblur: undefined,
 * }
 * 
 * function blur () {
-* if (control.valueÊ!= original_value)
+* if (control.valueÂ != original_value)
 * control.onchange();
 * }
 * </pre>
@@ -3484,7 +3484,7 @@ removeAttribute: function(attrName) {
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-removeAttributeNS: function(namespace, attrName) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+removeAttributeNS: function(namespace, attrName) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -3607,9 +3607,9 @@ removeChild: function(child) {
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">element.removeEventListener(<i>type</i>, <i>listener</i>, <i>useCapture</i>)
 * </pre>
 * <h2> <span>Parameters </span></h2>
-* <dl><dt style="font-weight:bold"><code>type</code>Ê</dt><dd> A string representing the event type being registered.
-* </dd><dt style="font-weight:bold"><code>listener</code>Ê</dt><dd> The listener parameter takes an interface implemented by the user which contains the methods to be called when the event occurs.
-* </dd><dt style="font-weight:bold"><code>useCapture</code>Ê</dt><dd> If true, useCapture indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered EventListener before being dispatched to any EventTargets beneath them in the tree. Events which are bubbling upward through the tree will not trigger an EventListener designated to use capture.
+* <dl><dt style="font-weight:bold"><code>type</code>Â </dt><dd> A string representing the event type being registered.
+* </dd><dt style="font-weight:bold"><code>listener</code>Â </dt><dd> The listener parameter takes an interface implemented by the user which contains the methods to be called when the event occurs.
+* </dd><dt style="font-weight:bold"><code>useCapture</code>Â </dt><dd> If true, useCapture indicates that the user wishes to initiate capture. After initiating capture, all events of the specified type will be dispatched to the registered EventListener before being dispatched to any EventTargets beneath them in the tree. Events which are bubbling upward through the tree will not trigger an EventListener designated to use capture.
 * </dd></dl>
 * <h2> <span>Notes </span></h2>
 * <p>If an EventListener is removed from an EventTarget while it is processing an event, it will not be triggered by the current actions. EventListeners can never be invoked after being removed.
@@ -3680,11 +3680,6 @@ removeEventListener: function(type, listener, useCapture) {
 replaceChild: function(newChild, oldChild) {
   // This is just a stub for a builtin native JavaScript object.
 },
-/**
- * The type information associated with this element.
- * @type TypeInfo
- */
-schemaTypeInfo: undefined, // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
 /**
 * <h2> <span>scrollHeight</span></h2>
 * <p><abbr title="Dynamic HyperText Markup Language">DHTML</abbr> property that gets the height of the scroll view of an element; it includes the element padding but <b>not</b> its margin.
@@ -3891,7 +3886,7 @@ scrollLeft: undefined,
 scrollTop: undefined,
 /**
 * <h2> <span>Summary</span></h2>
-* <p><b>scrollWidth</b> is a readÐonly property that returns either the width in pixels of the content of an element or the width of the element itself, whichever is greater.
+* <p><b>scrollWidth</b> is a readâ€“only property that returns either the width in pixels of the content of an element or the width of the element itself, whichever is greater.
 * </p>
 * <h2> <span>Syntax and values</span></h2>
 * <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">var <var>xScrollWidth</var> = <var>element</var>.scrollWidth;
@@ -4044,7 +4039,7 @@ setAttribute: function(name, value) {
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-setAttributeNS: function(namespace, name, value) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+setAttributeNS: function(namespace, name, value) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -4185,51 +4180,7 @@ setAttributeNode: function(attribute) { // COMPAT=IE6|IE7|FF1|FF2|FF3|OPERA|SAFA
 * <ul style="list-style-type:none;font-size:0.9em;text-align:center">
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
-setAttributeNodeNS: function(attributeNode) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
-  // This is just a stub for a builtin native JavaScript object.
-},
-/**
- * If the parameter isId is true , this method declares the specified attribute to
- * be a user-determined ID attribute . This affects the value of Attr.isId and the
- * behavior of Document.getElementById ,
- * but does not change any schema that may be in use, in particular
- * this does not affect the Attr.schemaTypeInfo of the specified Attr node. Use the value false for the parameter isId to undeclare
- * an attribute for being a user-determined ID attribute . To specify an attribute by local name and namespace URI, use the setIdAttributeNS method.
- * @param {String} name of type DOMString The name of the attribute.
- * @param {Boolean} isId of type boolean Whether the attribute is a of type ID.
- * @type name
- */
-setIdAttribute: function(name, isId) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
-  // This is just a stub for a builtin native JavaScript object.
-},
-/**
- * If the parameter isId is true , this method declares the specified attribute to
- * be a user-determined ID attribute . This affects the value of Attr.isId and the
- * behavior of Document.getElementById ,
- * but does not change any schema that may be in use, in particular
- * this does not affect the Attr.schemaTypeInfo of the specified Attr node. Use the value false for the parameter isId to undeclare
- * an attribute for being a user-determined ID attribute .
- * @param {String} namespaceURI of type DOMString The namespace URI of the attribute.
- * @param {String} localName of type DOMString The local name of the
- * attribute.
- * @param {Boolean} isId of type boolean Whether the attribute is a of type ID.
- * @type namespaceURI
- */
-setIdAttributeNS: function(namespaceURI, localName, isId) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
-  // This is just a stub for a builtin native JavaScript object.
-},
-/**
- * If the parameter isId is true , this method declares the specified attribute to
- * be a user-determined ID attribute . This affects the value of Attr.isId and the
- * behavior of Document.getElementById ,
- * but does not change any schema that may be in use, in particular
- * this does not affect the Attr.schemaTypeInfo of the specified Attr node. Use the value false for the parameter isId to undeclare
- * an attribute for being a user-determined ID attribute .
- * @param {Attr} idAttr of type Attr The attribute node.
- * @param {Boolean} isId of type boolean Whether the attribute is a of type ID.
- * @type idAttr
- */
-setIdAttributeNode: function(idAttr, isId) { // COMPAT=IE7|FF1|FF2|FF3|OPERA|SAFARI2|SAFARI3|KONQ
+setAttributeNodeNS: function(attributeNode) {
   // This is just a stub for a builtin native JavaScript object.
 },
 /**
@@ -4367,5 +4318,534 @@ tagName: undefined,
 * <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
 */
 textContent: undefined,
-});
+};
 
+/**
+* <p>This chapter provides a brief reference for the general methods, properties, and events available to most HTML and XML elements in the Gecko DOM.
+* </p><p>Various W3C specifications apply to elements:
+* </p>
+* <ul><li> <a href="http://www.w3.org/TR/DOM-Level-2-Core/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Core/">DOM Core Specification</a>â€”describes the core interfaces shared by most DOM objects in HTML and XML documents
+* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-HTML/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-HTML/">DOM HTML Specification</a>â€”describes interfaces for objects in HTML and XHTML documents that build on the core specification
+* </li><li> <a href="http://www.w3.org/TR/DOM-Level-2-Events/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/">DOM Events Specification</a>â€”describes events shared by most DOM objects, building on the DOM Core and <a href="http://www.w3.org/TR/DOM-Level-2-Views/" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Views/">Views</a> specifications
+* </li></ul>
+* <p>The articles listed here span the above and include links to the appropriate W3C DOM specification.
+* </p><p>While these interfaces are generally shared by most HTML and XML elements, there are more specialized interfaces for particular objects listed in the DOM HTML Specificationâ€”for example the <a href="table" shape="rect" title="DOM:table">HTML Table Element</a> and <a href="form" shape="rect" title="DOM:form">HTML Form Element</a> interfaces.
+* </p>
+* 
+* <h2> <span> Properties </span></h2>
+* <table border="1" style="background:#FFFFFF none repeat scroll 0%;border: 1px solid #666666;margin-bottom:10px;margin-top:10px" width="100%">
+* <tr>
+* <th colspan="1" rowspan="1">Name</th>
+* <th colspan="1" rowspan="1">Description</th>
+* <th colspan="1" rowspan="1">Type</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="DOM:element.attributes" shape="rect" title="DOM:element.attributes">attributes</a></code></td>
+* <td colspan="1" rowspan="1">All attributes associated with an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/index.php?title=NamedNodeMap&amp;action=edit" shape="rect" title="DOM:NamedNodeMap">NamedNodeMap</a><a href="http://www.xulplanet.com/references/objref/NamedNodeMap.html" rel="nofollow" shape="rect" title="http://www.xulplanet.com/references/objref/NamedNodeMap.html">[1]</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.childNodes" shape="rect" title="DOM:element.childNodes">childNodes</a></code></td>
+* <td colspan="1" rowspan="1">All child nodes of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/index.php?title=NodeList&amp;action=edit" shape="rect" title="DOM:NodeList">NodeList</a><a href="http://www.xulplanet.com/references/objref/NodeList.html" rel="nofollow" shape="rect" title="http://www.xulplanet.com/references/objref/NodeList.html">[2]</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.className" shape="rect" title="DOM:element.className">className</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the class of the element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.clientHeight" shape="rect" title="DOM:element.clientHeight">clientHeight</a></code></td>
+* <td colspan="1" rowspan="1">The inner height of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.clientLeft" shape="rect" title="DOM:element.clientLeft">clientLeft</a></code></td>
+* <td colspan="1" rowspan="1">The width of the left border of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.clientTop" shape="rect" title="DOM:element.clientTop">clientTop</a></code></td>
+* <td colspan="1" rowspan="1">The width of the top border of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.clientWidth" shape="rect" title="DOM:element.clientWidth">clientWidth</a></code></td>
+* <td colspan="1" rowspan="1">The inner width of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.dir" shape="rect" title="DOM:element.dir">dir</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the directionality of the element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.firstChild" shape="rect" title="DOM:element.firstChild">firstChild</a></code></td>
+* <td colspan="1" rowspan="1">The first direct child node of an element, or <code>null</code> if this element has no child nodes.</td>
+* <td colspan="1" rowspan="1"><code><a href="Node" shape="rect" title="DOM:Node">Node</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.id" shape="rect" title="DOM:element.id">id</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the id of the element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.innerHTML" shape="rect" title="DOM:element.innerHTML">innerHTML</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the markup and content of the element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.lang" shape="rect" title="DOM:element.lang">lang</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the language of an element's attributes, text, and element contents.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.lastChild" shape="rect" title="DOM:element.lastChild">lastChild</a></code></td>
+* <td colspan="1" rowspan="1">The last direct child node of an element, or <code>null</code> if this element has no child nodes.</td>
+* <td colspan="1" rowspan="1"><code><a href="Node" shape="rect" title="DOM:Node">Node</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.localName" shape="rect" title="DOM:element.localName">localName</a></code></td>
+* <td colspan="1" rowspan="1">The local part of the qualified name of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <th colspan="1" rowspan="1">Name</th>
+* <th colspan="1" rowspan="1">Description</th>
+* <th colspan="1" rowspan="1">Type</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.name" shape="rect" title="DOM:element.name">name</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the name attribute of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.namespaceURI" shape="rect" title="DOM:element.namespaceURI">namespaceURI</a></code></td>
+* <td colspan="1" rowspan="1">The namespace URI of this node, or <code>null</code> if it is unspecified.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.nextSibling" shape="rect" title="DOM:element.nextSibling">nextSibling</a></code></td>
+* <td colspan="1" rowspan="1">The node immediately following the given one in the tree, or <code>null</code> if there is no sibling node.</td>
+* <td colspan="1" rowspan="1"><code><a href="Node" shape="rect" title="DOM:Node">Node</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.nodeName" shape="rect" title="DOM:element.nodeName">nodeName</a></code></td>
+* <td colspan="1" rowspan="1">The name of the node.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.nodeType" shape="rect" title="DOM:element.nodeType">nodeType</a></code></td>
+* <td colspan="1" rowspan="1">A number representing the type of the node. Is always equal to <code>1</code> for DOM elements.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.nodeValue" shape="rect" title="DOM:element.nodeValue">nodeValue</a></code></td>
+* <td colspan="1" rowspan="1">The value of the node. Is always equal to <code>null</code> for DOM elements.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.offsetHeight" shape="rect" title="DOM:element.offsetHeight">offsetHeight</a></code></td>
+* <td colspan="1" rowspan="1">The height of an element, relative to the layout.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.offsetLeft" shape="rect" title="DOM:element.offsetLeft">offsetLeft</a></code></td>
+* <td colspan="1" rowspan="1">The distance from this element's left border to its <code>offsetParent</code>'s left border.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.offsetParent" shape="rect" title="DOM:element.offsetParent">offsetParent</a></code></td>
+* <td colspan="1" rowspan="1">The element from which all offset calculations are currently computed.</td>
+* <td colspan="1" rowspan="1"><code><strong>Element</strong></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.offsetTop" shape="rect" title="DOM:element.offsetTop">offsetTop</a></code></td>
+* <td colspan="1" rowspan="1">The distance from this element's top border to its <code>offsetParent</code>'s top border.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.offsetWidth" shape="rect" title="DOM:element.offsetWidth">offsetWidth</a></code></td>
+* <td colspan="1" rowspan="1">The width of an element, relative to the layout.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.ownerDocument" shape="rect" title="DOM:element.ownerDocument">ownerDocument</a></code></td>
+* <td colspan="1" rowspan="1">The document that this node is in, or <code>null</code> if the node is not inside of one.</td>
+* <td colspan="1" rowspan="1"><code><a href="document" shape="rect" title="DOM:document">Document</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <th colspan="1" rowspan="1">Name</th>
+* <th colspan="1" rowspan="1">Description</th>
+* <th colspan="1" rowspan="1">Type</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.parentNode" shape="rect" title="DOM:element.parentNode">parentNode</a></code></td>
+* <td colspan="1" rowspan="1">The parent element of this node, or <code>null</code> if the node is not inside of a <a href="document" shape="rect" title="DOM:document">DOM Document</a>.</td>
+* <td colspan="1" rowspan="1"><code><a href="Node" shape="rect" title="DOM:Node">Node</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.prefix" shape="rect" title="DOM:element.prefix">prefix</a></code></td>
+* <td colspan="1" rowspan="1">The namespace prefix of the node, or <code>null</code> if no prefix is specified.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.previousSibling" shape="rect" title="DOM:element.previousSibling">previousSibling</a></code></td>
+* <td colspan="1" rowspan="1">The node immediately preceding the given one in the tree, or <code>null</code> if there is no sibling node.</td>
+* <td colspan="1" rowspan="1"><code><a href="Node" shape="rect" title="DOM:Node">Node</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollHeight" shape="rect" title="DOM:element.scrollHeight">scrollHeight</a></code></td>
+* <td colspan="1" rowspan="1">The scroll view height of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollLeft" shape="rect" title="DOM:element.scrollLeft">scrollLeft</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the left scroll offset of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollTop" shape="rect" title="DOM:element.scrollTop">scrollTop</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the top scroll offset of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollWidth" shape="rect" title="DOM:element.scrollWidth">scrollWidth</a></code></td>
+* <td colspan="1" rowspan="1">The scroll view width of an element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.style" shape="rect" title="DOM:element.style">style</a></code></td>
+* <td colspan="1" rowspan="1">An object representing the declarations of an element's style attributes.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/index.php?title=CSSStyleDeclaration&amp;action=edit" shape="rect" title="DOM:CSSStyleDeclaration">CSSStyleDeclaration</a><a href="http://www.xulplanet.com/references/objref/CSSStyleDeclaration.html" rel="nofollow" shape="rect" title="http://www.xulplanet.com/references/objref/CSSStyleDeclaration.html">[3]</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.tabIndex" shape="rect" title="DOM:element.tabIndex">tabIndex</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the position of the element in the tabbing order.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:Number" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Number">Number</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.tagName" shape="rect" title="DOM:element.tagName">tagName</a></code></td>
+* <td colspan="1" rowspan="1">The name of the tag for the given element.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.textContent" shape="rect" title="DOM:element.textContent">textContent</a></code></td>
+* <td colspan="1" rowspan="1">Gets/sets the textual contents of an element and all its descendants.</td>
+* <td colspan="1" rowspan="1"><code><a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">String</a></code></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* </table>
+* <h2> <span> Methods </span></h2>
+* <table border="1" style="background:#FFFFFF none repeat scroll 0%;border: 1px solid #666666;margin-bottom:10px;margin-top:10px" width="100%">
+* <tr>
+* <th colspan="1" rowspan="1">Name &amp; Description</th>
+* <th colspan="1" rowspan="1">Return</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="DOM:element.addEventListener" shape="rect" title="DOM:element.addEventListener">addEventListener</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">listener</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
+* Register an event handler to a specific event type on the element.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="event" shape="rect" title="DOM:event">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.appendChild" shape="rect" title="DOM:element.appendChild">appendChild</a>( <a href="Node" shape="rect" title="DOM:Node">appendedNode</a> )</code>
+* Insert a node as the last child node of this element.</td>
+* <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.blur" shape="rect" title="DOM:element.blur">blur</a>()</code>
+* Removes keyboard focus from the current element.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.click" shape="rect" title="DOM:element.click">click</a>()</code>
+* Simulates a click on the current element.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.cloneNode" shape="rect" title="DOM:element.cloneNode">cloneNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">deep</a> )</code>
+* Clone a node, and optionally, all of its contents.</td>
+* <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.dispatchEvent" shape="rect" title="DOM:element.dispatchEvent">dispatchEvent</a>( <a href="event" shape="rect" title="DOM:event">event</a> )</code>
+* Dispatch an event to this node in the DOM.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.focus" shape="rect" title="DOM:element.focus">focus</a>()</code>
+* Gives keyboard focus to the current element.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a>, <a href="http://developer.mozilla.org/en/docs/XUL" shape="rect" title="XUL">XUL</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttribute" shape="rect" title="DOM:element.getAttribute">getAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve the value of the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNS" shape="rect" title="DOM:element.getAttributeNS">getAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve the value of the attribute with the specified name and namespace, from the current node.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">Object</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNode" shape="rect" title="DOM:element.getAttributeNode">getAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve the node representation of the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">Attr</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getAttributeNodeNS" shape="rect" title="DOM:element.getAttributeNodeNS">getAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve the node representation of the attribute with the specified name and namespace, from the current node.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">Attr</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <th colspan="1" rowspan="1">Name &amp; Description</th>
+* <th colspan="1" rowspan="1">Return</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagName" shape="rect" title="DOM:element.getElementsByTagName">getElementsByTagName</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve a set of all descendant elements, of a particular tag name, from the current element.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=NodeSet&amp;action=edit" shape="rect" title="DOM:NodeSet">NodeSet</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.getElementsByTagNameNS" shape="rect" title="DOM:element.getElementsByTagNameNS">getElementsByTagNameNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Retrieve a set of all descendant elements, of a particular tag name and namespace, from the current element.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/index.php?title=NodeSet&amp;action=edit" shape="rect" title="DOM:NodeSet">NodeSet</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.hasAttribute" shape="rect" title="DOM:element.hasAttribute">hasAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Check if the element has the specified attribute, or not.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.hasAttributeNS" shape="rect" title="DOM:element.hasAttributeNS">hasAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Check if the element has the specified attribute, in the specified namespace, or not.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.hasAttributes" shape="rect" title="DOM:element.hasAttributes">hasAttributes</a>()</code>
+* Check if the element has any attributes, or not.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.hasChildNodes" shape="rect" title="DOM:element.hasChildNodes">hasChildNodes</a>()</code>
+* Check if the element has any child nodes, or not.</td>
+* <td colspan="1" rowspan="1"><a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">Boolean</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.insertBefore" shape="rect" title="DOM:element.insertBefore">insertBefore</a>( <a href="Node" shape="rect" title="DOM:Node">insertedNode</a>, <a href="Node" shape="rect" title="DOM:Node">adjacentNode</a> )</code>
+* Inserts the first node before the second, child, Node in the DOM.</td>
+* <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.normalize" shape="rect" title="DOM:element.normalize">normalize</a>()</code>
+* Clean up all the text nodes under this element (merge adjacent, remove empty).</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttribute" shape="rect" title="DOM:element.removeAttribute">removeAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Remove the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNS" shape="rect" title="DOM:element.removeAttributeNS">removeAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Remove the attribute with the specified name and namespace, from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <th colspan="1" rowspan="1">Name &amp; Description</th>
+* <th colspan="1" rowspan="1">Return</th>
+* <th colspan="1" rowspan="1">Availability</th>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.removeAttributeNode" shape="rect" title="DOM:element.removeAttributeNode">removeAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a> )</code>
+* Remove the node representation of the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.removeChild" shape="rect" title="DOM:element.removeChild">removeChild</a>( <a href="Node" shape="rect" title="DOM:Node">removedNode</a> )</code>
+* Removes a child node from the current element.</td>
+* <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.removeEventListener" shape="rect" title="DOM:element.removeEventListener">removeEventListener</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">type</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Function" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Function">handler</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">useCapture</a> )</code>
+* Removes an event listener from the element.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="event" shape="rect" title="DOM:event">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.replaceChild" shape="rect" title="DOM:element.replaceChild">replaceChild</a>( <a href="Node" shape="rect" title="DOM:Node">insertedNode</a>, <a href="Node" shape="rect" title="DOM:Node">replacedNode</a> )</code>
+* Replaces one child node in the current element with another.</td>
+* <td colspan="1" rowspan="1"><a href="Node" shape="rect" title="DOM:Node">Node</a></td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.scrollIntoView" shape="rect" title="DOM:element.scrollIntoView">scrollIntoView</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:Boolean" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Boolean">alignWithTop</a> )</code>
+* Scrolls the page until the element gets into the view.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="http://developer.mozilla.org/en/docs/HTML" shape="rect" title="HTML">HTML</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttribute" shape="rect" title="DOM:element.setAttribute">setAttribute</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
+* Set the value of the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNS" shape="rect" title="DOM:element.setAttributeNS">setAttributeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:Object" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:Object">value</a> )</code>
+* Set the value of the attribute with the specified name and namespace, from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNode" shape="rect" title="DOM:element.setAttributeNode">setAttributeNode</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
+* Set the node representation of the named attribute from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* <tr>
+* <td colspan="1" rowspan="1"><code><a href="element.setAttributeNodeNS" shape="rect" title="DOM:element.setAttributeNodeNS">setAttributeNodeNS</a>( <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">namespace</a>, <a href="http://developer.mozilla.org/en/docs/Global_Objects:String" shape="rect" title="Core JavaScript 1.5 Reference:Global Objects:String">name</a>, <a href="http://developer.mozilla.org/en/docs/index.php?title=Attr&amp;action=edit" shape="rect" title="DOM:Attr">attrNode</a> )</code>
+* Set the node representation of the attribute with the specified name and namespace, from the current node.</td>
+* <td colspan="1" rowspan="1">-</td>
+* <td colspan="1" nowrap="nowrap" rowspan="1"><small><a href="DOM" shape="rect" title="DOM">All</a></small></td>
+* </tr>
+* </table>
+* <h2> <span> Event Handlers </span></h2>
+* <p>These are properties that correspond to the HTML 'on' event attributes.
+* </p><p>Unlike the corresponding attributes, the values of these properties are functions (or any other object implementing the <a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" rel="nofollow" shape="rect" title="http://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener">EventListener</a> interface) rather than a string. In fact, assigning an event attribute in HTML creates a wrapper function around the specified code. For example, given the following HTML:
+* </p>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* &lt;div onclick="foo();"&gt;click me!&lt;/div&gt;
+* </pre>
+* <p>If <code>element</code> is a reference to this <code>div</code>, the value of <code>element.onclick</code> is effectively:
+* </p>
+* <pre style="background:#EEEEEE none repeat scroll 0% 50%;border:1px solid #666666;padding:5px 5px" xml:space="preserve">
+* function onclick(event) {
+* foo();
+* }
+* </pre>
+* <p>Note how the <a href="event" shape="rect" title="DOM:event">event</a> object is passed as parameter <code>event</code> to this wrapper function.
+* </p>
+* <dl><dt style="font-weight:bold"> <a href="element.onblur" shape="rect" title="DOM:element.onblur">onblur</a>
+* </dt><dd> Returns the event handling code for the blur event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onchange" shape="rect" title="DOM:element.onchange">onchange</a>
+* </dt><dd> Returns the event handling code for the change event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onclick" shape="rect" title="DOM:element.onclick">onclick</a>
+* </dt><dd> Returns the event handling code for the click event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.ondblclick" shape="rect" title="DOM:element.ondblclick">ondblclick</a>
+* </dt><dd> Returns the event handling code for the dblclick event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onfocus" shape="rect" title="DOM:element.onfocus">onfocus</a>
+* </dt><dd> Returns the event handling code for the focus event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onkeydown" shape="rect" title="DOM:element.onkeydown">onkeydown</a>
+* </dt><dd> Returns the event handling code for the keydown event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onkeypress" shape="rect" title="DOM:element.onkeypress">onkeypress</a>
+* </dt><dd> Returns the event handling code for the keypress event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onkeyup" shape="rect" title="DOM:element.onkeyup">onkeyup</a>
+* </dt><dd> Returns the event handling code for the keyup event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onmousedown" shape="rect" title="DOM:element.onmousedown">onmousedown</a>
+* </dt><dd> Returns the event handling code for the mousedown event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onmousemove" shape="rect" title="DOM:element.onmousemove">onmousemove</a>
+* </dt><dd> Returns the event handling code for the mousemove event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onmouseout" shape="rect" title="DOM:element.onmouseout">onmouseout</a>
+* </dt><dd> Returns the event handling code for the mouseout event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onmouseover" shape="rect" title="DOM:element.onmouseover">onmouseover</a>
+* </dt><dd> Returns the event handling code for the mouseover event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onmouseup" shape="rect" title="DOM:element.onmouseup">onmouseup</a>
+* </dt><dd> Returns the event handling code for the mouseup event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onresize" shape="rect" title="DOM:element.onresize">onresize</a>
+* </dt><dd> Returns the event handling code for the resize event.
+* </dd></dl>
+* <dl><dt style="font-weight:bold"> <a href="element.onscroll" shape="rect" title="DOM:element.onscroll">onscroll</a>
+* </dt><dd> Returns the event handling code for the scroll event.
+* </dd></dl>
+* <p>
+* </p>
+* <h2> <span> Other Events </span></h2>
+* <p>There are also other <a href="DOM_Events" shape="rect" title="DOM Events">DOM Events</a> like
+* <code>DOMSubtreeModified</code>, <code>DOMAttrModified</code> etc. as well as
+* <a href="http://developer.mozilla.org/en/docs/Gecko-Specific_DOM_Events" shape="rect" title="Gecko-Specific DOM Events">Gecko-Specific DOM Events</a> like
+* <code>DOMContentLoaded</code>, <code>DOMTitleChanged</code> etc.
+* </p>
+* 
+* <div id="catlinks"><p><a href="http://developer.mozilla.org/en/docs/Special:Categories" shape="rect" title="Special:Categories">Category</a>: <span dir="ltr"><a href="http://developer.mozilla.org/en/docs/Category:Gecko_DOM_Reference" shape="rect" title="Category:Gecko DOM Reference">Gecko DOM Reference</a></span></p></div>
+* 
+* <ul style="list-style-type:none;font-size:0.9em;text-align:center">
+* <li id="f-copyright">Content is available under <a href="http://developer.mozilla.org/en/docs/MDC:Copyrights" shape="rect" title="MDC:Copyrights">these licenses</a>.</li>	  		<li id="f-about"><a href="http://developer.mozilla.org/en/docs/MDC:About" shape="rect" title="MDC:About">About MDC</a></li>	  				</ul>
+*/
+var element = new Element();

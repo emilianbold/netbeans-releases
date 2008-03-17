@@ -44,7 +44,6 @@ package org.netbeans.api.db.explorer.support;
 import javax.swing.JComboBox;
 import org.netbeans.api.db.explorer.*;
 import org.netbeans.modules.db.test.TestBase;
-import org.netbeans.modules.db.test.Util;
 
 /**
  *
@@ -60,7 +59,7 @@ public class DatabaseExplorerUIsTest extends TestBase {
     }
 
     private void initConnections() throws Exception {
-        JDBCDriver driver = Util.createDummyDriver();
+        JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers("sun.jdbc.odbc.JdbcOdbcDriver")[0];
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         dbconn1 = DatabaseConnection.create(driver, "db", "dbuser", "dbschema", "dbpassword", true);
         dbconn2 = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);

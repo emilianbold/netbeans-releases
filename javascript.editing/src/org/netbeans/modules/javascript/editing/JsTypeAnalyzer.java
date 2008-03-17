@@ -104,7 +104,7 @@ public class JsTypeAnalyzer {
     private final BaseDocument doc;
     private final FileObject fileObject;
     private final CompilationInfo info;
-    private long startTime;
+    private static volatile boolean usingIndex;
     
     // Generated with
     //  /bin/grep "^var" *.js  | grep new | awk '{print "BROWSER_BUILTINS.put(\"" $2 "\",\"" $5 "\");"}'
@@ -195,29 +195,23 @@ public class JsTypeAnalyzer {
     }
 
     /** Called on AsgnNodes to compute RHS 
-     * XXX See also AstUtilities.getExpressionType
+     * XXX See also GlobalAstNode.expressionType!
      */
     private String expressionType(Node node) {
         switch (node.getType()) {
         case Token.NUMBER:
-            return "Number"; // NOI18N
+            return "Number";
         case Token.STRING:
-            return "String"; // NOI18N
+            return "String";
         case Token.REGEXP:
-            return "RegExp"; // NOI18N
-        case Token.NE:
-        case Token.EQ:
-        case Token.LT:
-        case Token.GT:
-        case Token.LE:
-        case Token.GE:
+            return "RegExp";
         case Token.TRUE:
         case Token.FALSE:
-            return "Boolean"; // NOI18N
+            return "Boolean";
         case Token.ARRAYLIT:
-            return "Array"; // NOI18N
+            return "Array";
         case Token.FUNCTION:
-            return "Function"; // NOI18N
+            return "Function";
         case Token.NEW: {
             Node first = AstUtilities.getFirstChild(node);
             if (first.getType() == Token.NAME) {
@@ -225,67 +219,6 @@ public class JsTypeAnalyzer {
             } else {
                 return expressionType(first);
             }
-        }
-        case Token.CALL: {
-            Node first = node.getFirstChild();
-            if (first.getType() == Token.NAME) {
-                String s = first.getString();
-                // TODO - check whether we're using prototype or jquery here
-                if ("$".equals(s)) { // NOI18N
-                    // Determine if we're using jquery or prototype
-                    JsParseResult js = AstUtilities.getParseResult(info);
-                    boolean jQuery = false;
-                    for (String imp : js.getStructure().getImports()) {
-                        if (imp.indexOf("jquery") != -1) { // NOI18N
-                            jQuery = true;
-                        }
-                    }
-                    if (jQuery) {
-                        return "jQuery"; // NOI18N
-                    } else {
-                        return "Element"; // NOI18N
-                    }
-                }
-                
-                return FunctionCache.getInstance().getType(s, index);
-            } else if (first.getType() == Token.GETPROP) {
-                // Chained - figure out the type of this call before
-                // continuing
-                Node grandChild = first.getFirstChild();
-                if (grandChild.getType() == Token.CALL) {
-                    String lhs = expressionType(grandChild);
-                    if (lhs != null) {
-                        Node methodNode = grandChild.getNext();
-                        if (methodNode.getType() == Token.STRING) {
-                            String method = methodNode.getString();
-                            String fqn = lhs + "." + method; // NOI18N
-                            return FunctionCache.getInstance().getType(fqn, index);
-                        }
-                    }
-                } else if (grandChild.getType() == Token.NAME) {
-                    return FunctionCache.getInstance().getType(grandChild.getString(), index);
-                } else {
-                    String type = expressionType(grandChild);
-                    if (type != null) {
-                        Node methodNode = grandChild.getNext();
-                        if (methodNode.getType() == Token.STRING) {
-                            String method = methodNode.getString();
-                            String fqn = type + "." + method; // NOI18N
-                            return FunctionCache.getInstance().getType(fqn, index);
-                        }
-                    }
-                }
-            } else {
-                if (System.currentTimeMillis() > startTime+2000) {
-                    // Don't do a huge amount of computation here
-                    return null;
-                }
-                String s = AstUtilities.getCallName(node, true);
-                if (s != null) {
-                    return FunctionCache.getInstance().getType(s, index);
-                }
-            }
-            break;
         }
         case Token.NAME: {
             String name = node.getString();
@@ -305,34 +238,25 @@ public class JsTypeAnalyzer {
                 }
             }
         }
+        default:
+            return null;
         }
-        
-        return null;
     }
-    
-    /** Return the type of the given expression node */
-    public String getType(Node node) {
-        init();
-        
-        return expressionType(node);
-    }
-    
-    private void init() {
+
+    public String getType(String symbol) {
         if (types == null) {
-            startTime = System.currentTimeMillis();
             types = new HashMap<String, String>();
 
+//            if (fileObject != null) {
+//                initFileTypeVars();
+//            }
+//            
             if (doc != null) {
                 initTypeAssertions();
             }
 
             analyze(root);
         }
-    }
-
-    /** Return the type of the given symbol */
-    public String getType(String symbol) {
-        init();
 
         String type = types.get(symbol);
     

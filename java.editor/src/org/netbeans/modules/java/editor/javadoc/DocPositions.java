@@ -44,7 +44,6 @@ import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,10 +76,6 @@ public final class DocPositions {
     
     // context that should be descarded after resolve()
     private Env env;
-    
-    // test properties
-    static boolean isTestMode = false;
-    String tokenSequenceDump;
 
     public static final DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
         return DocPositionsManager.get(javac).get(javadoc, jdts);
@@ -174,16 +169,7 @@ public final class DocPositions {
             } else {
                 blockSectionStart = 0;
             }
-        } catch (Throwable t) {
-            // for debug purposes
-            tokenSequenceDump = String.valueOf(env.jdts);
-            throw new IllegalStateException(
-                    '\'' + env.javadoc.getRawCommentText() + "'\n" + this.toString(), // NOI18N
-                    t);
         } finally {
-            if (isTestMode) {
-                tokenSequenceDump = String.valueOf(env.jdts);
-            }
             env = null;
         }
     }
@@ -342,7 +328,6 @@ public final class DocPositions {
         } else {
             sb.append(" Not resolved yet."); // NOI18N
         }
-        sb.append("\ntoken sequence dump: " + tokenSequenceDump);
         return sb.toString();
     }
     
@@ -379,14 +364,14 @@ public final class DocPositions {
 
         private static final Tag[] EMPTY_TAGS = new Tag[0];
         private final String name;
-        private final Reference<Doc> wjavadoc;
+        private final Doc javadoc;
         private final String kind;
         private CharSequence text;
 
         public UnclosedTag(String name, String kind, Doc javadoc) {
             this.name = name;
             this.kind = kind;
-            this.wjavadoc = new WeakReference<Doc>(javadoc);
+            this.javadoc = javadoc;
         }
 
         public String name() {
@@ -394,7 +379,7 @@ public final class DocPositions {
         }
 
         public Doc holder() {
-            return wjavadoc.get();
+            return javadoc;
         }
 
         public String kind() {
@@ -425,15 +410,12 @@ public final class DocPositions {
     }
     
     private static final class TagEntry implements Comparable<TagEntry> {
-        final Reference<Tag> wtag;
-        final UnclosedTag utag;
+        final WeakReference<Tag> wtag;
         final boolean isBlock;
         final int[] span;
 
         public TagEntry(Tag tag ,int[] span, boolean isBlock) {
             this.wtag = new  WeakReference<Tag>(tag);
-            // hard reference UnclosedTag otherwise its weak reference will be GCed soon
-            this.utag = (UnclosedTag) (tag instanceof UnclosedTag ? tag : null);
             this.isBlock = isBlock;
             assert span.length == 2;
             this.span = span;

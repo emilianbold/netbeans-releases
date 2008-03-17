@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -64,7 +64,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -202,15 +202,14 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
                 if (url == null) {
                     url = sp.getURL(classRelPath, true);
                 }
-                if (url != null) {
-                    try {
-                        FileObject fo = URLMapper.findFileObject(new URL(url));
-                        if (fo != null) {
-                            return fo;
-                        }
-                    } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                try {
+                    java.io.File file = new java.io.File(new URI(url));
+                    FileObject fo = FileUtil.toFileObject(file);
+                    if (fo != null) {
+                        return fo;
                     }
+                } catch (URISyntaxException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }

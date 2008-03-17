@@ -1375,10 +1375,6 @@ public class Node
     private int sourceStart;
     private int sourceEnd;
     private Node parent;
-    /** Computed type of this node, such as Number, Boolean, void, etc. The special value UNKNOWN_TYPE means that we don't know; null means we haven't computed it yet. */
-    public String nodeType;
-    public Object element;
-    public static final String UNKNOWN_TYPE = new String("unknown"); // new String to avoid interning
 // </netbeans>
 
 }

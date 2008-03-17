@@ -40,16 +40,12 @@
 package org.netbeans.modules.php.editor.indent;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
+ *
  * @author tomslot
  */
 public class PHPIndentTask implements IndentTask {
@@ -61,46 +57,7 @@ public class PHPIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        
-        BaseDocument doc = (BaseDocument)context.document();
-        doc.atomicLock();
-        
-        try {
-            if (context.isIndent()) {
-                
-                // check if the cursor is within PHP language block
-                TokenHierarchy th = TokenHierarchy.get(doc);
-                TokenSequence ts = th.tokenSequence();
-                ts.move(context.caretOffset());
-                ts.moveNext();
-                
-                while (ts.embedded() != null) {
-                    ts = ts.embedded();
-                    ts.move(context.caretOffset());
-                    ts.moveNext();
-                }
-                
-                if (ts.language() != PHPTokenId.language()) {
-                    return;
-                }
-
-                // trivial implementation, copy the indent from the previous line
-                int currentLine = Utilities.getLineOffset(doc, context.startOffset());
-                int previousLineIndent = 0;
-                
-                if (currentLine > 0) {
-                    int previousLineStartOffset = Utilities.getRowStartFromLineOffset(doc, currentLine - 1);
-                    previousLineIndent = context.lineIndent(previousLineStartOffset);
-                }
-                
-                context.modifyIndent(Utilities.getRowStartFromLineOffset(doc, currentLine),
-                        previousLineIndent);
-            }
-
-        } finally {
-            doc.atomicUnlock();
-        }
-
+        //TODO: implement me
     }
 
     public ExtraLock indentLock() {

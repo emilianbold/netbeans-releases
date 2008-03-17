@@ -99,9 +99,9 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         Mapper mapper = canvas.getMapper();
         if (treePath == mapper.getRoot().getTreePath()) return;
         
-        TreePath parrentPath = mapper.getNode(treePath, true).getParent().getTreePath();
-        mapper.setExpandedState(parrentPath, true);
-        parentsExpand(parrentPath);
+        mapper.setExpandedState(treePath, true);
+        parentsExpand(mapper.getNode(treePath, true).getParent().getTreePath());
+        
     }
 
 }

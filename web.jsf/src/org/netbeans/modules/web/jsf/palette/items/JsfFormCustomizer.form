@@ -12,11 +12,6 @@
     <Component class="javax.swing.ButtonGroup" name="viewType">
     </Component>
   </NonVisualComponents>
-  <AccessibilityProperties>
-    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/web/jsf/palette/items/Bundle.properties" key="ACSD_JsfForm" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-    </Property>
-  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -49,7 +44,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="errorField" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="58" max="32767" attributes="0"/>
+              <EmptySpace pref="28" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -143,7 +138,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="detail" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="classTextField" pref="450" max="32767" attributes="0"/>
+                      <Component id="classTextField" pref="447" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jButton1" min="-2" max="-2" attributes="0"/>

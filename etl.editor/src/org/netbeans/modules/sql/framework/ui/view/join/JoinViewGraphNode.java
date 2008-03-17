@@ -90,6 +90,7 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
@@ -120,7 +121,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     private JoinViewActionListener aListener;
     private ArrayList<SQLJoinTableArea> tableAreas = new ArrayList<SQLJoinTableArea>();
     private static final int PREFERRED_JOIN_VIEW_WIDTH = 140;
-    private static transient final Logger mLogger = Logger.getLogger(JoinViewGraphNode.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinViewGraphNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of JoinViewGraphNode */
@@ -168,8 +169,8 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         aListener = new JoinViewActionListener();
 
         // edit join
-        String nbBundle1 = mLoc.t("BUND473: Edit JoinView...");
-        String lblEditJoin = nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Edit JoinView...");
+        String lblEditJoin = Localizer.parse(nbBundle1);
         editItem = new JMenuItem(lblEditJoin, new ImageIcon(editJoinViewUrl));
         editItem.addActionListener(aListener);
         popUpMenu.add(editItem);
@@ -177,15 +178,15 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         // show sql
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
-        String nbBundle2 = mLoc.t("BUND365: Show SQL");
-        String lblShowSql = nbBundle2.substring(15);
+        String nbBundle2 = mLoc.t("PRSR001: Show SQL");
+        String lblShowSql = Localizer.parse(nbBundle2);
         showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
         showSqlItem.addActionListener(aListener);
         popUpMenu.add(showSqlItem);
 
         // show join data
-        String nbBundle3 = mLoc.t("BUND453: Show Data");
-        String lblShowData = nbBundle3.substring(15);
+        String nbBundle3 = mLoc.t("PRSR001: Show Data");
+        String lblShowData = Localizer.parse(nbBundle3);
         showDataItem = new JMenuItem(lblShowData, new ImageIcon(showJoinDataUrl));
         showDataItem.addActionListener(aListener);
         popUpMenu.add(showDataItem);
@@ -193,8 +194,8 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         // select visible columns
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
-        String nbBundle4 = mLoc.t("BUND426: Select Columns...");
-        String lblSelectColumns = nbBundle4.substring(15);
+        String nbBundle4 = mLoc.t("PRSR001: Select Columns...");
+        String lblSelectColumns = Localizer.parse(nbBundle4);
         selectColumnsItem = new JMenuItem(lblSelectColumns, new ImageIcon(selectColumnsUrl));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
@@ -202,8 +203,8 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         popUpMenu.addSeparator();
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
-        String nbBundle5 = mLoc.t("BUND152: Remove");
-        String lbl = nbBundle5.substring(15);
+        String nbBundle5 = mLoc.t("PRSR001: Remove");
+        String lbl = Localizer.parse(nbBundle5);
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
@@ -431,8 +432,8 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
-        String nbBundle6 = mLoc.t("BUND428: Select columns to display for this table.");
-        String dlgLabel = nbBundle6.substring(15);
+        String nbBundle6 = mLoc.t("PRSR001: Select columns to display for this table.");
+        String dlgLabel = Localizer.parse(nbBundle6);
         JLabel lbl = new JLabel(dlgLabel);
         lbl.getAccessibleContext().setAccessibleName(dlgLabel);
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
@@ -459,8 +460,8 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
-        String nbBundle7 = mLoc.t("BUND429: Select Columns");
-        String dlgTitle = nbBundle7.substring(15);
+        String nbBundle7 = mLoc.t("PRSR001: Select Columns");
+        String dlgTitle = Localizer.parse(nbBundle7);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), panel, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (JOptionPane.OK_OPTION == response) {
@@ -752,7 +753,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
             //so that join view can refresh
             this.layoutChildren();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR188: Error removing source table {0}from join view", sTable.getName()), ex);
             throw ex;
         }
     }
@@ -832,7 +833,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
             this.removeTable(jTable.getSourceTable());
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT188: Error removing source table {0}from join view", sTable.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR189: Error removing source table {0}from join view", sTable.getName()), ex);
         }
     }
 

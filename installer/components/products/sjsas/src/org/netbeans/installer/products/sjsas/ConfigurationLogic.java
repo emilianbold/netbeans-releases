@@ -38,7 +38,6 @@ package org.netbeans.installer.products.sjsas;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,13 +74,12 @@ import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 /**
  *
  * @author Kirill Sorokin
- * @author Dmitry Lipin
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
-
+    
     // constructor //////////////////////////////////////////////////////////////////
     public ConfigurationLogic(
             ) throws InitializationException {
@@ -89,18 +87,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 WIZARD_COMPONENTS_URI,
                 getClass().getClassLoader());
     }
-
+    
     // configuration logic implementation ///////////////////////////////////////////
     public void install(
             final Progress progress) throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
-
+        
         final String username  = getProperty(ASPanel.USERNAME_PROPERTY);
         final String password  = getProperty(ASPanel.PASSWORD_PROPERTY);
         final String httpPort  = getProperty(ASPanel.HTTP_PORT_PROPERTY);
         final String httpsPort = getProperty(ASPanel.HTTPS_PORT_PROPERTY);
         final String adminPort = getProperty(ASPanel.ADMIN_PORT_PROPERTY);
-
+        
         final File javaHome =
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
         JavaInfo info = JavaUtils.getInfo(javaHome);
@@ -109,26 +107,26 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         LogManager.log("... version : "  + info.getVersion().toJdkStyle());
         LogManager.log("... vendor  : "  + info.getVendor());
         LogManager.log("... final   : "  + (!info.isNonFinal()));
-
+        
         final FilesList list = getProduct().getInstalledFiles();
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.replace.tokens")); // NOI18N
-
+            
             final Map<String, Object> map = new HashMap<String, Object>();
-
+            
             map.put(INSTALL_HOME_TOKEN, directory);
             map.put(INSTALL_HOME_F_TOKEN, directory.getPath().replace(StringUtils.BACK_SLASH, StringUtils.FORWARD_SLASH));
-
+            
             map.put(JAVA_HOME_TOKEN,  javaHome);
             map.put(JAVA_HOME_F_TOKEN, javaHome.getPath().replace(StringUtils.BACK_SLASH, StringUtils.FORWARD_SLASH));
-
+            
             map.put(HOST_NAME_TOKEN,  SystemUtils.getHostName());
             map.put(ADMIN_USERNAME_TOKEN, username);
             map.put(HTTP_PORT_TOKEN,httpPort);
             map.put(ADMIN_PORT_TOKEN,adminPort);
-
+            
             FileUtils.modifyFile(new File(directory, BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, DOCS_SUBDIR), map);
@@ -139,13 +137,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileUtils.modifyFile(new File(directory, BLUEPRINTS_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
-
+            
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.replace.tokens"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         //try {
         //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
@@ -156,22 +154,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //            getString("CL.install.error.irrelevant.files"), // NOI18N
         //            e);
         //}
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-
+            
             SystemUtils.correctFilesPermissions(directory);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.create.domain")); // NOI18N
-
+            
             GlassFishUtils.createDomain(
                     directory,
                     DOMAIN_NAME,
@@ -184,45 +182,45 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             final InstallationException firstException = new InstallationException(
                     getString("CL.install.error.create.domain"), // NOI18N
                     e);
-
+            
             final File asadminpass = new File(
                     SystemUtils.getUserHomeDirectory(),
-                    ".asadminpass");
-            final File asadmintruststore = new File(
-                    SystemUtils.getUserHomeDirectory(),
-                    ".asadmintruststore");
-            if (asadminpass.exists() || asadmintruststore.exists()) {
-                LogManager.log("either .asadminpass or .asadmintruststore " +
-                        "files exist -- deleting them");
-
-                getProduct().addInstallationWarning(firstException);
-
-                try {
-                    FileUtils.deleteFile(asadminpass);
-                    FileUtils.deleteFile(asadmintruststore);
-                    FileUtils.deleteFile(
-                            new File(directory,
-                            DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
-                            true);
-
-                    GlassFishUtils.createDomain(
-                            directory,
-                            DOMAIN_NAME,
-                            username,
-                            password,
-                            httpPort,
-                            httpsPort,
-                            adminPort);
-                } catch (IOException ex) {
-                    throw new InstallationException(
-                            getString("CL.install.error.create.domain"), // NOI18N
-                            ex);
-                }
-            } else {
-                throw firstException;
-            }
+                    ".asadminpass");;
+                    final File asadmintruststore = new File(
+                            SystemUtils.getUserHomeDirectory(),
+                            ".asadmintruststore");
+                    if (asadminpass.exists() || asadmintruststore.exists()) {
+                        LogManager.log("either .asadminpass or .asadmintruststore " +
+                                "files exist -- deleting them");
+                        
+                        getProduct().addInstallationWarning(firstException);
+                        
+                        try {
+                            FileUtils.deleteFile(asadminpass);
+                            FileUtils.deleteFile(asadmintruststore);                            
+                            FileUtils.deleteFile(
+                                    new File(directory,
+                                    DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
+                                    true);
+                            
+                            GlassFishUtils.createDomain(
+                                    directory,
+                                    DOMAIN_NAME,
+                                    username,
+                                    password,
+                                    httpPort,
+                                    httpsPort,
+                                    adminPort);
+                        } catch (IOException ex) {
+                            throw new InstallationException(
+                                    getString("CL.install.error.create.domain"), // NOI18N
+                                    ex);
+                        }
+                    } else {
+                        throw firstException;
+                    }
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.extra.files")); // NOI18N
@@ -232,74 +230,33 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.extra.files"), // NOI18N
                     e);
         }
-
-        //get bundled registry to perform further runtime integration
-        //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
-        Registry bundledRegistry = new Registry();
-        try {
-            final String bundledRegistryUri = System.getProperty(
-                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
-
-            bundledRegistry.loadProductRegistry(
-                    (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
-        } catch (InitializationException e) {
-            LogManager.log("Cannot load bundled registry", e);
-        }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
-
+            
             final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
-            List<Product> productsToIntegrate = new ArrayList<Product>();
-            for (Product ide : ides) {
+            for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
-                    LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
-                    final File location = ide.getInstallationLocation();
-                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
-                        final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
-                        if (bundledProduct != null) {
-                            //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
-                            productsToIntegrate.add(ide);
-                            LogManager.log("... will be integrated since this produce is also bundled");
-                        } else {
-                            //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
-                            try {
-                                String path = NetBeansUtils.getJvmOption(location, JVM_OPTION_NAME);
-                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
-                                    LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
-                                    productsToIntegrate.add(ide);                                    
-                                } else {
-                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
-                                }
-                            } catch (IOException e) {
-                                LogManager.log(e);
-                            }
+                    final File nbLocation = ide.getInstallationLocation();
+                    
+                    if (nbLocation != null) {
+                        NetBeansUtils.setJvmOption(
+                                nbLocation,
+                                JVM_OPTION_NAME,
+                                directory.getAbsolutePath(),
+                                true);
+                        
+                        // if the IDE was installed in the same session as the
+                        // appserver, we should add its "product id" to the IDE
+                        if (ide.hasStatusChanged()) {
+                            NetBeansUtils.addPackId(
+                                    nbLocation,
+                                    PRODUCT_ID);
                         }
-                    } else {
-                        LogManager.log("... null, non-existent or empty location");
                     }
                 }
-            }
-
-            for (Product productToIntegrate : productsToIntegrate) {
-                final File location = productToIntegrate.getInstallationLocation();
-                LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        location,
-                        JVM_OPTION_NAME,
-                        directory.getAbsolutePath(),
-                        true);
-
-                // if the IDE was installed in the same session as the
-                // appserver, we should add its "product id" to the IDE
-                if (productToIntegrate.hasStatusChanged()) {
-                    NetBeansUtils.addPackId(
-                            location,
-                            PRODUCT_ID);
-                }
-
             }
         } catch (IOException e) {
             throw new InstallationException(
@@ -320,7 +277,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         try {
             ClassLoader cl = getClass().getClassLoader();
-            FileUtils.writeFile(new File(directory, JTB_LICENSE),
+            FileUtils.writeFile(new File(directory, JTB_LICENSE), 
                     ResourceUtils.getResource(JTB_LEGAL_RESOURCE_PREFIX + JTB_LICENSE,
                     cl));
 //            FileUtils.writeFile(new File(directory, JTB_DISTRIBUTION), 
@@ -337,11 +294,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-
+    
     public void uninstall(
             final Progress progress) throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.shortcuts.delete")); // NOI18N
@@ -351,27 +308,24 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.shortcuts.delete"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
-
+            
             final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
             for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
-                    LogManager.log("... checking if " + ide.getDisplayName() + " is integrated with " + getProduct().getDisplayName() + " installed at " + directory);
                     final File nbLocation = ide.getInstallationLocation();
-
+                    
                     if (nbLocation != null) {
-                        LogManager.log("... ide location is " + nbLocation);
                         final String value = NetBeansUtils.getJvmOption(
                                 nbLocation,
                                 JVM_OPTION_NAME);
-                        LogManager.log("... ide integrated with: " + value);                
+                        
                         if ((value != null) &&
                                 (value.equals(directory.getAbsolutePath()))) {
-			    LogManager.log("... removing integration");
                             NetBeansUtils.removeJvmOption(
                                     nbLocation,
                                     JVM_OPTION_NAME);
@@ -384,37 +338,37 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.ide.integration"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.delete.domain")); // NOI18N
-
+            
             GlassFishUtils.deleteDomain(directory, DOMAIN_NAME);
         } catch (IOException e) {
             throw new UninstallationException(
                     getString("CL.uninstall.error.delete.domain"), // NOI18N
                     e);
         }
-
+        
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-
+    
     public List<WizardComponent> getWizardComponents(
             ) {
         return wizardComponents;
     }
-
+    
     @Override
     public boolean allowModifyMode() {
         return false;
     }
-
+    
     @Override
     public Text getLicense() {
-        return null;
-    }
-
+       return null;
+    }    
+    
     // private //////////////////////////////////////////////////////////////////////
     private FilesList modifyASLauncherFiles(
             final File location,
@@ -423,79 +377,79 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             LogManager.log("creating the application server launchers");//NOI18N
             File asadminLocation = GlassFishUtils.getAsadmin(location);
-
+            
             File launchersDir     = new File(location, BIN_SUBDIR);
-
+            
             File javaeeDocsFile   = new File(launchersDir, LAUNCHER_JAVAEE_DOCS + EXEC_EXT);
             File adminConsoleFile = new File(launchersDir, LAUNCHER_ADMIN_CONSOLE + EXEC_EXT);
             File startDomainFile  = new File(launchersDir, LAUNCHER_START_DOMAIN + EXEC_EXT);
             File startDerbyFile   = new File(launchersDir, LAUNCHER_START_DB + EXEC_EXT);
             File stopDomainFile   = new File(launchersDir, LAUNCHER_STOP_DOMAIN + EXEC_EXT);
             File stopDerbyFile    = new File(launchersDir, LAUNCHER_STOP_DB + EXEC_EXT);
-
+            
             File aboutFile        = new File(location, AS_ABOUT_LOCATION);
             File samplesFile      = new File(location, AS_SAMPLES_LOCATION);
             File quickStartFile   = new File(location, AS_QUICK_START_LOCATION);
-
+            
             if(isCreate) {
                 String execCommandStub = (SystemUtils.isWindows()) ?
                     BAT_CALLER_STUB :
                     SHELL_SCRIPT_STUB;
-
+                
                 String runUrlStub = null;
                 runUrlStub = SystemUtils.isWindows() ? BAT_STARTER_STUB :
                     (SystemUtils.isMacOS() ? SHELL_SCRIPT_BROWSER_STUB_MACOS :
                         SHELL_SCRIPT_BROWSER_STUB_UNIX);
-
+                
                 list.add(FileUtils.writeFile(javaeeDocsFile,
                         StringUtils.format(runUrlStub, JAVAEE_DOCS_URL)));
-
+                
                 String adminConsoleUrl = StringUtils.format(ADMIN_CONSOLE_URL,
                         LOCALHOST,
                         getProperty(ASPanel.ADMIN_PORT_PROPERTY));
-
+                
                 list.add(FileUtils.writeFile(adminConsoleFile,
                         StringUtils.format(runUrlStub, adminConsoleUrl)));
-
+                
                 String startDomainContents = StringUtils.format(
                         execCommandStub,
                         StringUtils.joinCommand(
                         asadminLocation.getAbsolutePath(),
                         GlassFishUtils.START_DOMAIN_COMMAND,
                         DOMAIN_NAME));
-
-
+                
+                
                 list.add(FileUtils.writeFile(startDomainFile, startDomainContents));
-
+                
                 String startDbContents = StringUtils.format(
                         execCommandStub,
                         StringUtils.joinCommand(
                         asadminLocation.getAbsolutePath(),
                         GlassFishUtils.START_DATABASE_COMMAND));
-
+                
                 list.add(FileUtils.writeFile(startDerbyFile, startDbContents));
-
+                
                 String stopDomainContents = StringUtils.format(
                         execCommandStub,
                         StringUtils.joinCommand(
                         asadminLocation.getAbsolutePath(),
                         GlassFishUtils.STOP_DOMAIN_COMMAND,
                         DOMAIN_NAME));
-
+                
                 list.add(FileUtils.writeFile(stopDomainFile, stopDomainContents));
-
-
+                
+                
                 String stopDbContents = StringUtils.format(
                         execCommandStub,
                         StringUtils.joinCommand(
                         asadminLocation.getAbsolutePath(),
                         GlassFishUtils.STOP_DATABASE_COMMAND));
-
+                
                 list.add(FileUtils.writeFile(stopDerbyFile, stopDbContents));
-
+                
                 SystemUtils.correctFilesPermissions(launchersDir);
             }
-
+            
             if(SystemUtils.isWindows()) {
                 modifyShortcut(getIconShortcut(adminConsoleFile, AS_ICON_ADMIN_CONSOLE, AS_ADMIN_CONSOLE_NAME, location),
                         isCreate);
@@ -523,7 +477,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return list;
     }
-
+    
     private void modifyShortcut(
             final Shortcut shortcut,
             final boolean create) throws NativeException {
@@ -533,7 +487,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             SystemUtils.removeShortcut(shortcut, LocationType.CURRENT_USER_START_MENU, true);
         }
     }
-
+    
     private Shortcut getIconShortcut(
             final File file,
             final String icon,

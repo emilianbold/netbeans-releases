@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -50,7 +49,7 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class MAMPInstallation implements Installation {
+public class MAMPInstallation extends AbstractInstallation {
     private static final String DEFAULT_BASE_PATH = "/Applications/MAMP"; // NOI8N
     private static final String START_PATH = "/bin/startMysql.sh"; // NOI18N
     private static final String STOP_PATH = "/bin/stopMysql.sh"; // NOI18N
@@ -73,9 +72,8 @@ public class MAMPInstallation implements Installation {
         return true;
     }
 
-    public boolean isInstalled() {
-        return Utilities.isMac() && 
-                Utils.isValidExecutable(getStartCommand()[0]);
+    public boolean isValidOnCurrentOS() {
+        return Utilities.isMac();
     }
 
     public String[] getAdminCommand() {
@@ -98,4 +96,25 @@ public class MAMPInstallation implements Installation {
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
+
+    @Override
+    protected String getBasePath() {
+        return basePath;
+    }
+
+    @Override
+    protected String getStartPath() {
+        return START_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return STOP_PATH;
+    }
+
+    @Override
+    protected Installation createInstallation(String basePath) {
+        return new MAMPInstallation(basePath);
+    }
+
 }

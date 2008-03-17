@@ -59,7 +59,6 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -112,7 +111,7 @@ public class RestServicesNodeFactory implements NodeFactory {
                     }
                 });
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                
             }
             
             return result;

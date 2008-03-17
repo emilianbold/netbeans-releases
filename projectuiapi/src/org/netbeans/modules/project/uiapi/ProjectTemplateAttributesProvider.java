@@ -83,15 +83,19 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
     
     private static Map<String, ? extends Object> checkProjectLicense(Map<String, Object> m) {
         Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
+        Map<String, Object> newMap = null;
         if (prjAttrObj instanceof Map) {
             Map prjAttrs = (Map) prjAttrObj;
             if (prjAttrs.get(ATTR_LICENSE) != null) {
                 return m;
             }
-        }
-        if (prjAttrObj != null) {
+        } else if (prjAttrObj != null) {
             return m;
+        } else {
+            newMap = new HashMap<String, Object>();
         }
-       return Collections.singletonMap(ATTR_PROJECT, Collections.singletonMap(ATTR_LICENSE, "default")); // NOI18N
+        newMap.put(ATTR_PROJECT, Collections.<String, String>singletonMap(ATTR_LICENSE, "default")); // NOI18N
+        return newMap;
     }
+    
 }

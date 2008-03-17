@@ -1336,43 +1336,27 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     }
 
-    private static class EditorRegistryListener implements CaretListener/*, PropertyChangeListener*/ {
-                        
-        private Request request;
+    private static class EditorRegistryListener implements ChangeListener, CaretListener {
+
         private JTextComponent lastEditor;
-        
-        public EditorRegistryListener() {
-            EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    editorRegistryChanged();
-                }
-            });
-            editorRegistryChanged();
+
+        public EditorRegistryListener () {
+            Registry.addChangeListener(this);
         }
-                
-        public void editorRegistryChanged() {
-            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
+
+        public void stateChanged(ChangeEvent event) {
+            final JTextComponent editor = Registry.getMostActiveComponent();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
-                    //lastEditor.removePropertyChangeListener(this);
-                    final Document doc = lastEditor.getDocument();
-                    Source js = null;
-                    if (doc != null) {
-                        js = forDocument(doc);
-                    }
-                    //if (js != null) {
-                    //    js.k24 = false;
-                    //}                   
                 }
                 lastEditor = editor;
-                if (lastEditor != null) {                    
+                if (lastEditor != null) {
                     lastEditor.addCaretListener(this);
-                    //lastEditor.addPropertyChangeListener(this);
                 }
             }
         }
-        
+
         public void caretUpdate(CaretEvent event) {
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument();
@@ -1384,39 +1368,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 }
             }
         }
-
-//        public void propertyChange(final PropertyChangeEvent evt) {
-//            String propName = evt.getPropertyName();
-//            if ("completion-active".equals(propName)) {
-//                Source js = null;
-//                final Document doc = lastEditor.getDocument();
-//                if (doc != null) {
-//                    js = forDocument(doc);
-//                }
-//                if (js != null) {
-//                    Object rawValue = evt.getNewValue();
-//                    assert rawValue instanceof Boolean;
-//                    if (rawValue instanceof Boolean) {
-//                        final boolean value = (Boolean)rawValue;
-//                        if (value) {
-//                            assert this.request == null;
-//                            this.request = currentRequest.getTaskToCancel(false);
-//                            if (this.request != null) {
-//                                this.request.task.cancel();
-//                            }
-//                            js.k24 = true;
-//                        }
-//                        else {                    
-//                            Request _request = this.request;
-//                            this.request = null;                            
-//                            js.k24 = false;
-//                            js.resetTask.schedule(js.reparseDelay);
-//                            currentRequest.cancelCompleted(_request);
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
 
     private class FileChangeListenerImpl extends FileChangeAdapter {

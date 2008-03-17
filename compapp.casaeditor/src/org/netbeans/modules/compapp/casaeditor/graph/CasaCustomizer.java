@@ -53,18 +53,13 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.awt.GradientRectangleColorScheme;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,39 +108,29 @@ public class CasaCustomizer {
     private static final String S_FONT_EXT_SU_TITLE = "FONT_EXT_SU_TITLE";                  // NOI18N
     private static final String S_FONT_EXT_SU_PIN = "FONT_EXT_SU_PIN";                      // NOI18N
     
-    private static final String S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE = "BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE";   // NOI18N
-    private static final String S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE = "BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE";     // NOI18N
-    private static final String S_BOOLEAN_CLASSIC_QOS_STYLE = "BOOLEAN_CLASSIC_QOS_STYLE";                     // NOI18N
-    
     public static final String PROPERTY_CHANGE = "Customizer_Property_Changed";             // NOI18N
 
     //private Font FONT_BC_HEADER = new Font("Helvetica", Font.BOLD, 14);    
     
-    private Map<String, Color> mColorsMap = new LinkedHashMap<String, Color>();
-    private Map<String, Font> mFontsMap   = new LinkedHashMap<String, Font>();
-    private Map<String, Boolean> mStylesMap   = new LinkedHashMap<String, Boolean>();
-    private Map<String, GradientRectangleColorScheme> mGradientsMap = new LinkedHashMap<String, GradientRectangleColorScheme>();
-    
+    private LinkedHashMap<String, Color> mColorsMap = new LinkedHashMap<String, Color>();
+    private LinkedHashMap<String, Font> mFontsMap   = new LinkedHashMap<String, Font>();
+    private LinkedHashMap<String, GradientRectangleColorScheme> mGradientsMap = new LinkedHashMap<String, GradientRectangleColorScheme>();
+
     private static String S_SEPARATOR = ",";                                                    // NOI18N
     /**
      * Default Lable Font: java.awt.Font[family=Dialog,name=Dialog,style=plain,size=12]
      * Default Lable color: java.awt.Color[r=0,g=0,b=0]
      */
     
-    public Map<String, Color> getColorsMapReference() {
+    public LinkedHashMap<String, Color> getColorsMapReference() {
         return mColorsMap;
     }
-    
-    public Map<String, Font> getFontsMapReference() {
+    public LinkedHashMap<String, Font> getFontsMapReference() {
         return mFontsMap;
     }
     
-    public Map<String, GradientRectangleColorScheme> getGradientsMapReference() {
+    public LinkedHashMap<String, GradientRectangleColorScheme> getGradientsMapReference() {
         return mGradientsMap;
-    }
-    
-    public Map<String, Boolean> getStylesMapReference() {
-        return mStylesMap;
     }
            
     /** Creates a new instance of CasaCustomizer */
@@ -399,27 +384,6 @@ public class CasaCustomizer {
         mFontsMap.put(S_FONT_EXT_SU_PIN, font);
     }
     
-    public Boolean getBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE() {
-        return mStylesMap.get(S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE);
-    }    
-//    public void setBOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE(boolean value) {
-//        mStylesMap.put(S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE, value);
-//    }
-    
-    public Boolean getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE() {
-        return mStylesMap.get(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE);
-    }    
-//    public void setBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE(boolean value) {
-//        mStylesMap.put(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE, value);
-//    }
-    
-    public Boolean getBOOLEAN_CLASSIC_QOS_STYLE() {
-        return mStylesMap.get(S_BOOLEAN_CLASSIC_QOS_STYLE);
-    }    
-//    public void setBOOLEAN_CLASSIC_QOS_STYLE(boolean value) {
-//        mStylesMap.put(S_BOOLEAN_CLASSIC_QOS_STYLE, value);
-//    }
-    
     
     public GradientRectangleColorScheme getGradientINT_SU_BACKGROUND() {
         return mGradientsMap.get(S_COLOR_SU_INTERNAL_BACKGROUND);
@@ -431,7 +395,7 @@ public class CasaCustomizer {
         return mGradientsMap.get(S_COLOR_BC_TITLE_BACKGROUND);
     }
     
-    public void renderCasaDesignView(CasaModelGraphScene scene) {        
+    public void renderCasaDesignView(CasaModelGraphScene scene) {
         changeBindingRegion(scene);
         changeEngineRegion(scene);
         changeExternalRegion(scene);
@@ -451,7 +415,8 @@ public class CasaCustomizer {
             if(widget instanceof CasaNodeWidgetBinding) {
                 change((CasaNodeWidgetBinding) widget);
             }
-        }        
+        }
+        
     }
     
     private void changeEngineRegion(CasaModelGraphScene scene) {
@@ -482,7 +447,7 @@ public class CasaCustomizer {
         }
     }
     
-    private void changeConnectionLayer(CasaModelGraphScene scene) {        
+    private void changeConnectionLayer(CasaModelGraphScene scene) {
         LayerWidget regionWidget = scene.getConnectionLayer();
         for(Widget widget : regionWidget.getChildren()) {
             if(widget instanceof CasaConnectionWidget) {
@@ -496,7 +461,6 @@ public class CasaCustomizer {
         internalSUWidget.setTitleFont(getFONT_SU_HEADER());
         internalSUWidget.setPinFont(getFONT_SU_PIN());
         internalSUWidget.setPinColor(getCOLOR_SU_INTERNAL_PIN());
-        internalSUWidget.updatePinImage();
         internalSUWidget.readjustBounds();
     }
     
@@ -505,7 +469,6 @@ public class CasaCustomizer {
         externalSUWidget.setTitleFont(this.getFONT_EXT_SU_HEADER());
         externalSUWidget.setPinFont(getFONT_EXT_SU_PIN());
         externalSUWidget.setPinColor(getCOLOR_SU_EXTERNAL_PIN());
-        externalSUWidget.updatePinImage();
         externalSUWidget.readjustBounds();
     }
     
@@ -516,28 +479,26 @@ public class CasaCustomizer {
         bindingWidget.setTitleBackgroundColor(getCOLOR_BC_TITLE_BACKGROUND());
         bindingWidget.setLabelColor(getCOLOR_BC_LABEL());
         bindingWidget.setLabelFont(getFONT_BC_LABEL());
-        bindingWidget.updatePinImage();
     }
 
     private void change(CasaConnectionWidget connectionWidget) {
         connectionWidget.setForegroundColor(getCOLOR_CONNECTION_NORMAL());
-        connectionWidget.updateQoSWidgets();
     }
 
     public Font getFont(String str) {
         //Font name, style, size
-        if (str == null || str.trim().equals("")) {  // NOI18N
+        if (str == null || str.trim().equals("")) {                         // NOI18N
             Scene scene = new Scene();
             return scene.getDefaultFont().deriveFont(Font.BOLD);
         }
-        String[] strNumbers = str.split(S_SEPARATOR);
+        String[] strNumbers = str.split(S_SEPARATOR);                               // NOI18N
         int appearance = Integer.parseInt(strNumbers[1].trim());
         int size = Integer.parseInt(strNumbers[2].trim());
         return new Font(strNumbers[0].trim(), appearance, size);
     }
     
     public GradientRectangleColorScheme getGradient(String str) {
-        String[] strNumbers = str.split(S_SEPARATOR);  
+        String[] strNumbers = str.split(S_SEPARATOR);                               // NOI18N
         return new GradientRectangleColorScheme(
                 new Color(Integer.parseInt(strNumbers[0])),
                 new Color(Integer.parseInt(strNumbers[1])),
@@ -548,7 +509,7 @@ public class CasaCustomizer {
 
     public Boolean getBoolean(String str) {
         Boolean bValue;
-        if(str.equalsIgnoreCase("true")) {      // NOI18N
+        if(str.equalsIgnoreCase("true")) {                                  // NOI18N
             bValue = new Boolean(true);
         } else {
             bValue = new Boolean(false);
@@ -562,8 +523,6 @@ public class CasaCustomizer {
            retValue =  (Object) getColorsMapReference().get(key);
         } else if(getFontsMapReference().containsKey(key)) {
            retValue =  (Object) getFontsMapReference().get(key);
-        } else if(getStylesMapReference().containsKey(key)) {
-           retValue =  (Object) getStylesMapReference().get(key);
         } 
         return retValue;
     }
@@ -588,58 +547,34 @@ public class CasaCustomizer {
         CasaFactory.getCasaCustomizerRegistor().propagateChange();
     }
     
-    public void setValue(String key, Boolean newValue) {
-        Boolean oldValue = getStylesMapReference().get(key);
-        
-        getStylesMapReference().put(key, newValue);
-        CasaFactory.getCasaCustomizerRegistor().propagateChange();
-        
-        if (key.equals(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE) &&
-                oldValue != newValue) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    CasaCustomizer.class,
-                    "MSG_PROPERTY_CHANGE_WILL_TAKE_EFFECT_NEXT_TIME"),
-                    NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd); 
-        }
-    }
-    
     public void restoreDefaults(boolean bPropagateChange) {
-        Map<String, String> defaultColors = getDefaultColors();
+        LinkedHashMap<String, String> defaultColors = getDefaultColors();
         int i;
         for(String key : defaultColors.keySet()){
             i = Integer.parseInt(defaultColors.get(key));
             mColorsMap.put(key, new Color(i));
         }
-        
-        Map<String, String> defaultFonts = getDefaultFonts();
+        LinkedHashMap<String, String> defaultFonts = getDefaultFonts();
         Font font;
         for(String key : defaultFonts.keySet()){
             font = getFont(defaultFonts.get(key));
             mFontsMap.put(key, font);
         }
         
-        Map<String, String> dafaultGradients = getDefaultGradients();
+        LinkedHashMap<String, String> dafaultGradients = getDefaultGradients();
         GradientRectangleColorScheme gradientColor;
         for(String key : dafaultGradients.keySet()){
             gradientColor = getGradient(dafaultGradients.get(key));
             mGradientsMap.put(key, gradientColor);
         }
 
-        Map<String, String> defaultStyles = getDefaultStyles();
-        for(String key : defaultStyles.keySet()) {
-            boolean value = getBoolean(defaultStyles.get(key));
-            mStylesMap.put(key, value);
-        }
-        
-        if(bPropagateChange) {
+         if(bPropagateChange) {
             CasaFactory.getCasaCustomizerRegistor().propagateChange();
         }
     }
     
     public void loadFromPreferences(Preferences prefs, boolean bRenderDesignView) {
-        Map<String, String> defaultColors = getDefaultColors();
+        LinkedHashMap<String, String> defaultColors = getDefaultColors();
         String value;
         int i;
         for(String key : defaultColors.keySet()){
@@ -652,7 +587,7 @@ public class CasaCustomizer {
             mColorsMap.put(key, new Color(i));
         }
         
-        Map<String, String> defaultFonts = getDefaultFonts();
+        LinkedHashMap<String, String> defaultFonts = getDefaultFonts();
         Font font;
         for(String key : defaultFonts.keySet()){
             value = prefs.get(key, defaultFonts.get(key));
@@ -664,19 +599,7 @@ public class CasaCustomizer {
             mFontsMap.put(key, font);
         }
         
-        Map<String, String> defaultStyles = getDefaultStyles();
-        Boolean bool;
-        for(String key : defaultStyles.keySet()){
-            value = prefs.get(key, defaultStyles.get(key));
-            try {
-                bool = getBoolean(value);
-            } catch(Exception e) {
-                bool = false;
-            }
-            mStylesMap.put(key, bool);
-        }
-        
-        Map<String, String> dafaultGradients = getDefaultGradients();
+        LinkedHashMap<String, String> dafaultGradients = getDefaultGradients();
         GradientRectangleColorScheme gradientColor;
         for(String key : dafaultGradients.keySet()){
             value = prefs.get(key, dafaultGradients.get(key));
@@ -700,21 +623,18 @@ public class CasaCustomizer {
         for(String key : mColorsMap.keySet()){
             prefs.put(key, Integer.toString(mColorsMap.get(key).getRGB()));
         }
-        
+        Font font;
+        String value;
         for(String key : mFontsMap.keySet()){
-            Font font = mFontsMap.get(key);
-            String value = font.getName() + S_SEPARATOR + Integer.toString(font.getStyle()) + S_SEPARATOR + Integer.toString(font.getSize());  // NOI18N
+            font = mFontsMap.get(key);
+            value = font.getName() + S_SEPARATOR + Integer.toString(font.getStyle()) + S_SEPARATOR + Integer.toString(font.getSize());  // NOI18N
             prefs.put(key, value);
         }
         
-        for(String key : mStylesMap.keySet()){
-            prefs.put(key, Boolean.toString(mStylesMap.get(key)));
-        }
-        
+        GradientRectangleColorScheme gradientColor;
         for(String key : mGradientsMap.keySet()){
-            GradientRectangleColorScheme gradientColor = mGradientsMap.get(key);
-            String value = 
-                    Integer.toString(gradientColor.getColor1().getRGB()) + S_SEPARATOR +                
+            gradientColor = mGradientsMap.get(key);
+            value = Integer.toString(gradientColor.getColor1().getRGB()) + S_SEPARATOR +                
                     Integer.toString(gradientColor.getColor2().getRGB()) + S_SEPARATOR +                
                     Integer.toString(gradientColor.getColor3().getRGB()) + S_SEPARATOR +                
                     Integer.toString(gradientColor.getColor4().getRGB()) + S_SEPARATOR +                
@@ -723,8 +643,8 @@ public class CasaCustomizer {
         }
     }
     
-    public Map<String, String> getDefaultColors() {
-        Map<String, String> colorsMap = new LinkedHashMap<String, String>();
+    public LinkedHashMap<String, String> getDefaultColors() {
+        LinkedHashMap<String, String> colorsMap = new LinkedHashMap<String, String>();
         
         // REGIONS
         
@@ -765,8 +685,8 @@ public class CasaCustomizer {
         return colorsMap;
     }
     
-    public Map<String, String> getDefaultFonts() {
-        Map<String, String> fontsMap = new LinkedHashMap<String, String>();   
+    public LinkedHashMap<String, String> getDefaultFonts() {
+        LinkedHashMap<String, String> fontsMap = new LinkedHashMap<String, String>();   
         
         fontsMap.put(S_FONT_BC_REGION_TITLE, "Dialog, 1, 14");          // NOI18N
         fontsMap.put(S_FONT_SU_REGION_TITLE, "Dialog, 1, 14");          // NOI18N
@@ -782,18 +702,8 @@ public class CasaCustomizer {
         return fontsMap;
     }
     
-    public Map<String, String> getDefaultStyles() {
-        Map<String, String> stylesMap = new LinkedHashMap<String, String>();   
-        
-        stylesMap.put(S_BOOLEAN_CLASSIC_ENDPOINT_PIN_STYLE, "false");          // NOI18N
-        stylesMap.put(S_BOOLEAN_CLASSIC_SESU_LAYOUT_STYLE, "true");          // NOI18N
-        stylesMap.put(S_BOOLEAN_CLASSIC_QOS_STYLE, "true");      // NOI18N
-        
-        return stylesMap;
-    }
-    
-    public Map<String, String> getDefaultGradients() {
-        Map<String, String> gradientsMap = new LinkedHashMap<String, String>();
+    public LinkedHashMap<String, String> getDefaultGradients() {
+        LinkedHashMap<String, String> gradientsMap = new LinkedHashMap<String, String>();
 
         String gradientColor = new Integer((new Color(221, 235, 246)).getRGB()).toString() + S_SEPARATOR +
                               new Integer((new Color(255, 255, 255)).getRGB()).toString() + S_SEPARATOR +

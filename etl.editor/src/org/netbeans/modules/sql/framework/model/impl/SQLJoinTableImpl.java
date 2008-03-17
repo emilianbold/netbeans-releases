@@ -54,7 +54,7 @@ import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -62,7 +62,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 public class SQLJoinTableImpl extends AbstractSQLObject implements SQLJoinTable {
 
     private static final String LOG_CATEGORY = SQLJoinTableImpl.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(SQLJoinTableImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinTableImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private GUIInfo guiInfo = new GUIInfo();
     private SourceTable table;
@@ -115,7 +115,7 @@ public class SQLJoinTableImpl extends AbstractSQLObject implements SQLJoinTable 
         try {
             cond = new SQLJoinTableImpl(this);
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("EDIT115: can not create clone of{0}", this.toString()), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR118: can not create clone of{0}", this.toString()), ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
         return cond;

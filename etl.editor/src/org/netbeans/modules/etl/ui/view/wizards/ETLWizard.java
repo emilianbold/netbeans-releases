@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import javax.swing.SwingUtilities;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -61,7 +62,7 @@ public abstract class ETLWizard {
     /* Log4J category string */
 
     private static final String LOG_CATEGORY = ETLWizard.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(ETLWizard.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLWizard.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** Common context for panels to exchange and store data. */
     protected ETLWizardContext context;
@@ -131,18 +132,18 @@ public abstract class ETLWizard {
 
             if (desc != null) {
                 if (desc.getValue() == WizardDescriptor.FINISH_OPTION) {
-                    mLogger.infoNoloc(mLoc.t("EDIT037: User finished the wizard.{0}", LOG_CATEGORY));
+                    mLogger.infoNoloc(mLoc.t("PRSR037: User finished the wizard.{0}", LOG_CATEGORY));
                     // Call method in concrete implementation to handle committal.
                     commit();
                     response = true;
                 } else {
-                    mLogger.infoNoloc(mLoc.t("EDIT038: User closed or cancelled the wizard.{0}", LOG_CATEGORY));
+                    mLogger.infoNoloc(mLoc.t("PRSR038: User closed or cancelled the wizard.{0}", LOG_CATEGORY));
                     // Call method in concrete implementation to handle cancellation.
                     cancel();
                 }
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("EDIT039: Exception caught while performing wizard processing.{0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR039: Exception caught while performing wizard processing.{0}", LOG_CATEGORY), e);
             ErrorManager.getDefault().notify(e);
         } finally {
             // Call method in concrete implementation to do any necessary cleanup.

@@ -200,7 +200,7 @@ public final class SQLExecuteHelper {
         }
         return Collections.unmodifiableList(statements);
     }
-        
+    
     static List<StatementInfo> split(String script) {
         return new SQLSplitter(script).getStatements();
     }
@@ -235,9 +235,6 @@ public final class SQLExecuteHelper {
         
         private int state = STATE_MEANINGFUL_TEXT;
         
-        private String delimiter = ";"; // NOI18N
-        private static final String DELIMITER_TOKEN = "delimiter"; // NOI18N
-                
         /**
          * @param sql the SQL string to parse. If it contains multiple lines
          * they have to be delimited by '\n' characters.
@@ -250,7 +247,6 @@ public final class SQLExecuteHelper {
         }
         
         private void parse() {
-            checkDelimiterStatement();
             while (pos < sqlLength) {
                 char ch = sql.charAt(pos);
                 
@@ -262,15 +258,27 @@ public final class SQLExecuteHelper {
                     continue;
                 }
                 
-                nextColumn();
+                if (wasEOL) {
+                    line++;
+                    column = 0;
+                    wasEOL = false;
+                } else {
+                    column++;
+                }
+                
+                if (ch == '\n') {
+                    wasEOL = true;
+                }
                 
                 switch (state) {
                     case STATE_MEANINGFUL_TEXT:
                         if (ch == '-') {
                             state = STATE_MAYBE_LINE_COMMENT;
-                        } else if (ch == '/') {
+                        }
+                        if (ch == '/') {
                             state = STATE_MAYBE_BLOCK_COMMENT;
-                        } else if (ch == '\'') {
+                        }
+                        if (ch == '\'') {
                             state = STATE_STRING;
                         }
                         break;
@@ -333,173 +341,36 @@ public final class SQLExecuteHelper {
                         assert false;
                 }
                 
-                if (state == STATE_MEANINGFUL_TEXT && isDelimiter()) {
+                if (state == STATE_MEANINGFUL_TEXT && ch == ';') {
                     rawEndOffset = pos;
                     addStatement();
                     statement.setLength(0);
-                    rawStartOffset = pos + delimiter.length(); // skip the delimiter
-                    pos += delimiter.length();
-                    
-                    // See if the next statement changes the delimiter
-                    // Note how we skip over a 'delimiter' statement - it's not
-                    // something we send to the server.
-                    checkDelimiterStatement();
-                } else if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
-                    // don't append leading whitespace
-                    if (statement.length() > 0 || !Character.isWhitespace(ch)) {
-                        // remember the position of the first appended char
-                        if (statement.length() == 0) {
-                            startOffset = pos;
-                            endOffset = pos;
-                            startLine = line;
-                            startColumn = column;
-                        }
-                        statement.append(ch);
-                        // the end offset is the character after the last non-whitespace character
-                        if (state == STATE_STRING || !Character.isWhitespace(ch)) {
-                            endOffset = pos + 1;
+                    rawStartOffset = pos + 1; // skip the semicolon
+                } else {
+                    if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
+                        // don't append leading whitespace
+                        if (statement.length() > 0 || !Character.isWhitespace(ch)) {
+                            // remember the position of the first appended char
+                            if (statement.length() == 0) {
+                                startOffset = pos;
+                                endOffset = pos;
+                                startLine = line;
+                                startColumn = column;
+                            }
+                            statement.append(ch);
+                            // the end offset is the character after the last non-whitespace character
+                            if (state == STATE_STRING || !Character.isWhitespace(ch)) {
+                                endOffset = pos + 1;
+                            }
                         }
                     }
-                    pos++;
-                } else {
-                    pos++;
                 }
+                
+                pos++;
             }
             
             rawEndOffset = pos;
             addStatement();
-        }
-        
-        /**
-         * See if the user wants to use a different delimiter for splitting
-         * up statements.  This is useful if, for example, their SQL contains
-         * stored procedures or triggers or other blocks that contain multiple
-         * statements but should be executed as a single unit. 
-         * 
-         * If we see the delimiter token, we read in what the new delimiter 
-         * should be, and then return the new character position past the
-         * delimiter statement, as this shouldn't be passed on to the 
-         * database.
-         */
-        private void checkDelimiterStatement() {
-            skipWhitespace();
-                        
-            if ( pos == sqlLength) {
-                return;
-            }
-            
-            if ( ! isToken(DELIMITER_TOKEN)) {
-                return;
-            }
-            
-            // Skip past the delimiter token
-            int tokenLength = DELIMITER_TOKEN.length();
-            pos += tokenLength;
-            
-            skipWhitespace();
-            
-            int endPos = pos;
-            while ( ! Character.isWhitespace(sql.charAt(endPos)) && 
-                    endPos < sqlLength) {
-                endPos++;
-            }
-            
-            if ( pos == endPos ) {
-                return;
-            }
-            
-            delimiter = sql.substring(pos, endPos);
-            
-            pos = endPos;
-            statement.setLength(0);
-            rawStartOffset = pos;
-        }
-        
-        private void skipWhitespace() {
-            while ( pos < sqlLength && Character.isWhitespace(sql.charAt(pos)) ) {
-                nextColumn();
-                pos++;
-            }            
-        }
-        
-        private boolean isDelimiter() {
-            int length = delimiter.length();
-            
-            if ( pos + length > sqlLength) {
-                return false;
-            }
-            
-            for ( int i = 0 ; i < length ; i++ ) {
-                if (delimiter.charAt(i) != sql.charAt(pos + i)) {
-                    return false;
-                }
-                i++;
-            }
-            
-            return true;
-        }
-        
-        private void nextColumn() {
-            if (wasEOL) {
-                line++;
-                column = 0;
-                wasEOL = false;
-            } else {
-                column++;
-            }
-                            
-            if (sql.charAt(pos) == '\n') {
-                wasEOL = true;
-            }
-        }
-        
-        
-        /** 
-         * See if the SQL text starting at the given position is a given token 
-         * 
-         * @param sql - the full SQL text
-         * @param ch - the character at the current position
-         * @param pos - the current position index for the SQL text
-         * @param token - the token we are looking for
-         * 
-         * @return true if the token is found at the current position
-         */
-        private boolean isToken(String token) {
-            char ch = sql.charAt(pos);
-            
-            // Simple check to see if there's potential.  In most cases this
-            // will return false and we don't have to waste our time doing
-            // any other processing.  Move along, move along...
-            if ( Character.toUpperCase(ch) != 
-                    Character.toUpperCase(token.charAt(0)) ) {
-                return false;
-            }
-
-            // Don't want to recognize larger strings that contain the token
-            if ( pos > 0 &&  !Character.isWhitespace(sql.charAt(pos - 1)) ) {
-                return false;
-            }
-            
-            if ( sql.length() > pos + token.length() &&
-                    Character.isLetterOrDigit(sql.charAt(pos + token.length())) ) {
-                return false;
-            }
-        
-
-            // Create a substring that contains just the potential token
-            // This way we don't have to uppercase the entire SQL string.
-            String substr;
-            try {
-                substr = sql.substring(pos, pos + token.length()); // NOI18N
-            } catch ( IndexOutOfBoundsException e ) {
-                return false;
-            }
-            
-            if ( substr.toUpperCase().equals(token.toUpperCase())) { // NOI8N
-                return true;
-            }
-            
-            return false;            
         }
         
         private void addStatement() {

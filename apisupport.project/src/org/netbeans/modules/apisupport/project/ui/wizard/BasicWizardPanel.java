@@ -149,9 +149,6 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel<WizardD
                 case SUITE:
                     helpId = "suite"; // NOI18N
                     break;
-                case APPLICATION:
-                    helpId = "application"; // NOI18N
-                    break;
                 case MODULE:
                 case SUITE_COMPONENT:
                     helpId = "module"; // NOI18N

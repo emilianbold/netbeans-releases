@@ -46,17 +46,23 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.logging.Logger;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
+import org.openide.util.WeakListeners;
+import org.openide.windows.TopComponent;
 
 /* Listens to user actions that trigger sliding operation such as slide in
  * slide out or popup menu action to be invoked.
@@ -75,8 +81,6 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     private AutoSlideTrigger autoSlideTrigger = new AutoSlideTrigger();
     private ResizeGestureRecognizer resizer;
     private boolean pressingButton = false;
-    
-    private static final Logger LOG = Logger.getLogger(SlideGestureRecognizer.class.getName());
 
     SlideGestureRecognizer(SlideBar slideBar, ResizeGestureRecognizer resize) {
         this.slideBar = slideBar;
@@ -143,18 +147,18 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     public void mouseExited(MouseEvent e) {
         mouseInButton = null;
         pressingButton = false;
-        autoSlideTrigger.deactivateAutoSlideInGesture(e);
+        autoSlideTrigger.deactivateAutoSlideInGesture();
     }
     
     /** Reacts to popup triggers on sliding buttons */
     public void mousePressed(MouseEvent e) {
-        autoSlideTrigger.deactivateAutoSlideInGesture(e);
+        autoSlideTrigger.deactivateAutoSlideInGesture();
         handlePopupRequests(e);
     }
     
     /** Reacts to popup triggers on sliding buttons */
     public void mouseReleased(MouseEvent e) {
-        autoSlideTrigger.deactivateAutoSlideInGesture(e);
+        autoSlideTrigger.deactivateAutoSlideInGesture();
         handlePopupRequests(e);
     }
     
@@ -184,8 +188,6 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         
         /** timer for triggering slide in after mouse stops for a while */
         private Timer slideInTimer;
-        /** timer for automatic slide out */
-        private Timer slideOutTimer;
         /** location of mouse pointer in last timer cycle */
         private int initialX, initialY;
         /** true when auto slide-in was performed and is visible, false ootherwise */
@@ -209,9 +211,8 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         }
         
         /** Stops listening to user events that may lead to automatic slide in */
-        public void deactivateAutoSlideInGesture (MouseEvent evt) {
+        public void deactivateAutoSlideInGesture() {
             slideInTimer.stop();
-            notifySlideOutTimer(evt);
         }
 
         /** @return true when auto slide system is listening and active, false ootherwise */
@@ -220,18 +221,9 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         }
 
         /** Action listener implementation - reacts to timer notification, which
-         * means we should check conditions and perform auto slide in or auto
-         * slide out if appropriate
+         * means we should check conditions and perform auto slide in if appropriate
          */
         public void actionPerformed(ActionEvent evt) {
-            if (slideInTimer.equals(evt.getSource())) {
-                slideInTimerReaction(evt);
-            } else {
-                slideOutTimerReaction(evt);
-            }
-        }
-        
-        private void slideInTimerReaction (ActionEvent evt) {
             if (isSlideInGesture()) {
                 slideInTimer.stop();
                 // multiple auto slide in requests, get rid of old one first
@@ -251,23 +243,17 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
                 initialY = curMouseLocY;
             }
         }
-        
-        private void slideOutTimerReaction (ActionEvent evt) {
-            LOG.fine("slideOutTimerReaction entered, trying to auto slide out");
-            slideOutTimer.stop();
-            autoSlideOutIfNeeded();
-        }
 
         /** AWTEventListener implementation. Analyzes incoming mouse motion
          * and initiates automatic slide out when needed.
          */
         public void eventDispatched(AWTEvent event) {
-            notifySlideOutTimer((MouseEvent)event);
+            autoSlideOutIfNeeded((MouseEvent)event);
         }
         
         /** Checks conditions and runs auto slide out if needed.
          */
-        private void autoSlideOutIfNeeded () {
+        private void autoSlideOutIfNeeded(MouseEvent evt) {
             if (!autoSlideActive) {
                 // ignore pending events that came later after cleanup
                 return;
@@ -277,9 +263,10 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
                 cleanup();
                 return;
             }
-            
-            cleanup();
-            autoSlideOut();
+            if (isSlideOutGesture(evt)) {
+                cleanup();
+                autoSlideOut();
+            }
         }
 
         /** Actually performs slide out by notifying slide bar */
@@ -327,10 +314,8 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
             }
             
             SwingUtilities.convertPointToScreen(mouseLoc, (Component)evt.getSource());
-            
-            boolean isMouseOut = !activeArea.contains(mouseLoc);
-            
-            return isMouseOut;
+
+            return !activeArea.contains(mouseLoc);
         }
 
         /** @return Area in which automatic slide in is preserved. Can return
@@ -370,37 +355,6 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
                 slideh, actArea);
             
             return actArea;
-        }
-
-        /** 
-         * Handles start or stop of timer for correct auto slide out
-         * functionality.
-         * 
-         * @param evt Mouse event to analyze
-         */
-        private void notifySlideOutTimer (MouseEvent evt) {
-            if (!autoSlideActive) {
-                return;
-            }
-            // stop automatic slide out if slide out gesture not satisfied
-            if (!isSlideOutGesture(evt)) {
-                if (slideOutTimer != null && slideOutTimer.isRunning()) {
-                    slideOutTimer.stop();
-                    LOG.fine("notifySlideOutTimer: slide out gesture not satisfied, stopping auto slide out");
-                }
-                return;
-            }
-            
-            if (slideOutTimer == null) {
-                slideOutTimer = new Timer(400, this);
-                slideOutTimer.setRepeats(false);
-                LOG.fine("notifySlideOutTimer: created slideOutTimer");
-            }
-
-            if (!slideOutTimer.isRunning()) {
-                slideOutTimer.start();
-                LOG.fine("notifySlideOutTimer: started slideoutTimer");
-            }
         }
         
         

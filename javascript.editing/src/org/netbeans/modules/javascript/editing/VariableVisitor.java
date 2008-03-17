@@ -61,7 +61,6 @@ public class VariableVisitor implements ParseTreeVisitor {
 
     private AstPath path = new AstPath();
     private ScopeChain scopes = new ScopeChain();
-    private boolean inWith;
     
     //private List<Scope> allScopes = new ArrayList<Scope>();
 
@@ -265,11 +264,6 @@ public class VariableVisitor implements ParseTreeVisitor {
             }
 
             case Token.BINDNAME: {
-                if (inWith) {
-                    // Assignments in a with block really apply to the with object
-                    // so these aren't globals or even locals, they are properties
-                    break;
-                }
                 // TODO - only track when used in a SETNAME?
 //                    Node parent = getParent();
 //                    int type = -1;
@@ -281,11 +275,6 @@ public class VariableVisitor implements ParseTreeVisitor {
                 Scope scope = scopes.getCurrent();
                 String var = node.getString();
                 scope.writtenVars.add(var);
-                break;
-            }
-            
-            case Token.WITH: {
-                inWith = true;
                 break;
             }
 
@@ -323,11 +312,6 @@ public class VariableVisitor implements ParseTreeVisitor {
                     Scope scope = scopes.getCurrent();
                     scope.readCalls.add(node.getString());
                 } else {
-                    if (inWith) {
-                        // Assignments in a with block really apply to the with object
-                        // so these aren't globals or even locals, they are properties
-                        break;
-                    }
                     // A variable read
                     Scope scope = scopes.getCurrent();
                     String str = node.getString();
@@ -354,14 +338,8 @@ public class VariableVisitor implements ParseTreeVisitor {
                 scopes.pop();
 
                 break;
-            }
-            case Token.WITH: {
-                // XXX Not accurate - should search outwards and see if 
-                // I'm indeed in another nested with!
-                inWith = false;
-                break;
-            }
 
+            }
         }
 
         path.ascend();

@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.java.editor.options;
 
+import java.beans.*;
 import java.util.MissingResourceException;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
+import org.openide.util.NbBundle;
 
 import org.openide.util.NbBundle;
 
@@ -94,10 +96,6 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
                 JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                JavaOptions.GUESS_METHOD_ARGUMENTS_PROP,
-                JavaOptions.INDENT_ENGINE_PROP,
-                JavaOptions.JAVADOC_AUTO_POPUP_DELAY_PROP,
-                JavaOptions.JAVADOC_AUTO_POPUP_PROP,
                 JavaOptions.SHOW_DEPRECATED_MEMBERS_PROP,
         } : new String [] {
                 JavaOptions.FAST_IMPORT_PACKAGE_PROP,
@@ -106,7 +104,6 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
                 JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                 JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                JavaOptions.INDENT_ENGINE_PROP,
         };
         
         setHidden(hidden);

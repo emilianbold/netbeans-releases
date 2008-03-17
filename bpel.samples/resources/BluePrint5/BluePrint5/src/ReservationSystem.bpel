@@ -98,7 +98,8 @@
     </variables>
 
     <correlationSets>
-        <correlationSet name="reservationCorrelationSet" properties="ns0:reservationID "/>
+        <correlationSet name="reservationCorrelationSet"
+                        properties="ns0:reservationID "/>
     </correlationSets>
     
     <sequence>
@@ -109,7 +110,8 @@
                  variable="reserve"
                  createInstance="yes">
             <correlations>
-                <correlation set="reservationCorrelationSet" initiate="yes"/>
+                <correlation set="reservationCorrelationSet"
+                             initiate="yes"/>
             </correlations>
         </receive>
         
@@ -165,7 +167,8 @@
                            operation="sendHotelStatus"
                            variable="hotelStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet" initiate="no"/>
+                        <correlation set="reservationCorrelationSet"
+                                     initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty3"></empty>
@@ -194,7 +197,8 @@
                            operation="sendCarStatus"
                            variable="carStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet" initiate="no"/>
+                        <correlation set="reservationCorrelationSet"
+                                     initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty_2"></empty>
@@ -222,7 +226,8 @@
                            operation="sendAirlineStatus"
                            variable="airlineStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet" initiate="no"/>
+                        <correlation set="reservationCorrelationSet"
+                                     initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty"></empty>

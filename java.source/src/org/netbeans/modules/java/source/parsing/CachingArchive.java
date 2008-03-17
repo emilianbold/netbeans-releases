@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,7 +53,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -63,9 +62,6 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.openide.util.Exceptions;
 
 public class CachingArchive implements Archive {
-    
-    private static final Logger LOGGER = Logger.getLogger(CachingArchive.class.getName());
-    
     private final File archiveFile;
     private final boolean keepOpened;
     private ZipFile zipFile;
@@ -143,30 +139,23 @@ public class CachingArchive implements Archive {
         nameOffset = 0;
     }
                       
+    // ILazzy implementation ---------------------------------------------------
+    
+    public synchronized boolean isInitialized() {
+        return folders != null;
+    }
+    
+    public synchronized void initialize() throws IOException {
+        names = new byte[16384];
+        folders = createMap( archiveFile );
+        trunc();
+    }
+    
     // Private methods ---------------------------------------------------------
     
-    synchronized void doInit() {
-        if (folders == null) {
-            try {
-                names = new byte[16384];
-                folders = createMap(archiveFile);
-                trunc();
-            } catch (IOException e) {
-                LOGGER.warning("Broken zip file: " + archiveFile.getAbsolutePath());
-                LOGGER.log(Level.FINE, null, e);
-                names = new byte[0];
-                nameOffset = 0;
-                folders = new HashMap<String, Folder>();
-                
-                if (zipFile != null) {
-                    try {
-                        zipFile.close();
-                    } catch (IOException ex) {
-                        LOGGER.warning("Cannot close archive: " + archiveFile.getAbsolutePath());
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
-                }
-            }
+    private synchronized void doInit() throws IOException {
+        if ( !isInitialized() ) {
+            initialize();
         }
     }
 

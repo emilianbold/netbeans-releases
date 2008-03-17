@@ -96,7 +96,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Krauskopf
  */
-public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
+final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator<Node>, ExplorerManager.Provider, ChangeListener {
     private final ExplorerManager manager;
     private ModuleEntry[] platformModules;
@@ -423,7 +423,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return manager;
     }
     
-    public static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
+    private static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.

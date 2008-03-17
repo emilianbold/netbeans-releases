@@ -9,11 +9,17 @@
   <resources base="http://api.flickr.com/">
     <resource path="services">
       <resource path="rest">
-        <method id="activity_userComments" name="POST">
+        <param name="api_sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The api signature.</doc>
+        </param>
+        <method id="flickr.activity_userComments" name="POST">
           <doc xml:lang="en">Returns a list of recent activity on photos commented on by the calling user. &lt;b&gt;Do not poll this method more than once an hour&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
+            </param>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
             </param>
             <param name="per_page" required="false" style="query" type="xsd:string">
               <doc xml:lang="en">Number of items to return per page. If this argument is omitted, it defaults to 10. The maximum allowed value is 50.</doc>
@@ -27,11 +33,14 @@
           </response>
           
         </method>
-        <method id="activity_userPhotos" name="POST">
+        <method id="flickr.activity_userPhotos" name="POST">
           <doc xml:lang="en">Returns a list of recent activity on photos belonging to the calling user. &lt;b&gt;Do not poll this method more than once an hour&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
+            </param>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
             </param>
             <param name="timeframe" required="false" style="query" type="xsd:string">
               <doc xml:lang="en">The timeframe in which to return updates for. This can be specified in days (&lt;code&gt;'2d'&lt;/code&gt;) or hours (&lt;code&gt;'4h'&lt;/code&gt;). The default behavoir is to return changes since the beginning of the previous user session.</doc>
@@ -47,7 +56,7 @@
           <response>
           </response>
         </method>
-        <method id="auth_checkToken" name="POST">
+        <method id="flickr.auth_checkToken" name="POST">
           <doc xml:lang="en">Returns the credentials attached to an authentication token. This call &lt;b&gt;must&lt;/b&gt; be signed as specified in the &lt;a href="/services/api/auth.spec.html"&gt;authentication API spec&lt;/a&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -57,26 +66,24 @@
               <doc xml:lang="en">The authentication token to check.</doc>
             </param>
             <param fixed="flickr.auth.checkToken" name="method" required="true" style="query" type="xsd:string"/>
-            <param name="api_sig" required="true" style="query" type="xsd:string"/>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="auth_getFrob" name="POST">
+        <method id="flickr.auth_getFrob" name="POST">
           <doc xml:lang="en">Returns a frob to be used during authentication. &lt;b&gt;This method call must be signed&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.auth.getFrob" name="method" required="true" style="query" type="xsd:string"/>
-            <param name="api_sig" required="true" style="query" type="xsd:string"/>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="auth_getFullToken" name="POST">
+        <method id="flickr.auth_getFullToken" name="POST">
           <doc xml:lang="en">Get the full authentication token for a mini-token. &lt;b&gt;This method call must be signed.&lt;/b&gt;</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -86,13 +93,12 @@
               <doc xml:lang="en">The mini-token typed in by a user. It should be 9 digits long. It may optionally contain dashes.</doc>
             </param>
             <param fixed="flickr.auth.getFullToken" name="method" required="true" style="query" type="xsd:string"/>
-            <param name="api_sig" required="true" style="query" type="xsd:string"/>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="auth_getToken" name="POST">
+        <method id="flickr.auth_getToken" name="POST">
           <doc xml:lang="en">Returns the auth token for the given frob, if one has been attached. &lt;b&gt;This method call must be signed.&lt;/b&gt;</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -102,25 +108,27 @@
               <doc xml:lang="en">The frob to check.</doc>
             </param>
             <param fixed="flickr.auth.getToken" name="method" required="true" style="query" type="xsd:string"/>
-            <param name="api_sig" required="true" style="query" type="xsd:string"/>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="blogs_getList" name="POST">
+        <method id="flickr.blogs_getList" name="POST">
           <doc xml:lang="en">Get a list of configured blogs for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.blogs.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="blogs_postPhoto" name="POST">
+        <method id="flickr.blogs_postPhoto" name="POST">
           <doc xml:lang="en"/>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -142,12 +150,15 @@
               <doc xml:lang="en">The password for the blog (used when the blog does not have a stored password).</doc>
             </param>
             <param fixed="flickr.blogs.postPhoto" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="contacts_getList" name="POST">
+        <method id="flickr.contacts_getList" name="POST">
           <doc xml:lang="en">Get a list of contacts for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -177,12 +188,15 @@
               <doc xml:lang="en">Number of photos to return per page. If this argument is omitted, it defaults to 1000. The maximum allowed value is 1000.</doc>
             </param>
             <param fixed="flickr.contacts.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="contacts_getPublicList" name="POST">
+        <method id="flickr.contacts_getPublicList" name="POST">
           <doc xml:lang="en">Get the contact list for a user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -198,12 +212,15 @@
               <doc xml:lang="en">Number of photos to return per page. If this argument is omitted, it defaults to 1000. The maximum allowed value is 1000.</doc>
             </param>
             <param fixed="flickr.contacts.getPublicList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="favorites_add" name="POST">
+        <method id="flickr.favorites_add" name="POST">
           <doc xml:lang="en">Adds a photo to a user's favorites list.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -213,12 +230,15 @@
               <doc xml:lang="en">The id of the photo to add to the user's favorites.</doc>
             </param>
             <param fixed="flickr.favorites.add" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="favorites_getList" name="POST">
+        <method id="flickr.favorites_getList" name="POST">
           <doc xml:lang="en">Returns a list of the user's favorite photos. Only photos which the calling user has permission to see are returned.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -237,12 +257,15 @@
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.favorites.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="favorites_getPublicList" name="POST">
+        <method id="flickr.favorites_getPublicList" name="POST">
           <doc xml:lang="en">Returns a list of favorite public photos for the given user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -261,12 +284,15 @@
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.favorites.getPublicList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="favorites_remove" name="POST">
+        <method id="flickr.favorites_remove" name="POST">
           <doc xml:lang="en">Removes a photo from a user's favorites list.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -276,12 +302,15 @@
               <doc xml:lang="en">The id of the photo to remove from the user's favorites.</doc>
             </param>
             <param fixed="flickr.favorites.remove" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_browse" name="POST">
+        <method id="flickr.groups_browse" name="POST">
           <doc xml:lang="en">Browse the group category tree, finding groups and sub-categories.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -291,12 +320,15 @@
               <doc xml:lang="en">The category id to fetch a list of groups and sub-categories for. If not specified, it defaults to zero, the root of the category tree.</doc>
             </param>
             <param fixed="flickr.groups.browse" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_getInfo" name="POST">
+        <method id="flickr.groups_getInfo" name="POST">
           <doc xml:lang="en">Get information about a group.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -311,12 +343,15 @@
 Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;.</doc>
             </param>
             <param fixed="flickr.groups.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_pools_add" name="POST">
+        <method id="flickr.groups_pools_add" name="POST">
           <doc xml:lang="en">Add a photo to a group's pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -329,12 +364,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The NSID of the group who's pool the photo is to be added to.</doc>
             </param>
             <param fixed="flickr.groups.pools.add" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_pools_getContext" name="POST">
+        <method id="flickr.groups_pools_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a group pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -347,12 +385,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The nsid of the group who's pool to fetch the photo's context for.</doc>
             </param>
             <param fixed="flickr.groups.pools.getContext" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_pools_getGroups" name="POST">
+        <method id="flickr.groups_pools_getGroups" name="POST">
           <doc xml:lang="en">Returns a list of groups to which you can add photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -365,12 +406,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">Number of groups to return per page. If this argument is omitted, it defaults to 400. The maximum allowed value is 400.</doc>
             </param>
             <param fixed="flickr.groups.pools.getGroups" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_pools_getPhotos" name="POST">
+        <method id="flickr.groups_pools_getPhotos" name="POST">
           <doc xml:lang="en">Returns a list of pool photos for a given group, based on the permissions of the group and the user logged in (if any).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -395,12 +439,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.groups.pools.getPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_pools_remove" name="POST">
+        <method id="flickr.groups_pools_remove" name="POST">
           <doc xml:lang="en">Remove a photo from a group pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -413,12 +460,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The NSID of the group who's pool the photo is to removed from.</doc>
             </param>
             <param fixed="flickr.groups.pools.remove" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="groups_search" name="POST">
+        <method id="flickr.groups_search" name="POST">
           <doc xml:lang="en">Search for groups. 18+ groups will only be returned for authenticated calls where the authenticated user is over 18.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -434,12 +484,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The page of results to return. If this argument is ommited, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.groups.search" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="interestingness_getList" name="POST">
+        <method id="flickr.interestingness_getList" name="POST">
           <doc xml:lang="en">Returns the list of interesting photos for the most recent day or a user-specified date.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -458,12 +511,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.interestingness.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_findByEmail" name="POST">
+        <method id="flickr.people_findByEmail" name="POST">
           <doc xml:lang="en">Return a user's NSID, given their email address</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -473,12 +529,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The email address of the user to find  (may be primary or secondary).</doc>
             </param>
             <param fixed="flickr.people.findByEmail" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_findByUsername" name="POST">
+        <method id="flickr.people_findByUsername" name="POST">
           <doc xml:lang="en">Return a user's NSID, given their username.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -488,12 +547,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The username of the user to lookup.</doc>
             </param>
             <param fixed="flickr.people.findByUsername" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_getInfo" name="POST">
+        <method id="flickr.people_getInfo" name="POST">
           <doc xml:lang="en">Get information about a user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -503,12 +565,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The NSID of the user to fetch information about.</doc>
             </param>
             <param fixed="flickr.people.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_getPublicGroups" name="POST">
+        <method id="flickr.people_getPublicGroups" name="POST">
           <doc xml:lang="en">Returns the list of public groups a user is a member of.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -518,12 +583,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The NSID of the user to fetch groups for.</doc>
             </param>
             <param fixed="flickr.people.getPublicGroups" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_getPublicPhotos" name="POST">
+        <method id="flickr.people_getPublicPhotos" name="POST">
           <doc xml:lang="en">Get a list of public photos for the given user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -553,24 +621,30 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.people.getPublicPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="people_getUploadStatus" name="POST">
+        <method id="flickr.people_getUploadStatus" name="POST">
           <doc xml:lang="en">Returns information for the calling user related to photo uploads.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.people.getUploadStatus" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_addTags" name="POST">
+        <method id="flickr.photos_addTags" name="POST">
           <doc xml:lang="en">Add tags to a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -583,12 +657,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The tags to add to the photo.</doc>
             </param>
             <param fixed="flickr.photos.addTags" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_comments_addComment" name="POST">
+        <method id="flickr.photos_comments_addComment" name="POST">
           <doc xml:lang="en">Add comment to a photo as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -601,12 +678,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">Text of the comment</doc>
             </param>
             <param fixed="flickr.photos.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_comments_deleteComment" name="POST">
+        <method id="flickr.photos_comments_deleteComment" name="POST">
           <doc xml:lang="en">Delete a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -616,12 +696,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the comment to edit.</doc>
             </param>
             <param fixed="flickr.photos.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_comments_editComment" name="POST">
+        <method id="flickr.photos_comments_editComment" name="POST">
           <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -634,12 +717,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">Update the comment to this text.</doc>
             </param>
             <param fixed="flickr.photos.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_comments_getList" name="POST">
+        <method id="flickr.photos_comments_getList" name="POST">
           <doc xml:lang="en">Returns the comments for a photo</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -649,12 +735,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the photo to fetch comments for.</doc>
             </param>
             <param fixed="flickr.photos.comments.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_delete" name="POST">
+        <method id="flickr.photos_delete" name="POST">
           <doc xml:lang="en">Delete a photo from flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -664,12 +753,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the photo to delete.</doc>
             </param>
             <param fixed="flickr.photos.delete" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_geo_getLocation" name="POST">
+        <method id="flickr.photos_geo_getLocation" name="POST">
           <doc xml:lang="en">Get the geo data (latitude and longitude and the accuracy level) for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -679,12 +771,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the photo you want to retrieve location data for.</doc>
             </param>
             <param fixed="flickr.photos.geo.getLocation" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_geo_getPerms" name="POST">
+        <method id="flickr.photos_geo_getPerms" name="POST">
           <doc xml:lang="en">Get permissions for who may view geo data for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -694,12 +789,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the photo to get permissions for.</doc>
             </param>
             <param fixed="flickr.photos.geo.getPerms" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_geo_removeLocation" name="POST">
+        <method id="flickr.photos_geo_removeLocation" name="POST">
           <doc xml:lang="en">Removes the geo data associated with a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -709,12 +807,15 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
               <doc xml:lang="en">The id of the photo you want to remove location data from.</doc>
             </param>
             <param fixed="flickr.photos.geo.removeLocation" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_geo_setLocation" name="POST">
+        <method id="flickr.photos_geo_setLocation" name="POST">
           <doc xml:lang="en">Sets the geo data (latitude and longitude and, optionally, the accuracy level) for a photo.
 
 Before users may assign location data to a photo they must define who, by default, may view that information. Users can edit this preference at &lt;a href="http://www.flickr.com/account/geo/privacy/"&gt;http://www.flickr.com/account/geo/privacy/&lt;/a&gt;. If a user has not set this preference, the API method will return an error.</doc>
@@ -735,12 +836,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">Recorded accuracy level of the location information. World level is 1, Country is ~3, Region ~6, City ~11, Street ~16. Current range is 1-16. Defaults to 16 if not specified.</doc>
             </param>
             <param fixed="flickr.photos.geo.setLocation" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_geo_setPerms" name="POST">
+        <method id="flickr.photos_geo_setPerms" name="POST">
           <doc xml:lang="en">Set the permission for who may view the geo data associated with a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -762,12 +866,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The id of the photo to get permissions for.</doc>
             </param>
             <param fixed="flickr.photos.geo.setPerms" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getAllContexts" name="POST">
+        <method id="flickr.photos_getAllContexts" name="POST">
           <doc xml:lang="en">Returns all visible sets and pools the photo belongs to.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -777,12 +884,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The photo to return information for.</doc>
             </param>
             <param fixed="flickr.photos.getAllContexts" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getContactsPhotos" name="POST">
+        <method id="flickr.photos_getContactsPhotos" name="POST">
           <doc xml:lang="en">Fetch a list of recent photos from the calling users' contacts.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -804,12 +914,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">A comma-delimited list of extra information to fetch for each returned record. Currently supported fields are: license, date_upload, date_taken, owner_name, icon_server, original_format, last_update.</doc>
             </param>
             <param fixed="flickr.photos.getContactsPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getContactsPublicPhotos" name="POST">
+        <method id="flickr.photos_getContactsPublicPhotos" name="POST">
           <doc xml:lang="en">Fetch a list of recent public photos from a users' contacts.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -834,12 +947,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">A comma-delimited list of extra information to fetch for each returned record. Currently supported fields are: license, date_upload, date_taken, owner_name, icon_server, original_format, last_update.</doc>
             </param>
             <param fixed="flickr.photos.getContactsPublicPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getContext" name="POST">
+        <method id="flickr.photos_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a photostream.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -849,12 +965,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The id of the photo to fetch the context for.</doc>
             </param>
             <param fixed="flickr.photos.getContext" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getCounts" name="POST">
+        <method id="flickr.photos_getCounts" name="POST">
           <doc xml:lang="en">Gets a list of photo counts for the given date ranges for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -867,12 +986,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">A comma delimited list of mysql datetimes, denoting the periods to return counts for. They should be specified &lt;b&gt;smallest first&lt;/b&gt;.</doc>
             </param>
             <param fixed="flickr.photos.getCounts" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getExif" name="POST">
+        <method id="flickr.photos_getExif" name="POST">
           <doc xml:lang="en">Retrieves a list of EXIF/TIFF/GPS tags for a given photo. The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -885,12 +1007,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The secret for the photo. If the correct secret is passed then permissions checking is skipped. This enables the 'sharing' of individual photos by passing around the id and secret.</doc>
             </param>
             <param fixed="flickr.photos.getExif" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getFavorites" name="POST">
+        <method id="flickr.photos_getFavorites" name="POST">
           <doc xml:lang="en">Returns the list of people who have favorited a given photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -906,12 +1031,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">Number of usres to return per page. If this argument is omitted, it defaults to 10. The maximum allowed value is 50.</doc>
             </param>
             <param fixed="flickr.photos.getFavorites" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getInfo" name="POST">
+        <method id="flickr.photos_getInfo" name="POST">
           <doc xml:lang="en">Get information about a photo. The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -924,12 +1052,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The secret for the photo. If the correct secret is passed then permissions checking is skipped. This enables the 'sharing' of individual photos by passing around the id and secret.</doc>
             </param>
             <param fixed="flickr.photos.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getNotInSet" name="POST">
+        <method id="flickr.photos_getNotInSet" name="POST">
           <doc xml:lang="en">Returns a list of your photos that are not part of any sets.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -967,12 +1098,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.getNotInSet" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getPerms" name="POST">
+        <method id="flickr.photos_getPerms" name="POST">
           <doc xml:lang="en">Get permissions for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -982,12 +1116,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The id of the photo to get permissions for.</doc>
             </param>
             <param fixed="flickr.photos.getPerms" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getRecent" name="POST">
+        <method id="flickr.photos_getRecent" name="POST">
           <doc xml:lang="en">Returns a list of the latest public photos uploaded to flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1003,12 +1140,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.getRecent" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getSizes" name="POST">
+        <method id="flickr.photos_getSizes" name="POST">
           <doc xml:lang="en">Returns the available sizes for a photo.  The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1018,12 +1158,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The id of the photo to fetch size information for.</doc>
             </param>
             <param fixed="flickr.photos.getSizes" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getUntagged" name="POST">
+        <method id="flickr.photos_getUntagged" name="POST">
           <doc xml:lang="en">Returns a list of your photos with no tags.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1061,12 +1204,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.getUntagged" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getWithGeoData" name="POST">
+        <method id="flickr.photos_getWithGeoData" name="POST">
           <doc xml:lang="en">Returns a list of your geo-tagged photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1107,12 +1253,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.getWithGeoData" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_getWithoutGeoData" name="POST">
+        <method id="flickr.photos_getWithoutGeoData" name="POST">
           <doc xml:lang="en">Returns a list of your photos which haven't been geo-tagged.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1153,24 +1302,30 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.getWithoutGeoData" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_licenses_getInfo" name="POST">
+        <method id="flickr.photos_licenses_getInfo" name="POST">
           <doc xml:lang="en">Fetches a list of available photo licenses for Flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.photos.licenses.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_licenses_setLicense" name="POST">
+        <method id="flickr.photos_licenses_setLicense" name="POST">
           <doc xml:lang="en">Sets the license for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1183,12 +1338,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The license to apply, or 0 (zero) to remove the current license.</doc>
             </param>
             <param fixed="flickr.photos.licenses.setLicense" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_notes_add" name="POST">
+        <method id="flickr.photos_notes_add" name="POST">
           <doc xml:lang="en">Add a note to a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1213,12 +1371,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The description of the note</doc>
             </param>
             <param fixed="flickr.photos.notes.add" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_notes_delete" name="POST">
+        <method id="flickr.photos_notes_delete" name="POST">
           <doc xml:lang="en">Delete a note from a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1228,12 +1389,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The id of the note to delete</doc>
             </param>
             <param fixed="flickr.photos.notes.delete" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_notes_edit" name="POST">
+        <method id="flickr.photos_notes_edit" name="POST">
           <doc xml:lang="en">Edit a note on a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1258,12 +1422,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The description of the note</doc>
             </param>
             <param fixed="flickr.photos.notes.edit" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_recentlyUpdated" name="POST">
+        <method id="flickr.photos_recentlyUpdated" name="POST">
           <doc xml:lang="en">&lt;p&gt;Return a list of your photos that have been recently created or which have been recently modified.&lt;/p&gt;
 
 &lt;p&gt;Recently modified may mean that the photo's metadata (title, description, tags) may have been changed or a comment has been added (or just modified somehow :-)&lt;/p&gt;</doc>
@@ -1284,12 +1451,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.recentlyUpdated" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_removeTag" name="POST">
+        <method id="flickr.photos_removeTag" name="POST">
           <doc xml:lang="en">Remove a tag from a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1299,12 +1469,15 @@ Before users may assign location data to a photo they must define who, by defaul
               <doc xml:lang="en">The tag to remove from the photo. This parameter should contain a tag id, as returned by &lt;a href="/services/api/flickr.photos.getInfo.html"&gt;flickr.photos.getInfo&lt;/a&gt;.</doc>
             </param>
             <param fixed="flickr.photos.removeTag" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_search" name="POST">
+        <method id="flickr.photos_search" name="POST">
           <doc xml:lang="en">Return a list of photos matching some criteria. Only photos visible to the calling user will be returned. To return private or semi-private photos, the caller must be authenticated with 'read' permissions, and have permission to view the photos. Unauthenticated calls will only return public photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1445,12 +1618,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photos.search" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_setContentType" name="POST">
+        <method id="flickr.photos_setContentType" name="POST">
           <doc xml:lang="en">Set the content type of a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1463,12 +1639,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The content type of the photo. Must be one of: 1 for Photo, 2 for Screenshot, and 3 for Other.</doc>
             </param>
             <param fixed="flickr.photos.setContentType" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_setDates" name="POST">
+        <method id="flickr.photos_setDates" name="POST">
           <doc xml:lang="en">Set one or both of the dates for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1487,12 +1666,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The granularity of the date the photo was taken (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)</doc>
             </param>
             <param fixed="flickr.photos.setDates" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_setMeta" name="POST">
+        <method id="flickr.photos_setMeta" name="POST">
           <doc xml:lang="en">Set the meta information for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1508,12 +1690,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The description for the photo.</doc>
             </param>
             <param fixed="flickr.photos.setMeta" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_setPerms" name="POST">
+        <method id="flickr.photos_setPerms" name="POST">
           <doc xml:lang="en">Set permissions for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1551,7 +1736,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="photos_setSafetyLevel" name="POST">
+        <method id="flickr.photos_setSafetyLevel" name="POST">
           <doc xml:lang="en">Set the safety level of a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1569,12 +1754,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">Whether or not to additionally hide the photo from public searches.  Must be either 1 for Yes or 0 for No.</doc>
             </param>
             <param fixed="flickr.photos.setSafetyLevel" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_setTags" name="POST">
+        <method id="flickr.photos_setTags" name="POST">
           <doc xml:lang="en">Set the tags for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1587,12 +1775,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">All tags for the photo (as a single space-delimited string).</doc>
             </param>
             <param fixed="flickr.photos.setTags" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_transform_rotate" name="POST">
+        <method id="flickr.photos_transform_rotate" name="POST">
           <doc xml:lang="en">Rotate a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1605,12 +1796,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The amount of degrees by which to rotate the photo (clockwise) from it's current orientation. Valid values are 90, 180 and 270.</doc>
             </param>
             <param fixed="flickr.photos.transform.rotate" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photos_upload_checkTickets" name="POST">
+        <method id="flickr.photos_upload_checkTickets" name="POST">
           <doc xml:lang="en">Checks the status of one or more asynchronous photo upload tickets.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1620,12 +1814,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">A comma-delimited list of ticket ids</doc>
             </param>
             <param fixed="flickr.photos.upload.checkTickets" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_addPhoto" name="POST">
+        <method id="flickr.photosets_addPhoto" name="POST">
           <doc xml:lang="en">Add a photo to the end of an existing photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1638,12 +1835,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photo to add to the set.</doc>
             </param>
             <param fixed="flickr.photosets.addPhoto" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_comments_addComment" name="POST">
+        <method id="flickr.photosets_comments_addComment" name="POST">
           <doc xml:lang="en">Add a comment to a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1656,12 +1856,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">Text of the comment</doc>
             </param>
             <param fixed="flickr.photosets.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_comments_deleteComment" name="POST">
+        <method id="flickr.photosets_comments_deleteComment" name="POST">
           <doc xml:lang="en">Delete a photoset comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1671,12 +1874,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the comment to delete from a photoset.</doc>
             </param>
             <param fixed="flickr.photosets.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_comments_editComment" name="POST">
+        <method id="flickr.photosets_comments_editComment" name="POST">
           <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1689,12 +1895,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">Update the comment to this text.</doc>
             </param>
             <param fixed="flickr.photosets.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_comments_getList" name="POST">
+        <method id="flickr.photosets_comments_getList" name="POST">
           <doc xml:lang="en">Returns the comments for a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1704,12 +1913,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photoset to fetch comments for.</doc>
             </param>
             <param fixed="flickr.photosets.comments.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_create" name="POST">
+        <method id="flickr.photosets_create" name="POST">
           <doc xml:lang="en">Create a new photoset for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1725,12 +1937,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photo to represent this set. The photo must belong to the calling user.</doc>
             </param>
             <param fixed="flickr.photosets.create" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_delete" name="POST">
+        <method id="flickr.photosets_delete" name="POST">
           <doc xml:lang="en">Delete a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1740,12 +1955,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photoset to delete. It must be owned by the calling user.</doc>
             </param>
             <param fixed="flickr.photosets.delete" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_editMeta" name="POST">
+        <method id="flickr.photosets_editMeta" name="POST">
           <doc xml:lang="en">Modify the meta-data for a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1761,12 +1979,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">A description of the photoset. May contain limited html.</doc>
             </param>
             <param fixed="flickr.photosets.editMeta" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_editPhotos" name="POST">
+        <method id="flickr.photosets_editPhotos" name="POST">
           <doc xml:lang="en">Modify the photos in a photoset. Use this method to add, remove and re-order photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1782,12 +2003,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">A comma-delimited list of photo ids to include in the set. They will appear in the set in the order sent. This list &lt;b&gt;must&lt;/b&gt; contain the primary photo id. All photos must belong to the owner of the set. This list of photos replaces the existing list. Call flickr.photosets.addPhoto to append a photo to a set.</doc>
             </param>
             <param fixed="flickr.photosets.editPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_getContext" name="POST">
+        <method id="flickr.photosets_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a set.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1800,12 +2024,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photoset for which to fetch the photo's context.</doc>
             </param>
             <param fixed="flickr.photosets.getContext" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_getInfo" name="POST">
+        <method id="flickr.photosets_getInfo" name="POST">
           <doc xml:lang="en">Gets information about a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1815,12 +2042,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The ID of the photoset to fetch information for.</doc>
             </param>
             <param fixed="flickr.photosets.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_getList" name="POST">
+        <method id="flickr.photosets_getList" name="POST">
           <doc xml:lang="en">Returns the photosets belonging to the specified user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1830,12 +2060,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The NSID of the user to get a photoset list for. If none is specified, the calling user is assumed.</doc>
             </param>
             <param fixed="flickr.photosets.getList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_getPhotos" name="POST">
+        <method id="flickr.photosets_getPhotos" name="POST">
           <doc xml:lang="en">Get the list of photos in a set.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1864,12 +2097,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The page of results to return. If this argument is omitted, it defaults to 1.</doc>
             </param>
             <param fixed="flickr.photosets.getPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_orderSets" name="POST">
+        <method id="flickr.photosets_orderSets" name="POST">
           <doc xml:lang="en">Set the order of photosets for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1879,12 +2115,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">A comma delimited list of photoset IDs, ordered with the set to show first, first in the list. Any set IDs not given in the list will be set to appear at the end of the list, ordered by their IDs.</doc>
             </param>
             <param fixed="flickr.photosets.orderSets" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="photosets_removePhoto" name="POST">
+        <method id="flickr.photosets_removePhoto" name="POST">
           <doc xml:lang="en">Remove a photo from a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1897,12 +2136,15 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
               <doc xml:lang="en">The id of the photo to remove from the set.</doc>
             </param>
             <param fixed="flickr.photosets.removePhoto" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="places_find" name="POST">
+        <method id="flickr.places_find" name="POST">
           <doc xml:lang="en">Return a list of place IDs for a query string.&lt;br /&gt;&lt;br /&gt;
 The flickr.places.find method is &lt;b&gt;not&lt;/b&gt; a geocoder. It will round &lt;q&gt;up&lt;/q&gt; to the nearest place type to which place IDs apply. For example, if you pass it a street level address it will return the city that contains the address rather than the street, or building, itself.</doc>
           <request>
@@ -1913,12 +2155,15 @@ The flickr.places.find method is &lt;b&gt;not&lt;/b&gt; a geocoder. It will roun
               <doc xml:lang="en">The query string to use for place ID lookups</doc>
             </param>
             <param fixed="flickr.places.find" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="places_findByLatLon" name="POST">
+        <method id="flickr.places_findByLatLon" name="POST">
           <doc xml:lang="en">Return a place ID for a latitude, longitude and accuracy triple.&lt;br /&gt;&lt;br /&gt;
 The flickr.places.findByLatLon method is not meant to be a (reverse) geocoder in the traditional sense. It is designed to allow users to find photos for "places" and will round up to the nearest place type to which corresponding place IDs apply.&lt;br /&gt;&lt;br /&gt;
 For example, if you pass it a street level coordinate it will return the city that contains the point rather than the street, or building, itself.&lt;br /&gt;&lt;br /&gt;
@@ -1937,12 +2182,15 @@ It will also truncate latitudes and longitudes to three decimal points.</doc>
               <doc xml:lang="en">Recorded accuracy level of the location information. World level is 1, Country is ~3, Region ~6, City ~11, Street ~16. Current range is 1-16. The default is 16.</doc>
             </param>
             <param fixed="flickr.places.findByLatLon" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="places_resolvePlaceId" name="POST">
+        <method id="flickr.places_resolvePlaceId" name="POST">
           <doc xml:lang="en">Find Flickr Places information by Place Id</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1952,12 +2200,15 @@ It will also truncate latitudes and longitudes to three decimal points.</doc>
               <doc xml:lang="en">A Flickr Places ID</doc>
             </param>
             <param fixed="flickr.places.resolvePlaceId" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="places_resolvePlaceURL" name="POST">
+        <method id="flickr.places_resolvePlaceURL" name="POST">
           <doc xml:lang="en">Find Flickr Places information by Place URL.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1969,36 +2220,45 @@ It will also truncate latitudes and longitudes to three decimal points.</doc>
 Flickr Place URLs are of the form /country/region/city</doc>
             </param>
             <param fixed="flickr.places.resolvePlaceURL" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="prefs_getContentType" name="POST">
+        <method id="flickr.prefs_getContentType" name="POST">
           <doc xml:lang="en">Returns the default content type preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.prefs.getContentType" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="prefs_getHidden" name="POST">
+        <method id="flickr.prefs_getHidden" name="POST">
           <doc xml:lang="en">Returns the default hidden preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.prefs.getHidden" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="prefs_getPrivacy" name="POST">
+        <method id="flickr.prefs_getPrivacy" name="POST">
           <doc xml:lang="en">Returns the default privacy level preference for the user.
 
 Possible values are:
@@ -2014,24 +2274,30 @@ Possible values are:
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.prefs.getPrivacy" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="prefs_getSafetyLevel" name="POST">
+        <method id="flickr.prefs_getSafetyLevel" name="POST">
           <doc xml:lang="en">Returns the default safety level preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.prefs.getSafetyLevel" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="reflection_getMethodInfo" name="POST">
+        <method id="flickr.reflection_getMethodInfo" name="POST">
           <doc xml:lang="en">Returns information for a given flickr API method.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2041,24 +2307,30 @@ Possible values are:
               <doc xml:lang="en">The name of the method to fetch information for.</doc>
             </param>
             <param fixed="flickr.reflection.getMethodInfo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="reflection_getMethods" name="POST">
+        <method id="flickr.reflection_getMethods" name="POST">
           <doc xml:lang="en">Returns a list of available flickr API methods.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.reflection.getMethods" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getHotList" name="POST">
+        <method id="flickr.tags_getHotList" name="POST">
           <doc xml:lang="en">Returns a list of hot tags for the given period.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2071,12 +2343,15 @@ Possible values are:
               <doc xml:lang="en">The number of tags to return. Defaults to 20. Maximum allowed value is 200.</doc>
             </param>
             <param fixed="flickr.tags.getHotList" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getListPhoto" name="POST">
+        <method id="flickr.tags_getListPhoto" name="POST">
           <doc xml:lang="en">Get the tag list for a given photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2086,12 +2361,15 @@ Possible values are:
               <doc xml:lang="en">The id of the photo to return tags for.</doc>
             </param>
             <param fixed="flickr.tags.getListPhoto" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getListUser" name="POST">
+        <method id="flickr.tags_getListUser" name="POST">
           <doc xml:lang="en">Get the tag list for a given user (or the currently logged in user).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2101,12 +2379,15 @@ Possible values are:
               <doc xml:lang="en">The NSID of the user to fetch the tag list for. If this argument is not specified, the currently logged in user (if any) is assumed.</doc>
             </param>
             <param fixed="flickr.tags.getListUser" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getListUserPopular" name="POST">
+        <method id="flickr.tags_getListUserPopular" name="POST">
           <doc xml:lang="en">Get the popular tags for a given user (or the currently logged in user).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2119,12 +2400,15 @@ Possible values are:
               <doc xml:lang="en">Number of popular tags to return. defaults to 10 when this argument is not present.</doc>
             </param>
             <param fixed="flickr.tags.getListUserPopular" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getListUserRaw" name="POST">
+        <method id="flickr.tags_getListUserRaw" name="POST">
           <doc xml:lang="en">Get the raw versions of a given tag (or all tags) for the currently logged-in user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2134,12 +2418,15 @@ Possible values are:
               <doc xml:lang="en">The tag you want to retrieve all raw versions for.</doc>
             </param>
             <param fixed="flickr.tags.getListUserRaw" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="tags_getRelated" name="POST">
+        <method id="flickr.tags_getRelated" name="POST">
           <doc xml:lang="en">Returns a list of tags 'related' to the given tag, based on clustered usage analysis.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2149,48 +2436,60 @@ Possible values are:
               <doc xml:lang="en">The tag to fetch related tags for.</doc>
             </param>
             <param fixed="flickr.tags.getRelated" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="test_echo" name="POST">
+        <method id="flickr.test_echo" name="POST">
           <doc xml:lang="en">A testing method which echo's all parameters back in the response.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.test.echo" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="test_login" name="POST">
+        <method id="flickr.test_login" name="POST">
           <doc xml:lang="en">A testing method which checks if the caller is logged in then returns their username.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.test.login" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="test_null" name="POST">
+        <method id="flickr.test_null" name="POST">
           <doc xml:lang="en">Null test</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
               <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.</doc>
             </param>
             <param fixed="flickr.test.null" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="urls_getGroup" name="POST">
+        <method id="flickr.urls_getGroup" name="POST">
           <doc xml:lang="en">Returns the url to a group's page.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2200,12 +2499,15 @@ Possible values are:
               <doc xml:lang="en">The NSID of the group to fetch the url for.</doc>
             </param>
             <param fixed="flickr.urls.getGroup" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="urls_getUserPhotos" name="POST">
+        <method id="flickr.urls_getUserPhotos" name="POST">
           <doc xml:lang="en">Returns the url to a user's photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2215,12 +2517,15 @@ Possible values are:
               <doc xml:lang="en">The NSID of the user to fetch the url for. If omitted, the calling user is assumed.</doc>
             </param>
             <param fixed="flickr.urls.getUserPhotos" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="urls_getUserProfile" name="POST">
+        <method id="flickr.urls_getUserProfile" name="POST">
           <doc xml:lang="en">Returns the url to a user's profile.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2230,12 +2535,15 @@ Possible values are:
               <doc xml:lang="en">The NSID of the user to fetch the url for. If omitted, the calling user is assumed.</doc>
             </param>
             <param fixed="flickr.urls.getUserProfile" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="urls_lookupGroup" name="POST">
+        <method id="flickr.urls_lookupGroup" name="POST">
           <doc xml:lang="en">Returns a group NSID, given the url to a group's page or photo pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2245,12 +2553,15 @@ Possible values are:
               <doc xml:lang="en">The url to the group's page or photo pool.</doc>
             </param>
             <param fixed="flickr.urls.lookupGroup" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>
           
         </method>
-        <method id="urls_lookupUser" name="POST">
+        <method id="flickr.urls_lookupUser" name="POST">
           <doc xml:lang="en">Returns a user NSID, given the url to a user's photos or profile.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2260,6 +2571,9 @@ Possible values are:
               <doc xml:lang="en">The url to the user's profile or photos page.</doc>
             </param>
             <param fixed="flickr.urls.lookupUser" name="method" required="true" style="query" type="xsd:string"/>
+            <param name="auth_token" required="true" style="query" type="xsd:string">
+                <doc xml:lang="en">The authentication token to check.</doc>
+            </param>
           </request>
           <response>
           </response>

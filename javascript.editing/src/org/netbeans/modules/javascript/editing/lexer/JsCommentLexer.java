@@ -67,7 +67,6 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 
 public class JsCommentLexer implements Lexer<JsCommentTokenId> {
-    public static final String AT_RETURN = "@return";
 
     private static final int EOF = LexerInput.EOF;
 
@@ -157,7 +156,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * This function will return a map of parameter names and the corresponding type string.
      * The type string can be null (for known parameters with unknown types), or a type string, or some
      * set of types separated by |.
-     * The return value is using the special key AT_RETURN.
+     * The return value is using the special key "@return".
      */
     public static Map<String, String> findFunctionTypes(TokenSequence<? extends JsCommentTokenId> ts) {
         Map<String, String> result = new HashMap<String, String>();
@@ -166,9 +165,8 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
             Token<? extends JsCommentTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == JsCommentTokenId.TAG) {
-                CharSequence text = token.text();
-                if (TokenUtilities.textEquals("@param", text) ||  // NOI18N
-                        TokenUtilities.textEquals("@argument", text)) { // NOI18N
+                String text = token.text().toString();
+                if (TokenUtilities.textEquals("@param", text)) { // NOI18N
                     int index = ts.index();
                     String type = nextType(ts);
                     String name = nextIdent(ts);
@@ -178,31 +176,8 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                         ts.moveIndex(index);
                         ts.moveNext();
                     }
-                } else if (TokenUtilities.textEquals("@type", text)) { // NOI18N)
-                    String type = nextIdentGroup(ts);
-                    if (type != null) {
-                        result.put(AT_RETURN,type); // NOI18N
-                    }
-                } else if (TokenUtilities.textEquals(AT_RETURN,text) || // NOI18N
-                        TokenUtilities.textEquals("@returns", text)) { // NOI18N
-                    // There can be both @return and @type where one of them specifies
-                    // the type so don't overwrite the map entry unconditionally
-                    String type = nextType(ts);
-                    if (type != null) {
-                        result.put(AT_RETURN,type); // NOI18N
-                    }
-                } else if (TokenUtilities.textEquals("@namespace", text) || // NOI18N
-                        TokenUtilities.textEquals("@extends", text) || // NOI18N
-                        TokenUtilities.textEquals("@class", text)) { // NOI18N
-                    String arg = nextIdentGroup(ts);
-                    if (arg != null) {
-                        result.put(text.toString(), arg);
-                    }
-                } else if (TokenUtilities.textEquals("@private", text) || // NOI18N
-                        TokenUtilities.textEquals("@constructor", text) || // NOI18N
-                        TokenUtilities.textEquals("@ignore", text) || // NOI18N
-                        TokenUtilities.textEquals("@deprecated", text)) { // NOI18N
-                    result.put(text.toString(), ""); // NOI18N
+                } else if (TokenUtilities.textEquals("@return", text)) { // NOI18N
+                    result.put("@return", nextType(ts)); // NOI18N
                 }
             }
         }
@@ -223,17 +198,10 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is left curly brace try to find next IDENT token
         if (nextToken != null && nextToken.id() == JsCommentTokenId.LCURL) {
-            boolean newToken = true;
             while (ts.moveNext() && ts.token().id() != JsCommentTokenId.RCURL) {
-                TokenId tid = ts.token().id();
-                if (tid == JsCommentTokenId.IDENT || tid == JsCommentTokenId.DOT) {
-                    if (newToken) {
-                        if (sb.length() > 0) { sb.append('|'); }
-                    }
-                    newToken = false;
+                if (ts.token().id() == JsCommentTokenId.IDENT) {
+                    if (sb.length() > 0) { sb.append('|'); }
                     sb.append(ts.token().text().toString());
-                } else {
-                    newToken = true;
                 }
             }
             if (ts.token() != null && ts.token().id() == JsCommentTokenId.RCURL) {
@@ -254,45 +222,6 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is IDENT token return its text
         if (nextToken != null && nextToken.id() == JsCommentTokenId.IDENT) {
-            return nextToken.text().toString();
-        }
-        return null;
-    }
-
-    /**
-     * Find the next dot-joined group of idents.
-     * Skips tokens ignored by {@link #nextNonIgnored} if there are any.
-     * @param ts token sequence to perform the search from current token
-     * @return found IDENT token group or null if no such token exists
-     */
-    private static String nextIdentGroup(TokenSequence<? extends JsCommentTokenId> ts) {
-        // find next token which is not OTHER_TEXT
-        Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
-        // if it is IDENT token return its text
-        if (nextToken != null && nextToken.id() == JsCommentTokenId.IDENT) {
-            // Peek to see if we have a dot next to it
-            if (ts.moveNext()) {
-                if (ts.token().id() == JsCommentTokenId.DOT) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(nextToken.text());
-                    
-                    boolean goback = true;
-                    while (ts.token().id() == JsCommentTokenId.DOT ||
-                            ts.token().id() == JsCommentTokenId.IDENT) {
-                        sb.append(ts.token().text());
-                        if (!ts.moveNext()) {
-                            goback = false;
-                            break;
-                        }
-                    }
-                    if (goback) {
-                        ts.movePrevious();
-                    }
-                    return sb.toString();
-                }
-                
-                ts.movePrevious();
-            }
             return nextToken.text().toString();
         }
         return null;

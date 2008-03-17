@@ -16,6 +16,7 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 
@@ -28,7 +29,7 @@ public final class JDBCTableVisualPanel extends JPanel {
     private DBMetaDataFactory meta = new DBMetaDataFactory();
     DatabaseConnection conn = null;
     private Map<String, String> driverMap = new HashMap<String, String>();
-    private static transient final Logger mLogger = Logger.getLogger(JDBCTableVisualPanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(JDBCTableVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates new form ChooseTableVisualPanel
@@ -93,10 +94,10 @@ public final class JDBCTableVisualPanel extends JPanel {
         });
     }
 
-    String nbBundle2 = mLoc.t("BUND293: Choose Connection Details");
+    String nbBundle2 = mLoc.t("PRSR001: Choose Connection Details");
     @Override
     public String getName() {
-        return nbBundle2.substring(15);
+        return Localizer.parse(nbBundle2);
     }
 
     public DefaultTableModel getTables() {
@@ -222,7 +223,7 @@ public final class JDBCTableVisualPanel extends JPanel {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(jLabel1)
                                     .add(jLabel2))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(schemaCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)))
@@ -257,7 +258,7 @@ public final class JDBCTableVisualPanel extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE))
+                .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -294,8 +295,8 @@ public final class JDBCTableVisualPanel extends JPanel {
             canAdvance = true;
         } else {
             removeButton.setEnabled(false);
-            String nbBundle1 = mLoc.t("BUND292: No table available for processing.");
-            error.setText(nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: No table available for processing.");
+            error.setText(Localizer.parse(nbBundle1));
             canAdvance = false;
         }
         Runnable run = new Runnable() {

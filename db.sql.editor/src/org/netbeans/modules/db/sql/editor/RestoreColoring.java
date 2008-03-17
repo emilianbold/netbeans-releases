@@ -64,6 +64,7 @@ public class RestoreColoring extends ModuleInstall {
      * Overrides superclass method.  
      */
     public void restored() {
+        addInitializer();
         installOptions();
     }
 
@@ -74,6 +75,13 @@ public class RestoreColoring extends ModuleInstall {
      */
     public void uninstalled() {
         uninstallOptions();
+    }
+
+    /** 
+     * Adds initializer and registers editor kit. 
+     */
+    public void addInitializer() {
+        Settings.addInitializer(new SQLSettingsInitializer());
     }
 
     /** 

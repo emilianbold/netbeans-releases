@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * SQL Framework Object factory
@@ -58,7 +58,7 @@ public abstract class SQLModelObjectFactory {
 
     private static SQLModelObjectFactory instance = null;
     private static final String LOG_CATEGORY = SQLModelObjectFactory.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(SQLModelObjectFactory.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLModelObjectFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -72,7 +72,7 @@ public abstract class SQLModelObjectFactory {
                 Class implClass = Class.forName("org.netbeans.modules.sql.framework.model.impl.SQLModelObjectFactoryImpl");
                 instance = (SQLModelObjectFactory) implClass.newInstance();
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT135: Can't instantiate factory class{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR135: Can't instantiate factory class{0}", LOG_CATEGORY), ex);
             }
         }
         return instance;

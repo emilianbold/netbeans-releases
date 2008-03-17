@@ -40,7 +40,6 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -50,29 +49,31 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class LinuxXAMPPInstallation implements Installation {
-    private static final String LAMPP = "/opt/lampp/lampp"; // NOI8N
-    private static final String ADMIN_URL = "http://localhost/phpmyadmin"; // NOI18N
-    private static final String DEFAULT_PORT = "3306"; // NOI18N
-    private static final String GKSU = "/usr/bin/gksu"; // NOI8N
-        
+public class LinuxXAMPPInstallation extends AbstractInstallation {
+    private static final String DEFAULT_BASE_PATH = "/opt/lampp"; // NOI8N
+    private static final String LAMPP_EXE_PATH = "/lampp"; // NOI18N
+    private static final String ADMIN_URL = "http://localhost/phpmyadmin";
+    private static final String DEFAULT_PORT = "3306";
+    
+    private String basePath = DEFAULT_BASE_PATH;
+    
     private static final LinuxXAMPPInstallation DEFAULT = 
-            new LinuxXAMPPInstallation();
+            new LinuxXAMPPInstallation(DEFAULT_BASE_PATH);
     
     public static final LinuxXAMPPInstallation getDefault() {
         return DEFAULT;
     }
     
-    protected LinuxXAMPPInstallation() {
+    private LinuxXAMPPInstallation(String basePath) {
+        this.basePath = basePath;
     }
 
     public boolean isStackInstall() {
         return true;
     }
 
-    public boolean isInstalled() {
-        return Utilities.isUnix() && Utils.isValidExecutable(LAMPP)
-                && Utils.isValidExecutable(GKSU);
+    public boolean isValidOnCurrentOS() {
+        return Utilities.isUnix();
     }
 
     public String[] getAdminCommand() {
@@ -80,14 +81,37 @@ public class LinuxXAMPPInstallation implements Installation {
     }
 
     public String[] getStartCommand() {
-        return new String[] { GKSU, LAMPP + " startmysql" };
+        String command = basePath + LAMPP_EXE_PATH; // NOI18N
+        return new String[] { command, "startmysql" };
     }
 
     public String[] getStopCommand() {
-        return new String[] { GKSU, LAMPP + " stopmysql" };
+        String command = basePath + LAMPP_EXE_PATH; // NOI18N
+        return new String[] { command, "stopmysql" };
     }
     
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
+
+    @Override
+    protected String getBasePath() {
+        return basePath;
+    }
+
+    @Override
+    protected String getStartPath() {
+        return LAMPP_EXE_PATH;
+    }
+
+    @Override
+    protected String getStopPath() {
+        return LAMPP_EXE_PATH;
+    }
+
+    @Override
+    protected Installation createInstallation(String basePath) {
+        return new LinuxXAMPPInstallation(basePath);
+    }
+
 }
