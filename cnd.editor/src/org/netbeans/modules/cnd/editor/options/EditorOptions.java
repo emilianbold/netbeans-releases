@@ -142,6 +142,12 @@ public class EditorOptions {
     public static final boolean alignMultilineCallArgsDefault = false;
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final boolean alignMultilineMethodParamsDefault = false;
+    public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
+    public static final boolean alignMultilineForDefault = false;
+    public static final String alignMultilineIfCondition = "alignMultilineIfCondition"; //NOI18N
+    public static final boolean alignMultilineIfConditionDefault = false;
+    public static final String alignMultilineWhileCondition = "alignMultilineWhileCondition"; //NOI18N
+    public static final boolean alignMultilineWhileConditionDefault = false;
 
     //NewLine
     public static final String newLineCatch = "newLineCatch"; //NOI18N
@@ -302,6 +308,9 @@ public class EditorOptions {
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
         defaults.put(alignMultilineCallArgs,alignMultilineCallArgsDefault);
         defaults.put(alignMultilineMethodParams,alignMultilineMethodParamsDefault);
+        defaults.put(alignMultilineFor,alignMultilineForDefault);
+        defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
+        defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
         //NewLine
         defaults.put(newLineCatch,newLineCatchDefault);
         defaults.put(newLineElse,newLineElseDefault);
@@ -391,6 +400,8 @@ public class EditorOptions {
         apache.put(indentCasesFromSwitch, false);
         apache.put(alignMultilineCallArgs, true);
         apache.put(alignMultilineMethodParams, true);
+        apache.put(alignMultilineIfCondition, true);
+        apache.put(alignMultilineWhileCondition, true);
         apache.put(newLineCatch, true);
         apache.put(newLineElse, true);
         apache.put(newLineWhile, true);
@@ -401,6 +412,8 @@ public class EditorOptions {
         gnu.put(indentCasesFromSwitch, false);
         gnu.put(alignMultilineCallArgs, true);
         gnu.put(alignMultilineMethodParams, true);
+        apache.put(alignMultilineIfCondition, true);
+        apache.put(alignMultilineWhileCondition, true);
         gnu.put(newLineCatch, true);
         gnu.put(newLineElse, true);
         gnu.put(newLineWhile, true);
