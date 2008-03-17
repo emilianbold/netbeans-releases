@@ -206,5 +206,9 @@ public class MIMEResolverImplTest extends NbTestCase {
         assertEquals("bogus.xml not recognized as anything", null, resolve(root.getFileObject("bogus", "xml")));
         assertEquals("build2.xml recognized as Ant script", "text/x-ant+xml", resolve(root.getFileObject("build2", "xml")));
     }
+    
+    public void testIllegalXMLEncoding() {
+        assertEquals("illegal-encoding.xml recognized as a XML file", "text/x-springconfig+xml", resolve(root.getFileObject("illegal-encoding", "xml")));
+    }
         
 }

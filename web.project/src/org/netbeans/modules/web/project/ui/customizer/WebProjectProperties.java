@@ -163,6 +163,10 @@ public class WebProjectProperties {
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
+    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
+    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
+    public static final String JSDEBUGGER_AVAILABLE = "debug.client.available"; // NOI18N
+    
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
     public static final String JAVADOC_USE="javadoc.use"; //NOI18N
@@ -248,6 +252,10 @@ public class WebProjectProperties {
     Document LAUNCH_URL_RELATIVE_MODEL;
     ButtonModel DISPLAY_BROWSER_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
+
+    // CustomizerDebug
+    ButtonModel DEBUG_SERVER_MODEL;
+    ButtonModel DEBUG_CLIENT_MODEL;
     
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
@@ -381,6 +389,10 @@ public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
+        
+        // CustomizerDebug
+        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
+        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
     }
 
     public void save() {
@@ -568,7 +580,7 @@ public class WebProjectProperties {
                 cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
 
         // Configure classpath from server (no server libraries)
-        if (!configured) {
+        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
                     project, projectProperties, privateProperties, true);
         }
@@ -764,7 +776,9 @@ public class WebProjectProperties {
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
             EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-        
+
+        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
+
         // update j2ee.platform.classpath
         String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
         if (oldServInstID != null) {
@@ -896,11 +910,11 @@ public class WebProjectProperties {
             }
         }
 
-        removeServerClasspathProperties(privateProps);
         if (serverItems.isEmpty()) {
             removeServerClasspathProperties(props);
             return false;
         }
+        removeServerClasspathProperties(privateProps);
 
         props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
         removeReferences(serverItems);

@@ -41,69 +41,19 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsNames;
 
 /**
-* Extended settings for Makefile.
-*
-*/
-
-public class MakefileSettingsInitializer extends Settings.AbstractInitializer {
-
-  /** Name assigned to initializer */
-  public static final String NAME = "makefile-settings-initializer"; //NOI18N
-
-  private Class fKitClass;
-
-  /** Construct new f-settings-initializer.
-  * @param fKitClass the real kit class for which the settings are created.
-  *   It's unknown here so it must be passed to this constructor.
-  */
-  public MakefileSettingsInitializer(Class fKitClass) {
-    super(NAME);
-    this.fKitClass = fKitClass;
-  }
-
-  /** Update map filled with the settings.
-  * @param kitClass kit class for which the settings are being updated.
-  *   It is always non-null value.
-  * @param settingsMap map holding [setting-name, setting-value] pairs.
-  *   The map can be empty if this is the first initializer
-  *   that updates it or if no previous initializers updated it.
-  */
-    @SuppressWarnings("unchecked")
-  public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-
-    if (kitClass == fKitClass) {
-      SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
-                   new TokenContext[] {
-                                       MakefileTokenContext.context,
-                   }
-                  );
-
-      settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
-                      MakefileSettingsDefaults.defaultCaretSimpleMatchBrace);
-
-      settingsMap.put(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE,
-                      MakefileSettingsDefaults.defaultHighlightMatchBrace);
-
-      settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
-                      MakefileSettingsDefaults.defaultIdentifierAcceptor);
-
-      settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR,
-                      MakefileSettingsDefaults.defaultAbbrevResetAcceptor);
-
-      settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
-                      MakefileSettingsDefaults.defaultMakeWordMatchMatchCase);
-
-      settingsMap.put(SettingsNames.WORD_MATCH_STATIC_WORDS,
-                      MakefileSettingsDefaults.defaultWordMatchStaticWords);
-
-    }//if
-
-  }//updateSettingsMap
-
+ * Extended settings for Makefile.
+ */
+public class MakefileSettingsInitializer {
+    public static Acceptor getAbbrevResetAcceptor() {
+        return SettingsDefaults.defaultAbbrevResetAcceptor;
+    }
+    
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(MakefileTokenContext.context);
+    }
 }

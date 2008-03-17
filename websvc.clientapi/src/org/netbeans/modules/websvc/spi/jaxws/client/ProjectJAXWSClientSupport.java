@@ -53,7 +53,6 @@ import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ClientAlreadyExistsExeption;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -63,6 +62,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -109,7 +109,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         return null;
     }
     
-    public String addServiceClient(String clientName, String wsdlUrl, final String packageName, boolean isJsr109) {
+    public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
         
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);
@@ -177,11 +177,17 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     jaxWsModel.setJsr109(Boolean.FALSE);
                 } else if (Boolean.FALSE.equals(value) && isJsr109) {
                     jaxWsModel.setJsr109(Boolean.TRUE);
-                }
+                }             
                 try {
                     client = jaxWsModel.addClient(finalClientName, wsdlUrl, packageName);
                 } catch (ClientAlreadyExistsExeption ex) {
                     //this shouldn't happen
+                }
+                if (packageName == null) {
+                    // compute package name from namespace
+                    client.setPackageName(
+                            WSUtils.getPackageNameForWsdl(FileUtil.toFile(localWsdl)));
+                    System.out.println("packageName = "+packageName);
                 }
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
                 String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
@@ -206,22 +212,22 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                                        }
                                     });
                                     
-                                }else{
-                                    String packName = packageName;
+                                } else {
+                                    Client client = jaxWsModel.findClientByName(clientName2);
+                                    String packName = client.getPackageName();
                                     if(packName == null){
                                         WsdlService service = model.getServices().get(0);
                                         String javaName = service.getJavaName();
                                         int index = javaName.lastIndexOf(".");
-                                        if(index != -1){
+                                        if (index != -1){
                                             packName = javaName.substring(0,index );
-                                        }else{
+                                        } else {
                                             packName = javaName;
-                                        }
-                                        Client client = jaxWsModel.findClientByName(clientName2);
+                                        }                                 
                                         client.setPackageName(packName);
                                         writeJaxWsModel(jaxWsModel);
                                     }
-                                    runWsimport(packName, clientName2);
+                                    runWsimport(clientName2);
                                 }
                             }
                         });
@@ -235,9 +241,8 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         return null;
     }
     
-    private void runWsimport(String packageName, String finalClientName){
+    private void runWsimport(String finalClientName){
         final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-        final String pkgName = packageName;
         final String finalName = finalClientName;
 
         if (SwingUtilities.isEventDispatchThread()) {

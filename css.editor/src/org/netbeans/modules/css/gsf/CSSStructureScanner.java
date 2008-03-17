@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -171,6 +172,10 @@ public class CSSStructureScanner implements StructureScanner {
             return handle.getName();
         }
 
+        public String getSortText() {
+            return getName();
+        }
+
         public String getHtml() {
             return getName();
         }
@@ -202,6 +207,10 @@ public class CSSStructureScanner implements StructureScanner {
 
         public long getEndPosition() {
             return AstUtils.documentPosition(handle.node().endOffset(), source);
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
         }
     }
 }

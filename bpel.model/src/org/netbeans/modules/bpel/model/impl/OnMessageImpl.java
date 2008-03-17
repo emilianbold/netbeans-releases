@@ -16,14 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.netbeans.modules.bpel.model.api.OnMessage;
@@ -36,15 +31,12 @@ import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
-
+import org.netbeans.modules.bpel.model.api.support.Utils;
 
 /**
  * @author ads
- *
  */
-public class OnMessageImpl extends OnMessageCommonImpl 
-    implements OnMessage, AfterSources 
-{
+public class OnMessageImpl extends OnMessageCommonImpl implements OnMessage, AfterSources {
 
     OnMessageImpl( BpelModelImpl model, Element e ) {
         super(model, e);
@@ -176,7 +168,5 @@ public class OnMessageImpl extends OnMessageCommonImpl
         return myAttributes.get();
     }
     
-    private static AtomicReference<Attribute[]> myAttributes = 
-        new AtomicReference<Attribute[]>();
-
+    private static AtomicReference<Attribute[]> myAttributes = new AtomicReference<Attribute[]>();
 }
