@@ -48,7 +48,6 @@ import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.text.Position;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 
@@ -392,7 +391,9 @@ public final class CodeTemplateParameterImpl {
                 value = handler.getComponent().getSelectedText();
                 if (value == null)
                     value = ""; //NOI18N
-                else if (getHints().get(CodeTemplateParameter.LINE_HINT_NAME) != null && !value.endsWith("\n")) //NOI18N
+                else
+                    value = value.trim();
+                if (getHints().get(CodeTemplateParameter.LINE_HINT_NAME) != null && !value.endsWith("\n")) //NOI18N
                     value += "\n"; //NOI18N
             }
         } else {

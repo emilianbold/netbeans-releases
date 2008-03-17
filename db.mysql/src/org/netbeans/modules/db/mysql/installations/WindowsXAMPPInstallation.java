@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -49,7 +50,7 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class WindowsXAMPPInstallation extends AbstractInstallation {
+public class WindowsXAMPPInstallation implements Installation {
     private static final String DEFAULT_BASE_PATH = "C:/xampp"; // NOI8N
     private static final String START_PATH="/mysql_start.bat";
     private static final String STOP_PATH="/mysql_stop.bat";
@@ -73,8 +74,9 @@ public class WindowsXAMPPInstallation extends AbstractInstallation {
         return true;
     }
 
-    public boolean isValidOnCurrentOS() {
-        return Utilities.isWindows();
+    public boolean isInstalled() {
+        return Utilities.isWindows() &&
+                Utils.isValidExecutable(getStartCommand()[0]);
     }
 
     public String[] getAdminCommand() {
@@ -87,32 +89,11 @@ public class WindowsXAMPPInstallation extends AbstractInstallation {
     }
 
     public String[] getStopCommand() {
-        String command = basePath + STOP_PATH + " stop"; // NOI18N
+        String command = basePath + STOP_PATH; // NOI18N
         return new String[] { command, "" };
     }
     
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
-
-    @Override
-    protected String getBasePath() {
-        return basePath;
-    }
-
-    @Override
-    protected String getStartPath() {
-        return START_PATH;
-    }
-
-    @Override
-    protected String getStopPath() {
-        return STOP_PATH;
-    }
-
-    @Override
-    protected Installation createInstallation(String basePath) {
-        return new WindowsXAMPPInstallation(basePath);
-    }
-
 }

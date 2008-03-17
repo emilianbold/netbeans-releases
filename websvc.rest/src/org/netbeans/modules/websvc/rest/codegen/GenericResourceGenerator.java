@@ -47,8 +47,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -62,6 +60,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -183,7 +182,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             );
             result.commit();
         } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "", ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -193,7 +192,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             result.add(RestConstants.PATH);
         }
         if (rbean.getUriParams().length > 0) {
-            result.add(RestConstants.URI_PARAM);
+            result.add(RestConstants.PATH_PARAM);
         }
         for (HttpMethodType m : rbean.getMethodTypes()) {
             result.add(m.getAnnotationType());
@@ -448,7 +447,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         String[] annos = new String [allParamCount];
         for (int i=0; i<uriParamCount; i++) {
-            annos[i] = RestConstants.URI_PARAM_ANNOTATION;
+            annos[i] = RestConstants.PATH_PARAM_ANNOTATION;
         }
         for (int i=uriParamCount; i<allParamCount; i++) {
             annos[i] = null;
@@ -460,7 +459,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         ArrayList<String[]> annos = new ArrayList<String[]>();
      
         for (String uriParam : bean.getUriParams()) {
-            annos.add(new String[] {RestConstants.URI_PARAM_ANNOTATION});
+            annos.add(new String[] {RestConstants.PATH_PARAM_ANNOTATION});
         }
         
         String[] annotations = null;

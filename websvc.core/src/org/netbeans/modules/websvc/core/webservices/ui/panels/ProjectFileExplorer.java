@@ -126,11 +126,14 @@ public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provi
 private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontCopyCBActionPerformed
 if(dontCopyCB.isSelected()){
     descriptor.setValid(true);
+    treeView.setEnabled(false);
 }else if (getSelectedFile() == null){
     descriptor.setValid(false);
+    treeView.setEnabled(true);
 }
 else{
     descriptor.setValid(true);
+    treeView.setEnabled(true);
 }
 }//GEN-LAST:event_dontCopyCBActionPerformed
 
