@@ -541,8 +541,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (evt.getNewValue() == STATE_STOPPED) {
                 updateLocalVariables(0);
-                gdb.data_list_register_values("");
-                gdb.data_list_changed_registers();
+                GdbContext.getInstance().update();
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_RUNNING && 
@@ -555,8 +554,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
             updateCurrentCallStack();
             updateLocalVariables(0);
-            gdb.data_list_register_values("");
-            gdb.data_list_changed_registers();
+            GdbContext.getInstance().update();
         }
     }
     
@@ -838,6 +836,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             disassembly.updateRegValues(msg);
         } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
             disassembly.updateRegModified(msg);
+            GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
         } else if (msg.equals("^done")) { // NOI18N
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
@@ -2111,7 +2110,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public Disassembly getDisassembly() {
         return disassembly;
     }
-
+    
     public void setCurrentBreakpoint(GdbBreakpoint currentBreakpoint) {
         this.currentBreakpoint = currentBreakpoint;
     }

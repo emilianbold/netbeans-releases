@@ -40,14 +40,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextImpl;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -67,14 +66,6 @@ public class DisToolTipAnnotation extends Annotation {
     public String getShortDescription() {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
-            return null;
-        }
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
-        if (debugger == null) {
             return null;
         }
         Part lp = (Part) getAttachedAnnotatable();
@@ -102,9 +93,11 @@ public class DisToolTipAnnotation extends Annotation {
             if (register == null) {
                 return null;
             }
-            RegisterValuesProvider.RegisterValue value = dis.getRegisterValues().get(register);
-            if (value != null) {
-                return value.getValue();
+            Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+            for (RegisterValue value : regValues) {
+                if (value.getName().equals(register)) {
+                    return value.getValue();
+                }
             }
         } catch (IOException e) {
             // do nothing
@@ -167,13 +160,13 @@ public class DisToolTipAnnotation extends Annotation {
         EditorCookie e = getCurrentEditorCookie();
         if (e == null) {
             return null;
-        }
+                    }
         JEditorPane[] op = EditorContextImpl.getOpenedPanes(e);
         if ((op == null) || (op.length < 1)) {
             return null;
-        }
+            }
         return op[0];
-    }
+        }
     
     /** 
      * Returns current editor component instance.
