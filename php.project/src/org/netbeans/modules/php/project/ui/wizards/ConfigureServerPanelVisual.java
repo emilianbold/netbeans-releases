@@ -42,18 +42,28 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class ConfigureServerPanelVisual extends JPanel implements ActionListener {
+public class ConfigureServerPanelVisual extends JPanel implements ActionListener, ChangeListener {
     private static final long serialVersionUID = -105799339751969L;
 
     private final ConfigureServerPanel wizardPanel;
+    private final WebFolderNameProvider webFolderNameProvider;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel) {
+    private MutableComboBoxModel localServerComboBoxModel;
+    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
+
+    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
         this.wizardPanel = wizardPanel;
+        this.webFolderNameProvider = webFolderNameProvider;
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectServer"));
@@ -68,6 +78,21 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
 
     private void init() {
         copyFilesCheckBox.addActionListener(this);
+        changeLocalServerFieldsState(false);
+
+        localServerComboBoxModel = new LocalServer.ComboBoxModel(new LocalServer((String) null));
+
+        localServerComboBox.setModel(localServerComboBoxModel);
+        localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
+        localServerComboBox.setEditor(localServerComboBoxEditor);
+    }
+
+    void addServerListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    void removeServerListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private void changeLocalServerFieldsState(boolean state) {
@@ -102,8 +127,18 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocalServerFolder")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(locateButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocateLocalServer")); // NOI18N
+        locateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                locateButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -146,6 +181,15 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
+        Utils.locateLocalServerAction();
+    }//GEN-LAST:event_locateButtonActionPerformed
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
+                webFolderNameProvider.getWebFolderName());
+    }//GEN-LAST:event_browseButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
@@ -156,8 +200,34 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
     private javax.swing.JButton locateButton;
     // End of variables declaration//GEN-END:variables
 
+    void setLocalServerState(boolean enabled) {
+        copyFilesCheckBox.setEnabled(enabled);
+        changeLocalServerFieldsState(enabled && copyFilesCheckBox.isSelected());
+    }
+
+    LocalServer getSourcesLocation() {
+        return (LocalServer) localServerComboBox.getSelectedItem();
+    }
+
+    MutableComboBoxModel getLocalServerModel() {
+        return localServerComboBoxModel;
+    }
+
+    void setLocalServerModel(MutableComboBoxModel localServers) {
+        localServerComboBoxModel = localServers;
+        localServerComboBox.setModel(localServerComboBoxModel);
+    }
+
+    void selectSourcesLocation(LocalServer localServer) {
+        localServerComboBox.setSelectedItem(localServer);
+    }
+
     // listeners
     public void actionPerformed(ActionEvent e) {
         changeLocalServerFieldsState(copyFilesCheckBox.isSelected());
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
     }
 }

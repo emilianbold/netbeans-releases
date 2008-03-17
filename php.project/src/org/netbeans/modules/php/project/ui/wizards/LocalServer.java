@@ -63,11 +63,7 @@ public class LocalServer implements Comparable<LocalServer> {
     private String srcRoot;
 
     public LocalServer(final LocalServer localServer) {
-        super();
-        virtualHost = localServer.virtualHost;
-        documentRoot = localServer.documentRoot;
-        srcRoot = localServer.srcRoot;
-        editable = localServer.editable;
+        this(localServer.virtualHost, localServer.documentRoot, localServer.srcRoot, localServer.editable);
     }
 
     public LocalServer(String srcRoot) {
@@ -83,7 +79,6 @@ public class LocalServer implements Comparable<LocalServer> {
     }
 
     public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
-        super();
         this.virtualHost = virtualHost;
         this.documentRoot = documentRoot;
         this.srcRoot = srcRoot;

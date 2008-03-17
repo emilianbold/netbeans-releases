@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
-        SourcesPanelVisual.WebFolderNameProvider, ChangeListener {
+        WebFolderNameProvider, ChangeListener {
 
     static final LocalServer DEFAULT_LOCAL_SERVER;
 
@@ -75,9 +75,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
-    LocationPanelVisual locationPanelVisual;
-    SourcesPanelVisual sourcesPanelVisual;
-    OptionsPanelVisual optionsPanelVisual;
+    private LocationPanelVisual locationPanelVisual;
+    private SourcesPanelVisual sourcesPanelVisual;
+    private OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
     private final String[] steps;
 

@@ -185,9 +185,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectServer"),
         };
 
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps);
         return new WizardDescriptor.Panel[] {
-            new ConfigureProjectPanel(steps),
-            new ConfigureServerPanel(steps),
+            configureProjectPanel,
+            new ConfigureServerPanel(steps, configureProjectPanel),
         };
     }
 

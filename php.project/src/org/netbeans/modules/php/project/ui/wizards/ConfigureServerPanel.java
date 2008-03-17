@@ -50,18 +50,20 @@ import org.openide.util.HelpCtx;
  * @author Tomas Mysik
  */
 public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+    private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
     private ConfigureServerPanelVisual configureServerPanelVisual = null;
     private WizardDescriptor descriptor;
 
-    public ConfigureServerPanel(String[] steps) {
+    public ConfigureServerPanel(String[] steps, WebFolderNameProvider webFolderNameProvider) {
+        this.webFolderNameProvider = webFolderNameProvider;
         this.steps = steps;
     }
 
     public Component getComponent() {
         if (configureServerPanelVisual == null) {
-            configureServerPanelVisual = new ConfigureServerPanelVisual(this);
+            configureServerPanelVisual = new ConfigureServerPanelVisual(this, webFolderNameProvider);
         }
         return configureServerPanelVisual;
     }
@@ -74,9 +76,12 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         getComponent();
         descriptor = (WizardDescriptor) settings;
 
-        registerListeners();
-
         unregisterListeners();
+
+        // copying enabled?
+        configureServerPanelVisual.setLocalServerState(isProjectFolder());
+
+        registerListeners();
         fireChangeEvent();
     }
 
@@ -115,10 +120,17 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         return steps;
     }
 
+    private boolean isProjectFolder() {
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        return ConfigureProjectPanel.isProjectFolder(localServer);
+    }
+
     private void registerListeners() {
+        configureServerPanelVisual.addServerListener(this);
     }
 
     private void unregisterListeners() {
+        configureServerPanelVisual.removeServerListener(this);
     }
 
     public void stateChanged(ChangeEvent e) {

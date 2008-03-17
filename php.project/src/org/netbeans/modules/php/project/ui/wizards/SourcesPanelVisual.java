@@ -227,10 +227,6 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
         urlTextField.setText(url);
     }
 
-    static interface WebFolderNameProvider {
-        String getWebFolderName();
-    }
-
     // listeners
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
