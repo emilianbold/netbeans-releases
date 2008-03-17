@@ -87,7 +87,7 @@ public class WadlSaasBean extends SaasBean {
         return m;
     }
     
-    private void init() {    
+    private void init() throws IOException {    
         findAuthentication(m);
         initUrl();
         getInputParameters();//init parameters
