@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.rest.codegen.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,11 +49,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean.Type;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.util.Exceptions;
 
@@ -68,8 +71,20 @@ public class EntityResourceModelBuilder {
     public EntityResourceModelBuilder(Project project, Collection<Entity> entities) {
         entityClassInfoMap = new HashMap<String, EntityClassInfo>();
         for (Entity entity : entities) {
-            EntityClassInfo info = new EntityClassInfo(entity, project, this);
-            entityClassInfoMap.put(entity.getClass2(), info);
+            try {
+                EntityClassInfo info = null;
+                JavaSource js = SourceGroupSupport.getJavaSourceFromClassName(entity.getClass2(), project);
+                if (js != null) {
+                    info = new EntityClassInfo(entity, project, this, js);
+                } else if (entity instanceof RuntimeJpaEntity) {
+                    info = new RuntimeEntityClassInfo((RuntimeJpaEntity)entity, project, this);
+                }
+                if (info != null) {
+                    entityClassInfoMap.put(entity.getClass2(), info);
+                }
+            } catch(IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
     }
     
