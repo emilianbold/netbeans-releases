@@ -118,6 +118,8 @@ import org.openide.util.UserCancelException;
 * @author Jaroslav Tulach
 */
 public abstract class CloneableEditorSupport extends CloneableOpenSupport {
+    static final RequestProcessor RP = new RequestProcessor("Document Processing");
+    
     /** Common name for editor mode. */
     public static final String EDITOR_MODE = "editor"; // NOI18N
     private static final String PROP_PANE = "CloneableEditorSupport.Pane"; //NOI18N
@@ -558,7 +560,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
 
             // The thread nume should be: "Loading document " + env; // NOI18N
-            prepareTask = RequestProcessor.getDefault().post(new Runnable() {
+            prepareTask = RP.post(new Runnable() {
                                                    private boolean runningInAtomicLock;
 
                                                    public void run() {
@@ -1677,7 +1679,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             synchronized (this) {
                 if (!this.inUserQuestionExceptionHandler) {
                     this.inUserQuestionExceptionHandler = true;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                                                            public void run() {
                                                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),

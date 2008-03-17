@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamSt
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
+import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 
 /**
@@ -86,7 +87,7 @@ public class WadlSaasBean extends SaasBean {
         return m;
     }
     
-    private void init() {    
+    private void init() throws IOException {    
         findAuthentication(m);
         initUrl();
         getInputParameters();//init parameters
@@ -154,7 +155,7 @@ public class WadlSaasBean extends SaasBean {
         return inputParams;
     }
     
-    public static ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
+    public ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         inputParams.addAll(findWadlParams(wsm.getWadlMethod()));
         Resource[] rArray = wsm.getResourcePath();
@@ -166,7 +167,7 @@ public class WadlSaasBean extends SaasBean {
         return inputParams;
     }
     
-    public static ArrayList<ParameterInfo> findWadlParams(Method wm) {
+    public ArrayList<ParameterInfo> findWadlParams(Method wm) {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         Request req = wm.getRequest();
         findWadlParams(inputParams, req.getParam());

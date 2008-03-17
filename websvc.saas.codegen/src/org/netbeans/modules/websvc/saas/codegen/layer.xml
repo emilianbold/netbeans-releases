@@ -47,7 +47,12 @@
             <file name="signedurl.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/signedurl.properties">
                 <attr name="position" intvalue="140"/>
             </file>
-            
+            <file name="SessionKeyCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyCallback.template">
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="SessionKeyLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyLogin.template">
+                <attr name="position" intvalue="160"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
