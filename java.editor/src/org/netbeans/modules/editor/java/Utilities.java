@@ -65,6 +65,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
@@ -74,6 +75,8 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.netbeans.modules.java.editor.options.JavaOptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -150,7 +153,13 @@ public class Utilities {
         lazyInit();
         showDeprecatedMembers = b;
     }
-    
+
+    public static boolean guessMethodArguments() {
+        Lookup lkp = MimeLookup.getLookup("text/x-java"); //NOI18N
+        JavaOptions opt = lkp != null ? lkp.lookup(JavaOptions.class) : null;
+        return opt.getGuessMethodArguments();
+    }
+
     private static void lazyInit() {
         if (!inited) {
             inited = true;
