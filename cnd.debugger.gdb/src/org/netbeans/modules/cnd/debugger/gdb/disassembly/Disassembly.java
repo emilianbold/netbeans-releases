@@ -84,6 +84,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private CallStackFrame lastFrame = null;
+    private boolean withSource = true;
     private boolean opened = false;
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
@@ -114,7 +115,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-        boolean withSource = false;
 
         synchronized (lines) {
             lines.clear();
@@ -136,9 +136,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 for (;;) {
                     int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    if (combinedPos != -1) {
-                        withSource = true;
-                    }
                     int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
                     
                     if (addressPos == -1) {
@@ -285,6 +282,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     private void reloadDis(boolean withSource, boolean force) {
+        this.withSource = withSource;
         if (!opened) {
             return;
         }
