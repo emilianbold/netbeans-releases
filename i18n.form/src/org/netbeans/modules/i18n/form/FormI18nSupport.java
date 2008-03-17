@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -106,12 +106,14 @@ public class FormI18nSupport extends JavaI18nSupport {
     }
 
     
-    /** Creates <code>I18nFinder</code>. Overrides superclass method. */
+    /** Creates <code>I18nFinder</code>. */
+    @Override
     protected I18nFinder createFinder() {
         return new FormI18nFinder(sourceDataObject, document);
     }
 
-    /** Creates <code>I18nReplacer</code>. Creates superclass method. */
+    /** Creates <code>I18nReplacer</code>. */
+    @Override
     protected I18nReplacer createReplacer() {        
         return new FormI18nReplacer(/*sourceDataObject, document,*/ (FormI18nFinder)getFinder());
         
@@ -134,9 +136,8 @@ public class FormI18nSupport extends JavaI18nSupport {
 //        document.addDocumentListener(documentListener);
     }
     
-    /**
-     * Overrides superclass methoid. 
-     * Gets info panel about found hard string. */
+    /** Gets info panel about found hard string. */
+    @Override
     public JPanel getInfo(HardCodedString hcString) {
         return new FormInfoPanel(hcString, document);
     }
@@ -413,7 +414,8 @@ public class FormI18nSupport extends JavaI18nSupport {
             createFormProperties();
         }
 
-        /** Resets finder. Overrides superclass method. */
+        /** Resets finder. */
+        @Override
         protected void reset() {
             super.reset();
             
@@ -499,7 +501,7 @@ public class FormI18nSupport extends JavaI18nSupport {
             }
         }
         
-        /** Overrides superclass method. */
+        @Override
         protected HardCodedString findNextString() {
             //boolean found;
             HardCodedString hcString;
@@ -815,7 +817,7 @@ public class FormI18nSupport extends JavaI18nSupport {
        }
 
        
-       /** Overrides superclass method. */
+       @Override
        public void replace(final HardCodedString hcString, final I18nString i18nString) {
            if(hcString instanceof FormHardCodedString) {
                replaceInGuarded((FormHardCodedString)hcString, (JavaI18nString)i18nString);
