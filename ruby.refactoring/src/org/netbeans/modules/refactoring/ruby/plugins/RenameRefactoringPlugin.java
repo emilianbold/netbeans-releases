@@ -570,7 +570,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             }
         }
         // see #126733. need to set a correct new name for the file rename plugin
-        // that gets invoked after this plugin
+        // that gets invoked after this plugin when the refactoring is invoked on a file.
         if (refactoring.getRefactoringSource().lookup(FileObject.class) != null) {
             String newName = RubyUtils.camelToUnderlinedName(refactoring.getNewName());
             refactoring.setNewName(newName);
