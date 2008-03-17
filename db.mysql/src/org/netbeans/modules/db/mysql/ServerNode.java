@@ -52,6 +52,7 @@ import org.openide.actions.DeleteAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -66,6 +67,9 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
     
     // I'd like a less generic icon, but this is what we have for now...
     private static final String ICON = "org/netbeans/modules/db/mysql/resources/catalog.gif";
+    
+    private static final HelpCtx HELP_CONTEXT =
+            new HelpCtx(ServerNode.class.getName());
             
     public static ServerNode create(ServerInstance server) {
         ChildFactory factory = new ChildFactory(server);
@@ -94,6 +98,11 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
         }
         
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HELP_CONTEXT;
+    }    
     
     private void registerListeners() {
         ServerInstance.getDefault().addChangeListener(
