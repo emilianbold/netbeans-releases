@@ -205,6 +205,7 @@ public final class CodeStyle {
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
+    //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -213,6 +214,19 @@ public final class CodeStyle {
     public boolean alignMultilineMethodParams() {
         return getOption(EditorOptions.alignMultilineMethodParams,
                          EditorOptions.alignMultilineMethodParamsDefault);
+    }
+
+    public boolean alignMultilineFor() {
+        return getOption(EditorOptions.alignMultilineFor,
+                         EditorOptions.alignMultilineForDefault);
+    }
+    public boolean alignMultilineIfCondition() {
+        return getOption(EditorOptions.alignMultilineIfCondition,
+                         EditorOptions.alignMultilineIfConditionDefault);
+    }
+    public boolean alignMultilineWhileCondition() {
+        return getOption(EditorOptions.alignMultilineWhileCondition,
+                         EditorOptions.alignMultilineWhileConditionDefault);
     }
 
     public boolean spaceAroundUnaryOps() {

@@ -37,63 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.installations;
+package org.netbeans.modules.websvc.axis2.nodes;
 
-import org.netbeans.modules.db.mysql.Installation;
+import java.util.List;
 
 /**
- * Provides some helper functionality for installations
- * 
- * @author David Van Couvering
+ *
+ * @author mkuchtiak
  */
-public abstract class AbstractInstallation implements Installation {
-    /**
-     * @return the base/installation path for this installation
-     */
-    protected abstract String getBasePath();
-    
-    /**
-     * 
-     * @return the path for the start command, relative to its base path
-     */
-    protected abstract String getStartPath();
-    
-    /**
-     * @return the path for the stop command, relative to its base path
-     */
-    protected abstract String getStopPath();
-    
-    /**
-     * Create a new installation given a new base path
-     * 
-     * @param basePath the base path to use for the installation
-     * 
-     * @return a new instance of the installation using this new base path
-     */
-    protected abstract Installation createInstallation(String basePath);
-   
+public class OperationInfo {
+    private String returnType;
+    private String operationName;
+    private List<String> paramTypes;
+    private List<String> paramNames;
 
-    public Installation getInstallation(String command, Command cmdType) {
-        // Installations either come with no admin UI or with phpmyadmin,
-        // so creating a new installation from the admin command doesn't
-        // really work...
-        if ( cmdType == Command.ADMIN ) {
-            return null;
-        }
-        
-        String newBasePath;
-        
-        if ( cmdType == Command.START ) {
-            newBasePath = command.replace(getStartPath(), "");
-        } else {
-            newBasePath = command.replace(getStopPath(), "");
-        }
-        if ( newBasePath.equals(command)) {
-            // not a valid command path
-            return null;
-        }
-        
-        return createInstallation(newBasePath);
+    public List<String> getParamNames() {
+        return paramNames;
     }
 
+    public void setParamNames(List<String> paramNames) {
+        this.paramNames = paramNames;
+    }
+
+    public List<String> getParamTypes() {
+        return paramTypes;
+    }
+
+    public void setParamTypes(List<String> paramTypes) {
+        this.paramTypes = paramTypes;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
+    }
+
+    public String getOperationName() {
+        return operationName;
+    }
+
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
+    }
+    
 }
