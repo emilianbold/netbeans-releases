@@ -36,48 +36,162 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 
 /**
  * This API displays the web service and client nodes in this project.
  * @author Ajit Bhate
  */
-public interface ProjectWebServiceView {
+public abstract class ProjectWebServiceView {
+
+    private static final Lookup.Result<ProjectWebServiceViewProvider> implementations;
+    
+
+    static {
+        implementations = Lookup.getDefault().lookup(new Lookup.Template<ProjectWebServiceViewProvider>(ProjectWebServiceViewProvider.class));
+    }
+
     /** 
      * View Type: Service or Client
      */
-    public enum ViewType {SERVICE,CLIENT};
+    public static enum ViewType {
+
+        SERVICE, CLIENT
+    };
+    private ChangeSupport serviceListeners,  clientListeners;
+
+    protected ProjectWebServiceView() {
+        serviceListeners = new ChangeSupport(this);
+        clientListeners = new ChangeSupport(this);
+    }
+
+    protected void addChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.addChangeListener(l);
+                break;
+            case CLIENT:
+                clientListeners.addChangeListener(l);
+                break;
+        }
+    }
+
+    protected void removeChangeListener(ChangeListener l, ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                if (serviceListeners != null) {
+                    serviceListeners.removeChangeListener(l);
+                }
+                break;
+            case CLIENT:
+                if (clientListeners != null) {
+                    clientListeners.removeChangeListener(l);
+                }
+                break;
+        }
+    }
+
+    protected void fireChange(ViewType viewType) {
+        switch (viewType) {
+            case SERVICE:
+                serviceListeners.fireChange();
+                return;
+            case CLIENT:
+                clientListeners.fireChange();
+                return;
+        }
+    }
+
     /** 
      * Create view for given type (service or client)
      */
-    Node[] createView(ViewType viewType);
+    protected abstract Node[] createView(ViewType viewType);
+
     /** 
      * If a view for given type (service or client) is empty.
      */
-    boolean isViewEmpty(ViewType viewType);
-    /** 
-     * Add a change listener
-     */
-    void addChangeListener(ChangeListener l, ViewType viewType);
-    /** 
-     * Remove a change listener
-     */
-    void removeChangeListener(ChangeListener l, ViewType viewType);
+    protected abstract boolean isViewEmpty(ViewType viewType);
 
     /** 
      * Notify that this view is in use.
      * Subclasses may add listeners here
      */
-    public void addNotify();
+    protected abstract void addNotify();
 
     /** 
      * Notify that this view is not in use.
      * Subclasses may remove listeners here.
      */
-    public void removeNotify();
+    protected abstract void removeNotify();
 
+    /**
+     * Returns lookup.result for ProjectWebServiceViewProviders
+     * @return Lookup.Result<ProjectWebServiceViewProvider>.
+     */
+    static Lookup.Result<ProjectWebServiceViewProvider> getProviders() {
+        return implementations;
+    }
+
+    /**
+     * Creates WebServiceViews for given project.
+     * @param project Project for which WebServiceViews are to be created.
+     * @return list of WebServiceViews.
+     */
+    public static List<ProjectWebServiceView> createWebServiceViews(Project project) {
+        Collection<? extends ProjectWebServiceViewProvider> providers = getProviders().allInstances();
+        if (providers == null || providers.isEmpty()) {
+            return Collections.<ProjectWebServiceView>emptyList();
+        }
+        List<ProjectWebServiceView> views = new ArrayList<ProjectWebServiceView>();
+        for (ProjectWebServiceViewProvider provider : providers) {
+            views.add(provider.createProjectWebServiceView(project));
+        }
+        return views;
+    }
+
+    /**
+     * Get the web service nodes that are in the project. 
+     * @param project Project that contains the web service nodes
+     * @return Array of web service nodes in the project.
+     */ 
+    public Node[] getServiceNodes(Project project) {
+        return createWebServiceNodes(project,ViewType.SERVICE);
+    };
+    
+    /**
+     * Get the web service client nodes that are in the project. 
+     * @param project Project that contains the web service nodes
+     * @return Array of web service client nodes in the project.
+     */ 
+    public Node[] getClientNodes(Project project) {
+        return createWebServiceNodes(project,ViewType.CLIENT);
+    };
+
+    /**
+     * Creates Web Service/client nodes for given project.
+     * @param project Project for which Web service /client nodes to be created.
+     * @param viewType type of nodes (service or client).
+     * @return array of nodes representing Web Services/Clients in given project.
+     */
+    private static Node[] createWebServiceNodes(Project project, ViewType viewType) {
+        List<ProjectWebServiceView> views = createWebServiceViews(project);
+        List<Node> result = new ArrayList<Node>();
+        for (ProjectWebServiceView view : views) {
+            if (!view.isViewEmpty(viewType)) {
+                result.addAll(Arrays.<Node>asList(view.createView(viewType)));
+            }
+        }
+        return result.toArray(new Node[result.size()]);
+    }
 }
