@@ -89,6 +89,11 @@ public class Utils {
     public static boolean isValidExecutable(String path, boolean emptyOK) {
         return isValidPath(path, false, emptyOK);
     }
+    
+    /** Return true if this is a valid, non-empty executable file */
+    public static boolean isValidExecutable(String path) {
+        return isValidExecutable(path, false);
+    }
 
     private static boolean isValidPath(String path, boolean isDirectory, boolean emptyOK) {
         if ( isEmpty(path) ) {
@@ -155,5 +160,14 @@ public class Utils {
                 NotifyDescriptor.OK_OPTION);
 
         DialogDisplayer.getDefault().notify(ndesc);
+    }
+    
+    /**
+     * See if two strings are equal, taking into account possibility of
+     * null
+     */
+    public static boolean stringEquals(String str1, String str2) {
+        return  (str1 == null && str2 == null) ||
+                (str2 != null && str1 != null && str1.equals(str2));
     }
 }

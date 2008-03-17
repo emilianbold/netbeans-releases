@@ -40,8 +40,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.ChangeableDataFilter;
@@ -63,7 +62,7 @@ class EtlproViews {
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
-        private static transient final Logger mLogger = LogUtil.getLogger(EtlproViews.class.getName());
+        private static transient final Logger mLogger = Logger.getLogger(EtlproViews.class.getName());
         private static transient final Localizer mLoc = Localizer.get();
 
         public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
@@ -136,7 +135,7 @@ class EtlproViews {
                         DataFolder df = DataFolder.findFolder(fo);
                         return df;
                     }catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR021: Exception :{0}", ex.getMessage()), ex);
+                        mLogger.errorNoloc(mLoc.t("PRJS021: Exception :{0}", ex.getMessage()), ex);
                     }
                 }
             }

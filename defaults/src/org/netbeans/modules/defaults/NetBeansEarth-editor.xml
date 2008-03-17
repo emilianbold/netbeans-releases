@@ -59,5 +59,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="caret-color-insert-mode" foreColor="black"/>
     <fontcolor name="text-limit-line-color" foreColor="ffffa8a8"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
-    <fontcolor name="synchronized-text-blocks" bgColor="ff8AC0EC"/>
+    <fontcolor name="synchronized-text-blocks-ext" foreColor="ffCC0099"/>
+    <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
 </fontscolors>

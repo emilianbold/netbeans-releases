@@ -49,7 +49,6 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
@@ -63,23 +62,23 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 public class ToggleOutputAction extends GraphAction {
 
     private static final URL outputGraphImgUrl = ToggleOutputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(ToggleOutputAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ToggleOutputAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ToggleOutputAction() {
         //action name
-        String nbBundle = mLoc.t("PRSR001: Toggle Output View");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle));
+        String nbBundle = mLoc.t("BUND037: Toggle Output View");
+        this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(outputGraphImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Toggle Output View (Cntl-O)");
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND038: Toggle Output View (Shift-O)");
+        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
 
-        // Acceleratot Cntl-O
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK ));
+        // Acceleratot Shift-O
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**
