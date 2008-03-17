@@ -53,7 +53,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import javax.xml.namespace.QName;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -107,9 +114,9 @@ import org.netbeans.modules.bpel.model.api.support.ImportHelper;
 import org.netbeans.modules.bpel.model.api.support.Pattern;
 import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
-import org.netbeans.modules.bpel.model.api.support.Utils;
-import org.netbeans.modules.bpel.model.api.support.Utils.Pair;
-import org.netbeans.modules.bpel.model.api.support.ContainerIterator;
+import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.impl.ContainerIterator;
+import org.netbeans.modules.bpel.model.impl.Utils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -143,6 +150,9 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Activity;
+import org.netbeans.modules.bpel.model.impl.Utils;
+import org.netbeans.modules.bpel.model.impl.Utils.Pair;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -982,10 +992,11 @@ public final class Validator extends BpelValidator {
         TBoolean mustUnderstand = extension.getMustUnderstand();
         if (TBoolean.YES.equals(mustUnderstand)) {
             BpelModel model = extension.getBpelModel();
+            assert model instanceof BpelModelImpl;
+            BpelModelImpl impl = (BpelModelImpl) model;
 
-            if ( !model.isSupportedExpension(extension.getNamespace())) {
+            if (!impl.isSupportedExpension(extension.getNamespace())) {
                 String ns = extension.getNamespace();
-
                 if (ns == null) {
                     ns = "";
                 }
@@ -1919,7 +1930,7 @@ public final class Validator extends BpelValidator {
             Collection<PropertyAlias> collection = getPropertyAliases(reference.getQName(), message, correlation.getBpelModel());
 
             if (collection.size() == 0 && reference != null && reference.get() != null) {
-              addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName(), set.getName()); // NOI18N
+              addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName()); // NOI18N
             }
         }
     }

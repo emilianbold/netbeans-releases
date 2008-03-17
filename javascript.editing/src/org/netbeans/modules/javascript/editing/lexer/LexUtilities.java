@@ -200,10 +200,6 @@ public class LexUtilities {
     }
 
     public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset) {
-        return getPositionedSequence(doc, offset, true);
-    }
-    
-    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack) {
         TokenSequence<?extends JsTokenId> ts = getJsTokenSequence(doc, offset);
 
         if (ts != null) {
@@ -219,9 +215,7 @@ public class LexUtilities {
                 throw e;
             }
 
-            if (!lookBack && !ts.moveNext()) {
-                return null;
-            } else if (lookBack && !ts.moveNext() && !ts.movePrevious()) {
+            if (!ts.moveNext() && !ts.movePrevious()) {
                 return null;
             }
             

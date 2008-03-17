@@ -73,24 +73,7 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
-        <change id="queries">
-            <api name="queries"/>
-            <summary>Support for passing hint to the java infrastructure whether it should prefer source or binary</summary>
-            <version major="1" minor="15"/>
-            <date day="10" month="3" year="2008"/>
-            <author login="tzezula"/>
-            <compatibility addition="yes" modification="yes" semantic="compatible" source="compatible" binary="compatible"/>
-            <description>
-                <p>
-                    It is possible for the SouceForBinaryQuery provider to specify whether the java module should prefer
-                    sources or binaries. In general sources should be preferred for projects where user can make modification.
-                    The binaries should be preferred for libraries and platforms where sources may not be complete or correct.
-                </p>
-            </description>
-            <class package="org.netbeans.api.java.queries" name="SourceForBinaryQuery"/>
-            <class package="org.netbeans.spi.java.queries" name="SourceForBinaryQueryImplementation2"/>
-            <issue number="128695"/>
-        </change>
+
         <change id="includes-excludes.classpath">
             <api name="classpath"/>
             <summary>Support for specifying classpath inclusion</summary>

@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
-import org.netbeans.modules.xml.axi.AXIComponent;
-
 /**
  *
  * @author radval
@@ -57,23 +55,6 @@ public class PlaceholderSchemaAttribute {
     
     private String mAttributeComment = "";
     
-    private AXIComponent mComponent;
-    
-    public PlaceholderSchemaAttribute(AXIComponent component) {
-        this.mComponent = component;
-    }
-    
-    public PlaceholderSchemaAttribute() {
-        
-    }
-    
-    public void setAXIComponent(AXIComponent component) {
-        this.mComponent = component;
-    }
-   
-    public AXIComponent getAXIComponent() {
-        return this.mComponent;
-    }
     
     public String getAttributeName() {
         return this.mAttributeName;
@@ -114,7 +95,4 @@ public class PlaceholderSchemaAttribute {
     public void setAttributeComment(String attributeComment) {
         this.mAttributeComment = attributeComment;
     }
-    
-    
-   
 }

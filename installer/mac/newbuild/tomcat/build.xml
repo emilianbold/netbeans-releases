@@ -58,10 +58,10 @@
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${basedir}/pkg/scripts/add_tc.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
         
-        <echo message="Building tomcat.pkg into ${basedir}/../build/tomcat.pkg"/>
+        <echo message="Building ${tomcat.pkg.name} into ${basedir}/../build/${tomcat.pkg.name}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/tomcat.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/${tomcat.pkg.name} -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
 </project>

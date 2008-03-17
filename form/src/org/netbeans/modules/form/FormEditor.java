@@ -311,8 +311,6 @@ public class FormEditor {
 	
         openForms.put(formModel, this);
 
-        Logger.getLogger("TIMER").log(Level.FINE, "FormModel", new Object[] { formDataObject.getPrimaryFile(), formModel}); // NOI18N
-
         // Force initialization of Auto Set Component Name.
         // It cannot be initialized in constructor of FormModel,
         // because it may call getResourceSupport() which
@@ -350,10 +348,7 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
-        ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
-        if (resupport.getDesignLocale() != null) {
-            resupport.updateDesignLocale();
-        }
+        getResourceSupport(); // make sure ResourceSupport is created and initialized
 
         getBindingSupport();
         formModel.fireFormLoaded();

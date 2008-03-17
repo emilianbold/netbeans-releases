@@ -49,8 +49,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -64,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,7 +71,8 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 public class EntityClassInfo {
 
     private EntityResourceModelBuilder builder;
-    private Entity entity;
+    private final Entity entity;
+    private JavaSource entitySource;
     private String name;
     private String type;
     private String packageName;
@@ -80,8 +80,9 @@ public class EntityClassInfo {
     private FieldInfo idFieldInfo;
 
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(Entity entity, Project project, EntityResourceModelBuilder builder) {
+    public EntityClassInfo(Entity entity, Project project, EntityResourceModelBuilder builder, JavaSource source) {
         this.entity = entity;
+        this.entitySource = source;
         this.fieldInfos = new ArrayList<FieldInfo>();
         this.builder = builder;
 
@@ -91,10 +92,22 @@ public class EntityClassInfo {
             extractPKFields(project);
         }
     }
-
-    private void extractFields(Project project) {
+    
+    protected void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+    
+    protected void setName(String name) {
+        this.name = name;
+    }
+    
+    protected void setType(String type) {
+        this.type = type;
+    }
+    
+    protected void extractFields(Project project) {
         try {
-            final JavaSource source = SourceGroupSupport.getJavaSourceFromClassName(entity.getClass2(), project);
+            final JavaSource source = entitySource;
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
@@ -107,92 +120,103 @@ public class EntityClassInfo {
                     type = packageName + "." + name;
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-                    List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
-
-                    for (VariableElement field : fields) {
-                        Set<Modifier> modifiers = field.getModifiers();
-                        if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT) || modifiers.contains(Modifier.VOLATILE) || modifiers.contains(Modifier.FINAL)) {
-                            continue;
-                        }
-
-                        FieldInfo fieldInfo = new FieldInfo();
-
-                        fieldInfos.add(fieldInfo);
-                        fieldInfo.setName(field.getSimpleName().toString());
-
-                        TypeMirror fieldType = field.asType();
-
-                        if (fieldType.getKind() == TypeKind.DECLARED) {
-                            DeclaredType declType = (DeclaredType) fieldType;
-
-                            fieldInfo.setType(declType.asElement().toString());
-
-                            for (TypeMirror arg : declType.getTypeArguments()) {
-                                fieldInfo.setTypeArg(arg.toString());
-                            }
-                        } else {
-                            fieldInfo.setType(fieldType.toString());
-                        }
-
-
-                        for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
-                            fieldInfo.addAnnotation(annotation.toString());
-                        }
-
-                        if (fieldInfo.isId()) {
-                            idFieldInfo = fieldInfo;
-                        }
-                    }
+                    extractFields(classElement);
                 }
             }, true);
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
-    private void extractPKFields(Project project) {
+    protected void extractFields(TypeElement typeElement) {
+        List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+
+        for (VariableElement field : fields) {
+            Set<Modifier> modifiers = field.getModifiers();
+            if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT) || modifiers.contains(Modifier.VOLATILE) || modifiers.contains(Modifier.FINAL)) {
+                continue;
+            }
+
+            FieldInfo fieldInfo = new FieldInfo();
+
+            fieldInfos.add(fieldInfo);
+            fieldInfo.setName(field.getSimpleName().toString());
+
+            TypeMirror fieldType = field.asType();
+
+            if (fieldType.getKind() == TypeKind.DECLARED) {
+                DeclaredType declType = (DeclaredType) fieldType;
+
+                fieldInfo.setType(declType.asElement().toString());
+
+                for (TypeMirror arg : declType.getTypeArguments()) {
+                    fieldInfo.setTypeArg(arg.toString());
+                }
+            } else {
+                fieldInfo.setType(fieldType.toString());
+            }
+
+
+            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
+                fieldInfo.addAnnotation(annotation.toString());
+            }
+
+            if (fieldInfo.isId()) {
+                idFieldInfo = fieldInfo;
+            }
+        }
+    }
+    
+    protected void extractPKFields(Project project) {
         try {
-            final JavaSource source = SourceGroupSupport.getJavaSourceFromClassName(idFieldInfo.getType(), project);
-            source.runUserActionTask(new AbstractTask<CompilationController>() {
+            JavaSource pkSource = SourceGroupSupport.getJavaSourceFromClassName(idFieldInfo.getType(), project);
+            if (pkSource == null) {
+                throw new IllegalArgumentException("No java source for "+idFieldInfo.getType());
+            }
+            pkSource.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
       
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-                    List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
-
-                    for (VariableElement field : fields) {
-                        Set<Modifier> modifiers = field.getModifiers();
-                        if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT) || modifiers.contains(Modifier.VOLATILE) || modifiers.contains(Modifier.FINAL)) {
-                            continue;
-                        }
-
-                        FieldInfo fieldInfo = new FieldInfo();
-
-                        idFieldInfo.addFieldInfo(fieldInfo);
-                        fieldInfo.setName(field.getSimpleName().toString());
-
-                        TypeMirror fieldType = field.asType();
-
-                        if (fieldType.getKind() == TypeKind.DECLARED) {
-                            DeclaredType declType = (DeclaredType) fieldType;
-
-                            fieldInfo.setType(declType.asElement().toString());
-
-                            for (TypeMirror arg : declType.getTypeArguments()) {
-                                fieldInfo.setTypeArg(arg.toString());
-                            }
-                        } else {
-                            fieldInfo.setType(fieldType.toString());
-                        }
-                    }
+                    extractPKFields(classElement);
                 }
             }, true);
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 
+    protected void extractPKFields(TypeElement typeElement) {
+        List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+
+        for (VariableElement field : fields) {
+            Set<Modifier> modifiers = field.getModifiers();
+            if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT) || modifiers.contains(Modifier.VOLATILE) || modifiers.contains(Modifier.FINAL)) {
+                continue;
+            }
+
+            FieldInfo fieldInfo = new FieldInfo();
+
+            idFieldInfo.addFieldInfo(fieldInfo);
+            fieldInfo.setName(field.getSimpleName().toString());
+
+            TypeMirror fieldType = field.asType();
+
+            if (fieldType.getKind() == TypeKind.DECLARED) {
+                DeclaredType declType = (DeclaredType) fieldType;
+
+                fieldInfo.setType(declType.asElement().toString());
+
+                for (TypeMirror arg : declType.getTypeArguments()) {
+                    fieldInfo.setTypeArg(arg.toString());
+                }
+            } else {
+                fieldInfo.setType(fieldType.toString());
+            }
+        }
+    }
+    
     public Entity getEntity() {
         return entity;
     }

@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.db.sql.editor;
 
+import java.util.Map;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenContext;
 
 /**
@@ -48,9 +52,32 @@ import org.netbeans.editor.TokenContext;
  *
  * @author Jesse Beaumont, Andrei Badea
  */
-public class SQLSettingsInitializer {
+public class SQLSettingsInitializer extends Settings.AbstractInitializer {
 
-    public static TokenContext[] getTokenContext() {
-        return new TokenContext[] { SQLTokenContext.context };
+    public static final String NAME = "sql-settings-initializer"; // NOI18N
+    
+    /**
+     * Constructor
+     */
+    public SQLSettingsInitializer() {
+        super(NAME);
+    }
+
+   /** 
+    * Update map filled with the settings.
+    * @param kitClass kit class for which the settings are being updated.
+    *   It is always non-null value.
+    * @param settingsMap map holding [setting-name, setting-value] pairs.
+    *   The map can be empty if this is the first initializer
+    *   that updates it or if no previous initializers updated it.
+    */
+    public void updateSettingsMap(Class kitClass, Map settingsMap) {
+        if (kitClass == SQLEditorKit.class) {
+            SettingsUtil.updateListSetting(
+                    settingsMap, 
+                    SettingsNames.TOKEN_CONTEXT_LIST,
+                    new TokenContext[] { SQLTokenContext.context }
+            );
+        }
     }
 }

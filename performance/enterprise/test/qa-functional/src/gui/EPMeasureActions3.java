@@ -55,8 +55,7 @@ public class EPMeasureActions3  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testInitGCProjects"));
+        suite.addTest(new WatchProjects("testInitGCProjects"));
         suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
         suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
         
@@ -66,9 +65,9 @@ public class EPMeasureActions3  {
 //        suite.addTest(new OpenComplexDiagram("testGC","Open Complex Diagram - Test GC"));         
         suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
 
+        suite.addTest(new StartAppserver("measureTime","Start Appserver"));
         suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
-// Disabled testGCProjects check to shorten run time        
-//        suite.addTest(new WatchProjects("testGCProjects"));
+        suite.addTest(new WatchProjects("testGCProjects"));
         return suite;
     }
     

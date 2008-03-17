@@ -291,7 +291,8 @@ public final class MasterMatcher {
     }
     
     // when navigating: set the dot after or before the matching area, depending on the caret bias
-    // when selecting: see #123091 for details
+    // when selecting: always select the inside between original and matching areas
+    //                 do not select the areas themselvs
     private static void navigateAreas(
         int [] origin, 
         int [] matches,
@@ -330,7 +331,7 @@ public final class MasterMatcher {
                         move = matches[2 * newDotBackwardIdx];
                     }
 
-                    if (caret.getDot() == caret.getMark()) { // || (move <= caret.getMark() && caret.getMark() <= set)
+                    if (caret.getDot() == caret.getMark() || (move <= caret.getMark() && caret.getMark() <= set)) {
                         caret.setDot(set);
                     }
                     caret.moveDot(move);
@@ -353,7 +354,7 @@ public final class MasterMatcher {
                         move = matches[2 * newDotForwardIdx + 1];
                     }
                     
-                    if (caret.getDot() == caret.getMark()) { //  || (set <= caret.getMark() && caret.getMark() <= move)
+                    if (caret.getDot() == caret.getMark() || (set <= caret.getMark() && caret.getMark() <= move)) {
                         caret.setDot(set);
                     }
                     caret.moveDot(move);

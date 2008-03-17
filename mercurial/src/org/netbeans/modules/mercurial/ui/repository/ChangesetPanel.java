@@ -26,12 +26,6 @@ public class ChangesetPanel extends javax.swing.JPanel {
             this.setDate(info.getDate().toString());
         }
     }
-    
-    public void clearInfo(){
-        this.setDescription("");
-        this.setAuthor("");
-        this.setDate("");
-    }
 
     public void setDescription(String desc){
         jTextField1.setText(desc);

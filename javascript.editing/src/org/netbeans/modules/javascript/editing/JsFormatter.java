@@ -79,7 +79,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
-    private int embeddededIndent = 0;
     
     /**
      * <p>
@@ -340,52 +339,104 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return 0;
     }
     
+    // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
     private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
-        TokenSequence<? extends JsTokenId> ts = null;
-
         if (embeddedJavaScript) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            for (TokenSequence<?> embeddedTS : th.embeddedTokenSequences(begin, false)) {
-                if (JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(embeddedTS.language().mimeType())) {
-                    ts = (TokenSequence<? extends JsTokenId>) embeddedTS;
+            // Probably an RHTML file - gotta process it in sections since I can have lines
+            // made up of both whitespace, ruby, html and delimiters and all ruby sections
+            // can affect the token balance
+            TokenSequence<?> t = th.tokenSequence();
+            if (t == null) {
+                return 0;
+            }
+            t.move(begin);
+            if (!t.moveNext()) {
+                return 0;
+            }
+            
+            do {
+                Token<?> token = t.token();
+                TokenId id = token.id();
+                if (id.primaryCategory().equals("html")) { // NOI18N
+                    // Some kind of "top level" language like RHTML which is two
+                    // levels away from JavaScript...
+                    TokenSequence<?> hts = t.embedded();
+                    hts.move(begin);
+                    hts.moveNext();
+                    do {
+                        Token<?> htmlToken = hts.token();
+                        if (htmlToken == null) {
+                            break;
+                        }
+                        TokenId htmlId = htmlToken.id();
+                        if (htmlId.primaryCategory().equals("script")) {
+                            TokenSequence<? extends JsTokenId> ts = hts.embedded(JsTokenId.language());
+                            ts.move(begin);
+                            ts.moveNext();
+                            
+                            do {
+                                Token<?extends JsTokenId> jsToken = ts.token();
+                                if (jsToken == null) {
+                                    break;
+                                }
+                                TokenId jsId = jsToken.id();
+
+                                if (includeKeywords) {
+                                    balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
+                                } else {
+                                    balance += getBracketBalanceDelta(jsId);
+                                }
+                            } while (ts.moveNext() && (ts.offset() < end));
+                        }
+                    } while (hts.moveNext() && (hts.offset() < end));
+                } else if (id.primaryCategory().equals("script")) { // NOI18N
+                    TokenSequence<? extends JsTokenId> ts = t.embedded(JsTokenId.language());
+                    ts.move(begin);
+                    ts.moveNext();
+                    
+                    do {
+                        Token<?extends JsTokenId> jsToken = ts.token();
+                        if (jsToken == null) {
+                            break;
+                        }
+                        TokenId jsId = jsToken.id();
+
+                        if (includeKeywords) {
+                            balance += getTokenBalanceDelta(jsId, doc, ts, indentOnly);
+                        } else {
+                            balance += getBracketBalanceDelta(jsId);
+                        }
+                    } while (ts.moveNext() && (ts.offset() < end));
                 }
-            }
+
+            } while (t.moveNext() && (t.offset() < end));
         } else {
-            ts = LexUtilities.getJsTokenSequence(doc, begin);
-        }
-        
-        if (ts == null) {
-            try {
-                // remember indent of previous html tag
-                embeddededIndent = Utilities.getRowIndent(doc, begin);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
+            if (ts == null) {
+                return 0;
             }
-            return 0;
-        }
+            
+            ts.move(begin);
 
-        ts.move(begin);
-
-        if (!ts.moveNext()) {
-            return 0;
-        }
-
-        do {
-            Token<?extends JsTokenId> token = ts.token();
-            if (token == null) {
-                break;
+            if (!ts.moveNext()) {
+                return 0;
             }
-            TokenId id = token.id();
 
-            if (includeKeywords) {
-                int delta = getTokenBalanceDelta(id, doc, ts, indentOnly);
-                balance += delta;
-            } else {
-                balance += getBracketBalanceDelta(id);
-            }
-        } while (ts.moveNext() && (ts.offset() < end));
+            do {
+                Token<?extends JsTokenId> token = ts.token();
+                TokenId id = token.id();
+                
+                if (includeKeywords) {
+                    int delta = getTokenBalanceDelta(id, doc, ts, indentOnly);
+                    balance += delta;
+                } else {
+                    balance += getBracketBalanceDelta(id);
+                }
+            } while (ts.moveNext() && (ts.offset() < end));
+        }
 
         return balance;
     }
@@ -680,7 +731,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
         embeddedJavaScript = !JsUtils.isJsDocument(document);
-        
+
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
@@ -698,7 +749,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 endOffset = doc.getLength();
             }
             
-                startOffset = Utilities.getRowStart(doc, startOffset);
+            startOffset = Utilities.getRowStart(doc, startOffset);
             int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
             int initialIndent = 0;
@@ -847,11 +898,12 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
-                if (embeddedJavaScript) {
-                    // now using JavaScript indent size to indent from <SCRIPT> tag; should it be HTML?
-                    initialIndent = embeddededIndent + indentSize;
-                }
-
+// No compound indentation for JavaScript                
+//                if (embeddedJavaScript && !indentOnly) {
+//                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
+//                    initialIndent = LexUtilities.getLineIndent(doc, offset);
+//                }
+                
                 
                 final int IN_CODE = 0;
                 final int IN_LITERAL = 1;
@@ -865,7 +917,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     // I can't look at the first position on the line, since
                     // for a string array that is indented, the indentation portion
                     // is recorded as a blank identifier
-                    ts = LexUtilities.getPositionedSequence(doc, pos, false);
+                    ts = LexUtilities.getPositionedSequence(doc, pos);
 
                     if (ts != null) {
                         TokenId id = ts.token().id();
@@ -899,8 +951,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 if (lineType == IN_LITERAL) {
                     // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
-                    
-                    // No compound indent for JavaScript          
+
+                    // No compound indent for JavaScript                    
                     //                    if (embeddedJavaScript && indentHtml && balance > 0) {
                     //                        indent += balance * indentSize;
                     //                    }

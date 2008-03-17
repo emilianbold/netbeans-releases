@@ -70,7 +70,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Timer;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -91,7 +90,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
@@ -114,13 +112,6 @@ public final class SearchBar extends JPanel {
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
-    
-    // Delay times for incremental search [ms]
-    private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
-    private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
-    
-    private static final int defaultIncremantalSearchComboWidth = 200;
-    private static final int maxIncremantalSearchComboWidth = 350;
     
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -290,34 +281,11 @@ public final class SearchBar extends JPanel {
             public @Override Dimension getMaximumSize() {
                 return getPreferredSize();
             }
-
-            @Override
-            public Dimension getPreferredSize() {
-                int width;
-                int editsize = this.getEditor().getEditorComponent().getPreferredSize().width + 10;
-                if (editsize > defaultIncremantalSearchComboWidth && editsize <  maxIncremantalSearchComboWidth)
-                    width = editsize;
-                else if (editsize >= maxIncremantalSearchComboWidth)
-                    width = maxIncremantalSearchComboWidth;
-                else width = defaultIncremantalSearchComboWidth;
-                return new Dimension(width,
-                        super.getPreferredSize().height);
-            }
         };
-        
         incrementalSearchComboBox.setEditable(true);
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
 
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                incrementalSearch();
-            }
-        };
-
-        final Timer searchDelayTimer = new Timer(SEARCH_DELAY_TIME_LONG, al);
-        searchDelayTimer.setRepeats(false);
-        
         // listen on text change
         incrementalSearchTextFieldListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -325,16 +293,12 @@ public final class SearchBar extends JPanel {
 
             public void insertUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
-                computeLayout();
-                if(incrementalSearchTextField.getText().length() > 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
-                searchDelayTimer.restart();
+                incrementalSearch();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
-                computeLayout();
-                if(incrementalSearchTextField.getText().length() <= 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
-                searchDelayTimer.restart();
+                incrementalSearch();
             }
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
@@ -473,18 +437,10 @@ public final class SearchBar extends JPanel {
         
         add(findLabel);
         add(incrementalSearchComboBox);
-        
-        JToolBar.Separator leftSeparator = new JToolBar.Separator();
-        leftSeparator.setOrientation(SwingConstants.VERTICAL);
-        add(leftSeparator);
-        
+        add(new JToolBar.Separator());
         add(findPreviousButton);
         add(findNextButton);
-        
-        JToolBar.Separator rightSeparator = new JToolBar.Separator();
-        rightSeparator.setOrientation(SwingConstants.VERTICAL);
-        add(rightSeparator);
-        
+        add(new JToolBar.Separator());
         add(matchCaseCheckBox);
         add(wholeWordsCheckBox);
         add(regexpCheckBox);

@@ -789,8 +789,7 @@ implements DocumentListener, KeyListener {
                 if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) == null)
                     notifyParameterUpdate(activeMasterImpl.getParameter(), true);
             } else { // the insert is not managed => release
-                if (DocumentUtilities.isTypingModification(evt) || 
-                        evt.getLength() >= evt.getDocument().getLength()) //HACK! - see issue #128600
+                if (DocumentUtilities.isTypingModification(evt))
                     release();
             }
         }

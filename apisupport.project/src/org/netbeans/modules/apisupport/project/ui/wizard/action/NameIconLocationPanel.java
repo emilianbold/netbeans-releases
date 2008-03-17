@@ -161,14 +161,9 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
             setError(getMessage("MSG_IconRequiredForToolbar"));
         } else {
-            String[] invalid = data.getCreatedModifiedFiles().getInvalidPaths();
-            if (invalid.length > 0) {
-                setError(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
-            } else {
-                markValid();
-                checkIconValidity();
-                return true;
-            }
+            markValid();
+            checkIconValidity();
+            return true;
         }
         return false;
     }

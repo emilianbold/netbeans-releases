@@ -84,6 +84,50 @@ made subject to such option by the copyright holder.
     <target name="-init-httpunit" depends="-init-props, -httpunit"/>
 
     <!--
+      XXX have to use own compilation because we don't have built dependent
+      REST modules on test machines
+     -->
+    <target name="qa-functional-compiler" depends="-init-httpunit,-init-cp-wa">
+        <ant inheritAll="false" dir="../../websvc.kit/test" target="buildtests"/>
+        <echo>Available Properties:</echo>
+        <echoproperties/>
+        <echo>=====================</echo>
+        <mkdir dir="../build"/>
+        <mkdir dir="../build/test"/>
+        <mkdir dir="../build/test/qa-functional"/>
+        <mkdir dir="../build/test/qa-functional/classes"/>
+        <mkdir dir="../build/test/qa-functional/data"/>
+        <mkdir dir="lib"/>
+        <property name="dst.classes.dir" value="../build/test/qa-functional/classes"/>
+        <property name="dst.data.dir" value="../build/test/qa-functional/data"/>
+        <javac debug="true" srcdir="qa-functional/src" destdir="${dst.classes.dir}"
+               source="1.5" target="1.5">
+            <classpath>
+                <path refid="httpunit.libs"/>
+                <pathelement location="${nb_all}/websvc.kit/test/lib/tests-qa-functional.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit-ide.jar"/>
+                <pathelement location="${nb_all}/jemmy/dist/jemmy.jar"/>
+                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/core/org-openide-filesystems.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/lib/org-openide-util.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-loaders.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-nodes.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-text.jar"/>
+                <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-windows.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/>
+            </classpath>
+            <compilerarg line="-Xlint -Xlint:-serial"/>
+        </javac>
+        <copy todir="${dst.data.dir}">
+            <fileset dir="qa-functional/data"/>
+        </copy>
+        <jar basedir="${dst.classes.dir}" destfile="lib/tests-qa-functional.jar"/>
+        <jar basedir="${dst.data.dir}" destfile="lib/data-qa-functional.zip" excludes="**/private/**"/>
+    </target>
+
+    <!--
       XXX make sure httpunit.jar (and related jars) is loaded first
       to avoid conflict with httunit module (SOA) and jtidy (visualweb)
      -->

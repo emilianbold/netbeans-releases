@@ -496,20 +496,16 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
     
     private void writefile(final File file) throws ConfigurationException {
-        assert file != null : "File to write can't be null"; // NOI18N
-        assert file.getParentFile() != null : "File parent folder can't be null"; // NOI18N
-
         try {
-            FileObject cfolder = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
+            FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
             if (cfolder == null) {
+                File parentFile = file.getParentFile();
                 try {
-                    cfolder = FileUtil.createFolder(FileUtil.normalizeFile(file.getParentFile()));
-                } catch (IOException ex) {
-                    throw new ConfigurationException(NbBundle.getMessage(TomcatModuleConfiguration.class,
-                            "MSG_FailedToCreateConfigFolder", file.getParentFile().getAbsolutePath()));
+                    cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
+                } catch (IOException ioe) {
+                    throw new ConfigurationException(NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
                 }
             }
-
             final FileObject folder = cfolder;
             final ConfigurationException anonClassException[] = new ConfigurationException[]{null};
             FileSystem fs = folder.getFileSystem();

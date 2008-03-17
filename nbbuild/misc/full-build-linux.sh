@@ -75,7 +75,7 @@
 #
 # dobuild=no
 # if set to "no", do not do a build, just run tests
-# default is "yes", do a build (incl. commit verification)
+# default is "yes", do a build (incl. sanity check and commit verification)
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
 # testedmodule=full
@@ -281,8 +281,9 @@ if [ $dobuild = yes ]
 then
     echo "----------BUILDING NETBEANS----------" 1>&2
     # Intentionally skipping check-commit-validation.
+    # Running sanity-start just so you have a good chance to see deprecation messages etc.
     # Make sure to explicitly set JDK (ignore any definition in user.build.properties).
-    $antcmd -f $sources/build.xml -Dnbjdk.home=$nbjdk
+    $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check
     status=$?
     if [ $status '!=' 0 ]
     then

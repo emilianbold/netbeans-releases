@@ -26,38 +26,29 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
         <ant dir="glassfish"/>
-        <ant target="cut-size">                             
-            <property name="pkg.name" value="glassfish"/>
-        </ant>
     </target>
     
     <target name="build-tomcat-pkg">
         <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
         <ant dir="tomcat" target="build-pkg"/>
-        <ant target="cut-size">                        
-            <property name="pkg.name" value="tomcat"/>
-        </ant>        
     </target>
     
     
     <target name="build-openesb-pkg">
         <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
-        <ant dir="openesb" target="build-pkg"/>
-        <ant target="cut-size">                
-            <property name="pkg.name" value="openesb"/>
-        </ant>               
+        <ant dir="openesb" target="build-pkg" >
+        </ant>
     </target>
     
     <target name="clean">
-        <delete dir="${basedir}/build"/>
-        <delete dir="${basedir}/dist"/>             
-        <delete dir="${basedir}/netBeans/soa/build"/>
-        <delete dir="${basedir}/netBeans/ruby/build"/>
-        <delete dir="${basedir}/netBeans/cpp/build"/>
-        <delete dir="${basedir}/netBeans/javase/build"/>
-        <delete dir="${basedir}/netBeans/javaee/build"/>
-        <delete dir="${basedir}/netBeans/baseide/build"/>   
-        <delete file="${basedir}/sizes.pro"/>
+        <delete dir="build"/>
+        <delete dir="dist"/>             
+        <delete dir="netBeans/soa/build"/>
+        <delete dir="netBeans/ruby/build"/>
+        <delete dir="netBeans/cpp/build"/>
+        <delete dir="netBeans/javase/build"/>
+        <delete dir="netBeans/javaee/build"/>
+        <delete dir="netBeans/baseide/build"/>                                          
     </target>
 
 
@@ -144,9 +135,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >
         <ant dir="netBeans/baseide"/>
-        <ant target="cut-size">                    
-            <property name="pkg.name" value="baseide"/>
-        </ant>            
         <ant target="build-modules"/>       
     </target>
     
@@ -197,83 +185,47 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
         </exec>
-                         
-        <ant target="cut-size">                       
-            <property name="pkg.name" value="${module.name}"/>
-        </ant>         
-    </target>      
-    
-    <target name="cut-size">       
-        <exec executable="sh" failonerror="yes" outputproperty="size">
-            <arg value="-c"/>
-            <arg value="cat ${basedir}/build/${pkg.name}.pkg/Contents/Info.plist | sed -n '/IFPkgFlagInstalledSize/{n;p;}' | sed 's/\&lt;integer\&gt;//;s/\&lt;\/integer\&gt;//'"/>
-        </exec>        
-        <echo message="sizeof.${pkg.name}=${size}${line.separator}" file="${basedir}/sizes.pro" append="true"/>            
-    </target>
-    
-    <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
-        
-       <property file="${basedir}/sizes.pro"/>  
-       
-       <mkdir dir="dist"/>  
-       
+    </target>         
+
+    <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg" >
+       <mkdir dir="dist"/>
        <ant target="build-dmg"> 
            <property name="bundle.type" value=""/>
-           <property name="welcome.message" value="${welcome.full}"/>
            <property name="packages" value="./build/*pkg"/>          
        </ant>   
        <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javase"/>      
-           <property name="welcome.message" value="${welcome.javase}"/>           
+           <property name="bundle.type" value="-javase"/>
            <property name="packages" value="./build/baseide.pkg ./build/javase.pkg"/>          
        </ant> 
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-javaee"/>
-           <property name="welcome.message" value="${welcome.javaee}"/>           
            <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg"/>          
        </ant> 
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-cpp"/>
-           <property name="welcome.message" value="${welcome.cpp}"/>           
            <property name="packages" value="./build/baseide.pkg ./build/cpp.pkg"/>          
        </ant> 
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-ruby"/>
-           <property name="welcome.message" value="${welcome.ruby}"/>           
            <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
-       </ant>
-       
-       <delete file="${basedir}/sizes.pro"/>
+       </ant>       
     </target>      
     
-    <target name="build-dmg">                   
-        <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>        
+    <target name="build-dmg">              
+        <delete dir="dist_dmg"/>
+        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>
         <mkdir dir="${mpkgfile}/Contents/Resources/English.lproj"/>
         <mkdir dir="${mpkgfile}/Contents/Packages"/>
         <copy file="dmg/license.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/License.txt"/>
-        <copy file="dmg/intro.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/Welcome.txt">
-            <filterset>
-                 <filter token="MESSAGE" value="${welcome.message}"/>
-            </filterset>
-        </copy>
+        <copy file="dmg/intro.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/Welcome.txt"/>
         <copy file="dmg/bgimage.tif" tofile="${mpkgfile}/Contents/Resources/English.lproj/background.tif"/>        
-        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">                                    
+        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">
             <filterset>
                 <filter token="TITLE" value="${appname}"/>
                 <filter token="GF_TITLE" value="${glassfish.appname}"/>
                 <filter token="TC_TITLE" value="${tomcat.appname}"/>
                 <filter token="OESB_TITLE" value="${openesb.appname}"/>
                 <filter token="NB_TITLE" value="${baseide.install.name}"/>                
-                <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
-                <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
-                <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
-                <filter token="SIZE_RUBY" value="${sizeof.ruby}"/>
-                <filter token="SIZE_SOA" value="${sizeof.soa}"/>
-                <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
-                <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
-                <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
-                <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
             </filterset>
         </copy>            
         
@@ -287,6 +239,6 @@ Microsystems, Inc. All Rights Reserved.
           <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml_postfix}'.dmg '${appname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>         
+    </target>       
     
 </project>

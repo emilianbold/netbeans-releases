@@ -168,15 +168,7 @@ public class Actions extends Object {
      * for this method by implementing method
      * {@link ButtonActionConnector#connect(JMenuItem, Action, boolean)} and
      * registering an instance of {@link ButtonActionConnector} in the
-     * default lookup. 
-     * <p>
-     * Since version 7.1 the action can also provide properties
-     * "menuText" and "popupText" if one wants to use other text on the JMenuItem
-     * than the name
-     * of the action taken from Action.NAME. The popupText is checked only if the
-     * popup parameter is true and takes the biggest precedence. The menuText is
-     * tested everytime and takes precedence over standard <code>Action.NAME</code>
-     * 
+     * default lookup.
      * @param item menu item
      * @param action action
      * @param popup create popup or menu item
@@ -916,16 +908,7 @@ public class Actions extends Object {
             }
 
             if ((changedProperty == null) || changedProperty.equals(Action.NAME)) {
-                Object s = null;
-                if (popup) {
-                    s = action.getValue("popupText"); // NOI18N
-                }
-                if (s == null) {
-                    s = action.getValue("menuText"); // NOI18N
-                }
-                if (s == null) {
-                    s = action.getValue(Action.NAME);
-                }
+                Object s = action.getValue(Action.NAME);
 
                 if (s instanceof String) {
                     setMenuText(((JMenuItem) comp), (String) s, true);

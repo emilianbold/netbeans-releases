@@ -163,10 +163,6 @@ public class WebProjectProperties {
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
-    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
-    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
-    public static final String JSDEBUGGER_AVAILABLE = "debug.client.available"; // NOI18N
-    
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
     public static final String JAVADOC_USE="javadoc.use"; //NOI18N
@@ -252,10 +248,6 @@ public class WebProjectProperties {
     Document LAUNCH_URL_RELATIVE_MODEL;
     ButtonModel DISPLAY_BROWSER_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
-
-    // CustomizerDebug
-    ButtonModel DEBUG_SERVER_MODEL;
-    ButtonModel DEBUG_CLIENT_MODEL;
     
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
@@ -389,10 +381,6 @@ public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        
-        // CustomizerDebug
-        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
-        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
     }
 
     public void save() {

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -53,7 +53,7 @@
     
     <p>Whenever you clean and build a project, the IDE also cleans and builds
 	its required projects. The required project's attached Javadoc and source
-	code are also made available to the project that you are building.</p>
+	code are also made available to the receiving project. <!--note : replace misleading "receiving project" with another term - "main" maybe?--></p>
 
   <ul class="note"> 
     <li> If you want to add a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
@@ -68,9 +68,9 @@
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
       </object>&nbsp;to the classpath of a standard project, you have to declare all 
-      of the JAR files that are produced when the free-form project is built. Right-click the free-form project's 
-      node in the Projects window and choose Properties. Then specify those JAR 
-      files in the Output page of the dialog box. </li>
+      of the free-form project's output files. Right-click the free-form project's 
+      node in the Projects window and choose Properties. Then declare the output 
+      files in the Output page of the dialog box. <!-- note : clarify "declare" and "output file" concepts--></li>
   </ul>
 
 <p><b>To configure project dependencies:</b> 

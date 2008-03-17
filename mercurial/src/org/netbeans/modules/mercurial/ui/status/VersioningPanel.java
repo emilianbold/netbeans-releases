@@ -721,7 +721,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
-        btnRefresh.setFocusable(false);
+        btnRefresh.setMaximumSize(new java.awt.Dimension(28, 28));
+        btnRefresh.setMinimumSize(new java.awt.Dimension(28, 28));
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
         btnRefresh.addActionListener(this);
         jPanel2.add(btnRefresh);

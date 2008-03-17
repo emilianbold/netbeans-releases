@@ -365,7 +365,6 @@ public abstract class WebServicesTestBase extends JellyTestCase {
             File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
             if (projectRoot.exists()) {
                 project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
-                checkMissingServer(getProjectName());
             } else {
                 if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
                     //XTest execution
@@ -469,7 +468,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
         if (ProjectType.SAMPLE.equals(type)) {
-            checkMissingServer(name);
+            checkMissingServer(projectName);
         }
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
@@ -669,7 +668,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         }
     }
 
-    protected void checkMissingServer(String project) {
+    private void checkMissingServer(String project) {
         // check missing target server dialog is shown
         // "Open Project"
         String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");

@@ -277,9 +277,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(UC_INSTALL_HOME_TOKEN,new File(directory, UC_INSTALL_HOME_SUBDIR));
             map.put(UC_EXT_LIB_TOKEN,new File(directory, UC_EXT_LIB));
             map.put(UC_AS_HOME_TOKEN, directory);
-            map.put(REGISTRATION_DIR_TOKEN,new File(directory,REGISTRATION_DIR));
-            map.put(JAVA_HOME_UNIX_ENV_TOKEN,javaHome);
-
+            
             if(SystemUtils.isWindows()) {
                 map.put(JDIC_LIB_TOKEN,
                         new File(directory, JDIC_LIB_WINDOWS));
@@ -378,7 +376,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             final File asadminpass = new File(
                     SystemUtils.getUserHomeDirectory(),
-                    ".asadminpass");
+                    ".asadminpass");;
                     final File asadmintruststore = new File(
                             SystemUtils.getUserHomeDirectory(),
                             ".asadmintruststore");
@@ -766,8 +764,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "%WEBSERVICES_LIB%"; // NOI18N
     public static final String JAVA_HOME_TOKEN =
             "%JAVA_HOME%"; // NOI18N
-    public static final String JAVA_HOME_UNIX_ENV_TOKEN =
-            "$JAVA_HOME"; // NOI18N
     public static final String ANT_HOME_TOKEN =
             "%ANT_HOME%"; // NOI18N
     public static final String ANT_LIB_TOKEN =
@@ -828,8 +824,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "@JDIC_LIB@"; //NOI18N
     public static final String JDIC_STUB_LIB_TOKEN =
             "@JDIC_STUB_LIB@"; //NOI18N
-    public static final String REGISTRATION_DIR_TOKEN = 
-            "@REGISTRATION_DIR@";//NOI18N
     
     public static final String JDIC_LIB_WINDOWS =
             "updatecenter/lib/jdic/windows/x86";//NOI18N
@@ -850,8 +844,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "updatecenter/lib/jdic/sunos";//NOI18N
     public static final String JDIC_STUB_LIB_MACOSX =
             "updatecenter/lib/jdic/mac";//NOI18N
-    public static final String REGISTRATION_DIR =
-            "lib/registration";
+    
     
     
     public static final String CONFIG_SUBDIR =

@@ -130,6 +130,9 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
     }
     
     public ComponentOperator open(){
+        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
+//        nodeToBeExpanded.tree().clickMouse(2);
+//        nodeToBeExpanded.waitExpanded();
         nodeToBeExpanded.expand();
         return null;
     }

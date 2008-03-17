@@ -112,22 +112,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
     public static final String          PROP_SHARED_LIB_LOADED = "sharedLibLoaded"; // NOI18N
-    public static final String          PROP_VALUE_CHANGED = "valueChanged"; // NOI18N
-    public static final String          PROP_LOCALS_REFRESH = "localsRefresh"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
     public static final String          STATE_LOADING = "state_loading"; // NOI18N
+    public static final String          STATE_LOADED = "state_loaded"; // NOI18N
     public static final String          STATE_READY = "state_ready"; // NOI18N
     public static final String          STATE_RUNNING = "state_running"; // NOI18N
     public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
     public static final String          STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
     public static final String          STATE_EXITED  = "state_exited"; // NOI18N
     
-    public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue"; // NOI18N
-    public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish"; // NOI18N
-    public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep"; // NOI18N
-    public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
+    public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue";
+    public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish";
+    public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep";
+    public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext";
     
     private Object                      lastGo;
     
@@ -409,7 +408,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (isCygwin() && path.charAt(1) == ':') {
             return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
         } else if (isMinGW() && path.charAt(1) == ':') {
-            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/");
         } else {
             return path;
         }
@@ -739,20 +738,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public void updateGdbVariable(String name, String value) {
-        synchronized (localVariables) {
-            for (GdbVariable var : localVariables) {
-                if (name.equals(var.getName())) {
-                    var.setValue(value);
-                }
-            }
-        }
-    }
-    
-    public void fireLocalsRefresh(Object node) {
-        firePropertyChange(PROP_LOCALS_REFRESH, 0, node);
-    }
-    
     private void updateCurrentCallStack() {
         gdb.stack_list_frames();
     }
@@ -809,19 +794,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.append(msg.substring(13, msg.length() - 1));
                 cb.done();
             }
-        } else if (msg.startsWith("^done,thread-id=") && Utilities.isMac()) { // NOI18N
+        } else if (msg.startsWith("^done,thread-id=") && // NOI18N
+                Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
             }
-        } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N
+        } else if (msg.startsWith("^done,shlib-info=") && // NOI18N
+                Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             lastShare = msg.substring(17);
             if (lastShare.contains("GdbHelper")) { // NOI18N
                 ProjectActionEvent pae;
                 pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                 int conType = pae.getProfile().getConsoleType().getValue();
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N 
+                    gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
                 }
             }
         } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
@@ -842,8 +829,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && !Utilities.isWindows()) {
-                            // FIXME - core dumping on Windows...
+                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
                         }
                     }
@@ -1084,10 +1070,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         CommandBuffer cb = new CommandBuffer();
         gdb.data_evaluate_expression(cb, name + '=' + value);
         return cb.waitForCompletion();
-    }
-    
-    public void variableChanged(Object var) {
-        firePropertyChange(PROP_VALUE_CHANGED, null, var);
     }
     
     // currently not called - should do more than set state (see JPDADebuggerImpl)
@@ -1419,49 +1401,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         cb.setID(gdb.stack_list_frames(cb));
         String msg = cb.waitForCompletion();
         int i = 0;
-        boolean valid = true;
-        
         for (String frame : GdbUtils.createListFromString(msg)) {
-            if (frame.contains("func=\"dlopen\"")) { // NOI18N
+            if (frame.contains("func=\"dlopen\"")) {
                 gdb.stack_select_frame(i);
-                gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
+                gdb.gdb_set("stop-on-solib-event"  , "0");
                 gdb.exec_finish();
-                gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
+                gdb.gdb_set("stop-on-solib-event"  , "1");
                 gdb.exec_next();
-                state = oldState;
-                return;
-            } else {
-                int pos1, pos2;
-                pos1 = frame.indexOf("fullname=\"");
-                if (pos1 > 0 && (pos2 = frame.indexOf('"', pos1 + 10)) > 0) {
-                    File file = new File(getOSPath(frame.substring(pos1 + 10, pos2)));
-                    if (file == null || !file.exists()) {
-                        valid = false;
-                    }
-                } else {
-                    valid = false;
-                }
+                break;
             }
             i++;
         }
-        if (valid) {
-            gdb.exec_next();
-        }
         state = oldState;
-    }
-    
-    private String getOSPath(String path) {
-        if (Utilities.isWindows()) {
-            if (isCygwin() && path.startsWith("/cygdrive/")) { // NOI18N
-                return path.charAt(10) + ":" + path.substring(11); // NOI18N
-            } else if (isMinGW() && path.charAt(0) == '/' && path.charAt(2) == '/') {
-                return path.charAt(1) + ":" + path.substring(2); // NOI18N
-            } else {
-                return path;
-            }
-        } else {
-            return path;
-        }
     }
     
     private void threadsViewInit() {

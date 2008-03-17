@@ -176,7 +176,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
         return name;
       }
     }
-    return component.getClass().getName() + ":" + component.hashCode(); // NOI18N
+    return component.getClass().getName();
   }
 
   protected final Component getTypeOfElement(Component component) {

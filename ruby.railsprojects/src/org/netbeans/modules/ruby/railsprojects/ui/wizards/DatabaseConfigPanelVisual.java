@@ -65,7 +65,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         ideConnectionsPanel.add(jdbcPanel, BorderLayout.CENTER);
         adapterConfigurationPanel.add(adaptersPanel, BorderLayout.CENTER);
         setName(NbBundle.getMessage(DatabaseConfigPanelVisual.class, "LAB_ConfigureDatabase"));
-        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_NewRoRApp")); // NOI18N
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(DatabaseConfigPanelVisual.class, "TXT_ConfigureDatabase")); // NOI18N
 
         initInnerPanels();
     }
@@ -135,8 +135,6 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         useJdbc = new javax.swing.JCheckBox();
 
-        setPreferredSize(new java.awt.Dimension(226, 100));
-
         ideConnectionsPanel.setLayout(new java.awt.BorderLayout());
 
         adapterConfigurationPanel.setLayout(new java.awt.BorderLayout());
@@ -162,18 +160,14 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(useIDEConnections)
-                .addContainerGap(259, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(useRailsAdapter)
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(useJdbc)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, adapterConfigurationPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .add(useIDEConnections)
+                    .add(useRailsAdapter)
+                    .add(useJdbc))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -181,7 +175,7 @@ public class DatabaseConfigPanelVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(useIDEConnections)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(ideConnectionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(useRailsAdapter)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
