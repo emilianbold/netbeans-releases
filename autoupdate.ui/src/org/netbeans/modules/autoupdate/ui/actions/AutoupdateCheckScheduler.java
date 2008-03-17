@@ -431,7 +431,7 @@ public class AutoupdateCheckScheduler {
                     public void actionPerformed(ActionEvent e) {
                         onMouseClick.run();
                     }
-                }, 0);
+                }, 30*1000);
             }
         };
         if (! wasFlashing) {
