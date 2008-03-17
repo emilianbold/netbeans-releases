@@ -45,8 +45,13 @@ package org.netbeans.modules.i18n.form;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -59,7 +64,11 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 
-import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADConnectionPropertyEditor.RADConnectionDesignValue;
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
