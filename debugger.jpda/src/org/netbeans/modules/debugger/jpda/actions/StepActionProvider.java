@@ -261,8 +261,8 @@ implements Executor {
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
-        setLastOperation(tr);
         removeStepRequests (tr);
+        setLastOperation(tr);
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 

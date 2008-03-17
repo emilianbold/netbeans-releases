@@ -62,7 +62,6 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     private static String openNodeName;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    private TopComponentOperator navPage;
     
     /** Creates a new instance of OpenNavigationPage */
     public OpenNavigationPage(String testName) {
@@ -77,7 +76,6 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
         WAIT_AFTER_OPEN=20000;
     }
     
-    @Override
     protected void initialize() {
         log("::initialize::");
         EditorOperator.closeDiscardAll();
@@ -99,14 +97,14 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
             fail("Cannot find and select project node");
         }
                 
-        if (openNode == null) {
+        if (this.openNode == null) {
             throw new Error("Cannot find node "+openNodeName);
         }
+        log("========== Open file path ="+this.openNode.getPath());
     }
     
     public ComponentOperator open() {
-        System.out.println("opening");
-        JPopupMenuOperator popup =  openNode.callPopup();
+        JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node " + openNodeName);
         }
@@ -117,18 +115,13 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
             throw new Error("Cannot push menu item Open on node " + openNodeName);
         }
         log("------------------------- after open ------------");
-        navPage = new TopComponentOperator("faces-config.xml",0); // NOI18N
-        System.out.println("opened");
-        return navPage;
+        return new TopComponentOperator("faces-config.xml",0); // NOI18N
     }
     
-    @Override
     public void close() {
-        navPage.closeDiscard();
-
+        ((TopComponentOperator)this.testedComponentOperator).close();
     }
     
-    @Override
     protected void shutdown() {
         log("::shutdwown");
         repaintManager().resetRegionFilters();

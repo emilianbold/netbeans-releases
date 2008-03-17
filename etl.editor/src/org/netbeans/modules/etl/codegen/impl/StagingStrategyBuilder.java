@@ -41,6 +41,7 @@ import com.sun.sql.framework.jdbc.SQLPart;
 import com.sun.sql.framework.utils.AttributeMap;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -52,7 +53,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
     private static final String LOG_CATEGORY = StagingStrategyBuilder.class.getName();
     private static final String SQL_INDENT = "";
     private boolean forceStaging = false;
-    private static transient final Logger mLogger = Logger.getLogger(StagingStrategyBuilder.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(StagingStrategyBuilder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public StagingStrategyBuilder(ETLScriptBuilderModel model) throws BaseException {
@@ -63,7 +64,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        mLogger.infoNoloc(mLoc.t("EDIT010: In generateScriptForTable:{0}", LOG_CATEGORY));
+        mLogger.infoNoloc(mLoc.t("PRSR010: In generateScriptForTable:{0}", LOG_CATEGORY));
         super.checkTargetConnectionDefinition(context);
 
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());

@@ -1,7 +1,7 @@
 /*
  *  Singleton3Cl
  *
- * Created on March 11, 2008, 10:42 PM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,7 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -25,9 +25,9 @@ import javax.ws.rs.ConsumeMime;
 
 @Path("Singleton3URI")
 public class Singleton3Cl {
-    @Context
+    @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton3Cl */
     public Singleton3Cl() {
     }

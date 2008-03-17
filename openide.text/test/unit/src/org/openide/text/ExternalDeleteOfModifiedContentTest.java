@@ -69,7 +69,7 @@ import org.openide.util.lookup.InstanceContent;
 public class ExternalDeleteOfModifiedContentTest extends NbTestCase 
 implements CloneableEditorSupport.Env  {
     static {
-       System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     /** the support to work with */
     private CloneableEditorSupport support;
@@ -151,9 +151,6 @@ implements CloneableEditorSupport.Env  {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 for (int i = 0; i < 1024 * 1024 + 50000; i++) {
                     os.write('A');
-                    if (i % 80 == 0) {
-                        os.write('\n');
-                    }
                 }
                 os.close();
                 content = os.toString();

@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Color;
@@ -58,139 +59,91 @@ import org.openide.util.Utilities;
  * @author jsandusky
  */
 public class LookAndFeelNode extends CasaNode {
-
+    
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/LookAndFeelNode.png"); // NOI18N
-
-
+    
+    
     public LookAndFeelNode() {
         super();
     }
-
-    @Override
+        
     public String getName() {
         return NbBundle.getMessage(LookAndFeelProperty.class, "LBL_LookAndFeel");        // NOI18N
-
     }
 
-    @Override
-    protected void setupPropertySheet(Sheet sheet) {
-        Sheet.Set genericPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.GENERIC_SET);
-        Sheet.Set stylePropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.STYLE_SET);
-        Sheet.Set colorPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.COLOR_SET);
-        Sheet.Set fontPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.FONT_SET);
 
+    protected void setupPropertySheet(Sheet sheet) {
+        Sheet.Set fontPropertySet  = getPropertySet(sheet, PropertyUtils.PropertiesGroups.FONT_SET);
+        Sheet.Set colorPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.COLOR_SET);
+        Sheet.Set genericPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.GENERIC_SET);
+        
         sheet.put(genericPropertySet);
-        sheet.put(stylePropertySet);
         sheet.put(colorPropertySet);
         sheet.put(fontPropertySet);
 
-        for (String key : CasaFactory.getCasaCustomizer().getStylesMapReference().keySet()) {
-            stylePropertySet.put(
-                    new PropertySupport.ReadWrite<Boolean>(
-                    key, // NO18N
-                    Boolean.class,
-                    NbBundle.getMessage(getClass(), key),
-                    Constants.EMPTY_STRING) {
-
-                        public Boolean getValue() {
-                            return (Boolean) CasaFactory.getCasaCustomizer().getValue(getName());
-                        }
-
-                        public void setValue(Boolean value) {
-                            CasaFactory.getCasaCustomizer().setValue(getName(), value);
-                        }
-
-                        @Override
-                        public void restoreDefaultValue() {
-                            CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
-                            String strValue = customizer.getDefaultStyles().get(getName());
-                            customizer.setValue(getName(), Boolean.parseBoolean(strValue));
-//                            if (customizer.getDefaultStyles().containsKey(getName())) {
-//                                String strValue = customizer.getDefaultStyles().get(getName());
-//                                customizer.setValue(getName(), customizer.getBoolean(strValue));
-//                            }
-                        }
-
-                        @Override
-                        public boolean supportsDefaultValue() {
-                            return true;
-                        }
-                    });
+        for(String key : CasaFactory.getCasaCustomizer().getColorsMapReference().keySet()) {
+            colorPropertySet.put (
+                  new PropertySupport.ReadWrite<Color>(
+                        key, // NO18N
+                        Color.class, 
+                        NbBundle.getMessage(getClass(), key), 
+                        Constants.EMPTY_STRING) {
+                    
+                    public Color getValue() {
+                        return (Color) CasaFactory.getCasaCustomizer().getValue(getName());
+                    }
+                    public void setValue(Color value) {
+                        CasaFactory.getCasaCustomizer().setValue(getName(), value);
+                    }
+                    public void restoreDefaultValue() {
+                        CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
+                        String strValue = customizer.getDefaultColors().get(getName());
+                        customizer.setValue(getName(), new Color(Integer.parseInt(strValue)));
+                        if(customizer.getDefaultGradients().containsKey(getName())) {
+                            strValue = customizer.getDefaultGradients().get(getName());
+                            customizer.setValue(getName(), customizer.getGradient(strValue));
+                        } 
+                    }
+                    public boolean supportsDefaultValue() {
+                        return true;
+                    }
+                });          
         }
-
-        for (String key : CasaFactory.getCasaCustomizer().getColorsMapReference().keySet()) {
-            colorPropertySet.put(
-                    new PropertySupport.ReadWrite<Color>(
-                    key, // NO18N
-                    Color.class,
-                    NbBundle.getMessage(getClass(), key),
-                    Constants.EMPTY_STRING) {
-
-                        public Color getValue() {
-                            return (Color) CasaFactory.getCasaCustomizer().getValue(getName());
-                        }
-
-                        public void setValue(Color value) {
-                            CasaFactory.getCasaCustomizer().setValue(getName(), value);
-                        }
-
-                        @Override
-                        public void restoreDefaultValue() {
-                            CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
-                            String strValue = customizer.getDefaultColors().get(getName());
-                            customizer.setValue(getName(), new Color(Integer.parseInt(strValue)));
-//                            if (customizer.getDefaultGradients().containsKey(getName())) {
-//                                String strValue = customizer.getDefaultGradients().get(getName());
-//                                customizer.setValue(getName(), customizer.getGradient(strValue));
-//                            }
-                        }
-
-                        @Override
-                        public boolean supportsDefaultValue() {
-                            return true;
-                        }
-                    });
-        }
-
-        for (String key : CasaFactory.getCasaCustomizer().getFontsMapReference().keySet()) {
-            fontPropertySet.put(
-                    new PropertySupport.ReadWrite<Font>(
-                    key, // NO18N
-                    Font.class,
-                    NbBundle.getMessage(getClass(), key),
-                    Constants.EMPTY_STRING) {
-
-                        public Font getValue() {
-                            return (Font) CasaFactory.getCasaCustomizer().getValue(getName());
-                        }
-
-                        public void setValue(Font value) {
-                            CasaFactory.getCasaCustomizer().setValue(getName(), value);
-                        }
-
-                        @Override
-                        public void restoreDefaultValue() {
-                            CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
-                            String strValue = customizer.getDefaultFonts().get(getName());
-                            customizer.setValue(getName(), customizer.getFont(strValue));
-                        }
-
-                        @Override
-                        public boolean supportsDefaultValue() {
-                            return true;
-                        }
-                    });
+        
+        for(String key : CasaFactory.getCasaCustomizer().getFontsMapReference().keySet()) {
+            fontPropertySet.put (
+                  new PropertySupport.ReadWrite<Font>(
+                        key, // NO18N
+                        Font.class, 
+                        NbBundle.getMessage(getClass(), key), 
+                        Constants.EMPTY_STRING) {
+                    
+                    public Font getValue() {
+                        return (Font) CasaFactory.getCasaCustomizer().getValue(getName());
+                    }
+                    public void setValue(Font value) {
+                        CasaFactory.getCasaCustomizer().setValue(getName(), value);
+                    }
+                    public void restoreDefaultValue() {
+                        CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
+                        String strValue = customizer.getDefaultFonts().get(getName());
+                        customizer.setValue(getName(), customizer.getFont(strValue));
+                    }
+                    public boolean supportsDefaultValue() {
+                        return true;
+                    }
+                    
+                });          
         }
     }
-
-    @Override
+    
     public Image getIcon(int type) {
         return ICON;
     }
-
-    @Override
+    
     public Image getOpenedIcon(int type) {
         return ICON;
     }
+    
 }

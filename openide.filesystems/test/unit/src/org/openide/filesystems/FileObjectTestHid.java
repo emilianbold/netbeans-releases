@@ -410,9 +410,16 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         FileObject fold = getTestFolder1(root);
         final FileObject fo1 = getTestFile1(fold);
-        if (fs.isReadOnly() || fo1.isReadOnly()) return;
-        firstThreadImpl1(fo1, deadlockInWrite);
-        firstThreadImpl2(fo1, deadlockInWrite);
+
+        try {
+            firstThreadImpl1(fo1, deadlockInWrite);
+            firstThreadImpl2(fo1, deadlockInWrite);            
+        } catch (IOException iex) {
+            fsAssert(
+                    "expected move will success on writable FS",
+                    fs.isReadOnly() || fo1.isReadOnly()
+            );
+        }
     }
 
     private static void firstThreadImpl1(final FileObject fo1, final boolean deadlockInWrite) throws IOException, InterruptedException {

@@ -40,12 +40,10 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.iep.editor.ps.SelectPanel;
 import org.netbeans.modules.iep.model.SchemaAttribute;
-import org.netbeans.modules.xml.axi.AXIComponent;
 import org.openide.util.NbBundle;
 
 /**
@@ -155,23 +153,19 @@ public class IEPAttributeTableModel extends AbstractTableModel {
             switch(columnIndex) {
                 
                 case 0:
-                 sa.setAttributeName((String) aValue);
-                 sa.setAXIComponent(null);
+                 sa.setAttributeName((String) aValue);   
                  break;
                  
                 case 1:
                  sa.setAttributeType((String) aValue);
-                 sa.setAXIComponent(null);
                 break;
                 
                 case 2:
-                 sa.setAttributeSize((String) aValue);
-                 sa.setAXIComponent(null);
+                 sa.setAttributeSize((String) aValue);    
                 break;
                 
                 case 3:
                  sa.setAttributeScale((String) aValue);   
-                 sa.setAXIComponent(null);
                 break;
                 
                 case 4:
@@ -190,8 +184,6 @@ public class IEPAttributeTableModel extends AbstractTableModel {
     
     public void addRow(PlaceholderSchemaAttribute rowData) {
         this.mAttrList.add(rowData);
-        
-        this.fireTableDataChanged();
     }
     
     public void insertRow(int rowIndex, PlaceholderSchemaAttribute rowData) {
@@ -220,20 +212,6 @@ public class IEPAttributeTableModel extends AbstractTableModel {
     public void clear() {
         this.mAttrList.clear();
         this.fireTableDataChanged();
-    }
-    
-    public PlaceholderSchemaAttribute getMatchingRow(AXIComponent component) {
-        Iterator<PlaceholderSchemaAttribute> it = this.mAttrList.iterator();
-        
-        while(it.hasNext()) {
-            PlaceholderSchemaAttribute attr = it.next();
-            AXIComponent comp = attr.getAXIComponent();
-            if(comp != null && component.equals(comp)) {
-                return attr;
-            }
-        }
-        
-        return null;
     }
     
     public PlaceholderSchemaAttribute getRowData(int rowIndex) {

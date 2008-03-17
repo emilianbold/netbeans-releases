@@ -88,7 +88,6 @@ public class AddNewXMLDocument extends org.netbeans.performance.test.utilities.P
     }
     
     public void prepare(){
-        new EventTool().waitNoEvent(2500);
         EPUtilities.getProcessFilesNode("BPELTestProject").select();
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();

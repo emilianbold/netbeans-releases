@@ -50,8 +50,7 @@ public class IEPModelProviderInsideIde extends CatalogWriteModelImpl implements
 
     public IEPModel getWLMModel(URI locationURI) throws Exception {
         System.out.println(toString() +" :" + locationURI);
-        //RITthis is failingModelSource source = getModelSource(locationURI);
-        ModelSource source = TestCatalogModel.getDefault().getModelSource(locationURI);
+        ModelSource source = getModelSource(locationURI);
         IEPModel model = IEPModelFactory.getDefault().getModel(source);
 //        model.sync();
        return model;

@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 2):
-<U>#define '["A",<203>,line=1,col=9],offset=8,file=null'='["<comment text skipped>",<216>,line=1,col=11],offset=10,file=null'
-<U>#define '["B",<203>,line=2,col=9],offset=52,file=null'=''
+<U>#define '["A",<202>,line=1,col=9],offset=8,file=null'='["<comment text skipped>",<215>,line=1,col=11],offset=10,file=null'
+<U>#define '["B",<202>,line=2,col=9],offset=52,file=null'=''
 System Map:
 MACROS (sorted 0):
 

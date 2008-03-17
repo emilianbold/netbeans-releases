@@ -58,7 +58,7 @@ import org.openide.nodes.Node;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -70,7 +70,7 @@ public class OperatorCategoryNode extends CommonNode implements IOperatorXmlInfo
     private static final String KEY_TOOLTIP = "ToolTip";
     private static final String KEY_DISPLAYNAME = "DisplayName";
     private static final String LOG_CATEGORY = OperatorCategoryNode.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(OperatorCategoryNode.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(OperatorCategoryNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private DataFolder folder;
     private Map operatorNameToNodeMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
@@ -92,7 +92,7 @@ public class OperatorCategoryNode extends CommonNode implements IOperatorXmlInfo
                 // this map for quick search of node based on node name
                 operatorNameToNodeMap.put(node.getName(), node);
             } catch (BaseException ignore) {
-                mLogger.errorNoloc(mLoc.t("EDIT140: Could not load item(s) in operator folder{0}", obj.getName()), ignore);
+                mLogger.errorNoloc(mLoc.t("PRSR140: Could not load item(s) in operator folder{0}", obj.getName()), ignore);
 
             }
         }

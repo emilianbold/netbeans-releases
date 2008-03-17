@@ -77,7 +77,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     public PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
-        currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
+        currentLibrariesLocation = ".." + File.separatorChar + "libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
         sharableProjectActionPerformed(null);
 

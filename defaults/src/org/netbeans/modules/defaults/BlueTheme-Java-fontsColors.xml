@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-undefined" foreColor="red"/>-->
 
     <!--mark occurrences:-->
-    <fontcolor name="mark-occurrences" bgColor="ff38566f"/>
+    <fontcolor name="mark-occurrences" bgColor="ffaea3ec"/>
 
     <!-- JavaStringTokenId categories -->
     <fontcolor name="string-escape" default="string">

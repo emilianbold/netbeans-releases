@@ -445,7 +445,7 @@ import org.openide.util.Lookup;
     /** Generates an empty suite. */
     public static SuiteProject generateSuite(File workDir, String prjDir, String platformID) throws IOException {
         File prjDirF = file(workDir, prjDir);
-        SuiteProjectGenerator.createSuiteProject(prjDirF, platformID, false);
+        SuiteProjectGenerator.createSuiteProject(prjDirF, platformID);
         return (SuiteProject) ProjectManager.getDefault().findProject(
                 FileUtil.toFileObject(prjDirF));
     }

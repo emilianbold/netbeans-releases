@@ -128,15 +128,11 @@ public class UMLJavaAssociationUtil {
       {
          AssociatedSourceProvider asp = (AssociatedSourceProvider)
          allProjects[i].getLookup().lookup(AssociatedSourceProvider.class);
+         
          if ( asp != null )
          {
-            Project codeGenProj = asp.getCodeGenTargetProject();            
-            if(project == codeGenProj)
-            {
-               return allProjects[i];
-            }
-
-            Project umlJavaProj = asp.getAssociatedSourceProject();           
+            Project umlJavaProj = asp.getAssociatedSourceProject();
+            
             if(project == umlJavaProj)
             {
                return allProjects[i];
@@ -144,6 +140,7 @@ public class UMLJavaAssociationUtil {
             
          }
       }
+      
       return null;
    }
 	

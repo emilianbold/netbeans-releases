@@ -628,40 +628,40 @@ public class NewDialogUtilities
    
     public static String getDefaultDiagramBaseName(int kind)
     {
-        String key = "NEW_DIAGRAM_BASENAME"; // NOI18N
+        String key = "NEW_DIAGRAM"; // NOI18N
         
         switch (kind)
         {
         case IDiagramKind.DK_ACTIVITY_DIAGRAM:
-            key = "PSK_ACTIVITY_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_ACTIVITY_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_CLASS_DIAGRAM:
-            key = "PSK_CLASS_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_CLASS_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_COLLABORATION_DIAGRAM:
-            key = "PSK_COLLABORATION_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_COLLABORATION_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_COMPONENT_DIAGRAM:
-            key = "PSK_COMPONENT_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_COMPONENT_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_DEPLOYMENT_DIAGRAM:
-            key = "PSK_DEPLOYMENT_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_DEPLOYMENT_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_SEQUENCE_DIAGRAM:
-            key = "PSK_SEQUENCE_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_SEQUENCE_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_STATE_DIAGRAM:
-            key = "PSK_STATE_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_STATE_DIAGRAM"; // NOI18N
             break;
 
         case IDiagramKind.DK_USECASE_DIAGRAM:
-            key = "PSK_USE_CASE_DIAGRAM_BASENAME"; // NOI18N
+            key = "PSK_USE_CASE_DIAGRAM"; // NOI18N
             break;
         }
         

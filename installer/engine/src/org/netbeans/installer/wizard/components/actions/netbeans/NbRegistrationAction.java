@@ -35,7 +35,7 @@
  */
 package org.netbeans.installer.wizard.components.actions.netbeans;
 
-import org.netbeans.modules.servicetag.RegistrationData;
+import com.sun.servicetag.RegistrationData;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

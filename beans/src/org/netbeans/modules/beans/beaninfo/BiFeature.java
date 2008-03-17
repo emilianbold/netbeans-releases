@@ -828,10 +828,8 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                 return resolveArrayClass((ArrayType) type);
             } else if (kind == TypeKind.DECLARED) {
                 return ((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName().toString();
-            } else if (kind == TypeKind.ERROR) {
-                return type.toString();
             } else {
-                throw new IllegalStateException("Unknown type: " + type + ", " + type.getKind()); // NOI18N
+                throw new IllegalStateException("Unknown type" + type); // NOI18N
             }
         }
 

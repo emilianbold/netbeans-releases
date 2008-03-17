@@ -94,7 +94,7 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
     
 
     public void testExpandEjbProjectNode(){
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 2000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
         pathToFolderNode = "";
@@ -102,7 +102,7 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
     }
 
     public void testExpandEjbNode(){
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 2000;
         WAIT_AFTER_PREPARE = 2000;
         project = testDataProject;
         pathToFolderNode = "Enterprise Beans";
@@ -130,7 +130,9 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
     }
     
     public ComponentOperator open(){
-        nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
+        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
+//        nodeToBeExpanded.tree().clickMouse(2);
+//        nodeToBeExpanded.waitExpanded();
         nodeToBeExpanded.expand();
         return null;
     }

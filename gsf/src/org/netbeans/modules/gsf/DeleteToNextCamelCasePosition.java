@@ -28,7 +28,6 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
@@ -39,7 +38,9 @@ public final class DeleteToNextCamelCasePosition extends SelectNextCamelCasePosi
         super(deleteNextCamelCasePosition, originalAction);
     }
 
-    protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getDocument().remove(textComponent.getCaretPosition(), offset - textComponent.getCaretPosition());
+    @Override
+    protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+        super.moveToNewOffset(textComponent, offset);
+        textComponent.replaceSelection("");
     }
 }

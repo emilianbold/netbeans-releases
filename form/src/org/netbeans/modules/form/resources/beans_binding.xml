@@ -49,10 +49,10 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.jdesktop.beansbinding/modules/ext/beansbinding-1.2.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.form/modules/ext/beansbinding-1.2.1.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.jdesktop.beansbinding/docs/beansbinding-1.2.1-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.form/docs/beansbinding-1.2.1-doc.zip!/</resource>
     </volume>
 </library>

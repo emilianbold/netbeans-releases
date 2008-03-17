@@ -222,37 +222,8 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
-                <condition property="enable.jsdebugger">
-                    <and>
-                        <isset property="debug.client.available"/>
-                        <istrue value="${{debug.client.available}}"/>
-                    </and>
-                </condition>
-                <condition property="do.debug.server">
-                    <or>
-                        <not><isset property="debug.server"/></not>
-                        <istrue value="${{debug.server}}"/>
-                        <not><isset property="enable.jsdebugger"/></not>
-                        <and>
-                            <not><istrue value="${{debug.server}}"/></not>
-                            <not><istrue value="${{debug.client}}"/></not>
-                        </and>
-                    </or>
-                </condition>
-                <condition property="do.debug.client">
-                    <and>
-                        <istrue value="${{debug.client}}"/>
-                        <isset property="enable.jsdebugger"/>
-                    </and>
-                </condition>
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
-                </condition>
-                <condition property="do.display.browser.debug">
-                    <and>
-                        <isset property="do.display.browser"/>
-                        <not><isset property="do.debug.client"/></not>
-                    </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
                 <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
@@ -492,20 +463,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-nbjsdebug" if="enable.jsdebugger">
-                <macrodef>
-                    <xsl:attribute name="name">nbjsdebugstart</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">webUrl</xsl:attribute>
-                        <xsl:attribute name="default">${client.url}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <nbjsdebugstart webUrl="@{{webUrl}}" urlPart="${{client.urlPart}}"/>
-                    </sequential>
-                </macrodef>                
-            </target>
-            
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
@@ -658,7 +615,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -1424,10 +1381,9 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
                 <antcall target="connect-debugger"/>
                 <antcall target="debug-display-browser"/>
-                <antcall target="connect-client-debugger"/>
             </target>
             
-            <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
+            <target name="connect-debugger" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
                     <classpath>
                         <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
@@ -1443,12 +1399,8 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </nbjpdaconnect>
             </target>
             
-            <target name="debug-display-browser" if="do.display.browser.debug">
+            <target name="debug-display-browser" if="do.display.browser">
                 <nbbrowse url="${{client.url}}"/>
-            </target>
-            
-            <target name="connect-client-debugger" if="do.debug.client">
-                <webproject1:nbjsdebugstart webUrl="${{client.url}}"/>
             </target>
             
             <target name="debug-single">

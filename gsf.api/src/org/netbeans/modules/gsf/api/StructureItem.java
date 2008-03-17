@@ -43,7 +43,6 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.List;
 import java.util.Set;
-import javax.swing.ImageIcon;
 
 /**
  *
@@ -51,7 +50,6 @@ import javax.swing.ImageIcon;
  */
 public interface StructureItem {
     String getName();
-    String getSortText();
     String getHtml();
     ElementHandle getElementHandle();
     ElementKind getKind();
@@ -60,11 +58,7 @@ public interface StructureItem {
     List<? extends StructureItem> getNestedItems(); 
     long getPosition();
     long getEndPosition();
-    /** Icon to use instead of the default implied by the ElementKind */
-    ImageIcon getCustomIcon();
 
-    @Override
     public abstract boolean equals(Object o);
-    @Override
     public abstract int hashCode();
 }

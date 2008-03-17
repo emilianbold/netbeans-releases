@@ -48,7 +48,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 
@@ -81,14 +80,13 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
     protected void init() {
         super.init();
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_PREPARE = 2000;
+        WAIT_AFTER_PREPARE = 3000;
         // in case this time is longer than 1000ms we will catch events generated
         // by parser which starts with 1000ms delay
         WAIT_AFTER_OPEN = 100;
     }
     
     protected void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         EditorOperator.closeDiscardAll();
         jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
@@ -108,7 +106,7 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
         editorOperator2.makeComponentVisible();
         editorOperator2.setCaretPositionToLine(1);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
-//        eventTool().waitNoEvent(2000);
+        eventTool().waitNoEvent(2000);
     }
     
     public void prepare() {
@@ -117,20 +115,20 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
     
     public ComponentOperator open(){
         //repaintManager().setOnlyEditor(true);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         // paste the clipboard contents
-//        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
-        new Action(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
         return null;
     }
     
     public void close() {
         //repaintManager().setOnlyEditor(false);
+        repaintManager().resetRegionFilters();
         
     }
     
     protected void shutdown() {
         super.shutdown();
-        repaintManager().resetRegionFilters();
         // close the second file without saving it
         editorOperator1.closeDiscard();
         editorOperator2.closeDiscard();

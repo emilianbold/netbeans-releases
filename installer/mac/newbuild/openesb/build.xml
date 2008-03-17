@@ -42,12 +42,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-pkg" depends="clean, unzip">
-        <exec executable="sh" failonerror="yes" outputproperty="size">
-            <arg value="-c"/>
-            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 15360"/>
-        </exec>        
-        <echo message="sizeof.openesb=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>     
-        
         <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
@@ -71,10 +65,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>      
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
         
-        <echo message="Building openesb.pkg into ${basedir}/../build/openesb.pkg"/>
+        <echo message="Building ${openesb.pkg.name} into ${basedir}/../build/${openesb.pkg.name}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/openesb.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/${openesb.pkg.name} -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
     

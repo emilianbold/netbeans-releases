@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
@@ -74,7 +75,7 @@ import org.openide.loaders.DataObject;
  */
 public class ETLCollaborationWizard extends ETLWizard {
 
-    private static transient final Logger mLogger = Logger.getLogger(ETLCollaborationWizard.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizard.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ETLCollaborationWizard() {
@@ -107,8 +108,8 @@ public class ETLCollaborationWizard extends ETLWizard {
             // between source and target panels if fewer than two source tables are
             // selected.
             //
-            String nbBundle1 = mLoc.t("BUND053: Enter a Unique Name for This Collaboration.");
-            collaborationNamePanel = new ETLCollaborationWizardNameFinishPanel(ETLCollaborationWizard.this,nbBundle1.substring(15));
+            String nbBundle1 = mLoc.t("PRSR001: Enter a Unique Name for This Collaboration.");
+            collaborationNamePanel = new ETLCollaborationWizardNameFinishPanel(ETLCollaborationWizard.this,Localizer.parse(nbBundle1));
         }
 
         public String name() {
@@ -213,12 +214,12 @@ public class ETLCollaborationWizard extends ETLWizard {
 
                 collaborationNamePanel = new SimpleTargetChooserPanel(project, groups, null, false);
             }
-            String nbBundle2 = mLoc.t("BUND054: Select Source Tables");
-            sourceTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(nbBundle2.substring(15), dbModels, srcModel, true);
-            String nbBundle3 = mLoc.t("BUND055: Select Source Tables to Create Join.");
-            joinSelectionPanel = new ETLCollaborationWizardJoinFinishPanel(ETLCollaborationWizard.this, nbBundle3.substring(15), null);
-            String nbBundle4 = mLoc.t("BUND056: Select Target Tables");
-            targetTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(nbBundle4.substring(15), dbModels, destModel, false);
+            String nbBundle2 = mLoc.t("PRSR001: Select Source Tables.");
+            sourceTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(Localizer.parse(nbBundle2), dbModels, srcModel, true);
+            String nbBundle3 = mLoc.t("PRSR001: Select Source Tables to Create Join.");
+            joinSelectionPanel = new ETLCollaborationWizardJoinFinishPanel(ETLCollaborationWizard.this, Localizer.parse(nbBundle3), null);
+            String nbBundle4 = mLoc.t("PRSR001: Select Target Tables.");
+            targetTableSelectionPanel = new ETLCollaborationWizardTransferFinishPanel(Localizer.parse(nbBundle4), dbModels, destModel, false);
 
             panels = new ArrayList(4);
             if (collaborationNamePanel != null) {
@@ -253,21 +254,21 @@ public class ETLCollaborationWizard extends ETLWizard {
 
         protected String[] createSteps() {
             try {
-                String nbBundle5 = mLoc.t("BUND057: Enter Collaboration Name");
-                String nbBundle6 = mLoc.t("BUND054: Select Source Tables");
-                String nbBundle7 = mLoc.t("BUND058: Select Source Tables for Join");
-                String nbBundle8 = mLoc.t("BUND056: Select Target Tables");
-                String nbBundle10 = mLoc.t("BUND059: Choose File Type");
+                String nbBundle5 = mLoc.t("PRSR001: Enter Collaboration Name");
+                String nbBundle6 = mLoc.t("PRSR001: Select Source Tables");
+                String nbBundle7 = mLoc.t("PRSR001: Select Source Tables for Join");
+                String nbBundle8 = mLoc.t("PRSR001: Select Target Tables");
+                String nbBundle10 = mLoc.t("PRSR001: Choose File Type");
                 return new String[]{
                     //TODO - need make wizard steps text match actual panel being viewed
-                    nbBundle10.substring(15), //TODO - use bundle property
-                    nbBundle5.substring(15),
-                    nbBundle6.substring(15),
-                    nbBundle7.substring(15),
-                    nbBundle8.substring(15),
+                    Localizer.parse(nbBundle10), //TODO - use bundle property
+                    Localizer.parse(nbBundle5),
+                    Localizer.parse(nbBundle6),
+                    Localizer.parse(nbBundle7),
+                    Localizer.parse(nbBundle8),
                 };
             } catch (MissingResourceException e) {
-                mLogger.errorNoloc(mLoc.t("EDIT029: Could not locate steps strings.{0}", LOG_CATEGORY), e);
+                mLogger.errorNoloc(mLoc.t("PRSR029: Could not locate steps strings.{0}", LOG_CATEGORY), e);
                 return new String[]{};
             }
         }
@@ -417,8 +418,8 @@ public class ETLCollaborationWizard extends ETLWizard {
      */
     @Override
     protected String getDialogTitle() {
-        String nbBundle9 = mLoc.t("BUND060: New Collaboration Definition Wizard (ETL)");
-        return nbBundle9.substring(15);
+        String nbBundle9 = mLoc.t("PRSR001: New Collaboration Definition Wizard (ETL)");
+        return  Localizer.parse(nbBundle9);
     }
 
     private List getSelectedDbOfType(String typeKey) {

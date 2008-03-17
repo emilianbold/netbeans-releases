@@ -226,7 +226,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // create layer entry for global menu item
         if (globalMenuItemEnabled) {
             generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
-                    dashedFqClassName, instanceFullPath, gmiSeparatorBefore,
+                    dashedPkgName, instanceFullPath, gmiSeparatorBefore,
                     gmiSeparatorAfter, gmiPosition);
         }
         
@@ -247,14 +247,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // create file type context menu item
         if (ftContextEnabled) {
             generateShadowWithOrderAndSeparator(ftContextType, shadow,
-                    dashedFqClassName, instanceFullPath, ftContextSeparatorBefore,
+                    dashedPkgName, instanceFullPath, ftContextSeparatorBefore,
                     ftContextSeparatorAfter, ftContextPosition);
         }
         
         // create editor context menu item
         if (edContextEnabled) {
             generateShadowWithOrderAndSeparator(edContextType, shadow,
-                    dashedFqClassName, instanceFullPath, edContextSeparatorBefore,
+                    dashedPkgName, instanceFullPath, edContextSeparatorBefore,
                     edContextSeparatorAfter, edContextPosition);
         }
     }

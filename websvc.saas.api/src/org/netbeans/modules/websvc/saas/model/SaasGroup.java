@@ -59,6 +59,7 @@ public class SaasGroup {
 
     private final Group delegate;
     private final SaasGroup parent;
+    private FileObject groupFolder;
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
@@ -73,6 +74,23 @@ public class SaasGroup {
 
     public SaasGroup getParent() {
         return parent;
+    }
+    
+    public FileObject getGroupFolder() {
+        if (groupFolder == null) {
+            if (parent == null) {
+                return SaasServicesModel.getWebServiceHome();
+            }
+            groupFolder = parent.getGroupFolder().getFileObject(getName(), null);
+            if (groupFolder == null) {
+                try {
+                    groupFolder = parent.getGroupFolder().createFolder(getName());
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return groupFolder;
     }
     
     public Group getDelegate() {

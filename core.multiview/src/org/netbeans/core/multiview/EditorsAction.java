@@ -41,7 +41,6 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
@@ -92,11 +91,8 @@ public class EditorsAction extends AbstractAction
         }
 
         public JComponent[] getMenuPresenters() {
-            Mode mode = null;
-            if (EventQueue.isDispatchThread()) {
-                mode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
-                removeAll();
-            }
+            Mode mode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
+            removeAll();
             if (mode != null) {
                 TopComponent tc = mode.getSelectedTopComponent();
                 if (tc != null) {

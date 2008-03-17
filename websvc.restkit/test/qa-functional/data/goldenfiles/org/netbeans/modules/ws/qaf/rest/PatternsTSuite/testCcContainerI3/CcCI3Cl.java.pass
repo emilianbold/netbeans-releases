@@ -1,7 +1,7 @@
 /*
  *  CcCI3Cl
  *
- * Created on March 11, 2008, 10:43 PM
+ * Created on February 19, 2008, 7:18 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,14 +9,14 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.PathParam;
 
 /**
  * REST Web Service
@@ -25,9 +25,9 @@ import javax.ws.rs.PathParam;
  */
 
 public class CcCI3Cl {
-    @Context
+    @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI3Cl */
     public CcCI3Cl() {
     }
@@ -39,7 +39,7 @@ public class CcCI3Cl {
      */
     @GET
     @ProduceMime("text/html")
-    public String getHtml(@PathParam("CcCI3URI")
+    public String getHtml(@UriParam("CcCI3URI")
     String CcCI3URI) {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -53,7 +53,7 @@ public class CcCI3Cl {
      */
     @PUT
     @ConsumeMime("text/html")
-    public void putHtml(@PathParam("CcCI3URI")
+    public void putHtml(@UriParam("CcCI3URI")
     String CcCI3URI, String content) {
     }
 
@@ -62,7 +62,7 @@ public class CcCI3Cl {
      * @param CcCI3URI resource URI parameter
      */
     @DELETE
-    public void delete(@PathParam("CcCI3URI")
+    public void delete(@UriParam("CcCI3URI")
     String CcCI3URI) {
     }
 }

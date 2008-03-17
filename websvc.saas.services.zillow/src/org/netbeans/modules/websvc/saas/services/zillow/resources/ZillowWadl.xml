@@ -12,21 +12,10 @@
              xmlns:Demographics="http://www.zillow.com/static/xsd/Demographics.xsd"
              xmlns:RegionChildren="http://www.zillow.com/static/xsd/RegionChildren.xsd"
              xmlns:SearchResults="http://www.zillow.com/static/xsd/SearchResults.xsd">
-                 
-    <grammars>
-        <include href="Chart.xsd"/>
-        <include href="Zestimate.xsd"/>
-        <include href="ZillowTypes.xsd"/>
-        <include href="RegionChart.xsd"/>
-        <include href="Comps.xsd"/>
-        <include href="Demographics.xsd"/>
-        <include href="RegionChildren.xsd"/>
-        <include href="SearchResults.xsd"/>
-    </grammars>
-
+    <grammars/>
     <resources base="http://www.zillow.com/webservice">	
         <resource path="GetChart.htm">
-            <method name="GET" id="getChart">
+            <method name="GET" id="zillow.homevaluation_GetChart">
                 <doc xml:lang="en">
                     Returns a URL for an image file displaying historical Zestimates for a  
                     property specified by Zillow property ID. The chart can show  
@@ -85,7 +74,7 @@
             </method>
         </resource>
         <resource path="GetComps.htm">
-            <method name="GET" id="getComps">
+            <method name="GET" id="zillow.homevaluation_GetComps">
                 <doc xml:lang="en">
                     Returns a list of comparable recent sales for a property. The results include the address, 
                     the Zillow property ID, and the Zestimate for the comparable properties and 
@@ -123,7 +112,7 @@
             </method>
         </resource> 
         <resource path="GetDeepComps.htm">
-            <method name="GET" id="getDeepComps">
+            <method name="GET" id="zillow.propertydetails_GetDeepComps">
                 <doc xml:lang="en">
                     Returns a list of comparable recent sales for a property. 
                     The results include the address, the Zillow property identifier, and the Zestimate 
@@ -164,7 +153,7 @@
             </method>
         </resource>
         <resource path="GetDeepSearchResults.htm">
-            <method name="GET" id="getDeepSearchResults">
+            <method name="GET" id="zillow.propertydetails_GetDeepSearchResults">
                 <doc xml:lang="en">
                     Finds a property given an address. The returned intormation includes the address 
                     for the property or properties, the Zillow Property ID (ZPID, the current 
@@ -210,7 +199,7 @@
             </method>
         </resource> 
         <resource path="GetRegionChart.htm">
-        <method name="GET" id="getRegionChart">
+        <method name="GET" id="zillow.homevaluation_GetRegionChart">
             <doc xml:lang="en">
                 Returns a URL for an image file displaying historical Zestimates for a  
                 region specified by city, state, and/or zipcode. The chart can show  
@@ -279,7 +268,7 @@
         </method>
     </resource>
     <resource path="GetSearchResults.htm">
-            <method name="GET" id="getSearchResults">
+            <method name="GET" id="zillow.homevaluation_GetSearchResults">
                 <doc xml:lang="en"> 
                     Finds a property given an address. The returned intormation includes the address 
                     for the property or properties, the Zillow Property ID (ZPID, the current 
@@ -324,7 +313,7 @@
             </method>
         </resource>  
         <resource path="GetZestimate.htm">
-            <method name="GET" id="getZestimate">
+            <method name="GET" id="zillow.homevaluation_GetZestimate">
                 <doc xml:lang="en">  
                     For a specified Zillow property identifier (zpid), 
                     returns the most recent property Zestimate, 
@@ -363,7 +352,7 @@
             </method>
         </resource>
 		<resource path="GetDemographics.htm">
-            <method name="GET" id="getDemographics">
+            <method name="GET" id="zillow.homevaluation_GetDemographics">
                 <doc xml:lang="en">  
 					For a specified region, returns a set of demographic data which includes
 					a URL linking to the corresponding demographics pages at Zillow.com,
@@ -415,7 +404,7 @@
             </method>
         </resource>		
 	    <resource path="GetRegionChildren.htm">
-            <method name="GET" id="getRegionChildren">
+            <method name="GET" id="zillow.homevaluation_GetRegionChildren">
                 <doc xml:lang="en">  
 					For a specified region, returns a list of subregions which includes
 					subregion type, region IDs, region names, URL to corresponding Zillow page

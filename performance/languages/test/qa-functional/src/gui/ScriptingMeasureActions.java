@@ -48,6 +48,8 @@ import gui.action.PageUpPageDownScriptingEditor;
 import gui.action.SaveModifiedScriptingFiles;
 import gui.action.ScriptingExpandFolder;
 import gui.action.TypingInScriptingEditor;
+import gui.menu.ScriptingNodePopup;
+import gui.menu.ScriptingProjectNodePopup;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -72,13 +74,13 @@ public class ScriptingMeasureActions {
         suite.addTest(new EditorMenuPopup("test_RB_EditorPopup"," Ruby editor node popup test"));
         suite.addTest(new EditorMenuPopup("test_RHTML_EditorPopup","RHTML editor node popup test"));
         suite.addTest(new EditorMenuPopup("test_JS_EditorPopup","Java Script editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_JSON_EditorPopup","JSON editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_CSS_EditorPopup","CSS editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_YML_EditorPopup","YML editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_BAT_EditorPopup","BAT editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_DIFF_EditorPopup"," editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_MANIFEST_EditorPopup","MANIFEST editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_SH_EditorPopup","Shell Script editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_JSON_EditorPopup","JSON editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_CSS_EditorPopup","CSS editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_YML_EditorPopup","YML editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_BAT_EditorPopup","BAT editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_DIFF_EditorPopup"," editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_MANIFEST_EditorPopup","MANIFEST editor node popup test"));
+        suite.addTest(new EditorMenuPopup("test_SH_EditorPopup","Shell Script editor node popup test"));
         
         suite.addTest(new TypingInScriptingEditor("test_RB_EditorTyping","test_RB_EditorTyping"));
         suite.addTest(new TypingInScriptingEditor("test_RHTML_EditorTyping","test_RHTML_EditorTyping"));

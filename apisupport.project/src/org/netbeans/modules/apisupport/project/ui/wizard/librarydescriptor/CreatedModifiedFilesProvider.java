@@ -176,7 +176,7 @@ final class CreatedModifiedFilesProvider  {
         URL archivURL = FileUtil.getArchiveFile(originalURL);
         if (archivURL != null && FileUtil.isArchiveFile(archivURL)) {
             FileObject archiv = URLMapper.findFileObject(archivURL);
-            assert archiv != null : archivURL; // #129617
+            assert archiv != null;
             retval = archiv.getNameExt();
             StringBuffer sb = new StringBuffer();
             sb.append(pathPrefix).append(retval);

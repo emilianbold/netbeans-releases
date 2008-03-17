@@ -48,6 +48,7 @@ import javax.swing.ImageIcon;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGraphViewContainer;
@@ -59,20 +60,20 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGra
 public class ShowSQLAction extends GraphAction {
 
     private static URL showSqlUrl = ShowSQLAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png");
-    private static transient final Logger mLogger = Logger.getLogger(ShowSQLAction.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ShowSQLAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ShowSQLAction() {
         // Action name
-        String nbBundle1 = mLoc.t("BUND365: Show SQL");
-        this.putValue(Action.NAME, nbBundle1.substring(15));
+        String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(showSqlUrl));
 
         // Action tooltip
-        String nbBundle2 = mLoc.t("BUND373: Toggle SQL For Condition");
-        this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
+        String nbBundle2 = mLoc.t("PRSR001: Toggle SQL For Condition");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
     }
 
     /**

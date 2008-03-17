@@ -117,9 +117,6 @@ public class DebuggerAnnotation extends Annotation {
         if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE)
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        if (type == EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_EXP_LINE"); // NOI18N
         else
         if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 

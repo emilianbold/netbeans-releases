@@ -78,30 +78,20 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     }
     
     public JPDAThread[] getThreads () {
-        ThreadsCache tc = debugger.getThreadsCache();
-        if (tc == null) {
-            return new JPDAThread[0];
-        }
-        List<ThreadReference> l = tc.getThreads(tgr);
+        List l = tgr.threads ();
         int i, k = l.size ();
         JPDAThread[] ts = new JPDAThread [k];
-        for (i = 0; i < k; i++) {
-            ts [i] = debugger.getThread(l.get (i));
-        }
+        for (i = 0; i < k; i++)
+            ts [i] = debugger.getThread((ThreadReference) l.get (i));
         return ts;
     }
     
     public JPDAThreadGroup[] getThreadGroups () {
-        ThreadsCache tc = debugger.getThreadsCache();
-        if (tc == null) {
-            return new JPDAThreadGroup[0];
-        }
-        List<ThreadGroupReference> l = tc.getGroups(tgr);
+        List l = tgr.threadGroups ();
         int i, k = l.size ();
         JPDAThreadGroup[] ts = new JPDAThreadGroup [k];
-        for (i = 0; i < k; i++) {
-            ts [i] = debugger.getThreadGroup(l.get (i));
-        }
+        for (i = 0; i < k; i++)
+            ts [i] = debugger.getThreadGroup((ThreadGroupReference) l.get (i));
         return ts;
     }
     
@@ -111,11 +101,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     
     // XXX Add some synchronization so that the threads can not be resumed at any time
     public void resume () {
-        ThreadsCache tc = debugger.getThreadsCache();
-        if (tc == null) {
-            return ;
-        }
-        List<ThreadReference> threads = tc.getThreads(tgr);
+        List threads = tgr.threads();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
             thread.notifyToBeResumed();
@@ -125,12 +111,8 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     
     // XXX Add some synchronization
     public void suspend () {
-        ThreadsCache tc = debugger.getThreadsCache();
-        if (tc == null) {
-            return ;
-        }
         tgr.suspend ();
-        List<ThreadReference> threads = tc.getThreads(tgr);
+        List threads = tgr.threads();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             JPDAThreadImpl thread = (JPDAThreadImpl) debugger.getThread((ThreadReference) it.next());
             thread.notifySuspended();

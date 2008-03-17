@@ -51,6 +51,7 @@ import org.openide.WizardDescriptor;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
@@ -64,7 +65,7 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
  */
 public class ETLTableSelectionWizard extends ETLWizard {
 
-    private static transient final Logger mLogger = Logger.getLogger(ETLTableSelectionWizard.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLTableSelectionWizard.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     class Descriptor extends ETLWizardDescriptor {
@@ -85,12 +86,12 @@ public class ETLTableSelectionWizard extends ETLWizard {
             List destModel = new ArrayList();
             List dbModels = getModelConnections();
             
-            String nbBundle1 = mLoc.t("BUND078: Select Source Tables.");
-            String selectSrcTitle = nbBundle1.substring(15);
+            String nbBundle1 = mLoc.t("PRSR001: Select Source Tables.");
+            String selectSrcTitle = Localizer.parse(nbBundle1);
             sourceTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectSrcTitle, dbModels, srcModel, true);
             panels.add(sourceTransferPanel);
-            String nbBundle2 = mLoc.t("BUND079: Select Target Tables.");
-            String selectTrgtTitle = nbBundle2.substring(15);
+            String nbBundle2 = mLoc.t("PRSR001: Select Target Tables.");
+            String selectTrgtTitle = Localizer.parse(nbBundle2);
             targetTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectTrgtTitle, dbModels, destModel, false);
             panels.add(targetTransferPanel);
         }
@@ -116,8 +117,8 @@ public class ETLTableSelectionWizard extends ETLWizard {
         }
 
         public String name() {
-            String nbBundle4 = mLoc.t("BUND080: Select Source/Target Tables");
-            return nbBundle4.substring(15);
+            String nbBundle4 = mLoc.t("PRSR001: Select Source/Target Tables");
+            return Localizer.parse(nbBundle4);
         }
 
         protected List createPanels() {
@@ -126,9 +127,9 @@ public class ETLTableSelectionWizard extends ETLWizard {
 
         protected String[] createSteps() {
             try {
-                String nbBundle1 = mLoc.t("BUND078: Select Source Tables.");
-                String nbBundle2 = mLoc.t("BUND079: Select Target Tables.");
-                return new String[]{nbBundle1.substring(15), nbBundle2.substring(15)};
+                String nbBundle5 = mLoc.t("PRSR001: Select Source Tables");
+                String nbBundle6 = mLoc.t("PRSR001: Select Target Tables");
+                return new String[]{Localizer.parse(nbBundle5), Localizer.parse(nbBundle6)};
             } catch (MissingResourceException e) {
                 return new String[]{};
             }
@@ -332,8 +333,8 @@ public class ETLTableSelectionWizard extends ETLWizard {
      */
     @Override
     protected String getDialogTitle() {
-        String nbBundle3 = mLoc.t("BUND081: Select Source and Target Tables");
-        return nbBundle3.substring(15);
+        String nbBundle3 = mLoc.t("PRSR001: Select Source and Target Tables");
+        return Localizer.parse(nbBundle3);
     }
 
     private List getSelectedModelsOfType(String typeKey) {

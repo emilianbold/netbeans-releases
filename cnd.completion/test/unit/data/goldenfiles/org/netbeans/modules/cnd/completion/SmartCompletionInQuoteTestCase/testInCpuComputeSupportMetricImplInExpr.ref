@@ -1,8 +1,0 @@
-GetCategory() const char*
-GetCategoryID() int
-GetDescription() const char*
-GetSupportMetric() int
-GetType() const char*
-GetTypeID() int
-GetUnits() int
-GetVendor() const char*

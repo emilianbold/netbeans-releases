@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     <echo message="xtest.data.dir=${xtest.data.dir}"/>
     <echo message="xtest.ide.commandline.suffix=${xtest.ide.commandline.suffix}"/>
 
-    <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.data.dir=${xtest.data.dir}"/>
+    <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true -J-Dxtest.data.dir=${xtest.data.dir}"/>
 
     <condition property="asadmin.script" value="asadmin.bat" else="asadmin">
         <contains string="${os.name}" substring="Windows" casesensitive="false"/>

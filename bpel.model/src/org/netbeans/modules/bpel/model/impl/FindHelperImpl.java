@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.bpel.model.spi.FindHelper;
-import org.netbeans.modules.bpel.model.api.support.ContainerIterator;
 import org.netbeans.modules.xml.xam.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,7 +42,8 @@ import org.w3c.dom.Node;
  */
 public final class FindHelperImpl implements FindHelper {
 
-    public FindHelperImpl() {}
+    public FindHelperImpl() {
+    }
 
     /*
      * (non-Javadoc)
@@ -130,4 +131,5 @@ public final class FindHelperImpl implements FindHelper {
         //
         return result;
     }
+
 }

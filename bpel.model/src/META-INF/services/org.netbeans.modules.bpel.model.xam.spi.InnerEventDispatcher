@@ -14,4 +14,3 @@ org.netbeans.modules.bpel.model.impl.NamespaceOptimizer
 org.netbeans.modules.bpel.model.impl.services.MarkBuilderElement
 org.netbeans.modules.bpel.model.impl.services.ResetBuilderElement
 org.netbeans.modules.bpel.model.impl.ExpressionConsistencyService
-org.netbeans.modules.bpel.model.impl.ExtensionsNamespaceDeclarationService

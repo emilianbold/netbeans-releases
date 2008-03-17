@@ -216,8 +216,15 @@ Customer.prototype = {
    findValue : function(field, value) {
       if(value == undefined)
           return field;
-      else
-         return value;
+      if(value['$'] == undefined) {
+         var r = {};
+         for(var i in value) {
+            r[i] = value[i]['$'];
+         }
+         return r;
+      } else {
+         return value['$'];
+      }
    },
 
    flush : function() {
@@ -237,18 +244,18 @@ Customer.prototype = {
          '"customer":'+
          '{'+
          '"@uri":"'+this.uri+'",'+
-                  '"customerId":"'+this.customerId+'",'+
-         '"zip":"'+this.zip+'",'+
-         '"name":"'+this.name+'",'+
-         '"addressline1":"'+this.addressline1+'",'+
-         '"addressline2":"'+this.addressline2+'",'+
-         '"city":"'+this.city+'",'+
-         '"state":"'+this.state+'",'+
-         '"phone":"'+this.phone+'",'+
-         '"fax":"'+this.fax+'",'+
-         '"email":"'+this.email+'",'+
-         '"creditLimit":"'+this.creditLimit+'",'+
-         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":"'+eval("this.discountCodeRef.get"+this.discountCodeRef.getFields()[0].substring(0,1).toUpperCase()+this.discountCodeRef.getFields()[0].substring(1)+"()")+'"}'+
+                  '"customerId":{"$":"'+this.customerId+'"},'+
+         '"zip":{"$":"'+this.zip+'"},'+
+         '"name":{"$":"'+this.name+'"},'+
+         '"addressline1":{"$":"'+this.addressline1+'"},'+
+         '"addressline2":{"$":"'+this.addressline2+'"},'+
+         '"city":{"$":"'+this.city+'"},'+
+         '"state":{"$":"'+this.state+'"},'+
+         '"phone":{"$":"'+this.phone+'"},'+
+         '"fax":{"$":"'+this.fax+'"},'+
+         '"email":{"$":"'+this.email+'"},'+
+         '"creditLimit":{"$":"'+this.creditLimit+'"},'+
+         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":{"$":"'+eval("this.discountCodeRef.get"+this.discountCodeRef.getFields()[0].substring(0,1).toUpperCase()+this.discountCodeRef.getFields()[0].substring(1)+"()")+'"}}'+
 
          '}';
       return myObj;

@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
     <target name="zip-identity-stock-client" depends="init-zip-samples">
         <property name="identity.samples.stockclient" value="src/${identity.samples}/StockQuoteClient"/>
         <zip destfile="${identity.samples.resources}/StockQuoteClient.zip"
-            update="false">
+            update="true">
         <zipfileset dir="StockQuoteClient"/>
         </zip>
     </target>
@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
     <target name="zip-identity-stock-server" depends="init-zip-samples">
         <property name="identity.samples.stockserver" value="src/${identity.samples}/StockQuoteService"/>
         <zip destfile="${identity.samples.resources}/StockQuoteService.zip"
-            update="false">
+            update="true">
         <zipfileset dir="StockQuoteService"/>
         </zip>
     </target>

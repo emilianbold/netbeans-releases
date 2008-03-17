@@ -57,7 +57,6 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -93,7 +92,7 @@ public class HttpMethodsChildren extends Children.Keys {
                 }
             });
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            
         }
         
         updateKeys();
@@ -109,7 +108,7 @@ public class HttpMethodsChildren extends Children.Keys {
                 }
             });
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            
         }
         
         setKeys(Collections.EMPTY_SET);
@@ -136,7 +135,7 @@ public class HttpMethodsChildren extends Children.Keys {
                 }
             });
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            
         }
         
         setKeys(Utils.sortKeys(keys));
@@ -165,7 +164,7 @@ public class HttpMethodsChildren extends Children.Keys {
             
             return nodes;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            
         }
         
         return new Node[0];

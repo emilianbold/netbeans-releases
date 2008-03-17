@@ -169,21 +169,14 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     if (component == null) {
       return null;
     }
-    String name;
     if (component instanceof Named) {
-      name = ((Named) component).getName();
+      String name = ((Named) component).getName();
 
       if (name != null) {
         return name;
       }
     }
-    name = component.getClass().getName();
-    int k = name.lastIndexOf(".");
-
-    if (k == -1) {
-      return name;
-    }
-    return name.substring(k + 1);
+    return component.getClass().getName();
   }
 
   protected final Component getTypeOfElement(Component component) {

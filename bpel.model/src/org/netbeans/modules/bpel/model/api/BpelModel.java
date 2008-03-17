@@ -107,6 +107,21 @@ public interface BpelModel extends Model<BpelEntity> {
      */
     void removeEntityChangeListener( ChangeEventListener listener );
 
+//    /**
+//     * Add undoable listener to model.
+//     * 
+//     * @param listener Undoable listener for addition.
+//     */
+//
+//    void addUndoableEditListener( UndoableEditListener listener );
+//
+//    /**
+//     * Removes undoable listener from model.
+//     * 
+//     * @param listener Undoable listener for removal.
+//     */
+//    void removeUndoableEditListener( UndoableEditListener listener );
+
     /**
      * This method should be used for executing group of calls to model as
      * atomic action. Placing <code>action</code> in this method guarantee
@@ -159,5 +174,4 @@ public interface BpelModel extends Model<BpelEntity> {
      */
     BpelEntity findElement( int i );
     
-    boolean isSupportedExpension(String uri);
 }

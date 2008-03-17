@@ -59,7 +59,6 @@ import javax.swing.Timer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -111,18 +110,11 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     }
     
     public void setWaitingState (boolean isWaiting) {
-        setWaitingState (isWaiting, 0);
-    }
-    
-    public void setWaitingState (boolean isWaiting, final long estimatedTime) {
-        if (this.isWaiting == isWaiting) {
-            return ;
-        }
         this.isWaiting = isWaiting;
         if (isWaiting) {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    addProgressLine (estimatedTime);
+                    addProgressLine ();
                 }
             });
         } else {
@@ -148,9 +140,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
 
     private Timer delay;
     private ProgressHandle handle;
-    private void addProgressLine (final long estimatedTime) {
+    private void addProgressLine () {
         handle = ProgressHandleFactory.createHandle ("PanelBodyContainer_ProgressLine"); // NOI18N
-        JLabel title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait")); // NOI18N
+        JLabel title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait"));
         JComponent progress = ProgressHandleFactory.createProgressComponent (handle);
         progressPanel = new JPanel (new GridBagLayout ());
         
@@ -173,30 +165,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             }
         });        
         
+        handle.start();
         delay.setRepeats(false);
         delay.start();
-        final String progressDisplayName = NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_ProgressLine"); // NOI18N
-        if (estimatedTime == 0) {
-            handle.start ();                    
-            handle.progress (progressDisplayName);
-        } else {
-            assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-            handle.start ((int) estimatedTime * 10, estimatedTime); 
-            handle.progress (progressDisplayName, 0);
-            RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    int i = 0;
-                    while (true) {
-                        try {
-                            handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
-                            Thread.sleep (100);
-                        } catch (InterruptedException ex) {
-                            // no worries
-                        }
-                    }
-                }
-            });
-        }
     }
     
     private void initBodyPanel () {
