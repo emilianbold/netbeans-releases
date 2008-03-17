@@ -82,6 +82,10 @@ public class Constants {
     
     public static final String PERSISTENCE = "javax.persistence.Persistence";
     
+    public static final String PERSISTENCE_ENTITY = "javax.persistence.Entity";
+
+    public static final String PERSISTENCE_TABLE = "javax.persistence.Table";
+    
     public static final String NO_RESULT_EXCEPTION = "javax.persistence.NoResultException";        //NOI18N
     
     public static final String XML_ROOT_ELEMENT = "javax.xml.bind.annotation.XmlRootElement";             //NOI18N

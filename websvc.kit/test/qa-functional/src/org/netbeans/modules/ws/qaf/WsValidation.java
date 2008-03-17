@@ -378,20 +378,20 @@ public class WsValidation extends WebServicesTestBase {
 
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
-        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
-        suite.addTest(new WsValidation("testStartServer")); //NOI18N
-        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
-        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
-        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
+//        suite.addTest(new WsValidation("testCreateNewWs")); //NOI18N
+//        suite.addTest(new WsValidation("testAddOperation")); //NOI18N
+//        suite.addTest(new WsValidation("testStartServer")); //NOI18N
+//        suite.addTest(new WsValidation("testWsHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsProject")); //NOI18N
+//        suite.addTest(new WsValidation("testCreateWsClient")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInServlet")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJSP")); //NOI18N
+//        suite.addTest(new WsValidation("testCallWsOperationInJavaClass")); //NOI18N
         suite.addTest(new WsValidation("testRefreshClient")); //NOI18N
-        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
-        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
-        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
-        suite.addTest(new WsValidation("testStopServer")); //NOI18N
+//        suite.addTest(new WsValidation("testWsClientHandlers")); //NOI18N
+//        suite.addTest(new WsValidation("testDeployWsClientProject")); //NOI18N
+//        suite.addTest(new WsValidation("testUndeployProjects")); //NOI18N
+//        suite.addTest(new WsValidation("testStopServer")); //NOI18N
         return suite;
     }
 

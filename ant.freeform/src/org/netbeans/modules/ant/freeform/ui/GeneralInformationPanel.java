@@ -83,7 +83,7 @@ public class GeneralInformationPanel extends javax.swing.JPanel {
         contentsFolderTextField = new javax.swing.JTextField();
         projectFolderTextField = new javax.swing.JTextField();
 
-        setPreferredSize(new java.awt.Dimension(600, 500));
+        setPreferredSize(new java.awt.Dimension(560, 450));
         setLayout(new java.awt.GridBagLayout());
 
         panelLabel.setText(org.openide.util.NbBundle.getMessage(GeneralInformationPanel.class, "GeneralInformationPanel.panelLabel.text")); // NOI18N

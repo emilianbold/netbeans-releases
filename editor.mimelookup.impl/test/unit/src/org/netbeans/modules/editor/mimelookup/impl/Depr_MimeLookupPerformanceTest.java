@@ -103,7 +103,7 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         }
         return filter;
     }
-
+    /*
     public void testMimeLookupObjectInstallingUninstallingSize() throws IOException{
         MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
                 childLookup("text/xml"); //NOI18N
@@ -152,6 +152,7 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         gc(); gc();
         assertSize("", size + 3000, lookup); // 3000 is threshold
     }
+    */
     
     public void testClassLookup() throws IOException{
         MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
