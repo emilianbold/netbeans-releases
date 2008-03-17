@@ -42,29 +42,18 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ErrorType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -73,12 +62,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -173,7 +158,7 @@ public class Utils {
                 restSupport.ensureRestDevelopmentReady();
                 return true;
             } catch (IOException ex) {
-                Logger.getLogger(Utils.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;
@@ -212,6 +197,9 @@ public class Utils {
     
     public static List<String> getDiagnostics(FileObject fileObject) {
         final List<String> result = new ArrayList<String>();
+        if (fileObject == null) {
+            return result;
+        }
         JavaSource js = JavaSource.forFileObject(fileObject);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {

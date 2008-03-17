@@ -63,7 +63,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
@@ -92,7 +91,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private ETLOutputPanel newSelection;
     private JToolBar verticalBar;
     public static final String ICON_RESOURCE = "org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png"; // NOI18N
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLOutputWindowTopComponent.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLOutputWindowTopComponent.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private ETLOutputWindowTopComponent() {
@@ -102,11 +101,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
 
-        String nbBundle1 = mLoc.t("PRSR001: Data Integrator Output");
-        setName(Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND167: Data Integrator Output");
+        setName(nbBundle1.substring(15));
         setIcon(Utilities.loadImage(ICON_RESOURCE));
-        String nbBundle2 = mLoc.t("PRSR001: Data Integrator Output");
-        setToolTipText(Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND167: Data Integrator Output");
+        setToolTipText(nbBundle2.substring(15));
 
         // create it but don't add it yet...
         verticalBar = new JToolBar(JToolBar.VERTICAL);
@@ -158,12 +157,12 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         };
 
     }
-    String nbBundle1 = mLoc.t("PRSR001: Close Tab");
-    String nbBundle2 = mLoc.t("PRSR001: Close All Tabs");
-    String nbBundle3 = mLoc.t("PRSR001: Close Other Tabs");
+    String nbBundle1 = mLoc.t("BUND168: Close Tab");
+    String nbBundle2 = mLoc.t("BUND169: Close All Tabs");
+    String nbBundle3 = mLoc.t("BUND150: Close Other Tabs");
     private class Close extends AbstractAction {
         public Close() {
-            super(Localizer.parse(nbBundle1));
+            super(nbBundle1.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -177,7 +176,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private final class CloseAll extends AbstractAction {
 
         public CloseAll() {
-            super(Localizer.parse(nbBundle2));
+            super(nbBundle2.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -192,7 +191,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private class CloseAllButCurrent extends AbstractAction {
 
         public CloseAllButCurrent() {
-            super(Localizer.parse(nbBundle3));
+            super(nbBundle3.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -281,13 +280,13 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     public static synchronized ETLOutputWindowTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-        mLogger.infoNoloc(mLoc.t("PRSR111: Cannot find {0}component. It will not be located properly in the window system.",PREFERRED_ID));
+        mLogger.infoNoloc(mLoc.t("EDIT511: Cannot find {0}component. It will not be located properly in the window system.",PREFERRED_ID));
         return getDefault();
         }
         if (win instanceof ETLOutputWindowTopComponent) {
             return (ETLOutputWindowTopComponent) win;
         }
-         mLogger.infoNoloc(mLoc.t("PRSR112: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.",PREFERRED_ID));
+         mLogger.infoNoloc(mLoc.t("EDIT512: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.",PREFERRED_ID));
         return getDefault();
     }
 

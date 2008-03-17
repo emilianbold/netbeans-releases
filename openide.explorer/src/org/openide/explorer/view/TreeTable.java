@@ -1132,7 +1132,7 @@ class TreeTable extends JTable implements Runnable {
                 }
 
                 MouseEvent newME = new MouseEvent(
-                        TreeTable.this.tree, me.getID(), me.getWhen(), me.getModifiers(),
+                        TreeTable.this.tree, me.getID(), me.getWhen(), me.getModifiers()+me.getModifiersEx(),
                         me.getX() - getCellRect(0, column, true).x + positionX, me.getY(), me.getClickCount(),
                         me.isPopupTrigger()
                     );

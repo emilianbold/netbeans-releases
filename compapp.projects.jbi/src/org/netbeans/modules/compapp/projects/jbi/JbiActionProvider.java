@@ -299,8 +299,8 @@ public class JbiActionProvider implements ActionProvider {
 
                     if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG)) {
                         NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(JbiActionProvider.class, "MSG_CleanConfig"), // NOI18N
-                                NbBundle.getMessage(JbiActionProvider.class, "TTL_CleanConfig"), // NOI18N
+                                NbBundle.getMessage(JbiActionProvider.class, "MSG_CleanServiceAssembly"), // NOI18N
+                                NbBundle.getMessage(JbiActionProvider.class, "TTL_CleanServiceAssembly"), // NOI18N
                                 NotifyDescriptor.OK_CANCEL_OPTION);
                         if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
                             return;

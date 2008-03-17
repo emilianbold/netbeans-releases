@@ -8,7 +8,7 @@
     <resources base="http://twitter.com"> 
 	<resource path="statuses">
 	    <resource path="public_timeline.{format}">
-		<method name="GET" id="twitter.getPublicTimeline">
+		<method name="GET" id="getPublicTimeline">
 		    <doc xml:lang="en">
 			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
                         This method doesn't require authentication. 
@@ -35,7 +35,7 @@
 	</resource>
 	
 	<resource path="direct_messages.{format}">
-	    <method name="GET" id="twitter.getDirectMessages">
+	    <method name="GET" id="getDirectMessages">
 		<doc xml:lang="en">
 		    Returns a list of the 20 most recent direct messages sent to the authenticating user.  
                     The XML and JSON versions include detailed information about the sending and recipient users.
@@ -52,7 +52,7 @@
 	
 	<resource path="direct_messages">
 	    <resource path="new.{format}">
-		<method name="POST" id="twitter.sendDirectMessage">
+		<method name="POST" id="sendDirectMessage">
                     <doc xml:lang="en">
                         Sends a new, direct message to the specified user from the authenticating user.
                         This method requires HTTP Basic Authentication, described at 
