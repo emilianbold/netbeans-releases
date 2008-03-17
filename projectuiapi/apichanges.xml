@@ -105,6 +105,22 @@ is the proper place.
 
     <changes>
         
+        <change id="folder-based-privileged-templates">
+            <api name="general"/>
+            <summary>PrivilegedTemplates instance in global action context is preferred</summary>
+            <version major="1" minor="28"/>
+            <date day="21" month="3" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                The previous scope of PrivilegedTemplates was the whole project. Now the selected Node (active context) can
+                also provide an instance in it's lookup and it will be used instead of the default one from project's lookup.
+                In this case the last used templates will not be considered.
+            </description>
+            <class package="org.netbeans.spi.project.ui" name="PrivilegedTemplates"/>
+            <issue number="122942"/>
+        </change>
+        
         <change id="observe-opening-closing">
             <api name="general"/>
             <summary>Added ways to track projects opening and closing</summary>
