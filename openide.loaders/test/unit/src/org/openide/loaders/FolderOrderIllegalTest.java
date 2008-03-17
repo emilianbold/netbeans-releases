@@ -93,7 +93,7 @@ public class FolderOrderIllegalTest extends NbTestCase {
             }
         }
         R run = new R();
-        new RequestProcessor("move").post(run);
+        RequestProcessor RP = new RequestProcessor("move");
 
         Logger listenTo = Logger.getLogger("org.openide.loaders.FolderList");
         String order = 
@@ -102,9 +102,11 @@ public class FolderOrderIllegalTest extends NbTestCase {
                 "THREAD: Folder recognizer MSG:.*carefullySort before getOrder.*" +
                 "THREAD: move MSG:.*done";
         Log.controlFlow(listenTo, Logger.getLogger("global"), order, 500);
+        RP.post(run);
         
         DataObject[] arr = f.getChildren();
         
-        assertEquals("Just 9:\n" + Arrays.asList(arr), 9, arr.length);//fail("OK:\n" + Arrays.asList(arr));
+        String txt = Arrays.toString(arr).replaceAll(", ", "\n");
+        assertEquals("Just 9:\n" + txt, 9, arr.length);//fail("OK:\n" + txt);
     }
 }
