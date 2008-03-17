@@ -222,6 +222,14 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
         localServerComboBox.setSelectedItem(localServer);
     }
 
+    boolean isCopyFiles() {
+        return copyFilesCheckBox.isSelected();
+    }
+
+    void setCopyFiles(boolean copyFiles) {
+        copyFilesCheckBox.setSelected(copyFiles);
+    }
+
     // listeners
     public void actionPerformed(ActionEvent e) {
         changeLocalServerFieldsState(copyFilesCheckBox.isSelected());

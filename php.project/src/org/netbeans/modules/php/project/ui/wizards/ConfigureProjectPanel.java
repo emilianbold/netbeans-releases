@@ -152,8 +152,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
-        LocalServer sourceRoot = sourcesPanelVisual.getSourcesLocation();
-        d.putProperty(WWW_FOLDER, sourceRoot);
+        d.putProperty(WWW_FOLDER, sourcesPanelVisual.getSourcesLocation());
         d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
         d.putProperty(URL, sourcesPanelVisual.getUrl());
 

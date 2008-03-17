@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -50,6 +51,11 @@ import org.openide.util.HelpCtx;
  * @author Tomas Mysik
  */
 public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+
+    static final String COPY_FILES = "copyFiles"; // NOI18N
+    static final String COPY_TARGET = "copyTarget"; // NOI18N
+    static final String COPY_TARGETS = "copyTargets"; // NOI18N
+
     private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
@@ -81,12 +87,30 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         // copying enabled?
         configureServerPanelVisual.setLocalServerState(isProjectFolder());
 
+        Boolean copyFiles = isCopyFiles();
+        if (copyFiles != null) {
+            configureServerPanelVisual.setCopyFiles(copyFiles);
+        }
+
+        MutableComboBoxModel localServers = getLocalServers();
+        if (localServers != null) {
+            configureServerPanelVisual.setLocalServerModel(localServers);
+        }
+        LocalServer wwwFolder = getLocalServer();
+        if (wwwFolder != null) {
+            configureServerPanelVisual.selectSourcesLocation(wwwFolder);
+        }
+
         registerListeners();
         fireChangeEvent();
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
+
+        d.putProperty(COPY_FILES, configureServerPanelVisual.isCopyFiles());
+        d.putProperty(COPY_TARGET, configureServerPanelVisual.getSourcesLocation());
+        d.putProperty(COPY_TARGETS, configureServerPanelVisual.getLocalServerModel());
     }
 
     public boolean isValid() {
@@ -123,6 +147,18 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     private boolean isProjectFolder() {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
         return ConfigureProjectPanel.isProjectFolder(localServer);
+    }
+
+    private Boolean isCopyFiles() {
+        return (Boolean) descriptor.getProperty(COPY_FILES);
+    }
+
+    private LocalServer getLocalServer() {
+        return (LocalServer) descriptor.getProperty(COPY_TARGET);
+    }
+
+    private MutableComboBoxModel getLocalServers() {
+        return (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
     }
 
     private void registerListeners() {
