@@ -1610,7 +1610,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
         private void gatherResourceForParseFilesFromRoot(Collection<File> files, File rootFile, final File cacheRoot, Map<String, List<File>> resources) {
             if (LOGGER.isLoggable(Level.FINE)) {
-                Thread.dumpStack();
                 LOGGER.log(Level.FINE, "going to compute resources");
                 LOGGER.log(Level.FINE, "files={0}", files);
             }
