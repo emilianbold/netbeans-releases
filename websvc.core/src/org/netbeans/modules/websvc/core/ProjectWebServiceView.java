@@ -44,10 +44,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.netbeans.api.project.Project;
 
 /**
  * This API displays the web service and client nodes in this project.
@@ -68,7 +68,7 @@ public abstract class ProjectWebServiceView {
     public static enum ViewType {
 
         SERVICE, CLIENT
-    };
+    }
     private ChangeSupport serviceListeners,  clientListeners;
 
     protected ProjectWebServiceView() {
@@ -164,19 +164,19 @@ public abstract class ProjectWebServiceView {
      * Get the web service nodes that are in the project. 
      * @param project Project that contains the web service nodes
      * @return Array of web service nodes in the project.
-     */ 
+     */
     public Node[] getServiceNodes(Project project) {
-        return createWebServiceNodes(project,ViewType.SERVICE);
-    };
-    
+        return createWebServiceNodes(project, ViewType.SERVICE);
+    }
+
     /**
      * Get the web service client nodes that are in the project. 
      * @param project Project that contains the web service nodes
      * @return Array of web service client nodes in the project.
-     */ 
+     */
     public Node[] getClientNodes(Project project) {
-        return createWebServiceNodes(project,ViewType.CLIENT);
-    };
+        return createWebServiceNodes(project, ViewType.CLIENT);
+    }
 
     /**
      * Creates Web Service/client nodes for given project.

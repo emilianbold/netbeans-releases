@@ -44,7 +44,6 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
