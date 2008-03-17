@@ -103,7 +103,6 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         }
         generateSaasServiceResourceClass();
         addSubresourceLocator();
-        addImportsToWrapperResource();
         FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
         modifyTargetConverter();
         FileObject[] result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO, outputWrapperFO};
