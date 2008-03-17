@@ -1183,12 +1183,14 @@ public class BracketCompleter implements BracketCompletion {
         case ' ': {
         // Backspacing over "$ " ? Delete the "$" too!
             TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
-            ts.move(dotPos);
-            if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == GroovyTokenId.LINE_COMMENT)) {
-                doc.remove(dotPos-1, 1);
-                target.getCaret().setDot(dotPos-1);
-                
-                return true;
+            if (ts != null) {
+                ts.move(dotPos);
+                if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == GroovyTokenId.LINE_COMMENT)) {
+                    doc.remove(dotPos-1, 1);
+                    target.getCaret().setDot(dotPos-1);
+
+                    return true;
+                }
             }
             break;
         }
