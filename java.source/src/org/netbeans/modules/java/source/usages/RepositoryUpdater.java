@@ -730,7 +730,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 storedFiles = url2CompileWithDeps.get(root);
                 
                 if (storedFiles == null) {
-                    url2CompileWithDeps.put(root, storedFiles = new  LinkedList<File>());
+                    url2CompileWithDeps.put(root, storedFiles = new  LinkedHashSet<File>());
                 }
             }
             
@@ -1589,6 +1589,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
         private void gatherResourceForParseFilesFromRoot(Collection<File> files, File rootFile, final File cacheRoot, Map<String, List<File>> resources) {
             if (LOGGER.isLoggable(Level.FINE)) {
+                Thread.dumpStack();
                 LOGGER.log(Level.FINE, "going to compute resources");
                 LOGGER.log(Level.FINE, "files={0}", files);
             }
