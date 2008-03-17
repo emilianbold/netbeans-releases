@@ -122,7 +122,6 @@ class ServerNode extends AbstractNode implements ChangeListener, Comparable {
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
                 SystemAction.get(ConnectServerAction.class),
-                SystemAction.get(RefreshAction.class),
                 SystemAction.get(DeleteAction.class),
                 SystemAction.get(AdministerAction.class),
                 SystemAction.get(PropertiesAction.class)
