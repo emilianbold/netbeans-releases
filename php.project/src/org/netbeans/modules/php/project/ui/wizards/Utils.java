@@ -52,6 +52,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Helper class with static methods
@@ -156,8 +157,9 @@ public final class Utils {
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {
-            return null;
+            // ignored
         }
+        return null;
     }
 
     /**
@@ -170,5 +172,47 @@ public final class Utils {
                 && fileName.indexOf('/')  == -1 // NOI18N
                 && fileName.indexOf('\\') == -1 // NOI18N
                 && fileName.indexOf(':') == -1; // NOI18N
+    }
+
+    /**
+     * Validate the path and get the error message or <code>null</code> if it's all right.
+     * @param projectPath the path to validate
+     * @param type the type for error messages, currently "Project", "Sources" and "Folder".
+     *             Add other to Bundle.properties file if more types are needed.
+     * @return localized error message in case of error, <code>null</code> otherwise.
+     */
+    public static String validateProjectDirectory(String projectPath, String type) {
+        assert projectPath != null;
+        assert type != null;
+
+        // not allow to create project on unix root folder, see #82339
+        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
+        }
+
+        final File destFolder = new File(projectPath).getAbsoluteFile();
+        if (Utils.getCanonicalFile(destFolder) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+        }
+
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
+        }
+
+        if (FileUtil.toFileObject(projLoc) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+        }
+
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            // Folder exists and is not empty
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
+        }
+        return null;
     }
 }

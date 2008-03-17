@@ -314,7 +314,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return validateProjectDirectory(projectPath, "Project"); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project"); // NOI18N
     }
 
     private String validateSources() {
@@ -327,7 +327,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            String err = validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
             if (err != null) {
                 return err;
             }
@@ -347,38 +347,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             if (!Utils.isValidFileName(indexName)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalIndexName");
             }
-        }
-        return null;
-    }
-
-    private String validateProjectDirectory(String projectPath, String type) {
-        // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
-        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
-        }
-
-        final File destFolder = new File(projectPath).getAbsoluteFile();
-        if (Utils.getCanonicalFile(destFolder) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
-        }
-
-        File projLoc = FileUtil.normalizeFile(destFolder);
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
-        }
-
-        if (FileUtil.toFileObject(projLoc) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
-        }
-
-        File[] kids = destFolder.listFiles();
-        if (destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
         }
         return null;
     }

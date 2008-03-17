@@ -233,6 +233,7 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
     // listeners
     public void actionPerformed(ActionEvent e) {
         changeLocalServerFieldsState(copyFilesCheckBox.isSelected());
+        changeSupport.fireChange();
     }
 
     public void stateChanged(ChangeEvent e) {

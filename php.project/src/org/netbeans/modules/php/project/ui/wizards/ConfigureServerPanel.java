@@ -40,12 +40,15 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.io.File;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -115,7 +118,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
 
     public boolean isValid() {
         getComponent();
-        String error = null;
+        String error = validateServerLocation();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
@@ -159,6 +162,20 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
 
     private MutableComboBoxModel getLocalServers() {
         return (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
+    }
+
+    private String validateServerLocation() {
+        if (!configureServerPanelVisual.isCopyFiles()) {
+            return null;
+        }
+
+        String sourcesLocation = configureServerPanelVisual.getSourcesLocation().getSrcRoot();
+        if (sourcesLocation == null
+                || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
+            return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
+        }
+
+        return Utils.validateProjectDirectory(sourcesLocation, "Folder"); // NOI18N
     }
 
     private void registerListeners() {
