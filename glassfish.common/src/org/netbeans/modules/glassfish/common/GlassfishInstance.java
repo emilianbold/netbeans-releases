@@ -45,9 +45,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -57,6 +59,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
+import org.netbeans.spi.glassfish.RemoveCookie;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -229,6 +232,11 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     }
 
     public void remove() {
+        // Just in case...
+        if(!removable) {
+            return;
+        }
+        
         // !PW FIXME Remove debugger hooks, if any
 //        DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerStateListener);
 
@@ -241,6 +249,8 @@ public class GlassfishInstance implements ServerInstanceImplementation {
             if(opState != OperationState.COMPLETED) {
                 Logger.getLogger("glassfish").info("Stop server failed...");
             }
+        } catch(TimeoutException ex) {
+            Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
         } catch(Exception ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
@@ -250,6 +260,11 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         InputOutput io = LogViewMgr.getServerIO(uri);
         if(io != null && !io.isClosed()) {
             io.closeInputOutput();
+        }
+
+        Collection<? extends RemoveCookie> lookupAll = lookup.lookupAll(RemoveCookie.class);
+        for(RemoveCookie cookie: lookupAll) {
+            cookie.removeInstance(getDeployerUri());
         }
 
         GlassfishInstanceProvider.getDefault().removeServerInstance(this);

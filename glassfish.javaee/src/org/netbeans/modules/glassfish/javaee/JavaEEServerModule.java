@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.spi.glassfish.RemoveCookie;
 import org.openide.util.Lookup;
 
 
@@ -47,7 +48,7 @@ import org.openide.util.Lookup;
  *
  * @author Peter Williams
  */
-public class JavaEEServerModule {
+public class JavaEEServerModule implements RemoveCookie {
 
     private Lookup lookup;
     private InstanceProperties instanceProperties;
@@ -55,6 +56,13 @@ public class JavaEEServerModule {
     JavaEEServerModule(Lookup instanceLookup, InstanceProperties ip) {
         lookup = instanceLookup;
         instanceProperties = ip;
+    }
+
+    // ------------------------------------------------------------------------
+    // RemoveCookie support
+    // ------------------------------------------------------------------------
+    public void removeInstance(String serverUri) {
+        InstanceProperties.removeInstance(serverUri);
     }
 
     // ------------------------------------------------------------------------
