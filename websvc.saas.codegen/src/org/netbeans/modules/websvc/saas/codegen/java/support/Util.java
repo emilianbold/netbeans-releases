@@ -910,8 +910,8 @@ public class Util {
                 if(val.endsWith("}"))
                     val = val.substring(0, val.length()-1);
                 val = getVariableName(val);
-                //val = getAuthenticatorClassName(groupName)+ "." +
-                //        "get"+val.substring(0,1).toUpperCase()+val.substring(1)+"()";
+                val = getAuthenticatorClassName(groupName)+ "." +
+                        "get"+val.substring(0,1).toUpperCase()+val.substring(1)+"()";
                 return new String[]{pElems[0], val};
             }
         }

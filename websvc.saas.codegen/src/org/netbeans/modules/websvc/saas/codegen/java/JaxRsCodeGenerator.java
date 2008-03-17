@@ -227,8 +227,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             methodBody += "             String content = \"Some content.\"";
             methodBody += "             result = conn.put("+headerUsage+", content.getBytes());\n";
         } else if(httpMethod == HttpMethodType.POST) {
-            methodBody += "             String content = \"Some content.\"";
-            methodBody += "             result = conn.post("+headerUsage+", content.getBytes());\n";
+            if(!queryParamsCode.trim().equals("")) {
+                methodBody += "             result = conn.post("+headerUsage+", "+Constants.QUERY_PARAMS+");\n";
+            } else {
+                methodBody += "             String content = \"Some content.\"";
+                methodBody += "             result = conn.post("+headerUsage+", content.getBytes());\n";
+            }
         } else if(httpMethod == HttpMethodType.DELETE) {
             methodBody += "             result = conn.delete("+headerUsage+");\n";
         }
