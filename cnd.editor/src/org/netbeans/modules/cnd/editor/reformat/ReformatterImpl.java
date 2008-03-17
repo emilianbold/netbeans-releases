@@ -1104,6 +1104,36 @@ public class ReformatterImpl {
                             }
                             break;
                         }
+                        case FOR:
+                        {
+                            if (codeStyle.alignMultilineFor()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case IF:
+                        {
+                            if (codeStyle.alignMultilineIfCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case WHILE:
+                        {
+                            if (codeStyle.alignMultilineWhileCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
             }
