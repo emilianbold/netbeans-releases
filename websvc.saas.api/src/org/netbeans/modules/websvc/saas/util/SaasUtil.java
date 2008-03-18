@@ -262,7 +262,37 @@ public class SaasUtil {
         context.registerNamespace("", Saas.NS_WADL);
         return type.cast(context.getValue(xpath));
     }*/
-
+    
+    
+    public static Resource getParentResource(Application app, Method wm) {
+        Resource r = null;
+        for (Resource base : app.getResources().getResource()) {
+            r = findParentResource(base, wm);
+            if (r != null) {
+                return r;
+            }
+        }
+        return null;
+    }
+    
+    static Resource findParentResource(Resource base, Method wm) {
+        for (Object o : base.getMethodOrResource()) {
+            if (o instanceof Method) {
+                Method m = (Method)o;
+                if (m == wm) {
+                    return base;
+                }
+                continue;
+            } else if (o instanceof Resource) {
+                Resource r = findParentResource((Resource)o, wm);
+                if (r != null) {
+                    return r;
+                }
+            }
+        }
+        return null;
+    }
+    
     public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
         String methodId = methodIdRef;
         if (methodId.charAt(0) == '#') {

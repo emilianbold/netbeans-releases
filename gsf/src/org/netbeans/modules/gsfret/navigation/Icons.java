@@ -136,6 +136,9 @@ public final class Icons {
         Image img = null;
     
         switch( elementKind ) {
+        case FILE:
+            img = Utilities.loadImage( ICON_BASE + "emptyfile-icon" + PNG_EXTENSION );
+            break;
         case ERROR:
             img = Utilities.loadImage( ICON_BASE + "error-glyph" + GIF_EXTENSION );
             break;

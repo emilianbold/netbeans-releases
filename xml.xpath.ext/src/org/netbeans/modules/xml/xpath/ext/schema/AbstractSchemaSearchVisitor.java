@@ -89,8 +89,10 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(ElementReference er) {
-        // # 105159
-        checkComponent(er);
+        // # 105159, #130053
+        if (!isXdmDomUsed(er)) {
+            checkComponent(er);
+        }
         //
         NamedComponentReference<GlobalElement> geRef = er.getRef();
 
@@ -105,8 +107,10 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(AttributeReference ar) {
-        // # 105159
-        checkComponent(ar);
+        // # 105159, #130053
+        if (!isXdmDomUsed(ar)) {
+            checkComponent(ar);
+        }
         //
         NamedComponentReference<GlobalAttribute> gaRef = ar.getRef();
 
@@ -242,4 +246,18 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
             child.accept(this);
         }
     }
+    
+    //-----------------------------------------------
+    
+    /**
+     * This auxiliary method is a workaround fro the issuer #130053
+     * @param sc
+     * @return
+     */
+    protected boolean isXdmDomUsed(SchemaComponent sc) {
+        org.w3c.dom.Element domElement = sc.getPeer();
+        String packageName = domElement.getClass().getPackage().getName();
+        return "org.netbeans.modules.xml.xdm.nodes".equals(packageName); // NOI18N
+    }
+    
 }

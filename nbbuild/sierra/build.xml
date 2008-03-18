@@ -43,7 +43,7 @@
     <import file="build.tst"/>
     
     <target name="all" depends="init,get-netbeans,build-xtest,clean,build-and-create"/>
-    <target name="build-and-create" depends="build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
+    <target name="build-and-create" depends="build-fcs,create-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="init">
@@ -70,6 +70,7 @@
 
         <delete dir="${home}/nbbuild/netbeans"/>
         <unzip src="${netbeans}/netbeans.zip" dest="${home}/nbbuild"/>
+        <delete dir="${home}/nbbuild/netbeans/soa2"/>
         <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
     </target>
 
@@ -79,7 +80,7 @@
     </target>
 
     <!-- zip -->
-    <target name="create-zip-init">
+    <target name="create-init">
         <delete dir="${dist}"/>
         <mkdir dir="${dist}"/>
         <delete dir="${latest}"/>
@@ -114,7 +115,7 @@
         </zip>
     </target>
 
-    <target name="create-zip-fcs">
+    <target name="create-zip-fcs" depends="run-extra">
         <zip destfile="${latest}/sierra.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
@@ -127,7 +128,7 @@
         <copy file="${latest}/sierra.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}.zip"/>
     </target>
 
-    <target name="create-zip-dev">
+    <target name="create-zip-dev" depends="run-extra">
         <zip destfile="${latest}/sierra_dev.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
@@ -137,6 +138,17 @@
         </zip>
 
         <copy file="${latest}/sierra_dev.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}_dev.zip"/>
+    </target>
+
+    <!-- extra -->
+    <target name="run-extra" depends="check-extra,do-extra"/>
+
+    <target name="check-extra">
+        <available property="extra.available" file="${home}/nbbuild/netbeans/extra" type="dir"/>
+    </target>
+
+    <target name="do-extra" if="extra.available">
+        <move file="${home}/nbbuild/netbeans/extra" tofile="${home}/nbbuild/netbeans/soa2"/>
     </target>
 
     <!-- daily -->

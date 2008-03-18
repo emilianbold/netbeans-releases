@@ -85,7 +85,7 @@ public abstract class ShutdownAction extends NodeAction {
                 Lookup lookup = node.getLookup();
                 Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
                 try {
-                    if (shutdownable != null && !shutdownable.canShutdown()) {
+                    if (shutdownable != null && !shutdownable.canShutdown(isForceAction())) {
                         ret = false;
                         break;
                     }
