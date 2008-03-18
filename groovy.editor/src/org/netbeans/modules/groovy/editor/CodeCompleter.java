@@ -44,6 +44,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 import groovy.util.Node;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -82,6 +83,8 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.openide.util.Utilities;
 
 public class CodeCompleter implements Completable {
  
@@ -89,7 +92,8 @@ public class CodeCompleter implements Completable {
     private boolean caseSensitive;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
-    private String jdkJavaDocBase = null;
+    private String jdkJavaDocBase    = null;
+    private String groovyJavaDocBase = null;
     
     public CodeCompleter() {
         // LOG.setLevel(Level.FINEST);
@@ -101,6 +105,24 @@ public class CodeCompleter implements Completable {
         for (URL url : docfolder) {
             LOG.log(Level.FINEST, "JavaDoc path from PlatformManager: " + url.toString());
             jdkJavaDocBase = url.toString();
+        }
+        
+        GroovySettings groovySettings = new GroovySettings();
+
+        // FIXME: Here we only care for the GDK, but not for the additional
+        // Groovy classes. I have to add those as well.
+        
+        String gHomeDoc = groovySettings.getGroovyHome() + "/" + "html" + "/" +"groovy-jdk/";
+        File gdoc = new File(gHomeDoc);
+        
+        if (gdoc.exists() && gdoc.isDirectory()) {
+            
+            if(Utilities.isWindows()){
+                gHomeDoc = gHomeDoc.replace("\\", "/");
+                }
+            
+            groovyJavaDocBase = "file:/" + gHomeDoc;
+            LOG.log(Level.FINEST, "GDK Doc path: " + groovyJavaDocBase);
         }
 
     }
@@ -305,34 +327,46 @@ public class CodeCompleter implements Completable {
         
         String ERROR = "<h2>Not found.</h2>";
         String doctext = ERROR;
-        
+
         if (element instanceof AstMethodElement) {
-            AstMethodElement ame = (AstMethodElement)element;
-            
+            AstMethodElement ame = (AstMethodElement) element;
+
+            String base = "";
+
             if (jdkJavaDocBase != null && ame.isGDK() == false) {
-                // create path from fq java package name:
-                // java.lang.String -> java/lang/String.html
-                String classNamePath = ame.getClz().getName().replace(".", "/");
-                classNamePath = classNamePath + ".html";
-
-                // create the signature-string of the method
-                String sig = ame.getMethod().getSignature();
-                int firstblank = sig.indexOf(" ");
-                sig = sig.substring(firstblank + 1);
-                
-                String urlName = jdkJavaDocBase + classNamePath + "#" + sig;
-
-                try {
-                    LOG.log(Level.FINEST, "Trying to load URL = " + urlName);
-                    doctext = HTMLJavadocParser.getJavadocText(
-                            new URL(urlName),
-                            false);
-                } catch (MalformedURLException ex) {
-                    LOG.log(Level.FINEST, "document(), URL trouble: " + ex);
-                    return ERROR;
-                }
-
+                base = jdkJavaDocBase;
+            } else if (groovyJavaDocBase != null && ame.isGDK() == true) {
+                base = groovyJavaDocBase;
+            } else {
+                LOG.log(Level.FINEST, "Neither JDK nor GDK or error locating: " + ame.isGDK());
+                return ERROR;
             }
+            
+            // enable this to troubleshoot subtle differences in JDK/GDK signatures
+            printMethod(ame.getMethod());
+
+            // create path from fq java package name:
+            // java.lang.String -> java/lang/String.html
+            String classNamePath = ame.getClz().getName().replace(".", "/");
+            classNamePath = classNamePath + ".html";
+
+            // create the signature-string of the method
+            String sig = ame.getMethod().getSignature();
+            int firstblank = sig.indexOf(" ");
+            sig = sig.substring(firstblank + 1);
+
+            String urlName = base + classNamePath + "#" + sig;
+
+            try {
+                LOG.log(Level.FINEST, "Trying to load URL = " + urlName);
+                doctext = HTMLJavadocParser.getJavadocText(
+                        new URL(urlName),
+                        false);
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.FINEST, "document(), URL trouble: " + ex);
+                return ERROR;
+            }
+
 
         }
         return doctext;
