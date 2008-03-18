@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.awt.Image;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.spi.glassfish.AppDesc;
+import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -60,6 +62,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -72,18 +75,18 @@ import org.openide.windows.WindowManager;
  */
 public class Hk2ItemNode extends AbstractNode {
     
-    private ItemType type;
+    private Decorator decorator;
     
     private static final String HTTP_HEADER = "http://";
     
     private static final int TIMEOUT = 30000;
     
-    private Hk2ItemNode(Children children, final Lookup lookup, final ItemType type) {
+    private Hk2ItemNode(Children children, final Lookup lookup, final Decorator decorator) {
         super(children);
-        this.type = type;
+        this.decorator = decorator;
         
         // NEW COOKIE CODE
-        if(type.isRefreshable()) {
+        if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
                 public void refresh() {
                     Children children = getChildren();
@@ -94,7 +97,7 @@ public class Hk2ItemNode extends AbstractNode {
             });
         }
         
-        if(type.canDeployTo()) {
+        if(decorator.canDeployTo()) {
             getCookieSet().add(new DeployDirectoryCookie() {
                 public void deployDirectory() {
                     JFileChooser chooser = new JFileChooser();
@@ -121,8 +124,8 @@ public class Hk2ItemNode extends AbstractNode {
         }
         
         // OLD COOKIE CODE
-        if(type.equals(ItemType.J2EE_APPLICATION_FOLDER) ||
-                type.equals(ItemType.REFRESHABLE_FOLDER)) {
+        if(decorator.equals(ItemType.J2EE_APPLICATION_FOLDER) ||
+                decorator.equals(ItemType.REFRESHABLE_FOLDER)) {
 //            getCookieSet().add(new RefreshModulesCookie() {
 //                public void refresh() {
 //                    Children children = getChildren();
@@ -260,9 +263,9 @@ public class Hk2ItemNode extends AbstractNode {
 //                        return isRunning;
 //                    }
 //                });
-            } else if (type.equals(ItemType.JDBC_NATIVE_DATASOURCES) ||
-            type.equals(ItemType.JDBC_MANAGED_DATASOURCES) ||
-            type.equals(ItemType.CONNECTION_POOLS)) {
+            } else if (decorator.equals(ItemType.JDBC_NATIVE_DATASOURCES) ||
+                    decorator.equals(ItemType.JDBC_MANAGED_DATASOURCES) ||
+                    decorator.equals(ItemType.CONNECTION_POOLS)) {
 //                getCookieSet().add(new UndeployModuleCookie() {
 //                    private boolean isRunning = false;
 //                    
@@ -302,8 +305,8 @@ public class Hk2ItemNode extends AbstractNode {
             }
     }
     
-    public Hk2ItemNode(Lookup lookup, AppDesc app, ItemType type) {
-        this(Children.LEAF, lookup, type);
+    public Hk2ItemNode(Lookup lookup, AppDesc app, Decorator decorator) {
+        this(Children.LEAF, lookup, decorator);
         setDisplayName(app.getName());
         setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
@@ -313,75 +316,47 @@ public class Hk2ItemNode extends AbstractNode {
         setDisplayName(name);
     }
     
-    /** 
-     * !PW FIXME Need logic to delegate icon display to decorator in node or
-     * instance lookup.  Then JavaEE module can provide icons for EE nodes and
-     * Ruby module provide icon for Ruby nodes independent of each other.
-     *
-     * @param type
-     * @return
-     */
     @Override
     public Image getIcon(int type) {
-//        if(this.type.equals(ItemType.J2EE_APPLICATION_FOLDER)) {
-//            return UISupport.getIcon(ServerIcon.EAR_FOLDER);
-//        } else if(this.type.equals(ItemType.J2EE_APPLICATION) ||
-//                this.type.equals(ItemType.J2EE_APPLICATION_SYSTEM)) {
-//            return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
-//        } else if(this.type.equals(ItemType.JDBC_MANAGED_DATASOURCES) ||
-//                this.type.equals(ItemType.JDBC_NATIVE_DATASOURCES)) {
-//            return Utilities.loadImage(JDBC_RESOURCE_ICON);
-//        } else if(this.type.equals(ItemType.CONNECTION_POOLS)) {
-//            return Utilities.loadImage(CONNECTION_POOL_ICON);
-//        } else {
-            return getIconDelegate().getIcon(type);
-//        }
+        Image image = null;
+        Image badge = decorator.getIconBadge();
+        if(badge != null) {
+            image = badgeFolder(badge, false);
+        } else {
+            image = decorator.getIcon(type);
+        }
+        return image != null ? image : getIconDelegate().getIcon(type);
     }
     
-    /** 
-     * !PW FIXME Need logic to delegate icon display to decorator in node or
-     * instance lookup.  Then JavaEE module can provide icons for EE nodes and
-     * Ruby module provide icon for Ruby nodes independent of each other.
-     *
-     * @param type
-     * @return
-     */
     @Override
     public Image getOpenedIcon(int type) {
-//        if(this.type.equals(ItemType.J2EE_APPLICATION_FOLDER)) {
-//            return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER);
-//        } else if(this.type.equals(ItemType.J2EE_APPLICATION) ||
-//                this.type.equals(ItemType.J2EE_APPLICATION_SYSTEM) ||
-//                this.type.equals(ItemType.JDBC_MANAGED_DATASOURCES) ||
-//                this.type.equals(ItemType.JDBC_NATIVE_DATASOURCES) ||
-//                this.type.equals(ItemType.CONNECTION_POOLS)) {
-//            return getIcon(type);
-//        } else {
-            return getIconDelegate().getOpenedIcon(type);
-//        }
-    }
-    
-    private Node getIconDelegate() {
-        return DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        Image image = null;
+        Image badge = decorator.getIconBadge();
+        if(badge != null) {
+            image = badgeFolder(badge, true);
+        } else {
+            image = decorator.getOpenedIcon(type);
+        }
+        return image != null ? image : getIconDelegate().getOpenedIcon(type);
     }
     
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
 
-        if(type.isRefreshable()) {
+        if(decorator.isRefreshable()) {
             actions.add(SystemAction.get(RefreshModulesAction.class));
         }
         
-        if(type.canDeployTo()) {
+        if(decorator.canDeployTo()) {
 //            actions.add(SystemAction.get(DeployDirectoryAction.class));
         }
         
-        if(type.canUndeploy()) {
+        if(decorator.canUndeploy()) {
 //            actions.add(SystemAction.get(UndeployModuleAction.class));
         }
     
-        if(type.canShowBrowser()) {
+        if(decorator.canShowBrowser()) {
 //            actions.add(SystemAction.get(OpenURLAction.class));
         }
         
@@ -400,12 +375,36 @@ public class Hk2ItemNode extends AbstractNode {
         return node;
     }
 
+    /**
+     * Applies a badge to an open or closed folder icon.
+     * 
+     * @param badge badge image for folder
+     * @param opened use open or closed folder
+     * @return an image of the badged folder
+     */
+    public static Image badgeFolder(Image badge, boolean opened) {
+        Node folderNode = getIconDelegate();
+        Image folder = opened ? folderNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : 
+                folderNode.getIcon(BeanInfo.ICON_COLOR_16x16);
+        return Utilities.mergeImages(folder, badge, 7, 7);
+    }
+    
+    /**
+     * Retrieves the IDE's standard folder node, so we can access the default
+     * open/closed folder icons.
+     * 
+     * @return standard folder node
+     */
+    private static Node getIconDelegate() {
+        return DataFolder.findFolder(Repository.getDefault().
+                getDefaultFileSystem().getRoot()).getNodeDelegate();
+    }
     
     /**
      * Enumeration of node types.  Allows single location of logic for determining
      * node action availability.
      */
-    public static enum ItemType {
+    public static enum ItemType implements Decorator {
         
         J2EE_APPLICATION_FOLDER { 
             @Override public boolean isRefreshable() { return true; }
@@ -433,7 +432,11 @@ public class Hk2ItemNode extends AbstractNode {
         public boolean canDeployTo() { return false; }
         public boolean canUndeploy() { return false; }
         public boolean canShowBrowser() { return false; }
-
+        
+        public Image getIconBadge() { return null; }
+        public Image getIcon(int type) { return null; }
+        public Image getOpenedIcon(int type) { return getIcon(type); }
+        
     }
  
 }

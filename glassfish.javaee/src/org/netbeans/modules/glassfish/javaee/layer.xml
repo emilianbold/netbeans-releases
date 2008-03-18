@@ -15,6 +15,11 @@
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.ServerModule"/>
             </file>
+            <file name="JavaEEDecoratorFactory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEDecoratorFactory.getDefault"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEDecoratorFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.glassfish.DecoratorFactory"/>
+            </file>
         </folder>
     </folder>
 

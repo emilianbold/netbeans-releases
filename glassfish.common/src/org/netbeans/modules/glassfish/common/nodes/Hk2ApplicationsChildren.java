@@ -41,17 +41,23 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.spi.glassfish.AppDesc;
+import org.netbeans.spi.glassfish.Decorator;
+import org.netbeans.spi.glassfish.DecoratorFactory;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -80,15 +86,13 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                         CommandRunner mgr = new CommandRunner(ip);
-                        AppDesc [] apps = mgr.getApplications();
-
-                        if(apps != null && apps.length > 0) {
+                        java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications();
+                        for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
+                            List<AppDesc> apps = entry.getValue();
+                            Decorator decorator = findDecorator(entry.getKey(), Hk2ItemNode.ItemType.J2EE_APPLICATION);
                             for(AppDesc app: apps) {
-                                System.out.println("Adding app " + app.getName());
-                                keys.add(new Hk2ItemNode(lookup, app, Hk2ItemNode.ItemType.J2EE_APPLICATION));
+                                keys.add(new Hk2ItemNode(lookup, app, decorator));
                             }
-                        } else {
-                            System.out.println("No apps...");
                         }
                     } catch (Exception ex) {
                         Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
@@ -98,6 +102,26 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                 }
             }
         }, 0);
+    }
+    
+    private static java.util.Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();;
+    
+    static {
+        initDecorators();
+    }
+    
+    private static void initDecorators() {
+        // Find all decorator support, categorize by type.
+        for (DecoratorFactory decoratorFactory : 
+                Lookups.forPath("Servers/GlassFish").lookupAll(DecoratorFactory.class)) {
+            java.util.Map<String, Decorator> map = decoratorFactory.getAllDecorators();
+            decoratorMap.putAll(map);
+        }
+    }
+    
+    private Decorator findDecorator(String type, Decorator defaultDecorator) {
+        Decorator d = decoratorMap.get(type);
+        return d != null ? d : defaultDecorator;
     }
     
     @Override

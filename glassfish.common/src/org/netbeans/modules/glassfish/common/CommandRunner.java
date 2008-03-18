@@ -52,6 +52,8 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
@@ -112,15 +114,15 @@ public class CommandRunner extends BasicTask<OperationState> {
      * 
      * @return String array of names of deployed applications.
      */
-    public AppDesc [] getApplications() {
-        AppDesc [] result = new AppDesc[0];
+    public Map<String, List<AppDesc>> getApplications() {
+        Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             ServerCommand.ListCommand cmd = new ServerCommand.ListCommand();
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                result = cmd.getApplications();
+                result = cmd.getApplicationMap();
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);

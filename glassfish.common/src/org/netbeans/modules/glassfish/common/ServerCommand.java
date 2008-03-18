@@ -42,7 +42,12 @@ package org.netbeans.modules.glassfish.common;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.spi.glassfish.AppDesc;
@@ -176,21 +181,24 @@ public abstract class ServerCommand {
     public static final class ListCommand extends ServerCommand {
         
         private Manifest list = null;
-        private List<String> containerList = null;
-        private List<AppDesc> appList = null; 
+        private Map<String, List<AppDesc>> appMap = null; 
         
         public String [] getContainers() {
-            if(containerList != null && containerList.size() > 0) {
-                return containerList.toArray(new String [containerList.size()]);
+            String [] result = null;
+            if(appMap != null && appMap.size() > 0) {
+                Set<String> containers = appMap.keySet();
+                result = containers.toArray(new String[containers.size()]);
             }
-            return null;
+            return result != null ? result : new String[0];
         }
         
-        public AppDesc [] getApplications() {
-            if(appList != null && appList.size() > 0) {
-                return appList.toArray(new AppDesc [appList.size()]);
+        public Map<String, List<AppDesc>> getApplicationMap() {
+            // !PW Can still modify sublist... is there a better structure?
+            if(appMap != null) {
+                return Collections.unmodifiableMap(appMap);
+            } else {
+                return Collections.emptyMap();
             }
-            return null;
         }
         
         @Override
@@ -226,22 +234,23 @@ public abstract class ServerCommand {
             }
 
             String [] containers = containerDesc.split(","); // NOI18N
-            containerList = new ArrayList<String>(containers.length);
             for(String container: containers) {
+                if(skipContainer(container)) {
+                    continue;
+                }
+                
                 // get container attributes
                 Attributes contAttr = list.getAttributes(container);
                 String appDesc = contAttr.getValue("children"); // NOI18N
+
+                // !PW XXX Do we want/need to show empty containers?
                 if(appDesc == null) {
                     // no apps currently deployed in this container
                     continue;
                 }
-
-                // !PW XXX Do we want/need to show empty containers?
-                // Only add the container if there are running apps...
-                containerList.add(container);
                 
                 String [] apps = appDesc.split(","); // NOI18N
-                appList = new ArrayList<AppDesc>(apps.length);
+                List<AppDesc> appList = new ArrayList<AppDesc>(apps.length);
                 for(String app: apps) {
                     Attributes appAttr = list.getAttributes(app);
                     String name = appAttr.getValue("message"); // NOI18N
@@ -251,11 +260,28 @@ public abstract class ServerCommand {
                     }
                     appList.add(new AppDesc(name, path));
                 }
+                
+                if(appMap == null) {
+                    appMap = new HashMap<String, List<AppDesc>>();
+                }
+                
+                appMap.put(container, appList);
             }
             
             return true;
         }
     
+        /**
+         * For skipping containers we don't care about.
+         * 
+         * @param container
+         * @return
+         */
+        private boolean skipContainer(String container) {
+            return "security_ContractProvider".equals(container);
+        }
+    
+        
     };
     
     /**

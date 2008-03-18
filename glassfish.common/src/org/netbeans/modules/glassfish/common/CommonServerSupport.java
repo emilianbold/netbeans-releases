@@ -43,8 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -228,7 +230,20 @@ public class CommonServerSupport implements GlassfishModule {
     
     public AppDesc [] getModuleList() {
         CommandRunner mgr = new CommandRunner(getInstanceProperties());
-        return mgr.getApplications();
+        int total = 0;
+        Map<String, List<AppDesc>> appMap = mgr.getApplications();
+        Collection<List<AppDesc>> appLists = appMap.values();
+        for(List<AppDesc> appList: appLists) {
+            total += appList.size();
+        }
+        AppDesc [] result = new AppDesc[total];
+        int index = 0;
+        for(List<AppDesc> appList: appLists) {
+            for(AppDesc app: appList) {
+                result[index++] = app;
+            }
+        }
+        return result;
     }
 
     public ServerState getServerState() {
