@@ -41,9 +41,12 @@ package org.netbeans.modules.hibernate.framework;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -54,6 +57,7 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
@@ -81,8 +85,9 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
     
-    public HibernateWebModuleExtender(boolean forNewProjectWizard, WebModule webModule) {
-        configPanel = new HibernateConfigurationPanel();
+    public HibernateWebModuleExtender(boolean forNewProjectWizard, 
+            WebModule webModule, ExtenderController controller) {
+        configPanel = new HibernateConfigurationPanel(this, controller, forNewProjectWizard);
         if(!forNewProjectWizard) {
             // Show the config panel for Proj. Customizer
             // Fill the panel with existing data.
@@ -90,14 +95,27 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         }
     }
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-
+    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    protected final void fireChangeEvent() {
+        Iterator it;
+        synchronized (listeners) {
+            it = new HashSet(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            ((ChangeListener)it.next()).stateChanged(ev);
+        }
     }
 
     @Override
