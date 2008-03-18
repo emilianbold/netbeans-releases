@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.design.DiagramView;
+import org.netbeans.modules.bpel.design.TriScrollPane;
 import org.netbeans.modules.bpel.design.geometry.Triangle;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
 
@@ -135,13 +136,13 @@ public class MessageConnection extends Connection {
 
         FPoint pl_point = isOutcoming ? getEndPoint() : getStartPoint();
 
-
-        Pattern pl_pattern = (isOutcoming) ? getTarget().getPattern() : getSource().getPattern();
+        Pattern pl_pattern = (isOutcoming) 
+                ? getTarget().getPattern() 
+                : getSource().getPattern();
 
         if (pl_pattern == null) {
             return null;
         }
-
 
         DiagramModel model = getPattern().getModel();
 
@@ -149,31 +150,35 @@ public class MessageConnection extends Connection {
             return null;
         }
 
-        
-
         DesignView view = model.getView();
 
+        TriScrollPane scrollPane = view.getScrollPane();
+        
         DiagramView pl_view = pl_pattern.getView();
 
-
         DiagramView process_view = view.getProcessView();
-
-
         
         int y0 = process_view.convertPointToParent(new FPoint(0,0)).y;
         int y1 = pl_view.convertPointToParent(new FPoint(0,0)).y;
+        
         FPoint delta0 = process_view.convertPointFromParent(new Point(0, 0));
         FPoint delta1 = process_view.convertPointFromParent(new Point(0, y1 - y0));
+        
         FPoint delta = new FPoint(0, delta1.y - delta0.y);
         
         Point tmp = process_view.convertDiagramToScreen(pl_point);
         
-        Rectangle r = process_view.getVisibleRect();
+        Rectangle viewVisibleRect = scrollPane.getViewport().getViewRect();
         
-        tmp.x = (((PartnerlinkPattern) pl_pattern).getType() == PartnerRole.PROVIDER) ? (r.x + r.width) : r.x;
-
-
-
+        if (((PartnerlinkPattern) pl_pattern).getType() 
+                == PartnerRole.PROVIDER)
+        {
+            tmp.x = viewVisibleRect.x + viewVisibleRect.width 
+                    - scrollPane.getRightPreferredWidth();
+        } else {
+            tmp.x = viewVisibleRect.x + scrollPane.getLeftPreferredWidth();
+        }
+           
         FPoint left = process_view.convertScreenToDiagram(tmp);
         
         FPoint result = new FPoint(left.x, pl_point.y + delta.y);
@@ -211,9 +216,6 @@ public class MessageConnection extends Connection {
 
         float cx = (x3 + x4) / 2f;
         float cy = (y1 + y2) / 2f;
-
-        
-
 
         GeneralPath path = new GeneralPath();
         path.moveTo(x1, y1);
@@ -343,7 +345,7 @@ public class MessageConnection extends Connection {
     isPaintArrow(), isPaintSlash(), isPaintCircle(), null);
     }*/
     }
-    private static final Color COLOR = new Color(0x5668CA);
+    private static final Color COLOR = new Color(0xB9C0E4); //new Color(0x5668CA);
     private static final Color COLOR_SELECTED = new Color(0x5D985C);
     
 }
