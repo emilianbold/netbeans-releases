@@ -125,6 +125,14 @@ public class StartTask extends BasicTask<OperationState> {
         while(System.currentTimeMillis() - start < TIMEOUT) {
             // Send the 'completed' event and return when the server is running
             if(CommonServerSupport.isRunning(host, port)) {
+                // !PW FIXME V3 as of March 12 is starting Grizzly & listening
+                // for connections before the server is ready to take asadmin
+                // commands.  Until this is fixed, wait 1 second before assuming
+                // it's really ok.  Otherwise, domain.xml can get corrupted.
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException ex) {
+                }
                 return fireOperationStateChanged(OperationState.COMPLETED, 
                         "MSG_SERVER_STARTED", instanceName); // NOI18N
             }
