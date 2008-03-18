@@ -39,59 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui.wizards;
+package org.netbeans.modules.autoupdate.ui.actions;
 
-import org.netbeans.modules.autoupdate.ui.*;
-import java.awt.Dialog;
-import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.CallableSystemAction;
 
-/**
- *
- * @author Jiri Rechtacek
- */
-public class InstallUnitWizard {
-    
-    private final Logger log = Logger.getLogger (this.getClass ().getName ());
-    
-    /** Creates a new instance of InstallUnitWizard */
-    public InstallUnitWizard () {}
-    
-    public boolean invokeWizard (OperationType doOperation, PluginManagerUI manager) {
-        InstallUnitWizardModel model = new InstallUnitWizardModel (doOperation);
-        model.setPluginManager (manager);
-        return invokeWizard (model);
+public final class CheckForUpdatesAction extends CallableSystemAction {
+
+    public void performAction () {
+        boolean wizardFinished = false;
+        RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
+        if (t != null && ! t.isFinished ()) {
+            DialogDisplayer.getDefault ().notifyLater (
+                    new NotifyDescriptor.Message (
+                        NbBundle.getMessage (AutoupdateCheckScheduler.class,
+                            "AutoupdateCheckScheduler_InstallInProgress"), // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE));
+            return ;
+        }
+        Collection<LazyUnit> units = LazyUnit.loadLazyUnits (OperationType.UPDATE);
+        try {
+            wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, OperationType.UPDATE, true);
+        } finally {
+            if (wizardFinished) {
+                PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
+                if (pluginManagerUI != null) {
+                    pluginManagerUI.updateUnitsChanged();
+                }
+                AutoupdateCheckScheduler.notifyAvailable (units, OperationType.UPDATE);
+            } else {
+                // notify available plugins/updates in the future
+            }
+        }
     }
-    
-    public boolean invokeWizard (InstallUnitWizardModel model) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
-        return implInvokeWizard (iterator);
+
+    public String getName () {
+        return NbBundle.getMessage (CheckForUpdatesAction.class, "CTL_CheckForUpdatesAction");
     }
-    
-    public boolean invokeLazyWizard (Collection<LazyUnit> units, OperationType doOperation, boolean forceReload) {
-        return implInvokeWizard (new LazyInstallUnitWizardIterator (units, doOperation, forceReload));
+
+    @Override
+    protected void initialize () {
+        super.initialize ();
+        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
+        putValue ("noIconInMenu", Boolean.TRUE);
     }
-    
-    private boolean implInvokeWizard (WizardDescriptor.Iterator<WizardDescriptor> iterator) {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor (iterator);
-        wizardDescriptor.setModal (true);
-        
-        wizardDescriptor.setTitleFormat (new MessageFormat(NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_MessageFormat")));
-        wizardDescriptor.setTitle (NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_Title"));
-        
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
-        dialog.setVisible (true);
-        dialog.toFront ();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        log.log (Level.FINE, "InstallUnitWizard returns with value " + wizardDescriptor.getValue ());
-        return !cancelled;
+
+    public HelpCtx getHelpCtx () {
+        return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
+    protected boolean asynchronous () {
+        return false;
+    }
 }
