@@ -51,7 +51,6 @@ import org.w3c.dom.Element;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBColumn;
 
 /**
@@ -83,7 +82,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
     /* Cardinal Position */
     protected int cardinalPosition;
     private boolean isSelected; // specifies if the column is selected
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDBColumnImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileDBColumnImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public FlatfileDBColumnImpl() {
@@ -407,7 +406,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.jdbcType = Integer.parseInt(str);
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR053: LOG_CATEGORY {0}", ATTR_JDBC_TYPE), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_JDBC_TYPE), ex);
             }
         }
 
@@ -416,7 +415,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.scale = Integer.parseInt(str);
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR054: LOG_CATEGORY {0}", ATTR_SCALE), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_SCALE), ex);
             }
         }
 
@@ -425,7 +424,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.precision = Integer.parseInt(str);
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR055: LOG_CATEGORY {0}", ATTR_PRECISION), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_PRECISION), ex);
             }
         }
 
@@ -434,7 +433,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.cardinalPosition = Integer.parseInt(str);
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR056: LOG_CATEGORY {0}", ATTR_CARDINAL_POSITION), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_CARDINAL_POSITION), ex);
             }
         }
 
@@ -443,7 +442,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.pkFlag = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR057: LOG_CATEGORY {0}", ATTR_IS_PRIMARY_KEY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_IS_PRIMARY_KEY), ex);
             }
         }
 
@@ -452,7 +451,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.fkFlag = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR058: LOG_CATEGORY {0}", ATTR_IS_FOREIGN_KEY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_IS_FOREIGN_KEY), ex);
             }
         }
 
@@ -461,7 +460,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.indexed = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR059: LOG_CATEGORY {0}", ATTR_INDEXED), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_INDEXED), ex);
             }
         }
 
@@ -470,7 +469,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.nullable = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR060: LOG_CATEGORY {0}", ATTR_NULLABLE), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT068: LOG_CATEGORY {0}", ATTR_NULLABLE), ex);
             }
         }
     }

@@ -73,7 +73,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -86,7 +85,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -258,9 +256,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (fob != null) {
             if (!fob.isFolder())
                 return false;
-            if (!RetoucheUtils.isOnSourceClasspath(fob)) 
-                return false;
-            
             FileObject fo = dob.getPrimaryFile();
             if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
                 return true;
@@ -335,7 +330,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         //We live with a 2 pass validation of the selected nodes for now since
         //the code will become unreadable if we attempt to implement all checks
         //in one pass.
-        if (multiplePkgsSelected(nodes)) {
+        if (isSelectionHeterogeneous(nodes)) {
             return false;
         }
         for (Node n:nodes) {
@@ -347,7 +342,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return false;
             }
             FileObject fileObject = dataObject.getPrimaryFile();
-            if (isRefactorableFolder(dataObject) && containsJavaFile(fileObject)) {
+            if (isRefactorableFolder(dataObject)){
                 return true;
             }
             if (!RetoucheUtils.isRefactorable(fileObject)) {
@@ -385,41 +380,27 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
                     if (renameFile) {
-                        ArrayList<FileObject> filesList = new ArrayList<FileObject>();
-                        ArrayList<TreePathHandle> handlesList = new ArrayList<TreePathHandle>();
+                        FileObject[] files = new FileObject[handles.size()];
+                        int i=0;
                         for (TreePathHandle handle:handles) {
-                            FileObject fo = handle.getFileObject();
-                            if (fo != null) {
-                                filesList.add(fo);
-                                handlesList.add(handle);
-                            }
+                            files[i++] = handle.getFileObject();
                         }
-                        if (filesList.isEmpty()) {
-                            return null;
-                        }
-                        return new SafeDeleteUI(filesList.toArray(new FileObject[filesList.size()]), handlesList, b);
+                        return new SafeDeleteUI(files, handles, b);
                     } else {
                         return new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()]), cinfo);
                     }
                 }
                 
             };
-        } else if(isPackageSelected(lookup)) {
-            task = new PackagetoTreePathHandleTask(lookup.lookupAll(Node.class)) {
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
-                    if (handles.isEmpty()) {
-                        return new SafeDeleteUI(getFileHandles(), handles, true);
-                    }else{
-                        return new SafeDeleteUI(getFileHandles(), handles, b);
-                    }
-                }
-            };
         } else {
             task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return new SafeDeleteUI(selectedElements, handles, b);
+                    if (pkg[0]!= null) {
+                        return new SafeDeleteUI(pkg[0],b);
+                    } else{                
+                        return new SafeDeleteUI(selectedElements, handles, b);
+                    }
                 }
 
             };
@@ -826,38 +807,22 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<TreePathHandle> handles);
     }    
 
-    private static boolean isPackageSelected(Lookup lookup) {
-        Node node = lookup.lookup(Node.class);
-        if ( node != null) {
-            DataObject dataObject = node.getLookup().lookup(DataObject.class);
-            if (dataObject == null) {
-                return false;
-            }
-
-            FileObject fileObject = dataObject.getPrimaryFile();
-            if ((dataObject instanceof DataFolder) && 
-                    RetoucheUtils.isFileInOpenProject(fileObject) && 
-                    RetoucheUtils.isOnSourceClasspath(fileObject) &&
-                    !RetoucheUtils.isClasspathRoot(fileObject)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean multiplePkgsSelected(Collection<? extends Node> nodes){
-        boolean pkgSelected = false;
+    private static boolean isSelectionHeterogeneous(Collection<? extends Node> nodes){
+        boolean folderSelected = false;
+        boolean nonFolderNodeSelected = false;
         for (Node node : nodes) {
             DataObject dataObject = node.getCookie(DataObject.class);
             if (dataObject == null){
                 continue;
             }
             if (isRefactorableFolder(dataObject)){
-                if (pkgSelected) {
+                if (folderSelected || nonFolderNodeSelected) {
                     return true;
                 }else{
-                    pkgSelected = true;
+                    folderSelected = true;
                 }
+            }else{
+                nonFolderNodeSelected = true;
             }
         }
 
@@ -895,28 +860,4 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 RetoucheUtils.isOnSourceClasspath(fileObject) && 
                 !RetoucheUtils.isClasspathRoot(fileObject);
     }
-    
-    private static boolean containsJavaFile(FileObject fileObject) {
-        FileObject[] children = fileObject.getChildren();
-        if (children == null) {
-            return false;
-        }
-        for (int x = 0; x < children.length; x++) {
-            try {
-                DataObject dobj = DataObject.find(children[x]);
-                FileObject fobj = dobj.getPrimaryFile();
-//                if (dobj instanceof DataFolder) {
-//                    if (containsJavaFile(fobj)) {
-//                        return true;
-//                    }
-//                } else {
-                if (RetoucheUtils.isJavaFile(fobj)) {
-                    return true;
-                }
-            } catch (DataObjectNotFoundException ex) {
-            }
-        }
-        return false;
-    }
-    
 }

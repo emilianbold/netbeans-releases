@@ -163,7 +163,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
             File x = rf != null ? rf.get() : null;
             
             if (x == null) {
-                fileNormalizationFacility.put(x, new WeakReference<File>(x));
+                fileNormalizationFacility.put(f, new WeakReference<File>(f));
             } else {
                 f = x;
             }
@@ -314,6 +314,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                 LOGGER.log(Level.FINE, "classpath entries changed: cp={0} ({2}), entries={1}", new Object[] {cp, cp.entries(), System.identityHashCode(cp)});
             }
             handleClassPath(cp);
+            fireRootsChanged(Collections.singleton(cp));
         }
     }
     

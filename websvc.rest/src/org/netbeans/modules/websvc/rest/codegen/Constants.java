@@ -70,6 +70,8 @@ public class Constants {
     
     public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
+    public static final String URI_BUILDER = RestConstants.REST_API_PACKAGE + "core.UriBuilder"; //NOI18N
+    
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
     public static final String QUERY_TYPE = "javax.persistence.Query";       //NOI18N
@@ -81,6 +83,10 @@ public class Constants {
     public static final String ENTITY_TRANSACTION = "javax.persistence.EntityTransaction";
     
     public static final String PERSISTENCE = "javax.persistence.Persistence";
+    
+    public static final String PERSISTENCE_ENTITY = "javax.persistence.Entity";
+
+    public static final String PERSISTENCE_TABLE = "javax.persistence.Table";
     
     public static final String NO_RESULT_EXCEPTION = "javax.persistence.NoResultException";        //NOI18N
     

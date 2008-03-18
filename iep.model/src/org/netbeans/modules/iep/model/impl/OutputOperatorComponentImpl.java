@@ -7,7 +7,7 @@ import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.w3c.dom.Element;
 
-public class OutputOperatorComponentImpl extends OperatorComponentImpl implements OutputOperatorComponent {
+public class OutputOperatorComponentImpl extends MultiWSDLComponentReferenceOperatorComponentImpl implements OutputOperatorComponent {
 	
 	public OutputOperatorComponentImpl(IEPModel model,  Element e) {
             super(model, e);
