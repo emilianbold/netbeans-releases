@@ -47,8 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -494,27 +492,10 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                         if (new HashSet<FileObject>(platform.getInstallFolders()).equals(Collections.singleton(homeFO))) {
                             // Matching JDK is registered, so look up its real bootcp.
-                            StringBuffer bootcpSB = new StringBuffer();
                             ClassPath boot = platform.getBootstrapLibraries();
                             boot.removePropertyChangeListener(weakListener);
                             boot.addPropertyChangeListener(weakListener);
-                            for (ClassPath.Entry entry : boot.entries()) {
-                                URL u = entry.getURL();
-                                if (u.toExternalForm().endsWith("!/")) { // NOI18N
-                                    URL nested = FileUtil.getArchiveFile(u);
-                                    if (nested != null) {
-                                        u = nested;
-                                    }
-                                }
-                                if ("file".equals(u.getProtocol())) { // NOI18N
-                                    File f = new File(URI.create(u.toExternalForm()));
-                                    if (bootcpSB.length() > 0) {
-                                        bootcpSB.append(File.pathSeparatorChar);
-                                    }
-                                    bootcpSB.append(f.getAbsolutePath());
-                                }
-                            }
-                            bootcp = bootcpSB.toString();
+                            bootcp = boot.toString(ClassPath.PathConversionMode.WARN);
                             break;
                         }
                     }
