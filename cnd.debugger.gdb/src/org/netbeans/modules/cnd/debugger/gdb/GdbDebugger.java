@@ -1340,9 +1340,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
                 if (impl == null) {
                     String frame = map.get("frame"); // NOI18N
-                    if (frame != null && frame.contains("dlopen")) { // NOI18N
+                    if (frame != null && frame.contains("func=\"dlopen\"")) { // NOI18N
                         dlopenPending = true;
+                        Object saveLastGo = lastGo;
                         gdb.exec_finish();
+                        setLastGo(saveLastGo); // exec_finish changes lastGo
                         return;
                     }
                 } else {
@@ -1358,7 +1360,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         setStopped();
                     }
                 }
-                if (dlopenPending) {
+                if (dlopenPending) { // who stops here?
                     dlopenPending = false;
                     checkSharedLibs(null);
                 }
@@ -1412,7 +1414,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("function-finished") && dlopenPending) { // NOI18N
                 dlopenPending = false;
-                checkSharedLibs(null);
+                checkSharedLibs(null); // Windows (after non-user -exec-finish after non-user breakpoint in dlopen)
             } else {
                 if (!reason.startsWith("exited")) { // NOI18N
                     gdb.stack_list_frames();
@@ -1425,7 +1427,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else if (dlopenPending) {
             dlopenPending = false;
-            checkSharedLibs(lastGo);
+            checkSharedLibs(lastGo); // Solaris (stopping for solib event)
         } else {
             gdb.stack_list_frames();
             setStopped();
