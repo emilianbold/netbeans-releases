@@ -57,4 +57,7 @@ public interface JavaGenerator extends Axis2Component {
     String getPortNameAttr();
     void setPortNameAttr(String portName);
     
+    String getOptionsAttr();
+    void setOptionsAttr(String options);
+    
 }

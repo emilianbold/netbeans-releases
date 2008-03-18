@@ -33,6 +33,6 @@ public class SoaPaletteDrop implements ActiveEditorDrop {
    * @return true if implementor allowed a drop operation into the targetComponent
    */
   public boolean handleTransfer(JTextComponent target) {
-      return false;
+    return false;
   }
 }

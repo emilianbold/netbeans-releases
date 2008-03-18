@@ -78,15 +78,19 @@ public interface SearchElement {
   void gotoSource();
 
   /**
-   * Selects element.
+   * Goes to the design of element.
    */
-  void select();
+  void gotoDesign();
 
   /**
-   * Highlights/unhighlights element.
-   * @param highlighted if true, element is highlighted
+   * Highlights element.
    */
-  void highlight(boolean highlighted);
+  void highlight();
+
+  /**
+   * Unhighlights element.
+   */
+  void unhighlight();
 
   // --------------------------------------------
   public class Adapter implements SearchElement {
@@ -116,17 +120,21 @@ public interface SearchElement {
 
     public void gotoSource() {}
 
-    public void select() {}
+    public void gotoDesign() {}
 
-    public void highlight(boolean highlighted) {}
+    public void highlight() {}
 
-    public String toString() {
+    public void unhighlight() {}
+
+    @Override
+    public String toString()
+    {
       return getName();
     }
 
+    private Icon myIcon;
     private String myName;
     private String myToolTip;
     private SearchElement myParent;
-    private Icon myIcon;
   }
 }

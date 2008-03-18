@@ -323,7 +323,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (prefix == null)
             return;
         StringBuilder text = new StringBuilder(prefix);
-        boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
         int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
         if (semiPos > -2)
             toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -381,8 +380,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.insertString(position.getOffset(), text.toString(), null);
             if (semiPosition != null)
                 doc.insertString(semiPosition.getOffset(), ";", null);
-            else if (completeMethod)
-                c.setCaretPosition(c.getCaretPosition() - 1);
         } catch (BadLocationException e) {
             // Can't update
         } finally {
@@ -1339,6 +1336,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 super.substituteText(c, offset, len, add);
+                if ("(".equals(toAdd)) //NOI18N
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } else {
                 String add = "()"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))

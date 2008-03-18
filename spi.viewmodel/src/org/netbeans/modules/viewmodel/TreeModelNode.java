@@ -957,7 +957,6 @@ public class TreeModelNode extends AbstractNode {
                 //System.out.println("\nTreeModelNode.evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): value = "+value+", fire = "+fire);
                 if (fire) {
                     firePropertyChange (id, null, value);
-                    refreshTheChildren(true);
                 }
                 
             }
