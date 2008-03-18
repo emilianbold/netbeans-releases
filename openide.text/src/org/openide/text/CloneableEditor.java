@@ -199,7 +199,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 run();
             } else {
                 task = CloneableEditorSupport.RP.create(this);
-                task.setPriority(Thread.MIN_PRIORITY);
+                task.setPriority(Thread.MIN_PRIORITY + 2);
                 task.schedule(0);
             }
         }
