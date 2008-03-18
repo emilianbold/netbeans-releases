@@ -43,6 +43,8 @@ package org.openide.text;
 
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -184,17 +186,16 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
     final boolean NEW_INITIALIZE = Boolean.getBoolean("org.openide.text.CloneableEditor.newInitialize"); // NOI18N
 
-    class DoInitialize implements Runnable {
+    class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
         private Document doc;
         private RequestProcessor.Task task;
         private int phase;
         private EditorKit kit;
-        private final JComponent tmpComp;
+        private JComponent tmpComp;
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
-            this.tmpComp = initLoading();
             if (!NEW_INITIALIZE) {
                 run();
             } else {
@@ -211,8 +212,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             loadingLbl.setOpaque(true);
             loadingLbl.setHorizontalAlignment(SwingConstants.CENTER);
             loadingLbl.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
+            loadingLbl.setVisible(false);
             add(loadingLbl, BorderLayout.CENTER);
+
+            new Timer(1000, this).start();
+            
             return loadingLbl;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            tmpComp.setVisible(true);
+            Timer t = (Timer)e.getSource();
+            t.stop();
         }
         
         @SuppressWarnings("fallthrough")
@@ -222,6 +233,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             int phaseNow = phase;
             switch (phase++) {
             case 0: 
+                this.tmpComp = initLoading();
                 initNonVisual();
                 if (NEW_INITIALIZE) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
