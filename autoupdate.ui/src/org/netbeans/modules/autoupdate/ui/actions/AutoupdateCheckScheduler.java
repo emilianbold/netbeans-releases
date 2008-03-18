@@ -67,6 +67,8 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Unit;
@@ -117,17 +119,7 @@ public class AutoupdateCheckScheduler {
     }
     
     private static void scheduleRefreshProviders () {
-        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
-        Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
-        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
-            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p));
-            refreshTasks.add (t);
-        }
-        err.log (Level.FINEST, "Waiting for all refreshTasks...");
-        for (RequestProcessor.Task t : refreshTasks) {
-            t.waitFinished ();
-        }
-        err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
+        refreshUpdatCenters (null);
         final int delay = 500;
         final long startTime = System.currentTimeMillis ();
         RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
@@ -142,12 +134,12 @@ public class AutoupdateCheckScheduler {
         });
     }
     
-    private static Runnable getRefresher (final UpdateUnitProvider p) {
+    private static Runnable getRefresher (final UpdateUnitProvider p, final Collection<String> problems, final ProgressHandle progress) {
         return new Runnable () {
             public void run () {
                 try {
                     err.log (Level.FINE, "Start refresh " + p.getName () + "[" + p.getDisplayName () + "]");
-                    p.refresh (null, true);
+                    p.refresh (progress, true);
                     PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
                     if (pluginManagerUI != null) {
                         if (pluginManagerUI.initTask.isFinished ()) {
@@ -156,6 +148,9 @@ public class AutoupdateCheckScheduler {
                     }
                 } catch (IOException ioe) {
                     err.log (Level.INFO, ioe.getMessage (), ioe);
+                    if (problems != null) {
+                        problems.add (ioe.getLocalizedMessage ());
+                    }
                 } finally {
                     err.log (Level.FINEST, "Refresh of " + p.getName () + "[" + p.getDisplayName () + "]" + " is finish.");
                 }
@@ -171,12 +166,12 @@ public class AutoupdateCheckScheduler {
             }
             boolean hasUpdates = false;
             if (Utilities.shouldCheckAvailableUpdates ()) {
-                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE);
+                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE, false);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
-                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL));
+                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
             }
             RequestProcessor.getDefault ().post (doCheckLazyUpdates, 500);
         }
@@ -186,14 +181,12 @@ public class AutoupdateCheckScheduler {
         RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
     }
     
-    public static Collection<UpdateElement> checkUpdateElements (OperationType type) {
+    public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
         // check
-        /*ProgressHandle handle = ProgressHandleFactory.createHandle (
-                NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_CheckingForUpdates"));
-        handle.setInitialDelay (0);
-        handle.start ();
-        try {*/
         err.log (Level.FINEST, "Check UpdateElements for " + type);
+        if (forceReload) {
+            refreshUpdatCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+        }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;
         Collection<UnitCategory> cats =  handleUpdates ?
@@ -238,15 +231,31 @@ public class AutoupdateCheckScheduler {
                 }
             }
         }
-        /*} finally {
-            if (handle != null) {
-                handle.finish ();
-            }
-        }*/
 
         // if any then notify updates
         err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
         return updates;
+    }
+    
+    private static Collection<String> refreshUpdatCenters (ProgressHandle progress) {
+        final long startTime = System.currentTimeMillis ();
+        Collection<String> problems = new HashSet<String> ();
+        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
+        Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
+        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
+            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p, problems, progress));
+            refreshTasks.add (t);
+        }
+        err.log (Level.FINEST, "Waiting for all refreshTasks...");
+        for (RequestProcessor.Task t : refreshTasks) {
+            t.waitFinished ();
+        }
+        err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
+        long time = (System.currentTimeMillis () - startTime) / 1000;
+        if (time > 0) {
+            Utilities.putTimeOfRefreshUpdateCenters (time);
+        }
+        return problems;
     }
     
     private static boolean timeToCheck () {
@@ -398,7 +407,7 @@ public class AutoupdateCheckScheduler {
                     return ;
                 }
                 try {
-                    wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, type);
+                    wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, type, false);
                 } finally {
                     if (wizardFinished) {
                         PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
