@@ -78,7 +78,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -910,8 +909,8 @@ public class Util {
                 if(val.endsWith("}"))
                     val = val.substring(0, val.length()-1);
                 val = getVariableName(val);
-                //val = getAuthenticatorClassName(groupName)+ "." +
-                //        "get"+val.substring(0,1).toUpperCase()+val.substring(1)+"()";
+                val = getAuthenticatorClassName(groupName)+ "." +
+                        "get"+val.substring(0,1).toUpperCase()+val.substring(1)+"()";
                 return new String[]{pElems[0], val};
             }
         }

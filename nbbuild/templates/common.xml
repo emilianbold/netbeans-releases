@@ -568,11 +568,11 @@ made subject to such option by the copyright holder.
             >
             <classpath refid="test.unit.run.cp"/>
         </nbprofiledirect>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}">
             <env key="${profiler.info.pathvar}" path="${profiler.info.agentpath}:${profiler.current.path}"/>
             <jvmarg value="${profiler.info.jvmargs.agent}"/>
             <jvmarg line="${profiler.info.jvmargs}"/>
-            <test name="${profile.class}"/>
+            <test name="${profile.class}" todir="${build.test.unit.results.dir}"/>
             <classpath refid="test.unit.run.cp"/>
             <syspropertyset refid="test.unit.properties"/>
             <!-- <assertions> does not seem to work in Ant 1.6.1? -->

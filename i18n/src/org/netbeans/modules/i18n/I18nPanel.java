@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,10 @@
 package org.netbeans.modules.i18n;
 
 
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -50,6 +54,7 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.FileObject;
@@ -58,6 +63,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
+import org.openide.awt.Mnemonics;
+import static org.jdesktop.layout.GroupLayout.BASELINE;
+import static org.jdesktop.layout.GroupLayout.TRAILING;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 
 /**
@@ -68,6 +77,14 @@ import org.netbeans.api.project.Project;
  * @author  Peter Zavadsky
  */
 public class I18nPanel extends JPanel {
+
+    private static final String CONTENT_FORM = "form visible";          //NOI18N
+    private static final String CONTENT_MESG = "message visible";       //NOI18N
+
+    private final boolean withButtons;
+
+    /** layout of the {@link #contentsPanelPlaceholder} */
+    private final CardLayout cardLayout = new CardLayout();
 
     /** {@code I18nString} cusomized in this panel. */
     private I18nString i18nString;
@@ -122,22 +139,16 @@ public class I18nPanel extends JPanel {
         this.propertyPanel = propertyPanel;
         this.propertyPanel.setFile(file);
         this.propertyPanel.setEnabled(project != null);
+        this.emptyPanel = new EmptyPropertyPanel();
 
         // Init bundle.
         bundle = I18nUtil.getBundle();
         
+        this.withButtons = withButtons;
         initComponents();
         myInitComponents();
         initAccessibility();        
         
-        if (!withButtons) {
-            remove(buttonsPanel);
-        }
-        
-        // create empty panel
-        emptyPanel = new EmptyPropertyPanel();
-        contentsShown = true;
-
         showBundleMessage("TXT_SearchingForStrings");                   //NOI18N
     }
 
@@ -145,26 +156,15 @@ public class I18nPanel extends JPanel {
     private boolean contentsShown;
 
     public void showBundleMessage(String bundleKey) {
-
         emptyPanel.setBundleText(bundleKey);
-        if (contentsShown) {
-            contentsPanelPlaceholder.remove(propertyPanel);
-            contentsPanelPlaceholder.add(emptyPanel);
-            contentsPanelPlaceholder.validate();
-            contentsPanelPlaceholder.repaint();
-            contentsShown = false;
-        }
+        cardLayout.show(contentsPanelPlaceholder, CONTENT_MESG);
+        contentsShown = false;
         buttonsEnableDisable();
     }
 
     public void showPropertyPanel() {
-        if (!contentsShown) {
-            contentsPanelPlaceholder.remove(emptyPanel);
-            contentsPanelPlaceholder.add(propertyPanel);
-            contentsPanelPlaceholder.validate();
-            contentsPanelPlaceholder.repaint();
-            contentsShown = true;
-        }
+        cardLayout.show(contentsPanelPlaceholder, CONTENT_FORM);
+        contentsShown = true;
         buttonsEnableDisable();        
     }
 
@@ -207,8 +207,10 @@ public class I18nPanel extends JPanel {
     public void addNotify() {
         super.addNotify();
         
-        if (SwingUtilities.isDescendingFrom(replaceButton, this)) {
-            getRootPane().setDefaultButton(replaceButton);
+        if (withButtons) {
+            if (SwingUtilities.isDescendingFrom(replaceButton, this)) {
+                getRootPane().setDefaultButton(replaceButton);
+            }
         }
     }
     
@@ -229,26 +231,34 @@ public class I18nPanel extends JPanel {
 
     /** Replace button accessor. */
     JButton getReplaceButton() {
+        assert withButtons;
         return replaceButton;
     }
     
     /** Skip button accessor. */
     JButton getSkipButton() {
+        assert withButtons;
         return skipButton;
     }
 
     /** Info button accessor. */
     JButton getInfoButton() {
+        assert withButtons;
         return infoButton;
     }
     
     /** Cancel/Close button accessor. */
     JButton getCancelButton() {
+        assert withButtons;
         return cancelButton;
     }
     
     /** Enables/disables buttons based on the contents of the dialog. */
     private void buttonsEnableDisable() {
+        if (!withButtons) {
+            return;
+        }
+
         if (contentsShown) {
             enableButtons(ALL_BUTTONS);
             boolean isBundle = (i18nString != null)
@@ -298,16 +308,18 @@ public class I18nPanel extends JPanel {
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACS_I18nPanel"));                     //NOI18N
-        skipButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACS_CTL_SkipButton"));                //NOI18N
-        cancelButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACS_CTL_CancelButton"));              //NOI18N
-        replaceButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACS_CTL_ReplaceButton"));             //NOI18N
-        infoButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACS_CTL_InfoButton"));                //NOI18N
-        helpButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACS_CTL_HelpButton"));                //NOI18N
+        if (withButtons) {
+            skipButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_SkipButton"));            //NOI18N
+            cancelButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_CancelButton"));          //NOI18N
+            replaceButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_ReplaceButton"));         //NOI18N
+            infoButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_InfoButton"));            //NOI18N
+            helpButton.getAccessibleContext().setAccessibleDescription(
+                    bundle.getString("ACS_CTL_HelpButton"));            //NOI18N
+        }
     }
     
     /** This method is called from within the constructor to
@@ -315,69 +327,78 @@ public class I18nPanel extends JPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the FormEditor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="UI Initialization Code">
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        fillPanel = new javax.swing.JPanel();
-        buttonsPanel = new javax.swing.JPanel();
-        replaceButton = new javax.swing.JButton();
-        skipButton = new javax.swing.JButton();
-        infoButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        helpButton = new javax.swing.JButton();
-        contentsPanelPlaceholder = new javax.swing.JPanel();
+        contentsPanelPlaceholder = new JPanel(cardLayout);
 
-        setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(fillPanel, gridBagConstraints);
+        if (withButtons) {
+            replaceButton = new JButton();
+            skipButton = new JButton();
+            infoButton = new JButton();
+            cancelButton = new JButton();
+            helpButton = new JButton();
 
-        buttonsPanel.setLayout(new java.awt.GridLayout(1, 5, 5, 0));
+            Mnemonics.setLocalizedText(replaceButton, bundle.getString("CTL_ReplaceButton")); // NOI18N
+            Mnemonics.setLocalizedText(skipButton, bundle.getString("CTL_SkipButton")); // NOI18N
+            Mnemonics.setLocalizedText(infoButton, bundle.getString("CTL_InfoButton")); // NOI18N
+            Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_CloseButton")); // NOI18N
+            Mnemonics.setLocalizedText(helpButton, bundle.getString("CTL_HelpButton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(replaceButton, bundle.getString("CTL_ReplaceButton")); // NOI18N
-        buttonsPanel.add(replaceButton);
+            helpButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    helpButtonActionPerformed(evt);
+                }
+            });
+        }
 
-        org.openide.awt.Mnemonics.setLocalizedText(skipButton, bundle.getString("CTL_SkipButton")); // NOI18N
-        buttonsPanel.add(skipButton);
+        GroupLayout layout;
+        setLayout (layout = new GroupLayout(this));
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoButton, bundle.getString("CTL_InfoButton")); // NOI18N
-        buttonsPanel.add(infoButton);
+        GroupLayout.SequentialGroup horizGroup = layout.createSequentialGroup();
+        horizGroup.addContainerGap();
+        if (withButtons) {
+            horizGroup.add(
+                    layout.createParallelGroup(TRAILING)
+                    .add(contentsPanelPlaceholder)
+                    .add(layout.createSequentialGroup()
+                        .add(replaceButton)
+                        .addPreferredGap(RELATED)
+                        .add(skipButton)
+                        .addPreferredGap(RELATED)
+                        .add(infoButton)
+                        .addPreferredGap(RELATED)
+                        .add(cancelButton)
+                        .addPreferredGap(RELATED)
+                        .add(helpButton)));
+            layout.linkSize(new Component[] {cancelButton,
+                                             helpButton,
+                                             infoButton,
+                                             replaceButton,
+                                             skipButton},
+                            GroupLayout.HORIZONTAL);
+        } else {
+            horizGroup.add(contentsPanelPlaceholder);
+        }
+        horizGroup.addContainerGap();
+        layout.setHorizontalGroup(horizGroup);
 
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_CloseButton")); // NOI18N
-        buttonsPanel.add(cancelButton);
-
-        org.openide.awt.Mnemonics.setLocalizedText(helpButton, bundle.getString("CTL_HelpButton")); // NOI18N
-        helpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                helpButtonActionPerformed(evt);
-            }
-        });
-        buttonsPanel.add(helpButton);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(17, 0, 11, 11);
-        add(buttonsPanel, gridBagConstraints);
-
-        contentsPanelPlaceholder.setLayout(new javax.swing.BoxLayout(contentsPanelPlaceholder, javax.swing.BoxLayout.Y_AXIS));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(contentsPanelPlaceholder, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
+        GroupLayout.SequentialGroup vertGroup = layout.createSequentialGroup();
+        vertGroup.addContainerGap();
+        vertGroup.add(contentsPanelPlaceholder);
+        if (withButtons) {
+            vertGroup
+            .add(18, 18, 18)
+            .add(layout.createParallelGroup(BASELINE)
+                .add(helpButton)
+                .add(cancelButton)
+                .add(infoButton)
+                .add(skipButton)
+                .add(replaceButton));
+        }
+        vertGroup.addContainerGap();
+        layout.setVerticalGroup(vertGroup);
+    }// </editor-fold>
 
     private void myInitComponents() {
 //        resourcePanel = createResourcePanel();
@@ -386,36 +407,42 @@ public class I18nPanel extends JPanel {
 
 //        contentsPanel.add(resourcePanel);
 //        contentsPanel.add(propertyPanel);
+
+        contentsPanelPlaceholder.add(propertyPanel, CONTENT_FORM);
+        contentsPanelPlaceholder.add(emptyPanel, CONTENT_MESG);
+
+        cardLayout.show(contentsPanelPlaceholder, CONTENT_FORM);
         contentsShown = true;
-        contentsPanelPlaceholder.add(propertyPanel);
         
-      
-        propertyPanel.addPropertyChangeListener(
-                PropertyPanel.PROP_STRING, 
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        buttonsEnableDisable();
-                    }
-                });
-        
-        propertyPanel.addPropertyChangeListener(
-                PropertyPanel.PROP_RESOURCE,
-//                WeakListeners.propertyChange(
+        if (withButtons) {
+            propertyPanel.addPropertyChangeListener(
+                    PropertyPanel.PROP_STRING, 
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
-                            if(PropertyPanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
-                                buttonsEnableDisable();
-    //                            ((PropertyPanel)propertyPanel).updateAllValues();
+                            buttonsEnableDisable();
+                        }
+                    });
+            
+            propertyPanel.addPropertyChangeListener(
+                    PropertyPanel.PROP_RESOURCE,
+    //                WeakListeners.propertyChange(
+                        new PropertyChangeListener() {
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                if(PropertyPanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
+                                    buttonsEnableDisable();
+        //                            ((PropertyPanel)propertyPanel).updateAllValues();
+                                }
                             }
                         }
-                    }
-//                },resourcePanel
-//               )
-        );
+    //                },resourcePanel
+    //               )
+            );
+        }
         
     }
 
-  private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
+  private void helpButtonActionPerformed(ActionEvent evt) {
+      assert withButtons;
       HelpCtx help = new HelpCtx(I18nUtil.HELP_ID_AUTOINSERT);
       
       String sysprop = System.getProperty("org.openide.actions.HelpAction.DEBUG"); // NOI18N
@@ -425,9 +452,10 @@ public class I18nPanel extends JPanel {
       }
       Help helpSystem = Lookup.getDefault().lookup(Help.class);
       helpSystem.showHelp(help);
-  }//GEN-LAST:event_helpButtonActionPerformed
+  }
 
     private void enableButtons(long buttonMask) {
+        assert withButtons;
         replaceButton.setEnabled((buttonMask & REPLACE_BUTTON) != 0);
         skipButton.setEnabled((buttonMask & SKIP_BUTTON) != 0);
         infoButton.setEnabled((buttonMask & INFO_BUTTON) != 0);
@@ -438,20 +466,18 @@ public class I18nPanel extends JPanel {
         
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel buttonsPanel;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JPanel contentsPanelPlaceholder;
-    private javax.swing.JPanel fillPanel;
-    private javax.swing.JButton helpButton;
-    private javax.swing.JButton infoButton;
-    private javax.swing.JButton replaceButton;
-    private javax.swing.JButton skipButton;
-    // End of variables declaration//GEN-END:variables
+    // Variables declaration
+    private JButton cancelButton;
+    private JPanel contentsPanelPlaceholder;
+    private JButton helpButton;
+    private JButton infoButton;
+    private JButton replaceButton;
+    private JButton skipButton;
+    // End of variables declaration
 
     private EmptyPropertyPanel emptyPanel;
-//    private javax.swing.JPanel resourcePanel;
+//    private JPanel resourcePanel;
     private PropertyPanel propertyPanel;
-//    private javax.swing.JPanel contentsPanel;
+//    private JPanel contentsPanel;
 
 }

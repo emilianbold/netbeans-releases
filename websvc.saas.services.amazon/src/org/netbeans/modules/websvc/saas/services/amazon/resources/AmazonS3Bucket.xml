@@ -47,21 +47,19 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               api-doc="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
 
     <description>AmazonS3 Bucket Service</description>
     
-    <display-name>S3 Bucket Service</display-name>
+    <display-name>S3 Buckets Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <group name="Amazon">
-            <group name="Simple Storage Service"/>
-        </group>
-
+        <group name="Amazon"/>
+  
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign>

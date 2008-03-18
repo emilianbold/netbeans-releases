@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 public class RevertModificationsAction extends ContextAction {
     
     private final VCSContext context;
+    private static String HG_TIP = "tip"; // NOI18N
  
     public RevertModificationsAction(String name, VCSContext context) {        
         this.context =  context;
@@ -91,6 +92,7 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         rev = revertModifications.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
         final String revStr = rev;
         final boolean doBackup = revertModifications.isBackupRequested();
 

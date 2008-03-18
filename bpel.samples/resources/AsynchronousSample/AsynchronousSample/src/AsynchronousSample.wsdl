@@ -57,7 +57,7 @@
     
     <wsdl:portType name="MyPortType">
         <wsdl:operation name="asyncOperation">
-            <wsdl:input  message="tns:requestMessage"/>
+            <wsdl:input message="tns:requestMessage"/>
         </wsdl:operation>
     </wsdl:portType>
     

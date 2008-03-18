@@ -42,9 +42,9 @@
 package gui.actions;
 
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -55,7 +55,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 /**
  * Test create BPELmodule
  *
- * @author  rashid@netbeans.org
+ * @author  rashid@netbeans.org, mrkam@netbeans.org
  */
 public class CreateBPELmodule extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
@@ -91,12 +91,29 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
         project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "BPEL Module"
         project_type="BPELModule";
         index=1;
+        
+        MainWindowOperator.getDefault().maximize();
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        NewProjectWizardOperator wizard;
+        for(int attempt = 1; ; attempt++) {
+            log("Attempt " + attempt + " to open New Project Wizard");
+            new EventTool().waitNoEvent(3000);
+            try {
+                wizard = NewProjectWizardOperator.invoke();
+                break;
+            } catch (Exception exc) {
+                if (attempt < 5) {
+                    log("Attempt failed with exception: " + exc);
+                    continue;
+                }
+                throw new Error(exc);
+            }
+        }   
         wizard.selectCategory(category);
         wizard.selectProject(project);
+        wizard.move(0, 0);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
@@ -119,6 +136,7 @@ public class CreateBPELmodule extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void close(){
+        closeAllModal(); // This is necessary in case open failed
         ProjectSupport.closeProject(project_name);
 //        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }

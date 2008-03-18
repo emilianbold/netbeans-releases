@@ -649,7 +649,7 @@ public class TreeModelNode extends AbstractNode {
     // innerclasses ............................................................
     
     /** Special locals subnodes (children) */
-    private static final class TreeModelChildren extends Children.Keys<Object>
+    static final class TreeModelChildren extends Children.Keys<Object>
                                                  implements LazyEvaluator.Evaluable {
             
         private boolean             initialezed = false;
@@ -803,6 +803,7 @@ public class TreeModelNode extends AbstractNode {
                     int i, k = ch.length;
                     for (i = 0; i < k; i++)
                         try {
+                            DefaultTreeExpansionManager.get(model).setChildrenToActOn(getTreeDepth());
                             if (model.isExpanded (ch [i])) {
                                 TreeTable treeTable = treeModelRoot.getTreeTable ();
                                 if (treeTable.isExpanded(object)) {
@@ -814,6 +815,22 @@ public class TreeModelNode extends AbstractNode {
                         }
                 }
             });
+        }
+        
+        private Integer depth;
+        
+        Integer getTreeDepth() {
+            Node p = getNode();
+            if (p == null) {
+                return 0;
+            } else if (depth != null) {
+                return depth;
+            } else {
+                int d = 1;
+                while ((p = p.getParentNode()) != null) d++;
+                depth = new Integer(d);
+                return depth;
+            }
         }
         
         private void applyWaitChildren() {
@@ -963,7 +980,6 @@ public class TreeModelNode extends AbstractNode {
             treeModelRoot.getValuesEvaluator().evaluate(this);
             
             Object ret = null;
-            boolean refreshChildren = false;
             
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
@@ -973,8 +989,6 @@ public class TreeModelNode extends AbstractNode {
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
                         ret = EVALUATING_STR;
-                    } else {
-                        refreshChildren = true;
                     }
                 }
             }
@@ -984,13 +998,6 @@ public class TreeModelNode extends AbstractNode {
                 }
             }
             
-            if (refreshChildren) {
-                getRequestProcessor().post(new Runnable() {
-                    public void run() {
-                        refreshTheChildren(true);
-                    }
-                });
-            }
             if (ret == EVALUATING_STR &&
                     getValueType() != null && getValueType() != String.class) {
                 ret = null; // Must not provide String when the property type is different.

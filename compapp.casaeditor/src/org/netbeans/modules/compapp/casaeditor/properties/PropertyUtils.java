@@ -55,15 +55,13 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-
-
 /**
  * @author nk160297
  */
 public abstract class PropertyUtils {
-    
-    
+
     public static enum PropertiesGroups {
+
         MAIN_SET,
         IDENTIFICATION_SET,
         TARGET_SET,
@@ -72,10 +70,10 @@ public abstract class PropertyUtils {
         EXPERT_SET,
         COLOR_SET,
         FONT_SET,
+        STYLE_SET,
         GENERIC_SET;
-        
         private String myDisplayName;
-        
+
         public String getDisplayName() {
             if (myDisplayName == null) {
                 myDisplayName = NbBundle.getMessage(PropertyType.class, this.toString());
@@ -83,112 +81,127 @@ public abstract class PropertyUtils {
             return myDisplayName;
         }
     }
-    
-    
+
     public static Node.Property createErrorProperty(String displayName) {
         return new PropertySupport.ReadOnly<String>(
-            "error", // NOI18N
-            String.class,
-            displayName,
-            Constants.EMPTY_STRING) {
+                "error", // NOI18N
+                String.class,
+                displayName,
+                Constants.EMPTY_STRING) {
+
             public String getValue() {
                 return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_VALUE");    // NOI18N
+
             }
         };
     }
     
+    public static Node.Property createErrorMetaDataProperty(String displayName) {
+        return new PropertySupport.ReadOnly<String>(
+                "error", // NOI18N
+                String.class,
+                displayName,
+                Constants.EMPTY_STRING) {
+
+            public String getValue() {
+                return NbBundle.getMessage(PropertyUtils.class, "PROP_ERROR_METADATA_VALUE");    // NOI18N
+
+            }
+        };
+    }
+
     public static void installEndpointInterfaceQNameProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaEndpointRef component,
-            String propertyType, 
+            String propertyType,
             String attributeName,
             String displayName,
             String displayDescription) {
         try {
             Node.Property property = new PropertyEndpointInterfaceQName(
-                node, 
-                component, 
-                propertyType, 
-                attributeName,
-                displayName,
-                displayDescription);
+                    node,
+                    component,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    displayDescription);
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     public static void installEndpointServiceQNameProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaEndpointRef component,
-            String propertyType, 
+            String propertyType,
             String attributeName,
             String displayName,
             String displayDescription) {
         try {
             Node.Property property = new PropertyEndpointServiceQName(
-                node, 
-                component, 
-                propertyType, 
-                attributeName,
-                displayName,
-                displayDescription);
+                    node,
+                    component,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    displayDescription);
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     public static void installEndpointNameProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaComponent component,
-            String propertyType, 
+            String propertyType,
             String attributeName,
             String displayName,
             String displayDescription) {
         try {
             Node.Property property = new PropertyEndpointName(
-                node, 
-                component, 
-                propertyType, 
-                attributeName,
-                displayName,
-                displayDescription);
+                    node,
+                    component,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    displayDescription);
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     public static void installServiceUnitNameProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaServiceUnit component,
-            String propertyType, 
+            String propertyType,
             String attributeName,
             String displayName,
             String displayDescription) {
         try {
             Node.Property property = new PropertyServiceUnitName(
-                node, 
-                component, 
-                propertyType, 
-                attributeName,
-                displayName,
-                displayDescription);
+                    node,
+                    component,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    displayDescription);
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     /**
      * Installs a CASA configuration extension property.
      * 
@@ -206,41 +219,44 @@ public abstract class PropertyUtils {
      * @param description   description of the attribute
      */
     public static void installExtensionProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String propertyType, 
+            String propertyType,
             String attrType,
             String attributeName,
             String displayName,
             String description) {
-        
+
         if (attrType == null) {
             System.err.println("Unsupported property type for " + attributeName);
             attrType = "String"; //JbiExtensionAttribute.Type.STRING;
+
         }
-        
+
         try {
             Node.Property property = ExtensionPropertyFactory.getProperty(
-                node, 
-                extensionPointComponent,
-                firstEE,
-                lastEE,
-                propertyType,
-                attrType,
-                attributeName,
-                displayName,
-                description);
-            
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attrType,
+                    attributeName,
+                    displayName,
+                    description);
+
+            assert property != null;
             propertySet.put(property);
+
         } catch (Exception e) {
-            propertySet.put(createErrorProperty(displayName));
             ErrorManager.getDefault().notify(e);
+            propertySet.put(createErrorMetaDataProperty(displayName));
         }
     }
-    
+
     /**
      * Installs a CASA configuration extension property of enumerated strings.
      * 
@@ -261,34 +277,34 @@ public abstract class PropertyUtils {
      * @param defaultChoice default choice
      */
     public static void installChoiceExtensionProperty(
-            Sheet.Set propertySet, 
+            Sheet.Set propertySet,
             CasaNode node,
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String propertyType, 
+            String propertyType,
             Class valueType,
             String attributeName,
             String displayName,
             String description,
             Map<String, CasaExtensibilityElement> choiceMap,
             String defaultChoice) {
-        
+
         assert valueType == String.class;
-        
+
         try {
             Node.Property property = ExtensionPropertyFactory.getProperty(
-                node, 
-                extensionPointComponent,
-                firstEE,
-                lastEE,
-                propertyType,
-                attributeName,
-                displayName,
-                description,
-                choiceMap,
-                defaultChoice);
-            
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    description,
+                    choiceMap,
+                    defaultChoice);
+
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.codegen.java.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -247,8 +248,12 @@ public abstract class SaasBean extends GenericResourceBean {
         return null;
     }
     
-    public void findAuthentication(SaasMethod m) {
+    public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
+        if(auth2 == null) {
+            throw new IOException("Element saas-services/service-metadata/authentication " +
+                    "missing in saas service xml for: "+getName());
+        }
         if(auth2.getHttpBasic() != null) {
             setAuthenticationType(SaasAuthenticationType.HTTP_BASIC);
             setAuthentication(new HttpBasicAuthentication());

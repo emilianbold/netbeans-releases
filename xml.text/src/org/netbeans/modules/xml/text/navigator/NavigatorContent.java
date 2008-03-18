@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.text.navigator;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Toolkit;
@@ -57,7 +56,6 @@ import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -67,7 +65,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
@@ -92,7 +89,6 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -104,13 +100,6 @@ import org.openide.windows.TopComponent;
 public class NavigatorContent extends AbstractXMLNavigatorContent   {
     
     private static final boolean DEBUG = false;
-    private static NavigatorContent navigatorContentInstance = null;    
-    
-    public static synchronized NavigatorContent getDefault() {
-        if(navigatorContentInstance == null)
-            navigatorContentInstance = new NavigatorContent();
-        return navigatorContentInstance;
-    }
     
     //suppose we always have only one instance of the navigator panel at one time
     //so using the static fields is OK. TheeNodeAdapter is reading these two
@@ -118,12 +107,11 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     static boolean showAttributes = true;
     static boolean showContent = true;
     
-    private JPanel active = null;
-    private DataObject peerDO = null;    
-    private WeakHashMap uiCache = new WeakHashMap();    
+    private DataObject peerDO = null;
+    private WeakHashMap uiCache = new WeakHashMap();
     private boolean editorOpened = false;
     
-    private NavigatorContent() {
+    public NavigatorContent() {
         setLayout(new BorderLayout());
     }
     

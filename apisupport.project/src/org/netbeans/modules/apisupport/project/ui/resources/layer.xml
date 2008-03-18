@@ -42,13 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
     <folder name="Templates">
         <folder name="Project">
             <folder name="APISupport">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                 <attr name="position" intvalue="900"/>
                 <file name="emptyModule">
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createModuleIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyModule.html"/>
                 </file>
                 <file name="emptySuite">
+                    <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createSuiteIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
@@ -63,15 +64,23 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptySuite.html"/>
                 </file>
                 <file name="libraryModule">
+                    <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createLibraryModuleIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/module.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraryModule.html"/>
                 </file>
+                <file name="emptyApplication">
+                    <attr name="position" intvalue="400"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createApplicationIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyApplication.html"/>
+                </file>
             </folder>
         </folder>
-        
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
             <attr name="position" intvalue="200"/>
@@ -114,7 +123,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>            
+            </file>
             <file name="newLoader">
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>
@@ -212,24 +221,20 @@ made subject to such option by the copyright holder.
             <file name="NBSTemplate.nbs" url="NBSTemplate.nbs"/>
             <file name="nbsresolver.xml" url="../wizard/glf/nbsresolver.xml"/>
         </folder>
-        
         <folder name="Licenses">
             <file name="license-cddl-netbeans-sun.txt" url="license-cddl-netbeans-sun.txt">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.Bundle"/>
             </file>
         </folder>
-        
     </folder>
-
     <folder name="Menu">
         <folder name="Tools">
             <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
-            </folder>
+        </folder>
     </folder>
-
     <folder name="Services">
         <file name="org-netbeans-modules-apisupport-project-ui-ModuleUI.settings" url="moduleui.settings"/>
         <folder name="JavaHelp">
@@ -238,7 +243,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2700"/>
             </file>
             <!-- Merge before 3rd party help: -->
-            </folder>
+        </folder>
         <folder name="Hidden">
             <folder name="CatalogProvider">
                 <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
@@ -246,7 +251,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
     <folder name="Plugins">
         <folder name="XML">
             <folder name="UserCatalogs">
@@ -257,7 +261,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-
     <folder name="Projects">
         <folder name="org-netbeans-modules-apisupport-project">
             <folder name="Lookup"/>
@@ -296,7 +299,7 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
-         </folder>
+        </folder>
         <folder name="org-netbeans-modules-apisupport-project-suite">
             <folder name="Lookup"/>
             <folder name="Nodes">
@@ -318,12 +321,11 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.customizer.Bundle"/>
                     <attr name="position" intvalue="300"/>
                     <file name="Self.instance">
-                            <attr name="instanceCreate" newvalue="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBrandingFactory"/>
+                        <attr name="instanceCreate" newvalue="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBrandingFactory"/>
                     </file>
                     <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerSplashBrandingFactory.instance"/>
                 </folder>
             </folder>
-
         </folder>
         <folder name="Actions">
             <!-- Adds XTest sub menu to project root node -->
