@@ -36,11 +36,9 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.compapp.casaeditor.properties.extension;
 
 import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
@@ -67,10 +65,110 @@ public class IntegerExtensionProperty extends ExtensionProperty<Integer> {
                 Integer.class, propertyName, displayName, description);
     }
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        // compared to the built-in IntEditor, this one allows empty value
-        return new IntegerEditor();
+    static class Regular extends IntegerExtensionProperty {
+
+        public Regular(
+                CasaNode node,
+                CasaComponent extensionPointComponent,
+                CasaExtensibilityElement firstEE,
+                CasaExtensibilityElement lastEE,
+                String propertyType,
+                String propertyName,
+                String displayName,
+                String description) {
+            super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                    propertyName, displayName, description);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new IntegerEditor();
+        }
+    }
+    
+    static class Positive extends IntegerExtensionProperty {
+
+        public Positive(
+                CasaNode node,
+                CasaComponent extensionPointComponent,
+                CasaExtensibilityElement firstEE,
+                CasaExtensibilityElement lastEE,
+                String propertyType,
+                String propertyName,
+                String displayName,
+                String description) {
+            super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                    propertyName, displayName, description);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new IntegerEditor(1, Integer.MAX_VALUE);
+        }
+    }
+
+    static class Negative extends IntegerExtensionProperty {
+
+        public Negative(
+                CasaNode node,
+                CasaComponent extensionPointComponent,
+                CasaExtensibilityElement firstEE,
+                CasaExtensibilityElement lastEE,
+                String propertyType,
+                String propertyName,
+                String displayName,
+                String description) {
+            super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                    propertyName, displayName, description);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new IntegerEditor(Integer.MIN_VALUE, -1);
+        }
+    }
+
+    static class NonPositive extends IntegerExtensionProperty {
+
+        public NonPositive(
+                CasaNode node,
+                CasaComponent extensionPointComponent,
+                CasaExtensibilityElement firstEE,
+                CasaExtensibilityElement lastEE,
+                String propertyType,
+                String propertyName,
+                String displayName,
+                String description) {
+            super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                    propertyName, displayName, description);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new IntegerEditor(Integer.MIN_VALUE, 0);
+        }
+    }
+
+    static class NonNegative extends IntegerExtensionProperty {
+
+        public NonNegative(
+                CasaNode node,
+                CasaComponent extensionPointComponent,
+                CasaExtensibilityElement firstEE,
+                CasaExtensibilityElement lastEE,
+                String propertyType,
+                String propertyName,
+                String displayName,
+                String description) {
+            super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                    propertyName, displayName, description);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new IntegerEditor(0, Integer.MAX_VALUE);
+        }
     }
 }
+
 

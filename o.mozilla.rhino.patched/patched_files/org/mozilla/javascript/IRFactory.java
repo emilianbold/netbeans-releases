@@ -1398,6 +1398,14 @@ final class IRFactory
     // Check if Node always mean true or false in boolean context
     private static int isAlwaysDefinedBoolean(Node node)
     {
+        // <netbeans>
+        // We don't want to optimize this:
+        //   if (true) foo(); else bar();
+        // into just
+        //   foo();
+        // That's not good for refactoring, AST formatting etc.
+        // So for in IDE use, never optimize away boolean expressions
+        /*
         switch (node.getType()) {
           case Token.FALSE:
           case Token.NULL:
@@ -1413,6 +1421,7 @@ final class IRFactory
             }
           }
         }
+        */
         return 0;
     }
 
