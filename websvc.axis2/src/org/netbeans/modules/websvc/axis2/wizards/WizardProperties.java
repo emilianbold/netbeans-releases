@@ -54,6 +54,12 @@ public interface WizardProperties {
     public static final String PROP_PACKAGE_NAME="prop_package_name"; //NOI18N
     public static final String PROP_DATABINDING_NAME="prop_databinding_name"; //NOI18N
     public static final String PROP_SEI="prop_sei"; //NOI18N
+    public static final String PROP_WS_TO_JAVA_OPTIONS="pws_to_java_optionsi"; //NOI18N
     public static final Boolean JAVA_TYPE_EMPTY=Boolean.TRUE;
     public static final Boolean JAVA_TYPE_EXISTING=Boolean.FALSE;
+    public static final String[] DATA_BINDING = {"ADB", "XML Beans", "JiBX", "none(Axiom)"}; //NOI18N
+    public static final String BINDING_ADB="ADB"; //NOI18N
+    public static final String BINDING_XML_BEANS="XML Beans"; //NOI18N
+    public static final String BINDING_JIBX="JiBX"; //NOI18N
+    public static final String BINDING_AXIOM="none(Axiom)"; //NOI18N
 }

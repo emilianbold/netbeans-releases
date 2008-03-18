@@ -127,7 +127,6 @@ public class LibraryTest extends JellyTestCase {
         jcbo = new JCheckBoxOperator(npnlso, 2);
         jcbo.setSelected(false);
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        npnlso.next();
         npnlso.finish();
         try {
             Thread.sleep(2000);
