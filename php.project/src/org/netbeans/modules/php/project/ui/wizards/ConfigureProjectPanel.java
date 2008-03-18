@@ -148,7 +148,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         WizardDescriptor d = (WizardDescriptor) settings;
 
         // location
-        d.putProperty(PROJECT_DIR, new File(locationPanelVisual.getProjectLocation()));
+        d.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(locationPanelVisual.getProjectLocation())));
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
@@ -193,7 +193,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     public boolean isFinishPanel() {
-        return true;
+        Boolean isServerValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        return isServerValid == null || isServerValid;
     }
 
     static boolean isProjectFolder(LocalServer localServer) {
@@ -310,7 +311,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
 
-        File f = new File(projectLocation).getAbsoluteFile();
+        File f = FileUtil.normalizeFile(new File(projectLocation)).getAbsoluteFile();
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
@@ -322,7 +323,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (!isProjectFolder(localServer)) {
             String sourcesLocation = localServer.getSrcRoot();
 
-            File sources = new File(sourcesLocation);
+            File sources = FileUtil.normalizeFile(new File(sourcesLocation));
             if (!Utils.isValidFileName(sources.getName())) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }

@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -188,7 +189,7 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
     }
 
     public String getFullProjectPath() {
-        File projectPath = new File(getProjectLocation(), getProjectName());
+        File projectPath = FileUtil.normalizeFile(new File(getProjectLocation(), getProjectName()));
         return projectPath.getAbsolutePath();
     }
 

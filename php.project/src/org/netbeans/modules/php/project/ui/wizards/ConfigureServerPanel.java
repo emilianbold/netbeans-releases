@@ -58,6 +58,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     static final String COPY_FILES = "copyFiles"; // NOI18N
     static final String COPY_TARGET = "copyTarget"; // NOI18N
     static final String COPY_TARGETS = "copyTargets"; // NOI18N
+    static final String SERVER_IS_VALID = "serverIsValid"; // NOI18N
 
     private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -121,9 +122,11 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         String error = validateServerLocation();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
+            descriptor.putProperty(SERVER_IS_VALID, false);
             return false;
         }
         descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
+        descriptor.putProperty(SERVER_IS_VALID, true);
         return true;
     }
 
