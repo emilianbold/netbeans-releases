@@ -51,7 +51,7 @@ import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Factory for creating instances of FlatfileBootstrapParser.
@@ -63,7 +63,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public final class FlatfileBootstrapParserFactory {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileBootstrapParserFactory.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileBootstrapParserFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class NullBootstrapParser implements FlatfileBootstrapParser {
@@ -129,7 +129,7 @@ public final class FlatfileBootstrapParserFactory {
             try {
                 keynameToClassMap.put(key, Class.forName(parserClass));
             } catch (Exception ignore) {
-                mLogger.errorNoloc(mLoc.t("PRSR051: Caught error while loading parser class names. {0}", LOG_CATEGORY), ignore);
+                mLogger.errorNoloc(mLoc.t("EDIT051: Caught error while loading parser class names. {0}", LOG_CATEGORY), ignore);
             // Ignore: Log but continue
             }
         }

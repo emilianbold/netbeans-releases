@@ -587,16 +587,12 @@ public class ServicePanel extends SectionInnerPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(mtomChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox")); // NOI18N
-        mtomChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(rmChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox")); // NOI18N
-        rmChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(securityChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox")); // NOI18N
-        securityChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(orderedChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox")); // NOI18N
-        orderedChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         profileComboLabel.setLabelFor(profileCombo);
         org.openide.awt.Mnemonics.setLocalizedText(profileComboLabel, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel")); // NOI18N
@@ -611,10 +607,8 @@ public class ServicePanel extends SectionInnerPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(stsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox")); // NOI18N
-        stsChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(tcpChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox")); // NOI18N
-        tcpChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(keyButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton")); // NOI18N
         keyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -645,7 +639,6 @@ public class ServicePanel extends SectionInnerPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(fiChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox")); // NOI18N
-        fiChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         profileInfoField.setEditable(false);
         profileInfoField.setLineWrap(true);
@@ -654,6 +647,8 @@ public class ServicePanel extends SectionInnerPanel {
         profileInfoField.setAutoscrolls(false);
         profileInfoField.setOpaque(false);
         jScrollPane1.setViewportView(profileInfoField);
+        profileInfoField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileDesc_ACSN")); // NOI18N
+        profileInfoField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileDesc_ACSD")); // NOI18N
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(validatorsButton, bundle.getString("LBL_validatorsButton")); // NOI18N
@@ -664,7 +659,6 @@ public class ServicePanel extends SectionInnerPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults")); // NOI18N
-        devDefaultsChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(secAdvancedButton, bundle.getString("LBL_Section_Service_Advanced")); // NOI18N
         secAdvancedButton.addActionListener(new java.awt.event.ActionListener() {
@@ -680,8 +674,8 @@ public class ServicePanel extends SectionInnerPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
                     .add(mtomChBox)
                     .add(rmChBox)
                     .add(layout.createSequentialGroup()
@@ -696,17 +690,17 @@ public class ServicePanel extends SectionInnerPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(12, 12, 12)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                                .add(jScrollPane1))
                             .add(layout.createSequentialGroup()
                                 .add(profileComboLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(profileCombo, 0, 182, Short.MAX_VALUE)
+                                .add(profileCombo, 0, 215, Short.MAX_VALUE)
                                 .add(6, 6, 6)
                                 .add(profConfigButton))))
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(devDefaultsChBox))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(stsChBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -779,6 +773,8 @@ public class ServicePanel extends SectionInnerPanel {
         orderedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox_ACSD")); // NOI18N
         profileComboLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSN")); // NOI18N
         profileComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSD")); // NOI18N
+        profileCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileCombo_ACSN")); // NOI18N
+        profileCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileCombo_ACSD")); // NOI18N
         rmAdvanced.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSN")); // NOI18N
         rmAdvanced.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSD")); // NOI18N
         stsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox_ACSN")); // NOI18N
@@ -799,6 +795,7 @@ public class ServicePanel extends SectionInnerPanel {
         validatorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_validatorsButton_ACSD")); // NOI18N
         devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSN")); // NOI18N
         devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSD")); // NOI18N
+        secAdvancedButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_Security_ACSD")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSN")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSD")); // NOI18N
