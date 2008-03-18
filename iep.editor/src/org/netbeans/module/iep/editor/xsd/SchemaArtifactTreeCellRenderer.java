@@ -13,6 +13,7 @@ import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import org.netbeans.module.iep.editor.xsd.nodes.AbstractSchemaArtifactNode;
 import org.netbeans.module.iep.editor.xsd.nodes.SelectableTreeNode;
 
 /**
@@ -23,7 +24,8 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
 
     private DefaultTreeCellRenderer mDefaultRenderer;
     
-    private JCheckBox checkBoxRenderer = new JCheckBox();
+    //private JCheckBox checkBoxRenderer = new JCheckBox();
+    private CheckBoxPanel checkBoxRenderer = new CheckBoxPanel();
     
     Color selectionBorderColor;
     Color selectionForeground;
@@ -54,6 +56,7 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
     
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         
+        AbstractSchemaArtifactNode nodeValue = (AbstractSchemaArtifactNode) value;
         
         String  stringValue = tree.convertValueToText(value, false,
 					    expanded, leaf, row, false);
@@ -66,9 +69,11 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             
             checkBoxRenderer.setSelected(node.isSelected());
             
+            checkBoxRenderer.setIcon(nodeValue.getIcon());
             checkBoxRenderer.setText(stringValue);
             checkBoxRenderer.setEnabled(tree.isEnabled());
-
+            
+            
           if (sel) {
             checkBoxRenderer.setForeground(selectionForeground);
             checkBoxRenderer.setBackground(selectionBackground);
@@ -76,9 +81,13 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             checkBoxRenderer.setForeground(textForeground);
             checkBoxRenderer.setBackground(textBackground);
           }
+            
+            
             comp = checkBoxRenderer;
           
         } else {
+            mDefaultRenderer.setOpenIcon(nodeValue.getIcon());
+            mDefaultRenderer.setClosedIcon(nodeValue.getIcon());
             comp = mDefaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
         

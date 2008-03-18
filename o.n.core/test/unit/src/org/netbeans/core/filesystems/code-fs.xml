@@ -85,6 +85,20 @@
 </MIME-resolver>
 ]]>
 	</file>
+        
+	<file name="springconfig.xml"><![CDATA[<?xml version="1.0"?>
+<MIME-resolver>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-springconfig+xml">
+            <xml-rule>
+                <element name="beans" ns="http://www.springframework.org/schema/beans"/>
+            </xml-rule>
+        </resolver>
+    </file>
+</MIME-resolver>
+]]>
+	</file>
 
     </folder>
 </filesystem>

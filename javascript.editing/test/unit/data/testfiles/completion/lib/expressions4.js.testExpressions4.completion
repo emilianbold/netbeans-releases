@@ -1,0 +1,5 @@
+Results for document.b with queryType=COMPLETION and nameKind=PREFIX
+PROPERTY   baseURI : String                           Node
+PROPERTY   bgColor                                    Document
+PROPERTY   body                                       Document
+PROPERTY   body : HTMLElement                         HTMLDocument

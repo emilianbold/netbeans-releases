@@ -66,6 +66,10 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/grizzly-http-webserver-1.7.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/grizzly-http-webserver-1.7.2.jar!/</resource>
     </volume>  
+     <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/jsr311-api-doc.zip!/</resource>
+    </volume>
 </library>

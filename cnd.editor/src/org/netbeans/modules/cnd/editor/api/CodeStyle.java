@@ -42,8 +42,6 @@ package org.netbeans.modules.cnd.editor.api;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.openide.util.NbBundle;
@@ -85,11 +83,8 @@ public final class CodeStyle {
 
     public synchronized static CodeStyle getDefault(Document doc) {
         if (doc instanceof BaseDocument) {
-            Formatter f = ((BaseDocument)doc).getFormatter();
-            if (f instanceof ExtFormatter) {
-                if (CKit.class.equals(f.getKitClass())) {
-                    return getDefault(Language.C);
-                }
+            if (CKit.class.equals(((BaseDocument)doc).getKitClass())) {
+                return getDefault(Language.C);
             }
         }
         return getDefault(Language.CPP);
@@ -125,6 +120,11 @@ public final class CodeStyle {
     public boolean indentCasesFromSwitch() {
         return getOption(EditorOptions.indentCasesFromSwitch,
                          EditorOptions.indentCasesFromSwitchDefault);
+    }
+
+    public boolean absoluteLabelIndent() {
+        return getOption(EditorOptions.absoluteLabelIndent,
+                         EditorOptions.absoluteLabelIndentDefault);
     }
 
     public boolean sharpAtStartLine(){
@@ -205,6 +205,7 @@ public final class CodeStyle {
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
+    //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -213,6 +214,19 @@ public final class CodeStyle {
     public boolean alignMultilineMethodParams() {
         return getOption(EditorOptions.alignMultilineMethodParams,
                          EditorOptions.alignMultilineMethodParamsDefault);
+    }
+
+    public boolean alignMultilineFor() {
+        return getOption(EditorOptions.alignMultilineFor,
+                         EditorOptions.alignMultilineForDefault);
+    }
+    public boolean alignMultilineIfCondition() {
+        return getOption(EditorOptions.alignMultilineIfCondition,
+                         EditorOptions.alignMultilineIfConditionDefault);
+    }
+    public boolean alignMultilineWhileCondition() {
+        return getOption(EditorOptions.alignMultilineWhileCondition,
+                         EditorOptions.alignMultilineWhileConditionDefault);
     }
 
     public boolean spaceAroundUnaryOps() {
@@ -433,7 +447,8 @@ public final class CodeStyle {
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE;
+        NEW_LINE,
+        NEW_LINE_HALF_INDENTED;
         
         @Override
         public String toString() {
