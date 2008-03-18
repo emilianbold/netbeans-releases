@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.ui.wizards;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.awt.Component;
 
@@ -47,22 +47,28 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
- * @author Jesse Glick
  */
-final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, 
-        WizardDescriptor.ValidatingPanel {
+public final class ProjectLocationWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+    
+    public static final String PROJECT_DIR = "projdir"; //NOI18N
+    public static final String NAME = "name"; //NOI18N
+    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
+    public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
     
     private WizardDescriptor wizardDescriptor;
-    private PanelConfigureProjectVisual component;
+    private ProjectLocationPanel component;
+    private Object j2eeModuleType;
+    private String defaultNameFormatter;
     
     /** Create the wizard panel descriptor. */
-    public PanelConfigureProject() {
+    public ProjectLocationWizardPanel(Object j2eeModuleType, String defaultNameFormatter) {
+        this.j2eeModuleType = j2eeModuleType;
+        this.defaultNameFormatter = defaultNameFormatter;
     }
     
     public boolean isFinishPanel() {
@@ -71,13 +77,13 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
 
     public Component getComponent() {
         if (component == null) {
-            component = new PanelConfigureProjectVisual(this);
+            component = new ProjectLocationPanel(j2eeModuleType, this, defaultNameFormatter);
         }
         return component;
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(PanelConfigureProject.class);
+        return new HelpCtx(ProjectLocationWizardPanel.class);
     }
     
     public boolean isValid() {
@@ -111,10 +117,5 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-
-    public void validate() throws WizardValidationException {
-        getComponent ();
-        component.validate (wizardDescriptor);
     }
 }

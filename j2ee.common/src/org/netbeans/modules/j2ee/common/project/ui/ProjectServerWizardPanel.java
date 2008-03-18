@@ -39,91 +39,105 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.clientproject.ui.wizards;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel, ChangeListener {
+/**
+ * Panel just asking for basic info.
+ */
+public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+    
+    public static final String SERVER_INSTANCE_ID = "serverInstanceID"; //NOI18N
+    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
+    public static final String CONTEXT_PATH = "contextPath"; //NOI18N
+    public static final String EAR_APPLICATION = "earApplication"; //NOI18N
+    public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
+    public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
+    public static final String WIZARD_SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+    public static final String WIZARD_SERVER_LIBRARY = "serverLibrary"; // NOI18N
+    public static final String MAIN_CLASS = "mainClass"; // NOI18N
+    public static final String WAR_NAME = "warName"; // NOI18N
+    public static final String JAR_NAME = "jarName"; // NOI18N
+    public static final String CAR_NAME = "carName"; // NOI18N
+    public static final String CREATE_WAR = "createWAR"; // NOI18N
+    public static final String CREATE_JAR = "createJAR"; // NOI18N
+    public static final String CREATE_CAR = "createCAR"; // NOI18N
     
     private WizardDescriptor wizardDescriptor;
-    private ImportLocationVisual component;
+    private ProjectServerPanel component;
     
-    public ImportLocation() {
+    private boolean finishable;
+    private boolean showAddToEar;
+    private boolean mainAppClientClass;
+    private boolean showContextPath;
+    private boolean createProjects;
+    private Object j2eeModuleType;
+    
+    /** Create the wizard panel descriptor. */
+    public ProjectServerWizardPanel(Object j2eeModuleType, boolean showAddToEar, boolean mainAppClientClass, 
+            boolean showContextPath, boolean createProjects, boolean finishable) {
+        this.finishable = finishable;
+        this.showAddToEar = showAddToEar;
+        this.mainAppClientClass = mainAppClientClass;
+        this.createProjects = createProjects;
+        this.showContextPath = showContextPath;
+        this.j2eeModuleType = j2eeModuleType;
     }
     
+    public boolean isFinishPanel() {
+        return finishable;
+    }
+
     public Component getComponent() {
         if (component == null) {
-            component = new ImportLocationVisual(this);
+            component = new ProjectServerPanel(j2eeModuleType, this, showAddToEar, mainAppClientClass, showContextPath, createProjects);
         }
         return component;
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(ImportLocation.class);
+        return new HelpCtx(ProjectServerWizardPanel.class);
     }
     
     public boolean isValid() {
         getComponent();
-        return component.valid( wizardDescriptor );
+        return component.valid(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            (it.next()).stateChanged(ev);
-        }
+    protected void fireChangeEvent() {
+        changeSupport.fireChange();
     }
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read (wizardDescriptor);
+        
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
         Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-        if (substitute != null) {
+        if (substitute != null)
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
-        }
     }
     
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor)settings;
+        WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
-    
-    public boolean isFinishPanel() {
-        return false;
-    }
-    
-    public void validate() throws WizardValidationException {
-    }
-    
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
-    }
+
 }
-
-

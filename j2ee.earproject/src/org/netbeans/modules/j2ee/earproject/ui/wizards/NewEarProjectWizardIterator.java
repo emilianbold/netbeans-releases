@@ -57,7 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -78,7 +79,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,25 +89,21 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
     
     private static final long serialVersionUID = 1L;
     
-    static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
-    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     transient WizardDescriptor wiz;
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(PROP_NAME_INDEX,
-                    NbBundle.getBundle(NewEarProjectWizardIterator.class),
-                    new HelpCtx(this.getClass())),
-            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
+            new ProjectLocationWizardPanel(J2eeModule.EAR, NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
+            new ProjectServerWizardPanel(J2eeModule.EAR, false, false, false, true, true),
         };
     }
     
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
-            NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "PanelShareabilityVisual.label"), 
+            NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "NewEarProjectWizardIterator.secondStep"), 
         };
     }
     
@@ -120,40 +116,39 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         handle.start(9);
         handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
-        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-        // Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        Boolean createWAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_WAR);
+        String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
+        String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
+        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        Boolean createWAR = (Boolean) wiz.getProperty(ProjectServerWizardPanel.CREATE_WAR);
         String warName = null;
         if (createWAR.booleanValue()) {
-            warName = (String) wiz.getProperty(WizardProperties.WAR_NAME);
+            warName = (String) wiz.getProperty(ProjectServerWizardPanel.WAR_NAME);
         }
-        Boolean createJAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_JAR);
+        Boolean createJAR = (Boolean) wiz.getProperty(ProjectServerWizardPanel.CREATE_JAR);
         String ejbJarName = null;
         if (createJAR.booleanValue()) {
-            ejbJarName = (String) wiz.getProperty(WizardProperties.JAR_NAME);
+            ejbJarName = (String) wiz.getProperty(ProjectServerWizardPanel.JAR_NAME);
         }
-        Boolean createCAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_CAR);
+        Boolean createCAR = (Boolean) wiz.getProperty(ProjectServerWizardPanel.CREATE_CAR);
         String carName = null;
         String mainClass = null;
         if (createCAR.booleanValue()) {
-            carName = (String) wiz.getProperty(WizardProperties.CAR_NAME);
-            mainClass = (String) wiz.getProperty(WizardProperties.MAIN_CLASS);
+            carName = (String) wiz.getProperty(ProjectServerWizardPanel.CAR_NAME);
+            mainClass = (String) wiz.getProperty(ProjectServerWizardPanel.MAIN_CLASS);
         }
-        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
-        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
         // remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         String librariesDefinition =
-                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
         SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
-        String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
+        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 
                 librariesDefinition, serverLibraryName);
@@ -307,8 +302,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
     
     public void uninitialize(WizardDescriptor wiz) {
         if (this.wiz != null) {
-            this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-            this.wiz.putProperty(WizardProperties.NAME,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.PROJECT_DIR,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.NAME,null);
         }
         this.wiz = null;
         panels = null;

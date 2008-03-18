@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.ui.wizards;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -54,7 +54,7 @@ import org.openide.modules.SpecificationVersion;
  *
  * @author Andrei Badea
  */
-public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
+final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     
     /**
      * Display a warning that the target platform will be downgraded to JDK 1.4
@@ -188,36 +188,19 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         setJdk14Panel = new javax.swing.JPanel();
-        warningJdk14TextArea = new javax.swing.JTextArea();
         downgradeJdk14CheckBox = new javax.swing.JCheckBox();
+        warningJdk14Label = new javax.swing.JLabel();
         setSourceLevel15Panel = new javax.swing.JPanel();
-        warningSourceLevel15TextArea = new javax.swing.JTextArea();
         downgradeSourceLevel15CheckBox = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
         setJdk15Panel = new javax.swing.JPanel();
-        warningJdk15TextArea = new javax.swing.JTextArea();
         downgradeJdk15CheckBox = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
         setSourceLevel14Panel = new javax.swing.JPanel();
-        warningSourceLevel14TextArea = new javax.swing.JTextArea();
         downgradeSourceLevel14CheckBox = new javax.swing.JCheckBox();
-
-        setLayout(new java.awt.GridBagLayout());
-
-        setJdk14Panel.setLayout(new java.awt.GridBagLayout());
-
-        warningJdk14TextArea.setEditable(false);
-        warningJdk14TextArea.setLineWrap(true);
-        warningJdk14TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk14")); // NOI18N
-        warningJdk14TextArea.setWrapStyleWord(true);
-        warningJdk14TextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        setJdk14Panel.add(warningJdk14TextArea, gridBagConstraints);
+        warningSourceLevel14Label = new javax.swing.JLabel();
 
         downgradeJdk14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetJdk14").charAt(0));
         downgradeJdk14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk14")); // NOI18N
@@ -226,37 +209,27 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 downgradeJdk14CheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        setJdk14Panel.add(downgradeJdk14CheckBox, gridBagConstraints);
+
+        warningJdk14Label.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk14")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setJdk14PanelLayout = new org.jdesktop.layout.GroupLayout(setJdk14Panel);
+        setJdk14Panel.setLayout(setJdk14PanelLayout);
+        setJdk14PanelLayout.setHorizontalGroup(
+            setJdk14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(warningJdk14Label, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .add(setJdk14PanelLayout.createSequentialGroup()
+                .add(downgradeJdk14CheckBox)
+                .addContainerGap())
+        );
+        setJdk14PanelLayout.setVerticalGroup(
+            setJdk14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setJdk14PanelLayout.createSequentialGroup()
+                .add(warningJdk14Label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(downgradeJdk14CheckBox))
+        );
+
         downgradeJdk14CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetJdk14")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(setJdk14Panel, gridBagConstraints);
-
-        setSourceLevel15Panel.setLayout(new java.awt.GridBagLayout());
-
-        warningSourceLevel15TextArea.setEditable(false);
-        warningSourceLevel15TextArea.setLineWrap(true);
-        warningSourceLevel15TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel15")); // NOI18N
-        warningSourceLevel15TextArea.setWrapStyleWord(true);
-        warningSourceLevel15TextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        setSourceLevel15Panel.add(warningSourceLevel15TextArea, gridBagConstraints);
 
         downgradeSourceLevel15CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetSourceLevel15").charAt(0));
         downgradeSourceLevel15CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel15")); // NOI18N
@@ -265,39 +238,27 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 downgradeSourceLevel15CheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        setSourceLevel15Panel.add(downgradeSourceLevel15CheckBox, gridBagConstraints);
+
+        jLabel2.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel15")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setSourceLevel15PanelLayout = new org.jdesktop.layout.GroupLayout(setSourceLevel15Panel);
+        setSourceLevel15Panel.setLayout(setSourceLevel15PanelLayout);
+        setSourceLevel15PanelLayout.setHorizontalGroup(
+            setSourceLevel15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .add(setSourceLevel15PanelLayout.createSequentialGroup()
+                .add(downgradeSourceLevel15CheckBox)
+                .addContainerGap())
+        );
+        setSourceLevel15PanelLayout.setVerticalGroup(
+            setSourceLevel15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setSourceLevel15PanelLayout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(downgradeSourceLevel15CheckBox))
+        );
+
         downgradeSourceLevel15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel15")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(setSourceLevel15Panel, gridBagConstraints);
-
-        setJdk15Panel.setLayout(new java.awt.GridBagLayout());
-
-        warningJdk15TextArea.setEditable(false);
-        warningJdk15TextArea.setLineWrap(true);
-        warningJdk15TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk15")); // NOI18N
-        warningJdk15TextArea.setWrapStyleWord(true);
-        warningJdk15TextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        setJdk15Panel.add(warningJdk15TextArea, gridBagConstraints);
 
         downgradeJdk15CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetJdk15").charAt(0));
         downgradeJdk15CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk15")); // NOI18N
@@ -306,39 +267,27 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 downgradeJdk15CheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        setJdk15Panel.add(downgradeJdk15CheckBox, gridBagConstraints);
+
+        jLabel1.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk15")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setJdk15PanelLayout = new org.jdesktop.layout.GroupLayout(setJdk15Panel);
+        setJdk15Panel.setLayout(setJdk15PanelLayout);
+        setJdk15PanelLayout.setHorizontalGroup(
+            setJdk15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .add(setJdk15PanelLayout.createSequentialGroup()
+                .add(downgradeJdk15CheckBox)
+                .addContainerGap())
+        );
+        setJdk15PanelLayout.setVerticalGroup(
+            setJdk15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setJdk15PanelLayout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(downgradeJdk15CheckBox))
+        );
+
         downgradeJdk15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetJdk15")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(setJdk15Panel, gridBagConstraints);
-
-        setSourceLevel14Panel.setLayout(new java.awt.GridBagLayout());
-
-        warningSourceLevel14TextArea.setEditable(false);
-        warningSourceLevel14TextArea.setLineWrap(true);
-        warningSourceLevel14TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel14")); // NOI18N
-        warningSourceLevel14TextArea.setWrapStyleWord(true);
-        warningSourceLevel14TextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        setSourceLevel14Panel.add(warningSourceLevel14TextArea, gridBagConstraints);
 
         downgradeSourceLevel14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetSourceLevel14").charAt(0));
         downgradeSourceLevel14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel14")); // NOI18N
@@ -347,25 +296,48 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
                 downgradeSourceLevel14CheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        setSourceLevel14Panel.add(downgradeSourceLevel14CheckBox, gridBagConstraints);
+
+        warningSourceLevel14Label.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel14")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout setSourceLevel14PanelLayout = new org.jdesktop.layout.GroupLayout(setSourceLevel14Panel);
+        setSourceLevel14Panel.setLayout(setSourceLevel14PanelLayout);
+        setSourceLevel14PanelLayout.setHorizontalGroup(
+            setSourceLevel14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(warningSourceLevel14Label, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .add(setSourceLevel14PanelLayout.createSequentialGroup()
+                .add(downgradeSourceLevel14CheckBox)
+                .addContainerGap())
+        );
+        setSourceLevel14PanelLayout.setVerticalGroup(
+            setSourceLevel14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setSourceLevel14PanelLayout.createSequentialGroup()
+                .add(warningSourceLevel14Label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(downgradeSourceLevel14CheckBox))
+        );
+
         downgradeSourceLevel14CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel14")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(setSourceLevel14Panel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(setJdk14Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(setJdk15Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(setSourceLevel14Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(setSourceLevel15Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(setJdk14Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(setSourceLevel14Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(setJdk15Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(setSourceLevel15Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void downgradeSourceLevel15CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeSourceLevel15CheckBoxActionPerformed
@@ -389,14 +361,14 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox downgradeJdk15CheckBox;
     private javax.swing.JCheckBox downgradeSourceLevel14CheckBox;
     private javax.swing.JCheckBox downgradeSourceLevel15CheckBox;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel setJdk14Panel;
     private javax.swing.JPanel setJdk15Panel;
     private javax.swing.JPanel setSourceLevel14Panel;
     private javax.swing.JPanel setSourceLevel15Panel;
-    private javax.swing.JTextArea warningJdk14TextArea;
-    private javax.swing.JTextArea warningJdk15TextArea;
-    private javax.swing.JTextArea warningSourceLevel14TextArea;
-    private javax.swing.JTextArea warningSourceLevel15TextArea;
+    private javax.swing.JLabel warningJdk14Label;
+    private javax.swing.JLabel warningSourceLevel14Label;
     // End of variables declaration//GEN-END:variables
     
 }

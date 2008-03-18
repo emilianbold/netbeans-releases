@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.ui;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import org.openide.filesystems.FileUtil;
 
@@ -47,7 +47,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.awt.*;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 
 public class FileChooser extends JFileChooser {
 

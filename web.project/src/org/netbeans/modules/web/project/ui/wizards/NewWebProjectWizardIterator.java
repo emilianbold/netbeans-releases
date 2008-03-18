@@ -71,13 +71,15 @@ import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 
 /**
@@ -88,7 +90,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     
     private static final long serialVersionUID = 1L;
     
-    static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
 
     /** Create a new wizard iterator. */
@@ -99,13 +100,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label"),
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
 	    };
 	else
 	    steps = new String[] {
 		NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
-                NbBundle.getMessage(NewWebProjectWizardIterator.class, "PanelShareabilityVisual.label")
+                NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer")
 	    };
 	
         return steps;
@@ -122,42 +123,37 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         Set resultSet = new HashSet();
 
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
 
-        String servInstID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
+        String servInstID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(dirF);
-        createData.setName((String) wiz.getProperty(WizardProperties.NAME));
+        createData.setName((String) wiz.getProperty(ProjectLocationWizardPanel.NAME));
         createData.setServerInstanceID(servInstID);
-        createData.setSourceStructure((String)wiz.getProperty(WizardProperties.SOURCE_STRUCTURE));
         if (createData.getSourceStructure() == null) {
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
         }
-        createData.setJavaEEVersion((String) wiz.getProperty(WizardProperties.J2EE_LEVEL));
-        createData.setContextPath((String) wiz.getProperty(WizardProperties.CONTEXT_PATH));
-        createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
-        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
+        createData.setJavaEEVersion((String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
+        createData.setContextPath((String) wiz.getProperty(ProjectServerWizardPanel.CONTEXT_PATH));
+        createData.setJavaPlatformName((String) wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM));
+        createData.setSourceLevel((String) wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL));
         
         createData.setLibrariesDefinition(
-                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES)));
-        createData.setServerLibraryName((String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY));
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
+        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);
         
         FileObject dir = FileUtil.toFileObject(dirF);
 
-        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        if(index != null) {
-            UserProjectSettings.getDefault().setNewProjectCount(index.intValue());
-        }
-        wiz.putProperty(WizardProperties.NAME, null); // reset project name
+        wiz.putProperty(ProjectLocationWizardPanel.NAME, null); // reset project name
 
-        Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
+        Project earProject = (Project) wiz.getProperty(ProjectServerWizardPanel.EAR_APPLICATION);
         
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdWebProject != null) {
@@ -234,15 +230,15 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
-		new PanelConfigureProject(),
-                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true),
+                new ProjectLocationWizardPanel(J2eeModule.WAR, NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
+                new ProjectServerWizardPanel(J2eeModule.WAR, true, false, true, false, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
 	    //no framework available, don't show framework panel
 	    panels = new WizardDescriptor.Panel[] {
-		new PanelConfigureProject(),
-                new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, true)
+                new ProjectLocationWizardPanel(J2eeModule.WAR, NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
+                new ProjectServerWizardPanel(J2eeModule.WAR, true, false, true, false, true),
 	    };
         panelsCount = panels.length;
         
@@ -262,8 +258,8 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     
     public void uninitialize(WizardDescriptor wiz) {
         if (this.wiz != null) {
-            this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-            this.wiz.putProperty(WizardProperties.NAME,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.PROJECT_DIR,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.NAME,null);
             this.wiz = null;
         }
         panels = null;
