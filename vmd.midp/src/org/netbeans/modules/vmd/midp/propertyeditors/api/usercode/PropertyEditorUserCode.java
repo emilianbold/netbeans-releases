@@ -108,7 +108,14 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     protected void initElements(Collection<PropertyEditorElement> elements) {
         customEditor.init(elements);
     }
-
+    
+    /**
+     * It returns radio buttom added to PropertyEditorUserCode
+     * @return null if radio burron is not created yet
+     */
+    protected JRadioButton getUserCodeRadioButton() {
+        return userCodeRadioButton;
+    }
     /**
      * <b>WARNING - while override, you have to call super.init() method too.</b>
      */
