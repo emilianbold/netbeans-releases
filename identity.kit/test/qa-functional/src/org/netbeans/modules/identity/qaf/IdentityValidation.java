@@ -157,9 +157,12 @@ public class IdentityValidation extends WsValidation {
         suite.addTest(new IdentityValidation("prepareWSClientProject")); //NOI18N
         suite.addTest(new IdentityValidationInEJB("prepareWSProject")); //NOI18N
         suite.addTest(new IdentityValidationInEJB("prepareWSClientProject")); //NOI18N
+        suite.addTest(new IdentitySamplesTest("testStockQuoteService"));
+        suite.addTest(new IdentitySamplesTest("testStockQuoteClient"));
         suite.addTest(new IdentityValidation("checkAMProfiles")); //NOI18N
         suite.addTest(new IdentityValidation("testAMSecurityInWeb")); //NOI18N
         suite.addTest(new IdentityValidationInEJB("testAMSecurityInEJB")); //NOI18N
+        suite.addTest(new IdentitySamplesTest("testUndeployAll"));
         suite.addTest(new IdentityValidation("stopSDKGlassfish")); //NOI18N
         return suite;
     }

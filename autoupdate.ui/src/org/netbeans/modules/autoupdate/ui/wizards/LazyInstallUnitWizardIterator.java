@@ -68,17 +68,19 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
     private List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
     private Collection<LazyUnit> installModel;
     private OperationType doOperation;
+    private boolean forceReload;
 
-    public LazyInstallUnitWizardIterator (Collection<LazyUnit> model, OperationType doOperation) {
+    public LazyInstallUnitWizardIterator (Collection<LazyUnit> model, OperationType doOperation, boolean forceReload) {
         this.installModel = model;
         this.doOperation = doOperation;
+        this.forceReload = forceReload;
         createPanels ();
         index = 0;
     }
     
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
-        panels.add (new LazyOperationDescriptionStep (installModel, doOperation));
+        panels.add (new LazyOperationDescriptionStep (installModel, doOperation, forceReload));
     }
     
     public WizardDescriptor.Panel<WizardDescriptor> current () {
