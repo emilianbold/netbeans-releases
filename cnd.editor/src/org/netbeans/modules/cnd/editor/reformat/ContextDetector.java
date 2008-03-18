@@ -405,6 +405,8 @@ public class ContextDetector extends ExtendedTokenSequence {
                         case AMP:
                             if (braces.isDeclarationLevel()) {
                                 return OperatorKind.TYPE_MODIFIER;
+                            } else if (isLikeForDeclaration()) {
+                                return OperatorKind.TYPE_MODIFIER;
                             } else if (isLikeExpession()) {
                                 return OperatorKind.BINARY;
                             }
@@ -454,6 +456,41 @@ public class ContextDetector extends ExtendedTokenSequence {
         }
     }
     
+    private boolean isLikeForDeclaration(){
+        StackEntry entry = braces.peek();
+        if (entry == null || entry.getKind() != FOR){
+            return false;
+        }
+        int index = index();
+        int level = 1;
+        try {
+            while (movePrevious()) {
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        break;
+                    case FOR:
+                        if (level == 0) {
+                            return true;
+                        }
+                        return false;
+                    case SEMICOLON:
+                    case EQ:
+                        return false;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
     private boolean isStatementParen(){
         if (token().id() == RPAREN){
             int level = 1;
@@ -466,13 +503,31 @@ public class ContextDetector extends ExtendedTokenSequence {
                         level--;
                         if (level == 0){
                             Token<CppTokenId> previous = lookPreviousImportant();
-                            if (previous != null && 
-                               (previous.id() == FOR ||
-                                previous.id() == IF ||
-                                previous.id() == WHILE ||
-                                previous.id() == CATCH ||
-                                previous.id() == SWITCH)) {
-                                return true;
+                            if (previous != null) {
+                                switch (previous.id()) {
+                                    case FOR:
+                                    case IF:
+                                    case WHILE:
+                                    case CATCH:
+                                    case SWITCH:
+                                        return true;
+                                    default:
+                                        while(movePrevious()){
+                                            switch (token().id()) {
+                                                case WHITESPACE:
+                                                case ESCAPED_WHITESPACE:
+                                                case NEW_LINE:
+                                                case LINE_COMMENT:
+                                                case BLOCK_COMMENT:
+                                                case DOXYGEN_COMMENT:
+                                                case PREPROCESSOR_DIRECTIVE:
+                                                    break;
+                                                default:
+                                                    return index() == braces.lastStatementStart;
+                                            }
+                                        }
+                                        break;
+                                }
                             }
                             return false;
                         }

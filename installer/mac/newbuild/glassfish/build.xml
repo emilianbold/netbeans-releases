@@ -23,9 +23,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="appdir" value="${basedir}/build/app"/>
     
-    <target name="clean">
+    <target name="clean"  depends="clean-getport">
         <delete dir="build"/>
-        <mkdir dir="build"/>
+        <mkdir dir="build"/>            
     </target>
     
     <target name="get-bits">
@@ -41,7 +41,16 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
     </target>
     
-    <target name="build-pkg" depends="clean, unzip">
+    <target name="build-getport">
+        <ant dir="${basedir}/getport" target="jar"/>
+    </target>
+
+    <target name="clean-getport">
+        <ant dir="${basedir}/getport" target="clean"/>
+        <delete file="pkg/scripts/getport.jar"/>
+    </target>    
+    
+    <target name="build-pkg" depends="clean, unzip, build-getport">
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
             <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
@@ -71,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
+        <copy file="${basedir}/getport/dist/getport.jar" tofile="${basedir}/pkg/scripts/getport.jar"/>        
         
         <echo message="Building glassfish.pkg into ${basedir}/../build/glassfish.pkg"/>
         <exec executable="sh" failonerror="yes">

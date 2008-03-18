@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="ttt" prio="1"
+    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </testbag>
     
     <!-- 1st round -->    
-    <testbag testattribs="ttt" prio="2"
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>

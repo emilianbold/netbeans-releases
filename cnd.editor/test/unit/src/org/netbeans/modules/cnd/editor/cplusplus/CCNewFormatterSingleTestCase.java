@@ -164,25 +164,18 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testOperatorEQformatting() {
+    public void testConcurrentSpacing() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "class real_c_float\n" +
+                "int foo(char* a, class B* b)\n" +
                 "{\n" +
-                "  const real_c_float & operator=(long l){ from_long(l);\n" +
-                "    return *this;\n" +
-                "  }\n" +
-                "};\n");
+                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect operator = formatting",
-                "class real_c_float\n" +
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
                 "{\n" +
-                "\n" +
-                "    const real_c_float & operator=(long l)\n" +
-                "    {\n" +
-                "        from_long(l);\n" +
-                "        return *this;\n" +
-                "    }\n" +
-                "};\n");
+                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
+                "}\n");
     }
 }

@@ -188,12 +188,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
-            if (!NEW_INITIALIZE) {
-                run();
-            } else {
+            if (NEW_INITIALIZE) {
                 task = CloneableEditorSupport.RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY);
                 task.schedule(0);
+            } else {
+                run();
             }
         }
         
@@ -296,12 +296,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         
         private void initVisual() {
             tmp.setEditorKit(kit);
+            tmp.setDocument(doc);
             
             // the following two shall be done out of AWT:
             initCustomEditor();
             initDecoration();
-            
-            tmp.setDocument(doc);
             
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
