@@ -22,9 +22,10 @@ import org.netbeans.modules.xml.xam.Component;
 
 public interface DiagramElement {
 
-  void select();
-  String getText();
+  void gotoDesign();
   void gotoSource();
+  void highlight();
+  void unhighlight();
+  String getName();
   Component getComponent();
-  void highlight(boolean highlighted);
 }

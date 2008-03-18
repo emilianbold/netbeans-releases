@@ -339,7 +339,6 @@
 					<file title="number_converter_db.html"/>
 					<file title="property_binding_db.html"/>
 					<file title="resolve_data_source_db.html"/>
-					<file title="resolve_ref_probs_db.html"/>
 					<file title="theme_switch_info_db.html"/>
 					<file title="virtual_forms_db.html"/>
 				</directory>

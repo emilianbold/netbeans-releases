@@ -107,11 +107,7 @@ abstract class BaseClassPathSupport<T extends BaseClassPathSupport.Item> {
             case LIBRARY:
                 List<URL> roots = item.getLibrary().getContent("classpath"); // NOI18N
                 for (URL rootUrl : roots) {
-                    FileObject root = URLMapper.findFileObject(rootUrl);
-                    if ("jar".equals(rootUrl.getProtocol())) { // NOI18N
-                        root = FileUtil.getArchiveFile(root);
-                    }
-                    File f = FileUtil.toFile(root);
+                    File f = FileUtil.archiveOrDirForURL(rootUrl);
                     if (f != null) {
                         if (f.isFile()) {
                             files.add(f);
