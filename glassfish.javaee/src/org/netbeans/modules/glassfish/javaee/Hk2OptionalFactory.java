@@ -39,13 +39,14 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 
@@ -66,14 +67,13 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
     }
     
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        System.out.println("JavaEE_V3_OptionalFactory.getFindJSPServlet");
+        Logger.getLogger("glassfish-javaee").log(Level.INFO, 
+                "JavaEE_V3_OptionalFactory.getFindJSPServlet");
         return null;
     }
     
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-//        System.out.println("JavaEE_V3_OptionalFactory.getAddInstanceIterator");
-//        return ServerUtilities.getAddInstanceIterator();
         return null;
     }
     
