@@ -1,5 +1,6 @@
 package org.netbeans.modules.groovy.editor.elements;
 
+import groovy.lang.MetaMethod;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -15,9 +16,34 @@ import org.netbeans.modules.gsf.api.Modifier;
 public class AstMethodElement extends AstElement implements MethodElement {
     private List<String> parameters;
     private Modifier access = Modifier.PUBLIC;
+    private Class clz;
+    private MetaMethod method;
+    boolean GDK;
 
     public AstMethodElement(ASTNode node) {
         super(node);
+    }
+    
+    // We need this variant to drag the Class to which this Method belongs with us.
+    // This is used in the CodeCompleter complete/document pair.
+    
+    public AstMethodElement(ASTNode node, Class clz, MetaMethod method, boolean GDK) {
+        super(node);
+        this.clz = clz;
+        this.method = method;
+        this.GDK = GDK;
+    }
+
+    public boolean isGDK() {
+        return GDK;
+    }
+
+    public MetaMethod getMethod() {
+        return method;
+    }
+    
+    public Class getClz() {
+        return clz;
     }
 
     @SuppressWarnings("unchecked")
