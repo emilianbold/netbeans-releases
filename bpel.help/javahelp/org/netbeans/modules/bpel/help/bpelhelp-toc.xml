@@ -85,8 +85,8 @@
 					<tocitem text="Adding On Event Elements" target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" />
 				</tocitem>
 				<tocitem text="Working with Correlation Sets" expand="false">
-					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation_and_wizard" />
-					<tocitem text="Adding Correlation Sets Manually" target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" />
+					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation" />
+					<tocitem text="Adding Correlation Sets Manually" target="orch_design_correlation_manually" />
 					<tocitem text="Adding Properties and Property Aliases to WSDL Files Using the Navigator" target="orch_design_add_props_navigator" />
 				</tocitem>
 				<tocitem text="Working with Variables" expand="false">
@@ -119,4 +119,9 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
+	<tocitem text="BPEL Designer: Adding Compensation Handlers" target="add_compensation_handler" />
+	<tocitem text="BPEL Designer: Adding Termination Handlers" target="add_termination_handler" />
+	<tocitem text="Compensate" target="compensate" />
+	<tocitem text="Compensate Scope" target="compensatescope" />
+	<tocitem text="Rethrow" target="rethrow" />
 </toc>

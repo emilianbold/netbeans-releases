@@ -74,8 +74,8 @@ public class ScrollExpandedProject extends org.netbeans.performance.test.utiliti
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;        
     }
-    public ScrollExpandedProject(String testName, String  performanceDataName) {
-        super(testName);
+    public ScrollExpandedProject(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;                

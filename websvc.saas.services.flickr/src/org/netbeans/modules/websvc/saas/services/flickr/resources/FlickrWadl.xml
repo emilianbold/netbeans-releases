@@ -12,7 +12,7 @@
         <param name="api_sig" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The api signature.</doc>
         </param>
-        <method id="flickr.activity_userComments" name="POST">
+        <method id="activity_userComments" name="POST">
           <doc xml:lang="en">Returns a list of recent activity on photos commented on by the calling user. &lt;b&gt;Do not poll this method more than once an hour&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -33,7 +33,7 @@
           </response>
           
         </method>
-        <method id="flickr.activity_userPhotos" name="POST">
+        <method id="activity_userPhotos" name="POST">
           <doc xml:lang="en">Returns a list of recent activity on photos belonging to the calling user. &lt;b&gt;Do not poll this method more than once an hour&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -56,7 +56,7 @@
           <response>
           </response>
         </method>
-        <method id="flickr.auth_checkToken" name="POST">
+        <method id="auth_checkToken" name="POST">
           <doc xml:lang="en">Returns the credentials attached to an authentication token. This call &lt;b&gt;must&lt;/b&gt; be signed as specified in the &lt;a href="/services/api/auth.spec.html"&gt;authentication API spec&lt;/a&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -71,7 +71,7 @@
           </response>
           
         </method>
-        <method id="flickr.auth_getFrob" name="POST">
+        <method id="auth_getFrob" name="POST">
           <doc xml:lang="en">Returns a frob to be used during authentication. &lt;b&gt;This method call must be signed&lt;/b&gt;.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -83,7 +83,7 @@
           </response>
           
         </method>
-        <method id="flickr.auth_getFullToken" name="POST">
+        <method id="auth_getFullToken" name="POST">
           <doc xml:lang="en">Get the full authentication token for a mini-token. &lt;b&gt;This method call must be signed.&lt;/b&gt;</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -98,7 +98,7 @@
           </response>
           
         </method>
-        <method id="flickr.auth_getToken" name="POST">
+        <method id="auth_getToken" name="POST">
           <doc xml:lang="en">Returns the auth token for the given frob, if one has been attached. &lt;b&gt;This method call must be signed.&lt;/b&gt;</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -113,7 +113,7 @@
           </response>
           
         </method>
-        <method id="flickr.blogs_getList" name="POST">
+        <method id="blogs_getList" name="POST">
           <doc xml:lang="en">Get a list of configured blogs for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -128,7 +128,7 @@
           </response>
           
         </method>
-        <method id="flickr.blogs_postPhoto" name="POST">
+        <method id="blogs_postPhoto" name="POST">
           <doc xml:lang="en"/>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -158,7 +158,7 @@
           </response>
           
         </method>
-        <method id="flickr.contacts_getList" name="POST">
+        <method id="contacts_getList" name="POST">
           <doc xml:lang="en">Get a list of contacts for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -196,7 +196,7 @@
           </response>
           
         </method>
-        <method id="flickr.contacts_getPublicList" name="POST">
+        <method id="contacts_getPublicList" name="POST">
           <doc xml:lang="en">Get the contact list for a user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -220,7 +220,7 @@
           </response>
           
         </method>
-        <method id="flickr.favorites_add" name="POST">
+        <method id="favorites_add" name="POST">
           <doc xml:lang="en">Adds a photo to a user's favorites list.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -238,7 +238,7 @@
           </response>
           
         </method>
-        <method id="flickr.favorites_getList" name="POST">
+        <method id="favorites_getList" name="POST">
           <doc xml:lang="en">Returns a list of the user's favorite photos. Only photos which the calling user has permission to see are returned.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -265,7 +265,7 @@
           </response>
           
         </method>
-        <method id="flickr.favorites_getPublicList" name="POST">
+        <method id="favorites_getPublicList" name="POST">
           <doc xml:lang="en">Returns a list of favorite public photos for the given user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -292,7 +292,7 @@
           </response>
           
         </method>
-        <method id="flickr.favorites_remove" name="POST">
+        <method id="favorites_remove" name="POST">
           <doc xml:lang="en">Removes a photo from a user's favorites list.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -310,7 +310,7 @@
           </response>
           
         </method>
-        <method id="flickr.groups_browse" name="POST">
+        <method id="groups_browse" name="POST">
           <doc xml:lang="en">Browse the group category tree, finding groups and sub-categories.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -328,7 +328,7 @@
           </response>
           
         </method>
-        <method id="flickr.groups_getInfo" name="POST">
+        <method id="groups_getInfo" name="POST">
           <doc xml:lang="en">Get information about a group.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -351,7 +351,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_pools_add" name="POST">
+        <method id="groups_pools_add" name="POST">
           <doc xml:lang="en">Add a photo to a group's pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -372,7 +372,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_pools_getContext" name="POST">
+        <method id="groups_pools_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a group pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -393,7 +393,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_pools_getGroups" name="POST">
+        <method id="groups_pools_getGroups" name="POST">
           <doc xml:lang="en">Returns a list of groups to which you can add photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -414,7 +414,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_pools_getPhotos" name="POST">
+        <method id="groups_pools_getPhotos" name="POST">
           <doc xml:lang="en">Returns a list of pool photos for a given group, based on the permissions of the group and the user logged in (if any).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -447,7 +447,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_pools_remove" name="POST">
+        <method id="groups_pools_remove" name="POST">
           <doc xml:lang="en">Remove a photo from a group pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -468,7 +468,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.groups_search" name="POST">
+        <method id="groups_search" name="POST">
           <doc xml:lang="en">Search for groups. 18+ groups will only be returned for authenticated calls where the authenticated user is over 18.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -492,7 +492,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.interestingness_getList" name="POST">
+        <method id="interestingness_getList" name="POST">
           <doc xml:lang="en">Returns the list of interesting photos for the most recent day or a user-specified date.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -519,7 +519,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_findByEmail" name="POST">
+        <method id="people_findByEmail" name="POST">
           <doc xml:lang="en">Return a user's NSID, given their email address</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -537,7 +537,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_findByUsername" name="POST">
+        <method id="people_findByUsername" name="POST">
           <doc xml:lang="en">Return a user's NSID, given their username.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -555,7 +555,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_getInfo" name="POST">
+        <method id="people_getInfo" name="POST">
           <doc xml:lang="en">Get information about a user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -573,7 +573,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_getPublicGroups" name="POST">
+        <method id="people_getPublicGroups" name="POST">
           <doc xml:lang="en">Returns the list of public groups a user is a member of.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -591,7 +591,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_getPublicPhotos" name="POST">
+        <method id="people_getPublicPhotos" name="POST">
           <doc xml:lang="en">Get a list of public photos for the given user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -629,7 +629,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.people_getUploadStatus" name="POST">
+        <method id="people_getUploadStatus" name="POST">
           <doc xml:lang="en">Returns information for the calling user related to photo uploads.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -644,7 +644,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_addTags" name="POST">
+        <method id="photos_addTags" name="POST">
           <doc xml:lang="en">Add tags to a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -665,7 +665,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_comments_addComment" name="POST">
+        <method id="photos_comments_addComment" name="POST">
           <doc xml:lang="en">Add comment to a photo as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -686,7 +686,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_comments_deleteComment" name="POST">
+        <method id="photos_comments_deleteComment" name="POST">
           <doc xml:lang="en">Delete a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -704,7 +704,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_comments_editComment" name="POST">
+        <method id="photos_comments_editComment" name="POST">
           <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -725,7 +725,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_comments_getList" name="POST">
+        <method id="photos_comments_getList" name="POST">
           <doc xml:lang="en">Returns the comments for a photo</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -743,7 +743,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_delete" name="POST">
+        <method id="photos_delete" name="POST">
           <doc xml:lang="en">Delete a photo from flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -761,7 +761,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_geo_getLocation" name="POST">
+        <method id="photos_geo_getLocation" name="POST">
           <doc xml:lang="en">Get the geo data (latitude and longitude and the accuracy level) for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -779,7 +779,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_geo_getPerms" name="POST">
+        <method id="photos_geo_getPerms" name="POST">
           <doc xml:lang="en">Get permissions for who may view geo data for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -797,7 +797,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_geo_removeLocation" name="POST">
+        <method id="photos_geo_removeLocation" name="POST">
           <doc xml:lang="en">Removes the geo data associated with a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -815,7 +815,7 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
           </response>
           
         </method>
-        <method id="flickr.photos_geo_setLocation" name="POST">
+        <method id="photos_geo_setLocation" name="POST">
           <doc xml:lang="en">Sets the geo data (latitude and longitude and, optionally, the accuracy level) for a photo.
 
 Before users may assign location data to a photo they must define who, by default, may view that information. Users can edit this preference at &lt;a href="http://www.flickr.com/account/geo/privacy/"&gt;http://www.flickr.com/account/geo/privacy/&lt;/a&gt;. If a user has not set this preference, the API method will return an error.</doc>
@@ -844,7 +844,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_geo_setPerms" name="POST">
+        <method id="photos_geo_setPerms" name="POST">
           <doc xml:lang="en">Set the permission for who may view the geo data associated with a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -874,7 +874,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getAllContexts" name="POST">
+        <method id="photos_getAllContexts" name="POST">
           <doc xml:lang="en">Returns all visible sets and pools the photo belongs to.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -892,7 +892,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getContactsPhotos" name="POST">
+        <method id="photos_getContactsPhotos" name="POST">
           <doc xml:lang="en">Fetch a list of recent photos from the calling users' contacts.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -922,7 +922,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getContactsPublicPhotos" name="POST">
+        <method id="photos_getContactsPublicPhotos" name="POST">
           <doc xml:lang="en">Fetch a list of recent public photos from a users' contacts.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -955,7 +955,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getContext" name="POST">
+        <method id="photos_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a photostream.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -973,7 +973,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getCounts" name="POST">
+        <method id="photos_getCounts" name="POST">
           <doc xml:lang="en">Gets a list of photo counts for the given date ranges for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -994,7 +994,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getExif" name="POST">
+        <method id="photos_getExif" name="POST">
           <doc xml:lang="en">Retrieves a list of EXIF/TIFF/GPS tags for a given photo. The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1015,7 +1015,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getFavorites" name="POST">
+        <method id="photos_getFavorites" name="POST">
           <doc xml:lang="en">Returns the list of people who have favorited a given photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1039,7 +1039,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getInfo" name="POST">
+        <method id="photos_getInfo" name="POST">
           <doc xml:lang="en">Get information about a photo. The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1060,7 +1060,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getNotInSet" name="POST">
+        <method id="photos_getNotInSet" name="POST">
           <doc xml:lang="en">Returns a list of your photos that are not part of any sets.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1106,7 +1106,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getPerms" name="POST">
+        <method id="photos_getPerms" name="POST">
           <doc xml:lang="en">Get permissions for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1124,7 +1124,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getRecent" name="POST">
+        <method id="photos_getRecent" name="POST">
           <doc xml:lang="en">Returns a list of the latest public photos uploaded to flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1148,7 +1148,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getSizes" name="POST">
+        <method id="photos_getSizes" name="POST">
           <doc xml:lang="en">Returns the available sizes for a photo.  The calling user must have permission to view the photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1166,7 +1166,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getUntagged" name="POST">
+        <method id="photos_getUntagged" name="POST">
           <doc xml:lang="en">Returns a list of your photos with no tags.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1212,7 +1212,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getWithGeoData" name="POST">
+        <method id="photos_getWithGeoData" name="POST">
           <doc xml:lang="en">Returns a list of your geo-tagged photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1261,7 +1261,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_getWithoutGeoData" name="POST">
+        <method id="photos_getWithoutGeoData" name="POST">
           <doc xml:lang="en">Returns a list of your photos which haven't been geo-tagged.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1310,7 +1310,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_licenses_getInfo" name="POST">
+        <method id="photos_licenses_getInfo" name="POST">
           <doc xml:lang="en">Fetches a list of available photo licenses for Flickr.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1325,7 +1325,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_licenses_setLicense" name="POST">
+        <method id="photos_licenses_setLicense" name="POST">
           <doc xml:lang="en">Sets the license for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1346,7 +1346,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_notes_add" name="POST">
+        <method id="photos_notes_add" name="POST">
           <doc xml:lang="en">Add a note to a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1379,7 +1379,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_notes_delete" name="POST">
+        <method id="photos_notes_delete" name="POST">
           <doc xml:lang="en">Delete a note from a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1397,7 +1397,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_notes_edit" name="POST">
+        <method id="photos_notes_edit" name="POST">
           <doc xml:lang="en">Edit a note on a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1430,7 +1430,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_recentlyUpdated" name="POST">
+        <method id="photos_recentlyUpdated" name="POST">
           <doc xml:lang="en">&lt;p&gt;Return a list of your photos that have been recently created or which have been recently modified.&lt;/p&gt;
 
 &lt;p&gt;Recently modified may mean that the photo's metadata (title, description, tags) may have been changed or a comment has been added (or just modified somehow :-)&lt;/p&gt;</doc>
@@ -1459,7 +1459,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_removeTag" name="POST">
+        <method id="photos_removeTag" name="POST">
           <doc xml:lang="en">Remove a tag from a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1477,7 +1477,7 @@ Before users may assign location data to a photo they must define who, by defaul
           </response>
           
         </method>
-        <method id="flickr.photos_search" name="POST">
+        <method id="photos_search" name="POST">
           <doc xml:lang="en">Return a list of photos matching some criteria. Only photos visible to the calling user will be returned. To return private or semi-private photos, the caller must be authenticated with 'read' permissions, and have permission to view the photos. Unauthenticated calls will only return public photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1626,7 +1626,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setContentType" name="POST">
+        <method id="photos_setContentType" name="POST">
           <doc xml:lang="en">Set the content type of a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1647,7 +1647,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setDates" name="POST">
+        <method id="photos_setDates" name="POST">
           <doc xml:lang="en">Set one or both of the dates for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1674,7 +1674,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setMeta" name="POST">
+        <method id="photos_setMeta" name="POST">
           <doc xml:lang="en">Set the meta information for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1698,7 +1698,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setPerms" name="POST">
+        <method id="photos_setPerms" name="POST">
           <doc xml:lang="en">Set permissions for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1736,7 +1736,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setSafetyLevel" name="POST">
+        <method id="photos_setSafetyLevel" name="POST">
           <doc xml:lang="en">Set the safety level of a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1762,7 +1762,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_setTags" name="POST">
+        <method id="photos_setTags" name="POST">
           <doc xml:lang="en">Set the tags for a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1783,7 +1783,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_transform_rotate" name="POST">
+        <method id="photos_transform_rotate" name="POST">
           <doc xml:lang="en">Rotate a photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1804,7 +1804,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photos_upload_checkTickets" name="POST">
+        <method id="photos_upload_checkTickets" name="POST">
           <doc xml:lang="en">Checks the status of one or more asynchronous photo upload tickets.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1822,7 +1822,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_addPhoto" name="POST">
+        <method id="photosets_addPhoto" name="POST">
           <doc xml:lang="en">Add a photo to the end of an existing photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1843,7 +1843,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_comments_addComment" name="POST">
+        <method id="photosets_comments_addComment" name="POST">
           <doc xml:lang="en">Add a comment to a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1864,7 +1864,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_comments_deleteComment" name="POST">
+        <method id="photosets_comments_deleteComment" name="POST">
           <doc xml:lang="en">Delete a photoset comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1882,7 +1882,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_comments_editComment" name="POST">
+        <method id="photosets_comments_editComment" name="POST">
           <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1903,7 +1903,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_comments_getList" name="POST">
+        <method id="photosets_comments_getList" name="POST">
           <doc xml:lang="en">Returns the comments for a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1921,7 +1921,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_create" name="POST">
+        <method id="photosets_create" name="POST">
           <doc xml:lang="en">Create a new photoset for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1945,7 +1945,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_delete" name="POST">
+        <method id="photosets_delete" name="POST">
           <doc xml:lang="en">Delete a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1963,7 +1963,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_editMeta" name="POST">
+        <method id="photosets_editMeta" name="POST">
           <doc xml:lang="en">Modify the meta-data for a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -1987,7 +1987,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_editPhotos" name="POST">
+        <method id="photosets_editPhotos" name="POST">
           <doc xml:lang="en">Modify the photos in a photoset. Use this method to add, remove and re-order photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2011,7 +2011,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_getContext" name="POST">
+        <method id="photosets_getContext" name="POST">
           <doc xml:lang="en">Returns next and previous photos for a photo in a set.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2032,7 +2032,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_getInfo" name="POST">
+        <method id="photosets_getInfo" name="POST">
           <doc xml:lang="en">Gets information about a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2050,7 +2050,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_getList" name="POST">
+        <method id="photosets_getList" name="POST">
           <doc xml:lang="en">Returns the photosets belonging to the specified user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2068,7 +2068,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_getPhotos" name="POST">
+        <method id="photosets_getPhotos" name="POST">
           <doc xml:lang="en">Get the list of photos in a set.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2105,7 +2105,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_orderSets" name="POST">
+        <method id="photosets_orderSets" name="POST">
           <doc xml:lang="en">Set the order of photosets for the calling user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2123,7 +2123,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.photosets_removePhoto" name="POST">
+        <method id="photosets_removePhoto" name="POST">
           <doc xml:lang="en">Remove a photo from a photoset.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2144,7 +2144,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
           </response>
           
         </method>
-        <method id="flickr.places_find" name="POST">
+        <method id="places_find" name="POST">
           <doc xml:lang="en">Return a list of place IDs for a query string.&lt;br /&gt;&lt;br /&gt;
 The flickr.places.find method is &lt;b&gt;not&lt;/b&gt; a geocoder. It will round &lt;q&gt;up&lt;/q&gt; to the nearest place type to which place IDs apply. For example, if you pass it a street level address it will return the city that contains the address rather than the street, or building, itself.</doc>
           <request>
@@ -2163,7 +2163,7 @@ The flickr.places.find method is &lt;b&gt;not&lt;/b&gt; a geocoder. It will roun
           </response>
           
         </method>
-        <method id="flickr.places_findByLatLon" name="POST">
+        <method id="places_findByLatLon" name="POST">
           <doc xml:lang="en">Return a place ID for a latitude, longitude and accuracy triple.&lt;br /&gt;&lt;br /&gt;
 The flickr.places.findByLatLon method is not meant to be a (reverse) geocoder in the traditional sense. It is designed to allow users to find photos for "places" and will round up to the nearest place type to which corresponding place IDs apply.&lt;br /&gt;&lt;br /&gt;
 For example, if you pass it a street level coordinate it will return the city that contains the point rather than the street, or building, itself.&lt;br /&gt;&lt;br /&gt;
@@ -2190,7 +2190,7 @@ It will also truncate latitudes and longitudes to three decimal points.</doc>
           </response>
           
         </method>
-        <method id="flickr.places_resolvePlaceId" name="POST">
+        <method id="places_resolvePlaceId" name="POST">
           <doc xml:lang="en">Find Flickr Places information by Place Id</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2208,7 +2208,7 @@ It will also truncate latitudes and longitudes to three decimal points.</doc>
           </response>
           
         </method>
-        <method id="flickr.places_resolvePlaceURL" name="POST">
+        <method id="places_resolvePlaceURL" name="POST">
           <doc xml:lang="en">Find Flickr Places information by Place URL.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2228,7 +2228,7 @@ Flickr Place URLs are of the form /country/region/city</doc>
           </response>
           
         </method>
-        <method id="flickr.prefs_getContentType" name="POST">
+        <method id="prefs_getContentType" name="POST">
           <doc xml:lang="en">Returns the default content type preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2243,7 +2243,7 @@ Flickr Place URLs are of the form /country/region/city</doc>
           </response>
           
         </method>
-        <method id="flickr.prefs_getHidden" name="POST">
+        <method id="prefs_getHidden" name="POST">
           <doc xml:lang="en">Returns the default hidden preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2258,7 +2258,7 @@ Flickr Place URLs are of the form /country/region/city</doc>
           </response>
           
         </method>
-        <method id="flickr.prefs_getPrivacy" name="POST">
+        <method id="prefs_getPrivacy" name="POST">
           <doc xml:lang="en">Returns the default privacy level preference for the user.
 
 Possible values are:
@@ -2282,7 +2282,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.prefs_getSafetyLevel" name="POST">
+        <method id="prefs_getSafetyLevel" name="POST">
           <doc xml:lang="en">Returns the default safety level preference for the user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2297,7 +2297,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.reflection_getMethodInfo" name="POST">
+        <method id="reflection_getMethodInfo" name="POST">
           <doc xml:lang="en">Returns information for a given flickr API method.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2315,7 +2315,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.reflection_getMethods" name="POST">
+        <method id="reflection_getMethods" name="POST">
           <doc xml:lang="en">Returns a list of available flickr API methods.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2330,7 +2330,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getHotList" name="POST">
+        <method id="tags_getHotList" name="POST">
           <doc xml:lang="en">Returns a list of hot tags for the given period.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2351,7 +2351,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getListPhoto" name="POST">
+        <method id="tags_getListPhoto" name="POST">
           <doc xml:lang="en">Get the tag list for a given photo.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2369,7 +2369,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getListUser" name="POST">
+        <method id="tags_getListUser" name="POST">
           <doc xml:lang="en">Get the tag list for a given user (or the currently logged in user).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2387,7 +2387,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getListUserPopular" name="POST">
+        <method id="tags_getListUserPopular" name="POST">
           <doc xml:lang="en">Get the popular tags for a given user (or the currently logged in user).</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2408,7 +2408,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getListUserRaw" name="POST">
+        <method id="tags_getListUserRaw" name="POST">
           <doc xml:lang="en">Get the raw versions of a given tag (or all tags) for the currently logged-in user.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2426,7 +2426,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.tags_getRelated" name="POST">
+        <method id="tags_getRelated" name="POST">
           <doc xml:lang="en">Returns a list of tags 'related' to the given tag, based on clustered usage analysis.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2444,7 +2444,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.test_echo" name="POST">
+        <method id="test_echo" name="POST">
           <doc xml:lang="en">A testing method which echo's all parameters back in the response.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2459,7 +2459,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.test_login" name="POST">
+        <method id="test_login" name="POST">
           <doc xml:lang="en">A testing method which checks if the caller is logged in then returns their username.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2474,7 +2474,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.test_null" name="POST">
+        <method id="test_null" name="POST">
           <doc xml:lang="en">Null test</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2489,7 +2489,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.urls_getGroup" name="POST">
+        <method id="urls_getGroup" name="POST">
           <doc xml:lang="en">Returns the url to a group's page.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2507,7 +2507,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.urls_getUserPhotos" name="POST">
+        <method id="urls_getUserPhotos" name="POST">
           <doc xml:lang="en">Returns the url to a user's photos.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2525,7 +2525,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.urls_getUserProfile" name="POST">
+        <method id="urls_getUserProfile" name="POST">
           <doc xml:lang="en">Returns the url to a user's profile.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2543,7 +2543,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.urls_lookupGroup" name="POST">
+        <method id="urls_lookupGroup" name="POST">
           <doc xml:lang="en">Returns a group NSID, given the url to a group's page or photo pool.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">
@@ -2561,7 +2561,7 @@ Possible values are:
           </response>
           
         </method>
-        <method id="flickr.urls_lookupUser" name="POST">
+        <method id="urls_lookupUser" name="POST">
           <doc xml:lang="en">Returns a user NSID, given the url to a user's photos or profile.</doc>
           <request>
             <param name="api_key" required="true" style="query" type="xsd:string">

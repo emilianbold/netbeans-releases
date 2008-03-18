@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import org.netbeans.modules.websvc.rest.support.*;
@@ -177,7 +176,7 @@ public class EntityClassInfo {
 
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
-      
+
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
                     extractPKFields(classElement);
                 }
@@ -343,10 +342,12 @@ public class EntityClassInfo {
 
         public boolean isId() {
             return matchAnnotation("@javax.persistence.Id") || matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
+
         }
 
         public boolean isEmbeddedId() {
             return matchAnnotation("@javax.persistence.EmbeddedId"); //NOI18N
+
         }
 
         public boolean isRelationship() {
@@ -355,18 +356,22 @@ public class EntityClassInfo {
 
         public boolean isOneToOne() {
             return matchAnnotation("@javax.persistence.OneToOne"); //NOI18N
+
         }
 
         public boolean isOneToMany() {
             return matchAnnotation("@javax.persistence.OneToMany"); //NOI18N
+
         }
 
         public boolean isManyToOne() {
             return matchAnnotation("@javax.persistence.ManyToOne"); //NOI18N
+
         }
 
         public boolean isManyToMany() {
             return matchAnnotation("@javax.persistence.ManyToMany"); //NOI18N
+
         }
 
         private boolean matchAnnotation(String annotation) {

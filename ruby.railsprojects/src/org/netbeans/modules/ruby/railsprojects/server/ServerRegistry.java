@@ -149,7 +149,7 @@ public class ServerRegistry implements VetoableChangeListener {
             this.platform = platform;
         }
 
-        public static RubyServerFactory getInstance(RubyPlatform platform) {
+        public static synchronized RubyServerFactory getInstance(RubyPlatform platform) {
             RubyServerFactory existing = instances.get(platform);
             if (existing != null) {
                 return existing;
