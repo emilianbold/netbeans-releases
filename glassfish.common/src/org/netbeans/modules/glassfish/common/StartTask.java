@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
@@ -84,7 +86,8 @@ public class StartTask extends BasicTask<OperationState> {
     public OperationState call() {
         // Save the current time so that we can deduct that the startup
         // Failed due to timeout
-        System.out.println("StartTask.call() called on thread \"" + Thread.currentThread().getName() + "\"");
+        Logger.getLogger("glassfish").log(Level.FINEST, 
+                "StartTask.call() called on thread \"" + Thread.currentThread().getName() + "\"");
         long start = System.currentTimeMillis();
 
         String host = null;
