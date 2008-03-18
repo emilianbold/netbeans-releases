@@ -75,6 +75,8 @@ import org.netbeans.spi.glassfish.OperationStateListener;
  */
 public class CommandRunner extends BasicTask<OperationState> {
     
+    public final int HTTP_RETRY_DELAY = 3000;
+    
     /** Executor that serializes management tasks. 
      */
     private static ExecutorService executor;
@@ -249,16 +251,18 @@ public class CommandRunner extends BasicTask<OperationState> {
         URLConnection conn = null;
         String commandUrl = constructCommandUrl(true);
         
-        System.out.println("CommandRunner.call(" + commandUrl + ") called on thread \"" + 
+        Logger.getLogger("glassfish").log(Level.FINEST, 
+                "CommandRunner.call(" + commandUrl + ") called on thread \"" + 
                 Thread.currentThread().getName() + "\"");
         
         // Create a connection for this command
         try {
             urlToConnectTo = new URL(commandUrl);
-            Logger.getLogger("glassfish").log(Level.INFO, "V3 HTTP Command: " + commandUrl);
 
-            while(retries-- > 0) {
+            while(!succeeded && retries-- > 0) {
                 try {
+                    Logger.getLogger("glassfish").log(Level.FINE, "V3 HTTP Command: " + commandUrl );
+
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
                         HttpURLConnection hconn = (HttpURLConnection) conn;
@@ -290,7 +294,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                             // connection to manager has not been allowed
                             authorized = false;
                             return fireOperationStateChanged(OperationState.FAILED, 
-                                    "MSG_AuthorizationFailed", serverCmd.toString(), instanceName);
+                                    "MSG_AuthorizationFailed", serverCmd.toString(), instanceName); // NOI18N
                         }
 
                         // !PW FIXME log status for debugging purposes
@@ -307,23 +311,23 @@ public class CommandRunner extends BasicTask<OperationState> {
                             succeeded = serverCmd.processResponse();
                         }
                     } else {
-                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " + 
+                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " +
                                 urlToConnectTo);
                     }
                 } catch(ProtocolException ex) {
-                    fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", 
+                    fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
                             ex.getLocalizedMessage());
                     retries = 0;
                 } catch(IOException ex) {
                     if(retries <= 0) {
-                        fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", 
+                        fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
                                 ex.getLocalizedMessage());
                     }
                 }
-
+                
                 if(!succeeded && retries > 0) {
                     try {
-                        Thread.sleep(3000);
+                        Thread.sleep(HTTP_RETRY_DELAY);
                     } catch (InterruptedException e) {}
                 }
             } // while
@@ -332,10 +336,10 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
         
         if(succeeded) {
-            return fireOperationStateChanged(OperationState.COMPLETED, "MSG_ServerCmdCompleted", 
+            return fireOperationStateChanged(OperationState.COMPLETED, "MSG_ServerCmdCompleted", // NOI18N
                     serverCmd.toString(), instanceName);
         } else {
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailed", 
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailed", // NOI18N
                     serverCmd.toString(), instanceName);
         }
     }
