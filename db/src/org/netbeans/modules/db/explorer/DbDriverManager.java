@@ -119,6 +119,12 @@ public class DbDriverManager {
         // we'll look ourselves in DriverManager, don't look there
         Driver driver = getDriverInternal(databaseURL, jdbcDriver, false);
         if (driver != null) {
+            // Issue XXXX - If this is MySQL, set up the connection to be
+            // a Unicode/utf8 connection
+            if ( driver.getClass().getName().equals("com.mysql.jdbc.Driver") ) { // NOI18N
+                props.put("useUnicode", "true");
+                props.put("characterEncoding", "utf8");
+            }
             Connection conn = driver.connect(databaseURL, props);
             if (conn == null) {
                 if (LOG) {
