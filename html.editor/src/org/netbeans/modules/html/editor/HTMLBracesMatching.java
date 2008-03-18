@@ -188,14 +188,22 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 if (origin != null) {
                     if (origin.type() == AstNode.NodeType.OPEN_TAG) {
                         AstNode parent = origin.parent();
-                        //last element must be the matching tag
-                        AstNode endTag = parent.children().get(parent.children().size() - 1);
-                        return translate(new int[]{endTag.startOffset(), endTag.endOffset()}, result.getTranslatedSource());
+                        if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                            return null;
+                        } else {
+                            //last element must be the matching tag
+                            AstNode endTag = parent.children().get(parent.children().size() - 1);
+                            return translate(new int[]{endTag.startOffset(), endTag.endOffset()}, result.getTranslatedSource());
+                        }
                     } else if (origin.type() == AstNode.NodeType.ENDTAG) {
                         AstNode parent = origin.parent();
-                        //first element must be the matching tag
-                        AstNode openTag = parent.children().get(0);
-                        return translate(new int[]{openTag.startOffset(), openTag.endOffset()}, result.getTranslatedSource());
+                        if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                            return null;
+                        } else {
+                            //first element must be the matching tag
+                            AstNode openTag = parent.children().get(0);
+                            return translate(new int[]{openTag.startOffset(), openTag.endOffset()}, result.getTranslatedSource());
+                        }
                     } else if (origin.type() == AstNode.NodeType.COMMENT) {
                         int so = origin.startOffset();
                         if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {

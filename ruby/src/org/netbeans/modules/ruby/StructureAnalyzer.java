@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -100,9 +100,7 @@ import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
 
 /**
  * @todo Access modifiers
@@ -123,6 +121,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class StructureAnalyzer implements StructureScanner {
+    
     private Set<AstClassElement> haveAccessModifiers;
     private List<AstElement> structure;
     private Map<AstClassElement, Set<InstAsgnNode>> fields;
@@ -131,7 +130,6 @@ public class StructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private HtmlFormatter formatter;
     private CompilationInfo info;
-    private RubyParseResult result;
 
     private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
     private static ImageIcon keywordIcon;
@@ -145,7 +143,7 @@ public class StructureAnalyzer implements StructureScanner {
         }
 
         
-        this.result = AstUtilities.getParseResult(info);
+        RubyParseResult result = AstUtilities.getParseResult(info);
         this.info = info;
         this.formatter = formatter;
 
@@ -956,6 +954,17 @@ public class StructureAnalyzer implements StructureScanner {
                 return false;
             }
 
+            if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
+                // consider parameters names and thus their arity (issue 101508)
+                List<String> parameters = ((AstMethodElement) node).getParameters();
+                List<String> dparameters = ((AstMethodElement) d.node).getParameters();
+                if (parameters == null) {
+                    return dparameters == null;
+                } else {
+                    return parameters.equals(dparameters);
+                }
+            }
+
             //            if ( !this.elementHandle.signatureEquals(d.elementHandle) ) {
             //                return false;
             //            }
@@ -977,6 +986,12 @@ public class StructureAnalyzer implements StructureScanner {
 
             hash = (29 * hash) + ((this.getName() != null) ? this.getName().hashCode() : 0);
             hash = (29 * hash) + ((this.kind != null) ? this.kind.hashCode() : 0);
+
+            if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
+                // consider also arity
+                Arity arity = Arity.getDefArity(node.getNode());
+                hash = 37 * hash + arity.hashCode();
+            }
 
             // hash = 29 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
             return hash;
@@ -1177,10 +1192,11 @@ public class StructureAnalyzer implements StructureScanner {
     }
     
     private class RhtmlStructureItem implements StructureItem {
-        private String name;
-        private HtmlFormatter formatter;
-        private int start;
-        private int end;
+        
+        private final String name;
+        private final HtmlFormatter formatter;
+        private final int start;
+        private final int end;
 
         public RhtmlStructureItem(String name, HtmlFormatter formatter, int start, int end) {
             this.name = name;

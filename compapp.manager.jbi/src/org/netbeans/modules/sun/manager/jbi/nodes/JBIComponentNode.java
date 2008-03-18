@@ -802,9 +802,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Shutdownable ==================================
-    public boolean canShutdown() {
+    public boolean canShutdown(boolean force) {
         return canStop() ||
-                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState());
+                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState()) ||
+                force && !JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
     public void shutdown(boolean force) {
@@ -857,8 +858,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Uninstallable =================================
-    public boolean canUninstall() {
-        return canShutdown() ||
+    public boolean canUninstall(boolean force) {
+        return force || canShutdown(force) ||
                 !busy && JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
@@ -883,7 +884,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
-        if (canUndeploy()) {
+        if (canUndeploy(force)) {
             if (!undeploy(force)) { // undeployment cancelled or failed
                 return;
             }
@@ -894,7 +895,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return;
         }
 
-        if (canShutdown()) {
+        if (canShutdown(force)) {
             shutdown(force);
         }
 
@@ -1306,7 +1307,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             RuntimeManagementServiceWrapper mgmtService =
                     getRuntimeManagementServiceWrapper();
             if (mgmtService == null) {
@@ -1772,7 +1773,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             return false;
         }
 

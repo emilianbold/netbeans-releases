@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.iep.model;
 
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  *
@@ -97,5 +99,12 @@ public interface Import extends IEPComponent {
     
     Component getParentComponent();
     
-    
+    /**
+     * Returns the imported WSDL model.
+     *
+     * @return a WSDL model object if the import location or namespace resolves 
+     * into a model source and the model source is well-formed; 
+     * @exception DepResolverException if location or namespace values cannot resolve;
+     */    
+    WSDLModel getImportedWSDLModel() throws CatalogModelException;
 }

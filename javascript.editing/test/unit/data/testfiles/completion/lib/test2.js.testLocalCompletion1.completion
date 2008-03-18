@@ -71,6 +71,7 @@ CLASS      EvalError                                  Core JS
 CLASS      Event                                      DOM
 CLASS      EventException                             DOM
 CLASS      EventTarget                                DOM
+CLASS      FlashPlayer                                DOM
 CLASS      Form                                       DOM
 CLASS      Function                                   Core JS
 CLASS      HTMLAnchorElement                          DOM
@@ -190,16 +191,16 @@ VARIABLE   element1
 VARIABLE   foo1                                       
 VARIABLE   options1                                   
 VARIABLE   update1                                    
-GLOBAL     cssRule                                    DOM
-GLOBAL     form                                       DOM
-GLOBAL     navigator                                  DOM
-GLOBAL     screen                                     DOM
-GLOBAL     selection                                  DOM
-GLOBAL     style                                      DOM
-GLOBAL     stylesheet                                 DOM
-GLOBAL     table                                      DOM
-GLOBAL     tableRow                                   DOM
-GLOBAL     window                                     DOM
+GLOBAL     cssRule : CSSRule                          DOM
+GLOBAL     form : Form                                DOM
+GLOBAL     navigator : Navigator                      DOM
+GLOBAL     screen : Screen                            DOM
+GLOBAL     selection : Selection                      DOM
+GLOBAL     style : Style                              DOM
+GLOBAL     stylesheet : Stylesheet                    DOM
+GLOBAL     table : Table                              DOM
+GLOBAL     tableRow : TableRow                        DOM
+GLOBAL     window : Window                            DOM
 PROPERTY   AbstractView                               DOM
 PROPERTY   Arguments                                  Core JS
 PROPERTY   Array                                      Core JS
@@ -262,6 +263,7 @@ PROPERTY   EventException                             DOM
 PROPERTY   EventListener                              DOM
 PROPERTY   EventTarget                                DOM
 PROPERTY   ExceptionCode                              DOM
+PROPERTY   FlashPlayer                                DOM
 PROPERTY   Form                                       DOM
 PROPERTY   Function                                   Core JS
 PROPERTY   HTMLAnchorElement                          DOM
@@ -382,14 +384,14 @@ PROPERTY   Window                                     DOM
 PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
 METHOD     eval(string)                               Object
-METHOD     hasOwnProperty(prop)                       Object
-METHOD     isPrototypeOf(object)                      Object
-METHOD     propertyIsEnumerable(prop)                 Object
-METHOD     toLocaleString()                           Object
-METHOD     toSource()                                 Object
-METHOD     toString()                                 Object
+METHOD     hasOwnProperty(prop) : Boolean             Object
+METHOD     isPrototypeOf(object) : Boolea             Object
+METHOD     propertyIsEnumerable(prop) : B             Object
+METHOD     toLocaleString() : String                  Object
+METHOD     toSource() : void                          Object
+METHOD     toString() : String                        Object
 METHOD     unwatch(prop)                              Object
-METHOD     valueOf()                                  Object
+METHOD     valueOf() : void                           Object
 METHOD     watch(prop, handler)                       Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null

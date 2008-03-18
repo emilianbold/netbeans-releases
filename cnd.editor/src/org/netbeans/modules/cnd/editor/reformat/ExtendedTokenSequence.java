@@ -632,7 +632,8 @@ public class ExtendedTokenSequence {
                     buf.insert(start, text);
                 }
             }
-            return buf.toString();
+            return buf.toString().replaceAll("\n", "\\\\n\n"); //NOI18N
+            //return buf.toString();
         } finally {
             ts.moveIndex(index);
             ts.moveNext();
