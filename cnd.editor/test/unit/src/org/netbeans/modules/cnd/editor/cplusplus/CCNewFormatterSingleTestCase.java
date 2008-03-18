@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -168,46 +164,26 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testLabelIndentHalf() {
+    public void testDereferenceFormatting() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
-                "  start: while(true){\n" +
-                "int i = 0;\n" +
-                "goto start;\n" +
-                "end:\n" +
-                "if(true){\n" +
-                "foo();\n" +
-                "second:\n" +
-                "foo();\n" +
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
                 "}\n" +
-                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect label half indent",
+        assertDocumentText("Incorrect * formating",
                 "int foo()\n" +
                 "{\n" +
-                "start:\n" +
-                "  while (true)\n" +
-                "    {\n" +
-                "      int i = 0;\n" +
-                "      goto start;\n" +
-                "end:\n" +
-                "      if (true)\n" +
-                "        {\n" +
-                "          foo();\n" +
-                "second:\n" +
-                "          foo();\n" +
-                "        }\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
                 "    }\n" +
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
                 "}\n");
     }
-
 }

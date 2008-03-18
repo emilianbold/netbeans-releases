@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.editor.reformat;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
@@ -102,6 +103,12 @@ class StackEntry {
                     case LPAREN: //("(", "separator"),
                     {
                         if (paren == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             likeToArrayInitialization = true;
                             return;
                         }
@@ -121,6 +128,12 @@ class StackEntry {
                     case EQ: //("=", "operator"),
                     {
                         if (paren == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             likeToArrayInitialization = true;
                             likeToFunction = false;
                             return;
@@ -130,6 +143,12 @@ class StackEntry {
                     case GT: //(">", "operator"),
                     {
                         if (paren == 0 && curly == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             triangle++;
                         }
                         break;
@@ -138,6 +157,12 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0) {
                             if (triangle == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                                if (prev != null && prev.id() == OPERATOR) {
+                                    likeToArrayInitialization = false;
+                                    likeToFunction = true;
+                                    return;
+                                }
                                 // undefined
                                 return;
                             }

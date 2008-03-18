@@ -1104,6 +1104,36 @@ public class ReformatterImpl {
                             }
                             break;
                         }
+                        case FOR:
+                        {
+                            if (codeStyle.alignMultilineFor()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case IF:
+                        {
+                            if (codeStyle.alignMultilineIfCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case WHILE:
+                        {
+                            if (codeStyle.alignMultilineWhileCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -1371,25 +1401,34 @@ public class ReformatterImpl {
     
     private void newLineBefore() {
         if (!ts.isFirstLineToken()) {
-           Token<CppTokenId> previous = ts.lookPrevious();
-           if (previous != null && previous.id() == WHITESPACE) {
+            Token<CppTokenId> previous = ts.lookPrevious();
+            if (previous != null) {
                 DiffResult diff = diffs.getDiffs(ts, -1);
-                if (diff != null) {
-                    if (diff.after != null) {
-                        diff.after.setText(1, getParentIndent());
-                        if (diff.replace != null){
-                            diff.replace.setText(0, 0);
+                if (previous.id() == WHITESPACE) {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            if (diff.replace != null) {
+                                diff.replace.setText(0, 0);
+                            }
+                            return;
+                        } else if (diff.replace != null) {
+                            diff.replace.setText(1, getParentIndent());
+                            return;
                         }
-                        return;
-                    } else if (diff.replace != null) {
-                        diff.replace.setText(1, getParentIndent());
-                        return;
+                    }
+                    ts.replacePrevious(previous, 1, getParentIndent());
+                    return;
+                } else {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            return;
+                        }
                     }
                 }
-               ts.replacePrevious(previous, 1, getParentIndent());
-           } else {
-               ts.addBeforeCurrent(1, getParentIndent());
-           }
+            }
+            ts.addBeforeCurrent(1, getParentIndent());
         } else {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
@@ -1536,7 +1575,9 @@ public class ReformatterImpl {
             } else if (canRemoveSpaceAfter(current)){
                 if (next.id() == WHITESPACE) {
                     Token<CppTokenId> n2 = ts.lookNext(2);
-                    if (n2 == null || !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
+                    if (n2 == null ||
+                        SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
+                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
                         ts.replaceNext(current, next, 0, 0);
                     }
                 }

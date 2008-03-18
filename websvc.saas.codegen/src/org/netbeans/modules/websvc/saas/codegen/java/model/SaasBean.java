@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.codegen.java.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -49,9 +50,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
@@ -62,7 +61,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Params;
 import org.netbeans.modules.websvc.saas.model.jaxb.Params.Param;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token.Frame;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token.Prompt;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
 import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
 
@@ -194,6 +193,7 @@ public abstract class SaasBean extends GenericResourceBean {
         this.resourceTemplate = template;
     }
     
+    @Override
     public SaasAuthenticationType getAuthenticationType() {
         return authType;
     }
@@ -203,6 +203,7 @@ public abstract class SaasBean extends GenericResourceBean {
     }
     
     
+    @Override
     public SaasAuthentication getAuthentication() {
         return auth;
     }
@@ -247,8 +248,12 @@ public abstract class SaasBean extends GenericResourceBean {
         return null;
     }
     
-    public void findAuthentication(SaasMethod m) {
+    public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
+        if(auth2 == null) {
+            throw new IOException("Element saas-services/service-metadata/authentication " +
+                    "missing in saas service xml for: "+getName());
+        }
         if(auth2.getHttpBasic() != null) {
             setAuthenticationType(SaasAuthenticationType.HTTP_BASIC);
             setAuthentication(new HttpBasicAuthentication());
@@ -282,13 +287,9 @@ public abstract class SaasBean extends GenericResourceBean {
             SessionKey sessionKey = auth2.getSessionKey();
             setAuthenticationType(SaasAuthenticationType.SESSION_KEY);
             SessionKeyAuthentication sessionKeyAuth = new SessionKeyAuthentication(
-                    sessionKey.getApiId());
-            if(sessionKey.getSessionId() != null) {
-                sessionKeyAuth.setSessionKeyName(sessionKey.getSessionId());
-            }
-            if(sessionKey.getSigId() != null) {
-                sessionKeyAuth.setSigKeyName(sessionKey.getSigId());
-            }
+                    sessionKey.getApiId(), 
+                    sessionKey.getSessionId(),
+                    sessionKey.getSigId());
             setAuthentication(sessionKeyAuth);
             Sign sign = sessionKey.getSign();
             if (sign != null) {
@@ -304,24 +305,34 @@ public abstract class SaasBean extends GenericResourceBean {
                 SaasBean.SessionKeyAuthentication.Login skLogin = sessionKeyAuth.createLogin();
                 sessionKeyAuth.setLogin(skLogin);
                 sign = login.getSign();
-                skLogin.setParameters(findSignParameters(sign));
+                if(sign != null) {
+                    skLogin.setSignId(sign.getId());
+                    skLogin.setParameters(findSignParameters(sign));
+                }
                 skLogin.setMethod(createSessionKeyMethod(login.getMethod(), sessionKeyAuth));
             }
             Token token = sessionKey.getToken();
             if(token != null) {
-                SaasBean.SessionKeyAuthentication.Token skToken = sessionKeyAuth.createToken();
+                SaasBean.SessionKeyAuthentication.Token skToken = sessionKeyAuth.createToken(token.getId());
                 sessionKeyAuth.setToken(skToken);
                 sign = token.getSign();
-                skToken.setParameters(findSignParameters(sign));
+                if(sign != null) {
+                    skToken.setSignId(sign.getId());
+                    skToken.setParameters(findSignParameters(sign));
+                }
                 skToken.setMethod(createSessionKeyMethod(token.getMethod(), sessionKeyAuth));
                 
-                Frame frame = token.getFrame();
-                if(frame != null) {
-                    SaasBean.SessionKeyAuthentication.Token.Frame skFrame = skToken.createFrame();
-                    skToken.setFrame(skFrame);
-                    sign = frame.getSign();
-                    skFrame.setParameters(findSignParameters(sign));
-                    skFrame.setUrl(frame.getUrl());
+                Prompt prompt = token.getPrompt();
+                if(prompt != null) {
+                    SaasBean.SessionKeyAuthentication.Token.Prompt skPrompt = skToken.createPrompt();
+                    skToken.setPrompt(skPrompt);
+                    sign = prompt.getSign();
+                    if(sign != null) {
+                        skPrompt.setSignId(sign.getId());
+                        skPrompt.setParameters(findSignParameters(sign));
+                    }
+                    skPrompt.setDesktopUrl(prompt.getDesktop().getUrl());
+                    skPrompt.setWebUrl(prompt.getWeb().getUrl());
                 }
             }
             Logout logout = sessionKey.getLogout();
@@ -444,8 +455,11 @@ public abstract class SaasBean extends GenericResourceBean {
         private SaasBean.SessionKeyAuthentication.Token token;
         private SaasBean.SessionKeyAuthentication.Logout logout;
 
-        public SessionKeyAuthentication(String apiId) {
+        public SessionKeyAuthentication(String apiId,
+                String sessionId, String sig) {
             this.apiId = apiId;
+            this.sessionId = sessionId;
+            this.sig = sig;
         }
         
         public String getApiKeyName() {
@@ -456,16 +470,8 @@ public abstract class SaasBean extends GenericResourceBean {
             return sessionId;
         }
 
-        public void setSessionKeyName(String sessionId) {
-            this.sessionId = sessionId;
-        }
-
         public String getSigKeyName() {
             return sig;
-        }
-        
-        public void setSigKeyName(String sig) {
-            this.sig = sig;
         }
         
         public List<ParameterInfo> getParameters() {
@@ -504,8 +510,8 @@ public abstract class SaasBean extends GenericResourceBean {
             return new Login();
         }
         
-        public Token createToken() {
-            return new Token();
+        public Token createToken(String id) {
+            return new Token(id);
         }
         
         public Logout createLogout() {
@@ -520,8 +526,17 @@ public abstract class SaasBean extends GenericResourceBean {
         
             List<ParameterInfo> params = Collections.emptyList();
             Method method;
+            String signId;
             
             public Login() {
+            }
+            
+            public String getSignId() {
+                return signId;
+            }
+            
+            public void setSignId(String signId) {
+                this.signId = signId;
             }
             
             public List<ParameterInfo> getParameters() {
@@ -543,45 +558,69 @@ public abstract class SaasBean extends GenericResourceBean {
         
         public class Token extends Login {
 
-            private Frame frame;
+            private String id;
+            private Prompt prompt;
 
-            public Token() {    
-            }
-
-            public Frame getFrame() {
-                return frame;
-            }
-
-            public void setFrame(Frame frame) {
-                this.frame = frame;
+            public Token(String id) { 
+                this.id = id;
             }
             
-            private Frame createFrame() {
-                return new Frame();
+            public String getId() {
+                return id;
+            }
+
+            public Prompt getPrompt() {
+                return prompt;
+            }
+
+            public void setPrompt(Prompt prompt) {
+                this.prompt = prompt;
             }
             
-            public class Frame {
+            private Prompt createPrompt() {
+                return new Prompt();
+            }
+            
+            public class Prompt {
 
-                private String url;
+                private String deskTopUrl;
+                private String webUrl;
                 List<ParameterInfo> params = Collections.emptyList();
+                private String signId;
 
-                public Frame() {    
+                public Prompt() {    
+                }
+                
+                public String getSignId() {
+                    return signId;
                 }
 
-                public String getUrl() {
-                    return url;
+                public void setSignId(String signId) {
+                    this.signId = signId;
                 }
-
-                public void setUrl(String url) {
-                    this.url = url;
-                }
-
+            
                 public List<ParameterInfo> getParameters() {
                     return params;
                 }
 
                 public void setParameters(List<ParameterInfo> params) {
                     this.params = params;
+                }
+
+                public String getDesktopUrl() {
+                    return deskTopUrl;
+                }
+                
+                public void setDesktopUrl(String deskTopUrl) {
+                    this.deskTopUrl = deskTopUrl;
+                }
+                
+                public String getWebUrl() {
+                    return webUrl;
+                }
+                
+                public void setWebUrl(String webUrl) {
+                    this.webUrl = webUrl;
                 }
             }
         }
