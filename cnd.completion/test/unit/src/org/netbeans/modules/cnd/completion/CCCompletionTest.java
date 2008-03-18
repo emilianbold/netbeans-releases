@@ -65,6 +65,7 @@ public class CCCompletionTest extends BaseTestSuite {
         this.addTestSuite(EnumTestCase.class);
         this.addTestSuite(LibrariesContentTestCase.class);
         this.addTestSuite(TypedefTestCase.class);
+        this.addTestSuite(TemplateCompletionTestCase.class);
     }
 
     public static Test suite() {

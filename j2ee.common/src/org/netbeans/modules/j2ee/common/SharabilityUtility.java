@@ -42,11 +42,18 @@ package org.netbeans.modules.j2ee.common;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -94,25 +101,6 @@ public final class SharabilityUtility {
         return null;
     }
 
-    public static Library[] getSharedServerLibraries(File location) {
-        Parameters.notNull("location", location); // NOI18N
-
-        FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
-        if (libraries == null) {
-            return null;
-        }
-
-        LibraryManager manager = LibraryManager.forLocation(URLMapper.findURL(
-                libraries, URLMapper.EXTERNAL));
-        List<Library> ret = new  ArrayList<Library>();
-        for (Library lib : manager.getLibraries()) {
-            if (lib.getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                ret.add(lib);
-            }
-        }
-        return ret.toArray(new Library[ret.size()]);
-    }
-
     public static Library createLibrary(File location, String libraryName, String serverInstanceId) throws IOException {
         J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
         if (platform == null) {
@@ -120,5 +108,134 @@ public final class SharabilityUtility {
         }
 
         return platform.createLibrary(location, libraryName);
+    }
+
+    public static Library findOrCreateLibrary(File location, String serverInstanceId) throws IOException {
+        Library[] existing = getLibraries(location, serverInstanceId);
+        if (existing.length > 0) {
+            return existing[0];
+        }
+
+        LibraryManager manager = LibraryManager.forLocation(location.toURI().toURL());
+
+        final Deployment deployment = Deployment.getDefault();
+        String prefix = PropertyUtils.getUsablePropertyName(
+                deployment.getServerDisplayName(deployment.getServerID(serverInstanceId)));
+        String name = prefix;
+        for (int i = 1;; i++) {
+            Library lib = manager.getLibrary(name);
+            if (lib == null) {
+                break;
+            }
+            name = prefix + "-" + i; // NOI18N
+        }
+
+        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+        if (platform == null) {
+            throw new IOException("Server instance does not exist"); // NOI18N
+        }
+
+        return platform.createLibrary(location, name);
+    }
+
+    public static Library[] getLibraries(File location, String serverInstanceId) throws IOException {
+        if (serverInstanceId == null) {
+            return new Library[] {};
+        }
+
+        final Deployment deployment = Deployment.getDefault();
+        String name = deployment.getServerDisplayName(deployment.getServerID(serverInstanceId));
+        // null can occur only if the server was removed somehow
+        if (name == null) {
+            return new Library[] {};
+        }
+
+        name = PropertyUtils.getUsablePropertyName(name);
+
+        FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
+        if (libraries == null) {
+            return new Library[] {};
+        }
+
+        LibraryManager manager = LibraryManager.forLocation(URLMapper.findURL(
+                libraries, URLMapper.EXTERNAL));
+        List<Library> ret = new  ArrayList<Library>();
+        for (Library lib : manager.getLibraries()) {
+            if (lib.getType().equals(J2eePlatform.LIBRARY_TYPE) && lib.getName().startsWith(name)) {
+                 String suffix = lib.getName().substring(name.length());
+                 if ("".equals(suffix) || suffix.matches("-\\d+")) { // NOI18N
+                    ret.add(lib);
+                }
+            }
+        }
+        return ret.toArray(new Library[ret.size()]);
+    }
+
+    public static String[] getServerInstances(File location, Library library) {
+        if (library == null) {
+            return new String[] {};
+        }
+
+        String name = library.getName();
+        final Deployment deployment = Deployment.getDefault();
+        List<String> instances = new ArrayList<String>();
+        for (String id : deployment.getServerInstanceIDs()) {
+            String propertyId = PropertyUtils.getUsablePropertyName(
+                    deployment.getServerDisplayName(deployment.getServerID(id)));
+
+            if (name.startsWith(propertyId)) {
+                String suffix = name.substring(propertyId.length());
+                if ("".equals(suffix) || suffix.matches("-\\d+")) { // NOI18N
+                    instances.add(id);
+                }
+            }
+        }
+        return instances.toArray(new String[instances.size()]);
+    }
+    
+    public static void switchServerLibrary(String instanceId, String oldServInstID,
+            List<ClassPathSupport.Item> javaClasspathList, UpdateHelper updateHelper) throws IOException {
+
+        if (instanceId != null && !instanceId.equals(oldServInstID)
+                && updateHelper.getAntProjectHelper().getLibrariesLocation() != null) {
+
+            AntProjectHelper helper = updateHelper.getAntProjectHelper();
+            File location = helper.resolveFile(helper.getLibrariesLocation());
+
+            // remove old libraries
+            Set<String> names = new HashSet<String>();
+            for (Library foundLib : SharabilityUtility.getLibraries(location, oldServInstID)) {
+                names.add(foundLib.getName());
+            }
+            boolean containLibs = false;
+            for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext();) {
+                ClassPathSupport.Item item = it.next();
+                if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
+                        && names.contains(item.getLibrary().getName())) {
+                    it.remove();
+                    containLibs = true;
+                }
+            }
+
+            if (containLibs) {
+                // get or create library for the new server
+                Library lib = SharabilityUtility.findOrCreateLibrary(location, instanceId);
+
+                // add new library
+                boolean add = true;
+                for (ClassPathSupport.Item item : javaClasspathList) {
+                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                            && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
+                            && item.getLibrary().getName().equals(lib.getName())) {
+                        add = false;
+                        break;
+                    }
+                }
+                if (add) {
+                    javaClasspathList.add(ClassPathSupport.Item.create(lib, null));
+                }
+            }
+        }
     }
 }

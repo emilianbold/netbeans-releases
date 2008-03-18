@@ -48,7 +48,11 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.MutableComboBoxModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Helper class with static methods
@@ -61,6 +65,7 @@ public final class Utils {
 
     public static String browseLocationAction(final Component parent, String path) {
         JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_SelectProjectLocation"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (path != null && path.length() > 0) {
@@ -70,9 +75,44 @@ public final class Utils {
             }
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return chooser.getSelectedFile().getAbsolutePath();
+            return FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath();
         }
         return null;
+    }
+
+    public static void browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName) {
+        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+        String newLocation = browseLocationAction(parent, ls.getDocumentRoot());
+        if (newLocation == null) {
+            return;
+        }
+
+        String projectLocation = new File(newLocation, newSubfolderName).getAbsolutePath();
+        for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
+            LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
+            if (projectLocation.equals(element.getSrcRoot())) {
+                localServerComboBox.setSelectedIndex(i);
+                return;
+            }
+        }
+        LocalServer localServer = new LocalServer(newLocation, projectLocation);
+        localServerComboBoxModel.addElement(localServer);
+        localServerComboBox.setSelectedItem(localServer);
+        sortComboBoxModel(localServerComboBoxModel);
+    }
+
+    public static void locateLocalServerAction() {
+        // XXX
+        String message = "Not implemented yet."; // NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                message,
+                message,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     public static List getAllItems(final JComboBox comboBox) {
@@ -117,8 +157,9 @@ public final class Utils {
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {
-            return null;
+            // ignored
         }
+        return null;
     }
 
     /**
@@ -131,5 +172,47 @@ public final class Utils {
                 && fileName.indexOf('/')  == -1 // NOI18N
                 && fileName.indexOf('\\') == -1 // NOI18N
                 && fileName.indexOf(':') == -1; // NOI18N
+    }
+
+    /**
+     * Validate the path and get the error message or <code>null</code> if it's all right.
+     * @param projectPath the path to validate
+     * @param type the type for error messages, currently "Project", "Sources" and "Folder".
+     *             Add other to Bundle.properties file if more types are needed.
+     * @return localized error message in case of error, <code>null</code> otherwise.
+     */
+    public static String validateProjectDirectory(String projectPath, String type) {
+        assert projectPath != null;
+        assert type != null;
+
+        // not allow to create project on unix root folder, see #82339
+        File cfl = Utils.getCanonicalFile(new File(projectPath));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
+        }
+
+        final File destFolder = new File(projectPath).getAbsoluteFile();
+        if (Utils.getCanonicalFile(destFolder) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+        }
+
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
+        }
+
+        if (FileUtil.toFileObject(projLoc) == null) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+        }
+
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            // Folder exists and is not empty
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
+        }
+        return null;
     }
 }
