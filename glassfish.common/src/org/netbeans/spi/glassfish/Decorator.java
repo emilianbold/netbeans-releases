@@ -45,14 +45,16 @@ import java.awt.Image;
  *
  * @author Peter Williams
  */
-public interface Decorator {
+public abstract class Decorator {
 
     /**
      * Returns the badge to be used to decorate the default icon for this node.
      * 
      * @return badge to apply to default icon for this node.
      */
-    public Image getIconBadge();
+    public Image getIconBadge() {
+        return null;
+    }
 
     /**
      * Find an icon for this node (closed).
@@ -60,7 +62,9 @@ public interface Decorator {
      * @param type constant from BeanInfo
      * @return icon used to represent the node
      */
-    public Image getIcon(int type);
+    public Image getIcon(int type) {
+        return null;
+    }
     
     /**
      * Find an icon for this node (opened).
@@ -68,34 +72,44 @@ public interface Decorator {
      * @param type constant from BeanInfo
      * @return icon used to represent the node
      */
-    public Image getOpenedIcon(int type);
+    public Image getOpenedIcon(int type) {
+        return null;
+    }
     
     /**
      * Should a refresh action be displayed for this node.
      * 
      * @return true if refresh is supported.
      */
-    public boolean isRefreshable();
+    public boolean isRefreshable() {
+        return false;
+    }
     
     /**
      * Can this node be deployed to?
      * 
      * @return true if deploy is supported (typically folder or instance nodes only.)
      */
-    public boolean canDeployTo();
+    public boolean canDeployTo() {
+        return false;
+    }
     
     /**
      * Can this node be undeployed?
      * 
      * @return true if undeploy is supported.
      */
-    public boolean canUndeploy();
+    public boolean canUndeploy() {
+        return false;
+    }
 
     /**
      * Can this node be executed to show a browser page?
      * 
      * @return true if can be shown by a browser.
      */
-    public boolean canShowBrowser();
+    public boolean canShowBrowser() {
+        return false;
+    }
     
 }

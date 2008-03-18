@@ -81,41 +81,24 @@ public class JRubyDecoratorFactory implements DecoratorFactory {
     //  Internals...
     // ------------------------------------------------------------------------
     
-    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
-    
-    static {
-        // !PW XXX need to put in correct strings, then define as static 
-        //   (export in Decorator API, for lack of better place)
-        decoratorMap.put("jruby_ContractProvider", JRubyDecorators.RUBY_APPLICATION);
-    };
-    
     private static final String RAILS_APPLICATION_ICON = 
             "org/netbeans/modules/glassfish/jruby/resources/rails.png"; // NOI18N
     private static final String RAILS_BADGE = 
             "org/netbeans/modules/glassfish/jruby/resources/rails_badge.png"; // NOI18N
     
-    /**
-     * Enumeration of node types.  Allows single location of logic for determining
-     * node action availability.
-     */
-    private static enum JRubyDecorators implements Decorator {
+    public static Decorator RUBY_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+//        @Override public Image getIconBadge() { return Utilities.loadImage(RAILS_BADGE); }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(RAILS_APPLICATION_ICON); }
+    };
 
-        RUBY_APPLICATION { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public boolean canShowBrowser() { return true; }
-//            @Override public Image getIconBadge() { return Utilities.loadImage(RAILS_BADGE); }
-            @Override public Image getIcon(int type) { return Utilities.loadImage(RAILS_APPLICATION_ICON); }
-        };
-
-        public boolean isRefreshable() { return false; }
-        public boolean canDeployTo() { return false; }
-        public boolean canUndeploy() { return false; }
-        public boolean canShowBrowser() { return false; }
-
-        public Image getIconBadge() { return null; }
-        public Image getIcon(int type) { return null; }
-        public Image getOpenedIcon(int type) { return getIcon(type); }
-
-    }
+    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
+    
+    static {
+        // !PW XXX need to put in correct strings, then define as static 
+        //   (export in Decorator API, for lack of better place)
+        decoratorMap.put("jruby_ContractProvider", RUBY_APPLICATION);
+    };
     
 }

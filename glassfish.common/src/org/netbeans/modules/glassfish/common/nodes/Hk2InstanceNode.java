@@ -104,7 +104,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
                 new Hk2ItemNode(instance.getLookup(), 
                         new Hk2ApplicationsChildren(instance.getLookup()),
                         NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Apps"),
-                        Hk2ItemNode.ItemType.J2EE_APPLICATION_FOLDER)
+                        Hk2ItemNode.J2EE_APPLICATION_FOLDER)
             });
         }
         

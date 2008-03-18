@@ -83,76 +83,61 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     //  Internals...
     // ------------------------------------------------------------------------
     
-    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
-    
-    static {
-        // !PW XXX need to put in correct strings, then define as static 
-        //   (export in Decorator API, for lack of better place)
-        decoratorMap.put("web_ContractProvider", JavaEEDecorators.WEB_APPLICATION);
-        decoratorMap.put("ejb_ContractProvider", JavaEEDecorators.EJB_JAR);
-        decoratorMap.put("ear_ContractProvider", JavaEEDecorators.J2EE_APPLICATION);
-        decoratorMap.put("JDBC Resource", JavaEEDecorators.JDBC_MANAGED_DATASOURCES);
-        decoratorMap.put("JDBC Connection Pool", JavaEEDecorators.CONNECTION_POOLS);
-    };
-    
     private static final String JDBC_RESOURCE_ICON = 
             "org/netbeans/modules/j2ee/hk2/resources/JDBCResource.gif"; // NOI18N
     private static final String CONNECTION_POOL_ICON = 
             "org/netbeans/modules/j2ee/hk2/resources/ConnectionPool.gif"; // NOI18N
     
-    /**
-     * Enumeration of node types.  Allows single location of logic for determining
-     * node action availability.
-     */
-    private static enum JavaEEDecorators implements Decorator {
+    public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public boolean canDeployTo() { return true; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_FOLDER); }
+        @Override public Image getOpenedIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER); }
+    };
+    
+    public static Decorator J2EE_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
+    };
+    
+    public static Decorator WEB_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
+    };
+    
+    public static Decorator EJB_JAR = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
+    };
+    
+    public static Decorator JDBC_MANAGED_DATASOURCES = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
+    };
+    
+    public static Decorator JDBC_NATIVE_DATASOURCES = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
+    };
+    
+    public static Decorator CONNECTION_POOLS = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(CONNECTION_POOL_ICON); }
+    };
 
-        J2EE_APPLICATION_FOLDER { 
-            @Override public boolean isRefreshable() { return true; }
-            @Override public boolean canDeployTo() { return true; }
-            @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_FOLDER); }
-            @Override public Image getOpenedIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER); }
-        },
-        J2EE_APPLICATION { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public boolean canShowBrowser() { return true; }
-            @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
-        },
-        WEB_APPLICATION { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public boolean canShowBrowser() { return true; }
-            @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
-        },
-        EJB_JAR { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public boolean canShowBrowser() { return true; }
-            @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
-        },
-//        REFRESHABLE_FOLDER { 
-//            @Override public boolean isRefreshable() { return true; }
-//            @Override public boolean canDeployTo() { return true; }
-//        },
-        JDBC_MANAGED_DATASOURCES { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
-        },
-        JDBC_NATIVE_DATASOURCES {
-            @Override public boolean canUndeploy() { return true; }
-            @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
-        },
-        CONNECTION_POOLS {
-            @Override public boolean canUndeploy() { return true; }
-            @Override public Image getIcon(int type) { return Utilities.loadImage(CONNECTION_POOL_ICON); }
-        };
-
-        public boolean isRefreshable() { return false; }
-        public boolean canDeployTo() { return false; }
-        public boolean canUndeploy() { return false; }
-        public boolean canShowBrowser() { return false; }
-
-        public Image getIconBadge() { return null; }
-        public Image getIcon(int type) { return null; }
-        public Image getOpenedIcon(int type) { return getIcon(type); }
-
-    }
+    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
+    
+    static {
+        // !PW XXX need to put in correct strings, then define as static 
+        //   (export in Decorator API, for lack of better place)
+        decoratorMap.put("web_ContractProvider", WEB_APPLICATION);
+        decoratorMap.put("ejb_ContractProvider", EJB_JAR);
+        decoratorMap.put("ear_ContractProvider", J2EE_APPLICATION);
+        decoratorMap.put("JDBC Resource", JDBC_MANAGED_DATASOURCES);
+        decoratorMap.put("JDBC Connection Pool", CONNECTION_POOLS);
+    };
     
 }

@@ -124,8 +124,8 @@ public class Hk2ItemNode extends AbstractNode {
         }
         
         // OLD COOKIE CODE
-        if(decorator.equals(ItemType.J2EE_APPLICATION_FOLDER) ||
-                decorator.equals(ItemType.REFRESHABLE_FOLDER)) {
+//        if(decorator.equals(J2EE_APPLICATION_FOLDER) ||
+//                decorator.equals(REFRESHABLE_FOLDER)) {
 //            getCookieSet().add(new RefreshModulesCookie() {
 //                public void refresh() {
 //                    Children children = getChildren();
@@ -263,9 +263,9 @@ public class Hk2ItemNode extends AbstractNode {
 //                        return isRunning;
 //                    }
 //                });
-            } else if (decorator.equals(ItemType.JDBC_NATIVE_DATASOURCES) ||
-                    decorator.equals(ItemType.JDBC_MANAGED_DATASOURCES) ||
-                    decorator.equals(ItemType.CONNECTION_POOLS)) {
+//            } else if (decorator.equals(JDBC_NATIVE_DATASOURCES) ||
+//                    decorator.equals(JDBC_MANAGED_DATASOURCES) ||
+//                    decorator.equals(CONNECTION_POOLS)) {
 //                getCookieSet().add(new UndeployModuleCookie() {
 //                    private boolean isRunning = false;
 //                    
@@ -302,7 +302,7 @@ public class Hk2ItemNode extends AbstractNode {
 //                        return isRunning;
 //                    }
 //                });
-            }
+//            }
     }
     
     public Hk2ItemNode(Lookup lookup, AppDesc app, Decorator decorator) {
@@ -311,7 +311,7 @@ public class Hk2ItemNode extends AbstractNode {
         setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
     
-    public Hk2ItemNode(Lookup lookup, Children children, String name, ItemType type) {
+    public Hk2ItemNode(Lookup lookup, Children children, String name, Decorator type) {
         this(children, lookup, type);
         setDisplayName(name);
     }
@@ -400,43 +400,19 @@ public class Hk2ItemNode extends AbstractNode {
                 getDefaultFileSystem().getRoot()).getNodeDelegate();
     }
     
-    /**
-     * Enumeration of node types.  Allows single location of logic for determining
-     * node action availability.
-     */
-    public static enum ItemType implements Decorator {
-        
-        J2EE_APPLICATION_FOLDER { 
-            @Override public boolean isRefreshable() { return true; }
-            @Override public boolean canDeployTo() { return true; }
-        },
-        J2EE_APPLICATION { 
-            @Override public boolean canUndeploy() { return true; }
-            @Override public boolean canShowBrowser() { return true; }
-        },
-        REFRESHABLE_FOLDER { 
-            @Override public boolean isRefreshable() { return true; }
-            @Override public boolean canDeployTo() { return true; }
-        },
-        JDBC_MANAGED_DATASOURCES { 
-            @Override public boolean canUndeploy() { return true; }
-        },
-        JDBC_NATIVE_DATASOURCES {
-            @Override public boolean canUndeploy() { return true; }
-        },
-        CONNECTION_POOLS {
-            @Override public boolean canUndeploy() { return true; }
-        };
-        
-        public boolean isRefreshable() { return false; }
-        public boolean canDeployTo() { return false; }
-        public boolean canUndeploy() { return false; }
-        public boolean canShowBrowser() { return false; }
-        
-        public Image getIconBadge() { return null; }
-        public Image getIcon(int type) { return null; }
-        public Image getOpenedIcon(int type) { return getIcon(type); }
-        
-    }
- 
+    public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public boolean canDeployTo() { return true; }
+    };
+    
+    public static Decorator J2EE_APPLICATION = new Decorator() { 
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+    };
+    
+    public static Decorator REFRESHABLE_FOLDER = new Decorator() { 
+        @Override public boolean isRefreshable() { return true; }
+        @Override public boolean canDeployTo() { return true; }
+    };
+    
 }
