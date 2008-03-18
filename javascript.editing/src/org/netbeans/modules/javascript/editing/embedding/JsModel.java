@@ -119,11 +119,11 @@ public class JsModel {
             documentDirty = false;
 
             // Debugging
-            try {
-                rhtmlCode = doc.getText(0, doc.getLength());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try {
+//                rhtmlCode = doc.getText(0, doc.getLength());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             codeBlocks.clear();
             StringBuilder buffer = new StringBuilder();
 
