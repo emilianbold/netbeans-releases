@@ -2655,7 +2655,16 @@ public class Reformatter implements ReformatTask {
                 if (first) {
                     if (align)
                         indent = col;
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     scan(impl, null);
+                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > old && c <= rightMargin) {
+                        rollback(index, c, d);
+                        indent = old;
+                        newline();
+                        scan(impl, null);
+                    }
                 } else {
                     wrapTree(wrapStyle, cs.spaceAfterComma() ? 1 : 0, impl);
                 }
