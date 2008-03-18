@@ -247,7 +247,7 @@ public class AppClientProjectGenerator {
     
     private static AntProjectHelper importProjectImpl(final FileObject projectDir, final String name,
             final File[] sourceFolders, final File[] testFolders, final File confFolder,
-            final File libFolder, String j2eeLevel, String serverInstanceID, String librariesDefinition, String serverLibraryName) throws IOException {
+            final File libFolder, String j2eeLevel, final String serverInstanceID, String librariesDefinition, final String serverLibraryName) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final AntProjectHelper h = setupProject(projectDir, name, null, null,
                 confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
@@ -297,6 +297,7 @@ public class AppClientProjectGenerator {
                         }
                     }
                     h.putPrimaryConfigurationData(data,true);
+                    copyRequiredLibraries(h, refHelper, serverInstanceID, serverLibraryName);
                     ProjectManager.getDefault().saveProject(p);
                     return null;
                 }

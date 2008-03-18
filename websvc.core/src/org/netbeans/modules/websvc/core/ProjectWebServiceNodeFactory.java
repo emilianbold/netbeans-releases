@@ -44,7 +44,6 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -77,9 +76,6 @@ import org.openide.util.lookup.Lookups;
  * @author Ajit Bhate
  */
 public class ProjectWebServiceNodeFactory implements NodeFactory {
-
-    private static final Lookup.Result<ProjectWebServiceViewProvider> implementations =
-            Lookup.getDefault().lookup(new Lookup.Template<ProjectWebServiceViewProvider>(ProjectWebServiceViewProvider.class));
 
     /** Creates a new instance of ProjectWebServiceNodeFactory */
     public ProjectWebServiceNodeFactory() {
@@ -158,7 +154,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                     view.addNotify();
                 }
             }
-            implementations.addLookupListener(this);
+            ProjectWebServiceView.getProviders().addLookupListener(this);
         }
 
         public void removeNotify() {
@@ -169,7 +165,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                     view.removeNotify();
                 }
             }
-            implementations.removeLookupListener(this);
+            ProjectWebServiceView.getProviders().removeLookupListener(this);
             views.clear();
             views = null;
         }
@@ -197,10 +193,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         private void initViews() {
-            views = new ArrayList<ProjectWebServiceView>();
-            for (ProjectWebServiceViewProvider provider : implementations.allInstances()) {
-                views.add(provider.createProjectWebServiceView(project));
-            }
+            views = ProjectWebServiceView.createWebServiceViews(project);
         }
 
         private static Lookup createLookup(Project project) {
