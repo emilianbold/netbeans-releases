@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,73 +39,35 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.Map;
-
 /**
  *
  * @author eu155513
  */
-public class RegisterValuesProvider {
-    public static final String VALUES_UPDATED = "register values updated";// NOI18N
-    public static final String VALUES_CLEAR = "register values clear";// NOI18N
-    
-    private static RegisterValuesProvider instance = null;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    
-    public static RegisterValuesProvider getInstance() {
-        if (instance == null) {
-            instance = new RegisterValuesProvider();
-        }
-        return instance;
-    }
-    
-    public Map<String,RegisterValue> getRegisterValues() {
-        Disassembly dis = Disassembly.getCurrent();
-        if (dis != null) {
-            return dis.getRegisterValues();
-        } else {
-            return null;
-        }
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-    
-    void fireRegisterValuesChanged() {
-        pcs.firePropertyChange(VALUES_UPDATED, 0, 1);
-    }
-    
-    void fireRegisterValuesClear() {
-        pcs.firePropertyChange(VALUES_CLEAR, 0, 1);
-    }
-    
-    public static class RegisterValue {
-        private final String value;
-        private final boolean modified;
+public class RegisterValue {
+    private final String name;
+    private final String value;
+    private final boolean modified;
 
-        public RegisterValue(String value, boolean modified) {
-            this.value = value;
-            this.modified = modified;
-        }
+    public RegisterValue(String name, String value, boolean modified) {
+        this.name = name;
+        this.value = value;
+        this.modified = modified;
+    }
 
-        public boolean isModified() {
-            return modified;
-        }
+    public boolean isModified() {
+        return modified;
+    }
 
-        public String getValue() {
-            return value;
-        }
+    public String getValue() {
+        return value;
+    }
 
-        @Override
-        public String toString() {
-            return getValue();
-        }
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
     }
 }

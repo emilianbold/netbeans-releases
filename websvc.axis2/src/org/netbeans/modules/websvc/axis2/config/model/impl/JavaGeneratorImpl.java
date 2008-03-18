@@ -52,6 +52,7 @@ public class JavaGeneratorImpl extends Axis2ComponentImpl implements JavaGenerat
     private static String DATABINDING_NAME_ATTR_PROP = Axis2Attributes.attrDatabindingName.getName();
     private static String PACKAGE_NAME_ATTR_PROP = Axis2Attributes.attrPackageName.getName();
     private static String SEI_ATTR_PROP = Axis2Attributes.attrSEI.getName();
+    private static String OPTIONS_ATTR_PROP = Axis2Attributes.attrOptions.getName();
     
     public JavaGeneratorImpl(Axis2ModelImpl model, Element e) {
         super(model, e);
@@ -108,6 +109,14 @@ public class JavaGeneratorImpl extends Axis2ComponentImpl implements JavaGenerat
 
     public void setPortNameAttr(String portName) {
         super.setAttribute(PORT_NAME_ATTR_PROP, Axis2Attributes.attrPortName, portName);
+    }
+
+    public String getOptionsAttr() {
+        return getAttribute(Axis2Attributes.attrOptions);
+    }
+
+    public void setOptionsAttr(String options) {
+        super.setAttribute(OPTIONS_ATTR_PROP, Axis2Attributes.attrOptions, options);
     }
     
 }

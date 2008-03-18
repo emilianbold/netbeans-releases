@@ -40,16 +40,11 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -62,30 +57,38 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel,
-        SourcesPanelVisual.WebFolderNameProvider {
+        WebFolderNameProvider, ChangeListener {
+
+    static final LocalServer DEFAULT_LOCAL_SERVER;
+
+    static final String DEFAULT_SOURCE_FOLDER = "web"; // NOI18N
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
     static final String SET_AS_MAIN = "setAsMain"; // NOI18N
     static final String WWW_FOLDER = "wwwFolder"; // NOI18N
     static final String LOCAL_SERVERS = "localServers"; // NOI18N
+    static final String URL = "url"; // NOI18N
     static final String CREATE_INDEX_FILE = "createIndexFile"; // NOI18N
     static final String INDEX_FILE = "indexFile"; // NOI18N
     static final String ENCODING = "encoding"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
-    LocationPanelVisual locationPanelVisual;
-    SourcesPanelVisual sourcesPanelVisual;
-    OptionsPanelVisual optionsPanelVisual;
+    private LocationPanelVisual locationPanelVisual;
+    private SourcesPanelVisual sourcesPanelVisual;
+    private OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
     private final String[] steps;
 
-    public ConfigureProjectPanel() {
-        steps = new String[] {
-            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
-            //NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ServerConfiguration"),
-        };
+    static {
+        String msg = NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_UseProjectFolder",
+                File.separator, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
+        DEFAULT_LOCAL_SERVER = new LocalServer(null, null, msg, false);
+    }
+
+    public ConfigureProjectPanel(String[] steps) {
+        this.steps = steps;
     }
 
     public Component getComponent() {
@@ -106,6 +109,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         getComponent();
         descriptor = (WizardDescriptor) settings;
 
+        unregisterListeners();
+
         // location
         locationPanelVisual.setProjectLocation(getProjectLocation().getAbsolutePath());
         locationPanelVisual.setProjectName(getProjectName());
@@ -119,6 +124,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (wwwFolder != null) {
             sourcesPanelVisual.selectSourcesLocation(wwwFolder);
         }
+        sourcesPanelVisual.setUrl(getUrl());
 
         // options
         Boolean createIndex = isCreateIndex();
@@ -134,7 +140,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             optionsPanelVisual.setSetAsMain(setAsMain);
         }
 
-        // listeners
         registerListeners();
         fireChangeEvent();
     }
@@ -143,13 +148,13 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         WizardDescriptor d = (WizardDescriptor) settings;
 
         // location
-        d.putProperty(PROJECT_DIR, new File(locationPanelVisual.getProjectLocation()));
+        d.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(locationPanelVisual.getProjectLocation())));
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
-        LocalServer sourceRoot = sourcesPanelVisual.getSourcesLocation();
-        d.putProperty(WWW_FOLDER, sourceRoot);
+        d.putProperty(WWW_FOLDER, sourcesPanelVisual.getSourcesLocation());
         d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
+        d.putProperty(URL, sourcesPanelVisual.getUrl());
 
         // options
         d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
@@ -188,11 +193,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     public boolean isFinishPanel() {
-        return true;
+        Boolean isServerValid = (Boolean) descriptor.getProperty(ConfigureServerPanel.SERVER_IS_VALID);
+        return isServerValid == null || isServerValid;
     }
 
     static boolean isProjectFolder(LocalServer localServer) {
-        return SourcesPanelVisual.isProjectFolder(localServer);
+        return DEFAULT_LOCAL_SERVER.equals(localServer);
     }
 
     public String getWebFolderName() {
@@ -214,6 +220,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 || projectLocation.getParentFile() == null
                 || !projectLocation.isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
+            descriptor.putProperty(PROJECT_DIR, projectLocation);
         }
         return projectLocation;
     }
@@ -247,6 +254,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return (MutableComboBoxModel) descriptor.getProperty(LOCAL_SERVERS);
     }
 
+    private String getUrl() {
+        String url = (String) descriptor.getProperty(URL);
+        if (url == null) {
+            url = "http://localhost/" + getProjectName(); // NOI18N
+        }
+        return url;
+    }
+
     private Boolean isCreateIndex() {
         return (Boolean) descriptor.getProperty(CREATE_INDEX_FILE);
     }
@@ -256,20 +271,25 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     private void registerListeners() {
-        ActionListener defaultActionListener = new DefaultActionListener();
-        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        ChangeListener defaultChangeListener = new DefaultChangeListener();
-
         // location
-        locationPanelVisual.addProjectLocationListener(defaultDocumentListener);
-        locationPanelVisual.addProjectNameListener(defaultDocumentListener);
+        locationPanelVisual.addLocationListener(this);
 
         // sources
-        sourcesPanelVisual.addSourcesListener(defaultChangeListener);
+        sourcesPanelVisual.addSourcesListener(this);
 
         // options
-        optionsPanelVisual.addCreateIndexListener(defaultActionListener);
-        optionsPanelVisual.addIndexNameListener(defaultDocumentListener);
+        optionsPanelVisual.addOptionsListener(this);
+    }
+
+    private void unregisterListeners() {
+        // location
+        locationPanelVisual.removeLocationListener(this);
+
+        // sources
+        sourcesPanelVisual.removeSourcesListener(this);
+
+        // options
+        optionsPanelVisual.removeOptionsListener(this);
     }
 
     private String validFreeProjectName(File parentFolder, int index) {
@@ -291,27 +311,35 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectName");
         }
 
-        File f = new File(projectLocation).getAbsoluteFile();
+        File f = FileUtil.normalizeFile(new File(projectLocation)).getAbsoluteFile();
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return validateProjectDirectory(projectPath, "Project"); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project"); // NOI18N
     }
 
     private String validateSources() {
         LocalServer localServer = sourcesPanelVisual.getSourcesLocation();
-        if (isProjectFolder(localServer)) {
-            // no need to validate source directory
-            return null;
-        }
-        String sourcesLocation = localServer.getSrcRoot();
+        if (!isProjectFolder(localServer)) {
+            String sourcesLocation = localServer.getSrcRoot();
 
-        File sources = new File(sourcesLocation);
-        if (!Utils.isValidFileName(sources.getName())) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            File sources = FileUtil.normalizeFile(new File(sourcesLocation));
+            if (!Utils.isValidFileName(sources.getName())) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            }
+
+            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+            if (err != null) {
+                return err;
+            }
         }
 
-        return validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+        String url = sourcesPanelVisual.getUrl();
+        if (!SourcesPanelVisual.isValidUrl(url)) {
+            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
+        }
+
+        return null;
     }
 
     private String validateOptions() {
@@ -324,68 +352,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return null;
     }
 
-    private String validateProjectDirectory(String projectPath, String type) {
-        // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
-        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
-        }
-
-        final File destFolder = new File(projectPath).getAbsoluteFile();
-        if (Utils.getCanonicalFile(destFolder) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
-        }
-
-        File projLoc = FileUtil.normalizeFile(destFolder);
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
-        }
-
-        if (FileUtil.toFileObject(projLoc) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
-        }
-
-        File[] kids = destFolder.listFiles();
-        if (destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
-        }
-        return null;
-    }
-
-    private class DefaultActionListener implements ActionListener {
-
-        public void actionPerformed(ActionEvent e) {
-            fireChangeEvent();
-        }
-    }
-
-    private class DefaultDocumentListener implements DocumentListener {
-
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        private void processUpdate() {
-            fireChangeEvent();
-        }
-    }
-
-    private class DefaultChangeListener implements ChangeListener {
-
-        public void stateChanged(ChangeEvent e) {
-            fireChangeEvent();
-        }
+    public void stateChanged(ChangeEvent e) {
+        fireChangeEvent();
     }
 }

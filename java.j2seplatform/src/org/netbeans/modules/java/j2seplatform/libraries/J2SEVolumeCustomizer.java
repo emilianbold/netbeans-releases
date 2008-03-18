@@ -325,10 +325,12 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         // TODO add your handling code here:
         File baseFolder = null;
+        File libFolder = null;
         if (area != null) {
             baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
+            libFolder = new File(baseFolder, impl.getName());
         }
-        FileChooser chooser = new FileChooser(baseFolder, baseFolder);
+        FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {

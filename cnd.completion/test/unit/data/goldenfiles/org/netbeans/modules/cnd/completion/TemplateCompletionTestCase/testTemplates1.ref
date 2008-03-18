@@ -1,0 +1,5 @@
+t1 T1 < 1 >
+T1<int i>
+T2<class C>
+T3<int k,class C>
+main() int
