@@ -3492,11 +3492,13 @@ public class CasaWrapperModel extends CasaModel {
      */
     public boolean isWsitEnable(final CasaPort casaPort) {
         Port port = getLinkedWSDLPort(casaPort);
-        Binding binding = port.getBinding().get();
-        for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
-            String exNS = ex.getQName().getNamespaceURI();
-            if (exNS.equals("http://schemas.xmlsoap.org/ws/2004/09/policy")) { // NOI18N
-                return true;
+        if (port != null) {
+            Binding binding = port.getBinding().get();
+            for (ExtensibilityElement ex : binding.getExtensibilityElements()) {
+                String exNS = ex.getQName().getNamespaceURI();
+                if (exNS.equals("http://schemas.xmlsoap.org/ws/2004/09/policy")) { // NOI18N
+                    return true;
+                }
             }
         }
         return false;

@@ -38,57 +38,69 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.DebugSession;
-import org.w3c.dom.Node;
+package org.openide.loaders;
 
 
-/**
- * @author ads
- *
- */
-public class StatusResponse extends DbgpResponse {
+import java.awt.Button;
+import java.awt.Color;
+import java.beans.*;
+import java.beans.beancontext.BeanContextChildSupport;
+import java.io.*;
+import java.lang.ref.WeakReference;
+import java.util.*;
+import java.util.logging.Level;
+import javax.swing.JButton;
+import junit.framework.Test;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.*;
+import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
+import org.openide.util.*;
+import org.openide.util.lookup.AbstractLookup;
 
-    private static final String REASON = "reason";        
+public class InstanceDataObjectLookupWarningTest extends NbTestCase {
+    /** folder to create instances in */
+    private DataFolder folder;
+    /** filesystem containing created instances */
+    private FileSystem lfs;
     
-    private static final String STATUS = "status";
-    
-    StatusResponse( Node node ) {
-        super(node);
+    /** Creates new DataFolderTest */
+    public InstanceDataObjectLookupWarningTest(String name) {
+        super (name);
     }
     
-    public Status getStatus(){
-        String status = getAttribute( getNode() , STATUS );
-        return Status.forString(status);
-    }
     
-    public Reason getReason(){
-        String reason = getAttribute( getNode(), REASON );
-        return Reason.forString( reason );
+    protected void setUp () throws Exception {
+        TestUtilHid.destroyLocalFileSystem (getName());
+        clearWorkDir();
+        lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), new String[0]);
+
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
-     */
-    @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( getStatus() == Status.BREAK && getReason() == Reason.OK ) {
-            StackGetCommand getCommand = new StackGetCommand( 
-                    session.getTransactionId() );
-            session.sendCommandLater( getCommand );
-            
-            session.getBridge().setSuspended( true );
-            session.getBridge().getThreadsModel().updateSession( session );
+    /** #28118, win sys relies that instance data object fires cookie 
+     * changes when its settings file removed, it gets into corruped state otherwise. */
+    public void testNoWarnings() throws Exception {
+        CharSequence log = Log.enable("org.openide.loaders", Level.WARNING);
+        
+        FileObject fo = FileUtil.createData(lfs.getRoot(), "x.instance");
+        fo.setAttribute("instanceClass", "javax.swing.JButton");
+        DataObject obj = DataObject.find(fo);
+        assertEquals("IDO", InstanceDataObject.class, obj.getClass());
+        
+        InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
+        assertNotNull("We have cookie", ic);
+        
+        Object o = ic.instanceCreate();
+        assertNotNull("Obj created", o);
+        
+        assertEquals("button", JButton.class, o.getClass());
+        
+        if (log.length() > 0) {
+            fail("No warnings, but: " + log);
         }
-        else if ( (getStatus() == Status.STOPPING || getStatus() == Status.STOPPED)
-                && getReason() == Reason.OK ) 
-        {
-            StopCommand stopCommand = new StopCommand( session.getTransactionId() );
-            session.sendCommandLater(stopCommand);
-            session.stop();
-        }
     }
-
 }
