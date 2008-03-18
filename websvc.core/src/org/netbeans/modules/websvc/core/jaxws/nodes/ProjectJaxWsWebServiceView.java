@@ -41,8 +41,6 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -51,18 +49,17 @@ import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.ProjectWebServiceViewImpl;
+import org.netbeans.modules.websvc.core.ProjectWebServiceView;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Ajit
  */
-public class ProjectJaxWsWebServiceView extends ProjectWebServiceViewImpl implements PropertyChangeListener {
+final class ProjectJaxWsWebServiceView extends ProjectWebServiceView implements PropertyChangeListener {
 
     private Project project;
     private JaxWsModel jaxWsModel;
@@ -80,7 +77,7 @@ public class ProjectJaxWsWebServiceView extends ProjectWebServiceViewImpl implem
         jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(projectDir);
     }
 
-    public Node[] createView(ViewType viewType) {
+    protected Node[] createView(ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 return createServiceNodes();
@@ -128,40 +125,44 @@ public class ProjectJaxWsWebServiceView extends ProjectWebServiceViewImpl implem
     private Node[] createClientNodes() {
         ArrayList<Node> nodes = new ArrayList<Node>();
         Client[] clients = jaxWsModel.getClients();
-        if (clients != null && clients.length>0) {
-            for (Client client:clients ) {
+        if (clients != null && clients.length > 0) {
+            for (Client client : clients) {
                 nodes.add(new JaxWsClientNode(jaxWsModel, client, project.getProjectDirectory()));
             }
         }
         return nodes.toArray(new Node[nodes.size()]);
     }
 
-    public boolean isViewEmpty(ViewType viewType) {
+    protected boolean isViewEmpty(ViewType viewType) {
         switch (viewType) {
             case SERVICE:
-                return jaxWsModel == null  || jaxwsSupport == null || jaxWsModel.getServices().length == 0;
+                return jaxWsModel == null || jaxwsSupport == null || jaxWsModel.getServices().length == 0;
             case CLIENT:
-                return jaxWsModel == null || jaxwsClientSupport == null || jaxWsModel.getClients().length == 0 ;
+                return jaxWsModel == null || jaxwsClientSupport == null || jaxWsModel.getClients().length == 0;
         }
         return true;
     }
 
-    public void addNotify() {
-        jaxWsModel.addPropertyChangeListener(weakModelListener);
+    protected void addNotify() {
+        if (jaxWsModel != null) {
+            jaxWsModel.addPropertyChangeListener(weakModelListener);
+        }
     }
 
-    public void removeNotify() {
-        jaxWsModel.removePropertyChangeListener(weakModelListener);
+    protected void removeNotify() {
+        if (jaxWsModel != null) {
+            jaxWsModel.removePropertyChangeListener(weakModelListener);
+        }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-       Object oldValue = evt.getOldValue();
-       Object newValue = evt.getNewValue();
-       if(oldValue instanceof Service || newValue instanceof Service) {
-           fireChange(ViewType.SERVICE);
-       }
-       if(oldValue instanceof Client || newValue instanceof Client) {
-           fireChange(ViewType.CLIENT);
-       }
+        Object oldValue = evt.getOldValue();
+        Object newValue = evt.getNewValue();
+        if (oldValue instanceof Service || newValue instanceof Service) {
+            fireChange(ViewType.SERVICE);
+        }
+        if (oldValue instanceof Client || newValue instanceof Client) {
+            fireChange(ViewType.CLIENT);
+        }
     }
 }

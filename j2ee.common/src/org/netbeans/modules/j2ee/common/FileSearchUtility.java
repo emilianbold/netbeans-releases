@@ -234,4 +234,24 @@ public final class FileSearchUtility {
         StringTokenizer toker = new StringTokenizer(path, File.separator);
         return toker.countTokens();
     }
+
+    public static FileObject guessConfigFilesPath(final FileObject dir, final String configFileName) {
+        if (null == dir) {
+            return null;
+        }
+        Enumeration<FileObject> ch = FileSearchUtility.getChildrenToDepth(dir, 3, true); //getChildren(true);
+        try {
+            while (ch.hasMoreElements()) {
+                FileObject f = ch.nextElement();
+                if (f.getNameExt().equals(configFileName)) {
+                    String rootName = f.getParent().getPath();
+                    return f.getFileSystem().findResource(rootName);
+                }
+            }
+        } catch (FileStateInvalidException fsie) {
+            Logger.getLogger("global").log(Level.INFO, null, fsie);
+        }
+        return null;
+    }
+
 }
