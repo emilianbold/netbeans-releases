@@ -207,14 +207,14 @@ function checkChoiceUpgradeAction() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="baseide"></line>          
-            <line choice="ruby"></line>           
+            <line choice="php"></line>           
         </line>            
     </choices-outline>
     <choice id="netbeans" title="@NB_TITLE@" description="NetBeans IDE" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="baseide" title="Base IDE" description="Core components of an integrated development environment." start_selected="true" start_enabled="false" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
     </choice>
-    <choice id="ruby" title="PHP" description="PHP">
+    <choice id="php" title="PHP" description="PHP">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
     <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
