@@ -1575,7 +1575,9 @@ public class ReformatterImpl {
             } else if (canRemoveSpaceAfter(current)){
                 if (next.id() == WHITESPACE) {
                     Token<CppTokenId> n2 = ts.lookNext(2);
-                    if (n2 == null || !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
+                    if (n2 == null ||
+                        SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
+                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
                         ts.replaceNext(current, next, 0, 0);
                     }
                 }

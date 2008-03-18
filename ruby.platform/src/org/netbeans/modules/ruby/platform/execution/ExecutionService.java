@@ -314,6 +314,12 @@ public class ExecutionService {
                         
                         RUNNING_PROCESSES.add(ExecutionService.this);
                         stopAction.process = process;
+                        if (descriptor.debug) {
+                            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+                            if (debugger != null) {
+                                stopAction.setFinishAction(debugger.getFinishAction());
+                            }
+                        }
                         runIO(stopAction, process, io, descriptor.getFileLocator(),
                                 descriptor.outputRecognizers);
                         
@@ -427,9 +433,9 @@ public class ExecutionService {
             errTask.addTaskListener(tl);
             inTask.addTaskListener(tl);
 
-            sa.processorTasks.add(outTask);
-            sa.processorTasks.add(errTask);
-            sa.processorTasks.add(inTask);
+            sa.addTask(outTask);
+            sa.addTask(errTask);
+            sa.addTask(inTask);
 
             process.waitFor();
             sa.process = null;
