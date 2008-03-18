@@ -164,26 +164,18 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testDereferenceFormatting() {
+    public void testConcurrentSpacing() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int foo()\n" +
+                "int foo(char* a, class B* b)\n" +
                 "{\n" +
-                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "TCHAR* tmp = list->field->toString();\n" +
-                "}\n" +
-                "CL_NS_STD(ostream)* infoStream;\n" +
-                "directory->deleteFile( *itr );\n" +
+                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect * formating",
-                "int foo()\n" +
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
                 "{\n" +
-                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "        TCHAR* tmp = list->field->toString();\n" +
-                "    }\n" +
-                "    CL_NS_STD(ostream)* infoStream;\n" +
-                "    directory->deleteFile(*itr);\n" +
+                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
                 "}\n");
     }
 }
