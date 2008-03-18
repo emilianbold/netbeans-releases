@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -41,10 +40,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.EtlproProjectGenerator;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -65,7 +62,7 @@ class EtlproViews {
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
-        private static transient final Logger mLogger = LogUtil.getLogger(EtlproViews.class.getName());
+        private static transient final Logger mLogger = Logger.getLogger(EtlproViews.class.getName());
         private static transient final Localizer mLoc = Localizer.get();
 
         public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
@@ -138,7 +135,7 @@ class EtlproViews {
                         DataFolder df = DataFolder.findFolder(fo);
                         return df;
                     }catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR021: Exception :{0}", ex.getMessage()), ex);
+                        mLogger.errorNoloc(mLoc.t("PRJS021: Exception :{0}", ex.getMessage()), ex);
                     }
                 }
             }
@@ -214,23 +211,6 @@ class EtlproViews {
         public void setName(String arg0) {
             super.setName(arg0);
         }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            //return super.getActions(context);
-            return new Action[] {
-		CommonProjectActions.newFileAction(),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
-	    };
-        }
-        
 
         public void propertyChange(PropertyChangeEvent evt) {
             fireNameChange(null, null);

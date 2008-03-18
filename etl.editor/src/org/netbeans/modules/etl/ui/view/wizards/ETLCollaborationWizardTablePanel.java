@@ -66,7 +66,6 @@ import javax.swing.table.TableColumn;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -83,7 +82,7 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  */
 public class ETLCollaborationWizardTablePanel extends JPanel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTablePanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLCollaborationWizardTablePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     class MetaTableComponent extends JTable {
@@ -126,23 +125,23 @@ public class ETLCollaborationWizardTablePanel extends JPanel {
                 setBackground(Color.LIGHT_GRAY);
 
                 Object obj = rowDW.getTable();
-
+                    String nbBundle1 = mLoc.t("BUND063: Table {0} already exists as target in this collaboration.",rowDW.getTable());
+                    String nbBundle2 = mLoc.t("BUND064: Table {0} already exists as source table in this collaboration.",rowDW.getTable());
+                    String nbBundle3 = mLoc.t("BUND064: Table {0} already exists as source table in this collaboration.", rowDW.getTable());
+                    String nbBundle4 = mLoc.t("BUND066: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
                 if (obj instanceof TargetTable) {
                     TargetTable tt = (TargetTable) obj;
                     if (tt.isSelected()) {
-                        String nbBundle1 = mLoc.t("PRSR001: Table {0} already exists as target in this collaboration.",rowDW.getTable());
-                        setToolTipText(Localizer.parse(nbBundle1));
+                        setToolTipText(nbBundle1.substring(15));
                     } else {
-                        String nbBundle2 = mLoc.t("PRSR001: Table {0} already exists as source table in this collaboration.",rowDW.getTable());
-                        setToolTipText(Localizer.parse(nbBundle2));
+                        setToolTipText(nbBundle2.substring(15));
                     }
                 }
 
                 if (obj instanceof SourceTable) {
                     SourceTable st = (SourceTable) obj;
                     if (!st.isSelected()) {
-                        String nbBundle3 = mLoc.t("PRSR001: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
-                        setToolTipText(Localizer.parse(nbBundle3));
+                        setToolTipText(nbBundle4.substring(15));
                     }
                 }
                 myPanel.setBorder(noFocusBorder);
@@ -316,22 +315,23 @@ public class ETLCollaborationWizardTablePanel extends JPanel {
 
                 Object obj = rowDW.getTable();
 
+                    String nbBundle1 = mLoc.t("BUND063: Table {0} already exists as target in this collaboration.",rowDW.getTable());
+                    String nbBundle2 = mLoc.t("BUND064: Table {0} already exists as source table in this collaboration.",rowDW.getTable());
+                    String nbBundle3 = mLoc.t("BUND064: Table {0} already exists as source table in this collaboration.", rowDW.getTable());
+                    String nbBundle4 = mLoc.t("BUND066: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
                 if (obj instanceof TargetTable) {
                     TargetTable tt = (TargetTable) obj;
                     if (tt.isSelected()) {
-                        String nbBundle4 = mLoc.t("PRSR001: Table {0} already exists as target in this collaboration.", rowDW.getTable());
-                        renderer.setToolTipText(Localizer.parse(nbBundle4));
+                        setToolTipText(nbBundle1.substring(15));
                     } else {
-                        String nbBundle5 = mLoc.t("PRSR001: Table {0} already exists as source table in this collaboration.", rowDW.getTable());
-                        renderer.setToolTipText(Localizer.parse(nbBundle5));
+                        renderer.setToolTipText(nbBundle2.substring(15));
                     }
                 }
 
                 if (obj instanceof SourceTable) {
                     SourceTable st = (SourceTable) obj;
                     if (!st.isSelected()) {
-                        String nbBundle6 = mLoc.t("PRSR001: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
-                        renderer.setToolTipText(Localizer.parse(nbBundle6));
+                        renderer.setToolTipText(nbBundle4.substring(15));
                     }
                 }
 

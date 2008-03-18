@@ -82,7 +82,7 @@ import com.nwoods.jgo.JGoText;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Graphical representation of a SQL operator.
@@ -94,7 +94,7 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
     
     protected static final JGoPen PEN_DEFAULT = JGoPen.makeStockPen(Color.WHITE);
     
-    protected static final Color COLOR_BG_OUTPUT = new Color(236, 217, 217); // pink 
+    protected static final Color COLOR_BG_OUTPUT = new Color(236, 215, 215); // pink 
     
     protected static final Color COLOR_BG_INPUT = new Color(240, 240, 240); // light gray
     
@@ -128,7 +128,7 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
     
     private ParenthesisCheckBoxArea cbWrap;
     
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorGraphNode.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLOperatorGraphNode.class.getName());
     
     private static transient final Localizer mLoc = Localizer.get();
 
@@ -223,15 +223,15 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
         if( popUpMenu == null ) {
             popUpMenu = new JPopupMenu();
         }
-        String nbBundle1 = mLoc.t("PRSR001: Show SQL...");
-        showSqlItem = new JMenuItem(Localizer.parse(nbBundle1), new ImageIcon(showSqlUrl));
+        String nbBundle1 = mLoc.t("BUND448: Show SQL...");
+        showSqlItem = new JMenuItem(nbBundle1.substring(15), new ImageIcon(showSqlUrl));
         showSqlItem.addActionListener(aListener);
         popUpMenu.add(showSqlItem);
 
         //remove menu
         popUpMenu.addSeparator();
-        String nbBundle2 = mLoc.t("PRSR001: Remove");
-        removeItem = new JMenuItem(Localizer.parse(nbBundle2), new ImageIcon(removeUrl));
+        String nbBundle2 = mLoc.t("BUND152: Remove");
+        removeItem = new JMenuItem(nbBundle2.substring(15), new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
     }
@@ -411,8 +411,8 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
         } else {
             String msg = "SQLOperatorGraphNode only accepts as its data object " + "instances of SQLOperator.";
             try {
-                String nbBundle1 = mLoc.t("PRSR001: SQLParameterizedOperatorGraphNode only accepts as its data object instances of SQLOperator that implement HasStaticParameters.");
-                msg = Localizer.parse(nbBundle1);
+                String nbBundle1 = mLoc.t("BUND450: SQLParameterizedOperatorGraphNode only accepts as its data object instances of SQLOperator that implement HasStaticParameters.");
+                msg = nbBundle1.substring(15);
             } catch (MissingResourceException ignore) {
                 // Do nothing - use default message above.
             }

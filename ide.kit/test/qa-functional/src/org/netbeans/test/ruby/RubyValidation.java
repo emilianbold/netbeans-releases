@@ -80,8 +80,7 @@ public class RubyValidation extends JellyTestCase {
         suite.addTest(new RubyValidation("testRunRubyFile"));
         suite.addTest(new RubyValidation("testCreateRailsProject"));
         suite.addTest(new RubyValidation("testRailsGenerate"));
-        // disabled until 129751 is fixed
-        //suite.addTest(new RubyValidation("testIrbShell"));
+        suite.addTest(new RubyValidation("testIrbShell"));
         return suite;
     }
     
@@ -226,8 +225,8 @@ public class RubyValidation extends JellyTestCase {
         viewsOper.setText("myview");
         generatorOper.ok();
         
-        // wait 60 second
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 60000);
+        // wait 180 second
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
         
         String filename = "myapp_controller.rb"; // NOI18N
         new EditorOperator(filename);

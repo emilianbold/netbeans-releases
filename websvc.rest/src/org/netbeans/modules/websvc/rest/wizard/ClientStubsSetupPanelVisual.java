@@ -44,12 +44,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -77,6 +73,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -239,10 +236,12 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     continue;
                 }
                 ProjectInformation pInfo = ProjectUtils.getInformation(p);
-                listModel.addElement(pInfo);
-                changed = true;
+                if(!listModel.contains(pInfo)) {
+                    listModel.addElement(pInfo);
+                    changed = true;
+                }
             } catch(IOException ioe) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         if (rejecteds.size() > 0) {
@@ -594,10 +593,7 @@ private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 }//GEN-LAST:event_wadlTextFieldKeyTyped
     
     private boolean validateWadlFile(final String fileName) {
-        String name = fileName.replaceAll(File.separator, "/");
-        if(!name.startsWith("/"))
-            name = "/"+name;
-        File f = new File(name);
+        File f = new File(fileName);
         boolean isValid = false;
         try {
             if(f.isFile()) {
