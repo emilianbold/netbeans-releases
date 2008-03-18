@@ -182,11 +182,11 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         }
         
         public String getOldVersion () {
-            return oldVersion == null ? "" : oldVersion;
+            return oldVersion == null ? "" : oldVersion.trim ();
         }
         
         public String getNewVersion () {
-            return newVersion == null ? "" : newVersion;
+            return newVersion == null ? "" : newVersion.trim ();
         }
         
         public String getNotification () {
@@ -197,16 +197,16 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         public String toString () {
             return  codeName + DELIMETER +
                     (displayName == null ? codeName : displayName) + DELIMETER +
-                    (oldVersion == null ? "" : oldVersion) + DELIMETER +
-                    (newVersion == null ? "" : newVersion) + DELIMETER +
+                    (oldVersion == null ? " " : oldVersion) + DELIMETER +
+                    (newVersion == null ? " " : newVersion) + DELIMETER +
                     (notification == null ? " " : notification);
         }
         
         private static String toString (UpdateElement el) {
             return  el.getCodeName () + DELIMETER +
                     (el.getDisplayName () == null ? el.getCodeName () : el.getDisplayName ()) + DELIMETER +
-                    (el.getUpdateUnit ().getInstalled () == null ? "" : el.getUpdateUnit ().getInstalled ().getSpecificationVersion ()) + DELIMETER +
-                    (el.getSpecificationVersion () == null ? "" : el.getSpecificationVersion ()) + DELIMETER +
+                    (el.getUpdateUnit ().getInstalled () == null ? " " : el.getUpdateUnit ().getInstalled ().getSpecificationVersion ()) + DELIMETER +
+                    (el.getSpecificationVersion () == null ? " " : el.getSpecificationVersion ()) + DELIMETER +
                     (el.getNotification () == null ? " " : el.getNotification ());
         }
         
