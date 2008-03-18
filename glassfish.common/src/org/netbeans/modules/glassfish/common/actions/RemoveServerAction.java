@@ -42,7 +42,6 @@ package org.netbeans.modules.glassfish.common.actions;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.ServerUtilities;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;

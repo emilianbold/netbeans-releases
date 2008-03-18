@@ -55,8 +55,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.actions.RefreshAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
+import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -246,13 +248,19 @@ public class LogViewMgr {
             if (node == null) {
                 return null;
             }
+            
+            // No server control interface...
+            GlassfishModule commonSupport = node.getLookup().lookup(GlassfishModule.class);
+            if(commonSupport == null) {
+                return null;
+            }
 
             Action[] actions = new Action[] {
-                new StartServerAction.OutputAction(node),
+                new StartServerAction.OutputAction(commonSupport),
 //                new DebugAction.OutputAction(node),
 //                new RestartAction.OutputAction(node),
-                new StopServerAction.OutputAction(node),
-//                new RefreshAction.OutputAction(node)
+                new StopServerAction.OutputAction(commonSupport),
+                new RefreshAction.OutputAction(commonSupport)
             };
             InputOutput newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
 

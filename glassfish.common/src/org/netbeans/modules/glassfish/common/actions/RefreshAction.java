@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.spi.glassfish.GlassfishModule;
-import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
+ * Resfresh action refreshes the server state.
  *
  * @author Peter Williams
  */
-public class StopServerAction extends NodeAction {
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
+public class RefreshAction extends NodeAction {
+    
+    protected void performAction(Node[] nodes) {
+        performActionImpl(nodes);
+    }
+    
+    private static void performActionImpl(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
             GlassfishModule commonSupport = 
                     node.getLookup().lookup(GlassfishModule.class);
@@ -63,13 +68,16 @@ public class StopServerAction extends NodeAction {
             }
         }
     }
-    
+
     private static void performActionImpl(GlassfishModule commonSupport) {
-        commonSupport.stopServer(null);
+        // Tell the server instance to refresh it's status.
+    }
+
+    protected boolean enable(Node[] nodes) {
+        return enableImpl(nodes);
     }
     
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
+    private static boolean enableImpl(Node[] activatedNodes) {
         boolean result = false;
         if(activatedNodes != null && activatedNodes.length > 0) {
             for(Node node : activatedNodes) {
@@ -88,34 +96,37 @@ public class StopServerAction extends NodeAction {
         return result;
     }
 
-    private static final boolean enableImpl(GlassfishModule commonSupport) {
-        return commonSupport.getServerState() == ServerState.RUNNING;
+    private static boolean enableImpl(GlassfishModule commonSupport) {
+        // !PW FIXME what should this be?
+//        if (commonSupport == null || commonSupport.getServerState() == ServerInstance.STATE_WAITING) {
+//            return false;
+//        }
+        return true;
+    }
+
+    @Override
+    protected boolean asynchronous() { 
+        return false; 
     }
     
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
     public String getName() {
-        return NbBundle.getMessage(StopServerAction.class, "CTL_StopServerAction"); // NOI18N
+        return NbBundle.getMessage(RefreshAction.class, "LBL_Refresh"); // NOI18N
     }
-
-    @Override
+    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    
     /** This action will be displayed in the server output window */
     public static class OutputAction extends AbstractOutputAction {
         
         private static final String ICON = 
-                "org/netbeans/modules/glassfish/common/resources/stop.png"; // NOI18N
+                "org/netbeans/modules/glassfish/common/resources/refresh.png"; // NOI18N
         
         public OutputAction(final GlassfishModule commonSupport) {
-            super(commonSupport, NbBundle.getMessage(StopServerAction.class, "LBL_StopOutput"), // NOI18N
-                    NbBundle.getMessage(StopServerAction.class, "LBL_StopOutputDesc"), // NOI18N
+            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_RefreshOutput"), // NOI18N
+                    NbBundle.getMessage(RefreshAction.class, "LBL_RefreshOutputDesc"), // NOI18N
                     ICON);
         }
         
