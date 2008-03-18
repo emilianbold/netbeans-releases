@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Task;
 
 /**
  * A helper class for checking what server, if any, has been explicitly set
@@ -91,7 +92,15 @@ final class ServerResolver {
                 if (editor == null) {
                     return null;
                 }
+                try {
+                    editor.prepareDocument().waitFinished(1500);
+                } catch (InterruptedException ie) {
+                    // do nothing
+                }
                 Document doc = editor.getDocument();
+                if (doc == null) {
+                    return null;
+                }
                 String text = doc.getText(0, doc.getLength());
                 String serverId = getSpecifiedServer(text);
                 if (serverId != null) {
