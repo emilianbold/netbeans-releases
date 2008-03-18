@@ -58,7 +58,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +75,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -265,9 +263,9 @@ public final class ClassPath {
     private FileObject[] createRoots (final List<ClassPath.Entry> entries) {
         List<FileObject> l = new ArrayList<FileObject> ();
         for (Entry entry : entries) {
-            RootsListener rootsListener = this.getRootsListener();
-            if (rootsListener != null) {
-                rootsListener.addRoot (entry.getURL());
+            RootsListener rL = this.getRootsListener();
+            if (rL != null) {
+                rL.addRoot (entry.getURL());
             }
             FileObject fo = entry.getRoot();
             if (fo != null) {
@@ -560,8 +558,76 @@ public final class ClassPath {
 	propSupport.firePropertyChange(event);
     }
 
-    public String toString() {
-        return "ClassPath" + entries(); // NOI18N
+    /**
+     * Policy for handling path items which cannot be converted into the desired format.
+     * @see #toString(ClassPath.PathConversionMode)
+     * @since org.netbeans.api.java/1 1.15
+     */
+    public enum PathConversionMode {
+        /**
+         * Drop entry silently.
+         */
+        SKIP,
+        /**
+         * Entry is dropped but a warning is logged.
+         */
+        WARN,
+        /**
+         * {@link #toString(ClassPath.PathConversionMode)} will fail with an {@link IllegalArgumentException}.
+         */
+        FAIL,
+        /**
+         * The entry is simply displayed as a URL.
+         * Useful for debug logging or unit tests.
+         * Used by {@link ClassPath#toString}.
+         */
+        PRINT,
+    }
+
+    /**
+     * Render this classpath in the conventional format used by the Java launcher.
+     * @param conversionMode policy for converting unusual entries
+     * @return a conventionally-formatted representation of the classpath
+     * @since org.netbeans.api.java/1 1.15
+     * @see File#pathSeparator
+     * @see FileUtil#archiveOrDirForURL
+     * @see ClassPathSupport#createClassPath(String)
+     */
+    public String toString(PathConversionMode conversionMode) {
+        StringBuilder b = new StringBuilder();
+        for (Entry e : entries()) {
+            URL u = e.getURL();
+            File f = FileUtil.archiveOrDirForURL(u);
+            if (f != null) {
+                if (b.length() > 0) {
+                    b.append(File.pathSeparatorChar);
+                }
+                b.append(f.getAbsolutePath());
+            } else {
+                switch (conversionMode) {
+                case SKIP:
+                    break;
+                case PRINT:
+                    if (b.length() > 0) {
+                        b.append(File.pathSeparatorChar);
+                    }
+                    b.append(u);
+                    break;
+                case WARN:
+                    LOG.warning("Encountered untranslatable classpath entry: " + u);
+                    break;
+                case FAIL:
+                    throw new IllegalArgumentException("Encountered untranslatable classpath entry: " + u); // NOI18N
+                default:
+                    assert false : conversionMode;
+                }
+            }
+        }
+        return b.toString();
+    }
+
+    public @Override String toString() {
+        return toString(PathConversionMode.PRINT);
     }
 
     /**
@@ -623,8 +689,8 @@ public final class ClassPath {
          * folder.
          */
         public boolean isValid() {
-            FileObject root = getRoot();
-            return root != null && root.isValid();
+            FileObject r = getRoot();
+            return r != null && r.isValid();
         }
 
         /**
@@ -688,13 +754,13 @@ public final class ClassPath {
          * @since org.netbeans.api.java/1 1.13
          */
         public boolean includes(FileObject file) {
-            FileObject root = getRoot();
-            if (root == null) {
+            FileObject r = getRoot();
+            if (r == null) {
                 throw new IllegalArgumentException("no root in " + url);
             }
-            String path = FileUtil.getRelativePath(root, file);
+            String path = FileUtil.getRelativePath(r, file);
             if (path == null) {
-                throw new IllegalArgumentException(file + " not in " + root);
+                throw new IllegalArgumentException(file + " not in " + r);
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N
@@ -709,7 +775,7 @@ public final class ClassPath {
             this.filter = filter;
         }
 
-        public String toString() {
+        public @Override String toString() {
             return "Entry[" + url + "]"; // NOI18N
         }
         
