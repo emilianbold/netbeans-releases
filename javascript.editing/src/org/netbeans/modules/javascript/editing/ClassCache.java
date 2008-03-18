@@ -39,45 +39,44 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * Cache which performs type lookup etc. for functions
  * 
  * @author Tor Norbye
  */
-public class FunctionCache {
-    public static final FunctionCache INSTANCE = new FunctionCache();
-    static final String NONE = new String("NONE");
+public class ClassCache {
+    public static final ClassCache INSTANCE = new ClassCache();
+    private Map<String,String> superClasses;
     
-    Map<String,String> cache = new HashMap<String,String>(500);
-    
-    public String getType(String fqn, JsIndex index) {
-        String type = cache.get(fqn);
-        if (type == NONE) {
-            return null;
-        } else if (type == null) {
-            type = index.getType(fqn);
-            if (type == null) {
-                cache.put(fqn, NONE);
-                return null;
-            } else {
-                cache.put(fqn, type);
-            }
+    private void initialize(JsIndex index) {
+        if (superClasses == null) {
+            superClasses = index.getAllExtends();
         }
+    }
+    
+    public String getExtends(String fqn, JsIndex index) {
+        initialize(index);
         
-        return type;
+        return superClasses.get(fqn);
     }
     
-    public void wipe(String fqn) {
-        cache.remove(fqn);
+    public List<String> getAncestors(String fqn, JsIndex index) {
+        initialize(index);
+        
+        List<String> ancestors = new ArrayList<String>();
+        for (String s = fqn; s != null; s = superClasses.get(s)) {
+            ancestors.add(s);
+        }
+
+        return ancestors;
     }
     
-    boolean isEmpty() {
-        return cache.size() == 0;
+    public void refresh() {
+        superClasses = null;
     }
 }
