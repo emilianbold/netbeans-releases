@@ -51,12 +51,23 @@ import org.openide.util.NbBundle;
  * A property editor for Integer class
  * @author Ajit Bhate
  */
+// Compared to the built-in IntEditor, this one allows empty value and 
+// client-specified range.
 public class IntegerEditor extends PropertyEditorSupport {
 
     public final static String EMPTY = Constants.EMPTY_STRING;
+    
+    private int minInclusive;
+    private int maxInclusive;
 
     /** Creates a new instance of IntegerEditor */
     public IntegerEditor() {
+        this(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+    
+    public IntegerEditor(int minInclusive, int maxInclusive) {
+        this.minInclusive = minInclusive;
+        this.maxInclusive = maxInclusive;
     }
     
     @Override
@@ -75,7 +86,21 @@ public class IntegerEditor extends PropertyEditorSupport {
         
         try {
             int v = Integer.parseInt(s);
-            setValue(v);
+            if (v < minInclusive) {
+                String msg = NbBundle.getMessage(getClass(), 
+                        "MSG_OUT_OF_LOWER_BOUND_INTEGER", v, minInclusive); // NOI18N
+                NotifyDescriptor d = 
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            } else if (v > maxInclusive) {
+                String msg = NbBundle.getMessage(getClass(), 
+                        "MSG_OUT_OF_UPPER_BOUND_INTEGER", v, maxInclusive); // NOI18N
+                NotifyDescriptor d = 
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);                
+            } else {
+                setValue(v);
+            }
         } catch (NumberFormatException e) {
             String msg = NbBundle.getMessage(getClass(), "MSG_INVALID_INTEGER", s); // NOI18N
             NotifyDescriptor d = 
