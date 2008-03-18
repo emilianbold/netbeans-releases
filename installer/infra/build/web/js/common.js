@@ -65,7 +65,8 @@ BUNDLE_IDS [1] = "mobility";
 BUNDLE_IDS [2] = "javase";
 BUNDLE_IDS [3] = "ruby";
 BUNDLE_IDS [4] = "cpp";
-BUNDLE_IDS [5] = "all";
+BUNDLE_IDS [5] = "php";
+BUNDLE_IDS [6] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";

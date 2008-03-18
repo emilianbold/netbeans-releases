@@ -65,7 +65,7 @@ public class CSSLanguage implements GsfLanguage {
     }
 
     public String getLineCommentPrefix() {
-        return "/*";
+        return null;
     }
 
     public boolean isIdentifierChar(char c) {
