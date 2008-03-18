@@ -486,17 +486,18 @@ public final class J2eePlatform {
     public Library createLibrary(File location, String libraryName) throws IOException {
         Parameters.notNull("location", location); // NOI18N
 
-        FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
-        if (libraries == null) {
-            throw new IOException("Library folder does not exist"); // NOI18N
+        File parent = location.getAbsoluteFile().getParentFile();
+        if (parent == null) {
+            throw new IOException("Wrong library location " + location); // NOI18N
+        }
+        FileObject baseFolder = FileUtil.toFileObject(parent);
+        if (baseFolder == null) {
+            baseFolder = FileUtil.createFolder(parent);
         }
 
-        URL url = URLMapper.findURL(libraries, URLMapper.EXTERNAL);
-
-        LibraryManager manager = LibraryManager.forLocation(url);
+        LibraryManager manager = LibraryManager.forLocation(location.toURI().toURL());
         Map<String, List<URL>> content = new HashMap<String, List<URL>>();
 
-        FileObject baseFolder = libraries.getParent();
         String folderName = getFolderName(baseFolder, libraryName);
         FileObject jarFolder = FileUtil.createFolder(baseFolder, folderName);
 
@@ -602,8 +603,15 @@ public final class J2eePlatform {
                 }
                 copied.put(jarObject, jarObject.getNameExt().replace(jarObject.getName(), name));
             }
+
+            FileObject fresh = jarFolder.getFileObject(copied.get(jarObject));
             URL u = LibrariesSupport.convertFilePathToURL(folderName
                     + File.separator + copied.get(jarObject));
+
+            if (FileUtil.isArchiveFile(fresh)) {
+                u = FileUtil.getArchiveRoot(u);
+            }
+
             if (!content.contains(u)) {
                 content.add(u);
             }

@@ -68,10 +68,8 @@ public final class CssRuleItem {
     CssRuleItem(Document doc, String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) throws BadLocationException {
         this.key = new Item(doc, key, keyOffset);
         this.value = new Item(doc, val, valOffset);
-        if(doc != null) {
-            this.colon_offset = doc.createPosition(colon_offset);
-            this.semicolon_offset = doc.createPosition(semicolon_offset);
-        }
+        this.colon_offset = doc == null ? new CssRule.SimplePosition(colon_offset) : doc.createPosition(colon_offset);
+        this.semicolon_offset = doc == null ? new CssRule.SimplePosition(semicolon_offset): doc.createPosition(semicolon_offset);
     }
 
     /** @return representation of the key of the rule item. */
@@ -91,13 +89,13 @@ public final class CssRuleItem {
     /** Gets offset of the key - value separator in the css rule item.
      */
     public int colonOffset() {
-        return colon_offset != null ? colon_offset.getOffset() : -1;
+        return colon_offset.getOffset();
     }
 
     /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
      */
     public int semicolonOffset() {
-        return semicolon_offset != null ? semicolon_offset.getOffset() : -1;
+        return semicolon_offset.getOffset();
     }
 
     public boolean equals(Object o) {
@@ -126,9 +124,7 @@ public final class CssRuleItem {
         
         Item(Document doc, String name, int offset) throws BadLocationException {
             this.name = name;
-            if(doc != null) {
-                this.offset = doc.createPosition(offset);
-            }
+            this.offset = doc == null ? new CssRule.SimplePosition(offset) : doc.createPosition(offset);
         }
 
         /** @return text content of the attribute's item. */

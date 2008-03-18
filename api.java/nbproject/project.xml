@@ -47,12 +47,26 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.api.java</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.7</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
@@ -62,37 +76,23 @@ made subject to such option by the copyright holder.
                         <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.execution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.openide.util</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.modules</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.modules</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.java.classpath</package>
