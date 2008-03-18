@@ -751,7 +751,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 storedFiles = url2CompileWithDeps.get(root);
                 
                 if (storedFiles == null) {
-                    url2CompileWithDeps.put(root, storedFiles = new  LinkedList<File>());
+                    url2CompileWithDeps.put(root, storedFiles = new  LinkedHashSet<File>());
                 }
             }
             

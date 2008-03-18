@@ -50,6 +50,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,9 +59,9 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -70,8 +71,6 @@ import org.openide.util.NbBundle;
  * @author Bharath Ravikumar
  */
 public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
-    
-    private final transient Collection elements;
     private final transient SafeDeleteRefactoring refactoring;
     private boolean regulardelete;
     private ChangeListener parent;
@@ -81,9 +80,8 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
      * @param refactoring The SafeDelete refactoring used by this panel
      * @param selectedElements A Collection of selected elements
      */
-    public SafeDeletePanel(SafeDeleteRefactoring refactoring, Collection selectedElements, boolean regulardelete, ChangeListener parent) {
+    public SafeDeletePanel(SafeDeleteRefactoring refactoring, boolean regulardelete, ChangeListener parent) {
         setName(NbBundle.getMessage(SafeDeletePanel.class,"LBL_SafeDel")); // NOI18N
-        this.elements = selectedElements;
         this.refactoring = refactoring;
         this.regulardelete = regulardelete;
         this.parent = parent;
@@ -109,10 +107,14 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         
         final String labelText;
         
-        Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
-        final Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        
-        if (files.size()>1 && files.size() == handles.size()) {
+        Lookup lkp = refactoring.getRefactoringSource();
+        NonRecursiveFolder folder = lkp.lookup(NonRecursiveFolder.class);
+        Collection<? extends FileObject> files = lkp.lookupAll(FileObject.class);
+        final Collection<? extends TreePathHandle> handles = lkp.lookupAll(TreePathHandle.class);
+        if (folder != null) {
+            String pkgName = folder.getFolder().getNameExt().replace('/', '.');
+            labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelPkg", pkgName);
+        }else if (files.size()>1 && files.size() == handles.size()) {
             //delete multiple files
             if (regulardelete) {
                 labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_RegularDelete",handles.size());
@@ -143,7 +145,15 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
               labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Element",name[0]);
           }
         } else {
-            labelText ="";
+            FileObject fileObject = files.iterator().next();
+            boolean isSingleFolderSelected = (files != null && files.size() == 1 
+                    && fileObject.isFolder());
+            if (isSingleFolderSelected && !regulardelete) {
+                String folderName = fileObject.getName();
+                labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelFolder", folderName);
+            }else{
+                labelText ="";
+            }
         }
         
         SwingUtilities.invokeLater(new Runnable() {

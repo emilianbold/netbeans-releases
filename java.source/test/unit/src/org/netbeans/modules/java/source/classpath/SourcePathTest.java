@@ -88,7 +88,8 @@ public class SourcePathTest extends NbTestCase {
                 return null;
             }
         });
-        assertTrue (sp2.entries().isEmpty());
+        assertEquals(1,sp2.entries().size());
+        assertEquals(base.entries().get(0).getURL(), sp2.entries().get(0).getURL());
         ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
             public Void run() throws IOException, InterruptedException {
                 ClassIndexManager.getDefault().createUsagesQuery(base.entries().get(1).getURL(), true);

@@ -89,6 +89,11 @@ public class Utils {
     public static boolean isValidExecutable(String path, boolean emptyOK) {
         return isValidPath(path, false, emptyOK);
     }
+    
+    /** Return true if this is a valid, non-empty executable file */
+    public static boolean isValidExecutable(String path) {
+        return isValidExecutable(path, false);
+    }
 
     private static boolean isValidPath(String path, boolean isDirectory, boolean emptyOK) {
         if ( isEmpty(path) ) {
