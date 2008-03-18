@@ -190,6 +190,6 @@ public class LayoutManager {
     public static final float HMARGIN = 1;
     public static final float VMARGIN = 1;
     
-    public static final float HSPACING = 20f;
-    public static final float VSPACING = 24f;
+    public static final float HSPACING = 12f;
+    public static final float VSPACING = 18f;
 }

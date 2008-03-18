@@ -76,7 +76,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
                                             = "MSG_ErrDebuggerRunOnFolder";// NOI18N
 
     private static final int WAIT_INIT_SESSION 
-                                            = 20000;
+                                            = 5000;
 
     private static final String XDEBUG_COOKIE 
                                             = "XDEBUG_SESSION_START";// NOI18N

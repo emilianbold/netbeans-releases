@@ -46,10 +46,10 @@ public class XORSmallIcon2D extends Icon2D {
 
     
     static {
-        final float w = 24f / 4 - 1;
-        final float h = 24f / 4 - 1;
+        final float w = 20f / 4 - 1;
+        final float h = 20f / 4 - 1;
         
-        final float s = 3.5f;
+        final float s = 3.0f;
         
         final float x1 = -w;
         final float x2 = -w + s;

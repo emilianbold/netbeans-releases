@@ -3545,4 +3545,88 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    }\n" +
                 "};\n");
     }
+
+    public void testDereferenceFormatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect * spacing",
+                "int foo()\n" +
+                "{\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
+                "    }\n" +
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
+                "}\n");
+    }
+
+    public void testNewStyleCastFormatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "const char* j = const_cast < const char*>(a);\n" +
+                "A* c = dynamic_cast <A* > (b);\n" +
+                "int i = reinterpret_cast< int > (a);\n" +
+                "i = static_cast < int > (*a);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    const char* j = const_cast<const char*> (a);\n" +
+                "    A* c = dynamic_cast<A*> (b);\n" +
+                "    int i = reinterpret_cast<int> (a);\n" +
+                "    i = static_cast<int> (*a);\n" +
+                "}\n");
+    }
+
+    public void testNewStyleCastFormatting2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAfterTypeCast, false);
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "const char* j = const_cast < const char*>(a);\n" +
+                "A* c = dynamic_cast <A* > (b);\n" +
+                "int i = reinterpret_cast< int > (a);\n" +
+                "i = static_cast < int > (*a);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    const char* j = const_cast < const char* >(a);\n" +
+                "    A* c = dynamic_cast < A* >(b);\n" +
+                "    int i = reinterpret_cast < int >(a);\n" +
+                "    i = static_cast < int >(*a);\n" +
+                "}\n");
+    }
+
+    public void testConcurrentSpacing() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect cpace after ; and befor ++",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
+                "}\n");
+    }
 }
