@@ -48,6 +48,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import javax.xml.ws.FaultAction;
@@ -187,9 +190,11 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private RequestProcessor.Task task;
         private int phase;
         private EditorKit kit;
+        private final JComponent tmpComp;
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
+            this.tmpComp = initLoading();
             if (!NEW_INITIALIZE) {
                 run();
             } else {
@@ -197,6 +202,17 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 task.setPriority(Thread.MIN_PRIORITY);
                 task.schedule(0);
             }
+        }
+        
+        private JComponent initLoading() {
+            setLayout(new BorderLayout());
+
+            JLabel loadingLbl = new JLabel(NbBundle.getMessage(CloneableEditor.class, "LBL_EditorLoading")); // NOI18N
+            loadingLbl.setOpaque(true);
+            loadingLbl.setHorizontalAlignment(SwingConstants.CENTER);
+            loadingLbl.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
+            add(loadingLbl, BorderLayout.CENTER);
+            return loadingLbl;
         }
         
         @SuppressWarnings("fallthrough")
@@ -246,8 +262,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
             doc = support.getDocument();
     
-            setLayout(new BorderLayout());
-
             // Init action map: cut,copy,delete,paste actions.
             javax.swing.ActionMap am = getActionMap();
 
@@ -320,6 +334,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 customToolbar.setBorder(b);
                 add(customToolbar, BorderLayout.NORTH);
             }
+            remove(tmpComp);
 
             tmp.setWorking(QuietEditorPane.ALL);
 
