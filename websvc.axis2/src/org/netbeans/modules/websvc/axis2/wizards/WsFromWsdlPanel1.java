@@ -69,6 +69,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
     private WsFromWsdlGUIPanel1 component;
     private WizardDescriptor wizardDescriptor;
     private Project project;
+    private File wsdlFile;
     
     /** Creates a new instance of WebServiceType */
     public WsFromWsdlPanel1(Project project, WizardDescriptor wizardDescriptor) {
@@ -97,9 +98,10 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public void readSettings(WizardDescriptor settings) {
-        final File wsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
-        component.setW2JOptions("");
-        if (wsdlFile != null) {
+        File newWsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
+        if (newWsdlFile != null && !newWsdlFile.equals(wsdlFile)) {
+            wsdlFile = newWsdlFile;
+            component.setW2JOptions("");
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     FileObject wsdlFo = FileUtil.toFileObject(wsdlFile);
@@ -112,16 +114,16 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                         }
                         String packageName = WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace());
                         component.setPackageName(packageName);
-                        component.setW2JOptions("-sn "+component.getServiceName()+
+                        component.setW2JOptions("-ss -sd -sn "+component.getServiceName()+
                                     " -pn "+component.getPortName()+
-                                    " -d adb\n"+
-                                    " -p "+packageName+" -ssi"
+                                    " -d " +component.getDatabindingName()+"\n"+
+                                    " -p "+packageName+(component.isSEI() ? " -ssi" : "")
                         );
                     }
                 }
-                
+
             });
-        }        
+        }
     }
 
     public void storeSettings(WizardDescriptor settings) {

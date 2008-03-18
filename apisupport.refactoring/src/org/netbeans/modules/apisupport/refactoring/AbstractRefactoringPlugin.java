@@ -170,6 +170,9 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
            public void run(CompilationController info) throws Exception {
                info.toPhase(JavaSource.Phase.RESOLVED);
                Element neco = handle.resolveElement(info);
+               if (neco == null) {
+                   return;
+               }
                infoholder.name = neco.getSimpleName().toString();
                if (neco.getKind() == ElementKind.CLASS) {
                    infoholder.isClass = true;

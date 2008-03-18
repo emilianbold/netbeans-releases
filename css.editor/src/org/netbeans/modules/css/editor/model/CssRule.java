@@ -65,8 +65,8 @@ public class CssRule {
     public CssRule(Document doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset,CssRuleContent styleData) throws BadLocationException {
         this.ruleName = ruleName;
         this.ruleNameOffset = doc.createPosition(ruleNameOffset);
-        this.ruleOpenBracketOffset = doc.createPosition(ruleOpenBracketOffset);
-        this.ruleCloseBracketOffset = doc.createPosition(ruleCloseBracketOffset);
+        this.ruleOpenBracketOffset = doc == null ? new SimplePosition(ruleOpenBracketOffset) : doc.createPosition(ruleOpenBracketOffset);
+        this.ruleCloseBracketOffset = doc == null ? new SimplePosition(ruleCloseBracketOffset) : doc.createPosition(ruleCloseBracketOffset);
         this.styleData = styleData;
     }
 
@@ -100,6 +100,16 @@ public class CssRule {
     @Override
     public String toString() {
         return "CssRule[" + name() + "\n" + ruleContent().toString() + "]";
+    }
+    
+    static class SimplePosition implements Position {
+        private int offset;
+        SimplePosition(int offset) {
+            this.offset = offset;
+        }
+        public int getOffset() {
+            return offset;
+        }
     }
     
 }
