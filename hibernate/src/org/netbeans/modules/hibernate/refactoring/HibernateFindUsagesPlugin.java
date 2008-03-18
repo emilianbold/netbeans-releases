@@ -62,12 +62,14 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Plugin to find usage of Java class or Java class field
  * 
  * @author Dongmei Cao
  */
 public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
     private final WhereUsedQuery query;
+    private List<FileObject> mappingFileObjs;
 
     public HibernateFindUsagesPlugin(WhereUsedQuery query) {
         this.query = query;
@@ -94,54 +96,38 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
             final TreePathHandle treePathHandle = query.getRefactoringSource().lookup(TreePathHandle.class);
             FileObject fo = null;
-            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+            if (treePathHandle != null &&
+                    (treePathHandle.getKind() == Kind.CLASS ||
+                    treePathHandle.getKind() == Kind.VARIABLE ||
+                    treePathHandle.getKind() == Kind.MEMBER_SELECT ||
+                    treePathHandle.getKind() == Kind.IDENTIFIER)) {
+
                 fo = treePathHandle.getFileObject();
+            }
+
+            if (fo == null) {
+                // TODO: return a Problem
+                return null;
             }
 
             // Find the mapping files in this project
             Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
             HibernateEnvironment env = new HibernateEnvironment(proj);
-            List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
-            if (mFileObjs == null || mFileObjs.size() == 0) {
+            mappingFileObjs = env.getAllHibernateMappingFileObjects();
+            if (mappingFileObjs == null || mappingFileObjs.size() == 0) {
                 // OK, no mapping files at all. 
                 return null;
             }
 
             try {
                 if (treePathHandle != null) {
-                    
-                    // Figure out the class binary name
-                    final String[] binaryClassName = new String[]{null};
-                    JavaSource javaSource = JavaSource.forFileObject(fo);
-                    if (javaSource == null) {
-                        return null;
-                    }
+                    if (treePathHandle.getKind() == Kind.CLASS) {
+                        findJavaClassUsage(treePathHandle, refactoringElements, fo);
+                    } else /*if (treePathHandle.getKind() == Kind.VARIABLE ||
+                            treePathHandle.getKind() == Kind.MEMBER_SELECT ||
+                            treePathHandle.getKind() == Kind.IDENTIFIER)*/ {
+                        findJavaClassFieldUsage(treePathHandle, refactoringElements, fo);
 
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-
-                        public void run(CompilationController cc) throws IOException {
-                            cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                            Element element = treePathHandle.resolveElement(cc);
-                            if (element == null || element.getKind() != ElementKind.CLASS) {
-                                return;
-                            }
-                            binaryClassName[0] = ElementUtilities.getBinaryName((TypeElement) element);
-                        }
-                        }, true);
-
-                    if (binaryClassName[0] != null) {
-                        String className = binaryClassName[0];
-                        Map<FileObject, OccurrenceItem> occurrences =
-                                HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, className);
-
-                        for (FileObject mFileObj : occurrences.keySet()) {
-                            OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                            HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
-                                    className,
-                                    foundPlace.getLocation(),
-                                    foundPlace.getText());
-                            refactoringElements.add(query, elem);
-                        }
                     }
                 }
             } catch (IOException ex) {
@@ -150,5 +136,85 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
         }
 
         return null;
+    }
+
+    private void findJavaClassUsage(final TreePathHandle treePathHandle,
+            RefactoringElementsBag refactoringElements, FileObject classFile) throws IOException {
+
+        // Figure out the class binary name
+        final String[] binaryClassName = new String[]{null};
+        JavaSource javaSource = JavaSource.forFileObject(classFile);
+        if (javaSource == null) {
+            return;
+        }
+
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController cc) throws IOException {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                Element element = treePathHandle.resolveElement(cc);
+                if (element == null || element.getKind() != ElementKind.CLASS) {
+                    return;
+                }
+                binaryClassName[0] = ElementUtilities.getBinaryName((TypeElement) element);
+            }
+        }, true);
+
+        String className = binaryClassName[0];
+        if (className != null) {
+            Map<FileObject, OccurrenceItem> occurrences =
+                    HibernateRefactoringUtil.getJavaClassOccurrences(mappingFileObjs, className);
+
+            for (FileObject mFileObj : occurrences.keySet()) {
+                OccurrenceItem foundPlace = occurrences.get(mFileObj);
+                HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
+                        className,
+                        foundPlace.getLocation(),
+                        foundPlace.getText());
+                refactoringElements.add(query, elem);
+            }
+        }
+    }
+    
+    private void findJavaClassFieldUsage(final TreePathHandle treePathHandle,
+            RefactoringElementsBag refactoringElements, FileObject classFile) throws IOException {
+
+        // Figure out the class binary name and field name
+        final String[] classAndFieldName = new String[]{null, null};
+        JavaSource javaSource = JavaSource.forFileObject(classFile);
+        if (javaSource == null) {
+            return;
+        }
+
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController cc) throws IOException {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                Element element = treePathHandle.resolveElement(cc);
+                if (element == null || element.getKind() != ElementKind.FIELD) {
+                    return;
+                }
+                classAndFieldName[0] = ElementUtilities.getBinaryName((TypeElement) element.getEnclosingElement());
+                classAndFieldName[1] = element.getSimpleName().toString();
+            }
+        }, true);
+
+        String className = classAndFieldName[0];
+        String fieldName = classAndFieldName[1];
+        
+        if (className != null && fieldName != null) {
+
+            Map<FileObject, OccurrenceItem> occurrences =
+                    HibernateRefactoringUtil.getJavaFieldOccurrences(mappingFileObjs, className, fieldName);
+
+            for (FileObject mFileObj : occurrences.keySet()) {
+                OccurrenceItem foundPlace = occurrences.get(mFileObj);
+                HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
+                        fieldName,
+                        foundPlace.getLocation(),
+                        foundPlace.getText());
+                refactoringElements.add(query, elem);
+            }
+        }
     }
 }
