@@ -39,6 +39,7 @@
 package org.netbeans.modules.hibernate.framework;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -52,6 +53,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
@@ -59,11 +61,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
- *
+ * Provides Framework extension for Hibernate.
+ * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateWebModuleExtender extends WebModuleExtender {
@@ -76,9 +80,14 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     private final String url = "hibernate.connection.url";
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
-
-    public HibernateWebModuleExtender() {
+    
+    public HibernateWebModuleExtender(boolean forNewProjectWizard, WebModule webModule) {
         configPanel = new HibernateConfigurationPanel();
+        if(!forNewProjectWizard) {
+            // Show the config panel for Proj. Customizer
+            // Fill the panel with existing data.
+            showConfigPanelForCustomizer(webModule);
+        }
     }
 
     @Override
@@ -131,6 +140,54 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             Exceptions.printStackTrace(ex);
         }
         return Collections.EMPTY_SET;
+    }
+
+    private void showConfigPanelForCustomizer(WebModule webModule) {
+        Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
+        ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
+        for(FileObject configFile : configFileObjects) {
+            if(configFile.getName().equals(DEFAULT_CONFIG_FILENAME)) {
+                try {
+                    HibernateCfgDataObject hibernateDO = (HibernateCfgDataObject) DataObject.find(configFile);
+                    SessionFactory sessionFactory = hibernateDO.getHibernateConfiguration().getSessionFactory();
+                    configPanel.setSessionName(sessionFactory.getAttributeValue(sessionName));
+                    int index = 0;
+                    for(String propValue : sessionFactory.getProperty2()) {
+                        String propName = sessionFactory.getAttributeValue(SessionFactory.PROPERTY2, index++, "name");  //NOI18N
+                        if(dialect.contains(propName)) {
+                            configPanel.setDialect(propValue);
+                        }
+                        if(driver.contains(propName)) {
+                            configPanel.setDriver(propValue);
+                        }
+                        if(url.contains(propName)) {
+                            configPanel.setConnectionURL(propValue);
+                        }
+                        if(userName.contains(propName)) {
+                            configPanel.setUserName(propValue);
+                        }
+                        if(password.contains(propName)) {
+                            configPanel.setPassword(propValue);
+                        }
+                        
+                    }
+                    
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                
+            } else {
+                // There's no default hibernate configuration file.
+                // Clear the fields and disable the panel.
+                configPanel.setSessionName("");
+                configPanel.setDialect("");
+                configPanel.setDriver("");
+                configPanel.setConnectionURL("");
+                configPanel.setUserName("");
+                configPanel.setPassword("");
+            }
+            configPanel.disable();
+        }
     }
 
     private class CreateHibernateConfiguration implements FileSystem.AtomicAction {
@@ -189,7 +246,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
             System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
-            createdFilesSet.add(newOne.getPrimaryFile());
+            createdFilesSet.add(hdo.getPrimaryFile());
 
         }
     }

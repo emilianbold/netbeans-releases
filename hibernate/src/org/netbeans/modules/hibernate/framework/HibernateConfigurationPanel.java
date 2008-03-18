@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.framework;
 
+import java.awt.Component;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.hibernate.wizards.Util;
 
@@ -87,20 +88,32 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
     public boolean isPanelValid() {
         return true;
     }
-    
+
     public String getSessionName() {
         return hibernateSessionNameTextField.getText().trim();
     }
     
-     public String getSelectedDialect() {
+    public void setSessionName(String newSessionName) {
+        hibernateSessionNameTextField.setText(newSessionName);
+    }
+
+    public String getSelectedDialect() {
         if (dialectComboBox.getSelectedItem() != null) {
             return Util.getSelectedDialect(dialectComboBox.getSelectedItem().toString());
         }
         return null;
     }
 
+    public void setDialect(String dialectName) {
+        dialectComboBox.setSelectedItem(Util.getDailectCode(dialectName));
+    }
+    
     public String getSelectedDriver() {
         return driverClassTextField.getText();
+    }
+    
+    public void setDriver(String driver) {
+        driverClassTextField.setText(driver);
     }
 
     public String getSelectedURL() {
@@ -110,15 +123,39 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
         return null;
 
     }
+    
+    public void setConnectionURL(String url) {
+        connectionURLComboBox.setSelectedItem(url);
+    }
 
     public String getUserName() {
         return usernameTextField.getText().trim();
+    }
+    
+    public void setUserName(String username) {
+        usernameTextField.setText(username);
     }
 
     public String getPassword() {
         return passwordTextField.getText().trim();
     }
     
+    public void setPassword(String password) {
+        passwordTextField.setText(password);
+    }
+    
+    @Override
+    public void disable() {
+        super.disable();
+        for(Component component : this.getComponents()) {
+            component.setEnabled(false);
+        }
+    }
+    
+//    @Override
+//    public void enable() {
+//        
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
