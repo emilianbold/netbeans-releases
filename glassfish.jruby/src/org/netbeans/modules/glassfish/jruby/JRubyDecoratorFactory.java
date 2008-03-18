@@ -103,7 +103,7 @@ public class JRubyDecoratorFactory implements DecoratorFactory {
         RUBY_APPLICATION { 
             @Override public boolean canUndeploy() { return true; }
             @Override public boolean canShowBrowser() { return true; }
-            @Override public Image getIconBadge() { return Utilities.loadImage(RAILS_BADGE); }
+//            @Override public Image getIconBadge() { return Utilities.loadImage(RAILS_BADGE); }
             @Override public Image getIcon(int type) { return Utilities.loadImage(RAILS_APPLICATION_ICON); }
         };
 
