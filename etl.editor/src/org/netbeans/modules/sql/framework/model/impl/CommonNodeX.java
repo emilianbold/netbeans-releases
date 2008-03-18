@@ -49,7 +49,6 @@ import net.java.hulp.i18n.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -72,7 +71,7 @@ public class CommonNodeX {
     protected Map attributes = new HashMap();
     protected String name = "unknown";
     private static final String LOG_CATEGORY = CommonNodeX.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(CommonNodeX.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CommonNodeX.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public CommonNodeX(Element elem) {
@@ -124,7 +123,7 @@ public class CommonNodeX {
             try {
                 ret = this.getClass().getResource(attrElement.getAttribute(ATTR_URL_VALUE));
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR107: Exception{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT107: Exception{0}", LOG_CATEGORY), ex);
             }
         }
         return ret;

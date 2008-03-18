@@ -116,6 +116,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
             column.setIdentifier(PropertyType.CORRELATION_SET);
             column.setHeaderValue(PropertyType.CORRELATION_SET.getDisplayName());
             column.setCellRenderer(new DefaultTableCellRenderer() {
+                @Override
                 public Component getTableCellRendererComponent(
                         JTable table, Object value, boolean isSelected,
                         boolean hasFocus, int row, int column) {
@@ -136,7 +137,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
             column = new TableColumn(1);
             column.setIdentifier(PropertyType.CORRELATION_INITIATE);
             column.setHeaderValue(PropertyType.CORRELATION_INITIATE.getDisplayName());
-            final Initiate[] initiateArr = new Initiate[] {
+            final Initiate[] initiateArr = new Initiate[] {null,
                 Initiate.NO, Initiate.YES, Initiate.JOIN};
             //
             final JComboBox editorCb = new JComboBox(initiateArr);
@@ -232,6 +233,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
             return null;
         }
         
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             PatternedCorrelationLocal pCorrLocal = getRowObject(rowIndex);
             TableColumn column = columnModel.getColumn(columnIndex);
@@ -254,7 +256,6 @@ public class CorrelationPTablePanel extends BaseTablePanel
                             "\" isn't supported by the getValueAt()"; // NOI18N
             }
         }
-        
     }
     
     /**
@@ -351,6 +352,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         }
     }
     
+    @Override
     public void createContent() {
         super.createContent();
         //
@@ -381,6 +383,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         setTableView(tableView);
     }
     
+    @Override
     protected void addRow(ActionEvent event) {
         Set<CorrelationSet> csSet = chooseCorrelationSet();
         if (csSet != null) {
@@ -420,6 +423,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         //        csChooser.afterClose();
     }
     
+    @Override
     protected void editRow(ActionEvent event) {
         int rowIndex = getTableView().getSelectedRow();
         if (rowIndex == -1) return; // Nothing to edit because of nothing is selected
@@ -467,6 +471,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         return false;
     }
     
+    @Override
     protected void deleteRowImpl(ActionEvent event) {
         int[] rows2delete = getTableView().getSelectedRows();
         //
@@ -482,6 +487,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         return (BpelModel)lookup.lookup(BpelModel.class);
     }
     
+    @Override
     public boolean applyNewValues() {
         Invoke invoke = myEditor.getEditedObject();
         PatternedCorrelationContainer pcc = invoke.getPatternedCorrelationContainer();
@@ -562,6 +568,7 @@ public class CorrelationPTablePanel extends BaseTablePanel
         public void doFastValidation() {
         }
         
+        @Override
         public void doDetailedValidation() {
             List<PatternedCorrelationLocal> pCorrLocalList = tableModel.getRowsList();
             if (pCorrLocalList != null && pCorrLocalList.size() != 0) {
@@ -631,15 +638,15 @@ public class CorrelationPTablePanel extends BaseTablePanel
             ArrayList<PatternedCorrelationLocal> csArrayList =
                     new ArrayList<PatternedCorrelationLocal>(csList);
             //
-            for (int i1 = 0; i1 < csArrayList.size(); i1++) {
-                PatternedCorrelationLocal csLocal1 = csArrayList.get(i1);
+            for (int m = 0; m < csArrayList.size(); m++) {
+                PatternedCorrelationLocal csLocal1 = csArrayList.get(m);
                 CorrelationSet cs1 = csLocal1.getSet();
                 if (cs1 == null) {
                     continue;
                 }
                 //
-                for (int i2 = i1 + 1; i2 < csArrayList.size(); i2++) {
-                    PatternedCorrelationLocal csLocal2 = csArrayList.get(i1);
+                for (int k = m + 1; k < csArrayList.size(); k++) {
+                    PatternedCorrelationLocal csLocal2 = csArrayList.get(k);
                     CorrelationSet cs2 = csLocal2.getSet();
                     //
                     if (cs2 == null) {
@@ -648,10 +655,11 @@ public class CorrelationPTablePanel extends BaseTablePanel
                     //
                     if (cs1.equals(cs2)) {
                         if (isOneWayOperation) {
+                            continue;
                         }
                         //
                         Pattern pattern1 = csLocal1.getPattern();
-                        Pattern pattern2 = csLocal1.getPattern();
+                        Pattern pattern2 = csLocal2.getPattern();
                         //
                         if ((pattern1 == Pattern.REQUEST &&
                                 pattern2 == Pattern.RESPONSE) ||
@@ -674,5 +682,4 @@ public class CorrelationPTablePanel extends BaseTablePanel
             return;
         }
     }
-    
 }

@@ -47,7 +47,6 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.AbstractGeneratorFactory;
 
 /**
@@ -58,7 +57,7 @@ public class GeneratorUtil {
 
     private static int currentDbType = DB.BASEDB;
     private static GeneratorUtil instance;
-    private static transient final Logger mLogger = LogUtil.getLogger(GeneratorUtil.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(GeneratorUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -97,7 +96,7 @@ public class GeneratorUtil {
         try {
             sql = genFactory.generate(sqlObj, stmtContext);
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR123: Could not evaulate object {0}in{1}", sqlObj.getDisplayName(), GeneratorUtil.class.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT123: Could not evaulate object {0}in{1}", sqlObj.getDisplayName(), GeneratorUtil.class.getName()), ex);
 
         }
         return sql;

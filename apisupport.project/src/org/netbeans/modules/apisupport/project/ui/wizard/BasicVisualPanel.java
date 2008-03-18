@@ -125,6 +125,9 @@ public abstract class BasicVisualPanel extends JPanel {
                 case SUITE:
                     resource = "emptySuite"; // NOI18N
                     break;
+                case APPLICATION:
+                    resource = "emptyApplication"; // NOI18N
+                    break;
                 case MODULE:
                 case SUITE_COMPONENT:
                     resource = "emptyModule"; // NOI18N
@@ -145,7 +148,7 @@ public abstract class BasicVisualPanel extends JPanel {
         }
         
         protected boolean isSuiteWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE;
+            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE || getData().getWizardType() == NewNbModuleWizardIterator.Type.APPLICATION;
         }
         
         protected boolean isSuiteComponentWizard() {

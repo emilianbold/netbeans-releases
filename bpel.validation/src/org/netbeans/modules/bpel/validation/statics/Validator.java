@@ -371,8 +371,7 @@ public final class Validator extends BpelValidator {
          * Rule : The <rethrow> activity MUST only be used within a faultHandler 
          * (i.e. <catch> and <catchAll> elements).
          */
-        boolean isInsideFaultHandlers = Utils.hasAscendant( reThrow , 
-                FaultHandlers.class ); 
+        boolean isInsideFaultHandlers = Utils.hasAscendant(reThrow, FaultHandlers.class); 
         if ( !isInsideFaultHandlers ){
             addError( FIX_RETHROW_OCCURANCE, reThrow );
         }
@@ -555,8 +554,7 @@ public final class Validator extends BpelValidator {
         if ( counterName == null ){
             return;
         }
-        ContainerIterator<BaseScope> containerIterator = 
-            new ContainerIterator<BaseScope>( forEach ,BaseScope.class );
+        ContainerIterator<BaseScope> containerIterator = new ContainerIterator<BaseScope>(forEach, BaseScope.class);
         BaseScope scope = containerIterator.next();
         assert scope!=null;
         VariableContainer container = scope.getVariableContainer();
@@ -1328,31 +1326,35 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkPortTypeCombinedPartnerLink( PortTypeReference portTypeReference ) {
-        if ( portTypeReference instanceof PartnerLinkReference ){
-            PartnerLinkReference partnerLinkReference =
-                    (PartnerLinkReference) portTypeReference;
-            WSDLReference<PortType> portTypeDirectRef =
-                    portTypeReference.getPortType();
-            if ( portTypeDirectRef == null ){
-                return;
-            }
-            BpelReference<PartnerLink> partnerLinkRef =
-                    partnerLinkReference.getPartnerLink();
-            NamedComponentReference<PortType> portTypeRef = Utils.
-                    getPortTypeRef( partnerLinkRef , (Component)portTypeReference );
-            if ( portTypeRef == null ||
-                    !Utils.equals( portTypeDirectRef.get() , portTypeRef.get())) {
-                addError( FIX_DIFFERENT_PORT_TYPES , (BpelEntity)portTypeReference );
-            }
+    private void checkPortTypeCombinedPartnerLink(PortTypeReference portTypeReference) {
+//out();
+//out("see: " + portTypeReference);
+        if ( !(portTypeReference instanceof PartnerLinkReference)) {
+          return;
         }
+//out("    1");
+        PartnerLinkReference partnerLinkReference = (PartnerLinkReference) portTypeReference;
+        WSDLReference<PortType> portTypeDirectRef = portTypeReference.getPortType();
+
+        if (portTypeDirectRef == null) {
+          return;
+        }
+//out("    2");
+        BpelReference<PartnerLink> partnerLinkRef = partnerLinkReference.getPartnerLink();
+        NamedComponentReference<PortType> portTypeRef = Utils.getPortTypeRef(partnerLinkRef, (Component) portTypeReference);
+
+        if (portTypeRef == null || !Utils.equals(portTypeDirectRef.get(), portTypeRef.get())) {
+          addError("FIX_DifferentPortTypes", (BpelEntity) portTypeReference); // NOI18N
+        }
+//out("    1: " + getName(portTypeRef.get()));
+//out("    2: " + getName(portTypeDirectRef.get()));
     }
     
-    void addNamedToMap( BpelEntity named, Map<String, Collection<Component>> map  ) {
+    private void addNamedToMap( BpelEntity named, Map<String, Collection<Component>> map  ) {
         addNamedToMap(named, map, DEFAULT_NAME_ACESS);
     }
     
-    void addErrorForNamed( Map<String, Collection<Component>> map, String key) {
+    private void addErrorForNamed( Map<String, Collection<Component>> map, String key) {
         for( Entry<String, Collection<Component>> entry : map.entrySet()) {
             String name = entry.getKey();
             assert name != null;
@@ -1366,7 +1368,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void addNamedToMap( BpelEntity entity, Map<String, Collection<Component>> map, NameAccess access ) {
+    private void addNamedToMap( BpelEntity entity, Map<String, Collection<Component>> map, NameAccess access ) {
         String name = access.getName(entity);
 
         if (name== null) {
@@ -1381,11 +1383,11 @@ public final class Validator extends BpelValidator {
         collection.add( entity );
     }
     
-    void addCompensateError(  Activity compensate ) {
+    private void addCompensateError(  Activity compensate ) {
         addError( FIX_COMPENSATE_OCCURANCE , compensate, compensate.getPeer().getLocalName());
     }
     
-    void checkCompensateOccurance( Activity compensate ) {
+    private void checkCompensateOccurance( Activity compensate ) {
         /*
          *  Rule : The <compensate(Scope)> activity MUST only be used from within a faultHandler,
          *  another compensationHandler, or a terminationHandler.
@@ -1402,7 +1404,7 @@ public final class Validator extends BpelValidator {
         addCompensateError(  compensate );
     }
     
-    void addNamedActivity( BpelEntity entity, Map<String, Collection<Component>> map ) {
+    private void addNamedActivity( BpelEntity entity, Map<String, Collection<Component>> map ) {
         if ( entity instanceof ExtendableActivity &&
                 entity instanceof NamedElement ) {
             String name = ((NamedElement) entity ).getName();
@@ -1418,7 +1420,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void collectIsolatedScopes( BpelContainer container, Collection<Component> collection ) {
+    private void collectIsolatedScopes( BpelContainer container, Collection<Component> collection ) {
         List<BpelEntity> children = container.getChildren();
 
         for (BpelEntity entity : children) {
@@ -1432,7 +1434,7 @@ public final class Validator extends BpelValidator {
         }
     }
 
-    void checkOrderOfActivities( CreateInstanceActivity activity ) {
+    private void checkOrderOfActivities( CreateInstanceActivity activity ) {
         if ( TBoolean.YES.equals( activity.getCreateInstance())  )
         {
             /* 
@@ -1453,7 +1455,7 @@ public final class Validator extends BpelValidator {
         }
     }
 
-    void visitBaseScope( BaseScope baseScope ) {
+    private void visitBaseScope( BaseScope baseScope ) {
         /*
          * Rule : The name of a named activity MUST be unique amongst
          * all named activities present within the same immediately
@@ -1492,7 +1494,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void collectActivitiesInScope( BpelContainer container, Map<String,Collection<Component>> map ) {
+    private void collectActivitiesInScope( BpelContainer container, Map<String,Collection<Component>> map ) {
         List<BpelEntity> children = container.getChildren();
 
         for (BpelEntity entity : children) {
@@ -1507,7 +1509,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkImportType( Import imp ) {
+    private void checkImportType( Import imp ) {
         String importType = imp.getImportType();
         if ( !Import.WSDL_IMPORT_TYPE.equals( importType) &&
                 !Import.SCHEMA_IMPORT_TYPE.equals( importType ) ) {
@@ -1515,7 +1517,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkInstantiableActivities( Process process ) {
+    private void checkInstantiableActivities( Process process ) {
         Collection<Activity> collection = getInstantiableActivities( process );
         if ( collection.size() ==0 ){
                 addError( FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE , process );
@@ -1526,7 +1528,7 @@ public final class Validator extends BpelValidator {
         }
     }
 
-    void checkMessageType( OnEvent onEvent ) {
+    private void checkMessageType( OnEvent onEvent ) {
         WSDLReference<Message> messageRef = onEvent.getMessageType();
         WSDLReference<Operation> operationRef = onEvent.getOperation();
         if ( operationRef == null || operationRef.get()==null ){
@@ -1549,7 +1551,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkLinks( Flow flow ) {
+    private void checkLinks( Flow flow ) {
         LinkContainer linkContainer = flow.getLinkContainer();
         if ( linkContainer == null ){
             return;
@@ -1631,7 +1633,7 @@ public final class Validator extends BpelValidator {
         return null;
     }
     
-    void checkInputOutputVariableOperation( Invoke invoke ) {
+    private void checkInputOutputVariableOperation( Invoke invoke ) {
         WSDLReference<Operation> operationRef = invoke.getOperation();
         if ( operationRef == null ) {
             return;
@@ -1678,7 +1680,7 @@ public final class Validator extends BpelValidator {
       }
     }
 
-    void checkFCTScope( BpelContainer container ) {
+    private void checkFCTScope( BpelContainer container ) {
         Collection<Scope> scopes = getScopes( container );
         for (Scope scope : scopes) {
             if ( scope.getCompensationHandler()!= null ){
@@ -1691,7 +1693,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkPropertyAliasMultiplicity( Process process ) {
+    private void checkPropertyAliasMultiplicity( Process process ) {
         Collection<PropertyAlias> aliases = 
             getPropertyAliases( null , null, process.getBpelModel() );
         Set<Pair<QName>> qNames = new HashSet<Pair<QName>>(); // # 80412
@@ -1719,7 +1721,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkPropertyUsageInInputMessage( OperationReference reference, BaseCorrelation[] correlations) {
+    private void checkPropertyUsageInInputMessage( OperationReference reference, BaseCorrelation[] correlations) {
         if ( correlations.length == 0) {
             return;
         }
@@ -1747,7 +1749,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkPropertyUsageInOutputMessage( OperationReference reference, 
+    private void checkPropertyUsageInOutputMessage( OperationReference reference, 
             BaseCorrelation[] correlations ) 
     {
         if ( correlations.length == 0) {
@@ -1777,7 +1779,7 @@ public final class Validator extends BpelValidator {
         }
     }
     
-    void checkVariableContainer( VariableContainer container ) {
+    private void checkVariableContainer( VariableContainer container ) {
         /*
          * Rule : The name of a variable MUST be unique amongst the names of all
          * variables defined within the same immediately enclosing scope. This
@@ -1798,7 +1800,7 @@ public final class Validator extends BpelValidator {
 
     }
 
-    void checkImplicitlyDeclaredVars( OnEvent onEvent ) {
+    private void checkImplicitlyDeclaredVars( OnEvent onEvent ) {
         FromPartContainer parts = onEvent.getFromPartContaner();
         if (parts == null || parts.getFromParts()==null) {
             return;
@@ -2760,7 +2762,6 @@ public final class Validator extends BpelValidator {
     private static final String FIX_COMPENSATE_OCCURANCE = "FIX_CompensateOccurance";                                      // NOI18N
     private static final String FIX_MULTIPLE_NAMED_ACTIVITIES = "FIX_MultipleNamedActivities";                                  // NOI18N
     private static final String FIX_EXIT_ON_STANDART_FAULT = "FIX_ExitOnStandartFault";                                      // NOI18N
-    private static final String FIX_DIFFERENT_PORT_TYPES = "FIX_DifferentPortTypes";                                       // NOI18N
     private static final String FIX_BAD_IMPORT_TYPE = "FIX_BadImportType";                                            // NOI18N
     private static final String FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE = "FIX_NoPickReceiveWithCreateInstance";                          // NOI18N
     private static final String FIX_MILTIPLE_LINK_SOURCE = "FIX_MultipleLinkSource";                                       // NOI18N

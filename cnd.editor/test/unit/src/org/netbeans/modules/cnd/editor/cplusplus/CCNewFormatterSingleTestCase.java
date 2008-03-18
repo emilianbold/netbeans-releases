@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -168,21 +164,25 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSwitchFormatting3Half() {
+    public void testOperatorEQformatting() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int main(int i)\n" +
+                "class real_c_float\n" +
                 "{\n" +
-                "if (offset)\n" +
-                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
-                "}\n");
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
         reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "int main(int i)\n" +
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
                 "{\n" +
-                "    if (offset)\n" +
-                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
-                "}\n");
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
+                "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
+                "    }\n" +
+                "};\n");
     }
-
 }
