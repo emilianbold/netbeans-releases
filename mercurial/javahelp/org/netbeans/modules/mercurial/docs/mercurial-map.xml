@@ -25,15 +25,16 @@
     <mapID target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" url="mercurial-properties.html" />
     <mapID target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" url="mercurial-options.html" />
 
-    <!-- TBD - need specific java help pages for following -->
-    <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="mercurial-about.html" />   
+    <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="csh/mercurial-clone.html" />   
     
-    <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="mercurial-about.html" />
-    <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="mercurial-about.html" />
-    <mapID target="org.netbeans.modules.mercurial.ui.push.PushOtherAction" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="csh/mercurial-export-diff.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="csh/mercurial-pullother.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.push.PushOtherAction" url="csh/mercurial-pushother.html" />
     
-    <mapID target="org.netbeans.modules.mercurial.ui.merge.MergeRevisions" url="mercurial-about.html" />
-    <mapID target="org.netbeans.modules.mercurial.ui.update.RevertModifications" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.merge.MergeRevisions" url="csh/mercurial-merge-revs.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.update.RevertModifications" url="csh/mercurial-revert-mods.html" />
+    
+    <mapID target="org.netbeans.modules.mercurial.ui.update.Update" url="csh/mercurial-update.html" />
 </map>
 
 

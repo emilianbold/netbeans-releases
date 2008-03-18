@@ -11,6 +11,8 @@
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
+				<file title="ArchiverOptions.html"/>
+				<file title="Attaching.html"/>
 				<file title="BalloonEvaluation.html"/>
 				<file title="BuildingCorC++Project.html"/>
 				<file title="CandC++Breakpoints.html"/>
@@ -19,8 +21,11 @@
 				<file title="CandC++CallStackWindow.html"/>
 				<file title="CandC++DebuggerContext.html"/>
 				<file title="CandC++DebuggingTasks.html"/>
+				<file title="CandC++DisassemblyWIndow.html"/>
 				<file title="CandC++LocalVariablesWindow.html"/>
+				<file title="CandC++Options.html"/>
 				<file title="CandC++SessionsWindow.html"/>
+				<file title="CandC++ThreadsWindow.html"/>
 				<file title="CandC++WatchesWindow.html"/>
 				<file title="CompilerOptions.html"/>
 				<file title="CompilingSingleCandC++File.html"/>
@@ -30,16 +35,17 @@
 				<file title="DebuggerWindows.html"/>
 				<file title="DebuggingCorC++Project.html"/>
 				<file title="Environment.html"/>
+				<file title="EvaluatingCorC++Expression.html"/>
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
 				<file title="Projects.html"/>
-				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="RuntimeSearchDirectories.html"/>
 				<file title="SettingCorC++Breakpoint.html"/>
 				<file title="StartingLocalDebuggingSession.html"/>
 				<file title="SteppingThroughCorC++.html"/>
+				<file title="Threads.html"/>
 				<file title="UsingCorC++CallStack.html"/>
 				<file title="Watch.html"/>
 				<file title="WorkingWithDebugging.html"/>
@@ -71,6 +77,8 @@
 				<file title="CreatingCodeTemplates.html"/>
 				<file title="DisablingAutoCodeCompletion.html"/>
 				<file title="EditingSourceFiles.html"/>
+				<file title="FindingUsages.html"/>
+				<file title="FindUsagesDialog.html"/>
 				<file title="GoToDeclaration.html"/>
 				<file title="GoToFunction.html"/>
 				<file title="GoToInclude.html"/>
@@ -79,6 +87,7 @@
 				<file title="SettingCompletionBoxDelay.html"/>
 				<file title="SourceHeaderSwitch.html"/>
 				<file title="TypeView.html"/>
+				<file title="UsagesWindow.html"/>
 				<file title="UsingAbbreviations.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
@@ -111,6 +120,7 @@
 				<file title="circle7.gif"/>
 				<file title="circle8.gif"/>
 				<file title="circle9.gif"/>
+				<file title="collapse.png"/>
 				<file title="cswitch.gif"/>
 				<file title="CurrentFrame.gif"/>
 				<file title="CurrentSession.gif"/>
@@ -121,6 +131,8 @@
 				<file title="freeform-project.png"/>
 				<file title="j2seProject.gif"/>
 				<file title="LocalVariable.gif"/>
+				<file title="logical.png"/>
+				<file title="next.png"/>
 				<file title="NonLineBreakpoint.gif"/>
 				<file title="package.gif"/>
 				<file title="packageBadge.gif"/>
@@ -129,7 +141,9 @@
 				<file title="packagePublic.gif"/>
 				<file title="packageRoot.gif"/>
 				<file title="packagesNode.gif"/>
+				<file title="physical.png"/>
 				<file title="platform.gif"/>
+				<file title="previous.png"/>
 				<file title="projectFolder.gif"/>
 				<file title="Session.gif"/>
 				<file title="space_8pix.gif"/>
@@ -154,8 +168,11 @@
 				<file title="CodeAssistanceWizardP6.html"/>
 				<file title="CompilingSingleCandC++File.html"/>
 				<file title="ConfiguringBuildTools.html"/>
+				<file title="ConfiguringCodeStyle.html"/>
+				<file title="ConfiguringFileExtensions.html"/>
 				<file title="ConfiguringParsingSettings.html"/>
 				<file title="ConfiguringProjectSettings.html"/>
+				<file title="ConfiguringSemanticHighlighting.html"/>
 				<file title="CreatingCorC++Project.html"/>
 				<file title="DeletingCorC++Project.html"/>
 				<file title="ManagingProjectConfigurations.html"/>
