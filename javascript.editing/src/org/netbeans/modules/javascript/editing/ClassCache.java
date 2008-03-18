@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,20 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.earproject.ui.wizards;
+package org.netbeans.modules.javascript.editing;
 
-public class WizardProperties {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    private WizardProperties() {
+/**
+ * Cache which performs type lookup etc. for functions
+ * 
+ * @author Tor Norbye
+ */
+public class ClassCache {
+    public static final ClassCache INSTANCE = new ClassCache();
+    private Map<String,String> superClasses;
+    
+    private void initialize(JsIndex index) {
+        if (superClasses == null) {
+            superClasses = index.getAllExtends();
+        }
     }
+    
+    public String getExtends(String fqn, JsIndex index) {
+        initialize(index);
+        
+        return superClasses.get(fqn);
+    }
+    
+    public List<String> getAncestors(String fqn, JsIndex index) {
+        initialize(index);
+        
+        List<String> ancestors = new ArrayList<String>();
+        for (String s = fqn; s != null; s = superClasses.get(s)) {
+            ancestors.add(s);
+        }
 
-    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
+        return ancestors;
+    }
     
-    public static final String DOC_BASE = "docBase"; //NOI18N
-    public static final String JAVA_ROOT = "javaRoot"; //NOI18N
-    public static final String LIB_FOLDER = "libFolder"; //NOI18N
-    
-    public static final String USER_MODULES = "userModules"; // NOI18N
+    public void refresh() {
+        superClasses = null;
+    }
 }

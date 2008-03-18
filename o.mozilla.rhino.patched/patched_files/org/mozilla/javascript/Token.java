@@ -278,10 +278,14 @@ public class Token
         REGEXP_END     = 162,
         REGEXP_ERROR   = 163,
         
+        // This is the token type for a node I'm inserting in expressions where
+        // there seems to be someting missing (this is done only once
+        MISSING_DOT    = 164,
+        
         // For syntax highlighting purposes, "undefined" should be treated as a keyword
-        UNDEFINED      = 164,
+        UNDEFINED      = 165,
 
-        LAST_TOKEN     = 165;
+        LAST_TOKEN     = 166;
 // </netbeans>
         
 
@@ -462,6 +466,7 @@ public class Token
           case REGEXP_BEGIN:    return "REGEXP_BEGIN";
           case REGEXP_END:      return "REGEXP_END";
           case REGEXP_ERROR:    return "REGEXP_ERROR";
+          case MISSING_DOT:     return "MISSING_DOT";
           case UNDEFINED:       return "UNDEFINED";
 // </netbeans>
         }

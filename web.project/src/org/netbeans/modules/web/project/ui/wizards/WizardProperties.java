@@ -42,30 +42,12 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 public class WizardProperties {
-    public static final String PROJECT_DIR = "projdir"; //NOI18N
-    public static final String NAME = "name"; //NOI18N
-    public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
-
-    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
-    public static final String SERVER_INSTANCE_ID = "serverInstanceID"; //NOI18N
-    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
-    public static final String SOURCE_STRUCTURE = "sourceStructure"; //NOI18N
-    public static final String CONTEXT_PATH = "contextPath"; //NOI18N
-    
     public static final String DOC_BASE = "docBase"; //NOI18N
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
     public static final String TEST_ROOT = "testRoot"; //NOI18N
     public static final String WEBINF_FOLDER = "webInfFolder"; //NOI18N
     
-    public static final String EAR_APPLICATION = "earApplication"; //NOI18N
-    
-    public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
-    public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
-    
     public static final String EXTENDERS = "extenders"; // NOI18N
     public static final String FRAMEWORK_NAMES = "frameworkNames"; //NOI18N
-    
-//    public static final String SHARED_LIBRARIES = "sharedLibraries";
-     
 }
