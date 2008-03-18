@@ -379,6 +379,7 @@ public class StartActionProviderImpl  implements StartActionProvider
         
         private void stop(){
             isStopped.set( true );
+            closeSocket();
         }
         
         private boolean isStopped(){
