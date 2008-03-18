@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,13 +48,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.DebuggerPreferences;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -77,6 +77,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
+    private RubySession session;
+    
     static {
         String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
         File classicDebug = InstalledFileLocator.getDefault().locate(
@@ -91,7 +93,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Process debug(final ExecutionDescriptor descriptor) {
         Process p = null;
         try {
-            p = startDebugging(descriptor);
+            session = startDebugging(descriptor);
+            p = session.getProxy().getDebugTarged().getProcess();
         } catch (IOException e) {
             problemOccurred(e);
         } catch (RubyDebuggerException e) {
@@ -99,7 +102,17 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         return p;
     }
-    
+
+    /** @see RubyDebuggerImplementation#getFinishAction */
+    public Runnable getFinishAction() {
+        return new Runnable() {
+            public void run() {
+                session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                session = null;
+            }
+        };
+    }
+
     private static void problemOccurred(final Exception e) {
         Util.showWarning(NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getMessage()));
     }
@@ -114,7 +127,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
      * @throws java.io.IOException
      * @throws org.rubyforge.debugcommons.RubyDebuggerException
      */
-    static Process startDebugging(final ExecutionDescriptor descriptor)
+    static RubySession startDebugging(final ExecutionDescriptor descriptor)
             throws IOException, RubyDebuggerException {
         final RubyPlatform platform = descriptor.getPlatform();
         boolean jrubySet = platform.isJRuby();
@@ -167,9 +180,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                     rDebugF.getAbsolutePath(), interpreter, timeout);
         }
         
-        intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
+        RubySession session = intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
         proxy.startDebugging(RubyBreakpointManager.getBreakpoints());
-        return proxy.getDebugTarged().getProcess();
+        return session;
     }
 
     private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
@@ -219,7 +232,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         return true;
     }
     
-    private static void intializeIDEDebuggerEngine(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
+    private static RubySession intializeIDEDebuggerEngine(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
         RubySession rubySession = new RubySession(proxy, fileLocator);
         SessionProvider sp = rubySession.createSessionProvider();
         DebuggerInfo di = DebuggerInfo.create(
@@ -230,7 +243,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         RubyDebuggerActionProvider provider =
                 es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
+        rubySession.setActionProvider(provider);
         proxy.addRubyDebugEventListener(provider);
+        return rubySession;
     }
     
 }

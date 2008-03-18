@@ -229,10 +229,10 @@ public class JsCodeCompletionTest extends JsTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                sb.append(text);
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                sb.append(text, fromInclusive, toExclusive);
             }
-
+            
             @Override
             public void emphasis(boolean start) {
             }
@@ -574,6 +574,26 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/test1.js", "/b\\^ar/");
     }
 
+    public void testExpression1() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions.js", "^escape");
+    }
+
+    public void testExpressions2() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions.js", "^toE");
+    }
+
+    public void testExpressions2b() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions2.js", "ownerDocument.^");
+    }
+
+    public void testExpressions3() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions3.js", "specified.^");
+    }
+
+    public void testExpressions4() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions4.js", "document.b^");
+    }
+    
 //
 //    public void testCompletion6() throws Exception {
 //        checkCompletion("testfiles/completion/lib/test2.js", "class My^Test");

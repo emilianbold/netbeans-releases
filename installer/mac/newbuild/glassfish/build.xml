@@ -42,6 +42,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-pkg" depends="clean, unzip">
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
+        </exec>        
+        <echo message="sizeof.glassfish=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>            
         <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
@@ -67,10 +72,10 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${basedir}/pkg/scripts/perm.sh"/>
         
-        <echo message="Building ${glassfish.pkg.name} into ${basedir}/../build/${glassfish.pkg.name}"/>
+        <echo message="Building glassfish.pkg into ${basedir}/../build/glassfish.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/${glassfish.pkg.name} -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${basedir}/../build/glassfish.pkg -f ${appdir} -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
     

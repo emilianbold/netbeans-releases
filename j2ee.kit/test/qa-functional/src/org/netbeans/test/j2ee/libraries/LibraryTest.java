@@ -59,13 +59,11 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -129,9 +127,11 @@ public class LibraryTest extends JellyTestCase {
         jcbo = new JCheckBoxOperator(npnlso, 2);
         jcbo.setSelected(false);
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        npnlso.next();
-        WizardOperator wo = new WizardOperator("New Project");
-        wo.finish();
+        npnlso.finish();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ie) {
+        }
         //add modules to j2ee app
         addJ2eeModule(pto, appName, ejbName);
         addJ2eeModule(pto, appName, webName);

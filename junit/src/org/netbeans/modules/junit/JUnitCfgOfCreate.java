@@ -68,7 +68,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -77,6 +76,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.DialogDescriptor;
@@ -663,14 +663,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     /**
      */
     private Component createMessagePanel() {
-        txtAreaMessage = (JTextArea) GuiUtils.createMultilineLabel(""); //NOI18N
-        
         Color color = UIManager.getColor("nb.errorForeground");         //NOI18N
         if (color == null) {
             color = new Color(89, 79, 191);   //RGB suggested by Bruce in #28466
         }
-        txtAreaMessage.setForeground(color);
-
+        txtAreaMessage = GuiUtils.createMultilineLabel("", color);      //NOI18N
         return txtAreaMessage;
     }
     
@@ -1083,7 +1080,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
 
     private JLabel lblClassToTestValue;
     private ClassNameTextField tfClassName;
-    private JTextArea txtAreaMessage;
+    private JTextComponent txtAreaMessage;
     private JComboBox cboxLocation;
     private JCheckBox chkAbstractImpl;
     private JCheckBox chkComments;

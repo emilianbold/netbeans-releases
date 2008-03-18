@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -167,40 +163,27 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testBlankLineAfterEndLineComment() {
+    
+    public void testDereferenceFormatting() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "namespace AC\n" +
+                "int foo()\n" +
                 "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect blak line after end line comment",
-                "namespace AC\n" +
+        assertDocumentText("Incorrect * formating",
+                "int foo()\n" +
                 "{\n" +
-                "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
                 "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
+                "}\n");
     }
 }

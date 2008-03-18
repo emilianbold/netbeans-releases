@@ -56,6 +56,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  * 
  * @todo E4X XML nodes
  * 
+ * @todo Produce a function call hashmap of bad browser calls, and look up calls in semantic highlighting
+ *   against the name map. Only if it matches, do a full FQN check and if so, do a browser delta.
+ *
  * @author Tor Norbye
  */
 public class JsSemanticAnalyzer implements SemanticAnalyzer {

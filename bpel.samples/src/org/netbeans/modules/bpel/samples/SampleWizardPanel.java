@@ -50,9 +50,6 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
-    private static final long serialVersionUID = 1L;
-    private WizardDescriptor myWizardDescriptor;
-    private SampleWizardPanelVisual myComponent;
     
     public SampleWizardPanelVisual getComponent() {
         if (myComponent == null) {
@@ -69,17 +66,19 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
         return getComponent().valid( myWizardDescriptor );
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
+    @SuppressWarnings("unchecked")
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -109,4 +108,9 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
     public void validate () throws WizardValidationException {
         getComponent().validate (myWizardDescriptor);
     }
+
+    private WizardDescriptor myWizardDescriptor;
+    private SampleWizardPanelVisual myComponent;
+    private static final long serialVersionUID = 1L;
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 }

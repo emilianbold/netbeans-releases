@@ -1165,7 +1165,10 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         private String getVM(){
-            return System.getProperty("java.vm.name", "unknown") + ", " + System.getProperty("java.vm.version", ""); // NOI18N
+            return System.getProperty("java.vm.name", "unknown") + ", " // NOI18N
+                 + System.getProperty("java.vm.version", "") + ", " // NOI18N
+                 + System.getProperty("java.runtime.name", "unknown") + ", " // NOI18N
+                 + System.getProperty("java.runtime.version", ""); // NOI18N
         }
         
     } // end of Submit
