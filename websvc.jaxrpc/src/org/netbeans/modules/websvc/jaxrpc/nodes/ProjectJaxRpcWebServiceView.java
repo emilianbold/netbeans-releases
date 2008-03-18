@@ -44,8 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.core.ProjectWebServiceView;
@@ -81,7 +81,6 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     private Project project;
     private WebServicesSupport wss;
     private WebServicesClientSupport wscs;
-    private ArrayList<FileObject> roots;
     boolean wsdlFolderCreated = false;
     private final FileChangeListener wsdlCreationListener;
     private final FileChangeListener wsddCreationListener;
@@ -95,16 +94,6 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         FileObject projectDir = project.getProjectDirectory();
         wss = WebServicesSupport.getWebServicesSupport(projectDir);
         wscs = WebServicesClientSupport.getWebServicesClientSupport(projectDir);
-        roots = new ArrayList<FileObject>();
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        if (sources != null) {
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (groups != null) {
-                for (SourceGroup group : groups) {
-                    roots.add(group.getRootFolder());
-                }
-            }
-        }
         projectXmlListener = new ProjectXmlListener();
         wsddCreationListener = new WSDDCreationListener();
         wsddListener = new WSDDListener();
@@ -122,9 +111,22 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     }
 
     private Node[] createServiceNodes() {
+        if(wss==null) {
+            return new Node[0];
+        }
         try {
             Webservices webServices = DDProvider.getDefault().getDDRoot(wss.getWebservicesDD());
             if (webServices == null) {
+                return new Node[0];
+            }
+            ArrayList<FileObject> roots = new ArrayList<FileObject>();
+            SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (groups != null) {
+                for (SourceGroup group : groups) {
+                    roots.add(group.getRootFolder());
+                }
+            }
+            if (roots == null || roots.isEmpty()) {
                 return new Node[0];
             }
             ArrayList<Node> nodes = new ArrayList<Node>();
@@ -145,6 +147,9 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     }
 
     private Node[] createClientNodes() {
+        if(wscs==null) {
+            return new Node[0];
+        }
         ArrayList<Node> nodes = new ArrayList<Node>();
         FileObject wsdlFolder = wscs.getWsdlFolder();
         FileObject[] wsdls = wsdlFolder.getChildren();
