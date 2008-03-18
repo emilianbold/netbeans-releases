@@ -269,8 +269,10 @@ public class AddQueryParameterDlg extends JPanel {
         parmRadioBtn = new JRadioButton();
         valueTxtField = new JTextField();
         valueTxtFieldLbl = new JLabel();
+        valueTxtFieldLbl.setLabelFor(valueTxtField);
         parmTxtField = new JTextField();
         parmTxtFieldLbl = new JLabel();
+        parmTxtFieldLbl.setLabelFor(parmTxtFieldLbl);
         
 // Default are disabled until we restore parameterized execution, which requires ParameterMetaData
 //         defaultValTxtField = new JTextField();

@@ -236,8 +236,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     continue;
                 }
                 ProjectInformation pInfo = ProjectUtils.getInformation(p);
-                listModel.addElement(pInfo);
-                changed = true;
+                if(!listModel.contains(pInfo)) {
+                    listModel.addElement(pInfo);
+                    changed = true;
+                }
             } catch(IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
@@ -591,10 +593,7 @@ private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 }//GEN-LAST:event_wadlTextFieldKeyTyped
     
     private boolean validateWadlFile(final String fileName) {
-        String name = fileName.replaceAll(File.separator, "/");
-        if(!name.startsWith("/"))
-            name = "/"+name;
-        File f = new File(name);
+        File f = new File(fileName);
         boolean isValid = false;
         try {
             if(f.isFile()) {

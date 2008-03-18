@@ -57,6 +57,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -216,7 +217,18 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 recolor();
             }*/
             if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
-                recolor();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        NbEditorDocument nbdoc = (NbEditorDocument)doc;
+                        nbdoc.extWriteLock();
+                        try {
+                            recolor();
+                        } finally {
+                            nbdoc.extWriteUnlock();
+                        }
+                    }
+                });
+                
             }
         }
     }
@@ -238,8 +250,8 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
                 //THC.rebuild() must run under document write lock. Since it is not guaranteed that the
                 //event from the JSPColoringData is not fired under document read lock, synchronous call
-                //to write lock could deadlock. So the rebuild is better called asynchronously from RP thread.
-                RequestProcessor.getDefault().post(new Runnable() {
+                //to write lock could deadlock. So the rebuild is better called asynchronously.
+                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         NbEditorDocument nbdoc = (NbEditorDocument)doc;
                         nbdoc.extWriteLock();

@@ -95,7 +95,7 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     /** Cached default implementations of expansion models. */
-    private static WeakHashMap<Object, TreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, TreeExpansionModel>();
+    private static WeakHashMap<Object, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, DefaultTreeExpansionModel>();
     /**
      * Empty model - returns default root node with no children.
      */
@@ -287,12 +287,14 @@ public final class Models {
         }
         DefaultTreeExpansionModel defaultExpansionModel = null;
         if (treeExpansionModels.isEmpty()) {
-            TreeExpansionModel tem = defaultExpansionModels.get(models);
-            if (tem == null) {
-                tem = defaultExpansionModel = new DefaultTreeExpansionModel();
-                defaultExpansionModels.put(models, tem);
+            defaultExpansionModel = defaultExpansionModels.get(models);
+            if (defaultExpansionModel != null) {
+                defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
+            } else {
+                defaultExpansionModel = new DefaultTreeExpansionModel();
             }
-            treeExpansionModels = Collections.singletonList(tem);
+            defaultExpansionModels.put(models, defaultExpansionModel);
+            treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
         }
         
         CompoundModel cm = new CompoundModel (
@@ -1625,6 +1627,14 @@ public final class Models {
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
         private CompoundModel cm;
+        private CompoundModel oldCM;
+        
+        public DefaultTreeExpansionModel() {
+        }
+        
+        private DefaultTreeExpansionModel(CompoundModel oldCM) {
+            this.oldCM = oldCM;
+        }
         
         /**
          * Defines default state (collapsed, expanded) of given node.
@@ -1656,9 +1666,17 @@ public final class Models {
         }
 
         private void setCompoundModel(CompoundModel cm) {
+            if (oldCM != null) {
+                DefaultTreeExpansionManager.copyExpansions(oldCM, cm);
+                oldCM = null;
+            }
             this.cm = cm;
         }
         
+        private DefaultTreeExpansionModel cloneForNewModel() {
+            return new DefaultTreeExpansionModel(cm);
+        }
+
     }
 
     /**

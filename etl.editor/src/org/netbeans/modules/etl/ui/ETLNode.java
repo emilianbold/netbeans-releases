@@ -70,6 +70,7 @@ public class ETLNode extends DataNode implements PropertyChangeListener {
 
     private ETLNode(DataObject obj, Children ch) {
         super(obj, ch);
+        this.dObj = (ETLDataObject) obj;
         obj.addPropertyChangeListener(this);
         setIconBaseWithExtension("org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png");
         init();
@@ -77,6 +78,7 @@ public class ETLNode extends DataNode implements PropertyChangeListener {
 
     private void init() {
         CookieSet cs = getCookieSet();
+		cs.add(dObj);
         cs.add(new ExecuteTestCookie());
         cs.add(new SelectTablesCookie());
     }
@@ -92,14 +94,14 @@ public class ETLNode extends DataNode implements PropertyChangeListener {
         try {
             Property nameProp = new PropertySupport.Reflection(this.dObj, String.class,
                     "getName", null);
-            Property execProp = new PropertySupport.Reflection(this.dObj.getETLDefinition().getSQLDefinition(),
-                    String.class, "getExecutionStrategyStr", null);
-            String nbBundle1 = mLoc.t("BUND179: Collaboration Name");  
-            String nbBundle2 = mLoc.t("BUND180: Execution Strategy"); 
+            //Property execProp = new PropertySupport.Reflection(this.dObj.getETLDefinition().getSQLDefinition(),
+                    //String.class, "getExecutionStrategyStr", null);
+            String nbBundle1 = mLoc.t("BUND179: Collaboration Name"); 
+            //String nbBundle2 = mLoc.t("PRSR001: Execution Strategy"); 
             nameProp.setName(nbBundle1.substring(15));
-            execProp.setName(nbBundle2.substring(15));
+            //execProp.setName(Localizer.parse(nbBundle2));
             set.put(nameProp);
-            set.put(execProp);
+            //set.put(execProp);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
