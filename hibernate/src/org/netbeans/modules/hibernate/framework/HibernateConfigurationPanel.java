@@ -38,8 +38,15 @@
  */
 package org.netbeans.modules.hibernate.framework;
 
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.hibernate.wizards.Util;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.openide.util.NbBundle;
 
 /**
  * This panel allows setting up a Hibernate session during the 
@@ -48,13 +55,28 @@ import org.netbeans.modules.hibernate.wizards.Util;
  * 
  * @author  Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateConfigurationPanel extends javax.swing.JPanel {
+public class HibernateConfigurationPanel extends javax.swing.JPanel implements DocumentListener, ItemListener{
 
     private final String JAVADB_DIALECT_CODE = "Derby"; //NOI18N
+    private HibernateWebModuleExtender webModuleExtender;
+    private ExtenderController controller;
+    private boolean forNewProjectWizard = false;
 
     /** Creates new form HibernateConfigurationPanel */
-    public HibernateConfigurationPanel() {
+    public HibernateConfigurationPanel(HibernateWebModuleExtender webModuleExtender, 
+            ExtenderController controller, boolean forNewProjectWizard) {
+        this.webModuleExtender = webModuleExtender;
+        this.controller = controller;
+        this.forNewProjectWizard = forNewProjectWizard;
         initComponents();
+        
+        hibernateSessionNameTextField.getDocument().addDocumentListener(this);
+        dialectComboBox.addItemListener(this);
+        driverClassTextField.getDocument().addDocumentListener(this);
+        connectionURLComboBox.addItemListener(this);
+        usernameTextField.getDocument().addDocumentListener(this);
+        passwordTextField.getDocument().addDocumentListener(this);
+        
         fillDBDialectCombo();
         setDefaults();
     }
@@ -85,22 +107,45 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
     }
 
     public boolean isPanelValid() {
+        if(forNewProjectWizard) { // Validate only in case of New Project Wizard.
+            if(connectionURLComboBox.getSelectedItem() != null &&
+                    connectionURLComboBox.getSelectedItem().toString().trim().equals("")) {
+                controller.setErrorMessage(NbBundle.getMessage(HibernateConfigurationPanel.class,"MSG_connectionUrlEmpty"));
+                return false;
+            }
+            if(usernameTextField.getText().trim().equals("")) {
+                controller.setErrorMessage(NbBundle.getMessage(HibernateConfigurationPanel.class,"MSG_usernameEmpty"));
+                return false;
+            }
+        }
         return true;
     }
-    
+
     public String getSessionName() {
         return hibernateSessionNameTextField.getText().trim();
     }
     
-     public String getSelectedDialect() {
+    public void setSessionName(String newSessionName) {
+        hibernateSessionNameTextField.setText(newSessionName);
+    }
+
+    public String getSelectedDialect() {
         if (dialectComboBox.getSelectedItem() != null) {
             return Util.getSelectedDialect(dialectComboBox.getSelectedItem().toString());
         }
         return null;
     }
 
+    public void setDialect(String dialectName) {
+        dialectComboBox.setSelectedItem(Util.getDailectCode(dialectName));
+    }
+    
     public String getSelectedDriver() {
         return driverClassTextField.getText();
+    }
+    
+    public void setDriver(String driver) {
+        driverClassTextField.setText(driver);
     }
 
     public String getSelectedURL() {
@@ -110,15 +155,39 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
         return null;
 
     }
+    
+    public void setConnectionURL(String url) {
+        connectionURLComboBox.setSelectedItem(url);
+    }
 
     public String getUserName() {
         return usernameTextField.getText().trim();
+    }
+    
+    public void setUserName(String username) {
+        usernameTextField.setText(username);
     }
 
     public String getPassword() {
         return passwordTextField.getText().trim();
     }
     
+    public void setPassword(String password) {
+        passwordTextField.setText(password);
+    }
+    
+    @Override
+    public void disable() {
+        super.disable();
+        for(Component component : this.getComponents()) {
+            component.setEnabled(false);
+        }
+    }
+    
+//    @Override
+//    public void enable() {
+//        
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -283,4 +352,21 @@ public class HibernateConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JLabel usernameLabel;
     private javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
+
+    
+    public void insertUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        webModuleExtender.fireChangeEvent();
+    }
+
+    public void itemStateChanged(ItemEvent e) {
+        webModuleExtender.fireChangeEvent();
+    }
 }

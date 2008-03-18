@@ -73,7 +73,11 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule wm, ExtenderController controller) {
-        HibernateWebModuleExtender webModuleExtender = new HibernateWebModuleExtender();
+        // Find out wether WFE needs to be shown in Proj. Customizer or in New Project Wizard.
+        // (The following is copied from JSFFrameworkProvider
+        boolean forNewProjectWizard = (wm == null || !isInWebModule(wm));
+        HibernateWebModuleExtender webModuleExtender = 
+                new HibernateWebModuleExtender(forNewProjectWizard, wm, controller);
         return webModuleExtender;
     }
 

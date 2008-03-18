@@ -186,6 +186,14 @@ public class Util {
         return (String) urlConnectionMap.get(code);
     }
     
+    public static String getDailectCode(String dialectName) {
+        for(String key : dialectMap.keySet()) {
+            if(dialectMap.get(key).equals(dialectName)) {
+                return key;
+            }
+        }
+        return ""; // A blank string is ok here.
+    }
     /**
      * Convenience method to obtain the source root folder.
      * @param project the Project object
