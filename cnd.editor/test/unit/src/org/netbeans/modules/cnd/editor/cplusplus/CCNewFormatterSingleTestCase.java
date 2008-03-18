@@ -164,25 +164,26 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testOperatorEQformatting() {
+    public void testDereferenceFormatting() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "class real_c_float\n" +
+                "int foo()\n" +
                 "{\n" +
-                "  const real_c_float & operator=(long l){ from_long(l);\n" +
-                "    return *this;\n" +
-                "  }\n" +
-                "};\n");
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect operator = formatting",
-                "class real_c_float\n" +
+        assertDocumentText("Incorrect * formating",
+                "int foo()\n" +
                 "{\n" +
-                "\n" +
-                "    const real_c_float & operator=(long l)\n" +
-                "    {\n" +
-                "        from_long(l);\n" +
-                "        return *this;\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
                 "    }\n" +
-                "};\n");
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
+                "}\n");
     }
 }

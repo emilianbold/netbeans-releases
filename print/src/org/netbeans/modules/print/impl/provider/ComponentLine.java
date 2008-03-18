@@ -222,7 +222,9 @@ final class ComponentLine {
     return -1;
   }
 
-  public String toString() {
+  @Override
+  public String toString()
+  {
     StringBuffer buffer = new StringBuffer();
 
     for (int i=0; i < length(); i++) {
@@ -262,7 +264,9 @@ final class ComponentLine {
       myColor = color;
     }
 
-    public String toString() {
+    @Override
+    public String toString()
+    {
       return "'" + // NOI18N
         myChar + "' " + // NOI18N
         getString(myFont) + " " + // NOI18N

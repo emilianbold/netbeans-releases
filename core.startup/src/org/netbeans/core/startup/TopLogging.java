@@ -206,9 +206,14 @@ public final class TopLogging {
         ps.println("  Operating System        = " + System.getProperty("os.name", "unknown")
                    + " version " + System.getProperty("os.version", "unknown")
                    + " running on " +  System.getProperty("os.arch", "unknown"));
-        ps.println("  Java; VM; Vendor        = " + System.getProperty("java.version", "unknown") + "; " +
-                   System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "") + "; " +
-                   System.getProperty("java.vendor", "unknown"));
+        ps.println("  Java; VM; Vendor        = "
+                + System.getProperty("java.version", "unknown") + "; "
+                + System.getProperty("java.vm.name", "unknown") + " "
+                + System.getProperty("java.vm.version", "") + "; "
+                + System.getProperty("java.vendor", "unknown"));
+        ps.println("  Runtime                 = "
+                + System.getProperty("java.runtime.name", "unknown") + " "
+                + System.getProperty("java.runtime.version", ""));
         ps.println("  Java Home               = " + System.getProperty("java.home", "unknown"));
         ps.print(  "  System Locale; Encoding = " + Locale.getDefault()); // NOI18N
         String branding = NbBundle.getBranding ();
