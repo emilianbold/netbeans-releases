@@ -39,55 +39,66 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.util.regex.Pattern;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class SourcesPanelVisual extends JPanel implements DocumentListener, ChangeListener {
+public class ConfigureServerPanelVisual extends JPanel implements ActionListener, ChangeListener {
+    private static final long serialVersionUID = -105799339751969L;
 
-    private static final long serialVersionUID = -358263102348820543L;
-
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
-    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
-
+    private final ConfigureServerPanel wizardPanel;
     private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private MutableComboBoxModel localServerComboBoxModel;
     private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
 
-
-    /** Creates new form SourcesPanelVisual */
-    public SourcesPanelVisual(WebFolderNameProvider webFolderNameProvider) {
+    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
+        this.wizardPanel = wizardPanel;
         this.webFolderNameProvider = webFolderNameProvider;
+
+        // Provide a name in the title bar.
+        setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectServer"));
+        putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
+        // Step name (actually the whole list for reference).
+        putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
+
         initComponents();
+
         init();
     }
 
     private void init() {
-        localServerComboBoxModel = new LocalServer.ComboBoxModel(ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
+        copyFilesCheckBox.addActionListener(this);
+        changeLocalServerFieldsState(false);
+
+        localServerComboBoxModel = new LocalServer.ComboBoxModel(new LocalServer((String) null));
 
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
         localServerComboBox.setEditor(localServerComboBoxEditor);
-
-        urlTextField.getDocument().addDocumentListener(this);
     }
 
-    void addSourcesListener(ChangeListener listener) {
+    void addServerListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
 
-    void removeSourcesListener(ChangeListener listener) {
+    void removeServerListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    private void changeLocalServerFieldsState(boolean state) {
+        localServerComboBox.setEnabled(state);
+        locateButton.setEnabled(state);
+        browseButton.setEnabled(state);
     }
 
     /** This method is called from within the constructor to
@@ -99,39 +110,35 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        sourcesLabel = new javax.swing.JLabel();
+        copyFilesCheckBox = new javax.swing.JCheckBox();
+        localServerInfoLabel = new javax.swing.JLabel();
         localServerComboBox = new javax.swing.JComboBox();
+        localServerLabel = new javax.swing.JLabel();
         locateButton = new javax.swing.JButton();
         browseButton = new javax.swing.JButton();
-        localServerLabel = new javax.swing.JLabel();
-        urlInfoLabel = new javax.swing.JLabel();
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Sources")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_CopyFiles")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(localServerInfoLabel, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "TXT_LocalServerFolder")); // NOI18N
 
         localServerComboBox.setEditable(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(locateButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_LocateLocalServer")); // NOI18N
+        localServerLabel.setLabelFor(localServerComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocalServerFolder")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(locateButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocateLocalServer")); // NOI18N
         locateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 locateButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_LocalServer")); // NOI18N
-        localServerLabel.setEnabled(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(urlInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_Url")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Url")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -140,66 +147,62 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(sourcesLabel)
+                        .addContainerGap()
+                        .add(localServerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(localServerComboBox, 0, 319, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(locateButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))))
-                    .add(urlInfoLabel)
+                        .add(localServerComboBox, 0, 205, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(locateButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseButton))
+                    .add(copyFilesCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 339, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
-                        .add(urlLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)))
+                        .addContainerGap()
+                        .add(localServerInfoLabel)))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {browseButton, locateButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(copyFilesCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(localServerInfoLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sourcesLabel)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton)
+                    .add(localServerLabel)
                     .add(locateButton)
-                    .add(browseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localServerLabel)
-                .add(18, 18, 18)
-                .add(urlInfoLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
+        Utils.locateLocalServerAction();
+    }//GEN-LAST:event_locateButtonActionPerformed
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
                 webFolderNameProvider.getWebFolderName());
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
-        Utils.locateLocalServerAction();
-    }//GEN-LAST:event_locateButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JCheckBox copyFilesCheckBox;
     private javax.swing.JComboBox localServerComboBox;
+    private javax.swing.JLabel localServerInfoLabel;
     private javax.swing.JLabel localServerLabel;
     private javax.swing.JButton locateButton;
-    private javax.swing.JLabel sourcesLabel;
-    private javax.swing.JLabel urlInfoLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
-    static boolean isValidUrl(String url) {
-        return URL_PATTERN.matcher(url).matches();
+    void setLocalServerState(boolean enabled) {
+        copyFilesCheckBox.setEnabled(enabled);
+        changeLocalServerFieldsState(enabled && copyFilesCheckBox.isSelected());
     }
 
     LocalServer getSourcesLocation() {
@@ -219,28 +222,17 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
         localServerComboBox.setSelectedItem(localServer);
     }
 
-    String getUrl() {
-        return urlTextField.getText().trim();
+    boolean isCopyFiles() {
+        return copyFilesCheckBox.isSelected();
     }
 
-    void setUrl(String url) {
-        urlTextField.setText(url);
+    void setCopyFiles(boolean copyFiles) {
+        copyFilesCheckBox.setSelected(copyFiles);
     }
 
     // listeners
-    public void insertUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        processUpdate();
-    }
-
-    private void processUpdate() {
+    public void actionPerformed(ActionEvent e) {
+        changeLocalServerFieldsState(copyFilesCheckBox.isSelected());
         changeSupport.fireChange();
     }
 
