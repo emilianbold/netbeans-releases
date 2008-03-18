@@ -203,10 +203,11 @@ public abstract class WebServicesTestBase extends JellyTestCase {
             switch (this) {
                 case J2EE14:
                     //J2EE 1.4
-                    return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "J2EESpecLevel_14");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14");
                 case JAVAEE5:
                     //Java EE 5
-                    return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "JavaEESpecLevel_50");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50");
+                    
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
