@@ -52,6 +52,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -61,6 +62,7 @@ import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -305,14 +307,16 @@ public class Utilities {
         NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
-        String pname = wizard_location.txtProjectName().getText();
+        String pname = wizard_location.txtProjectName().getText() + System.currentTimeMillis();
+        wizard_location.txtProjectName().clearText();
+        wizard_location.txtProjectName().typeText(pname);
         
-        // if the project exists, try to generate new name
-        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
-            pname = pname+"1";
-            wizard_location.txtProjectName().clearText();
-            wizard_location.txtProjectName().typeText(pname);
-        }
+//        // if the project exists, try to generate new name
+//        for (int i = 0; i < 5 && !wizard.btFinish().isEnabled(); i++) {
+//            pname = pname+"1";
+//            wizard_location.txtProjectName().clearText();
+//            wizard_location.txtProjectName().typeText(pname);
+//        }
         wizard.finish();
         
         // wait 10 seconds
@@ -382,7 +386,7 @@ public class Utilities {
     public static void buildproject(String project) {
         ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(project);
         prn.buildProject();
-        StringComparator sc = MainWindowOperator.getDefault().getComparator();
+        StringComparator sc = MainWindowOperator.getDefault().getComparator();        
         MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, true));
         MainWindowOperator.getDefault().waitStatusText("Finished building "); // NOI18N
         MainWindowOperator.getDefault().setComparator(sc);
