@@ -323,7 +323,9 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                libs.add(item.getLibrary().getName());
+                if (!item.isBroken()) {
+                    libs.add(item.getLibrary().getName());
+                }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
                 if (item.getReference() != null) {
