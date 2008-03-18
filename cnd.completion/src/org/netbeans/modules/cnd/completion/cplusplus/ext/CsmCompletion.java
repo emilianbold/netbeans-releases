@@ -323,11 +323,14 @@ abstract public class CsmCompletion extends Completion {
         CsmType type = null;
         if (CsmKindUtilities.isClassifier(obj)) {
             type = CsmCompletion.getType((CsmClassifier)obj, 0);
-        } else if (CsmKindUtilities.isConstructor((CsmFunction)obj)) {
-            CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
-            type = CsmCompletion.getType(cls, 0);                  
         } else if (CsmKindUtilities.isFunction(obj)) {
-            type = ((CsmFunction)obj).getReturnType();
+            CsmFunction fun = (CsmFunction) obj;
+            if (CsmKindUtilities.isConstructor(fun)) {
+                CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
+                type = CsmCompletion.getType(cls, 0);                  
+            } else {
+                type = fun.getReturnType();
+            }
         } else if (CsmKindUtilities.isVariable(obj)) {
             type = ((CsmVariable)obj).getType();
         } else if (CsmKindUtilities.isEnumerator(obj)) {
