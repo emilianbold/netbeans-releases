@@ -69,8 +69,11 @@ public class CSSLanguage implements GsfLanguage {
     }
 
     public boolean isIdentifierChar(char c) {
-        return true;
-        //return RubyUtils.isIdentifierChar(c);
+         /** Includes things you'd want selected as a unit when double clicking in the editor */
+        return Character.isJavaIdentifierPart(c) 
+                || (c == '-') || (c == '@') 
+                || (c == '&') || (c == '_')
+                || (c == '#');
     }
 
     public Language getLexerLanguage() {
