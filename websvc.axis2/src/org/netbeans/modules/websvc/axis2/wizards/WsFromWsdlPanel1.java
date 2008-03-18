@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -66,12 +65,6 @@ import org.openide.util.RequestProcessor;
  * @author mkuchtiak
  */
 public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<WizardDescriptor>, WizardProperties {
-
-    static final String[] DATA_BINDING = {"ADB", "XML Beans", "JiBX", "none(Axiom)"}; //NOI18N
-    static final String BINDING_ADB="ADB"; //NOI18N
-    static final String BINDING_XML_BEANS="XML Beans"; //NOI18N
-    static final String BINDING_JIBX="JiBX"; //NOI18N
-    static final String BINDING_AXIOM="none(Axiom)"; //NOI18N
     
     private WsFromWsdlGUIPanel1 component;
     private WizardDescriptor wizardDescriptor;
@@ -105,6 +98,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
 
     public void readSettings(WizardDescriptor settings) {
         final File wsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
+        component.setW2JOptions("");
         if (wsdlFile != null) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -116,7 +110,13 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                         if (services != null && services.size()>0) {
                             component.setPorts(WSDLUtils.getPortsForService(services.iterator().next()));
                         }
-                        component.setPackageName(WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace()));
+                        String packageName = WSDLUtils.getPackageNameFromNamespace(wsdlModel.getDefinitions().getTargetNamespace());
+                        component.setPackageName(packageName);
+                        component.setW2JOptions("-sn "+component.getServiceName()+
+                                    " -pn "+component.getPortName()+
+                                    " -d adb\n"+
+                                    " -p "+packageName+" -ssi"
+                        );
                     }
                 }
                 
@@ -130,6 +130,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
         settings.putProperty(WizardProperties.PROP_SERVICE_NAME, component.getServiceName());
         settings.putProperty(WizardProperties.PROP_PORT_NAME, component.getPortName());
         settings.putProperty(WizardProperties.PROP_PACKAGE_NAME, component.getPackageName());
+        settings.putProperty(WizardProperties.PROP_WS_TO_JAVA_OPTIONS, component.getW2JMoreOptions());
     }
 
     public boolean isValid() {
