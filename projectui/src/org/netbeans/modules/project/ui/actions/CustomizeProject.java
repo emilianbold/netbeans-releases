@@ -74,7 +74,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     }
     
     public CustomizeProject( Lookup context ) {
-        super( (String)null, namePattern, null, context );
+        super( (String)null, namePattern, namePatternPopup, null, context );
         refresh( getLookup() );
     }
             
