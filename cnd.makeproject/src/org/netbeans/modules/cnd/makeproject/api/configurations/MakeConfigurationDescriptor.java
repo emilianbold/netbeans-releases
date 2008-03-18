@@ -638,6 +638,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         return subProjects;
     }
+    
+    public void addSourceRootRaw(String path) {
+        synchronized(sourceRoots) {
+            sourceRoots.add(path);
+        }
+    }
 
     /*
      * Add a new root.
@@ -704,12 +710,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     /*
      * Return real list
      */
-    public List<String> getSourceRootsRaw() {
-        synchronized (sourceRoots) {
-            return sourceRoots;
-        }
+    private List<String> getSourceRootsRaw() {
+        return sourceRoots;
     }
-
+    
     public void setSourceRoots(List list) {
         synchronized (sourceRoots) {
             sourceRoots = list;

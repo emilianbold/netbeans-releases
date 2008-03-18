@@ -43,8 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
@@ -190,7 +189,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
-            currentList = ((MakeConfigurationDescriptor)projectDescriptor).getSourceRootsRaw();
+            currentList = new ArrayList();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(0);
             path = getString(adjustOffset(path));
@@ -444,6 +443,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
             currentList = null;
         } else if (element.equals(LINKER_DYN_SERCH_ELEMENT)) {
+            currentList = null;
+        } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
+            Iterator iter = currentList.iterator();
+            while (iter.hasNext()) {
+                String sf = (String)iter.next();
+                ((MakeConfigurationDescriptor)projectDescriptor).addSourceRootRaw(sf);
+            }
             currentList = null;
         } else if (element.equals(DIRECTORY_PATH_ELEMENT)) {
             if (currentList != null) {
