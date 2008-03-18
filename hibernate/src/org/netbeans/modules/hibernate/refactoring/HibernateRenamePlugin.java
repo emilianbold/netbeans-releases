@@ -99,7 +99,9 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         FileObject fo = null;
         if (treePathHandle != null &&
                 (treePathHandle.getKind() == Kind.CLASS ||
-                treePathHandle.getKind() == Kind.VARIABLE)) {
+                treePathHandle.getKind() == Kind.VARIABLE ||
+                treePathHandle.getKind() == Kind.MEMBER_SELECT ||
+                treePathHandle.getKind() == Kind.IDENTIFIER)) {
             fo = treePathHandle.getFileObject();
         }
         if (fo == null) {
@@ -131,7 +133,9 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                 if (treePathHandle.getKind() == Kind.CLASS) {
                     // A Java class is being renamed
                     renameJavaClass(refactoringElements, treePathHandle, fo);
-                } else if (treePathHandle.getKind() == Kind.VARIABLE) {
+                } else if (treePathHandle.getKind() == Kind.VARIABLE ||
+                        treePathHandle.getKind() == Kind.MEMBER_SELECT ||
+                        treePathHandle.getKind() == Kind.IDENTIFIER) {
                     // A Java field is being renamed
                     renameJavaField(refactoringElements, treePathHandle, fo);
                 }
