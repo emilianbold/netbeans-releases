@@ -64,7 +64,7 @@ public class CssRule {
     
     public CssRule(Document doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset,CssRuleContent styleData) throws BadLocationException {
         this.ruleName = ruleName;
-        this.ruleNameOffset = doc.createPosition(ruleNameOffset);
+        this.ruleNameOffset = doc == null ? new SimplePosition(ruleNameOffset) : doc.createPosition(ruleNameOffset);
         this.ruleOpenBracketOffset = doc == null ? new SimplePosition(ruleOpenBracketOffset) : doc.createPosition(ruleOpenBracketOffset);
         this.ruleCloseBracketOffset = doc == null ? new SimplePosition(ruleCloseBracketOffset) : doc.createPosition(ruleCloseBracketOffset);
         this.styleData = styleData;
