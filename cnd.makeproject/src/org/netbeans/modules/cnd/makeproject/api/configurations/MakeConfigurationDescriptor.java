@@ -823,7 +823,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                     folder.addFolder(top);
                 }
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded, notify);
                 getNativeProject().fireFilesAdded(filesAdded);
 
                 addSourceRoot(folderEntry.getFile().getPath());
@@ -864,7 +864,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                         top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                         folder.addFolder(top);
                     }
-                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded);
+                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded, true);
                     addSourceRoot(folderEntry.getFile().getPath());
                 }
             } finally {
@@ -881,7 +881,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded) {
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded, boolean notify) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
@@ -915,14 +915,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                         dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                     }
                 }
-                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded);
+                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded, notify);
                 if (dirfolder.size() == 0) {
                     folder.removeFolder(dirfolder);
                 }
             } else {
                 String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                 Item item = new Item(FilePathAdaptor.normalize(filePath));
-                if (folder.addItem(item) != null) {
+                if (folder.addItem(item, notify) != null) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {
