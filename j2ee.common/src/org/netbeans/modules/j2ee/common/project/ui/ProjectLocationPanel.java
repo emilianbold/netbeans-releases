@@ -81,7 +81,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = defaultNameFormatter;
-        currentLibrariesLocation = "lib"; // NOI18N
+        currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );

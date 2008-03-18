@@ -573,6 +573,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         }
         sharableProject = d.getProperty(ProjectLocationWizardPanel.SHARED_LIBRARIES) != null;
         serverLibraryCheckbox.setEnabled(isSharableProject());
+        if (!serverLibraryCheckbox.isEnabled()) {
+            serverLibraryCheckbox.setSelected(false);
+        }
         projectLocation = (File)d.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (j2eeModuleType == J2eeModule.EJB) {
             updateJ2EEVersion("ejb-jar.xml");

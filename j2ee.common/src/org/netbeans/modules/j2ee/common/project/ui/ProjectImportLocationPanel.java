@@ -87,7 +87,7 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         this.nameFormatter = nameFormatter;
         initComponents ();
         jLabelSrcLocationDesc.setText(importLabel);
-        currentLibrariesLocation = "lib"; // NOI18N
+        currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         setName(NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_ImportTitle")); //NOI18N
@@ -115,7 +115,8 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 fireChanges();
             }
         });
-        
+        // update state:
+        sharableProjectActionPerformed(null);
     }
     
     void read(WizardDescriptor settings) {
