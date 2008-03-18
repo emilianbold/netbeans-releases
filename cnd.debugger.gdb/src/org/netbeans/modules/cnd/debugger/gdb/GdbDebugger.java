@@ -1367,9 +1367,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         gdb.exec_continue();
                     }
                     String frame = map.get("frame"); // NOI18N
-                    if (frame != null && frame.contains("dlopen")) { // NOI18N
+                    if (frame != null && frame.contains("func=\"dlopen\"")) { // NOI18N
                         dlopenPending = true;
+                        Object saveLastGo = lastGo;
                         gdb.exec_finish();
+                        setLastGo(saveLastGo); // exec_finish changes lastGo
                         return;
                     }
                 } else {
@@ -1385,9 +1387,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         setStopped();
                     }
                 }
-                if (dlopenPending) {
+                if (dlopenPending) { // who stops here?
                     dlopenPending = false;
-                    checkSharedLibs(null);
+                    checkSharedLibs();
                 }
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
@@ -1429,7 +1431,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     GdbTimer.getTimer("Step").report("Step1");// NOI18N
                 }
             } else if (reason.equals("shlib-event")) { // NOI18N
-                 checkSharedLibs(lastGo);
+                 checkSharedLibs();
             } else if (reason.equals("signal-received")) { // NOI18N
                 if (getState().equals(STATE_RUNNING)) {
                     String tid = map.get("thread-id"); // NOI18N
@@ -1441,7 +1443,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("function-finished") && dlopenPending) { // NOI18N
                 dlopenPending = false;
-                checkSharedLibs(null);
+                checkSharedLibs(); // Windows (after non-user -exec-finish after non-user breakpoint in dlopen)
             } else {
                 if (!reason.startsWith("exited")) { // NOI18N
                     gdb.stack_list_frames();
@@ -1454,7 +1456,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else if (dlopenPending) {
             dlopenPending = false;
-            checkSharedLibs(lastGo);
+            checkSharedLibs(); // Solaris (stopping for solib event)
         } else {
             gdb.stack_list_frames();
             setStopped();
@@ -1466,7 +1468,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * different thread because we're probably being called from the GdbReaderRP
      * thread and CommandBuffer.waitForCompletion() doesn't work on that thread.
      */
-    private void checkSharedLibs(final Object lastGo) {
+    private void checkSharedLibs() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 CommandBuffer cb = new CommandBuffer();
@@ -1522,7 +1524,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
                     gdb.exec_next();
                     state = oldState;
-                    return;
+                return;
                 }
             } else {
                 String fullname = map.get("fullname"); // NOI18N
@@ -1631,7 +1633,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             temporaryBreakpoints.add(number);
         }
         return false;
-    } 
+    }
      
     /**
      * This utility method helps to start a new Cnd debugger session. 
