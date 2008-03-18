@@ -42,50 +42,13 @@
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Michal Mocnak
  */
-public class RefreshModulesAction extends NodeAction {
+public interface OpenURLActionCookie extends Node.Cookie {
     
-    public RefreshModulesAction() {
-    }
-    
-    protected boolean enable(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }    
-    
-    public String getName() {
-        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-    
-    protected void performAction(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
-        }
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    public String getWebURL();
     
 }

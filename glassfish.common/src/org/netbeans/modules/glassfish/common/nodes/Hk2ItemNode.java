@@ -44,17 +44,25 @@ package org.netbeans.modules.glassfish.common.nodes;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.UndeployModuleCookie;
 import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -77,15 +85,13 @@ public class Hk2ItemNode extends AbstractNode {
     
     private Decorator decorator;
     
-    private static final String HTTP_HEADER = "http://";
+    private static final String HTTP_HEADER = "http://"; // NOI18N
+
     
-    private static final int TIMEOUT = 30000;
-    
-    private Hk2ItemNode(Children children, final Lookup lookup, final Decorator decorator) {
+    private Hk2ItemNode(Children children, final Lookup lookup, final String name, final Decorator decorator) {
         super(children);
         this.decorator = decorator;
         
-        // NEW COOKIE CODE
         if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
                 public void refresh() {
@@ -123,196 +129,64 @@ public class Hk2ItemNode extends AbstractNode {
             }); 
         }
         
-        // OLD COOKIE CODE
-//        if(decorator.equals(J2EE_APPLICATION_FOLDER) ||
-//                decorator.equals(REFRESHABLE_FOLDER)) {
-//            getCookieSet().add(new RefreshModulesCookie() {
-//                public void refresh() {
-//                    Children children = getChildren();
-//                    if(children instanceof Refreshable)
-//                        ((Refreshable)children).updateKeys();
-//                }
-//            });
-//            getCookieSet().add(new DeployDirectoryCookie() {
-//                private boolean isRunning = false;
-//                public void deployDirectory() {
-//                    
-//                    JFileChooser chooser = new JFileChooser();
-//                    chooser.setDialogTitle(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); //NOI18N
-//                    chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-//                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//                    //chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
-//                    chooser.setMultiSelectionEnabled(false);
-//                    
-//                    //chooser.setAcceptAllFileFilterUsed(false);
-//                    //chooser.setApproveButtonToolTipText(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooserName")); //NOI18N
-//                    //chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooserName")); //NOI18N
-//                    //chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooserName")); //NOI18N
-//                    
-//                    int returnValue = chooser.showDialog(new JFrame(), NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); //NOI18N
-//                    
-//                    if(returnValue != JFileChooser.APPROVE_OPTION){
-//                        return;
-//                        
-//                    }
-//                    
-//                    final File dir=new File(chooser.getSelectedFile().getAbsolutePath());
-//                    final Hk2DeploymentManager dm =
-//                            (Hk2DeploymentManager)lookup.lookup(Hk2DeploymentManager.class);
-//                    final String message=NbBundle.getMessage(Hk2ItemNode.class,
-//                            "LBL_DeployProgress", chooser.getSelectedFile().getAbsolutePath());
-//                    final ProgressHandle handle = ProgressHandleFactory.createHandle(message);
-//                    
-//                    Runnable r = new Runnable() {
-//                        public void run() {
-//                            isRunning = true;
-//                            
-//                            // Save the current time so that we can deduct that the deploy
-//                            // failed due to timeout
-//                            long start = System.currentTimeMillis();
-//                            FastDeploy g= new FastDeploy(dm);
-//                            ProgressObject o =g.initialDeploy(null, dir,dir.getName()) ;
-//                            handle.progress(o.getDeploymentStatus().getMessage());
-//                            
-//                            
-//                            while(!(o.getDeploymentStatus().isCompleted()||o.getDeploymentStatus().isFailed()) && System.currentTimeMillis() - start < TIMEOUT) {
-//                                //                                System.out.println("o.getDeploymentStatus()"+o.getDeploymentStatus());
-//                                handle.progress(o.getDeploymentStatus().getMessage());
-//                                try {
-//                                    Thread.sleep(500);
-//                                } catch(InterruptedException ex) {
-//                                    // Nothing to do
-//                                }
-//                            }
-//                            handle.progress(o.getDeploymentStatus().getMessage());
-//                            handle.finish();
-//                            
-//                            NotifyDescriptor d = new NotifyDescriptor.Message(o.getDeploymentStatus().getMessage(), NotifyDescriptor.INFORMATION_MESSAGE);
-//                            d.setTitle(message);
-//                            DialogDisplayer.getDefault().notify(d);
-//                            isRunning = false;
-//                        }
-//                    };
-//                    
-//                    handle.start();
-//                    RequestProcessor.getDefault().post(r);
-//                }
-//            });        } else if(type.equals(ItemType.J2EE_APPLICATION)) {
-//                getCookieSet().add(new OpenURLActionCookie() {
-//                    public String getWebURL() {
-//                        if(module == null || lookup == null)
-//                            return null;
-//                        
-//                        try {
-//                            Hk2DeploymentManager dm = (Hk2DeploymentManager)lookup.lookup(Hk2DeploymentManager.class);
-//                            String app =  module.getModuleID();
-//                            
-//                            
-//                            
-//                            InstanceProperties ip = dm.getInstanceProperties();
-//                            
-//                            String host = ip.getProperty(Hk2PluginProperties.PROPERTY_HOST);
-//                            String httpPort = ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER);
-//                            if(app == null || host == null || httpPort == null)
-//                                return null;
-//                            
-//                            return HTTP_HEADER + host + ":" + httpPort + "/"+app+"/";
-//                        } catch (Throwable t) {
-//                            return null;
-//                        }
-//                    }
-//                });
-//                getCookieSet().add(new UndeployModuleCookie() {
-//                    private boolean isRunning = false;
-//                    
-//                    public Task undeploy() {
-//                        final Hk2DeploymentManager dm =
-//                                (Hk2DeploymentManager)lookup.lookup(Hk2DeploymentManager.class);
-//                        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Hk2ItemNode.class,
-//                                "LBL_UndeployProgress", ((Hk2TargetModuleID)module).getModuleID()));
-//                        
-//                        Runnable r = new Runnable() {
-//                            public void run() {
-//                                isRunning = true;
-//                                
-//                                // Save the current time so that we can deduct that the undeploy
-//                                // failed due to timeout
-//                                long start = System.currentTimeMillis();
-//                                
-//                                ProgressObject o = dm.undeploy(new TargetModuleID[] {module});
-//                                
-//                                while(!o.getDeploymentStatus().isCompleted() && System.currentTimeMillis() - start < TIMEOUT) {
-//                                    //                                System.out.println("o.getDeploymentStatus()"+o.getDeploymentStatus());
-//                                    try {
-//                                        Thread.sleep(500);
-//                                    } catch(InterruptedException ex) {
-//                                        // Nothing to do
-//                                    }
-//                                }
-//                                handle.progress(o.getDeploymentStatus().getMessage());
-//                                handle.finish();
-//                                isRunning = false;
-//                            }
-//                        };
-//                        
-//                        handle.start();
-//                        return RequestProcessor.getDefault().post(r);
-//                    }
-//                    
-//                    public synchronized boolean isRunning() {
-//                        return isRunning;
-//                    }
-//                });
-//            } else if (decorator.equals(JDBC_NATIVE_DATASOURCES) ||
-//                    decorator.equals(JDBC_MANAGED_DATASOURCES) ||
-//                    decorator.equals(CONNECTION_POOLS)) {
-//                getCookieSet().add(new UndeployModuleCookie() {
-//                    private boolean isRunning = false;
-//                    
-//                    public Task undeploy() {
-//                        final Hk2DeploymentManager dm =(Hk2DeploymentManager) lookup.lookup(Hk2DeploymentManager.class);
-//                        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Hk2ItemNode.class,
-//                                "LBL_UndeployProgress", getDisplayName()));
-//                        
-//                        Runnable r = new Runnable() {
-//                            public void run() {
-//                                isRunning = true;
-//                                
-//                                //////      ludo                      Hk2DatasourceManager dsManager = new Hk2DatasourceManager(dm);
-//                                //////
-//                                //////                            // Undeploying
-//                                //////                            if(type.equals(ItemType.JDBC_NATIVE_DATASOURCES)) {
-//                                //////                                dsManager.undeployNativeDataSource(getDisplayName());
-//                                //////                            } else if (type.equals(ItemType.JDBC_MANAGED_DATASOURCES)) {
-//                                //////                                dsManager.undeployManagedDataSource(getDisplayName());
-//                                //////                            } else if (type.equals(ItemType.CONNECTION_POOLS)) {
-//                                //////                                dsManager.undeployConnectionPool(getDisplayName());
-//                                //////                            }
-//                                //////
-//                                handle.finish();
-//                                isRunning = false;
-//                            }
-//                        };
-//                        
-//                        handle.start();
-//                        return RequestProcessor.getDefault().post(r);
-//                    }
-//                    
-//                    public synchronized boolean isRunning() {
-//                        return isRunning;
-//                    }
-//                });
-//            }
+        if(decorator.canUndeploy()) {
+            getCookieSet().add(new UndeployModuleCookie() {
+                
+                private volatile WeakReference<Future<OperationState>> status;
+
+                public Future<OperationState> undeploy() {
+                    Future<OperationState> result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
+                        result = mgr.undeploy(name);
+                        status = new WeakReference<Future<OperationState>>(result);
+                    }
+                    return result;
+                }
+
+                public boolean isRunning() {
+                    WeakReference<Future<OperationState>> localref = status;
+                    if(localref == null) {
+                        return false;
+                    }
+                    Future<OperationState> cmd = localref.get();
+                    if(cmd == null || cmd.isDone()) {
+                        return false;
+                    }
+                    return true;
+                }
+                
+            });
+        }
+
+        // !PW FIXME retrieve browser URL from decorator directly.
+        if(decorator.canShowBrowser()) {
+            getCookieSet().add(new OpenURLActionCookie() {
+                
+                public String getWebURL() {
+                    String result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        Map<String, String> ip = commonModule.getInstanceProperties();
+                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+                        result = HTTP_HEADER + host + ":" + httpPort + "/" + name + "/";
+                    }
+                    return result;
+                }
+            });
+        }
     }
     
     public Hk2ItemNode(Lookup lookup, AppDesc app, Decorator decorator) {
-        this(Children.LEAF, lookup, decorator);
+        this(Children.LEAF, lookup, app.getName(), decorator);
         setDisplayName(app.getName());
         setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
     
     public Hk2ItemNode(Lookup lookup, Children children, String name, Decorator type) {
-        this(children, lookup, type);
+        this(children, lookup, name, type);
         setDisplayName(name);
     }
     
@@ -353,11 +227,11 @@ public class Hk2ItemNode extends AbstractNode {
         }
         
         if(decorator.canUndeploy()) {
-//            actions.add(SystemAction.get(UndeployModuleAction.class));
+            actions.add(SystemAction.get(UndeployModuleAction.class));
         }
     
         if(decorator.canShowBrowser()) {
-//            actions.add(SystemAction.get(OpenURLAction.class));
+            actions.add(SystemAction.get(OpenURLAction.class));
         }
         
         return actions.toArray(new Action[actions.size()]);

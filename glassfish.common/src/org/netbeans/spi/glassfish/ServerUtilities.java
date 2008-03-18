@@ -40,6 +40,7 @@
 package org.netbeans.spi.glassfish;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
@@ -55,6 +56,10 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  */
 public final class ServerUtilities {
 
+    public static final int ACTION_TIMEOUT = 10000;
+    public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
+    
+    
     private ServerUtilities() {
     }
     

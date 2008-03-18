@@ -38,54 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
+ * Action which displays selected web module in browser.
  *
  * @author Michal Mocnak
  */
-public class RefreshModulesAction extends NodeAction {
-    
-    public RefreshModulesAction() {
-    }
-    
-    protected boolean enable(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }    
-    
-    public String getName() {
-        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-    
+public class OpenURLAction extends NodeAction {
+
     protected void performAction(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
+        for(Node node : nodes) {
+            OpenURLActionCookie oCookie = node.getCookie(OpenURLActionCookie.class);
+
+            if(oCookie != null) {
+                try {
+                    URLDisplayer.getDefault().showURL(new URL(oCookie.getWebURL()));
+                } catch(MalformedURLException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
             }
         }
     }
-    
+
+    protected boolean enable(Node[] nodes) {
+        for(Node node : nodes) {
+            OpenURLActionCookie oCookie = node.getCookie(OpenURLActionCookie.class);
+            UndeployModuleCookie uCookie = node.getCookie(UndeployModuleCookie.class);
+
+            if(uCookie != null) {
+                if(uCookie.isRunning()) {
+                    return false;
+                }
+            }
+            if(oCookie != null && oCookie.getWebURL() != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(OpenURLAction.class, "LBL_OpenInBrowserAction"); // NOI18N
+
+    }
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
+
+    public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
 }

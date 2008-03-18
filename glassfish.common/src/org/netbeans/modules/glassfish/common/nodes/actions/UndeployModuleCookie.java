@@ -41,51 +41,20 @@
 
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.util.concurrent.Future;
+import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+
 
 /**
  *
  * @author Michal Mocnak
+ * @auther Peter Williams
  */
-public class RefreshModulesAction extends NodeAction {
+public interface UndeployModuleCookie extends Node.Cookie {
     
-    public RefreshModulesAction() {
-    }
+    public Future<OperationState> undeploy();
     
-    protected boolean enable(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }    
-    
-    public String getName() {
-        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-    
-    protected void performAction(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
-        }
-    }
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    public boolean isRunning();
     
 }

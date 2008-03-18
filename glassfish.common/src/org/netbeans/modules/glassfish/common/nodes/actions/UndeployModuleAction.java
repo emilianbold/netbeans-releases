@@ -38,54 +38,84 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Michal Mocnak
+ * @author Peter Williams
  */
-public class RefreshModulesAction extends NodeAction {
-    
-    public RefreshModulesAction() {
+public class UndeployModuleAction extends NodeAction {
+
+    protected void performAction(Node[] nodes) {
+        if((nodes == null) || (nodes.length < 1)) {
+            return;
+        }
+        
+        for(Node node : nodes) {
+            UndeployModuleCookie uCookie = node.getCookie(UndeployModuleCookie.class);
+
+            if(uCookie != null) {
+                final Future<OperationState> result = uCookie.undeploy();
+                final Node pNode = node.getParentNode().getParentNode();
+
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            result.get(ServerUtilities.ACTION_TIMEOUT, ServerUtilities.ACTION_TIMEOUT_UNIT);
+                            if(pNode != null) {
+                                Node[] nodes = pNode.getChildren().getNodes();
+                                for(Node node : nodes) {
+                                    RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
+                                    if(cookie != null) {
+                                        cookie.refresh();
+                                    }
+                                }
+                            }
+                        } catch(TimeoutException ex) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, "Timeout waiting on undeploy.", ex);
+                        } catch(Exception ex) {
+                            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+                    }
+                });
+            }
+        }
     }
-    
+
     protected boolean enable(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
+        for(Node node : nodes) {
+            UndeployModuleCookie cookie = node.getCookie(UndeployModuleCookie.class);
+            if(cookie == null || cookie.isRunning()) {
                 return false;
             }
         }
-        
+
         return true;
-    }    
-    
+    }
+
     public String getName() {
-        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
+        return NbBundle.getMessage(UndeployModuleAction.class, "LBL_UndeployAction");
     }
-    
-    protected void performAction(Node[] nodes) {
-        for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
-        }
-    }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
 }
