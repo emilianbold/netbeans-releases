@@ -70,12 +70,11 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -90,7 +89,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Kvashin
  */
-public class ModelSupport implements PropertyChangeListener, FileChangeListener {
+public class ModelSupport implements PropertyChangeListener {
     
     private static ModelSupport instance = new ModelSupport();
     
@@ -99,6 +98,7 @@ public class ModelSupport implements PropertyChangeListener, FileChangeListener 
     private Set<Project> openedProjects = new HashSet<Project>();
     
     private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
+    private FileChangeListener fileChangeListener;
 
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
@@ -130,10 +130,15 @@ public class ModelSupport implements PropertyChangeListener, FileChangeListener 
     
     public void setModel(ModelImpl model) {
         this.theModel = model;
-        if( model == null ) {
-            FileUtil.addFileChangeListener(this);
-        } else {
-            FileUtil.removeFileChangeListener(this);
+        synchronized( this ) {
+            if( fileChangeListener != null ) {
+                FileUtil.removeFileChangeListener(fileChangeListener);
+                fileChangeListener = null;
+            }
+            if( model != null ) {
+                fileChangeListener = new ExternalUpdateListener();
+                FileUtil.addFileChangeListener(fileChangeListener);
+            }
         }
     }
     
@@ -617,60 +622,73 @@ public class ModelSupport implements PropertyChangeListener, FileChangeListener 
         }
     }
 
-    /** 
-     * FileChangeListener implementation.  
-     */
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileAttributeChanged %s\n", fe);
-    }
+    private class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
 
-    /** FileChangeListener implementation. Fired when a new file is created. */
-    public void fileDataCreated(FileEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileDataCreated %s\n", fe);
-    }
-
-    /** FileChangeListener implementation. Fired when a file is deleted. */
-    public void fileDeleted(FileEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileDeleted %s\n", fe);
-    }
-
-    /** FileChangeListener implementation. Fired when a new folder is created. */
-    public void fileFolderCreated(FileEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileFolderCreated %s\n", fe);
-    }
-
-    /** FileChangeListener implementation. Fired when a file is renamed. */
-    public void fileRenamed(FileRenameEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileRenamed %s\n", fe);
-    }
-
-    /** FileChangeListener implementation. Fired when a file is changed. */
-    public void fileChanged(FileEvent fe) {
-        if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("FileChangeListener.fileChanged %s\n", fe);
-        ModelImpl model = theModel;
-        if( model == null ) {
-            return;
-        }
-        FileObject fo = fe.getFile();
-        if( isCOrCpp(fo) ) {
-            CsmFile[] files = CsmUtilities.getCsmFiles(fo);
-            for (int i = 0; i < files.length; i++) {
-                FileImpl file = (FileImpl) files[i];
-                file.getProjectImpl().onFileExternalChange(file);
+        private boolean isRunning;
+        private Collection<FileObject> changedFileObjects = new HashSet();
+        
+        /** FileChangeListener implementation. Fired when a file is changed. */
+        public @Override void fileChanged(FileEvent fe) {
+            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: fileChanged %s\n", fe);
+            ModelImpl model = theModel;
+            if( model != null ) {
+                FileObject fo = fe.getFile();
+                if( isCOrCpp(fo) ) {
+                    scheduleUpdate(fo);
+                }
             }
         }
-    }
-
-    
-    private boolean isCOrCpp(FileObject fo) {
-        // FIXUP: we'd better use org.netbeans.modules.cnd.MIMENames
-        // but don't want to make a depen
-        //MIMENames.
-        String mime = fo.getMIMEType();
-        if( mime == null ) {
-            mime = FileUtil.getMIMEType(fo);
-            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("MIME resolved: %s\n", mime);
+        
+        private void scheduleUpdate(FileObject fo) {
+            ModelImpl model = theModel;
+            if( model != null ) {
+                synchronized( this ) {
+                    if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: schedulling update for %s\n", fo);
+                    changedFileObjects.add(fo);
+                    if( ! isRunning ) {
+                        isRunning = true;
+                        model.enqueueModelTask(this, "External File Updater"); // NOI18N
+                    }
+                }
+            }
         }
-        return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) || MIMENames.C_MIME_TYPE.equals(mime);
+
+        public void run() {
+            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: running update task\n");
+            while( true ) {
+                FileObject fo = null;
+                synchronized( this ) {
+                    Iterator<FileObject> iter = changedFileObjects.iterator();
+                    if( iter.hasNext() ) {
+                        fo = iter.next();
+                        iter.remove();
+                    } else {
+                        isRunning = false;
+                        break;
+                    }
+                }
+                if( fo != null ) {
+                    if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("Updating for %s\n", fo);
+                    CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+                    for (int i = 0; i < files.length; i++) {
+                        FileImpl file = (FileImpl) files[i];
+                        file.getProjectImpl().onFileExternalChange(file);
+                    }
+                }
+            }
+            if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("External updates: update task finished\n");
+        }
+        
+
+        private boolean isCOrCpp(FileObject fo) {
+            String mime = fo.getMIMEType();
+            if( mime == null ) {
+                mime = FileUtil.getMIMEType(fo);
+                if( TraceFlags.TRACE_EXTERNAL_CHANGES ) System.err.printf("MIME resolved: %s\n", mime);
+            }
+            return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) || MIMENames.C_MIME_TYPE.equals(mime);
+        }
+
     }
+    
 }
