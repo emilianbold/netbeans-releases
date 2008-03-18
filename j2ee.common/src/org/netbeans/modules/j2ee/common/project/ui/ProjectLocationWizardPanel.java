@@ -64,11 +64,15 @@ public final class ProjectLocationWizardPanel implements WizardDescriptor.Panel,
     private ProjectLocationPanel component;
     private Object j2eeModuleType;
     private String defaultNameFormatter;
+    private String name;
+    private String title;
     
     /** Create the wizard panel descriptor. */
-    public ProjectLocationWizardPanel(Object j2eeModuleType, String defaultNameFormatter) {
+    public ProjectLocationWizardPanel(Object j2eeModuleType, String name, String title, String defaultNameFormatter) {
         this.j2eeModuleType = j2eeModuleType;
         this.defaultNameFormatter = defaultNameFormatter;
+        this.name = name;
+        this.title = title;
     }
     
     public boolean isFinishPanel() {
@@ -77,7 +81,7 @@ public final class ProjectLocationWizardPanel implements WizardDescriptor.Panel,
 
     public Component getComponent() {
         if (component == null) {
-            component = new ProjectLocationPanel(j2eeModuleType, this, defaultNameFormatter);
+            component = new ProjectLocationPanel(j2eeModuleType, name, title, this, defaultNameFormatter);
         }
         return component;
     }

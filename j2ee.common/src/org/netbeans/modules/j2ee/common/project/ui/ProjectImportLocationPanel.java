@@ -81,7 +81,8 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     private Object j2eeModuleType;
     
     /** Creates new form TestPanel */
-    public ProjectImportLocationPanel (Object j2eeModuleType, ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel) {
+    public ProjectImportLocationPanel (Object j2eeModuleType, String name, String title, 
+            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel) {
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = nameFormatter;
@@ -90,7 +91,8 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectImportLocationPanel.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
-        setName(NbBundle.getMessage(ProjectImportLocationPanel.class, "LBL_IW_ImportTitle")); //NOI18N
+        setName(name);
+        putClientProperty ("NewProjectWizard_Title", title); // NOI18N
         
         moduleLocationTextField.getDocument().addDocumentListener(new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {

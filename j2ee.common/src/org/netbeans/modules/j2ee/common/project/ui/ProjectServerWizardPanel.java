@@ -80,9 +80,12 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     private boolean showContextPath;
     private boolean createProjects;
     private Object j2eeModuleType;
+    private String name;
+    private String title;
     
     /** Create the wizard panel descriptor. */
-    public ProjectServerWizardPanel(Object j2eeModuleType, boolean showAddToEar, boolean mainAppClientClass, 
+    public ProjectServerWizardPanel(Object j2eeModuleType, String name, String title, 
+            boolean showAddToEar, boolean mainAppClientClass, 
             boolean showContextPath, boolean createProjects, boolean finishable) {
         this.finishable = finishable;
         this.showAddToEar = showAddToEar;
@@ -90,6 +93,8 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
         this.createProjects = createProjects;
         this.showContextPath = showContextPath;
         this.j2eeModuleType = j2eeModuleType;
+        this.name = name;
+        this.title = title;
     }
     
     public boolean isFinishPanel() {
@@ -98,7 +103,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
 
     public Component getComponent() {
         if (component == null) {
-            component = new ProjectServerPanel(j2eeModuleType, this, showAddToEar, mainAppClientClass, showContextPath, createProjects);
+            component = new ProjectServerPanel(j2eeModuleType, name, title, this, showAddToEar, mainAppClientClass, showContextPath, createProjects);
         }
         return component;
     }

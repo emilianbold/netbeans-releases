@@ -68,16 +68,21 @@ public final class ProjectImportLocationWizardPanel implements WizardDescriptor.
     private Object j2eeModuleType;
     private String defaultNameFormatter;
     private String importLabel;
+    private String name;
+    private String title;
     
-    public ProjectImportLocationWizardPanel (Object j2eeModuleType, String defaultNameFormatter, String importLabel) {
+    public ProjectImportLocationWizardPanel (Object j2eeModuleType, String name, String title,
+            String defaultNameFormatter, String importLabel) {
         this.j2eeModuleType = j2eeModuleType;
         this.defaultNameFormatter = defaultNameFormatter;
         this.importLabel = importLabel;
+        this.name = name;
+        this.title = title;
     }
 
     public java.awt.Component getComponent () {
         if (panel == null) {
-            panel = new ProjectImportLocationPanel(j2eeModuleType, this, defaultNameFormatter, importLabel);
+            panel = new ProjectImportLocationPanel(j2eeModuleType, name, title, this, defaultNameFormatter, importLabel);
         }
         return panel;
     }

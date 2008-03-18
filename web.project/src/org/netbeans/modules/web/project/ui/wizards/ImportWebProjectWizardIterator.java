@@ -93,9 +93,14 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ProjectImportLocationWizardPanel(J2eeModule.WAR, 
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step1"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_LocationSrcDesc")),
-            new ProjectServerWizardPanel(J2eeModule.WAR, true, false, true, false, false),
+            new ProjectServerWizardPanel(J2eeModule.WAR, 
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step2"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
+                    true, false, true, false, false),
             new PanelSourceFolders.Panel()
         };
     }

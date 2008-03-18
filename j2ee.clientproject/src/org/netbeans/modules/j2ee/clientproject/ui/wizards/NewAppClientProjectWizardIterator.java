@@ -83,8 +83,14 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ProjectLocationWizardPanel(J2eeModule.CLIENT, NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_JavaApplication")), // NOI18N
-            new ProjectServerWizardPanel(J2eeModule.CLIENT, true, true, false, false, true),
+            new ProjectLocationWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LAB_ConfigureProject"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_NewAppClient"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_JavaApplication")), // NOI18N
+            new ProjectServerWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_NewAppClient"),
+                    true, true, false, false, true),
         };
     }
     

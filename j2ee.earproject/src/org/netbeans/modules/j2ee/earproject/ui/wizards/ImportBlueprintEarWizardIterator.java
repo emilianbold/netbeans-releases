@@ -82,9 +82,14 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ProjectImportLocationWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_ImportInstructions1")),
-            new ProjectServerWizardPanel(J2eeModule.EAR, false, false, false, false, false),
+            new ProjectServerWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
+                    false, false, false, false, false),
             new PanelModuleDetection()
         };
     }

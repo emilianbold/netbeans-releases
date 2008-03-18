@@ -230,15 +230,27 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 	if (WebFrameworks.getFrameworks().size() > 0)
 	    //standard panels + configurable framework panel
 	    panels = new WizardDescriptor.Panel[] {
-                new ProjectLocationWizardPanel(J2eeModule.WAR, NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
-                new ProjectServerWizardPanel(J2eeModule.WAR, true, false, true, false, true),
+                new ProjectLocationWizardPanel(J2eeModule.WAR, 
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")),
+                new ProjectServerWizardPanel(J2eeModule.WAR, 
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
+                        true, false, true, false, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
 	    //no framework available, don't show framework panel
 	    panels = new WizardDescriptor.Panel[] {
-                new ProjectLocationWizardPanel(J2eeModule.WAR, NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
-                new ProjectServerWizardPanel(J2eeModule.WAR, true, false, true, false, true),
+                new ProjectLocationWizardPanel(J2eeModule.WAR, 
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")),
+                new ProjectServerWizardPanel(J2eeModule.WAR, 
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
+                        NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
+                        true, false, true, false, true),
 	    };
         panelsCount = panels.length;
         

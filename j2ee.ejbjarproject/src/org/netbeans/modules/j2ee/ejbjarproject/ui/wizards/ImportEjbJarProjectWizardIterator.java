@@ -95,9 +95,14 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ProjectImportLocationWizardPanel(J2eeModule.EJB, 
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"),
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_ImportEJBModule"),
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_IW_LocationSrcDesc")),
-            new ProjectServerWizardPanel(J2eeModule.EJB, true, false, false, false, false),
+            new ProjectServerWizardPanel(J2eeModule.EJB, 
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "NewEjbJarProjectWizardIterator.secondpanel"),
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_ImportEJBModule"),
+                    true, false, false, false, false),
             new PanelSourceFolders.Panel()
         };
     }

@@ -95,8 +95,14 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ProjectLocationWizardPanel(J2eeModule.EAR, NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
-            new ProjectServerWizardPanel(J2eeModule.EAR, false, false, false, true, true),
+            new ProjectLocationWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_NewProject"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
+            new ProjectServerWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_NewProject"),
+                    false, false, false, true, true),
         };
     }
     

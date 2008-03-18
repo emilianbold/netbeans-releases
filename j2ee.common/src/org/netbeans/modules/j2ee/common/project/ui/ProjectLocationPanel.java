@@ -76,7 +76,8 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
     private String nameFormatter;
 
     /** Creates new form ProjectLocationPanel */
-    public ProjectLocationPanel(Object j2eeModuleType, ProjectLocationWizardPanel wizard, String defaultNameFormatter) {
+    public ProjectLocationPanel(Object j2eeModuleType, String name, String title, 
+            ProjectLocationWizardPanel wizard, String defaultNameFormatter) {
         initComponents();
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
@@ -88,8 +89,8 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         projectLocationTextField.getDocument().addDocumentListener( this );        
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
-        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(ProjectLocationPanel.class, "TXT_NewWebApp")); //NOI18N
+        setName(name);
+        putClientProperty ("NewProjectWizard_Title", title);
         // update state:
         sharableProjectActionPerformed(null);
     }

@@ -87,9 +87,14 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new ProjectImportLocationWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_IW_ImportTitle"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_ImportAppClientModule"),
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_JavaApplication"),
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "LBL_IW_LocationSrcDesc")),
-            new ProjectServerWizardPanel(J2eeModule.CLIENT, true, true, false, false, false),
+            new ProjectServerWizardPanel(J2eeModule.CLIENT, 
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_ImportAppClientModule"),
+                    true, true, false, false, false),
             new PanelSourceFolders.Panel()
         };
     }

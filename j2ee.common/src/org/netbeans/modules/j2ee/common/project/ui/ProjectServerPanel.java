@@ -93,7 +93,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private BigDecimal xmlVersion;
     
     /** Creates new form ProjectServerPanel */
-    public ProjectServerPanel(Object j2eeModuleType, ProjectServerWizardPanel wizard, boolean showAddToEar, 
+    public ProjectServerPanel(Object j2eeModuleType, String name, String title,
+            ProjectServerWizardPanel wizard, boolean showAddToEar, 
             boolean mainAppClientClass, boolean showContextPath, boolean createProjects) {
         initComponents();
         setJ2eeVersionWarningPanel();
@@ -107,7 +108,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         initEnterpriseApplications();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ProjectServerPanel.class, "ProjectServerPanel.title")); //NOI18N
+        setName(name);
+        putClientProperty ("NewProjectWizard_Title", title);
         
         jLabelEnterprise.setVisible(showAddToEar);
         jComboBoxEnterprise.setVisible(showAddToEar);

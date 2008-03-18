@@ -81,14 +81,20 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
 
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[] {
-        NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
+        NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
         NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "NewEjbJarProjectWizardIterator.secondpanel"),
     };
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new ProjectLocationWizardPanel(J2eeModule.EJB, NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
-            new ProjectServerWizardPanel(J2eeModule.EJB, true, false, false, false, true),
+            new ProjectLocationWizardPanel(J2eeModule.EJB, 
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_NewWebApp"),
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName")), // NOI18N
+            new ProjectServerWizardPanel(J2eeModule.EJB, 
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "NewEjbJarProjectWizardIterator.secondpanel"),
+                    NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_NewWebApp"),
+                    true, false, false, false, true),
         };
     }
 
