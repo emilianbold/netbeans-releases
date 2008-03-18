@@ -941,18 +941,51 @@ public class JsBracketCompleterTest extends JsTestBase {
 
     public void testLogicalRange2() throws Exception {
         String code = "if (true) {\n  %<%fo^o%>%\n}";
-        String next = "%<%if (true) {\n  fo^o\n}%>%";
+        String next = "if (true) %<%{\n  fo^o\n}%>%";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
 
+    public void testLogicalRange2b() throws Exception {
+        String code = "if (true) %<%{\n  fo^o\n}%>%";
+        String next = "%<%if (true) {\n  fo^o\n}%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+    
     public void testLogicalRange3() throws Exception {
         String code = "function foo() {\nif (true) {\n  %<%fo^o%>%\n}\n}";
+        String next = "function foo() {\nif (true) %<%{\n  fo^o\n}%>%\n}";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange3b() throws Exception {
+        String code = "function foo() {\nif (true) %<%{\n  fo^o\n}%>%\n}";
         String next = "function foo() {\n%<%if (true) {\n  fo^o\n}%>%\n}";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }
 
+    public void testLogicalRange3c() throws Exception {
+        String code = "function foo() {\n%<%if (true) {\n  fo^o\n}%>%\n}";
+        // Weird AST offset error - doesn't include the correct endpoint, just
+        // end of last statement in the method
+        //String next = "function foo() %<%{\nif (true) {\n  fo^o\n}\n}%>%";
+        String next = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+    
+    public void testLogicalRange3d() throws Exception {
+        String code = "function foo() %<%{\nif (true) {\n  fo^o\n}%>%\n}";
+        // Weird AST offset error - doesn't include the correct endpoint, just
+        // end of last statement in the method
+        String next = "%<%function foo() {\nif (true) {\n  fo^o\n}\n}%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+    
     public void testLogicalRangeComment1() throws Exception {
         String code = "foo\n  // Foo Bar\n  // Foo^y Baary\n  // Bye\nfunction foo() {\n}\n";
         String next = "foo\n  // Foo Bar\n  %<%// Foo^y Baary%>%\n  // Bye\nfunction foo() {\n}\n";
@@ -1003,7 +1036,7 @@ public class JsBracketCompleterTest extends JsTestBase {
 
     public void testLogicalRangeStrings4() throws Exception {
         String code = "function foo() {\nif (true) {\n%<%x = 'foo b^ar baz'%>%\n}\n}";
-        String next = "function foo() {\n%<%if (true) {\nx = 'foo b^ar baz'\n}%>%\n}";
+        String next = "function foo() {\nif (true) %<%{\nx = 'foo b^ar baz'\n}%>%\n}";
         assertLogicalRange(code, true, next);
         assertLogicalRange(next, false, code);
     }

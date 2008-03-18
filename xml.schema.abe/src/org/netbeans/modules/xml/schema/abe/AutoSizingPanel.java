@@ -75,31 +75,29 @@ public class AutoSizingPanel extends ABEBaseDropPanel{
     }
     
     public Dimension getPreferredSize() {
-        synchronized(this){        
-            int width = 0;
-            int height = 0;
-            for(Component child: this.getComponents()){
-                Dimension dim = child.getPreferredSize();
-                int curW = dim.width;
-                int curH = dim.height;
-                if(horizontalScaling)
-                    width += curW + getInterComponentSpacing();
-                else
-                    width = width < curW ? curW : width;
+        int width = 0;
+        int height = 0;
+        for(Component child: this.getComponents()){
+            Dimension dim = child.getPreferredSize();
+            int curW = dim.width;
+            int curH = dim.height;
+            if(horizontalScaling)
+                width += curW + getInterComponentSpacing();
+            else
+                width = width < curW ? curW : width;
 
-                if(verticalScaling)
-                    height += curH + getInterComponentSpacing();
-                else
-                    height = height < curH ? curH : height;
-            }
-            if(isFixedHeight()){
-                height = getFixedPanelHeight();
-            }
-            if(isFixedWidth()){
-                width = getFixedPanelWidth();
-            }
-            return new Dimension(width, height);
+            if(verticalScaling)
+                height += curH + getInterComponentSpacing();
+            else
+                height = height < curH ? curH : height;
         }
+        if(isFixedHeight()){
+            height = getFixedPanelHeight();
+        }
+        if(isFixedWidth()){
+            width = getFixedPanelWidth();
+        }
+        return new Dimension(width, height);
     }
     
     public Dimension getMinimumSize() {

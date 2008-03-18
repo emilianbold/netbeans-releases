@@ -80,7 +80,6 @@ public class FolderInstanceTest extends NbTestCase {
 
     public static Test suite() {
         return new NbTestSuite(FolderInstanceTest.class);
-        //return new FolderInstanceTest("testListenersCountWithCookie");
     }
     
     private static void setSystemProp(String key, String value) {
@@ -108,13 +107,6 @@ public class FolderInstanceTest extends NbTestCase {
      */
     public void testListenersCountNoCookie () throws Exception {
         doTestListenersCount (false);
-    }
-        
-    /** Checks whether only necessary listeners are attached to the objects.
-     * Initial object has cookie.
-     */
-    public void testListenersCountWithCookie () throws Exception {
-        doTestListenersCount (true);
     }
         
     /** Because listeners have different code for objects with cookie and 

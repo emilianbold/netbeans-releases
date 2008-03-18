@@ -65,7 +65,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
     private final ClassPath delegate;
     private final ClassIndexManager manager;
-    private volatile boolean prefSources;
+    private final boolean forcePrefSources;
     private List<PathResourceImplementation> resources;
     private long eventId;
     
@@ -73,23 +73,22 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         this.delegate = delegate;
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
-        this.prefSources = bkgComp || !GlobalSourcePath.getDefault().isLibrary(delegate);
+        this.forcePrefSources = bkgComp;
     }
     
     public List<? extends PathResourceImplementation> getResources() {
-        boolean prefSources;
         long currentEventId;
         synchronized (this) {
             if (resources != null) {
                 return this.resources;
             }
-            prefSources = this.prefSources;
             currentEventId = this.eventId;
         }
         
         List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
-        if (prefSources) {
-            for (ClassPath.Entry entry : delegate.entries()) {
+        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();        
+        for (ClassPath.Entry entry : delegate.entries()) {
+            if (forcePrefSources || !gsp.isLibrary(entry.getURL())) {
                 res.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
@@ -118,7 +117,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     }
     
     public void classIndexAdded(ClassIndexManagerEvent event) {
-        if (prefSources) {
+        if (forcePrefSources) {
             return;
         }
         final Set<? extends URL> newRoots = event.getRoots();
@@ -129,20 +128,12 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
                 break;
             }
         }
-        if (changed) {
-            
-            boolean ps;
+        if (changed) {            
             synchronized (this) {
-                ps = !GlobalSourcePath.getDefault().isLibrary(delegate);
-                if (ps) {
-                    this.prefSources = ps;
-                    this.resources = null;
-                    this.eventId++;
-                }
+                this.resources = null;
+                this.eventId++;
             }
-            if (ps) {
-                listeners.firePropertyChange(PROP_RESOURCES, null, null);
-            }
+            listeners.firePropertyChange(PROP_RESOURCES, null, null);
         }
         
     }

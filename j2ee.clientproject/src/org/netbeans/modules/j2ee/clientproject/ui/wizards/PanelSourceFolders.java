@@ -54,6 +54,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
+import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -110,7 +113,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         ((FolderList) this.sourcePanel).setLastUsedDir(FileUtil.toFile(fo));
         ((FolderList) this.testsPanel).setLastUsedDir(FileUtil.toFile(fo));
 
-        FileObject confFO = FileSearchUtility.guessConfigFilesPath(fo);
+        FileObject confFO = FileSearchUtility.guessConfigFilesPath(fo, AppClientProvider.FILE_DD);
         if (confFO == null) { // without deployment descriptor
             // XXX guess appropriate conf. folder
         } else {
@@ -184,7 +187,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
     
     boolean valid (WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty (WizardProperties.PROJECT_DIR);  //NOI18N
+        File projectLocation = (File) settings.getProperty (ProjectLocationWizardPanel.PROJECT_DIR);  //NOI18N
         String confFolder = jTextFieldConfigFiles.getText().trim();
         if (confFolder.length() == 0) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
@@ -425,7 +428,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldLibraries.getText().length() > 0 && getLibraries().exists()) {
             chooser.setSelectedFile(getLibraries());
         } else {
-            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(ProjectLocationWizardPanel.PROJECT_DIR));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
@@ -440,7 +443,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldConfigFiles.getText().length() > 0 && getConfigFiles().exists()) {
             chooser.setSelectedFile(getConfigFiles());
         } else {
-            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(ProjectLocationWizardPanel.PROJECT_DIR));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
