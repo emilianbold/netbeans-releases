@@ -42,9 +42,16 @@ import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
@@ -55,7 +62,6 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
-import org.openide.text.PositionBounds;
 
 /**
  * This plugin modifies the Hibernate mapping files accordingly when the referenced
@@ -66,6 +72,7 @@ import org.openide.text.PositionBounds;
 public class HibernateRenamePlugin implements RefactoringPlugin {
 
     private RenameRefactoring refactoring;
+    private List<FileObject> mFileObjs;
 
     public HibernateRenamePlugin(RenameRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -88,9 +95,11 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
     }
 
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        final TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         FileObject fo = null;
-        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+        if (treePathHandle != null &&
+                (treePathHandle.getKind() == Kind.CLASS ||
+                treePathHandle.getKind() == Kind.VARIABLE)) {
             fo = treePathHandle.getFileObject();
         }
         if (fo == null) {
@@ -111,7 +120,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         // Find the mapping files in this project
         Project proj = org.netbeans.api.project.FileOwnerQuery.getOwner(fo);
         HibernateEnvironment env = new HibernateEnvironment(proj);
-        List<FileObject> mFileObjs = env.getAllHibernateMappingFileObjects();
+        mFileObjs = env.getAllHibernateMappingFileObjects();
         if (mFileObjs == null || mFileObjs.size() == 0) {
             // OK, no mapping files at all. 
             return null;
@@ -119,62 +128,125 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
         try {
             if (treePathHandle != null) {
-                RenamedClassName clazz = null;
-
-                // Figure out the old name and new name
-                JavaSource js = JavaSource.forFileObject(fo);
-                if (js != null) {
-                    clazz = HibernateRefactoringUtil.getRenamedClassName(treePathHandle, js, refactoring.getNewName());
-                }
-
-                if (clazz != null) {
-                    String oldBinaryName = clazz.getOldBinaryName();
-                    String newBinaryName = clazz.getNewBinaryName();
-                    if (oldBinaryName != null && newBinaryName != null) {
-
-                        Map<FileObject, OccurrenceItem> occurrences =
-                                HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, oldBinaryName);
-
-                        for (FileObject mFileObj : occurrences.keySet()) {
-                            OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                            HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
-                                    oldBinaryName,
-                                    newBinaryName,
-                                    foundPlace.getLocation(),
-                                    foundPlace.getText());
-                            refactoringElements.add(refactoring, elem);
-                        }
-
-                        refactoringElements.registerTransaction(new JavaClassRenameTransaction(occurrences.keySet(), oldBinaryName, newBinaryName));
-                    }
+                if (treePathHandle.getKind() == Kind.CLASS) {
+                    // A Java class is being renamed
+                    renameJavaClass(refactoringElements, treePathHandle, fo);
+                } else if (treePathHandle.getKind() == Kind.VARIABLE) {
+                    // A Java field is being renamed
+                    renameJavaField(refactoringElements, treePathHandle, fo);
                 }
             } else if (fo.isFolder()) {
-                String oldPackageName = HibernateRefactoringUtil.getPackageName(fo);
-                // If the rename is not recursive (e.g, "a.b.c" -> "x.b.c"), the new name is the whole package name.
-                String newPackageName = recursive ? HibernateRefactoringUtil.getRenamedPackageName(fo, refactoring.getNewName()) : refactoring.getNewName();
-                if (oldPackageName != null && newPackageName != null) {
-                    Map<FileObject, List<OccurrenceItem>> occurrences =
-                            HibernateRefactoringUtil.getJavaPackageOccurrences(mFileObjs, oldPackageName);
-
-                    for (FileObject mFileObj : occurrences.keySet()) {
-                        List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
-
-                        for (OccurrenceItem foundPlace : foundPlaces) {
-                            HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
-                                    oldPackageName,
-                                    newPackageName,
-                                    foundPlace.getLocation(),
-                                    foundPlace.getText());
-                            refactoringElements.add(refactoring, elem);
-                        }
-                    }
-
-                    refactoringElements.registerTransaction(new JavaPackageRenameTransaction(occurrences.keySet(), oldPackageName, newPackageName));
-                }
+                // A Java package is being renamed
+                renameJavaPackage(refactoringElements, treePathHandle, fo, recursive);
             }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         return null;
+    }
+
+    private void renameJavaClass(RefactoringElementsBag refactoringElements, TreePathHandle treePathHandle,
+            FileObject fo) throws IOException {
+
+        RenamedClassName clazz = null;
+
+        // Figure out the old name and new name
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js != null) {
+            clazz = HibernateRefactoringUtil.getRenamedClassName(treePathHandle, js, refactoring.getNewName());
+        }
+
+        if (clazz != null) {
+            String oldBinaryName = clazz.getOldBinaryName();
+            String newBinaryName = clazz.getNewBinaryName();
+            if (oldBinaryName != null && newBinaryName != null) {
+
+                Map<FileObject, OccurrenceItem> occurrences =
+                        HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, oldBinaryName);
+
+                for (FileObject mFileObj : occurrences.keySet()) {
+                    OccurrenceItem foundPlace = occurrences.get(mFileObj);
+                    HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                            oldBinaryName,
+                            newBinaryName,
+                            foundPlace.getLocation(),
+                            foundPlace.getText());
+                    refactoringElements.add(refactoring, elem);
+                }
+
+                refactoringElements.registerTransaction(new JavaClassRenameTransaction(occurrences.keySet(), oldBinaryName, newBinaryName));
+            }
+        }
+    }
+
+    private void renameJavaField(RefactoringElementsBag refactoringElements, final TreePathHandle treePathHandle,
+            FileObject fo) throws IOException {
+
+        final String[] classAndVariableNames = new String[]{null, null};
+        JavaSource javaSource = JavaSource.forFileObject(fo);
+        if (javaSource == null) {
+            return;
+        }
+
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController cc) throws IOException {
+                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                Element element = treePathHandle.resolveElement(cc);
+                if (element == null || element.getKind() != ElementKind.FIELD) {
+                    return;
+                }
+                classAndVariableNames[0] = ElementUtilities.getBinaryName((TypeElement) element.getEnclosingElement());
+                classAndVariableNames[1] = element.getSimpleName().toString();
+            }
+        }, true);
+        
+        String className = classAndVariableNames[0];
+        String oldVariableName = classAndVariableNames[1];
+        String newVariableName = refactoring.getNewName();
+        if(oldVariableName != null && newVariableName != null) {
+        
+            Map<FileObject, OccurrenceItem> occurrences =
+                        HibernateRefactoringUtil.getJavaFieldOccurrences(mFileObjs, className, oldVariableName);
+
+                for (FileObject mFileObj : occurrences.keySet()) {
+                    OccurrenceItem foundPlace = occurrences.get(mFileObj);
+                    HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                            oldVariableName,
+                            newVariableName,
+                            foundPlace.getLocation(),
+                            foundPlace.getText());
+                    refactoringElements.add(refactoring, elem);
+                }
+
+                refactoringElements.registerTransaction(new JavaFieldRenameTransaction(occurrences.keySet(), className, oldVariableName, newVariableName));
+        }
+    }
+
+    private void renameJavaPackage(RefactoringElementsBag refactoringElements, final TreePathHandle treePathHandle,
+            FileObject fo, boolean recursive) throws IOException {
+
+        String oldPackageName = HibernateRefactoringUtil.getPackageName(fo);
+        // If the rename is not recursive (e.g, "a.b.c" -> "x.b.c"), the new name is the whole package name.
+        String newPackageName = recursive ? HibernateRefactoringUtil.getRenamedPackageName(fo, refactoring.getNewName()) : refactoring.getNewName();
+        if (oldPackageName != null && newPackageName != null) {
+            Map<FileObject, List<OccurrenceItem>> occurrences =
+                    HibernateRefactoringUtil.getJavaPackageOccurrences(mFileObjs, oldPackageName);
+
+            for (FileObject mFileObj : occurrences.keySet()) {
+                List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+
+                for (OccurrenceItem foundPlace : foundPlaces) {
+                    HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                            oldPackageName,
+                            newPackageName,
+                            foundPlace.getLocation(),
+                            foundPlace.getText());
+                    refactoringElements.add(refactoring, elem);
+                }
+            }
+
+            refactoringElements.registerTransaction(new JavaPackageRenameTransaction(occurrences.keySet(), oldPackageName, newPackageName));
+        }
     }
 }
