@@ -107,6 +107,10 @@ public class PhpProject implements Project, AntProjectListener {
 
     public static final String SOURCES_TYPE_PHP 
             = PhpProjectSharedConstants.SOURCES_TYPE_PHP;
+    
+    public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
+    public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String URL = "url"; // NOI18N
 
     private static final Icon PROJECT_ICON = 
         new ImageIcon(Utilities.loadImage( 

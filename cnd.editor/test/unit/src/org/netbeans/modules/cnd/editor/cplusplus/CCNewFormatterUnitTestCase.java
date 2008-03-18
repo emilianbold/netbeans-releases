@@ -3545,4 +3545,27 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    }\n" +
                 "};\n");
     }
+
+    public void testDereferenceFormatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect * spacing",
+                "int foo()\n" +
+                "{\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
+                "    }\n" +
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
+                "}\n");
+    }
 }
