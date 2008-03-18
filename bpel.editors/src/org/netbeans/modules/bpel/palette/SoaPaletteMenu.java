@@ -32,7 +32,7 @@ public class SoaPaletteMenu extends CallableSystemAction {
    * Creates a new palette menu.
    */
   public SoaPaletteMenu () {
-    myName = NbBundle.getMessage(SoaPaletteMenu.class, "CTL_SoaPalette"); // NOI18N
+    myName = NbBundle.getMessage(SoaPaletteMenu.class, "LBL_BPEL_Palette"); // NOI18N
   }
 
   /**

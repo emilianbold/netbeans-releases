@@ -91,7 +91,7 @@ public final class DiagramDecorator extends DecorationProvider
     myIsClearSelection = false;
   }
 
-  void highlight(Component component, boolean highlighted) {
+  void doHighlight(Component component, boolean highlighted) {
     if ( !(component instanceof BpelEntity)) {
       return;
     }

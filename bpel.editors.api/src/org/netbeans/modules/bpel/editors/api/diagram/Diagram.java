@@ -25,5 +25,5 @@ public interface Diagram {
 
   void clearHighlighting();
   JComponent getComponent();
-  List<DiagramElement> getElements(boolean useSelection);
+  List<DiagramElement> getElements(boolean inSelectionOnly);
 }

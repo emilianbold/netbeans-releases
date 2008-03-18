@@ -279,6 +279,10 @@ public class DesignView extends JPanel implements
         this.printMode = printMode;
     }
     
+    public TriScrollPane getScrollPane() {
+        return scrollPane;
+    }
+    
     @Override
     public void doLayout() {
         int w = getWidth();
