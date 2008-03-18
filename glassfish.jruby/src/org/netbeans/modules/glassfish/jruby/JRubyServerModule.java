@@ -121,7 +121,8 @@ public class JRubyServerModule implements RubyInstance {
                     platform.getHome().getAbsolutePath());
             return wrapTask(commonModule.startServer(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    System.out.println("startServer V3/JRuby: " + newState + " - " + message);
+                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
+                            "startServer V3/JRuby: " + newState + " - " + message);
                 }
             }));
         } else {
@@ -194,7 +195,8 @@ public class JRubyServerModule implements RubyInstance {
         }
 
         public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-            System.out.println("runApplication/" + step + " V3/JRuby: " + newState + " - " + message);
+            Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
+                    "runApplication/" + step + " V3/JRuby: " + newState + " - " + message);
         }
         
     }
@@ -204,7 +206,8 @@ public class JRubyServerModule implements RubyInstance {
         if(commonModule != null) {
             return wrapTask(commonModule.stopServer(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    System.out.println("stopServer V3/JRuby: " + newState + " - " + message);
+                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
+                            "stopServer V3/JRuby: " + newState + " - " + message);
                 }
             }));
         } else {
@@ -217,7 +220,8 @@ public class JRubyServerModule implements RubyInstance {
         if(commonModule != null) {
             return wrapTask(commonModule.deploy(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    System.out.println("deploy V3/JRuby: " + newState + " - " + message);
+                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
+                            "deploy V3/JRuby: " + newState + " - " + message);
                 }
             }, applicationDir, applicationName, "/"));
         } else {
@@ -231,7 +235,8 @@ public class JRubyServerModule implements RubyInstance {
             return wrapTask(
                     commonModule.undeploy(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    System.out.println("undeploy V3/JRuby: " + newState + " - " + message);
+                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
+                            "undeploy V3/JRuby: " + newState + " - " + message);
                 }
             }, applicationName));
         } else {
@@ -344,7 +349,8 @@ public class JRubyServerModule implements RubyInstance {
                 return translateOperationState(state);
             }
 
-            public OperationState get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public OperationState get(long timeout, TimeUnit unit) 
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 GlassfishModule.OperationState state = task.get(timeout, unit);
                 return translateOperationState(state);
             }
