@@ -116,10 +116,10 @@ public class CommandRunner extends BasicTask<OperationState> {
      * 
      * @return String array of names of deployed applications.
      */
-    public Map<String, List<AppDesc>> getApplications() {
+    public Map<String, List<AppDesc>> getApplications(String container) {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
-            ServerCommand.ListCommand cmd = new ServerCommand.ListCommand();
+            ServerCommand.ListCommand cmd = new ServerCommand.ListCommand(container);
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
@@ -172,7 +172,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         return executor().submit(this);
     }
     
-    public Future<OperationState> redeploy(String moduleName)  {
+    public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
 //        try {
 //            this.tmId = (Hk2TargetModuleID) targetModuleID;
 //            command = "redeploy?name=" +targetModuleID.getModuleID(); // NOI18N
@@ -187,7 +187,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 //            fireOperationStateChanged(null, new Status(ActionType.EXECUTE, serverCmd, msg, StateType.FAILED));
 //        }
         
-        ServerCommand.RedeployCommand cmd = new ServerCommand.RedeployCommand(moduleName);
+        ServerCommand.RedeployCommand cmd = new ServerCommand.RedeployCommand(moduleName, contextRoot);
         serverCmd = cmd;
         return executor().submit(this);
     }

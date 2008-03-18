@@ -180,8 +180,17 @@ public abstract class ServerCommand {
      */
     public static final class ListCommand extends ServerCommand {
         
+        private final String container;
         private Manifest list = null;
         private Map<String, List<AppDesc>> appMap = null; 
+        
+        public ListCommand() {
+            this(null);
+        }
+        
+        public ListCommand(final String container) {
+            this.container = container;
+        }
         
         public String [] getContainers() {
             String [] result = null;
@@ -277,8 +286,9 @@ public abstract class ServerCommand {
          * @param container
          * @return
          */
-        private boolean skipContainer(String container) {
-            return "security_ContractProvider".equals(container);
+        private boolean skipContainer(String currentContainer) {
+            return container != null ? !container.equals(currentContainer) :
+                "security_ContractProvider".equals(container);
         }
     
         
@@ -324,14 +334,23 @@ public abstract class ServerCommand {
     public static final class RedeployCommand extends ServerCommand {
         
         private final String name;
+        private final String contextRoot;
         
-        public RedeployCommand(final String name) {
+        public RedeployCommand(final String name, final String contextRoot) {
             this.name = name;
+            this.contextRoot = contextRoot;
         }
         
         @Override
         public String getCommand() { 
-            return "redeploy?name=" + name; // NOI18N
+            StringBuilder cmd = new StringBuilder(128);
+            cmd.append("redeploy?name="); // NOI18N
+            cmd.append(name);
+            if(contextRoot != null && contextRoot.length() > 0) {
+                cmd.append("?contextroot="); // NOI18N
+                cmd.append(contextRoot);
+            }
+            return cmd.toString();
         }
         
     }

@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.DecoratorFactory;
+import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.util.Utilities;
 
 /**
@@ -98,7 +99,7 @@ public class JRubyDecoratorFactory implements DecoratorFactory {
     static {
         // !PW XXX need to put in correct strings, then define as static 
         //   (export in Decorator API, for lack of better place)
-        decoratorMap.put("jruby_ContractProvider", RUBY_APPLICATION);
+        decoratorMap.put(GlassfishModule.JRUBY_CONTAINER, RUBY_APPLICATION);
     };
     
 }

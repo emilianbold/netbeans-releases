@@ -242,7 +242,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
         List<TargetModuleID> moduleList = new ArrayList<TargetModuleID>();
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
-            AppDesc [] appList = commonSupport.getModuleList();
+            AppDesc [] appList = commonSupport.getModuleList(GlassfishModule.WEB_CONTAINER);
             if(appList != null && appList.length > 0) {
                 for(AppDesc app: appList) {
                     moduleList.add(new Hk2TargetModuleID(target[0], app.getName(), 

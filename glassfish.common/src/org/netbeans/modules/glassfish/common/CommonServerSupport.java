@@ -215,15 +215,26 @@ public class CommonServerSupport implements GlassfishModule {
         return mgr.deploy(application, name, contextRoot);
     }
     
+    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+            final String name) {
+        return redeploy(stateListener, name, null);
+    }
+        
+    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+            final String name, final String contextRoot) {
+        CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
+        return mgr.redeploy(name, contextRoot);
+    }
+
     public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties(), stateListener);
         return mgr.undeploy(name);
     }
     
-    public AppDesc [] getModuleList() {
+    public AppDesc [] getModuleList(String container) {
         CommandRunner mgr = new CommandRunner(getInstanceProperties());
         int total = 0;
-        Map<String, List<AppDesc>> appMap = mgr.getApplications();
+        Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
         for(List<AppDesc> appList: appLists) {
             total += appList.size();

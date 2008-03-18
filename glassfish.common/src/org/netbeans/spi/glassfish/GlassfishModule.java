@@ -64,6 +64,10 @@ public interface GlassfishModule {
     public static final String HOSTNAME_ATTR = "host"; // NOI18N
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
 
+    // Contract provider constants (identify the different containers in V3)
+    public static final String WEB_CONTAINER = "web_ContractProvider";
+    public static final String JRUBY_CONTAINER = "jruby_ContractProvider";
+
     
     /**
      * Enum for the current state of the server (stopped, running, etc.)
@@ -145,7 +149,8 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name);
+    public Future<OperationState> deploy(OperationStateListener stateListener, 
+            File application, String name);
 
     /**
      * Deploy the specified directory or application archive onto the server.
@@ -161,7 +166,39 @@ public interface GlassfishModule {
      *   completed.
      */
     
-    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name, String contextRoot);
+    public Future<OperationState> deploy(OperationStateListener stateListener, 
+            File application, String name, String contextRoot);
+    
+    /**
+     * Redeploy the named application onto the server.  The application must
+     * have previously been directory deployed.  If not, use deploy().
+     * 
+     * @param stateListener listener to listen message describing the redeploy 
+     *   process as it progresses.  Can be null.
+     * @param name name this application is deployed under.
+     * 
+     * @return Future instance that finishes when the redeploy command has been
+     *   completed.
+     */
+    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+            final String name);
+       
+    /**
+     * Redeploy the named application onto the server with a new context root
+     * value.  The application must have previously been directory deployed.
+     * If not, use deploy().
+     * 
+     * @param stateListener listener to listen message describing the redeploy 
+     *   process as it progresses.  Can be null.
+     * @param name name this application is deployed under.
+     * @param contextRoot to use for this application on deploy (can be null to
+     *   reuse existing contextRoot.)
+     * 
+     * @return Future instance that finishes when the redeploy command has been
+     *   completed.
+     */
+    public Future<OperationState> redeploy(final OperationStateListener stateListener, 
+            final String name, final String contextRoot);
     
     /**
      * Undeploy the named application.
@@ -173,14 +210,15 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<OperationState> undeploy(OperationStateListener stateListener, String name);
+    public Future<OperationState> undeploy(OperationStateListener stateListener, 
+            String name);
     
     /**
      * List the applications currently deployed on the server.
      * 
      * @return array of application names current deployed.
      */
-    public AppDesc [] getModuleList();
+    public AppDesc [] getModuleList(String container);
     
     /**
      * Returns the current server state (stopped, running, etc.)

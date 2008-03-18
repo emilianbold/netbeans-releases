@@ -122,10 +122,9 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-        Hk2TargetModuleID hk2tid = (Hk2TargetModuleID) targetModuleID;
         DeployProgressObject progressObject = new DeployProgressObject(targetModuleID);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
-        commonSupport.deploy(progressObject, new File(hk2tid.getLocation()), hk2tid.getModuleID());
+        commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
         return progressObject;
     }
     

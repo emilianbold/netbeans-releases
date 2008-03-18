@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.DecoratorFactory;
+import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.util.Utilities;
 
 /**
@@ -133,7 +134,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     static {
         // !PW XXX need to put in correct strings, then define as static 
         //   (export in Decorator API, for lack of better place)
-        decoratorMap.put("web_ContractProvider", WEB_APPLICATION);
+        decoratorMap.put(GlassfishModule.WEB_CONTAINER, WEB_APPLICATION);
         decoratorMap.put("ejb_ContractProvider", EJB_JAR);
         decoratorMap.put("ear_ContractProvider", J2EE_APPLICATION);
         decoratorMap.put("JDBC Resource", JDBC_MANAGED_DATASOURCES);
