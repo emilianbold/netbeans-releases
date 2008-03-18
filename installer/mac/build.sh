@@ -48,12 +48,28 @@ if [ -z "$1" ] || [ -z "$2" ] ; then
     exit 1
 fi
 
+if [ -n "$3" ]; then
+   INSTRUMENT_SH=$3
+fi
+
 zipdir=$1
 basename=$2
 
 progdir=`dirname $0`
+cd $progdir
+progdir=`pwd`
 
 dmgname=$basename
+
+instrument_build() {
+   DIR=$1
+   $INSTRUMENT_SH $DIR $progdir/../../emma/emma_filter $progdir/../../emma/emma.jar
+#   mkdir $DIR/emma-lib
+   chmod a+w $DIR/emma-lib
+   cp $progdir/../../emma/emma_filter $DIR/emma-lib/netbeans_coverage.ec
+   cp $progdir/../../emma/emma.jar $DIR/emma-lib/
+   sed -i -e "s/^netbeans_default_options=/netbeans_default_options=\"--cp:p $\{NETBEANS_HOME\}\/emma-lib\/emma.jar -J-Demma.coverage.file=\$\{NETBEANS_HOME\}\/emma-lib\/netbeans_coverage.ec -J-Dnetbeans.security.nocheck=true/" $DIR/etc/netbeans.conf
+}
 
 
 buildnum=""`find "$zipdir" -name '*[0-9].zip'`
@@ -79,6 +95,11 @@ rm -rf $progdir/build/netbeans/mobility*
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
+#instrument
+if [ -n "$INSTRUMENT_SH" ]; then
+    instrument_build $progdir/build/netbeans
+fi
+
 # build dmg
 ant -f $progdir/build.xml -Ddmgname=_$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Djbicore_location="$JBICORE_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
 
