@@ -205,14 +205,15 @@ final class Tree extends JTree {
     });
     addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent event) {
+        // popup menu
         if (SwingUtilities.isRightMouseButton(event)) {
           showPopupMenu(event, event.getX(), event.getY());
         }
       }
       public void mouseClicked(MouseEvent event) {
         // double click
-        if (event.getClickCount() == 2) {
-          select(getSelectedNode());
+        if (event.getClickCount() == 2 && getSelectedNode().isLeaf()) {
+          gotoDesign(getSelectedNode());
           event.consume();
         }
       }
@@ -250,6 +251,9 @@ final class Tree extends JTree {
     }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
+    }
+    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
+      gotoSource(node);
     }
   }
 
@@ -334,12 +338,12 @@ final class Tree extends JTree {
     JMenuItem item;
 
     // go to design
-    item = createItem("LBL_Select"); // NOI18N
+    item = createItem("LBL_Go_to_Design"); // NOI18N
     item.setEnabled( !node.isRoot());
     item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        select(node);
+        gotoDesign(node);
       }
     });
     popup.add(item);
@@ -353,6 +357,7 @@ final class Tree extends JTree {
         gotoSource(node);
       }
     });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // copy
@@ -396,8 +401,8 @@ final class Tree extends JTree {
     ((SearchElement) node.getUserObject()).gotoSource();
   }
 
-  private void select(DefaultMutableTreeNode node) {
-    ((SearchElement) node.getUserObject()).select();
+  private void gotoDesign(DefaultMutableTreeNode node) {
+    ((SearchElement) node.getUserObject()).gotoDesign();
   }
 
   void previousOccurence() {
