@@ -1170,10 +1170,20 @@ public class Reformatter implements ReformatTask {
                     }
                     accept(GT, GTGT, GTGTGT);
                 }
-                if(exp.getKind() == Tree.Kind.METHOD_INVOCATION)
-                    wrapToken(cs.wrapChainedMethodCalls(), 0, IDENTIFIER);
-                else
+                CodeStyle.WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
+                if(exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                    wrapToken(wrapStyle, 0, IDENTIFIER);
+                } else {
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     accept(IDENTIFIER);
+                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
+                        rollback(index, c, d);
+                        newline();
+                        accept(IDENTIFIER);
+                    }
+                }
             } else {
                 scan(node.getMethodSelect(), p);
             }
@@ -2659,7 +2669,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     scan(impl, null);
-                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > old && c <= rightMargin) {
+                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > old && (wrapDepth == 0 || c <= rightMargin)) {
                         rollback(index, c, d);
                         indent = old;
                         newline();

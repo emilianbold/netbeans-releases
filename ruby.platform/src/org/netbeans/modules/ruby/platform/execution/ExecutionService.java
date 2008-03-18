@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +73,6 @@ import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-
 
 /**
  * <p>An ExecutionService takes an {@link ExecutionDescriptor} and executes it.
@@ -227,36 +225,39 @@ public class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    Entry<InputOutput, String> entry = FreeIOHandler.findFreeIO(descriptor.getDisplayName(), descriptor.frontWindow);
-                    if (entry != null) {
-                        io = entry.getKey();
-                        displayName = entry.getValue();
+                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(descriptor.getDisplayName());
+                    if (freeIO != null) {
+                        io = freeIO.getIO();
+                        displayName = freeIO.getDisplayName();
+                        stopAction = freeIO.getStopAction();
+                        rerunAction = freeIO.getRerunAction();
+                        if (descriptor.frontWindow) {
+                            io.select();
+                        }
                     }
                 }
             }
             
-            if (io == null || stopAction == null) { // free IO was not found
+            if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(descriptor.getDisplayName());
 
                 stopAction = new StopAction();
                 rerunAction = new RerunAction(this, descriptor.getFileObject());
 
-                if (io == null) {
-                    io = IOProvider.getDefault().getIO(displayName, new Action[] { rerunAction, stopAction });
+                io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
 
-                    try {
-                        io.getOut().reset();
-                    } catch (IOException exc) {
-                        ErrorManager.getDefault().notify(exc);
-                    }
+                try {
+                    io.getOut().reset();
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(exc);
+                }
 
-                    // Note - do this AFTER the reset() call above; if not, weird bugs occur
-                    io.setErrSeparated(false);
+                // Note - do this AFTER the reset() call above; if not, weird bugs occur
+                io.setErrSeparated(false);
 
-                    // Open I/O window now. This should probably be configurable.
-                    if (descriptor.frontWindow) {
-                        io.select();
-                    }
+                // Open I/O window now. This should probably be configurable.
+                if (descriptor.frontWindow) {
+                    io.select();
                 }
             }
         }
@@ -369,7 +370,7 @@ public class ExecutionService {
                     RUNNING_PROCESSES.remove(ExecutionService.this);
 
                     if (io != null) {
-                        FreeIOHandler.addFreeIO(io, displayName);
+                        FreeIOHandler.addFreeIO(io, displayName, stopAction, rerunAction);
                     }
 
                     ACTIVE_DISPLAY_NAMES.remove(displayName);
