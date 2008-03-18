@@ -111,6 +111,7 @@ made subject to such option by the copyright holder.
                         <delete dir="${{build.dir}}/axis2"/>
                         <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
                             <arg line="-uri {$wsdlUrl}"/>
+                            <arg line="-ss -sd"/>
                             <arg line="{$wsdlToJavaOptions}"/> 
                             <xsl:if test="axis2:java-generator/@sei"><arg line="-ssi"/></xsl:if>
                             <xsl:if test="axis2:java-generator/@databindingName = 'jibx'"><arg line="-uw"/></xsl:if>
@@ -138,6 +139,7 @@ made subject to such option by the copyright holder.
                         <delete dir="${{build.dir}}/axis2"/>
                         <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
                             <arg line="-uri ${{basedir}}/xml-resources/axis2/META-INF/{$serviceName}.wsdl"/>
+                            <arg line="-ss -sd"/>
                             <arg line="{$wsdlToJavaOptions}"/>
                             <xsl:if test="axis2:java-generator/@sei"><arg line="-ssi"/></xsl:if>
                             <xsl:if test="axis2:java-generator/@databindingName = 'jibx'"><arg line="-uw"/></xsl:if>
