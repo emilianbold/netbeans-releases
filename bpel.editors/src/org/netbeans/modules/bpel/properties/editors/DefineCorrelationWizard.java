@@ -48,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -244,6 +246,11 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     
     public void showWizardDialog() {
+        String errMsg = WizardUtils.checkActivityIsReadyForCorrelation(correlatedActivity);
+        if (errMsg != null) {
+            UserNotification.showMessage(errMsg);
+            return;
+        }
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
             DefineCorrelationWizard.class, "A11_DESCRIPTOR_DefineCorrelationWizardDialog"));
@@ -500,7 +507,8 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
     }
     //========================================================================//
-    public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
+    public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel
+        implements ItemListener {
         private final Dimension COMBOBOX_DIMENSION = new Dimension(350, 20);
         private final int COMBOBOX_MAX_ROW_COUNT = 16;
         private final JComboBox activityComboBox = new JComboBox();
@@ -513,6 +521,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 WizardSelectMessagingActivityPanel.class, "LBL_Initiating_Messaging_Activities")));
 
             fillActivityComboBox();
+            
+            activityComboBox.addItemListener(this);
             activityComboBox.setRenderer(new ComboBoxRenderer());
             activityComboBox.setMaximumRowCount(COMBOBOX_MAX_ROW_COUNT);
             activityComboBox.setEditable(false);
@@ -542,6 +552,12 @@ public class DefineCorrelationWizard implements WizardProperties {
                 }
             }
         }
+
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                isValid();
+            }
+        }
         
         @Override
         public boolean isValid() {
@@ -550,6 +566,14 @@ public class DefineCorrelationWizard implements WizardProperties {
             
             wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
                 NbBundle.getMessage(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
+
+            if (isOK) {
+                String errMsg = WizardUtils.checkActivityIsReadyForCorrelation(
+                    (BpelEntity) activityComboBox.getSelectedItem());
+                isOK &= (errMsg == null);
+                wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, errMsg);                              
+            }
+            
             if (buttonNext != null) buttonNext.setEnabled(isOK);
             return isOK;
         }
@@ -608,7 +632,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             super();
         }
         
-        public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
+        public void buildCorrelationMapper(BpelEntity leftBpelEntity, 
+            BpelEntity rightBpelEntity) {
             boolean isMapperChanged = (correlationMapper == null);
             CorrelationMapperTreeModel 
                 leftTreeModel  = (CorrelationMapperTreeModel) (correlationMapper == null ? null : 
@@ -1087,8 +1112,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             private CorrelationMapperTreeNode mapperTreeNode;
 
             public WSDLModel getWSDLModel() {
-                PortType portType = ((PortTypeReference) activity).getPortType().get();
-                return portType.getModel();
+                PortType portType = WizardUtils.getBpelEntityPortType(activity);
+                return (portType == null ? null : portType.getModel());
             }
         
             public void createActivityCorrelation(CorrelationSet correlationSet) {
@@ -1180,9 +1205,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             private Pattern defineInvokeCorrelationPattern(BpelEntity bpelEntity) {
                 assert (bpelEntity != null);
                 Operation operation = WizardUtils.getBpelEntityOperation(bpelEntity);
-                // Rule: The pattern attribute used in <correlation>  within 
-                // <invoke> is required for request-response operations, and 
-                // disallowed when a one-way operation (OneWayOperation) is invoked.
+                // Rule: The "pattern"-attribute, which is used inside the tag <correlation ...> 
+                // for Invoke activity, is required for request-response operations, and 
+                // has to be absent, when a one-way operation (OneWayOperation) is used.
                 if ((bpelEntity instanceof Invoke) && 
                     (operation instanceof RequestResponseOperation)) {
                     Message outputMessage = null, inputMessage = null;
@@ -1915,9 +1940,19 @@ class WizardUtils implements WizardConstants {
         return (builtInSimpleType != null);
     }
     
+    public static PortType getBpelEntityPortType(BpelEntity bpelEntity) {
+        if (bpelEntity == null) return null;
+        try {
+            PortType portType = ((PortTypeReference) bpelEntity).getPortType().get();
+            return portType;
+        } catch(Exception e) {
+            return null;
+        }
+    }
+    
     public static Operation getBpelEntityOperation(BpelEntity bpelEntity) {
         if (bpelEntity == null) return null;
-        PortType portType = ((PortTypeReference) bpelEntity).getPortType().get();
+        PortType portType = getBpelEntityPortType(bpelEntity);
         Collection<Operation> operations = portType.getOperations();
         String requiredOperationName = bpelEntity.getAttribute(BpelAttributes.OPERATION);
         for (Operation operation : operations) {
@@ -1928,6 +1963,16 @@ class WizardUtils implements WizardConstants {
         return null;
     }
 
+    public static String checkActivityIsReadyForCorrelation(BpelEntity bpelEntity) {
+        if (getBpelEntityPortType(bpelEntity) == null) {
+            return NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_ErrMsg_Activity_Has_Wrong_PortType");
+        }
+        if (getBpelEntityOperation(bpelEntity) == null) {
+            return NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_ErrMsg_Activity_Has_Wrong_Operation");
+        }
+        return null;
+    }
+    
     public static void importRequiredSchemas(WSDLModel wsdlModel, 
         List<SchemaComponent> schemaComponents) {
         try {

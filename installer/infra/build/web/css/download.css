@@ -284,3 +284,7 @@ table.components_table .title {
      margin-right: 25px;
      background-color:#E6F6FE;
 }
+
+.download_tab_active {
+     color: #999999;
+}

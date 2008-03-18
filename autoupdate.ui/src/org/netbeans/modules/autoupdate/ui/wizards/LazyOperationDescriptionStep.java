@@ -79,12 +79,14 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private RequestProcessor.Task checkRealUpdatesTask = null;
     private WizardDescriptor wd = null;
+    private boolean forceReload;
     
     /** Creates a new instance of OperationDescriptionStep */
-    public LazyOperationDescriptionStep (Collection<LazyUnit> model, OperationType doOperation) {
+    public LazyOperationDescriptionStep (Collection<LazyUnit> model, OperationType doOperation, boolean forceReload) {
         this.installModel = model;
         this.operationType = doOperation;
         this.hasUpdates = installModel != null && ! installModel.isEmpty ();
+        this.forceReload = forceReload;
     }
     
     public Component getComponent() {
@@ -108,6 +110,9 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                 assert false : "Unexcepted operationType " + operationType;
                 return null;
             }
+            if (! hasUpdates) {
+                tableTitle = getBundle ("LazyOperationDescriptionStep_FindUpdates_Title");
+            }
             body = new OperationDescriptionPanel (tableTitle,
                     preparePluginsForShow (installModel, operationType),
                     "",
@@ -115,7 +120,12 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                     false);
             component = new PanelBodyContainer (head, content, body);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
-            component.setWaitingState (true, Utilities.getTimeOfInitialization ());
+            long estimatedTime = Utilities.getTimeOfInitialization ();
+            if (forceReload) {
+                long refreshTime = Utilities.getTimeOfRefreshUpdateCenters ();
+                estimatedTime = estimatedTime > 0 && refreshTime > 0 ? estimatedTime + refreshTime : 0;
+            }
+            component.setWaitingState (true, estimatedTime);
             checkRealUpdates ();
         }
         return component;
@@ -125,7 +135,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private void checkRealUpdates () {
         checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType);
+                Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, true);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
