@@ -86,6 +86,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -174,7 +175,7 @@ public class JavaSourceTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
 //        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
+//        suite.addTest(new JavaSourceTest("testIndexCancel"));
         return suite;
     }
     
@@ -1356,37 +1357,6 @@ public class JavaSourceTest extends NbTestCase {
         }
     }
     
-    public void testRegisterSameTask() throws Exception {        
-        final FileObject testFile1 = createTestFile("Test1");
-        final ClassPath bootPath = createBootPath();
-        final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
-              JavaSource js = JavaSource.create(cpInfo, testFile1);
-        final CountDownLatch latch1 = new CountDownLatch (1);
-        final CountDownLatch latch2 = new CountDownLatch (1);
-        CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
-            public void cancel() {}
-            public void run(CompilationInfo parameter) throws Exception {
-                if (latch1.getCount() > 0) {
-                    latch1.countDown();
-                    return ;
-                }
-                
-                latch2.countDown();
-            }
-        };
-        js.addPhaseCompletionTask(task, Phase.PARSED, Priority.NORMAL);
-        assertTrue(latch1.await(10, TimeUnit.SECONDS));
-        js.removePhaseCompletionTask(task);
-        Reference<JavaSource> r = new WeakReference<JavaSource>(js);
-        js = null;
-        
-        assertGC("", r);
-        
-        js = JavaSource.create(cpInfo, testFile1);
-        js.addPhaseCompletionTask(task, Phase.PARSED, Priority.NORMAL);
-        assertTrue(latch2.await(10, TimeUnit.SECONDS));
-    }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
         

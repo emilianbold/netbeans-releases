@@ -83,14 +83,11 @@ public class GSFPHPParser implements Parser {
                 parser.setErrorHandler(new ErrorHandler(context));
                 java_cup.runtime.Symbol rootSymbol = parser.parse();
                 if (rootSymbol != null) {
-                    Program program = null;
-                    if (rootSymbol.value instanceof Program) {
-                        program = (Program)rootSymbol.value; // call the parser itself
-                    }
-                    else {
-                        LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
-                    }
+                    Program program = (Program)rootSymbol.value; // call the parser itself
                     result = new PHPParseResult(this, file, program);
+                }
+                else {
+                    result = new PHPParseResult(this, file, null);
                 }
                 
             } catch (Exception exception) {

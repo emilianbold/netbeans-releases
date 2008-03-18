@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.compapp.test.ui.wizards;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.InputStream;
@@ -51,6 +52,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -62,8 +64,6 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.actions.RenameAction;
-import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.FilterNode;
@@ -74,7 +74,6 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
@@ -86,7 +85,7 @@ import org.w3c.dom.NodeList;
  */
 public class WsdlViewNodes {
     
-    //private static Image badgedImage = loadImage("org/netbeans/modules/compapp/test/ui/resources/errorbadge.gif"); // NOI18N
+    private static Image badgedImage = loadImage("org/netbeans/modules/compapp/test/ui/resources/errorbadge.gif"); // NOI18N
     
     
     static final class GroupNode extends FilterNode implements PropertyChangeListener {
@@ -113,20 +112,17 @@ public class WsdlViewNodes {
         
         // XXX May need to change icons as well
         
-        @Override
         public String getName() {
             return group.getName();
             
         }
         
-        @Override
         public String getDisplayName() {
             return MessageFormat.format(GROUP_NAME_PATTERN,
                     new Object[] { group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName() });
             
         }
         
-        @Override
         public String getShortDescription() {
             FileObject gdir = group.getRootFolder();
             String dir = FileUtil.getFileDisplayName(gdir);
@@ -135,28 +131,23 @@ public class WsdlViewNodes {
                     dir);
         }
         
-        @Override
         public boolean canRename() {
             return false;
         }
         
-        @Override
         public boolean canCut() {
             return false;
         }
         
-        @Override
         public boolean canCopy() {
             // At least for now.
             return false;
         }
         
-        @Override
         public boolean canDestroy() {
             return false;
         }
         
-        @Override
         public Action[] getActions(boolean context) {
             
             if (context) {
@@ -215,18 +206,17 @@ public class WsdlViewNodes {
             System.arraycopy(depedentProjectGroups, 0, allGroups, ownerProjectGroups.length, depedentProjectGroups.length);
         }
         
-        @Override
         protected void addNotify() {
             super.addNotify();
             setKeys(getKeys());
         }
         
-        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
         }
-                
+        
+        
         protected Node[] createNodes(Object key) {
             FileObject folder = null;
             SourceGroup group = null;
@@ -270,19 +260,18 @@ public class WsdlViewNodes {
             this.allGroups = groups;
             this.ownerProject = project;
         }
-       
-        @Override
+        
         protected void addNotify() {
             super.addNotify();
             setKeys(getKeys());
         }
         
-        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
         }
-                
+        
+        
         protected Node[] createNodes(Object key) {
             
             FileObject folder = null;
@@ -304,8 +293,18 @@ public class WsdlViewNodes {
                         delegate = DataFolder.find(folder).getNodeDelegate();
                         
                         if(delegate != null) {
+                            Project prj = FileOwnerQuery.getOwner(folder);
+//                            if(ownerProject.equals(prj)) {
+//                                FilterNode fn = new FilterNode(delegate) {
+//                                    public Action getPreferredAction() {
+//                                        return null;
+//                                    }
+//                                };
+//                                return new Node[] { fn };
+//                            } else {
                             FilterNode fn = new DepedentProjectFileNode(delegate, folder, this.ownerGroup, allGroups);
                             return new Node[] { fn };
+//                            }
                         }                        
                     } catch(Exception ex) {
                         ex.printStackTrace();
@@ -415,6 +414,7 @@ public class WsdlViewNodes {
                         inputStream.close();
                     }
                 } catch (Exception e) {
+                    ;
                 }
             }
         }
@@ -428,6 +428,8 @@ public class WsdlViewNodes {
         private FileObject fileObject;
         private SourceGroup ownerGroup;
         private SourceGroup[] allGroups;
+        private boolean fileExists;
+        private ProxyLookup lookup;
         private CookieSet set;
         
         public DepedentProjectFileNode(Node original, FileObject fileObj, SourceGroup owner,SourceGroup[] groups) {
@@ -439,27 +441,13 @@ public class WsdlViewNodes {
             this.set.add(new FileObjectCookie(fileObject));
         }
         
-        @Override
         public Cookie getCookie(Class type) {
-            // #122711 Do not allow the WSDL file to be opened.
-            if (DataObject.class.isAssignableFrom(type) 
-                    || OpenCookie.class.isAssignableFrom(type) 
-                    /*|| EditCookie.class.isAssignableFrom(type) 
-                    || EditorCookie.class.isAssignableFrom(type)*/ ) {
-                return null;
-            }            
-            
             Cookie c = this.set.getCookie(type);
-            if (c != null) {
+            if(c != null) {
                 return c;
             }
             
             return super.getCookie(type);
-        }
-        
-        @Override
-        public boolean canRename() {
-            return false;
         }
     }
     
@@ -469,6 +457,7 @@ public class WsdlViewNodes {
     
     public static final class FileObjectCookie implements Node.Cookie {
         private FileObject fileObject;
+        private Project ownerProject;
         
         public FileObjectCookie(FileObject file) {
             this.fileObject = file;
@@ -483,7 +472,7 @@ public class WsdlViewNodes {
      * @param   path    Image relative file path.
      * @return  Corresponding <code>Image</code> object.
      */
-//    private static Image loadImage(String path) {
-//        return (new ImageIcon(WsdlViewNodes.class.getClassLoader().getResource(path))).getImage();
-//    }
+    private static Image loadImage(String path) {
+        return (new ImageIcon(WsdlViewNodes.class.getClassLoader().getResource(path))).getImage();
+    }
 }

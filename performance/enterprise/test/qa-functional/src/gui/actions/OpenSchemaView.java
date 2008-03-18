@@ -66,14 +66,14 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
         super(testName);
         //TODO: Adjust expectedTime value
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public OpenSchemaView(String testName, String  performanceDataName) {
         super(testName,performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=3000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public void testOpenSchemaView(){

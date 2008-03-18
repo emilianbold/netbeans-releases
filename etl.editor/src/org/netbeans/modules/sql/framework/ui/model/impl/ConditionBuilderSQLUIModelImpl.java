@@ -60,7 +60,7 @@ import org.netbeans.modules.sql.framework.ui.model.ConditionBuilderSQLUiModel;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author radval
@@ -68,7 +68,7 @@ import org.netbeans.modules.etl.logger.Localizer;
 public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements ConditionBuilderSQLUiModel {
 
     private static final String LOG_CATEGORY = ConditionBuilderSQLUIModelImpl.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderSQLUIModelImpl.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderSQLUIModelImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition sqlCondition;
 
@@ -218,7 +218,7 @@ public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements 
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                mLogger.errorNoloc(mLoc.t("EDIT141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
+                mLogger.errorNoloc(mLoc.t("PRSR144: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
             }
         }
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
 import com.sun.source.tree.ClassTree;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -67,7 +66,6 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.netbeans.modules.websvc.core.ProjectInfo;
-import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -89,14 +87,13 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ajit Bhate
  */
-public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.MessageReceiver {
+public class JaxRpcServiceCreator implements ServiceCreator {
     private static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N
     
     private Project project;
     private ProjectInfo projectInfo;
     private WizardDescriptor wiz;
     private String wsName;
-    private String downloadMsg;
     
     /** Creates a new instance of JaxRpcServiceCreator */
     public JaxRpcServiceCreator(Project project, ProjectInfo projectInfo, WizardDescriptor wiz) {
@@ -214,8 +211,8 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
     
     private void generateWsFromWsdl(ProgressHandle handle) throws Exception {
         FileObject pkg = Templates.getTargetFolder(wiz);
+        wsName = Templates.getTargetName(wiz);
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
-        wsName = getUniqueJaxrpcName(wsSupport, Templates.getTargetName(wiz));
         assert wsSupport != null;
         WebServiceGenerator generator = new WebServiceGenerator(wsSupport, wsName, pkg, project);
         
@@ -228,109 +225,8 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
         }
         
         handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_PARSING_WSDL"), 30); //NOI18N
-        File normalizedWsdlFilePath = null;
-        String wsdlUrl = (String) wiz.getProperty("wsdl_url");
         String wsdlFilePath = (String)wiz.getProperty(WSDL_FILE_PATH);
-        if (wsdlFilePath != null) {
-            normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
-        } else {
-            if (wsdlUrl != null) {
-                WsdlRetriever retriever = new WsdlRetriever(this, wsdlUrl);
-                retriever.run();
-                if (retriever.getState() != WsdlRetriever.STATUS_COMPLETE) {
-                    String errorMessage = NbBundle.getMessage(JaxRpcServiceCreator.class, 
-                            "ERR_DownloadFailedUnknown");
-                    if (downloadMsg != null) {
-                        errorMessage = NbBundle.getMessage(JaxRpcServiceCreator.class, 
-                                "ERR_DownloadFailed", downloadMsg); // NOI18N
-                    }
-                    throw new IOException(errorMessage); //NOI18N
-                } else {
-                    // create a temporary WSDL file
-                    File wsdlFile = new File(System.getProperty("java.io.tmpdir"), retriever.getWsdlFileName());
-                    if (!wsdlFile.exists()) {
-                        try {
-                            wsdlFile.createNewFile();
-                        } catch (IOException ex) {
-                            String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, 
-                                    "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                            return;
-                        }
-                    }
-                    FileObject sourceWsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdlFile));
-                    if (sourceWsdlFile != null) {
-                        FileLock wsdlLock = sourceWsdlFile.lock();
-                        try {
-                            OutputStream out = sourceWsdlFile.getOutputStream(wsdlLock);
-                            try {
-                                out.write(retriever.getWsdl());
-                                out.flush();
-                            } finally {
-                                if (out != null) {
-                                    out.close();
-                                }
-                            }
-                        } finally {
-                            wsdlLock.releaseLock();
-                        }
-                    } else {
-                        String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, 
-                                "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
-                                NotifyDescriptor.Message.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
-                        return;
-                    }
-                    // create temporary Schema Files
-                    List<WsdlRetriever.SchemaInfo> downloadedSchemas = retriever.getSchemas();
-                    if (downloadedSchemas != null && !downloadedSchemas.isEmpty()) {
-                        for (WsdlRetriever.SchemaInfo schemaInfo : downloadedSchemas) {
-                            File schemalFile = new File(System.getProperty
-                                    ("java.io.tmpdir"), schemaInfo.getSchemaName());
-                            try {
-                                schemalFile.createNewFile();
-                            } catch (IOException ex) {
-                                String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, 
-                                        "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
-                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
-                                        NotifyDescriptor.Message.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(desc);
-                                return;
-                            }
-                            FileObject schemaFo = FileUtil.toFileObject(FileUtil.
-                                    normalizeFile(schemalFile));
-                            if (schemaFo != null) {
-                                FileLock lock = schemaFo.lock();
-                                try {
-                                    OutputStream out = schemaFo.getOutputStream(lock);
-                                    try {
-                                        out.write(schemaInfo.getSchemaContent());
-                                        out.flush();
-                                    } finally {
-                                        if (out != null) {
-                                            out.close();
-                                        }
-                                    }
-                                } finally {
-                                    lock.releaseLock();
-                                }
-                            } else {
-                                String mes = NbBundle.getMessage(JaxRpcServiceCreator.class,
-                                        "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
-                                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, 
-                                        NotifyDescriptor.Message.ERROR_MESSAGE);
-                                DialogDisplayer.getDefault().notify(desc);
-                                return;
-                            }
-                        } //end for
-                    } // end if
-                    normalizedWsdlFilePath = FileUtil.normalizeFile(wsdlFile);
-                } //end else
-            }
-        }
-            
+        File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
         final FileObject sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
         if(sourceWsdlFile == null) {
             String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_CANNOT_GET_FILE_OBJECT", normalizedWsdlFilePath.getAbsolutePath()); //NOI18N
@@ -352,9 +248,6 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
         FileObject wsdlFO = generator.generateWSDL(WebServiceGenerator.WSDL_TEMPLATE, changedWsName, generator.getSoapBinding(),
                 generator.getPortTypeName(), wsdlFolder, sourceWsdlFile.getParent(), wsName, new StreamSource(sourceWsdlFile.getInputStream()));
         
-        if(wsdlFilePath==null&&wsdlUrl!=null) {
-            sourceWsdlFile.delete();
-        }
         URI targetNS = null;
         URI typeNS = null;
         try {
@@ -495,9 +388,5 @@ public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.Messa
             truename = origName + String.valueOf(++uniquifier);
         }
         return truename;
-    }
-
-    public void setWsdlDownloadMessage(String m) {
-        downloadMsg = m;
     }
 }

@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.WizardDescriptor;
 
 /**
@@ -55,7 +56,7 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
     /* Logging category string */
 
     private static final String LOG_CATEGORY = ETLWizardDescriptor.class.getName();
-    private static transient final Logger mLogger = Logger.getLogger(ETLWizardDescriptor.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLWizardDescriptor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /* Manages navigation of wizard panels */
     private WizardDescriptor.Iterator iterator;
@@ -90,13 +91,13 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
     protected void initializeLookAndFeel() {
 
         try {
-            String nbBundle1 = mLoc.t("BUND009: {0}");
-            // Sets message format used for EDIT001panel title; {0} indicates component
+            String nbBundle1 = mLoc.t("PRSR001: {0}");
+            // Sets message format used for panel title; {0} indicates component
             // name, if any; {1} indicates step info as provided by iterator.
             setTitleFormat(new MessageFormat(
-                    nbBundle1.substring(15)));
+                    Localizer.parse(nbBundle1)));
         } catch (MissingResourceException e) {
-            mLogger.errorNoloc(mLoc.t("EDIT040: Could not locate key for title format.{0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}", LOG_CATEGORY), e);
         }
 
         // Number the steps.

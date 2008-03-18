@@ -42,13 +42,13 @@ package org.netbeans.modules.bpel.validation.custom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -67,15 +67,12 @@ import org.netbeans.modules.bpel.model.api.FaultHandlers;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
-import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
-import org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer;
 import org.netbeans.modules.bpel.model.api.Pick;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Receive;
@@ -86,7 +83,7 @@ import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
+import org.netbeans.modules.bpel.model.impl.services.ExpressionUpdater;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
@@ -386,9 +383,6 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkHolders(List<CorrelationsHolder> holders) {
-    for (CorrelationsHolder holder : holders) {
-      checkInitiateAndUse(holder);
-    }
 //out();
 //out();
     for (int i=0; i < holders.size(); i++) {
@@ -400,122 +394,6 @@ public final class Validator extends BpelValidator {
     }
 //out();
 //out();
-  }
-
-  // # 120390
-  private void checkInitiateAndUse(CorrelationsHolder holder) {
-    CorrelationContainer container = holder.getCorrelationContainer();
-
-    if (container == null) {
-      return;
-    }
-    Correlation [] correlations = container.getCorrelations();
-
-    if (correlations == null)  {
-      return;
-    }
-    Process process = holder.getBpelModel().getProcess();
-//out();
-//out("SEE: " + getName(holder));
-    for (Correlation correlation : correlations) {
-      Initiate initiate = correlation.getInitiate();
-
-      if (initiate != Initiate.NO) {
-        continue;
-      }
-      BpelReference<CorrelationSet> ref = correlation.getSet();
-
-      if (ref == null) {
-        continue;
-      }
-      CorrelationSet set = ref.get();
-
-      if (set == null) {
-        continue;
-      }
-//out("check: " + getName(correlation));
-      if ( !checkCorrelationSet(set, holder, process)) {
-        addError("FIX_Not_Instantiated_Correlation_Set", correlation, set.getName()); // NOI18N
-      }
-    }
-  }
-
-  private boolean checkCorrelationSet(CorrelationSet set, CorrelationsHolder holder, BpelEntity entity) {
-    List<BpelEntity> children = entity.getChildren();
-
-    for (BpelEntity child : children) {
-      if (checkCorrelationSet(set, holder, child)) {
-        return true;
-      }
-    }
-    if (holder == entity) {
-      return false;
-    }
-    if (checkCorrelationSetInInvoke(set, entity)) {
-      return true;
-    }
-    if ( !(entity instanceof CorrelationsHolder)) {
-      return false;
-    }
-    CorrelationsHolder current = (CorrelationsHolder) entity;
-    CorrelationContainer container = current.getCorrelationContainer();
-
-    if (container == null) {
-      return false;
-    }
-    Correlation [] correlations = container.getCorrelations();
-
-    if (correlations == null)  {
-      return false;
-    }
-    for (Correlation correlation : correlations) {
-      if (theSame(set, correlation)) {
-//out("    view: " + getName(corr));
-        return true;
-//out("    FOUND");
-      }
-    }
-    return false;
-  }
-
-  private boolean checkCorrelationSetInInvoke(CorrelationSet set, BpelEntity entity) {
-    if ( !(entity instanceof Invoke)) {
-      return false;
-    }
-    Invoke invoke = (Invoke) entity;
-    PatternedCorrelationContainer container = invoke.getPatternedCorrelationContainer();
-
-    if (container == null) {
-      return false;
-    }
-    PatternedCorrelation [] correlations = container.getPatternedCorrelations();
-
-    if (correlations == null)  {
-      return false;
-    }
-    for (PatternedCorrelation correlation : correlations) {
-      if (theSame(set, correlation)) {
-//out("    view: " + getName(corr));
-        return true;
-//out("    FOUND");
-      }
-    }
-    return false;
-  }
-
-  private boolean theSame(CorrelationSet set, BaseCorrelation correlation) {
-    BpelReference<CorrelationSet> ref = correlation.getSet();
-
-    if (ref == null) {
-      return false;
-    }
-    CorrelationSet corr = ref.get();
-
-    if (corr == null) {
-      return false;
-    }
-//out("    view: " + getName(corr));
-    return corr == set && correlation.getInitiate() == Initiate.YES;
   }
 
   private void checkReplies(Reply reply1, Reply reply2) {
@@ -792,57 +670,6 @@ public final class Validator extends BpelValidator {
     addError("FIX_Activity_with_Correlation", parent); // NOI18N
   }
   
-  // # 129986
-  @Override
-  public void visit(Receive receive) {
-//out();
-//out("RECEIVE: " + receive);
-    WSDLReference<PortType> ref = receive.getPortType();
-
-    if (ref == null) {
-      return;
-    }
-    PortType portType = ref.get();
-
-    if (portType == null) {
-      return;
-    }
-    Collection<Operation> operations = portType.getOperations();
-
-    if (operations.size() != 1) {
-      return;
-    }
-    Operation operation = operations.iterator().next();
-
-    if (operation == null) {
-      return;
-    }
-    if (operation.getInput() == null || operation.getOutput() == null) {
-      return;
-    }
-    if ( !findReply(receive.getBpelModel().getProcess(), portType)) {
-      addError("FIX_In_Out_Receive_Reply", receive, receive.getName()); // NOI18N
-    }
-  }
-
-  private boolean findReply(BpelEntity entity, PortType portType) {
-    if (entity instanceof Reply) {
-      WSDLReference<PortType> ref = ((Reply) entity).getPortType();
-
-      if (ref != null && portType == ref.get()) {
-        return true;
-      }
-    }
-    List<BpelEntity> children = entity.getChildren();
-
-    for (BpelEntity child : children) {
-      if (findReply(child, portType)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @Override
   public void visit(Reply reply) {
       super.visit(reply);

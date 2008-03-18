@@ -47,9 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 
@@ -66,27 +63,22 @@ import org.openide.util.NbBundle;
  */
 public class FileArrayEditor extends PropertyEditorSupport implements ExPropertyEditor, PropertyChangeListener {
     
-    private static final String ANCESTOR = "ancestor";              // NOI18N
-
     /** Openning mode.*/
     private int mode = JFileChooser.FILES_AND_DIRECTORIES;
     
     /** Flag indicating whether to choose directories. Default value is <code>true</code>. */
     private boolean directories = true;
     /** Flag indicating whether to choose files. Default value is <code>true</code>. */
+    private boolean files = true;
     /** Flag indicating whether to hide files marked as hidden. Default value is <code>false</code>. */
     private boolean fileHiding = false;
-    private boolean files = true;
     /** Filter for files to show. */
     private javax.swing.filechooser.FileFilter fileFilter;
     /** Current firectory. */
     private File currentDirectory;
     /** Base directory to which to show relative path, if is set. */
     private File baseDirectory;
-    
 
-    private ThreadLocal<String> myPropertyFired = new ThreadLocal<String>();
-    
     /** Cached chooser.
      * If you don't cache it, MountIterator in core flickers and behaves weirdly,
      * because apparently PropertyPanel will call getCustomEditor repeatedly and
@@ -303,11 +295,6 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
     
     /** Property change listaner attached to the JFileChooser chooser. */
     public void propertyChange(PropertyChangeEvent e) {
-        // Fix for IZ#36742 - FileArrayEditor fires each selection change twice
-        if ( ANCESTOR.equals( e.getPropertyName()) ){
-            myPropertyFired.set( null );
-        }
-        
         if (e.getSource() instanceof JFileChooser) {
             JFileChooser jfc = (JFileChooser) e.getSource();
             if (mode == jfc.DIRECTORIES_ONLY && jfc.DIRECTORY_CHANGED_PROPERTY.equals(e.getPropertyName())) {
@@ -331,11 +318,6 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         JFileChooser chooser = (JFileChooser)e.getSource();
         File[] f = (File[])chooser.getSelectedFiles();
         if (f == null) {
-            return;
-        }
-        
-        // Fix for IZ#36742 - FileArrayEditor fires each selection change twice
-        if ( isAlreadyHandled ( chooser , f , e.getPropertyName())){
             return;
         }
         
@@ -369,33 +351,4 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         
         FileEditor.lastCurrentDir = chooser.getCurrentDirectory();
     }
-
-    // Fix for IZ#36742 FileArrayEditor fires each selection change twice 
-    private boolean isAlreadyHandled( JFileChooser chooser, File[] files ,
-            String property ) 
-    {
-        Set<File> fileSet = new HashSet<File>( Arrays.asList( files ));
-        File file = chooser.getSelectedFile();
-        boolean contains = (file == null && files.length ==0 ) 
-            || (file!= null && fileSet.contains( file ));
-        if ( !contains || property.equals( myPropertyFired.get())){
-            myPropertyFired.set( null );
-            return false;
-        }
-        else {
-            if ( isFired() ){
-                myPropertyFired.set( null );
-                return true;
-            }
-            else {
-                myPropertyFired.set( property );
-                return false;
-            }
-        }
-    }
-    
-    private boolean isFired(){
-        return myPropertyFired.get() != null;
-    }
-    
 }

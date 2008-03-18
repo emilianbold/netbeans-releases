@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -51,13 +53,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,10 +72,6 @@ public class LibrariesHelper {
         addArchiveRefsToProject(project, targetSource, jarPaths);
     }
     
-    public static void addClientJars(Project project, FileObject targetSource, WadlSaas saas) {
-        addArchivesToProject(project, targetSource, saas.getLibraryJars());
-    }
-    
     /**
      * Adds the given jars to the project as archive references
      *
@@ -83,18 +79,6 @@ public class LibrariesHelper {
      * @param jars jar files to be added to the project (filename Strings)
      */
     public static void addArchiveRefsToProject(Project project, FileObject targetSource, List<String> jars) {
-        List<FileObject> jarFiles = new ArrayList<FileObject>();
-        for (String jarPath : jars) {
-            FileObject jarFO = FileUtil.toFileObject(new File(jarPath));
-            if (jarFO != null) {
-                jarFiles.add(jarFO);
-            }
-        }
-        
-        addArchivesToProject(project, targetSource, jarFiles);
-    }
-     
-    public static void addArchivesToProject(Project project, FileObject targetSource, List<FileObject> jars) {
         if (targetSource == null) {
             targetSource = getSourceRoot(project);
         }
@@ -102,8 +86,9 @@ public class LibrariesHelper {
         try {
             FileObject wsClientsSubDir = getWebServiceClientLibraryDir(project);
             ArrayList<URL> archiveJars = new ArrayList<URL>();
-            for (FileObject jarFO : jars) {
+            for (String jarFilePath : jars) {
                 try {
+                    FileObject jarFO = FileUtil.toFileObject(new File(jarFilePath));
                     FileObject destJar = wsClientsSubDir.getFileObject(jarFO.getNameExt());
                     if (destJar == null) {
                         destJar = FileUtil.copyFile(jarFO, wsClientsSubDir, jarFO.getName());
@@ -113,14 +98,15 @@ public class LibrariesHelper {
                     }
                     archiveJars.add(new URL(destJar.getURL().toExternalForm() + "/")); // NOI18N
                 }catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(LibrariesHelper.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
                 URL[] archiveURLs = archiveJars.toArray(new URL[archiveJars.size()]);
                 ProjectClassPathModifier.addRoots(archiveURLs, targetSource, ClassPath.COMPILE);
             }
             
         } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            Logger.getLogger(LibrariesHelper.class.getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+            return;            
         }
     }
     

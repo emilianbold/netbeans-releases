@@ -80,20 +80,14 @@ public final class OpenAction extends AbstractAction {
     
     private ElementHandle elementHandle;   
     private FileObject fileObject;
-    private long start;
       
-    public OpenAction(ElementHandle elementHandle, FileObject fileObject, long start) {
+    public OpenAction(ElementHandle elementHandle, FileObject fileObject) {
         this.elementHandle = elementHandle;
         this.fileObject = fileObject;
-        this.start = start;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
     
     public void actionPerformed (ActionEvent ev) {
-        if (fileObject != null && elementHandle == null) {
-            UiUtils.open(fileObject, (int)start);
-            return;
-        }
         ElementHandle handle = elementHandle;
         try {
             DataObject activeFile = DataObject.find(fileObject);

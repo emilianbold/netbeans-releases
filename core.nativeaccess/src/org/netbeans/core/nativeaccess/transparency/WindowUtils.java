@@ -1,44 +1,15 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * Copyright (c) 2007 Timothy Wall, All Rights Reserved 
+ * Parts Copyright (c) 2007 Olivier Chafik 
  * 
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- * 
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- * 
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-/*
- * Original file is from http://jna.dev.java.net/
+ * This library is free software; you can
+ * redistribute it and/or modify it under the terms of the GNU Lesser
+ * General Public License as published by the Free Software Foundation;
+ * either version 2.1 of the License, or (at your option) any later
+ * version. <p/> This library is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  */
 package org.netbeans.core.nativeaccess.transparency;
 
@@ -47,9 +18,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -80,13 +48,13 @@ import javax.swing.PopupFactory;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 import org.netbeans.core.nativeaccess.transparency.unix.X11;
 import org.netbeans.core.nativeaccess.transparency.unix.X11.Display;
+import org.netbeans.core.nativeaccess.transparency.unix.X11.Drawable;
 import org.netbeans.core.nativeaccess.transparency.unix.X11.GC;
 import org.netbeans.core.nativeaccess.transparency.unix.X11.Pixmap;
 import org.netbeans.core.nativeaccess.transparency.unix.X11.XVisualInfo;
@@ -122,6 +90,10 @@ import com.sun.jna.ptr.PointerByReference;
  * masked windows to implicitly force PopupFactory to use a heavyweight
  * window and avoid clipping.
  * <p>
+ * NOTE: {@link #setWindowTransparent} on X11 doesn't composite
+ * entirely correctly; depending on what's drawn in the window it mey be
+ * more or less noticable. 
+ * <p>
  * NOTE: Neither shaped windows nor transparency
  * currently works with Java 1.4 under X11. This is at least partly due
  * to 1.4 using multiple X11 windows for a single given Java window. It
@@ -140,11 +112,10 @@ import com.sun.jna.ptr.PointerByReference;
 // TODO: setWindowMask() should accept a threshold; some cases want a
 // 50% threshold, some might want zero/non-zero
 public class WindowUtils {
-
+    public static boolean doPaint;
     private static final String TRANSPARENT_OLD_BG = "transparent-old-bg";
     private static final String TRANSPARENT_OLD_OPAQUE = "transparent-old-opaque";
     private static final String TRANSPARENT_ALPHA = "transparent-alpha";
-
     /** Use this to clear a window mask. */
     public static final Shape MASK_NONE = null;
 
@@ -155,13 +126,7 @@ public class WindowUtils {
      * target window.
      * <p>
      * Ideally we'd have more control over {@link PopupFactory} but this
-     * is a fairly simple, lightweight workaround.  Note that, at least as of
-     * JDK 1.6, the following do not have the desired effect:<br>
-     * <code><pre>
-     * ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-     * JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-     * System.setProperty("JPopupMenu.defaultLWPopupEnabledKey", "false");
-     * </pre></code>
+     * is a fairly simple, lightweight workaround.
      */
     private static class HeavyweightForcer extends Window {
         private boolean packed;
@@ -174,8 +139,7 @@ public class WindowUtils {
 
         public boolean isVisible() {
             // Only want to be 'visible' once the peer is instantiated
-            // via pack; this tricks PopupFactory into using a heavyweight
-            // popup to avoid being obscured by this window
+            // via pack
             return packed;
         }
 
@@ -185,11 +149,10 @@ public class WindowUtils {
     }
     /**
      * This can be installed over a {@link JLayeredPane} in order to
-     * listen for repaint requests. The content's repaint method will be
+     * listen for repaint requests. The {@link #update} method will be
      * invoked whenever any part of the ancestor window is repainted.
      */
-    protected static class RepaintTrigger extends JComponent {
-
+    private static abstract class RepaintTrigger extends JComponent {
         protected class Listener extends WindowAdapter implements
             ComponentListener, HierarchyListener {
             public void windowOpened(WindowEvent e) {
@@ -215,12 +178,7 @@ public class WindowUtils {
         }
 
         private Listener listener = createListener();
-        private JComponent content;
 
-        public RepaintTrigger(JComponent content) {
-            this.content = content;
-        }
-        
         public void addNotify() {
             super.addNotify();
             Window w = SwingUtilities.getWindowAncestor(this);
@@ -236,172 +194,75 @@ public class WindowUtils {
             super.removeNotify();
         }
 
-        private Rectangle dirty;
+        private boolean painting;
+
         protected void paintComponent(Graphics g) {
-            Rectangle bounds = g.getClipBounds();
-            if (dirty == null || !dirty.contains(bounds)) {
-                if (dirty == null) {
-                    dirty = bounds;
-                }
-                else {
-                    dirty = dirty.union(bounds);
-                }
-                content.repaint(dirty);
-            }
-            else {
-                dirty = null;
+            if (!painting) {
+                painting = true;
+                update();
+                painting = false;
             }
         }
 
         protected Listener createListener() {
             return new Listener();
         }
+
+        protected abstract void update();
+
+        public static void remove(Container c) {
+            for (int i = 0; i < c.getComponentCount(); i++) {
+                if (c.getComponent(i) instanceof RepaintTrigger) {
+                    c.remove(i);
+                    return;
+                }
+            }
+        }
     };
+
+    /**
+     * Execute the given action when the given window becomes
+     * displayable.
+     */
+    public static void whenDisplayable(Window w, final Runnable action) {
+        if (w.isDisplayable() && (!Holder.requiresVisible || w.isVisible())) {
+            action.run();
+        }
+        else if (Holder.requiresVisible) {
+            w.addWindowListener(new WindowAdapter() {
+                public void windowOpened(WindowEvent e) {
+                    e.getWindow().removeWindowListener(this);
+                    action.run();
+                }
+                public void windowClosed(WindowEvent e) {
+                    e.getWindow().removeWindowListener(this);
+                }
+            });
+        }
+        else {
+            // Hierarchy events are fired in direct response to
+            // displayability
+            // changes
+            w.addHierarchyListener(new HierarchyListener() {
+                public void hierarchyChanged(HierarchyEvent e) {
+                    if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0
+                        && e.getComponent().isDisplayable()) {
+                        e.getComponent().removeHierarchyListener(this);
+                        action.run();
+                    }
+                }
+            });
+        }
+    }
 
     /** Window utilities with differing native implementations. */
     public static abstract class NativeWindowUtils {
-        protected abstract class TransparentContent extends JPanel {
-            private boolean transparent;
-            public TransparentContent(Container oldContent) {
-                super(new BorderLayout());
-                add(oldContent, BorderLayout.CENTER);
-                setTransparent(true);
-                if (oldContent instanceof JPanel) {
-                    ((JComponent)oldContent).setOpaque(false);
-                }
-            }
-            public void setTransparent(boolean transparent) {
-                this.transparent = transparent;
-                setOpaque(!transparent);
-                setDoubleBuffered(!transparent);
-                repaint();
-            }
-            public void paint(Graphics gr) {
-                if (transparent) {
-                    Rectangle r = gr.getClipBounds();
-                    final int w = r.width;
-                    final int h = r.height;
-                    if (getWidth() > 0 && getHeight() > 0) {
-                        final BufferedImage buf =
-                            new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB_PRE);
-                        
-                        Graphics2D g = buf.createGraphics();
-                        g.setComposite(AlphaComposite.Clear);
-                        g.fillRect(0, 0, w, h);
-                        g.dispose();
-
-                        g = buf.createGraphics();
-                        g.translate(-r.x, -r.y);
-                        super.paint(g);
-                        g.dispose();
-
-                        paintDirect(buf, r);
-                    }
-                }
-                else {
-                    super.paint(gr);
-                }
-            }
-            /** Use the contents of the given BufferedImage to paint directly
-             * on this component's ancestor window.
-             */
-            protected abstract void paintDirect(BufferedImage buf, Rectangle bounds);
-        }
-        
-        protected Window getWindow(Component c) {
-            return c instanceof Window 
-                ? (Window)c : SwingUtilities.getWindowAncestor(c); 
-        }
-        /**
-         * Execute the given action when the given window becomes
-         * displayable.
-         */
-        protected void whenDisplayable(Component w, final Runnable action) {
-            if (w.isDisplayable() && (!Holder.requiresVisible || w.isVisible())) {
-                action.run();
-            }
-            else if (Holder.requiresVisible) {
-                getWindow(w).addWindowListener(new WindowAdapter() {
-                    public void windowOpened(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                        action.run();
-                    }
-                    public void windowClosed(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                    }
-                });
-            }
-            else {
-                // Hierarchy events are fired in direct response to
-                // displayability changes
-                w.addHierarchyListener(new HierarchyListener() {
-                    public void hierarchyChanged(HierarchyEvent e) {
-                        if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0
-                            && e.getComponent().isDisplayable()) {
-                            e.getComponent().removeHierarchyListener(this);
-                            action.run();
-                        }
-                    }
-                });
-            }
-        }
-
-        protected Raster toRaster(Shape mask) {
-            Raster raster = null;
-            if (mask != MASK_NONE) {
-                Rectangle bounds = mask.getBounds();
-                if (bounds.width > 0 && bounds.height > 0) {
-                    BufferedImage clip = 
-                        new BufferedImage(bounds.x + bounds.width,
-                                          bounds.y + bounds.height,
-                                          BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g = clip.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0, 0, bounds.x + bounds.width, bounds.y + bounds.height);
-                    g.setComposite(AlphaComposite.SrcOver);
-                    g.setColor(Color.white);
-                    g.fill(mask);
-                    raster = clip.getAlphaRaster();
-                }
-            }
-            return raster;
-        }
-
-        protected Raster toRaster(Component c, Icon mask) {
-            Raster raster = null;
-            if (mask != null) {
-                Rectangle bounds = new Rectangle(0, 0, mask.getIconWidth(),
-                                                 mask.getIconHeight());
-                BufferedImage clip = new BufferedImage(bounds.width,
-                                                       bounds.height,
-                                                       BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g = clip.createGraphics();
-                g.setComposite(AlphaComposite.Clear);
-                g.fillRect(0, 0, bounds.width, bounds.height);
-                g.setComposite(AlphaComposite.SrcOver);
-                mask.paintIcon(c, g, 0, 0);
-                raster = clip.getAlphaRaster();
-            }
-            return raster;
-        }
-
-        protected Shape toShape(Raster raster) {
-            final Area area = new Area(new Rectangle(0, 0, 0, 0));
-            RasterRangesUtils.outputOccupiedRanges(raster, new RasterRangesUtils.RangesOutput() {
-                public boolean outputRange(int x, int y, int w, int h) {
-                    area.add(new Area(new Rectangle(x, y, w, h)));
-                    return true;
-                }
-            });
-            return area;
-        }
-        
         /**
          * Set the overall alpha transparency of the window. An alpha of
          * 1.0 is fully opaque, 0.0 is fully transparent.
          */
         public void setWindowAlpha(Window w, float alpha) {
-            // do nothing
+        // do nothing
         }
 
         /** Default: no support. */
@@ -424,21 +285,6 @@ public class WindowUtils {
          */
         public void setWindowTransparent(Window w, boolean transparent) {
             // do nothing
-        }
-
-        protected void setDoubleBuffered(Component root, boolean buffered) {
-            if (root instanceof JComponent) {
-                ((JComponent)root).setDoubleBuffered(buffered);
-            }
-            if (root instanceof JRootPane && buffered) {
-                ((JRootPane)root).setDoubleBuffered(true);
-            }
-            else if (root instanceof Container) {
-                Component[] kids = ((Container)root).getComponents();
-                for (int i=0;i < kids.length;i++) {
-                    setDoubleBuffered(kids[i], buffered);
-                }
-            }
         }
 
         protected void setLayersTransparent(Window w, boolean transparent) {
@@ -467,7 +313,8 @@ public class WindowUtils {
                 }
                 else {
                     lp.setOpaque(Boolean.TRUE.equals(lp.getClientProperty(TRANSPARENT_OLD_OPAQUE)));
-                    root.setOpaque(Boolean.TRUE.equals(root.getClientProperty(TRANSPARENT_OLD_OPAQUE)));
+                    root
+                        .setOpaque(Boolean.TRUE.equals(root.getClientProperty(TRANSPARENT_OLD_OPAQUE)));
                     if (content != null) {
                         content.setOpaque(Boolean.TRUE.equals(content.getClientProperty(TRANSPARENT_OLD_OPAQUE)));
                     }
@@ -477,35 +324,54 @@ public class WindowUtils {
             w.setBackground(bg);
         }
 
-        /** Override this method to provide bitmap masking of the given
-         * heavyweight component.
-         */
-        protected void setMask(Component c, Raster raster) {
-            throw new UnsupportedOperationException("Window masking is not available");
-        }
-        
         /**
          * Set the window mask based on the given Raster, which should
          * be treated as a bitmap (zero/nonzero values only). A value of
          * <code>null</code> means to remove the mask.
          */
-        protected void setWindowMask(Component w, Raster raster) {
-            if (w.isLightweight())
-                throw new IllegalArgumentException("Component must be heavyweight: " + w);
-            setMask(w, raster);
-        }
+        public abstract void setWindowMask(Window w, Raster raster);
 
         /** Set the window mask based on a {@link Shape}. */
-        public void setWindowMask(Component w, Shape mask) {
-            setWindowMask(w, toRaster(mask));
+        public void setWindowMask(Window w, Shape mask) {
+            Raster raster = null;
+            if (mask != MASK_NONE) {
+                Rectangle bounds = mask.getBounds();
+                if (bounds.width > 0 && bounds.height > 0) {
+                    BufferedImage bitmap = 
+                        new BufferedImage(bounds.x + bounds.width,
+                                          bounds.y + bounds.height,
+                                          BufferedImage.TYPE_BYTE_BINARY);
+                    Graphics2D g = bitmap.createGraphics();
+                    g.setColor(Color.black);
+                    g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+                    g.setColor(Color.white);
+                    g.fill(mask);
+                    raster = bitmap.getData();
+                }
+            }
+            setWindowMask(w, raster);
         }
 
         /**
          * Set the window mask based on an Icon. All non-transparent
          * pixels will be included in the mask.
          */
-        public void setWindowMask(Component w, Icon mask) {
-            setWindowMask(w, toRaster(w, mask));
+        public void setWindowMask(final Window w, Icon mask) {
+            Raster raster = null;
+            if (mask != null) {
+                Rectangle bounds = new Rectangle(0, 0, mask.getIconWidth(),
+                                                 mask.getIconHeight());
+                BufferedImage clip = new BufferedImage(bounds.width,
+                                                       bounds.height,
+                                                       BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = clip.createGraphics();
+                g.setComposite(AlphaComposite.Clear);
+                g.fillRect(0, 0, bounds.width, bounds.height);
+                g.setComposite(AlphaComposite.SrcOver);
+                mask.paintIcon(w, g, 0, 0);
+                raster = clip.getAlphaRaster();
+            }
+            setWindowMask(w, raster);
         }
 
         /**
@@ -518,13 +384,10 @@ public class WindowUtils {
                 Window[] owned = w.getOwnedWindows();
                 for (int i = 0; i < owned.length; i++) {
                     if (owned[i] instanceof HeavyweightForcer) {
-                        if (force)
-                            return;
                         owned[i].dispose();
                     }
                 }
-                Boolean b = Boolean.valueOf(System.getProperty("jna.force_hw_popups", "true"));
-                if (force && b.booleanValue()) {
+                if (force) {
                     new HeavyweightForcer(w);
                 }
             }
@@ -540,19 +403,19 @@ public class WindowUtils {
         public static boolean requiresVisible;
         public static final NativeWindowUtils INSTANCE;
         static {
-            if (Platform.isWindows()) {
+            String os = System.getProperty("os.name");
+            if (os.startsWith("Windows")) {
                 INSTANCE = new W32WindowUtils();
             }
-            else if (Platform.isMac()) {
+            else if (os.startsWith("Mac")) {
                 INSTANCE = new MacWindowUtils();
             }
-            else if (Platform.isX11()) {
+            else if (os.startsWith("Linux") || os.startsWith("SunOS")) {
                 INSTANCE = new X11WindowUtils();
                 requiresVisible = System.getProperty("java.version")
                                         .matches("^1\\.4\\..*");
             }
             else {
-                String os = System.getProperty("os.name");
                 throw new UnsupportedOperationException("No support for " + os);
             }
         }
@@ -563,9 +426,9 @@ public class WindowUtils {
     }
 
     private static class W32WindowUtils extends NativeWindowUtils {
-        private HWND getHWnd(Component w) {
+        public HWND getHWnd(Window w) {
             HWND hwnd = new HWND();
-            hwnd.setPointer(Native.getComponentPointer(w));
+            hwnd.setPointer(Native.getWindowPointer(w));
             return hwnd;
         }
 
@@ -578,7 +441,7 @@ public class WindowUtils {
         }
 
         /** Indicates whether UpdateLayeredWindow is in use. */
-        private boolean usingUpdateLayeredWindow(Window w) {
+        private boolean isTransparent(Window w) {
             if (w instanceof RootPaneContainer) {
                 JRootPane root = ((RootPaneContainer)w).getRootPane();
                 return root.getClientProperty(TRANSPARENT_OLD_BG) != null;
@@ -619,7 +482,7 @@ public class WindowUtils {
                     User32 user = User32.INSTANCE;
                     int flags = user.GetWindowLong(hWnd, User32.GWL_EXSTYLE);
                     byte level = (byte)((int)(255 * alpha) & 0xFF);
-                    if (usingUpdateLayeredWindow(w)) {
+                    if (isTransparent(w)) {
                         // If already using UpdateLayeredWindow, continue to 
                         // do so
                         BLENDFUNCTION blend = new BLENDFUNCTION();
@@ -645,100 +508,71 @@ public class WindowUtils {
             });
         }
 
-        /** W32 makes the client responsible for repainting the <em>entire</em>
-         * window on any change.  It also does not paint window decorations
-         * when the window is transparent.
-         */
-        private class W32TransparentContent extends TransparentContent {
-            private HDC memDC;
-            private HBITMAP hBitmap;
-            private Pointer pbits;
-            private Dimension bitmapSize;
-            public W32TransparentContent(Container content) {
-                super(content);
+        private class W32RepaintTrigger extends RepaintTrigger {
+            public void setBounds(int x, int y, int w, int h) {
+                super.setBounds(x, y, w, h);
+                // FIXME this is a hack to get the window to properly
+                // refresh. figure out what w32 api needs tweaking to
+                // do it explicitly
+                if (w > 0 && h > 0)
+                    SwingUtilities.getWindowAncestor(this).toFront();
             }
-            private void disposeBackingStore() {
-                GDI32 gdi = GDI32.INSTANCE;
-                if (hBitmap != null) {
-                    gdi.DeleteObject(hBitmap);
-                    hBitmap = null;
-                }
-                if (memDC != null) {
-                    gdi.DeleteDC(memDC);
-                    memDC = null;
-                }
-            }
-            public void removeNotify() {
-                super.removeNotify();
-                disposeBackingStore();
-            }
-            public void setTransparent(boolean transparent) {
-                super.setTransparent(transparent);
-                if (!transparent) {
-                    disposeBackingStore();
-                }
-            }
-            protected void paintDirect(BufferedImage buf, Rectangle bounds) {
-                // TODO: paint frame decoration if window is decorated
-                Window win = SwingUtilities.getWindowAncestor(this);
+
+            public void update() {
                 GDI32 gdi = GDI32.INSTANCE;
                 User32 user = User32.INSTANCE;
-                int x = bounds.x;
-                int y = bounds.y;
-                Point origin = SwingUtilities.convertPoint(this, x, y, win);
-                int w = bounds.width;
-                int h = bounds.height;
-                int ww = win.getWidth();
-                int wh = win.getHeight();
+                Window win = SwingUtilities.getWindowAncestor(this);
+                int w = win.getWidth();
+                int h = win.getHeight();
                 HDC screenDC = user.GetDC(null);
+                HDC memDC = gdi.CreateCompatibleDC(screenDC);
+                HBITMAP hBitmap = null;
                 HANDLE oldBitmap = null;
                 try {
-                    if (memDC == null) {
-                        memDC = gdi.CreateCompatibleDC(screenDC);
-                    }
-                    if (hBitmap == null || !win.getSize().equals(bitmapSize)) {
-                        if (hBitmap != null) {
-                            gdi.DeleteObject(hBitmap);
-                            hBitmap = null;
-                        }
-                        BITMAPINFO bmi = new BITMAPINFO();
-                        bmi.bmiHeader.biWidth = ww;
-                        bmi.bmiHeader.biHeight = wh;
-                        bmi.bmiHeader.biPlanes = 1;
-                        bmi.bmiHeader.biBitCount = 32;
-                        bmi.bmiHeader.biCompression = GDI32.BI_RGB;
-                        bmi.bmiHeader.biSizeImage = ww * wh * 4;
-                        PointerByReference ppbits = new PointerByReference();
-                        hBitmap = gdi.CreateDIBSection(memDC, bmi,
-                                                       GDI32.DIB_RGB_COLORS,
-                                                       ppbits, null, 0);
-                        pbits = ppbits.getValue();
-                        bitmapSize = new Dimension(ww, wh);
-                    }
+                    BufferedImage buf = 
+                        new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB_PRE);
+                    Graphics2D g = buf.createGraphics();
+                    g.setComposite(AlphaComposite.Clear);
+                    g.fillRect(0, 0, w, h);
+                    g.setComposite(AlphaComposite.SrcOver);
+                    Point origin = SwingUtilities.convertPoint(getParent(), 0, 0, win);
+                    getParent().paint(g.create(origin.x, origin.y,
+                                               getWidth(), getHeight()));
+                    BITMAPINFO bmi = new BITMAPINFO();
+                    bmi.bmiHeader.biWidth = w;
+                    bmi.bmiHeader.biHeight = h;
+                    bmi.bmiHeader.biPlanes = 1;
+                    bmi.bmiHeader.biBitCount = 32;
+                    bmi.bmiHeader.biCompression = GDI32.BI_RGB;
+                    bmi.bmiHeader.biSizeImage = w * h * 4;
+                    PointerByReference ppbits = new PointerByReference();
+                    hBitmap = gdi.CreateDIBSection(memDC, bmi,
+                                                   GDI32.DIB_RGB_COLORS,
+                                                   ppbits, null, 0);
                     oldBitmap = gdi.SelectObject(memDC, hBitmap);
+                    Pointer pbits = ppbits.getValue();
                     Raster raster = buf.getData();
                     int[] pixel = new int[4];
-                    int[] bits = new int[w];
+                    int[] bits = new int[w * h];
                     for (int row = 0; row < h; row++) {
                         for (int col = 0; col < w; col++) {
-                            raster.getPixel(col, row, pixel);
+                            raster.getPixel(col, h - row - 1, pixel);
                             int alpha = (pixel[3] & 0xFF) << 24;
                             int red = (pixel[2] & 0xFF);
                             int green = (pixel[1] & 0xFF) << 8;
                             int blue = (pixel[0] & 0xFF) << 16;
-                            bits[col] = alpha | red | green | blue;
+                            bits[col + row * w] = alpha | red | green | blue;
                         }
-                        int v = wh - (origin.y + row) - 1;
-                        pbits.write((v*ww+origin.x)*4, bits, 0, bits.length);
                     }
-                    SIZE winSize = new SIZE();
-                    winSize.cx = win.getWidth();
-                    winSize.cy = win.getHeight();
-                    POINT winLoc = new POINT();
-                    winLoc.x = win.getX();
-                    winLoc.y = win.getY();
+                    pbits.write(0, bits, 0, bits.length);
+                    SIZE size = new SIZE();
+                    size.cx = w;
+                    size.cy = h;
                     POINT srcLoc = new POINT();
                     BLENDFUNCTION blend = new BLENDFUNCTION();
+                    POINT loc = new POINT();
+                    loc.x = win.getX();
+                    loc.y = win.getY();
                     HWND hWnd = getHWnd(win);
                     // extract current constant alpha setting, if possible
                     ByteByReference bref = new ByteByReference();
@@ -750,21 +584,20 @@ public class WindowUtils {
                     }
                     blend.SourceConstantAlpha = level;
                     blend.AlphaFormat = User32.AC_SRC_ALPHA;
-                    user.UpdateLayeredWindow(hWnd, screenDC, winLoc, winSize, memDC,
+                    user.UpdateLayeredWindow(hWnd, screenDC, loc, size, memDC,
                                              srcLoc, 0, blend, User32.ULW_ALPHA);
                 }
                 finally {
                     user.ReleaseDC(null, screenDC);
-                    if (memDC != null && oldBitmap != null) {
+                    if (hBitmap != null) {
                         gdi.SelectObject(memDC, oldBitmap);
+                        gdi.DeleteObject(hBitmap);
                     }
+                    gdi.DeleteDC(memDC);
                 }
             }
         }
 
-        /** Note that w32 does <em>not</em> paint window decorations when
-         * the window is transparent.
-         */
         public void setWindowTransparent(final Window w,
                                          final boolean transparent) {
             if (!(w instanceof RootPaneContainer)) {
@@ -775,7 +608,7 @@ public class WindowUtils {
             }
             boolean isTransparent = w.getBackground() != null
                 && w.getBackground().getAlpha() == 0;
-            if (transparent == isTransparent)
+            if (!(transparent ^ isTransparent))
                 return;
             whenDisplayable(w, new Runnable() {
                 public void run() {
@@ -784,33 +617,23 @@ public class WindowUtils {
                     int flags = user.GetWindowLong(hWnd, User32.GWL_EXSTYLE);
                     JRootPane root = ((RootPaneContainer)w).getRootPane();
                     JLayeredPane lp = root.getLayeredPane();
-                    Container content = root.getContentPane();
-                    if (content instanceof W32TransparentContent) {
-                        ((W32TransparentContent)content).setTransparent(transparent);
-                    }
-                    else if (transparent) {
-                        W32TransparentContent w32content =
-                            new W32TransparentContent(content);
-                        root.setContentPane(w32content);
-                        lp.add(new RepaintTrigger(w32content),
-                               JLayeredPane.DRAG_LAYER);
-                    }
-                    if (transparent && !usingUpdateLayeredWindow(w)) {
+                    if (transparent && !isTransparent(w)) {
                         flags |= User32.WS_EX_LAYERED;
                         user.SetWindowLong(hWnd, User32.GWL_EXSTYLE, flags);
+                        lp.add(new W32RepaintTrigger(), JLayeredPane.DRAG_LAYER);
                     }
-                    else if (!transparent && usingUpdateLayeredWindow(w)) {
+                    else if (!transparent && isTransparent(w)) {
                         flags &= ~User32.WS_EX_LAYERED;
                         user.SetWindowLong(hWnd, User32.GWL_EXSTYLE, flags);
+                        RepaintTrigger.remove(lp);
                     }
                     setLayersTransparent(w, transparent);
                     setForceHeavyweightPopups(w, transparent);
-                    setDoubleBuffered(w, !transparent);
                 }
             });
         }
 
-        protected void setMask(final Component w, final Raster raster) {
+        public void setWindowMask(final Window w, final Raster raster) {
             whenDisplayable(w, new Runnable() {
                 public void run() {
                     GDI32 gdi = GDI32.INSTANCE;
@@ -841,12 +664,23 @@ public class WindowUtils {
                     finally {
                         gdi.DeleteObject(result);
                     }
-                    setForceHeavyweightPopups(getWindow(w), raster != null);
+                    setForceHeavyweightPopups(w, raster != null);
                 }
             });
         }
     }
     private static class MacWindowUtils extends NativeWindowUtils {
+        private Shape shapeFromRaster(Raster raster) {
+            final Area area = new Area(new Rectangle(0, 0, 0, 0));
+            RasterRangesUtils.outputOccupiedRanges(raster, new RasterRangesUtils.RangesOutput() {
+                public boolean outputRange(int x, int y, int w, int h) {
+                    area.add(new Area(new Rectangle(x, y, w, h)));
+                    return true;
+                }
+            });
+            return area;
+        }
+
         public boolean isWindowAlphaSupported() {
             return true;
         }
@@ -882,11 +716,11 @@ public class WindowUtils {
         public void setWindowTransparent(Window w, boolean transparent) {
             boolean isTransparent = w.getBackground() != null
                 && w.getBackground().getAlpha() == 0;
-            if (transparent != isTransparent) {
-                installTransparentContent(w);
-                setBackgroundTransparent(w, transparent);
-                setLayersTransparent(w, transparent);
-            }
+            if (!(transparent ^ isTransparent))
+                return;
+            installTransparentContent(w);
+            setBackgroundTransparent(w, transparent);
+            setLayersTransparent(w, transparent);
         }
 
         public void setWindowAlpha(final Window w, final float alpha) {
@@ -901,18 +735,14 @@ public class WindowUtils {
                         });
                     }
                     catch (Exception e) {
-			if (w instanceof RootPaneContainer) {
-			    JRootPane p = ((RootPaneContainer)w).getRootPane();
-			    p.putClientProperty("Window.alpha", new Float(alpha));
-			}
                     }
                 }
             });
         }
 
-        protected void setWindowMask(Component w, Raster raster) {
+        public void setWindowMask(Window w, Raster raster) {
             if (raster != null) {
-                setWindowMask(w, toShape(raster));
+                setWindowMask(w, shapeFromRaster(raster));
             }
             else {
                 setWindowMask(w, new Rectangle(0, 0, w.getWidth(),
@@ -920,24 +750,16 @@ public class WindowUtils {
             }
         }
 
-        public void setWindowMask(Component c, final Shape shape) {
-            if (c instanceof Window) {
-                Window w = (Window)c;
-                OSXTransparentContent content = installTransparentContent(w);
-                content.setMask(shape);
-                setBackgroundTransparent(w, shape != MASK_NONE);
-            }
-            else {
-                // not yet implemented
-            }
-        }
-
         /** Mask out unwanted pixels and ensure background gets cleared.
          * @author Olivier Chafik
          */
-        private static class OSXTransparentContent extends JPanel {
+        static class OSXTransparentContent extends JPanel {
             private Shape shape;
 
+            public OSXTransparentContent() {
+                this(null);
+            }
+            
             public OSXTransparentContent(Component oldContent) {
                 super(new BorderLayout());
                 if (oldContent != null) {
@@ -976,11 +798,17 @@ public class WindowUtils {
                 w.setBackground(null);
             }
         }
+
+        public void setWindowMask(Window w, final Shape shape) {
+            OSXTransparentContent content = installTransparentContent(w);
+            content.setMask(shape);
+            setBackgroundTransparent(w, shape != MASK_NONE);
+        }
     }
     private static class X11WindowUtils extends NativeWindowUtils {
         private Pixmap createBitmap(final Display dpy, 
                                     X11.Window win, 
-                                    Raster raster) {
+                                    Window w, Raster raster) {
             final X11 x11 = X11.INSTANCE;
             Rectangle bounds = raster.getBounds();
             int width = bounds.x + bounds.width;
@@ -1013,43 +841,40 @@ public class WindowUtils {
         }
 
         private boolean didCheck;
-        private long[] alphaVisualIDs = {};
+        private int[] alphaVisuals = {};
 
         public boolean isWindowAlphaSupported() {
-            return getAlphaVisualIDs().length > 0;
-        }
-
-        private long getVisualID(GraphicsConfiguration config) {
-            // Use reflection to call
-            // X11GraphicsConfig.getVisual
-            try {
-                Object o = config.getClass()
-                    .getMethod("getVisual", (Class[])null)
-                    .invoke(config, (Object[])null);
-                return ((Number)o).longValue();
+            if (!didCheck) {
+                didCheck = true;
+                alphaVisuals = getAlphaVisuals();
             }
-            catch (Exception e) {
-                e.printStackTrace();
-                return -1;
-            }
+            return alphaVisuals.length > 0;
         }
 
         /** Return the default graphics configuration. */
         public GraphicsConfiguration getAlphaCompatibleGraphicsConfiguration() {
             if (isWindowAlphaSupported()) {
-                GraphicsEnvironment env =
-                    GraphicsEnvironment.getLocalGraphicsEnvironment();
+                GraphicsEnvironment env = GraphicsEnvironment
+                                                             .getLocalGraphicsEnvironment();
                 GraphicsDevice[] devices = env.getScreenDevices();
                 for (int i = 0; i < devices.length; i++) {
-                    GraphicsConfiguration[] configs =
-                        devices[i].getConfigurations();
+                    GraphicsConfiguration[] configs = devices[i]
+                                                                .getConfigurations();
                     for (int j = 0; j < configs.length; j++) {
-                        long visualID = getVisualID(configs[j]);
-                        long[] ids = getAlphaVisualIDs();
-                        for (int k = 0; k < ids.length; k++) {
-                            if (visualID == ids[k]) {
-                                return configs[j];
+                        // Use reflection to call
+                        // X11GraphicsConfig.getVisual
+                        try {
+                            Object o = configs[j].getClass()
+                                                 .getMethod("getVisual", (Class[])null)
+                                                 .invoke(configs[j], (Object[])null);
+                            int visual = ((Integer)o).intValue();
+                            for (int k = 0; k < alphaVisuals.length; k++) {
+                                if (visual == alphaVisuals[k])
+                                    return configs[j];
                             }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -1061,15 +886,11 @@ public class WindowUtils {
          * Return the visual ID of the visual which supports an alpha
          * channel.
          */
-        private synchronized long[] getAlphaVisualIDs() {
-            if (didCheck) {
-                return alphaVisualIDs;
-            }
-            didCheck = true;
+        private int[] getAlphaVisuals() {
             X11 x11 = X11.INSTANCE;
             Display dpy = x11.XOpenDisplay(null);
             if (dpy == null)
-                return alphaVisualIDs;
+                return new int[0];
             XVisualInfo info = null;
             try {
                 int screen = x11.XDefaultScreen(dpy);
@@ -1092,14 +913,14 @@ public class WindowUtils {
                                                                          infos[i].visual);
                         if (format.type == X11.Xrender.PictTypeDirect
                             && format.direct.alphaMask != 0) {
-                            list.add(infos[i].visualid);
+                            list.add(new Integer(infos[i].visualID));
                         }
                     }
-                    alphaVisualIDs = new long[list.size()];
-                    for (int i=0;i < alphaVisualIDs.length;i++) {
-                        alphaVisualIDs[i] = ((Number)list.get(i)).longValue();
+                    int[] ids = new int[list.size()];
+                    for (int i = 0; i < list.size(); i++) {
+                        ids[i] = ((Integer)list.get(i)).intValue();
                     }
-                    return alphaVisualIDs;
+                    return ids;
                 }
             }
             finally {
@@ -1108,40 +929,11 @@ public class WindowUtils {
                 }
                 x11.XCloseDisplay(dpy);
             }
-            return alphaVisualIDs;
+            return new int[0];
         }
 
-        private X11.Window getContentWindow(Window w, X11.Display dpy,
-                                            X11.Window win, Point offset) {
-            if ((w instanceof Frame && !((Frame)w).isUndecorated())
-                || (w instanceof Dialog && !((Dialog)w).isUndecorated())) {
-                X11 x11 = X11.INSTANCE;
-                X11.WindowByReference rootp = new X11.WindowByReference();
-                X11.WindowByReference parentp = new X11.WindowByReference();
-                PointerByReference childrenp = new PointerByReference();
-                IntByReference countp = new IntByReference();
-                x11.XQueryTree(dpy, win, rootp, parentp, childrenp, countp);
-                Pointer p = childrenp.getValue();
-                int[] ids = p.getIntArray(0, countp.getValue());
-                for (int i=0;i < ids.length;i++) {
-                    // TODO: more verification of correct window?
-                    X11.Window child = new X11.Window(ids[i]);
-                    X11.XWindowAttributes xwa = new X11.XWindowAttributes();
-                    x11.XGetWindowAttributes(dpy, child, xwa);
-                    offset.x = -xwa.x;
-                    offset.y = -xwa.y;
-                    win = child; 
-                    break;
-                }
-                if (p != null) {
-                    x11.XFree(p);
-                }
-            }
-            return win;
-        }
-
-        private X11.Window getDrawable(Component w) {
-            int id = (int)Native.getComponentID(w);
+        public X11.Window getDrawable(Window w) {
+            int id = (int)Native.getWindowID(w);
             if (id == X11.None)
                 return null;
             return new X11.Window(id);
@@ -1186,62 +978,48 @@ public class WindowUtils {
             whenDisplayable(w, action);
         }
 
-        private class X11TransparentContent extends TransparentContent {
-            
+        private class X11TransparentContent extends JPanel {
+            private boolean transparent;
+
             public X11TransparentContent(Container oldContent) {
-                super(oldContent);
-            }
-            
-            private Memory buffer;
-            private int[] pixels;
-            private int[] pixel = new int[4];
-            // Painting directly to the original Graphics 
-            // fails to properly composite unless the destination
-            // is pure black.  Too bad.
-            protected void paintDirect(BufferedImage buf, Rectangle bounds) {
-                Window window = SwingUtilities.getWindowAncestor(this);
-                X11 x11 = X11.INSTANCE;
-                X11.Display dpy = x11.XOpenDisplay(null);
-                X11.Window win = getDrawable(window);
-                Point offset = new Point();
-                win = getContentWindow(window, dpy, win, offset);
-                X11.GC gc = x11.XCreateGC(dpy, win, new NativeLong(0), null);
-                
-                Raster raster = buf.getData();
-                int w = bounds.width;
-                int h = bounds.height;
-                if (buffer == null || buffer.getSize() != w*h*4) {
-                    buffer = new Memory(w*h*4);
-                    pixels = new int[w*h];
+                super(new BorderLayout());
+                add(oldContent, BorderLayout.CENTER);
+                setTransparent(true);
+                if (oldContent instanceof JPanel) {
+                    ((JComponent)oldContent).setOpaque(false);
                 }
-                for (int y=0;y<h;y++) {
-                    for (int x=0;x < w;x++) {
-                        raster.getPixel(x, y, pixel);
-                        int alpha = pixel[3]&0xFF;
-                        int red = pixel[2]&0xFF;
-                        int green = pixel[1]&0xFF;
-                        int blue = pixel[0]&0xFF;
-                        // TODO: use visual RGB masks to position bits
-                        // This layout (ABGR) works empirically
-                        pixels[y*w + x] = (alpha<<24)|(blue<<16)|(green<<8)|red;
+            }
+
+            public void setTransparent(boolean transparent) {
+                this.transparent = transparent;
+                setOpaque(!transparent);
+                repaint();
+            }
+
+            public void paint(Graphics gr) {
+                if (transparent) {
+                    int w = getWidth();
+                    int h = getHeight();
+                    if (w > 0 && h > 0) {
+                        BufferedImage buf =
+                            new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                        Graphics2D g = buf.createGraphics();
+                        g.setComposite(AlphaComposite.Clear);
+                        g.fillRect(0, 0, w, h);
+                        g.setComposite(AlphaComposite.SrcOver);
+                        super.paint(g);
+                        g = (Graphics2D)gr.create();
+                        g.setComposite(AlphaComposite.Src);
+                        g.drawImage(buf, 0, 0, w, h, null);
+                        g.dispose();
                     }
                 }
-                X11.XWindowAttributes xwa = new X11.XWindowAttributes();
-                x11.XGetWindowAttributes(dpy, win, xwa);
-                X11.XImage image =
-                    x11.XCreateImage(dpy, xwa.visual, 32, X11.ZPixmap,
-                                     0, buffer, w, h, 32, w * 4);
-                buffer.write(0, pixels, 0, pixels.length);
-                offset.x += bounds.x;
-                offset.y += bounds.y;
-                x11.XPutImage(dpy, win, gc, image, 0, 0, offset.x, offset.y, w, h);
-                
-                x11.XFree(image.getPointer());
-                x11.XFreeGC(dpy, gc);
-                x11.XCloseDisplay(dpy);
+                else {
+                    super.paint(gr);
+                }
             }
         }
-        
+
         public void setWindowTransparent(final Window w,
                                          final boolean transparent) {
             if (!(w instanceof RootPaneContainer)) {
@@ -1251,36 +1029,31 @@ public class WindowUtils {
                 throw new UnsupportedOperationException("This X11 display does not provide a 32-bit visual");
             }
             if (!w.getGraphicsConfiguration()
-                .equals(getAlphaCompatibleGraphicsConfiguration())) {
-                throw new IllegalArgumentException("Window GraphicsConfiguration '" + w.getGraphicsConfiguration() + "' does not support transparency");
+                  .equals(getAlphaCompatibleGraphicsConfiguration())) {
+                throw new IllegalArgumentException("Window GraphicsConfiguration does not support transparency");
             }
             boolean isTransparent = w.getBackground() != null
                 && w.getBackground().getAlpha() == 0;
-            if (transparent == isTransparent)
+            if (!(transparent ^ isTransparent))
                 return;
             whenDisplayable(w, new Runnable() {
                 public void run() {
                     JRootPane root = ((RootPaneContainer)w).getRootPane();
-                    JLayeredPane lp = root.getLayeredPane();
                     Container content = root.getContentPane();
                     if (content instanceof X11TransparentContent) {
-                        ((X11TransparentContent)content).setTransparent(transparent);
+                        ((X11TransparentContent)content)
+                                                     .setTransparent(transparent);
                     }
                     else if (transparent) {
-                        X11TransparentContent x11content =
-                            new X11TransparentContent(content);
-                        root.setContentPane(x11content);
-                        lp.add(new RepaintTrigger(x11content),
-                               JLayeredPane.DRAG_LAYER);
+                        root.setContentPane(new X11TransparentContent(content));
                     }
                     setLayersTransparent(w, transparent);
                     setForceHeavyweightPopups(w, transparent);
-                    setDoubleBuffered(w, !transparent);
                 }
             });
         }
 
-        protected void setMask(final Component w, final Raster raster) {
+        public void setWindowMask(final Window w, final Raster raster) {
             Runnable action = new Runnable() {
                 public void run() {
                     X11 x11 = X11.INSTANCE;
@@ -1292,7 +1065,7 @@ public class WindowUtils {
                     try {
                         X11.Window win = getDrawable(w);
                         if (raster == null 
-                            || ((pm = createBitmap(dpy, win, raster)) == null)) {
+                            || ((pm = createBitmap(dpy, win, w, raster)) == null)) {
                             ext.XShapeCombineMask(dpy, win, 
                                                   X11.Xext.ShapeBounding,
                                                   0, 0, Pixmap.None,
@@ -1310,7 +1083,7 @@ public class WindowUtils {
                         }
                         x11.XCloseDisplay(dpy);
                     }
-                    setForceHeavyweightPopups(getWindow(w), raster != null);
+                    setForceHeavyweightPopups(w, raster != null);
                 }
             };
             whenDisplayable(w, action);
@@ -1324,15 +1097,6 @@ public class WindowUtils {
      */
     public static void setWindowMask(Window w, Shape mask) {
         getInstance().setWindowMask(w, mask);
-    }
-
-    /**
-     * Applies the given mask to the given heavyweight component. Does nothing 
-     * if the operation is not supported.  The mask is treated as a bitmap and
-     * ignores transparency.
-     */
-    public static void setComponentMask(Component c, Shape mask) {
-        getInstance().setWindowMask(c, mask);
     }
 
     /**
@@ -1365,7 +1129,13 @@ public class WindowUtils {
      * in order for alpha to work.
      */
     public static void setWindowAlpha(Window w, float alpha) {
-        getInstance().setWindowAlpha(w, Math.max(0f, Math.min(alpha, 1f)));
+        try {
+            getInstance().setWindowAlpha(w, Math.max(0f, Math.min(alpha, 1f)));
+        } catch( ThreadDeath td ) {
+            throw td;
+        } catch( Throwable e ) {
+            
+        }
     }
 
     /**
@@ -1375,5 +1145,5 @@ public class WindowUtils {
      */
     public static void setWindowTransparent(Window w, boolean transparent) {
         getInstance().setWindowTransparent(w, transparent);
-    }    
+    }
 }

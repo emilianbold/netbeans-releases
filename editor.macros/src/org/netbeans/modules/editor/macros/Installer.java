@@ -55,7 +55,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
-import org.netbeans.modules.editor.lib.KitsTracker;
+import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.macros.storage.MacroDescription;
 import org.netbeans.modules.editor.macros.storage.MacrosStorage;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;

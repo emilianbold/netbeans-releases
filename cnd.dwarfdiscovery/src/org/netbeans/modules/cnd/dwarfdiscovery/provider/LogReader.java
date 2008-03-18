@@ -96,11 +96,11 @@ public class LogReader {
                         if (oneMoreLine == null) {
                             break;
                         }
-                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18N
+                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18Na
                     }
                     line = trimBackApostropheCalls(line);
 
-                    String[] cmds = line.split(";|\\|\\||&&"); // ||, && //NOI18N
+                    String[] cmds = line.split(";|\\|\\||&&"); // ||, &&
                     for (int i = 0; i < cmds.length; i++) {
                         if (parseLine(cmds[i])){
                             nFoundFiles++;

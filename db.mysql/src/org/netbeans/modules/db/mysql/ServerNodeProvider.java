@@ -94,7 +94,7 @@ public class ServerNodeProvider implements NodeProvider {
         }
     }
     
-    public synchronized boolean isRegistered() {
+    synchronized boolean isRegistered() {
         return options.isProviderRegistered();
     }
     

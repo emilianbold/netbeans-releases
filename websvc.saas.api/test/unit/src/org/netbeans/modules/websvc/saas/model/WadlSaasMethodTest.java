@@ -70,7 +70,7 @@ public class WadlSaasMethodTest extends NbTestCase {
         WadlSaas saas = (WadlSaas) group.getServices().get(0);
         assertEquals("Bookmarking Service", saas.getDisplayName());
         WadlSaasMethod m = saas.getResources().get(0).getChildResources().get(0).getMethods().get(0);
-        assertEquals("getPosts", m.getName());
+        assertEquals("delicious.posts_get", m.getName());
         Resource[] path = m.getResourcePath();
         assertEquals("posts", path[0].getPath());
         assertEquals("get", path[1].getPath());
@@ -84,14 +84,13 @@ public class WadlSaasMethodTest extends NbTestCase {
         SaasServicesModel instance = SaasServicesModel.getInstance();
         SaasGroup group = instance.getRootGroup().getChildGroup("YouTube");
         WadlSaas saas = (WadlSaas) group.getServices().get(0);
-        assertEquals("Video Service", saas.getDisplayName());
-        /* These wadl methods are no longer filter.
+        assertEquals("YouTubeVideos", saas.getDisplayName());
         WadlSaasMethod m = (WadlSaasMethod) saas.getMethods().get(2);
         assertEquals("ListPopular", m.getName());
         Resource[] path = m.getResourcePath();
         assertEquals(1, path.length);
         assertEquals("api2_rest", path[0].getPath());
-        */
+
         SetupUtil.commonTearDown();
     }
 }

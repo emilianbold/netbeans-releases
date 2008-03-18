@@ -59,6 +59,5 @@ made subject to such option by the copyright holder.
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="ff4BFF0F"/>
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
-    <fontcolor name="synchronized-text-blocks-ext" foreColor="ffCC0099"/>
-    <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
+    <fontcolor name="synchronized-text-blocks" bgColor="ff8AC0EC"/>
 </fontscolors>

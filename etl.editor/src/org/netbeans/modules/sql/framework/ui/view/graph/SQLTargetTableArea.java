@@ -65,6 +65,7 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -102,7 +103,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private JMenuItem propertiesItem;
     private JMenuItem synchroniseItem;
     private JMenuItem remountItem;
-    private static transient final Logger mLogger = Logger.getLogger(SQLTargetTableArea.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLTargetTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
     /**
@@ -129,43 +130,43 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         try {
             ActionListener aListener = new TableActionListener();
             // Show SQL
-            String nbBundle1 = mLoc.t("BUND365: Show SQL");
-            String lblShowSql =  nbBundle1.substring(15);
+            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+            String lblShowSql =  Localizer.parse(nbBundle1);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('B', InputEvent.SHIFT_DOWN_MASK));
+            showSqlItem.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
             // Show data
-            String nbBundle2 = mLoc.t("BUND453: Show Data");
-            String lblShowData = nbBundle2.substring(15);
+            String nbBundle2 = mLoc.t("PRSR001: Show Data");
+            String lblShowData = Localizer.parse(nbBundle2);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.ALT_DOWN_MASK));
+            showDataItem.setAccelerator(KeyStroke.getKeyStroke('D',InputEvent.CTRL_MASK));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
 
             // Show rejection data
             // TODO: Add listener framework to enable/disable this action depending on whether
             // a validation condition exists
-            String nbBundle3 = mLoc.t("BUND461: Show Rejected Data...");
-            String lblRjtShowData = nbBundle3.substring(15);
+            String nbBundle3 = mLoc.t("PRSR001: Show Rejected Data...");
+            String lblRjtShowData = Localizer.parse(nbBundle3);
             showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
-            showRejectionDataItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.ALT_DOWN_MASK));
+            showRejectionDataItem.setAccelerator(KeyStroke.getKeyStroke('E',InputEvent.CTRL_MASK));
             showRejectionDataItem.addActionListener(aListener);
             popUpMenu.add(showRejectionDataItem);
 
 
             addSelectVisibleColumnsPopUpMenu(aListener);
-            String nbBundle4 = mLoc.t("BUND024: Refresh Metadata");
-            synchroniseItem = new JMenuItem(nbBundle4.substring(15), new ImageIcon(synchroniseImgUrl));
-            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.SHIFT_DOWN_MASK));
+            String nbBundle4 = mLoc.t("PRSR001: Refresh Metadata");
+            synchroniseItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.CTRL_MASK));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
-            String nbBundle5 = mLoc.t("BUND027: Remount");
-            String lblRemount = nbBundle5.substring(15);
+            String nbBundle5 = mLoc.t("PRSR001: Remount");
+            String lblRemount = Localizer.parse(nbBundle5);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
-            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.SHIFT_DOWN_MASK));
+            remountItem.setAccelerator(KeyStroke.getKeyStroke('M',InputEvent.CTRL_MASK));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
@@ -177,18 +178,18 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
 
             // TODO: show join condition only if source table exist (Delete, Static Insert/Update does not require Join Condition)
             // Target Join Condition
-            String nbBundle6 = mLoc.t("BUND462: Target Join Condition...");
-            String lblTargetCondition = nbBundle6.substring(15);
+            String nbBundle6 = mLoc.t("PRSR001: Target Join Condition...");
+            String lblTargetCondition = Localizer.parse(nbBundle6);
             editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
-            editJoinConditionItem.setAccelerator(KeyStroke.getKeyStroke('J',InputEvent.SHIFT_DOWN_MASK));
+            editJoinConditionItem.setAccelerator(KeyStroke.getKeyStroke('J',InputEvent.CTRL_MASK));
             editJoinConditionItem.addActionListener(aListener);
             popUpMenu.add(editJoinConditionItem);
 
             // Target Filter Condition
-            String nbBundle7 = mLoc.t("BUND463: Outer Filter Condition...");
-            String lblTargetFilterCondition = nbBundle7.substring(15);
+            String nbBundle7 = mLoc.t("PRSR001: Outer Filter Condition...");
+            String lblTargetFilterCondition = Localizer.parse(nbBundle7);
             editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
-            editFilterConditionItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.SHIFT_DOWN_MASK));
+            editFilterConditionItem.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
             editFilterConditionItem.addActionListener(aListener);
             popUpMenu.add(editFilterConditionItem);
             popUpMenu.addSeparator();
@@ -198,10 +199,10 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
 
             // Properties
             popUpMenu.addSeparator();
-            String nbBundle8 = mLoc.t("BUND443: Properties");
-            String lblProps =  nbBundle8.substring(15);
+            String nbBundle8 = mLoc.t("PRSR001: Properties");
+            String lblProps =  Localizer.parse(nbBundle8);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('P',InputEvent.CTRL_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
         } catch (BaseException ex) {
@@ -293,10 +294,10 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private void synchroniseItem_ActionPerformed(ActionEvent e) {
         IGraphView gView = this.getGraphView();
 
-        String nbBundle9 = mLoc.t("BUND026: If columns are deleted or renamed you may lose existing mappings.");
-        String dlgMsg = nbBundle9.substring(15);
-        String nbBundle10 = mLoc.t("BUND024: Refresh Metadata");
-        String dlgTitle = nbBundle10.substring(15);
+        String nbBundle9 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = Localizer.parse(nbBundle9);
+        String nbBundle10 = mLoc.t("PRSR001: Refresh Metadata");
+        String dlgTitle = Localizer.parse(nbBundle10);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (JOptionPane.OK_OPTION == response) {

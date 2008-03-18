@@ -44,11 +44,6 @@
     <target name="netbeans-extra" depends="ant-extra"/> 
     <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../etl.editor/external/net.java.hulp.i18ntask.jar"></taskdef>
       <target name="compile-i18" depends="init">
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)"></i18n>   
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(PRJS\d\d\d)(: )(.*)"></i18n> 
-	<copy file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties"
-                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
-        <copy file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"  
-                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
+        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"></i18n>   
     </target>
 </project>

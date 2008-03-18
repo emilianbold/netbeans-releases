@@ -129,10 +129,7 @@ public class PhysicalView {
             if ( groups[i] == projectDirGroup ) {
                 continue;
             }
-            if ("sharedlibraries".equals(groups[i].getName())) { //NOI18N
-                //HACK - ignore shared libs group in UI, it's only useful for version control commits.
-                continue;
-            }
+            
             nodesList.add(/*new GroupContainmentFilterNode(*/new GroupNode(p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder()))/*, groups[i])*/);
         }
         

@@ -159,7 +159,7 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
         URL url = null;
         for (File f : cp) {
             try {
-                url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                url = f.toURI().toURL();
                 path.add(ClassPathSupport.createResource(url));
             } catch (MalformedURLException ex) {
                 LOG.severe(ex.getMessage());

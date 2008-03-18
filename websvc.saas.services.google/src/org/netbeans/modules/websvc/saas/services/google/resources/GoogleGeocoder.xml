@@ -52,7 +52,7 @@
 
     <description>Google Service</description>
     
-    <display-name>Geocoding Service</display-name>
+    <display-name>GoogleGeocoding</display-name>
 
     <saas-metadata>
 
@@ -67,10 +67,8 @@
 
     </saas-metadata>
 
-    <!--
     <methods>
         <method name="getGeocode" href="#google.Geocode"/>
     </methods>
-    -->
 
 </saas-services>

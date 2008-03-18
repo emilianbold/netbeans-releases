@@ -152,7 +152,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.tcpmon.integration</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
-                <friend>org.netbeans.modules.web.businessone</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>

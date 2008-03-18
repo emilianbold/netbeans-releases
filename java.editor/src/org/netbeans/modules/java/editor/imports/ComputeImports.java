@@ -352,7 +352,7 @@ public class ComputeImports {
                 if (simpleName != null) {
                     unresolved.add(simpleName);
                     
-                    Scope currentScope = getScope();
+                    Scope currentScope = info.getTrees().getScope(getCurrentPath());
                     
                     hints.add(new AccessibleHint(simpleName, currentScope));
                     
@@ -371,21 +371,6 @@ public class ComputeImports {
             return null;
         }
         
-        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.CLASS);
-        
-        //resolving scope for each unresolved identifier is very slow, and not really necessary for Trees.isAccessible -
-        //scope for the nearest class should be OK
-        private Scope getScope() {
-            TreePath tp = getCurrentPath();
-            Kind kind = tp.getLeaf().getKind();
-            
-            while (!SAFE_KIND_FOR_SCOPE.contains(kind)) {
-                tp = tp.getParentPath();
-                kind = tp.getLeaf().getKind();
-            }
-            
-            return info.getTrees().getScope(tp);
-        }
     }
     
     public static interface Hint {

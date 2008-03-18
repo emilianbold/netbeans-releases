@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
@@ -20,7 +21,7 @@ import org.openide.util.HelpCtx;
 
 
 public class SelectDatabasePanel extends AbstractWizardPanel {
-    private static transient final Logger mLogger = Logger.getLogger(SelectDatabasePanel.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectDatabasePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * The visual component that displays this panel. If you need to access the
@@ -120,8 +121,8 @@ public class SelectDatabasePanel extends AbstractWizardPanel {
     }
     
     public String getStepLabel() {
-        String nbBundle1 = mLoc.t("BUND227: Select Database");
-        return nbBundle1.substring(15);
+        String nbBundle1 = mLoc.t("PRSR001: Select Database");
+        return Localizer.parse(nbBundle1);
     }
     
     public String getTitle() {

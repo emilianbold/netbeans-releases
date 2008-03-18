@@ -106,7 +106,12 @@ made subject to such option by the copyright holder.
         <folder name="Other">
             <file name="SpringXMLConfig.shadow">
                 <attr name="originalFile" stringvalue="Templates/SpringFramework/SpringXMLConfig.xml"/>
-                <attr name="templateCategory" stringvalue="spring-types"/>
+                <!--
+                We would need a category included in the Java projects, but not a web project.
+                But There seems to be none, so the Spring config file template shows up in
+                both Spring and Other categories in the web project.
+                -->
+                <attr name="templateCategory" stringvalue="XML"/>
                 <attr name="position" intvalue="475"/>
             </file>
         </folder>
@@ -119,7 +124,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.spring.beans.wizards.NewSpringXMLConfigWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/newSpringXMLConfig.html"/>
-                <attr name="templateCategory" stringvalue="spring-web-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="position" intvalue="100"/>
             </file>
         </folder>
@@ -162,9 +167,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
-                </file>
+                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
@@ -174,9 +177,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
-                </file>
+                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-java-j2seproject">
@@ -186,9 +187,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
-                </file>
+                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
@@ -198,9 +197,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createWeb"/>
-                </file>
+                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>

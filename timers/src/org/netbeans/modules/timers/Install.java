@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.timers;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.Registry;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.modules.ModuleInstall;
@@ -63,17 +62,17 @@ import org.openide.modules.ModuleInstall;
 public class Install extends  ModuleInstall {
     static Logger logger;
     private static Handler timers = new TimerHandler();
-    private static PropertyChangeListener docTracker = new ActivatedDocumentListener();
+    private static ChangeListener docTracker = new ActivatedDocumentListener();
 
     private static String INSTANCES = "Important instances";
     
-    public @Override void restored() {
+    public void restored() {
         Logger log = Logger.getLogger("TIMER"); // NOI18N
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINE);
         log.addHandler(timers);
         
-        EditorRegistry.addPropertyChangeListener(docTracker);
+        Registry.addChangeListener(docTracker);
     }
     
     private static class TimerHandler extends Handler {
@@ -127,14 +126,13 @@ public class Install extends  ModuleInstall {
      *
      * @author Jan Lahoda
      */
-    private static class ActivatedDocumentListener implements PropertyChangeListener {
+    private static class ActivatedDocumentListener implements ChangeListener {
         ActivatedDocumentListener() {}
 
-        public synchronized void propertyChange(PropertyChangeEvent evt) {
-            JTextComponent jtc = EditorRegistry.focusedComponent();
-            if (jtc == null) return;
-            
-            Document active = jtc.getDocument();
+        public synchronized void stateChanged(ChangeEvent e) {
+            Document active = Registry.getMostActiveDocument();
+            if (active == null) return;
+
             Object sourceProperty = active.getProperty(Document.StreamDescriptionProperty);
             if (!(sourceProperty instanceof DataObject)) return;
 

@@ -33,7 +33,6 @@ import java.util.Collection;
 import javax.swing.JEditorPane;
 import org.netbeans.editor.*;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
@@ -41,9 +40,8 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  */
 public class IncludesCompletionTestPerformer extends CompletionTestPerformer {
     
-    private final int queryType;
     public IncludesCompletionTestPerformer() {
-        this.queryType = CompletionProvider.COMPLETION_QUERY_TYPE;
+        
     }
     
     @Override
@@ -52,12 +50,13 @@ public class IncludesCompletionTestPerformer extends CompletionTestPerformer {
             JEditorPane  editor,
             BaseDocument doc,
             int caretOffset,
-            boolean      unsorted
+            boolean      unsorted,
+            int queryType
             ) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         Collection<CsmIncludeCompletionItem> items = null;
         if (doc != null) {
-            items = CsmIncludeCompletionProvider.getFilteredData(doc, caretOffset, this.queryType);
+            items = CsmIncludeCompletionProvider.getFilteredData(doc, caretOffset, queryType);
         }
         CompletionItem[] array =  (items == null) ? new CompletionItem[0] : items.toArray(new CompletionItem[items.size()]);
         assert array != null;

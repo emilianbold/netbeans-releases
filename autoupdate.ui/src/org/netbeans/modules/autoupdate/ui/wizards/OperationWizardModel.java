@@ -352,8 +352,7 @@ public abstract class OperationWizardModel {
     private void recognizeButtons (WizardDescriptor wd) {
         if (! reconized) {
             Object [] options = wd.getOptions ();
-            assert options != null : "options: " + options;
-            assert options.length >= 4 : Arrays.asList (options) + " has lenght 4";
+            assert options != null && options.length >= 4;
             assert options [1] instanceof JButton : options [1] + " instanceof JButton";
             originalNext = (JButton) options [1];
             assert options [2] instanceof JButton : options [2] + " instanceof JButton";

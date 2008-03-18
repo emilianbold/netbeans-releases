@@ -66,10 +66,7 @@
 	<mapID target="framework_jsf_fromentity" url="web/create/tag/framework/framework_jsf_fromentity.html"/>
 	<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html"/>
 	<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html"/>
-        <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
-	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
-	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
-        <mapID target="html_create" url="web/create/html/html_create.html"/>
+	<mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>
 	<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html"/>

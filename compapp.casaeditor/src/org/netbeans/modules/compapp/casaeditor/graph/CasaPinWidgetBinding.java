@@ -42,6 +42,7 @@
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Image;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
@@ -50,20 +51,38 @@ import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
  *
  * @author rdara
  */
-public class CasaPinWidgetBinding extends CasaPinWidget {       
+public class CasaPinWidgetBinding extends CasaPinWidget {
     
-    public CasaPinWidgetBinding(Scene scene, Image pinImage, Image classicPinImage) {
-        super(scene, pinImage, classicPinImage);
-        
+    private Image mOriginalImage;
+    
+    
+    public CasaPinWidgetBinding(Scene scene, Image arrowImage) {
+        super(scene);
+        mOriginalImage = arrowImage;
+        mImageWidget.setImage(arrowImage);
         addChild(mImageWidget);
     }
-            
+    
+    
+    protected void setSelected(boolean isSelected) {
+        if (isSelected) {
+            mImageWidget.setImage(createSelectedPinImage(mOriginalImage));
+        } else {
+            mImageWidget.setImage(mOriginalImage);
+        }
+    }
+    
+    protected Rectangle getPinWidgetBounds() {
+        return mImageWidget.getPreferredBounds();
+    }
+    
     protected void setPinName(String name) {
         // do nothing
     }
    
-    @Override
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, Directions.RIGHT, 0);
     }
+
+
 }

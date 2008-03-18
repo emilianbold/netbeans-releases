@@ -57,7 +57,7 @@
             This is a single WADL method for a all 3 methods of Amazon S3 services.
         -->	
         <resource path="/">
-            <method name="GET" id="getBuckets">
+            <method name="GET" id="amazons3.getBuckets">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                 </request>

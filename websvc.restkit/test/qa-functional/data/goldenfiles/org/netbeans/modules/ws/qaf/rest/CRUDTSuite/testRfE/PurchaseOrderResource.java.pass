@@ -1,7 +1,7 @@
 /*
  *  PurchaseOrderResource
  *
- * Created on March 11, 2008, 10:39 PM
+ * Created on December 12, 2007, 1:27 AM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -32,7 +32,7 @@ import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
 public class PurchaseOrderResource {
     private Integer id;
     private UriInfo context;
-    
+  
     /** Creates a new instance of PurchaseOrderResource */
     public PurchaseOrderResource() {
     }

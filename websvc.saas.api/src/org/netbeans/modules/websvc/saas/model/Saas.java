@@ -39,16 +39,12 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
-import java.net.URL;
-import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
-import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
@@ -56,7 +52,6 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -81,8 +76,6 @@ public class Saas {
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
     
-    public static final String ARTIFACT_TYPE_LIBRARY = "library";
-    
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
     private SaasGroup topGroup;
@@ -91,7 +84,6 @@ public class Saas {
     private State state = State.UNINITIALIZED;
     protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
     private boolean userDefined = true;
-    private List<FileObject> libraryJars; // library artifacts to add to consumer project classpath
 
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
@@ -321,41 +313,5 @@ public class Saas {
         } catch(IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-    }
-    
-    /**
-     * @eturns absolute paths to all library jars, generated or 
-     * provided by vendor module.  Generated
-     */
-    public List<FileObject> getLibraryJars() {
-        if (getState() != State.READY) {
-            throw new IllegalStateException("Should only access libraries when in ready state");
-        }
-        
-        if (libraryJars == null) {
-            libraryJars = new ArrayList<FileObject>();
-            if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
-                for (Artifacts arts : getSaasMetadata().getCodeGen().getArtifacts()) {
-                    for (Artifact art : arts.getArtifact()) {
-                        if (ARTIFACT_TYPE_LIBRARY.equals(art.getType())) {
-                            try {
-                                URL url = new URL(art.getUrl());
-                                libraryJars.add(FileUtil.toFileObject(new File(url.toURI())));
-                            } catch(Exception ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return Collections.unmodifiableList(libraryJars);
-    }
-    
-    public String getPackageName() {
-        if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
-            return getSaasMetadata().getCodeGen().getPackageName();
-        }
-        return null;
     }
 }

@@ -56,6 +56,7 @@ import com.sun.sql.framework.exception.BaseException;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -66,7 +67,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLDBColumn, Cloneable, Comparable {
 
-    private static transient final Logger mLogger = Logger.getLogger(AbstractDBColumn.class.getName());
+    private static transient final Logger mLogger = LogUtil.getLogger(AbstractDBColumn.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** Constant for indicating unknown ordinal position for this column. */
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
@@ -484,11 +485,11 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
         try {
             this.jdbcType = Integer.parseInt(jdbcTypeStr);
         } catch (NumberFormatException e) {
-            mLogger.infoNoloc(mLoc.t("EDIT102: Cannot determine JDBC int type for column{0}({1}); will try parsing as string.", name, jdbcTypeStr));
+            mLogger.infoNoloc(mLoc.t("PRSR102: Cannot determine JDBC int type for column{0}({1}); will try parsing as string.", name, jdbcTypeStr));
             try {
                 this.jdbcType = SQLUtils.getStdJdbcType(jdbcTypeStr);
             } catch (IllegalArgumentException iae) {
-                mLogger.infoNoloc(mLoc.t("EDIT103: Cannot determine JDBC int type for column{0}by parsing as string; giving up..", name));
+                mLogger.infoNoloc(mLoc.t("PRSR103: Cannot determine JDBC int type for column{0}by parsing as string; giving up..", name));
                 this.jdbcType = SQLConstants.JDBCSQL_TYPE_UNDEFINED;
             }
         }
@@ -615,7 +616,7 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
                     }
                 }
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("EDIT104: could not set parent object or id for column{0}", this.getName()), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR104: could not set parent object or id for column{0}", this.getName()), ex);
             }
         }
     }
