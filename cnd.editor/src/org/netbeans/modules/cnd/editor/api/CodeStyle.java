@@ -122,6 +122,11 @@ public final class CodeStyle {
                          EditorOptions.indentCasesFromSwitchDefault);
     }
 
+    public boolean absoluteLabelIndent() {
+        return getOption(EditorOptions.absoluteLabelIndent,
+                         EditorOptions.absoluteLabelIndentDefault);
+    }
+
     public boolean sharpAtStartLine(){
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
@@ -200,6 +205,7 @@ public final class CodeStyle {
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
+    //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -208,6 +214,19 @@ public final class CodeStyle {
     public boolean alignMultilineMethodParams() {
         return getOption(EditorOptions.alignMultilineMethodParams,
                          EditorOptions.alignMultilineMethodParamsDefault);
+    }
+
+    public boolean alignMultilineFor() {
+        return getOption(EditorOptions.alignMultilineFor,
+                         EditorOptions.alignMultilineForDefault);
+    }
+    public boolean alignMultilineIfCondition() {
+        return getOption(EditorOptions.alignMultilineIfCondition,
+                         EditorOptions.alignMultilineIfConditionDefault);
+    }
+    public boolean alignMultilineWhileCondition() {
+        return getOption(EditorOptions.alignMultilineWhileCondition,
+                         EditorOptions.alignMultilineWhileConditionDefault);
     }
 
     public boolean spaceAroundUnaryOps() {

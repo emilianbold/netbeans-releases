@@ -363,6 +363,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
+        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
         fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
         fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
         fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ws.qaf.utilities;
 
+import java.util.logging.Logger;
 import org.netbeans.junit.diff.LineDiff;
 
 /**
@@ -49,6 +50,8 @@ import org.netbeans.junit.diff.LineDiff;
  */
 public class FilteringLineDiff extends LineDiff {
 
+    private static final Logger LOGGER = Logger.getLogger(FilteringLineDiff.class.getName());
+    
     /**
      * Creates a new instance of FilteringLineDiff
      *
@@ -87,6 +90,18 @@ public class FilteringLineDiff extends LineDiff {
             return true;
         }
         if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {
+            return true;
+        }
+        //WA: there's some strange random issue which causes that some
+        //"randomly" chosen types are used with FQN
+        String pkg = "o.n.m.ws.qaf.rest.crud.service.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            return true;
+        }
+        pkg = "o.n.m.ws.qaf.rest.crud.converter.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
             return true;
         }
         return false;

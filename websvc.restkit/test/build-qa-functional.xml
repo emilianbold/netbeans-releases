@@ -51,49 +51,8 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-    <target name="-init-props">
-        <property name="build.dir" value="${nb_all}/websvc.restkit/build" />
-        <mkdir dir="${build.dir}" />
-        <property name="lib.dir" value="${build.dir}/libs"/>
-        <mkdir dir="${lib.dir}" />
-
-        <condition property="skip-download-httpunit" >
-            <and>
-                <available file="${lib.dir}/httpunit-1.6.2.jar" />
-                <available file="${lib.dir}/Tidy-r7.jar" />
-            </and>
-        </condition>
-    </target>
-
-    <target name="-httpunit" unless="skip-download-httpunit" depends="-setup-proxy" >
-        <echo message="Going to download httpunit. If it fails download it from http://www.httpunit.org/" />
-        <echo message="(and unpack httpunit, js and jtidy jars into ${lib.dir})"/>
-        <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://hg.netbeans.org/binaries/B4B42BDA5955665AE5B6D7FA60A4B401BD1063E2-httpunit-1.6.2.jar" dest="${lib.dir}/httpunit-1.6.2.jar"/>
-        <get src="http://hg.netbeans.org/binaries/414EE6C40F6EE7FC11EB4540E63AE04DE0656087-Tidy-r7.jar" dest="${lib.dir}/Tidy-r7.jar"/>
-    </target>
-
     <target name="-setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
-    </target>
-
-    <target name="-clean-httpunit" depends="-init-props">
-        <delete dir="${lib.dir}" />
-    </target>
-
-    <target name="-init-httpunit" depends="-init-props, -httpunit"/>
-
-    <!--
-      XXX make sure httpunit.jar (and related jars) is loaded first
-      to avoid conflict with httunit module (SOA) and jtidy (visualweb)
-     -->
-    <target name="-init-cp-wa" depends="-init-props">
-        <path id="httpunit.libs">
-            <fileset dir="${lib.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </path>
-        <property name="coverage.lib.path" refid="httpunit.libs"/>
     </target>
 
     <!--
@@ -116,7 +75,7 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
 
-    <target name="-download-jmaki" if="plugins.jmaki.do.download">
+    <target name="-download-jmaki" if="plugins.jmaki.do.download" depends="-setup-proxy">
         <echo message="Going to download ${plugins.jmaki.nbm.name}. If it fails download it from http://ajax.dev.java.net" />
         <echo message="(and put it into ${java.io.tmpdir})"/>
         <echo message="or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
@@ -164,6 +123,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-init-cp-wa, setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
+    <target name="runidetest-with-appserver" depends="setup-jmaki-nbm, -runidetest-with-glassfish, -runidetest-with-tomcat, -runidetest-with-jboss"/>
 
 </project>

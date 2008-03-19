@@ -67,7 +67,6 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.Valid
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
 
 /**
@@ -76,7 +75,7 @@ import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
  */
 public class ConditionBuilderRightPanel extends JPanel implements IConditionGraphViewContainer {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderRightPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderRightPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class ValidationThread extends SwingWorker {
@@ -103,12 +102,12 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         // Runs on the event-dispatching thread.
         public void finished() {
             if (execModel.getAllObjects().size() == 0) {
-                String nbBundle1 = mLoc.t("PRSR001: \nNo expression to be validated in the Graph.");
-                String msg = Localizer.parse(nbBundle1);
+                String nbBundle1 = mLoc.t("BUND384: No expression to be validated in the Graph.");
+                String msg = nbBundle1.substring(15);
                 validationView.appendToView(msg);
             } else if (list.size() == 0) {
-                String nbBundle2 = mLoc.t("PRSR001: \nCondition is valid.");
-                String msg = Localizer.parse(nbBundle2);
+                String nbBundle2 = mLoc.t("BUND379: Condition is valid.");
+                String msg = nbBundle2.substring(15);
                 validationView.appendToView(msg);
             } else {
                 validationView.setValidationInfos(list);
@@ -168,8 +167,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         try {
             if (model != null) {
                 validationView.clearView();
-                String nbBundle3 = mLoc.t("PRSR001: Performing validation...");
-                String msg = Localizer.parse(nbBundle3);
+                String nbBundle3 = mLoc.t("BUND385: Performing validation...");
+                String msg = nbBundle3.substring(15);
                 validationView.appendToView(msg);
 
                 SQLCondition cond1 = model.getSQLCondition();
@@ -177,10 +176,10 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
                 vThread.start();
             }
         } catch (Exception ex) {
-            String nbBundle4 = mLoc.t("PRSR001: \nError occurred during validation: {0}", ex.getMessage());
-            String msg = Localizer.parse(nbBundle4);
+            String nbBundle4 = mLoc.t("BUND386: Error occurred during validation: {0}", ex.getMessage());
+            String msg = nbBundle4.substring(15);
 
-            mLogger.errorNoloc(mLoc.t("PRSR154: error doing condition validation{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT154: error doing condition validation{0}", LOG_CATEGORY), ex);
             validationView.appendToView(msg);
         }
     }
@@ -234,7 +233,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             SwingUtilities.invokeLater(layout);
         } catch (Exception ex) {
             // Safely ignore this exception
-            mLogger.errorNoloc(mLoc.t("PRSR155: Can't refresh condition graph view{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT513: Can't refresh condition graph view{0}", LOG_CATEGORY), ex);
         }
     }
 
@@ -343,8 +342,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         this.add(hSplitPane, BorderLayout.CENTER);
 
         validationView = new SQLValidationView(graphView);
-        String nbBundle5 = mLoc.t("PRSR001: Validation:");
-        String name = Localizer.parse(nbBundle5);
+        String nbBundle5 = mLoc.t("BUND383: Validation");
+        String name = nbBundle5.substring(15);
         validationView.setName(name);
 
         BasicToolBar tlBar = (BasicToolBar) viewFactory.getOperatorView();

@@ -342,6 +342,9 @@ TreeSelectionListener, ListSelectionListener {
                 cbProfile.addItem (keymaps.get (i));
             listen = true;
         }
+        //refresh -- #65199
+        getModel().refreshActions();
+        
         cbProfile.setSelectedItem (getModel ().getCurrentProfile ());
     }
     

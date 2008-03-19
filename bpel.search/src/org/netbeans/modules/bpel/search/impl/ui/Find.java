@@ -104,7 +104,7 @@ public final class Find extends SearchControlPanel {
       return;
     }
     for (Object element : myElements) {
-      ((SearchElement) element).highlight(false);
+      ((SearchElement) element).unhighlight();
     }
     myElements = null;
   }
@@ -116,7 +116,7 @@ public final class Find extends SearchControlPanel {
     if ( !(object instanceof SearchElement)) {
       return;
     }
-    ((SearchElement) object).select();
+    ((SearchElement) object).gotoDesign();
   }
 
   private void bindAction(JComponent parent) {

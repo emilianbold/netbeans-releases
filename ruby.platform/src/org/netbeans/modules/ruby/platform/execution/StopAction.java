@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,11 +59,17 @@ import org.openide.util.RequestProcessor;
  */
 final class StopAction extends AbstractAction {
     
-    public List<RequestProcessor.Task> processorTasks = new CopyOnWriteArrayList<RequestProcessor.Task>();
+    private final List<RequestProcessor.Task> processorTasks;
+    private Runnable finishAction;
     public Process process;
 
     public StopAction() {
+        processorTasks = new CopyOnWriteArrayList<RequestProcessor.Task>();
         setEnabled(false); // initially, until ready
+    }
+    
+    void addTask(final RequestProcessor.Task task) {
+        processorTasks.add(task);
     }
 
     public @Override Object getValue(String key) {
@@ -71,7 +77,7 @@ final class StopAction extends AbstractAction {
             return new ImageIcon(ExecutionService.class.getResource(
                     "/org/netbeans/modules/ruby/platform/resources/stop.gif")); // NOI18N
         } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-            return NbBundle.getMessage(ExecutionService.class, "Stop");
+            return NbBundle.getMessage(StopAction.class, "Stop");
         } else {
             return super.getValue(key);
         }
@@ -82,21 +88,24 @@ final class StopAction extends AbstractAction {
             processorTasks.remove(task);
 
             // Done
-            if (processorTasks.size() == 0) {
-                if (process != null) {
-                    process.destroy();
-                    process = null;
-                }
+            if (!processorTasks.isEmpty() && process != null) {
+                process.destroy();
+                process = null;
             }
         }
     }
 
     public void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
+        finishAction.run();
 
         for (RequestProcessor.Task task : processorTasks) {
             task.cancel();
         }
+    }
+
+    void setFinishAction(final Runnable finishAction) {
+        this.finishAction = finishAction;
     }
     
 }

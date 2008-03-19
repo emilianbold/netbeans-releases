@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -168,21 +164,26 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSwitchFormatting3Half() {
+    public void testDereferenceFormatting() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int main(int i)\n" +
+                "int foo()\n" +
                 "{\n" +
-                "if (offset)\n" +
-                "    *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect formatting for macro define with paren",
-                "int main(int i)\n" +
+        assertDocumentText("Incorrect * formating",
+                "int foo()\n" +
                 "{\n" +
-                "    if (offset)\n" +
-                "        *offset = layout->record_size / BITS_PER_UNIT;\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
+                "    }\n" +
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
                 "}\n");
     }
-
 }

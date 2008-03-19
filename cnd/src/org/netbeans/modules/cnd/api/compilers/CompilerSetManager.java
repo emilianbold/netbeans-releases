@@ -50,13 +50,17 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -124,7 +128,20 @@ public class CompilerSetManager {
             instance = restoreFromDisk();
             if (instance == null) {
                 instance = new CompilerSetManager();
-                instance.saveToDisk();
+                if (instance.getCompilerSets().size() > 0 && instance.getCompilerSets().get(0).getName() != CompilerSet.None) {
+                    instance.saveToDisk();
+                } else {
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                        new NoCompilersPanel(),
+                        getString("NO_COMPILERS_FOUND_TITLE"),
+                        true,
+                        new Object[]{DialogDescriptor.OK_OPTION},
+                        DialogDescriptor.OK_OPTION,
+                        DialogDescriptor.BOTTOM_ALIGN,
+                        null,
+                        null);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
+                }
             }
         }
         if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
@@ -733,5 +750,10 @@ public class CompilerSetManager {
         }
         
         return new CompilerSetManager(css);
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 }

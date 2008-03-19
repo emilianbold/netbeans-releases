@@ -50,8 +50,10 @@ import java.util.*;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.*;
@@ -74,6 +76,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery[] whereUsedQueries;
     
     private static final String DOT = "."; //NOI18N
+    private static final String JAVA_EXTENSION = "java";
     
     /**
      * Creates the a new instance of the Safe Delete refactoring
@@ -97,7 +100,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
         Collection<ElementGrip> abstractMethHandles = new ArrayList<ElementGrip>();
         Set<Object> refactoredObjects = new HashSet<Object>();
-        Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+        Collection<? extends FileObject> files = lookupJavaFileObjects();
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
         for(int i = 0;i < whereUsedQueries.length; ++i) {
             Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
@@ -162,7 +165,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStop();
         return null;
     }
-    
+
     private class ProblemDetailsImplemen implements ProblemDetailsImplementation {
         
         private RefactoringUI ui;
@@ -229,7 +232,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         //This class expects too many details from SafeDeleteRefactoring
         //But there's no other go I guess.
         grips.clear();
-        for (final FileObject f : refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
+        for (final FileObject f: lookupJavaFileObjects()) {
             JavaSource source = JavaSource.forFileObject(f);
             if (source == null) {
                 continue;
@@ -302,6 +305,25 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return q;
     }
     
+    private Collection<? extends FileObject> lookupJavaFileObjects() {
+        Lookup lkp = refactoring.getRefactoringSource();
+        Collection<? extends FileObject> javaFiles = null;
+        NonRecursiveFolder folder = lkp.lookup(NonRecursiveFolder.class);
+        if (folder != null) {
+            javaFiles = getJavaFileObjects(folder.getFolder(), false);
+        } else {
+            Collection<FileObject> javaFileObjects =  new ArrayList<FileObject>();
+            for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
+                if (fileObject.isFolder()) {
+                    javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
+                }else if (RetoucheUtils.isRefactorable(fileObject)) {
+                    javaFileObjects.add(fileObject);
+                }
+            }
+            javaFiles = javaFileObjects;
+        }
+        return javaFiles;
+    }
     
     //Private Helper methods
     private static String getString(String key) {
@@ -351,4 +373,20 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return methodNameString[0];
     }
     
+    private static Collection<FileObject> getJavaFileObjects(FileObject dirFileObject, boolean isRecursive){
+        Collection<FileObject> javaSrcFiles = new ArrayList<FileObject>();
+        addSourcesInDir(dirFileObject, isRecursive, javaSrcFiles);
+        return javaSrcFiles;
+    }
+
+    private static void addSourcesInDir(FileObject dirFileObject, boolean isRecursive, Collection<FileObject> javaSrcFiles) {
+        for (FileObject childFileObject : dirFileObject.getChildren()) {
+            if (childFileObject.isData() && JAVA_EXTENSION.equalsIgnoreCase(childFileObject.getExt())) {
+                javaSrcFiles.add(childFileObject);
+            }
+            else if (childFileObject.isFolder() && isRecursive) {
+                addSourcesInDir(childFileObject, true, javaSrcFiles);
+            }
+        }
+    }
 }
