@@ -162,6 +162,9 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
             HibernateMappingDataObject hmo = (HibernateMappingDataObject) newOne;
             if (descriptor.getClassName() != null && !"".equals(descriptor.getClassName())) {
                 myClass.setAttributeValue("name", descriptor.getClassName());
+                if (descriptor.getDatabaseTable() != null && !"".equals(descriptor.getDatabaseTable())) {
+                    myClass.setAttributeValue("table", descriptor.getDatabaseTable());
+                }
                 hmo.addMyClass(myClass);
             }            
             hmo.save();
