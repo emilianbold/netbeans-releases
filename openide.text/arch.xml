@@ -407,7 +407,11 @@ in methods
         </question>
 -->
 <answer id="exec-privateaccess">
-No.
+<api name="EditorKitInitialization" category="friend" group="java" type="export">
+    In order to speedup, or remove the load of initialization of kit in AWT during startup,
+    there is a special API that allows to ask the kit to pre-initialize. If the kit
+    implements <code>Callable</code> interface from JDK, it is called in non-AWT thread.
+</api>
 </answer>
 
 

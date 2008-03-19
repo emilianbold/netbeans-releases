@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -288,8 +289,18 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
+            
+            EditorKit k = support.cesKit();
+            
+            if (k instanceof Callable) {
+                try {
+                    ((Callable) k).call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
             synchronized (this) {
-                kit = support.cesKit();
+                kit = k;
                 notifyAll();
             }
         }
