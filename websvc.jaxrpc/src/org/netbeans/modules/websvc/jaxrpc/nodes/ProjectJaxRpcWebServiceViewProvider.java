@@ -40,7 +40,7 @@
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ProjectWebServiceView;
+import org.netbeans.modules.websvc.core.ProjectWebServiceViewImpl;
 import org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider;
 
 /**
@@ -49,7 +49,7 @@ import org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider;
  */
 public class ProjectJaxRpcWebServiceViewProvider implements ProjectWebServiceViewProvider {
 
-    public ProjectWebServiceView createProjectWebServiceView(Project p) {
+    public ProjectWebServiceViewImpl createProjectWebServiceView(Project p) {
         return new ProjectJaxRpcWebServiceView(p);
     }
 
