@@ -52,6 +52,7 @@ import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.customizer.PhpCustomizerProvider;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -252,7 +253,7 @@ public class PhpProject implements Project, AntProjectListener {
                 getHelper().createCacheDirectoryProvider(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider( this , provider ),
-                new PhpCustomizerProvider( this ),
+                new CustomizerProviderImpl(this, myHelper),
                 getHelper().createSharabilityQuery( getEvaluator(), 
                     new String[] { SRC_DIR } , new String[] {} ),
                 new PhpProjectOperations(this) ,

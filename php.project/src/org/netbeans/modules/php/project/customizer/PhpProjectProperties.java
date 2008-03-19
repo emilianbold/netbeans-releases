@@ -63,18 +63,18 @@ import org.openide.util.Mutex;
  * @author ads
  *
  */
-class PhpProjectProperties {
+public class PhpProjectProperties {
 
     public static final String STATUS_USE_NO_HOST = "use_no_host";
     public static final String STATUS_ABSENT_HOST = "absent_host";
 
     private static Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
     
-    PhpProjectProperties(PhpProject project) {
+    public PhpProjectProperties(PhpProject project) {
         myProject = project;
     }
 
-    void save() {
+    public void save() {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
 
             public Host run() {
