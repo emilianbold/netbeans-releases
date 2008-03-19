@@ -41,8 +41,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-php-rt-options-ServerActionsOptions.instance"/>
+        </folder>
+    </folder>
     <folder name="UI">
         <folder name="Runtime">
             <file name="org-netbeans-modules-php-rt-WebServersRootNode.instance">
@@ -53,13 +57,5 @@ made subject to such option by the copyright holder.
     
     <folder name="WebServers">
         <folder name="Hosts"/>
-    </folder>
-    <folder name="org.netbeans.modules.php">
-        <folder name="ActionsOptions">
-            <file name="ServerActionsOptions.instance">
-                <attr name="position" intvalue="160"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.rt.options.ServerActionsOptions"/>
-            </file>
-        </folder>
     </folder>
 </filesystem>

@@ -23,7 +23,7 @@
                   <Group type="102" attributes="0">
                       <Component id="sharedLibrariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="librariesLocation" pref="289" max="32767" attributes="2"/>
+                      <Component id="librariesLocation" pref="301" max="32767" attributes="2"/>
                   </Group>
                   <Component id="jScrollPane2" pref="382" max="32767" attributes="0"/>
               </Group>
@@ -39,7 +39,7 @@
                   <Component id="jButtonMoveDown" alignment="1" pref="119" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabelErrorMessage" alignment="0" pref="507" max="32767" attributes="0"/>
+          <Component id="jLabelErrorMessage" alignment="0" pref="509" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
