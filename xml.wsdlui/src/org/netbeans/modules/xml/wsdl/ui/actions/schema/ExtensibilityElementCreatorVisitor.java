@@ -381,7 +381,7 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
         
         ExtensibilityElement element = createExtensibilityElement(elementName, prefix, namespace, peek());
         addExtensibilityElement(peek(), element);
-        ExtensibilityElementConfigurator configurator = new ExtensibilityElementConfiguratorFactory().getExtensibilityElementConfigurator(new QName(namespace, elementName));
+        ExtensibilityElementConfigurator configurator = ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(new QName(namespace, elementName));
         if (configurator != null) {
             String attributeName = configurator.getDisplayAttributeName(element, element.getQName());
             if (attributeName != null && element.getAttribute(attributeName) == null) {
@@ -429,7 +429,7 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
         } else {
             QName elementQName = new QName(attr.getModel().getSchema().getTargetNamespace(), exElement.getQName().getLocalPart());
             ExtensibilityElementConfigurator configurator = 
-                new ExtensibilityElementConfiguratorFactory().getExtensibilityElementConfigurator(elementQName);
+                ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(elementQName);
             if(simpleType != null) {
                 //for boolean type we show true/false drop down
                 String simpleTypeName = null;

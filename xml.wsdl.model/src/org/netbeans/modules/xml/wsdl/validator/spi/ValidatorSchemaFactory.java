@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.xml.wsdl.validator.spi;
 
-import java.io.InputStream;
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.ls.LSResourceResolver;
 
 

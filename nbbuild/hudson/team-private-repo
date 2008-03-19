@@ -91,23 +91,19 @@ fi
 
 if [ "$action" = "sync" ]; then
     # update the latest tip of the private repository
-    hg pull http://hg.netbeans.org/$repository
-    hg up -C
+    hg fetch http://hg.netbeans.org/$repository
 
     # pulling new changes from main-golden
-    hg fetch http://hg.netbeans.org/main-golden
+    # not needed because the real.workspace is the latest main-golden
+    # hg fetch http://hg.netbeans.org/main-golden
 
     # Now build and run tests before push
     ant build || exit 2
     ant commit-validation # || exit 3
 
-    HEADS=`hg heads --template "{node}\n" | wc -l`
-    if [ $HEADS = 2 ]; then
-      hg merge
-      hg ci -m "Automated merge"
-      hg up -C
-    fi
     echo hg push https://\"$push_username\":\"$push_password\"@hg.netbeans.org/$repository
+    echo "Test push:"
+    hg push /export/chau/Workspace/src/jsdebugger-testpush
     exit 0
 fi
 # Something wrong here

@@ -50,21 +50,26 @@ package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
+import org.netbeans.modules.xml.wsdl.ui.cookies.RefreshExtensibilityElementNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfo;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfoContainer;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.windows.TopComponent;
 
 
 
@@ -77,35 +82,30 @@ import org.openide.loaders.DataObject;
  */
 public class WSDLExtensibilityElementImpl implements WSDLExtensibilityElement {
     
-    
     private DataFolder mDataFolder;
     
-    private Map elementInfoMap = new HashMap();
+    private Map<String, WSDLExtensibilityElementInfo> elementInfoMap = new HashMap<String, WSDLExtensibilityElementInfo>();
     
-    private Map providersMap = new HashMap();
+    private Map<String, WSDLExtensibilityElementInfoContainer> providersMap = new HashMap<String, WSDLExtensibilityElementInfoContainer>();
     
     private WSDLExtensibilityElementsImpl mRootElement;
     
     public WSDLExtensibilityElementImpl(DataFolder dataObject, WSDLExtensibilityElementsImpl element) {
         this.mDataFolder = dataObject;
         this.mRootElement = element;
+        mDataFolder.getPrimaryFile().addFileChangeListener(new WSDLExtensibilityElementFileChangeListener());
     }
     
     public WSDLExtensibilityElementInfo getWSDLExtensibilityElementInfos(QName elementQName) {
-        List allInfos = getAllWSDLExtensibilityElementInfos();
-        Iterator it = allInfos.iterator();
+        List<WSDLExtensibilityElementInfo> allInfos = getAllWSDLExtensibilityElementInfos();
         String ns = elementQName.getNamespaceURI();
         String localPart = elementQName.getLocalPart();
-        while(it.hasNext()) {
-            WSDLExtensibilityElementInfo eInfo = (WSDLExtensibilityElementInfo) it.next();
+        for (WSDLExtensibilityElementInfo eInfo : allInfos) {
             Schema schema = eInfo.getSchema();
-            if(schema != null) {
-                if(ns != null) {
-                    if(ns.equals(schema.getTargetNamespace()) 
-                            && localPart.equals(eInfo.getElementName())) {
-                        if(findGlobalElement(elementQName, schema) != null) {
-                            return eInfo;
-                        }
+            if(schema != null && ns != null) {
+                if (ns.equals(schema.getTargetNamespace()) && localPart.equals(eInfo.getElementName())) {
+                    if (findGlobalElement(elementQName, schema) != null) {
+                        return eInfo;
                     }
                 }
             }
@@ -114,30 +114,26 @@ public class WSDLExtensibilityElementImpl implements WSDLExtensibilityElement {
         return null;
     }
     
-    public List getAllWSDLExtensibilityElementInfos() {
-        ArrayList elementsInfo = new ArrayList();
+    public List<WSDLExtensibilityElementInfo> getAllWSDLExtensibilityElementInfos() {
+        ArrayList<WSDLExtensibilityElementInfo> elementsInfo = new ArrayList<WSDLExtensibilityElementInfo>();
         elementsInfo.addAll(getWSDLExtensibilityElementInfos());
-        
-        List containers = getAllWSDLExtensibilityElementInfoContainers();
-        Iterator it = containers.iterator();
-        while(it.hasNext()) {
-            WSDLExtensibilityElementInfoContainer container = (WSDLExtensibilityElementInfoContainer) it.next();
+
+        List<WSDLExtensibilityElementInfoContainer> containers = getAllWSDLExtensibilityElementInfoContainers();
+        for (WSDLExtensibilityElementInfoContainer container : containers) {
             elementsInfo.addAll(container.getAllWSDLExtensibilityElementInfo());
         }
         
         return elementsInfo;
     }
     
-    public List getWSDLExtensibilityElementInfos() {
-        ArrayList elementInfos = new ArrayList();
-        ArrayList allDataObjectNames = new ArrayList();
+    public List<WSDLExtensibilityElementInfo> getWSDLExtensibilityElementInfos() {
+        ArrayList<WSDLExtensibilityElementInfo> elementInfos = new ArrayList<WSDLExtensibilityElementInfo>();
+        ArrayList<String> allDataObjectNames = new ArrayList<String>();
         
         DataObject[] children = this.mDataFolder.getChildren();
-        for(int i = 0; i < children.length; i++ ) {
-            DataObject dObj = children[i];
+        for (DataObject dObj : children) {
             if(!(dObj instanceof DataFolder)) {
-                WSDLExtensibilityElementInfo elementInfo = 
-                    (WSDLExtensibilityElementInfo) elementInfoMap.get(dObj.getName());
+                WSDLExtensibilityElementInfo elementInfo = elementInfoMap.get(dObj.getName());
                 
                 if(elementInfo == null) {
                     elementInfo = createNewElementInfo(dObj);
@@ -149,35 +145,24 @@ public class WSDLExtensibilityElementImpl implements WSDLExtensibilityElement {
             }
         }
         
-        
-        //TODO:update elementInfoMap map. this is to ensure if some
-        //modules are disabled then we remove the elementInfos provided 
-        //by that module
-        
-        
         return elementInfos;
     }
     
-    public List getAllWSDLExtensibilityElementInfoContainers() {
-        ArrayList providers = new ArrayList();
+    public List<WSDLExtensibilityElementInfoContainer> getAllWSDLExtensibilityElementInfoContainers() {
+        ArrayList<WSDLExtensibilityElementInfoContainer> providers = new ArrayList<WSDLExtensibilityElementInfoContainer>();
         DataObject[] children = this.mDataFolder.getChildren();
-        for(int i = 0; i < children.length; i++ ) {
-            DataObject dObj = children[i];
+        for (DataObject dObj : children) {
             if(dObj instanceof DataFolder) {
                 WSDLExtensibilityElementInfoContainer provider = 
-                    (WSDLExtensibilityElementInfoContainer) providersMap.get(dObj.getName());
+                     providersMap.get(dObj.getName());
                 
                 if(provider == null) {
                     provider = createNewProvider((DataFolder) dObj);
                     providersMap.put(dObj.getName(), provider);
-                } 
+                }
                 providers.add(provider);
             }
         }
-        
-        //update provider map. this is to ensure if some
-        //modules are disabled then we remove the provider provided 
-        //by that module
         
         return providers;
     }
@@ -221,9 +206,7 @@ public class WSDLExtensibilityElementImpl implements WSDLExtensibilityElement {
         
     private GlobalElement findGlobalElement(QName elementQName, Schema schema) {
         Collection<GlobalElement> elements = schema.getElements();
-        Iterator<GlobalElement> iter = elements.iterator();
-        while (iter.hasNext()) {
-            GlobalElement elem =  iter.next();
+        for (GlobalElement elem : elements) {
             if (elem.getName().equals(elementQName.getLocalPart())) {
                 return elem;
             }
@@ -247,5 +230,33 @@ public class WSDLExtensibilityElementImpl implements WSDLExtensibilityElement {
         }
         
         return result;
+    }
+    
+    class WSDLExtensibilityElementFileChangeListener extends FileChangeAdapter {
+        
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    //first try to refresh the active topcomponent
+                    TopComponent tc = TopComponent.getRegistry().getActivated();
+                    if (tc != null) {
+                        RefreshExtensibilityElementNodeCookie rc = tc.getLookup().lookup(RefreshExtensibilityElementNodeCookie.class);
+                        if (rc != null) rc.refresh();
+                    }
+                    
+                    Set<TopComponent> openedTCs = TopComponent.getRegistry().getOpened();
+                    for (TopComponent openedTC : openedTCs) {
+                        RefreshExtensibilityElementNodeCookie rc = openedTC.getLookup().lookup(RefreshExtensibilityElementNodeCookie.class);
+                        if (rc != null) {
+                            rc.refresh();
+                        }
+                    }
+                }
+            });
+
+        }
+
     }
 }

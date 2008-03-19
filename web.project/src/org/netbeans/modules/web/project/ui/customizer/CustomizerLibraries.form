@@ -22,8 +22,8 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="librariesLocation" pref="334" max="32767" attributes="2"/>
-                  <Component id="jComboBoxTarget" alignment="0" pref="334" max="32767" attributes="2"/>
+                  <Component id="librariesLocation" pref="401" max="32767" attributes="2"/>
+                  <Component id="jComboBoxTarget" alignment="0" pref="401" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">

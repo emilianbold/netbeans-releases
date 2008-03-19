@@ -48,7 +48,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,6 +61,8 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.schema.model.Element;
+
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.RemoveAttributesAction;
@@ -83,7 +84,6 @@ import org.netbeans.modules.xml.wsdl.ui.schema.visitor.SchemaDocumentationFinder
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfiguratorFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementChildNewTypesFactory;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
@@ -117,6 +117,9 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
     private ExtensibilityElementConfigurator mConfigurator;
     private ResourceBundle bundle;
     private Map<String, String> groupNameMap = new HashMap<String, String>();
+    private String extensibilityElementType;
+    
+    private boolean isExtensionIdentified = false;
 
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
         super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
@@ -132,7 +135,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
         }
 
         String displayName = mQName != null ? Utility.fromQNameToString(mQName) : "Missing Name";
-        mConfigurator = new ExtensibilityElementConfiguratorFactory().getExtensibilityElementConfigurator(mQName);
+        mConfigurator = ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(mQName);
         boolean isNameSet = false;
         if (isNamedReferenceable()) {
             setNamedPropertyAdapter(new ExtensibilityElementConstrainedNamedPropertyAdapter());
@@ -157,93 +160,75 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                 setShortDescription(mQName != null ? mQName.toString() : "Missing Name");
             }
         }
+        WSDLComponent parentComponent = mWSDLConstruct.getParent();
+        extensibilityElementType = ExtensibilityUtils.getExtensibilityElementType(parentComponent);
+        identifyExtension();
+        
+       
+    }
 
-        WSDLExtensibilityElementInfo info = null;
-        try {
-            WSDLComponent parentComponent = mWSDLConstruct.getParent();
-            String extensibilityElementType = ExtensibilityUtils.getExtensibilityElementType(parentComponent);
-            if (extensibilityElementType != null) {
-                WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
-                WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
-                if (mExtensibilityElement != null) {
-                    info = mExtensibilityElement.getWSDLExtensibilityElementInfos(mQName);
-                    if (info != null && info.getElement() != null) {
-                        this.mLayerDelegateNode = getLayerDelegateNode(info);
-
-                        this.mSchemaElement = info.getElement();
-                        bundle = info.getBundle();
-                    /*SchemaElementCookie sCookie = new SchemaElementCookie(mElement);
-                    getLookupContents().add(sCookie);*/
-                    }
-                }
-            } else {
-                mSchemaElement = ExtensibilityUtils.getElement(mWSDLConstruct);
-
-            /*                SchemaElementCookie sCookie = (SchemaElementCookie) parent.getCookie(SchemaElementCookie.class);
-            if(sCookie != null && sCookie.getElement() != null) {
-            Element parentElement = sCookie.getElement();
-            if(parentElement != null) {
-            SchemaElementFinderVisitor seFinder = new SchemaElementFinderVisitor(qName.getLocalPart());
-            parentElement.accept(seFinder);
-            this.mElement = seFinder.getSuccessorElement();
-            if(this.mElement != null) {
-            sCookie = new SchemaElementCookie(mElement);
-            getLookupContents().add(sCookie);
-            }
-            }
-            XMLType type = parentElement.getType();
-            if(type instanceof ComplexType) {
-            ComplexType cType = (ComplexType) type;
-            this.mElement = cType.getElementDecl(this.mWSDLConstruct.getLocalName());
-            if(this.mElement != null) {
-            sCookie = new SchemaElementCookie(mElement);
-            getLookupContents().add(sCookie);
-            }
-            }
-            } else {
-            mLogger.warning("Failed to find SchemaElementCookie in parent " + wsdlConstruct.toString() + " or SchemaElementCookie has null schema element");
-            }*/
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-
-        if (this.mSchemaElement != null) {
-            SchemaDocumentationFinderVisitor sdFinder = new SchemaDocumentationFinderVisitor();
-            this.mSchemaElement.accept(sdFinder);
-            String docStr = sdFinder.getDocumentation();
-            if (docStr != null && docStr.length() > 0) {
-                String shortDesc = docStr;
-
-                if (info != null) {
-                    if (bundle != null) {
-                        try {
-                            shortDesc = bundle.getString(docStr);
-                        } catch (MissingResourceException e) {
-                            //ignore exception
-                        }
-                    }
-                }
-                this.setShortDescription(shortDesc);
-            }
-            
+    private void identifyExtension() {
+        if (!isExtensionIdentified) {
+            WSDLExtensibilityElementInfo info = null;
             try {
-                ElementProperties elemProps = PropertyModelFactory.getInstance().getElementProperties(mQName);
-                if (elemProps != null) {
-                    for (GroupedProperty gProp : elemProps.getGroupedProperty()) {
-                        String groupedNames = gProp.getGroupedAttributeNames();
-                        String[] splits = groupedNames.split(" ");
-                        String groupDisplayName = gProp.getDisplayName();
-                        for (String split : splits) {
-                            groupNameMap.put(split, groupDisplayName);
+                if (extensibilityElementType != null) {
+                    WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
+                    WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
+                    if (mExtensibilityElement != null) {
+                        info = mExtensibilityElement.getWSDLExtensibilityElementInfos(mQName);
+                        if (info != null && info.getElement() != null) {
+                            this.mLayerDelegateNode = getLayerDelegateNode(info);
+                            this.mSchemaElement = info.getElement();
+                            bundle = info.getBundle();
+                            isExtensionIdentified = true;
+                        } else {
+                            isExtensionIdentified = false;
                         }
                     }
+                } else {
+                    mSchemaElement = ExtensibilityUtils.getElement(mWSDLConstruct);
+                }
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+
+            if (this.mSchemaElement != null) {
+                SchemaDocumentationFinderVisitor sdFinder = new SchemaDocumentationFinderVisitor();
+                this.mSchemaElement.accept(sdFinder);
+                String docStr = sdFinder.getDocumentation();
+                if (docStr != null && docStr.length() > 0) {
+                    String shortDesc = docStr;
+
+                    if (info != null) {
+                        if (bundle != null) {
+                            try {
+                                shortDesc = bundle.getString(docStr);
+                            } catch (MissingResourceException e) {
+                                //ignore exception
+                            }
+                        }
+                    }
+                    this.setShortDescription(shortDesc);
                 }
 
-            } catch (PropertyModelException ex) {
-                Exceptions.printStackTrace(ex);
+                try {
+                    ElementProperties elemProps = PropertyModelFactory.getInstance().getElementProperties(mQName);
+                    if (elemProps != null) {
+                        for (GroupedProperty gProp : elemProps.getGroupedProperty()) {
+                            String groupedNames = gProp.getGroupedAttributeNames();
+                            String[] splits = groupedNames.split(" ");
+                            String groupDisplayName = gProp.getDisplayName();
+                            for (String split : splits) {
+                                groupNameMap.put(split, groupDisplayName);
+                            }
+                        }
+                    }
+
+                } catch (PropertyModelException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
             }
-            
         }
     }
 
@@ -284,6 +269,8 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
     public NewTypesFactory getNewTypesFactory() {
         return new ExtensibilityElementChildNewTypesFactory(mSchemaElement);
     }
+
+    
 
     @Override
     public boolean canRename() {
@@ -429,6 +416,17 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
 
         return htmlDisplayName + " <font color='#999999'>" + decoration + "</font>";
 
+    }
+    
+    public void refresh() {
+        if (isExtensionIdentified) return;
+        identifyExtension();
+        
+        if (isExtensionIdentified) {
+            fireIconChange();
+            fireOpenedIconChange();
+            refreshAttributesSheetSet(getSheet());
+        }
     }
 }
 

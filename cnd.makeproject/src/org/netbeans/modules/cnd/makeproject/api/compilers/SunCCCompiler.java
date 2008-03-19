@@ -42,18 +42,12 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 public class SunCCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
@@ -66,7 +60,7 @@ public class SunCCCompiler extends SunCCCCompiler {
         "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
         "-g0 -xO2", // Dianosable Release // NOI18N
         "-xO3", // Release // NOI18N
-        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no -xalias_level=simple -sync_stdio=no", // Performance Release // NOI18N
+        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no -xalias_level=simple", // Performance Release // NOI18N
     };
     
     private static final String[] WARNING_LEVEL_OPTIONS = {
