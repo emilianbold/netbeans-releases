@@ -59,6 +59,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.editor.EditorUI;
 import org.openide.util.Exceptions;
 
 /**
@@ -156,25 +157,34 @@ public class HTMLDocView extends JEditorPane {
         if (htmlKit == null){
             htmlKit= new HTMLEditorKit ();
             setEditorKit(htmlKit);
-
+            
             // override the Swing default CSS to make the HTMLEditorKit use the
             // same font as the rest of the UI.
-            
+   
             // XXX the style sheet is shared by all HTMLEditorKits.  We must
             // detect if it has been tweaked by ourselves or someone else
             // (template description for example) and avoid doing the same
             // thing again
-            
-            if (htmlKit.getStyleSheet().getStyleSheets() != null)
+
+            if (htmlKit.getStyleSheet().getStyleSheets() != null) {
+                htmlKit.getStyleSheet().removeStyle("body");
+                setBodyFontInCSS();
                 return htmlKit;
-            
-            javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();
-            java.awt.Font f = getFont();
-            css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-            css.addStyleSheet(htmlKit.getStyleSheet());
-            htmlKit.setStyleSheet(css);
+            }
+            setBodyFontInCSS();
         }
         return htmlKit;
+    }
+    
+    private void setBodyFontInCSS() {
+        javax.swing.text.html.StyleSheet css =
+                new javax.swing.text.html.StyleSheet();
+        java.awt.Font f = new EditorUI().getDefaultColoring().getFont();
+        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+
+        css.addStyleSheet(htmlKit.getStyleSheet());
+        htmlKit.setStyleSheet(css);
+
     }
 }
