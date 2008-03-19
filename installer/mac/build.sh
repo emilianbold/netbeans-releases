@@ -111,6 +111,9 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
+if [ -n "$INSTRUMENT_SH" ]; then
+    instrument_build $progdir/build/netbeans
+fi
 ant -f $progdir/build.xml -Ddmgname=$dmgname-javaee-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_WebAndJavaEE.txt"
 
 # all others
@@ -135,6 +138,9 @@ for pkg in javase ruby cpp php ; do
     ant -f $progdir/build.xml clean
     mkdir $progdir/build
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
+    if [ -n "$INSTRUMENT_SH" ]; then
+	instrument_build $progdir/build/netbeans
+    fi
     ant -f $progdir/build.xml -Ddmgname=$dmgname-$dmg_postfix-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dnetbeans_license_file="$progdir/$license_file"
 done
 
