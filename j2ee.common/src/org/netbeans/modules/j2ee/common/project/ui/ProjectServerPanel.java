@@ -70,6 +70,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -436,6 +437,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
 }//GEN-LAST:event_serverLibraryCheckboxActionPerformed
     
     boolean valid(WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, null);
         if (getSelectedServer() == null) {
             String errMsg = NbBundle.getMessage(ProjectServerPanel.class, "MSG_NoServer");
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
@@ -446,7 +448,6 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, ProjectLocationPanel.decorateMessage(
                     NbBundle.getMessage(ProjectServerPanel.class, "PanelSharability.licenseWarning.text")));
         }
-        wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, null);
         if (j2eeModuleType == J2eeModule.EJB) {
             setJ2eeVersionWarning(wizardDescriptor);
         }
@@ -912,4 +913,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         wizard.fireChangeEvent();
     }
     
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectServerPanel.class, j2eeModuleType));
+    }
 }
