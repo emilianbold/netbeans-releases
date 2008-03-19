@@ -18,12 +18,7 @@
 		<type>javax.help.TOCView</type>
 		<data>bpelhelp-toc.xml</data>
 	</view>
-	<view>
-		<name>Index</name>
-		<label>Index</label>
-		<type>javax.help.IndexView</type>
-		<data>bpelhelp-idx.xml</data>
-	</view>
+
 	<view>
 		<name>Search</name>
 		<label>Search</label>

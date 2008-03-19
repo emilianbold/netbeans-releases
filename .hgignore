@@ -8,6 +8,7 @@ derby\.log
 \.DS_Store$
 \.orig$
 \.rej$
+\.tmp\.$
 \.swp$
 /gensrc$
 \.ant-targets-build\.xml$
