@@ -349,13 +349,34 @@ public final class GemManager {
      */
     public boolean isGemInstalled(final String gemName, final String version) {
         String currVersion = getVersion(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+        return isRightVersion(currVersion, version, false);
     }
 
-    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+    /**
+     * Checks whether the installed version matches.
+     * 
+     * @param gemName cf. {@link #isGemInstalled(String, String)}
+     * @param version cf. {@link #isGemInstalled(String, String)}
+     * @param exact whether exact match should be performed. If <tt>false</tt>,
+     * equal or greater matches. If <tt>true</tt>, only exact version matches.
+     * @return whether the installed version matches
+     */
+    public boolean isGemInstalledForPlatform(final String gemName, final String version, final boolean exact) {
         String currVersion = getVersionForPlatform(gemName);
-        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
-        
+        return isRightVersion(currVersion, version, exact);
+    }
+    
+    private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
+        boolean isInstalled = false;
+        if (currVersion != null) {
+            int result = GemManager.compareGemVersions(version, currVersion);
+            isInstalled = exact ? result == 0 : result <= 0;
+        }
+        return isInstalled;
+    }
+    
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        return isGemInstalledForPlatform(gemName, version, false);
     }
     
     public String getVersion(String gemName) {
