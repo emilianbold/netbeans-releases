@@ -56,6 +56,7 @@ import com.sun.rave.designtime.impl.BasicCustomizer2;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,6 +70,7 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -166,7 +168,11 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
                 }
             }
         } catch (NamingException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SQLException sqe) {
+            Exceptions.printStackTrace(sqe);
         }
+
         
         String command = (String)srcBean.getProperty("command").getValue();
         VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
@@ -190,7 +196,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
      * context.  Copied from SqlStatementImpl
      */
     private DesignTimeDataSource lookupDataSource( String dataSourceName )
-        throws NamingException 
+        throws NamingException, SQLException 
     {
         String dsName ;
         if ( dataSourceName == null ) {
@@ -207,6 +213,9 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         }
         
         DesignTimeDataSource ds = (DesignTimeDataSource) ctx.lookup( dsName );
+        if (ds == null) {
+            throw new SQLException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName); //NOI18N
+        }
         return ds ;
     }
     
