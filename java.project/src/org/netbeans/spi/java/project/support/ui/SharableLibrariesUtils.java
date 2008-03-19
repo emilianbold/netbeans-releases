@@ -49,13 +49,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.FileChooser;
@@ -163,7 +166,7 @@ public final class SharableLibrariesUtils {
      */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
-        final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(new CopyIterator(helper));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle(NbBundle.getMessage(SharableLibrariesUtils.class, "TIT_MakeSharableWizard")); 
@@ -175,55 +178,91 @@ public final class SharableLibrariesUtils {
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SharableLibrariesUtils.class, "ACSD_MakeSharableWizard"));
         dialog.setVisible(true);
         dialog.toFront();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
-            assert loc != null;
-            try {
-                // create libraries property file if it does not exist:
-                File f = new File(loc);
-                if (!f.isAbsolute()) {
-                    f = new File(FileUtil.toFile(helper.getProjectDirectory()), loc);
-                }
-                f = FileUtil.normalizeFile(f);
-                if (!f.exists()) {
-                    FileUtil.createData(f);
-                }
+        return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
+    }
 
-                try {
-                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-
-                        public Object run() throws IOException {
-                            try {
-                                helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                                    public void run() throws IOException {
-                                        helper.setLibrariesLocation(loc);
-
-                                        // TODO or make just runnables?
-                                        List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
-                                        for (Action act : actions) {
-                                            act.actionPerformed(null);
-                                        }
-                                        ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
-                                    }
-                                });
-                            } catch (IllegalArgumentException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-
-                            return null;
-                        }
-                    });
-                } catch (MutexException ex) {
-                    throw (IOException) ex.getException();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+    private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) {
+        
+        final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
+        final List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
+        assert loc != null;
+        handle.start(Math.max(1, actions.size() + 1));
+        try {
+            // create libraries property file if it does not exist:
+            File f = new File(loc);
+            if (!f.isAbsolute()) {
+                f = new File(FileUtil.toFile(helper.getProjectDirectory()), loc);
+            }
+            f = FileUtil.normalizeFile(f);
+            if (!f.exists()) {
+                FileUtil.createData(f);
             }
 
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
 
+                    public Object run() throws IOException {
+                        try {
+                            helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
+                                public void run() throws IOException {
+                                    helper.setLibrariesLocation(loc);
+                                    int count = 1;
+                                    // TODO or make just runnables?
+                                    for (Action act : actions) {
+                                        handle.progress(count);
+                                        count = count + 1;
+                                        act.actionPerformed(null);
+                                    }
+                                    ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+                                }
+                            });
+                        } catch (IllegalArgumentException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return null;
+                    }
+                });
+            } catch (MutexException ex) {
+                throw (IOException) ex.getException();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            handle.finish();
         }
-        return !cancelled;
+    }
+    
+    private static class CopyIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+        private AntProjectHelper helper;
+        private WizardDescriptor desc;
+
+        private CopyIterator(AntProjectHelper helper) {
+            this.helper = helper;
+            
+        }
+
+        public Set instantiate(ProgressHandle handle) throws IOException {
+            execute(desc, helper, handle);
+            return Collections.EMPTY_SET;
+        }
+
+        public Set instantiate() throws IOException {
+            throw new UnsupportedOperationException("Not supported");
+        }
+
+        public void initialize(WizardDescriptor wizard) {
+            this.desc = wizard;
+        }
+
+        public void uninitialize(WizardDescriptor wizard) {
+            this.desc = wizard;
+        }
+        
+        public WizardDescriptor.Panel<WizardDescriptor>[] initializePanels() {
+            return getPanels();
+        }
+        
     }
 
     /**

@@ -496,8 +496,6 @@ public class PolledColumnPanel extends JPanel implements JDBCTableColumnDisplaya
 
     public void addColumnTable(final List testList) {
         this.metaDataTColumn = new MetaTColumnComponent();
-        this.metaDataTColumn.setFont(JDBCTableColumnDisplayable.FONT_TABLE_COLUMNS);
-        this.metaDataTColumn.getTableHeader().setFont(JDBCTableColumnDisplayable.FONT_TABLE_HEADER);
         final MyTColumnModel myModel = new MyTColumnModel(testList);
         this.metaDataTColumn.setModel(myModel);
         this.setLayout(new BorderLayout());

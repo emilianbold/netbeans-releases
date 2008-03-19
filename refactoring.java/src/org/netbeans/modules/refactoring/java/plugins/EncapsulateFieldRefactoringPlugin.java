@@ -427,12 +427,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Encapsulator encapsulator = new Encapsulator(
                     Collections.singletonList(desc), desc.p);
             
-            createAndAddElements(
+            Problem problem = createAndAddElements(
                     desc.refs,
                     new TransformTask(encapsulator, desc.fieldHandle),
                     bag, refactoring);
             
-            return encapsulator.getProblem();
+            return problem != null ? problem : encapsulator.getProblem();
         } finally {
             fireProgressListenerStop();
         }
