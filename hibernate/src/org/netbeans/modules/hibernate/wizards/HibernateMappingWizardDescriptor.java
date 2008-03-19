@@ -115,4 +115,8 @@ public class HibernateMappingWizardDescriptor implements WizardDescriptor.Panel,
     public FileObject getConfigurationFile() {
         return panel.getConfigurationFile();
     }
+    
+    public String getDatabaseTable() {
+        return panel.getDatabaseTable();
+    }
 }
