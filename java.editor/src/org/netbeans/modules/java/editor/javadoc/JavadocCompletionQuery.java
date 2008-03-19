@@ -461,8 +461,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         
         jdts.move(span[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
-        jdts.moveNext(); // @see|@link|@throws
-        jdts.moveNext(); // white space
+        // @see|@link|@throws
+        if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
+            return;
+        }
+        // white space
+        if (!jdts.moveNext() || caretOffset <= jdts.offset()) {
+            return;
+        }
         
         boolean noPrefix = false;
         
@@ -542,8 +548,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         int[] span = jdctx.positions.getTagSpan(tag);
         
         jdts.move(span[0]);
-        jdts.moveNext(); // @param
-        jdts.moveNext(); // white space
+        // @param
+        if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
+            return;
+        }
+        // white space
+        if (!jdts.moveNext() || caretOffset <= jdts.offset()) {
+            return;
+        }
         
         if (caretOffset <= jdts.offset() + jdts.token().length()) {
             int pos = caretOffset - jdts.offset();
