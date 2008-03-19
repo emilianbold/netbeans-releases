@@ -288,7 +288,7 @@ public abstract class ServerCommand {
          */
         private boolean skipContainer(String currentContainer) {
             return container != null ? !container.equals(currentContainer) :
-                "security_ContractProvider".equals(container);
+                "security_ContractProvider".equals(currentContainer);
         }
     
         
