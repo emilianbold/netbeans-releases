@@ -573,84 +573,86 @@ public class AstRenderer {
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if( ast != null ) {
             AST firstChild = ast.getFirstChild();
-            if( firstChild.getType() == CPPTokenTypes.LITERAL_typedef ) {
-                //return createTypedef(ast, file, container);
+            if (firstChild != null) {
+                if (firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
+                    //return createTypedef(ast, file, container);
 
-                AST classifier = null;
-                int arrayDepth = 0;
-                AST nameToken = null;
-                AST ptrOperator = null;
-                String name = "";
-                
-                EnumImpl ei = null;
-                    
-                for( AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling() ) {
-                    switch( curr.getType() ) {
-                        case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                        case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                            classifier = curr;
-                            break;
-                        case CPPTokenTypes.LITERAL_enum:
-                            if( AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null ) {
-                                if( container instanceof CsmScope) {
-                                    ei = EnumImpl.create(curr, (CsmScope) container, file);
-                                    if( container instanceof  MutableDeclarationsContainer )
-                                    ((MutableDeclarationsContainer) container).addDeclaration(ei);
+                    AST classifier = null;
+                    int arrayDepth = 0;
+                    AST nameToken = null;
+                    AST ptrOperator = null;
+                    String name = "";
+
+                    EnumImpl ei = null;
+
+                    for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
+                        switch (curr.getType()) {
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                                classifier = curr;
+                                break;
+                            case CPPTokenTypes.LITERAL_enum:
+                                if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
+                                    if (container instanceof CsmScope) {
+                                        ei = EnumImpl.create(curr, (CsmScope) container, file);
+                                        if (container instanceof MutableDeclarationsContainer) {
+                                            ((MutableDeclarationsContainer) container).addDeclaration(ei);
+                                        }
+                                    }
+                                    break;
+                                }
+                            // else fall through!
+                            case CPPTokenTypes.LITERAL_struct:
+                            case CPPTokenTypes.LITERAL_union:
+                            case CPPTokenTypes.LITERAL_class:
+                                AST next = curr.getNextSibling();
+                                if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                                    classifier = next;
                                 }
                                 break;
-                            }
-                            // else fall through!
-                        case CPPTokenTypes.LITERAL_struct:
-                        case CPPTokenTypes.LITERAL_union:
-                        case CPPTokenTypes.LITERAL_class:
-                            AST next = curr.getNextSibling();
-                            if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-                                classifier = next;
-                            }
-                            break;
-                        case CPPTokenTypes.CSM_PTR_OPERATOR:
-                            // store only 1-st one - the others (if any) follows,
-                            // so it's TypeImpl.createType() responsibility to process them all
-                            if( ptrOperator == null ) {
-                                ptrOperator = curr;
-                            }
-                            break;
-                        case CPPTokenTypes.CSM_QUALIFIED_ID:    
-                            // now token corresponds the name, since the case "struct S" is processed before
-                            nameToken = curr;
-                            name = AstUtil.findId(nameToken);
-                            break;
-                        case CPPTokenTypes.LSQUARE:
-                            arrayDepth++;
-                            break;
-                        case CPPTokenTypes.COMMA:
-                        case CPPTokenTypes.SEMICOLON:
-                            TypeImpl typeImpl = null;
-                            if( classifier != null ) {
-                                typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
-                            }
-                            else if( ei != null ) {
-                                typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
-                            }
-                            if( typeImpl != null) {
-                                CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
-                                if( typedef != null ) {
-                                    if (ei != null && ei.getName().length()==0){
-                                        ((TypedefImpl)typedef).setTypeUnnamed();
-                                    }
-                                    results.add(typedef);
-                                    if (classifier instanceof ClassEnumBase) {
-                                        ((ClassEnumBase)classifier).addEnclosingTypedef(typedef);
-                                    } else if (ei instanceof ClassEnumBase){
-                                        ((ClassEnumBase)ei).addEnclosingTypedef(typedef);
+                            case CPPTokenTypes.CSM_PTR_OPERATOR:
+                                // store only 1-st one - the others (if any) follows,
+                                // so it's TypeImpl.createType() responsibility to process them all
+                                if (ptrOperator == null) {
+                                    ptrOperator = curr;
+                                }
+                                break;
+                            case CPPTokenTypes.CSM_QUALIFIED_ID:
+                                // now token corresponds the name, since the case "struct S" is processed before
+                                nameToken = curr;
+                                name = AstUtil.findId(nameToken);
+                                break;
+                            case CPPTokenTypes.LSQUARE:
+                                arrayDepth++;
+                                break;
+                            case CPPTokenTypes.COMMA:
+                            case CPPTokenTypes.SEMICOLON:
+                                TypeImpl typeImpl = null;
+                                if (classifier != null) {
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
+                                } else if (ei != null) {
+                                    typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
+                                }
+                                if (typeImpl != null) {
+                                    CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
+                                    if (typedef != null) {
+                                        if (ei != null && ei.getName().length() == 0) {
+                                            ((TypedefImpl) typedef).setTypeUnnamed();
+                                        }
+                                        results.add(typedef);
+                                        if (classifier instanceof ClassEnumBase) {
+                                            ((ClassEnumBase) classifier).addEnclosingTypedef(typedef);
+                                        } else if (ei instanceof ClassEnumBase) {
+                                            ((ClassEnumBase) ei).addEnclosingTypedef(typedef);
+                                        }
                                     }
                                 }
-                            }
-                            ptrOperator = null;
-                            name = "";
-                            nameToken = null;
-                            arrayDepth = 0;
-                            break;
+                                ptrOperator = null;
+                                name = "";
+                                nameToken = null;
+                                arrayDepth = 0;
+                                break;
+                        }
                     }
                 }
             }
