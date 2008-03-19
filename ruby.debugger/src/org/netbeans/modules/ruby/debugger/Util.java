@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,8 +58,6 @@ import org.openide.util.NbBundle;
 public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
-    
-    private static final String SPECIFICATIONS = "specifications"; // NOI18N
     
     private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     private static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
@@ -131,6 +129,13 @@ public final class Util {
             currentEngine.lookupFirst(null, RubySession.class);
     }
     
+    /**
+     * Offers to install fast debugger iff the debugger is not already installed.
+     * 
+     * @param platform platform for which to do a check and possibly installation
+     * @return <tt>true</tt> if the debugger is either installed or was
+     * successfully installed; <tt>false</tt> otherwise
+     */
     static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
         return Util.ensureRubyDebuggerIsPresent(platform, false, "RubyDebugger.askMessage");
     }
@@ -147,7 +152,7 @@ public final class Util {
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
             return false;
         }
-        String message = NbBundle.getMessage(RubyDebugger.class, messageKey, problems);
+        String message = NbBundle.getMessage(Util.class, messageKey, problems);
         RubyDebugInstallPanel rubyDebugPanel = new RubyDebugInstallPanel(strict, message);
         DialogDescriptor descriptor = new DialogDescriptor(rubyDebugPanel,
                 NbBundle.getMessage(Util.class, "Util.installation.panel.title"));

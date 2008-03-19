@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
@@ -440,7 +441,17 @@ public class AppClientProjectProperties {
         resolveProjectDependencies();
         
         // Encode all paths (this may change the project properties)
-        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
+        List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+        }
+        
+        String[] javac_cp = cs.encodeToStrings( javaClasspathList, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ), null );
@@ -498,13 +509,14 @@ public class AppClientProjectProperties {
         boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
                 AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH); 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, !serverLibUsed);
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
 
         // Configure server libraries (if any)
         boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
+                cs, javaClasspathList);
 
         // Configure classpath from server (no server libraries)
         if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
