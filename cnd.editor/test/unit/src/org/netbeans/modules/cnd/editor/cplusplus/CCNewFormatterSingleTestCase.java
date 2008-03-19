@@ -164,26 +164,30 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testDereferenceFormatting() {
+    public void testIZ130538() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         setLoadDocumentText(
-                "int foo()\n" +
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
                 "{\n" +
-                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "TCHAR* tmp = list->field->toString();\n" +
-                "}\n" +
-                "CL_NS_STD(ostream)* infoStream;\n" +
-                "directory->deleteFile( *itr );\n" +
+                "    foo(a,\n" +
+                "   b);\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect * formating",
-                "int foo()\n" +
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
                 "{\n" +
-                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "        TCHAR* tmp = list->field->toString();\n" +
-                "    }\n" +
-                "    CL_NS_STD(ostream)* infoStream;\n" +
-                "    directory->deleteFile(*itr);\n" +
+                "    foo (a,\n" +
+                "         b);\n" +
                 "}\n");
     }
 }

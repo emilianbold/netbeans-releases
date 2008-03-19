@@ -75,8 +75,8 @@ public class InstallUnitWizard {
         return implInvokeWizard (iterator);
     }
     
-    public boolean invokeLazyWizard (Collection<LazyUnit> units, OperationType doOperation) {
-        return implInvokeWizard (new LazyInstallUnitWizardIterator (units, doOperation));
+    public boolean invokeLazyWizard (Collection<LazyUnit> units, OperationType doOperation, boolean forceReload) {
+        return implInvokeWizard (new LazyInstallUnitWizardIterator (units, doOperation, forceReload));
     }
     
     private boolean implInvokeWizard (WizardDescriptor.Iterator<WizardDescriptor> iterator) {
