@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.awt.Color;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.event.DocumentEvent;
@@ -74,7 +73,6 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
     private final static String COLORS = "cc-highlighting-mark-occurences"; // NOI18N
-    private WeakReference<CsmFile> weakFile;
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -104,19 +102,8 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
     
     private CsmFile getCsmFile() {
-        if (weakFile == null || weakFile.get() == null) {
-            if (getDocument() == null) {
-                return null;
-            }
-            DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-            CsmFile file = CsmUtilities.getCsmFile(dobj, false);
-            if (file != null) {
-                weakFile = new WeakReference<CsmFile>(file);
-            } else {
-                return null;
-            }
-        }
-        return weakFile.get();
+        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
+        return CsmUtilities.getCsmFile(dobj, false);
     }
     
     private void clean() {
@@ -152,6 +139,13 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             
             CsmFile file = getCsmFile();
             FileObject fo = CsmUtilities.getFileObject(file);
+            
+            if (file == null || fo == null) {
+                // this can happen if MO was triggered right before closing project
+                clean();
+                return;
+            }
+            
             int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
             
             HighlightsSequence hs = getHighlightsBag(doc).getHighlights(0, doc.getLength()-1);
