@@ -109,7 +109,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(ProjectServerWizardPanel.class);
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectServerWizardPanel.class, j2eeModuleType));
     }
     
     public boolean isValid() {

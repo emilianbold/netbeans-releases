@@ -1381,10 +1381,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                     if (len > 0)
                         doc.remove(offset, len);
+                    doc.insertString(offset, getInsertPrefix().toString(), null);                    
                     if (semiPosition != null)
                         doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                    else if (params.isEmpty() && "(".equals(toAdd)) //NOI18N
-                        c.setCaretPosition(c.getCaretPosition() - 1);
                 } catch (BadLocationException e) {
                     // Can't update
                 } finally {
@@ -1394,7 +1393,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
                     boolean guessArgs = Utilities.guessMethodArguments();
-                    sb.append(getInsertPrefix());
                     if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
                     sb.append(' '); //NOI18N
                     sb.append('('); //NOI18N

@@ -1699,8 +1699,10 @@ public final class FileUtil extends Object {
             } else if (entry.isDirectory()) {
                 return u;
             } else if (!entry.exists()) {
-                assert !u.toString().endsWith("/") : u;
-                return new URL(u + "/"); // NOI18N
+                if (!u.toString().endsWith("/")) {
+                    u = new URL(u + "/"); // NOI18N
+                }
+                return u;
             } else {
                 return null;
             }

@@ -67,6 +67,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
@@ -166,8 +167,8 @@ public final class FileObjectFactory {
 
         return retval;
     }
-
-
+    
+    
     public BaseFileObj getFileObject(FileInfo fInfo, Caller caller) {
         File file = fInfo.getFile();
         FileObject retVal = null;
@@ -190,7 +191,7 @@ public final class FileObjectFactory {
         if (initTouch == -1  && FileBasedFileSystem.isModificationInProgress()) {
             initTouch = file.exists() ? 1 : 0;
         }
-        return issueIfExist(file, caller, parent, child, initTouch);
+        return issueIfExist(file, caller, parent, child, initTouch, !caller.equals(Caller.Others));
     }
 
 
@@ -250,7 +251,7 @@ public final class FileObjectFactory {
         Logger.getLogger(getClass().getName()).log(Level.INFO, ise.getMessage(), ise);
     }
 
-    private BaseFileObj issueIfExist(File file, Caller caller, FileObject parent, FileNaming child, int initTouch) {
+    private BaseFileObj issueIfExist(File file, Caller caller, final FileObject parent, FileNaming child, int initTouch,boolean asyncFire) {
         boolean exist = false;
         BaseFileObj foForFile = null;
         Integer realExists = initRealExists(initTouch);
@@ -266,7 +267,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            parent.refresh();
+                            refreshFromGetter(parent,asyncFire);
                         }
                     }
                     assert checkCacheState(true, file, caller);
@@ -275,7 +276,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            parent.refresh();
+                            refreshFromGetter(parent,asyncFire);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -283,7 +284,7 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                 }
             } else {
@@ -297,12 +298,12 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        foForFile.refresh();
+                        refreshFromGetter(foForFile,asyncFire);
                     }
                 } else {
                     exist = touchExists(file, realExists);
                     if (exist) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                 }
             }
@@ -315,7 +316,7 @@ public final class FileObjectFactory {
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
-                            foForFile.refresh();
+                            refreshFromGetter(foForFile,asyncFire);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -323,7 +324,7 @@ public final class FileObjectFactory {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
-                        foForFile.refresh();
+                        refreshFromGetter(foForFile,asyncFire);
                     }
                 }
             } else {
@@ -357,7 +358,7 @@ public final class FileObjectFactory {
                     //guarantee issuing for existing file
                     exist = touchExists(file, realExists);
                     if (exist && parent != null && parent.isValid()) {
-                        parent.refresh();
+                        refreshFromGetter(parent,asyncFire);
                     }
                     assert checkCacheState(exist, file, caller);
                     break;
@@ -710,5 +711,27 @@ public final class FileObjectFactory {
         Statistics.REFRESH_FOLDER.reset();
         Statistics.REFRESH_FILE.reset();
     }
+    
+    private static class AsyncRefreshAtomicAction implements  FileSystem.AtomicAction {
+        private FileObject fo;
+        AsyncRefreshAtomicAction(FileObject fo) {
+            this.fo = fo;
+        }
+        public void run() throws IOException {
+            this.fo.refresh();
+        }
+        
+    }
 
+    private void refreshFromGetter(final FileObject parent,boolean asyncFire)  {
+        try {
+            if (asyncFire) {
+                FileUtil.runAtomicAction(new AsyncRefreshAtomicAction(parent));
+            } else {
+                parent.refresh();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }

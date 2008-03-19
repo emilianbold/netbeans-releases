@@ -167,7 +167,7 @@ final class JavadocCompletionUtils {
     }
 
     static boolean isInsideIndent(Token<JavadocTokenId> token, int offset) {
-        boolean indent = false;
+        int indent = -1;
         if (token.id() == JavadocTokenId.OTHER_TEXT) {
             CharSequence text = token.text();
             for (int i = 0; i < text.length(); i++) {
@@ -175,7 +175,7 @@ final class JavadocCompletionUtils {
                 if (c == '\n') {
                     if (i <= offset) {
                         // new line; reset status
-                        indent = false;
+                        indent = -1;
                         if (i < offset) {
                             continue;
                         }
@@ -187,8 +187,8 @@ final class JavadocCompletionUtils {
                     break;
                 }
 
-                if (c == '*') {
-                    indent = true;
+                if (c == '*' && indent < 0) {
+                    indent = i;
                     if (offset <= i) {
                         // stop, offset is inside indentation
                         break;
@@ -196,7 +196,7 @@ final class JavadocCompletionUtils {
                 }
             }
         }
-        return indent;
+        return indent >= offset;
     }
     
     /**
