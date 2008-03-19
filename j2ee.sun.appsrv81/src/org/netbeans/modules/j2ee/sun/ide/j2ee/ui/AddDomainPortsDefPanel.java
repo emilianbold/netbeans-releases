@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,6 @@ import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -67,8 +66,6 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
      */
     private CreateServerVisualPanel component;
     private WizardDescriptor wiz;
-    private PlatformValidator pv;
-    private String serverVersion;
 //    private TargetServerData targetData;
     
     /** Create the wizard panel descriptor. */
@@ -99,36 +96,28 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
         Set portsUsed = new HashSet(7);
         portsUsed.add(component.getAdminPort());
         
-        if (isPortReused(portsUsed, component.getAdminJmxPort(), "ERR_AdminJmxPort"))   // NOI18N
+        if (isPortReused(portsUsed, component.getAdminJmxPort(), "ERR_AdminJmxPort"))
             return false;
         
-        if (isPortReused(portsUsed, component.getInstanceHttpPort(), "ERR_InstancePort"))   // NOI18N
-            return false;
-        
-        
-        if (isPortReused(portsUsed, component.getJmsPort(), "ERR_JmsPort"))     // NOI18N
-            return false;
-        
-        if (isPortReused(portsUsed,component.getOrbPort(), "ERR_OrbListenerPort"))  // NOI18N
+        if (isPortReused(portsUsed, component.getInstanceHttpPort(), "ERR_InstancePort"))
             return false;
         
         
-        if (isPortReused(portsUsed,component.getHttpSslPort(), "ERR_HttpSslPort"))  // NOI18N
+        if (isPortReused(portsUsed, component.getJmsPort(), "ERR_JmsPort"))
             return false;
         
-        if (isPortReused(portsUsed,component.getOrbSslPort(), "ERR_OrbSslPort"))    // NOI18N
-            return false;
-        if (isPortReused(portsUsed,component.getOrbMutualAuthPort(), "ERR_OrbMutualAutPort"))   // NOI18N
+        if (isPortReused(portsUsed,component.getOrbPort(), "ERR_OrbListenerPort"))
             return false;
         
-        if (PlatformValidator.SAILFIN_V1.equals(serverVersion)) {        
-            if (isPortReused(portsUsed,component.getSipPort(), "ERR_SipPort"))  // NOI18N
-                return false;
-
-            if (isPortReused(portsUsed,component.getSipSslPort(), "ERR_SipSslPort"))    // NOI18N
-                return false;
-        }
-
+        
+        if (isPortReused(portsUsed,component.getHttpSslPort(), "ERR_HttpSslPort"))
+            return false;
+        
+        if (isPortReused(portsUsed,component.getOrbSslPort(), "ERR_OrbSslPort"))
+            return false;
+        if (isPortReused(portsUsed,component.getOrbMutualAuthPort(), "ERR_OrbMutualAutPort"))
+            return false;
+        
         wiz.putProperty(AddDomainWizardIterator.ADMIN_JMX_PORT,
                 component.getAdminJmxPort().toString());
         wiz.putProperty(AddDomainWizardIterator.HTTP_SSL_PORT,
@@ -146,21 +135,11 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
         wiz.putProperty(AddDomainWizardIterator.PORT,
                 component.getAdminPort().toString());
         
-        // these values are ignored for non-sailfin platforms...
-        wiz.putProperty(AddDomainWizardIterator.SIP_PORT,
-                component.getSipPort().toString());
-        wiz.putProperty(AddDomainWizardIterator.SIP_SSL_PORT,
-                component.getSipSslPort().toString());
-        
         wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
         wiz.putProperty(AddDomainWizardIterator.HOST,"localhost");            //NOI18N
         return true;
     }
 
-    void setPlatformValidator(PlatformValidator pv, String serverVersion) {
-        this.pv = pv;
-        this.serverVersion = serverVersion;
-    }
 
     private boolean isPortReused(Set portsUsed, Object newVal, String id) {
         if (portsUsed.contains(newVal)) {
@@ -205,9 +184,6 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     // to store information entered by the user.
     public void readSettings(Object settings) {
         wiz = (WizardDescriptor) settings;
-        // todo : correct this after late change is approved...
-        //component.includeSip(PlatformValidator.SAILFIN_V1.equals(serverVersion));
-        component.includeSip(false);
     }
     public void storeSettings(Object settings) {
     }

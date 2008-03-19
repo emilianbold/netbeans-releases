@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -105,8 +105,6 @@ public class AddDomainWizardIterator implements
     final static String HTTP_SSL_PORT = "http_ssl_port";                        //NOI18N
     final static String ORB_MUTUAL_AUTH_PORT = "orb_mutual_auth_port";          //NOI18N
     final static String ADMIN_JMX_PORT = "admin_jmx_port";                      //NOI18N
-    final static String SIP_PORT = "sip_port";                                  //NOI18N
-    final static String SIP_SSL_PORT = "sip_ssl_port";                          //NOI18N
     final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage";        // NOI18N
     final static String TYPE = "type";                                          //NOI18N
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
@@ -147,7 +145,6 @@ public class AddDomainWizardIterator implements
 
     public AddDomainWizardIterator(PlatformValidator pv, String serverVersion) {
         platformPanel.setPlatformValidator(pv, serverVersion);
-        portsPanel.setPlatformValidator(pv,serverVersion);
     }
     
     /**
@@ -426,7 +423,6 @@ public class AddDomainWizardIterator implements
             this.pword = pword;
         }
         
-        @Override
         public void run() {
             Process process = null;
             // attempt to do the domian/instance create HERE
@@ -472,11 +468,7 @@ public class AddDomainWizardIterator implements
                         ":orb.mutualauth.port="+                                    //NOI18N
                         ((String)wizard.getProperty(ORB_MUTUAL_AUTH_PORT)).trim()+
                         ":domain.jmxPort="+                                         //NOI18N
-                        ((String)wizard.getProperty(ADMIN_JMX_PORT)).trim()+
-                        ":sip.port="+                                               //NOI18N
-                        ((String)wizard.getProperty(SIP_PORT)).trim()+
-                        ":sip.ssl.port="+                                           //NOI18N
-                        ((String)wizard.getProperty(SIP_SSL_PORT)).trim(),
+                        ((String)wizard.getProperty(ADMIN_JMX_PORT)).trim(),
                 domain
                 };
                 Integer detectedVersion = 
@@ -608,7 +600,6 @@ public class AddDomainWizardIterator implements
             passwordField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdminAuthenticator.class).getString("ACSD_PasswordField"));
         }
         
-        @Override
         public java.awt.Dimension getPreferredSize() {
             java.awt.Dimension sup = super.getPreferredSize();
             return new java.awt.Dimension( Math.max(sup.width, DEFAULT_WIDTH), Math.max(sup.height, DEFAULT_HEIGHT ));

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -82,8 +83,6 @@ public final class DomainCreator {
     private final static int DEFAULT_HTTPS_PORT = 8181;
     private final static int DEFAULT_ORB_SSL_PORT = 3820;
     private final static int DEFAULT_ORB_MUTUALAUTH_PORT = 3920;
-    private static int DEFAULT_SIP_PORT = 5060;
-    private static int DEFAULT_SIP_SSL_PORT = 5061;
     
     // properties
     
@@ -101,10 +100,9 @@ public final class DomainCreator {
     private final static String PROP_HTTP_SSL_PORT = "http_ssl_port";                   // NOI18N
     private final static String PROP_ORB_MUTUAL_AUTH_PORT = "orb_mutual_auth_port";     // NOI18N
     private final static String PROP_ADMIN_JMX_PORT = "admin_jmx_port";                 // NOI18N
-    private final static String PROP_SIP_PORT = "sip_port";                             // NOI18N
-    private final static String PROP_SIP_SSL_PORT = "sip_ssl_port";                     // NOI18N
     private final static String PROP_TYPE = "type";                                     // NOI18N
     private final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
+    
     private WizardDescriptor wizardDescriptor;
     private AddDomainWizardIterator wizard;
     
@@ -189,14 +187,11 @@ public final class DomainCreator {
                     int orbSSLPort = DEFAULT_ORB_SSL_PORT + bucket;
                     int orbMAPort = DEFAULT_ORB_MUTUALAUTH_PORT + bucket;
                     int jmxPort = DEFAULT_JMX_PORT + bucket;
-                    int sipPort = DEFAULT_SIP_PORT + bucket;
-                    int sipSslPort = DEFAULT_SIP_SSL_PORT + bucket;
                     
-                    while (!isPortAvailable(adminPort) || !isPortAvailable(httpPort) 
-                            || !isPortAvailable(jmsPort) || !isPortAvailable(orbPort)
-                            || !isPortAvailable(httpsPort) || !isPortAvailable(orbSSLPort)
-                            || !isPortAvailable(orbMAPort) || !isPortAvailable(jmxPort)
-                            || !isPortAvailable(sipPort) || !isPortAvailable(sipSslPort)) {
+                    while (!isPortAvaibale(adminPort) || !isPortAvaibale(httpPort) 
+                            || !isPortAvaibale(jmsPort) || !isPortAvaibale(orbPort)
+                            || !isPortAvaibale(httpsPort) || !isPortAvaibale(orbSSLPort)
+                            || !isPortAvaibale(orbMAPort) || !isPortAvaibale(jmxPort)) {
                         int incr = (new Random()).nextInt(100)+1;
                         adminPort += incr;
                         httpPort += incr;
@@ -237,8 +232,6 @@ public final class DomainCreator {
                     factory.setProperty(PROP_ORB_SSL_PORT, String.valueOf(orbSSLPort));
                     factory.setProperty(PROP_ORB_MUTUAL_AUTH_PORT, String.valueOf(orbMAPort));
                     factory.setProperty(PROP_ADMIN_JMX_PORT, String.valueOf(jmxPort));
-                    factory.setProperty(PROP_SIP_PORT, String.valueOf(sipPort));
-                    factory.setProperty(PROP_SIP_SSL_PORT, String.valueOf(sipSslPort));
                     factory.setProperty(PROP_TYPE, AddDomainWizardIterator.PERSONAL);
                     
                     if (jmxPort < 0xffff) {
@@ -247,7 +240,7 @@ public final class DomainCreator {
                     }
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                            NbBundle.getMessage(DomainCreator.class, "MSG_DomainDirWriteProtect",   // NOI18N
+                            NbBundle.getMessage(DomainCreator.class, "MSG_DomainDirWriteProtect",
                             domainRoot.getParentFile().getAbsolutePath()));
                 }
             }
@@ -278,7 +271,7 @@ public final class DomainCreator {
      *
      *  @return true if the port is free or false when is being used
      */
-    private static boolean isPortAvailable(int port) {
+    private static boolean isPortAvaibale(int port) {
         String host = DEFAULT_HOST;
         boolean retVal = true;
         Socket socket = null;
