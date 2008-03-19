@@ -51,8 +51,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import org.apache.xmlbeans.XmlException;
 import javax.xml.namespace.QName;
 import org.apache.xmlbeans.SchemaTypeLoader;
 import org.apache.xmlbeans.SimpleValue;
@@ -166,17 +164,25 @@ public class WsdlSupport {
     private static SchemaTypeLoader loadSchemaTypes(String wsdlUrl) 
             throws XmlException, SchemaException {
         
-        Map<String, XmlObject> schemaTable = new HashMap<String, XmlObject>();        
-        getSchemas(wsdlUrl, schemaTable, new ArrayList<String>());
+        // #112499
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(XmlObject.class.getClassLoader());
         
-        List<XmlObject> schemaList = 
-                new ArrayList<XmlObject>(schemaTable.values());        
-        for (XmlObject schema : schemaList) {
-            removeImportAndInclude(schema);
+        try {
+            Map<String, XmlObject> schemaTable = new HashMap<String, XmlObject>();        
+            getSchemas(wsdlUrl, schemaTable, new ArrayList<String>());
+
+            List<XmlObject> schemaList = 
+                    new ArrayList<XmlObject>(schemaTable.values());        
+            for (XmlObject schema : schemaList) {
+                removeImportAndInclude(schema);
+            }
+
+            SchemaTypeLoader schemaTypes = loadSchemaTypes(schemaList);
+            return schemaTypes;
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
-        
-        SchemaTypeLoader schemaTypes = loadSchemaTypes(schemaList);
-        return schemaTypes;
     }
     
     private static SchemaTypeLoader loadSchemaTypes(List schemaList) throws XmlException {
@@ -199,8 +205,8 @@ public class WsdlSupport {
         try {
             schemaList.add(
                     // IZ #112499
-                    //XmlObject.Factory
-                    org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
+                    XmlObject.Factory
+                    //org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
                     .parse(WsdlSupport.class.getResource(
                     "/org/netbeans/modules/compapp/test/wsdl/resources/soapEncoding.xsd"))); // NOI18N
             XmlObject[] schemaArray = (XmlObject[])schemaList.toArray(new XmlObject[0]);
@@ -257,8 +263,8 @@ public class WsdlSupport {
                     String xmlText = xmlCursor.getObject().xmlText(options);
                     schemas[i] = 
                             // IZ #112499
-                            //XmlObject.Factory
-                            org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
+                            XmlObject.Factory
+                            //org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
                             .parse(xmlText, options);
                     schemas[i].documentProperties().setSourceName(wsdlUrl);
                     

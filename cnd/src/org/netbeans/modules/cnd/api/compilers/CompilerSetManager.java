@@ -161,6 +161,21 @@ public class CompilerSetManager {
 //        fireCompilerSetChangeNotification(csm);
     }
     
+    public String getUniqueCompilerSetName(String baseName) {
+        int n = 0;
+        String suggestedName = baseName;
+        while (true) {
+            suggestedName = baseName + (n > 0 ? ("_" + n) : ""); // NOI18N
+            if (getCompilerSet(suggestedName) != null) {
+                n++;
+            }
+            else {
+                break;
+            }
+        }
+        return suggestedName;
+    }
+    
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
     public void initCompilerSets(ArrayList<String> dirlist) {
         HashSet flavors = new HashSet();
