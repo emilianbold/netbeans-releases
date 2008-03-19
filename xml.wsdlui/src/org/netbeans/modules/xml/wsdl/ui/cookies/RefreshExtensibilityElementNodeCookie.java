@@ -1,9 +1,8 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -21,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,43 +31,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wsdl.validator.spi;
+package org.netbeans.modules.xml.wsdl.ui.cookies;
 
-import javax.xml.transform.Source;
-import org.w3c.dom.ls.LSResourceResolver;
-
+import org.openide.nodes.Node;
 
 /**
- * Factory for getting the schema inputstream.
- * This will be plugged in into WSDLSchemaValidator to support 
- * extensibility element schema validation. 
- * 
  *
- * @author Shivanand Kini
- * 
+ * @author skini
  */
-public abstract class ValidatorSchemaFactory {
-    /**
-     * Returns the targetnamespace of the schema
-     */
-    public abstract String getNamespaceURI();
-    
-  
-    /**
-     * Returns the Inputstream related to this schema
-     */
-    public abstract Source getSchemaSource();
-    
-    /**
-     * Returns the LSResourceResolver related to this schema
-     * for resolution of resources defined in schema like import location etc
-     */
-    public  LSResourceResolver getLSResourceResolver() {
-        return null;
-    }
-    
-    
-            
+public interface RefreshExtensibilityElementNodeCookie extends Node.Cookie {
+    void refresh();
 }
