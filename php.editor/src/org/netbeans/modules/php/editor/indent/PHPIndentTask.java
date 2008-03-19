@@ -72,7 +72,10 @@ public class PHPIndentTask implements IndentTask {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 TokenSequence ts = th.tokenSequence();
                 ts.move(context.caretOffset());
-                ts.moveNext();
+                
+                if (!ts.moveNext()){
+                    return;
+                }
                 
                 while (ts.embedded() != null) {
                     ts = ts.embedded();
