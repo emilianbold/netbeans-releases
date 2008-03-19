@@ -212,6 +212,22 @@ public class PropertySheetTest extends NbTestCase {
                 ps.helperNodes );
     }
     
+    public void testSheetCleared_126818 () throws Exception {
+        final PropertySheet ps = new PropertySheet();
+        Node n = new AbstractNode( Children.LEAF );
+        ps.setNodes( new Node[] {n} );
+        Thread.sleep(70);
+        ps.setNodes(null);
+        
+        for (int i = 0; i < 10; i++) {
+            Node[] curNodes = ps.getCurrentNodes();
+            assertTrue("Cur nodes should be empty", 
+                    curNodes == null || curNodes.length == 0);
+            Thread.sleep(50);
+        }
+        
+    }
+    
     //Node definition
     public class TNode extends AbstractNode {
         //create Node
