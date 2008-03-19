@@ -63,23 +63,29 @@ public class MetaDataDeserializer {
      * @return an instance of ResultSetMetaData
      */
     public ResultSetMetaData deserialize(String mdFileName) {
-        ResultSetMetaData resultSetMetaData = null;
-            ObjectInputStream is = null;
+        ResultSetMetaData resultSetMetaData = null; 
+        FileInputStream fileIn = null;
+        try {
+            fileIn = new FileInputStream(new File(mdFileName));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        ObjectInputStream is = null;
+        try {
+            is = new ObjectInputStream(fileIn);
+            resultSetMetaData = (ResultSetMetaData) is.readObject();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        } finally {
             try {
-                FileInputStream fileIn = new FileInputStream(new File(mdFileName));
-                is = new ObjectInputStream(fileIn);
-                resultSetMetaData = (ResultSetMetaData)is.readObject();
+                is.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
-            } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
-            } finally {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
             }
+        }
 
         return resultSetMetaData;
     }

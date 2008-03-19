@@ -68,17 +68,19 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
     private List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
     private Collection<LazyUnit> installModel;
     private OperationType doOperation;
+    private boolean forceReload;
 
-    public LazyInstallUnitWizardIterator (Collection<LazyUnit> model, OperationType doOperation) {
+    public LazyInstallUnitWizardIterator (Collection<LazyUnit> model, OperationType doOperation, boolean forceReload) {
         this.installModel = model;
         this.doOperation = doOperation;
+        this.forceReload = forceReload;
         createPanels ();
         index = 0;
     }
     
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
-        panels.add (new LazyOperationDescriptionStep (installModel, doOperation));
+        panels.add (new LazyOperationDescriptionStep (installModel, doOperation, forceReload));
     }
     
     public WizardDescriptor.Panel<WizardDescriptor> current () {
@@ -180,11 +182,11 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         }
         
         public String getOldVersion () {
-            return oldVersion == null ? "" : oldVersion;
+            return oldVersion == null ? "" : oldVersion.trim ();
         }
         
         public String getNewVersion () {
-            return newVersion == null ? "" : newVersion;
+            return newVersion == null ? "" : newVersion.trim ();
         }
         
         public String getNotification () {
@@ -195,16 +197,16 @@ public final class LazyInstallUnitWizardIterator implements WizardDescriptor.Ite
         public String toString () {
             return  codeName + DELIMETER +
                     (displayName == null ? codeName : displayName) + DELIMETER +
-                    (oldVersion == null ? "" : oldVersion) + DELIMETER +
-                    (newVersion == null ? "" : newVersion) + DELIMETER +
+                    (oldVersion == null ? " " : oldVersion) + DELIMETER +
+                    (newVersion == null ? " " : newVersion) + DELIMETER +
                     (notification == null ? " " : notification);
         }
         
         private static String toString (UpdateElement el) {
             return  el.getCodeName () + DELIMETER +
                     (el.getDisplayName () == null ? el.getCodeName () : el.getDisplayName ()) + DELIMETER +
-                    (el.getUpdateUnit ().getInstalled () == null ? "" : el.getUpdateUnit ().getInstalled ().getSpecificationVersion ()) + DELIMETER +
-                    (el.getSpecificationVersion () == null ? "" : el.getSpecificationVersion ()) + DELIMETER +
+                    (el.getUpdateUnit ().getInstalled () == null ? " " : el.getUpdateUnit ().getInstalled ().getSpecificationVersion ()) + DELIMETER +
+                    (el.getSpecificationVersion () == null ? " " : el.getSpecificationVersion ()) + DELIMETER +
                     (el.getNotification () == null ? " " : el.getNotification ());
         }
         
