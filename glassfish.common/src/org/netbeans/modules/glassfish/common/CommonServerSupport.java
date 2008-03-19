@@ -56,6 +56,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
@@ -69,7 +70,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Peter Williams
  */
-public class CommonServerSupport implements GlassfishModule {
+public class CommonServerSupport implements GlassfishModule, RefreshModulesCookie {
 
     public static final String URI_PREFIX = "deployer:gfv3";
     
@@ -133,6 +134,16 @@ public class CommonServerSupport implements GlassfishModule {
     
     public String getHttpPort() {
         return properties.get(HTTPPORT_ATTR);
+    }
+    
+    public int getHttpPortNumber() {
+        int httpPort = -1;
+        try {
+            httpPort = Integer.parseInt(properties.get(HTTPPORT_ATTR));
+        } catch(NumberFormatException ex) {
+            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+        return httpPort;
     }
     
     public String getHostName() {
@@ -359,6 +370,22 @@ public class CommonServerSupport implements GlassfishModule {
                 return OperationState.COMPLETED;
             }
         };
+    }
+
+    // ------------------------------------------------------------------------
+    //  RefreshModulesCookie implementation (for refreshing server state)
+    // ------------------------------------------------------------------------
+    public void refresh() {
+        // !PW FIXME we can do better here, but for now, make sure we only change
+        // server state from stopped or running states -- leave stopping or starting
+        // states alone.
+        ServerState currentState = getServerState();
+        boolean isRunning = isRunning(getHostName(), getHttpPortNumber());
+        if(currentState == ServerState.STOPPED && isRunning) {
+            setServerState(ServerState.RUNNING);
+        } else if(currentState == ServerState.RUNNING && !isRunning) {
+            setServerState(ServerState.STOPPED);
+        }
     }
     
 }
