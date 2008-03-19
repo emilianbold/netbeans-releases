@@ -73,6 +73,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -226,11 +227,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         return result.values();
     }    
     
-    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) throws IOException {
         return processFiles(files, task, null);
     }
 
-    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task, ClasspathInfo info) {
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task, ClasspathInfo info) throws IOException {
         currentTask = task;
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
@@ -240,11 +241,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                     return Collections.<ModificationResult>emptyList();
                 }
                 final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);
-                try {
-                    results.add(javaSource.runModificationTask(task));
-                } catch (IOException ex) {
-                    throw (RuntimeException) new RuntimeException().initCause(ex);
-                }
+                results.add(javaSource.runModificationTask(task)); // can throw IOException
             }
         } finally {
             currentTask = null;
@@ -252,20 +249,47 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         return results;
     }
     
-    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring, ClasspathInfo info) {
-        final Collection<ModificationResult> results = processFiles(files, task, info);
-        elements.registerTransaction(new RetoucheCommit(results));
-        for (ModificationResult result:results) {
-            for (FileObject jfo : result.getModifiedFileObjects()) {
-                for (Difference dif: result.getDifferences(jfo)) {
-                        elements.add(refactoring,DiffElement.create(dif, jfo, result));
+    protected final Problem createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring, ClasspathInfo info) {
+        try {
+            final Collection<ModificationResult> results = processFiles(files, task, info);
+            elements.registerTransaction(new RetoucheCommit(results));
+            for (ModificationResult result:results) {
+                for (FileObject jfo : result.getModifiedFileObjects()) {
+                    for (Difference dif: result.getDifferences(jfo)) {
+                            elements.add(refactoring,DiffElement.create(dif, jfo, result));
+                    }
                 }
             }
+        } catch (IOException e) {
+            return createProblemAndLog(null, e);
         }
+        return null;
     }
 
-    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
-        createAndAddElements(files, task, elements, refactoring, null);
+    protected final Problem createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
+        return createAndAddElements(files, task, elements, refactoring, null);
+    }
+    
+    protected final Problem createProblemAndLog(Problem p, Throwable t) {
+        Throwable cause = t.getCause();
+        Problem newProblem;
+        if (cause != null && (cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException") ||  //NOI18N
+            (cause.getCause()!=null ) && cause.getCause().getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException"))) { //NOI18N
+            newProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_OutOfMemory"));
+        } else {
+            String msg = NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExceptionThrown", t.toString());
+            newProblem = new Problem(true, msg);
+        }
+        Exceptions.printStackTrace(t);
+        
+        Problem problem;
+        if (p == null) return newProblem;
+        problem = p;
+        while(problem.getNext() != null) {
+            problem = problem.getNext();
+        }
+        problem.setNext(newProblem);
+        return p;
     }
     
     private class WorkingTask implements Task<CompilationController> {
