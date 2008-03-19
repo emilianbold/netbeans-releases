@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -290,6 +291,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             kit = support.cesKit();
+            
+            if (kit instanceof Callable) {
+                try {
+                    ((Callable) kit).call();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         
         private void initCustomEditor() {

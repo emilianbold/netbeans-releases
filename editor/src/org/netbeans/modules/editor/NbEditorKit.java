@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -82,8 +83,10 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.impl.ActionsList;
+import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
+import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
@@ -108,7 +111,7 @@ import org.openide.util.NbBundle;
 * @version 1.00
 */
 
-public class NbEditorKit extends ExtKit {
+public class NbEditorKit extends ExtKit implements Callable {
 
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
@@ -865,5 +868,14 @@ public class NbEditorKit extends ExtKit {
                 menu.add(item);
             }
         }        
+    }
+
+    public Object call() {
+        CustomizableSideBar.getFactoriesMap(getContentType());
+        NbEditorToolBar.getKeyBindingList(getContentType());
+        ToolbarActionsProvider.getToolbarItems(getContentType());
+        ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
+
+        return null;
     }
 }

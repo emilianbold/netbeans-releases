@@ -412,7 +412,7 @@ import org.openide.util.lookup.ProxyLookup;
         return retMap;
     }
     
-    private static List getKeyBindingList(String mimeType) {
+    public static List getKeyBindingList(String mimeType) {
         List keyBindingsList = new ArrayList();
 
         AllOptionsFolder aof = AllOptionsFolder.getDefault();
