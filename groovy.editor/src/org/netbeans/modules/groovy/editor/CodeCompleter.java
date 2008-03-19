@@ -360,10 +360,18 @@ public class CodeCompleter implements Completable {
                 LOG.log(Level.FINEST, "Trying to load URL = " + urlName);
                 doctext = HTMLJavadocParser.getJavadocText(
                         new URL(urlName),
-                        false);
+                        false,
+                        ame.isGDK());
             } catch (MalformedURLException ex) {
                 LOG.log(Level.FINEST, "document(), URL trouble: " + ex);
                 return ERROR;
+            }
+            
+            // If we could not find a suitable JavaDoc for the method
+            // say so. 
+            
+            if(doctext == null){
+                doctext = "Sorry, I'm unable to find the documentation.";
             }
 
             doctext = "<h3>" + sig + "</h3><BR>" + doctext;

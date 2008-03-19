@@ -53,6 +53,8 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *  HTML Parser. It retrieves sections of the javadoc HTML file.
@@ -61,12 +63,19 @@ import javax.swing.text.html.parser.ParserDelegator;
  */
 class HTMLJavadocParser {
     
+    private final Logger LOG = Logger.getLogger(HTMLJavadocParser.class.getName());
 
+    public HTMLJavadocParser() {
+        LOG.setLevel(Level.FINEST);
+    }
+    
+    
+    
     /** Gets the javadoc text from the given URL
      *  @param url nbfs protocol URL
      *  @param pkg true if URL should be retrieved for a package
      */
-    public static String getJavadocText(URL url, boolean pkg) {
+    public static String getJavadocText(URL url, boolean pkg, boolean isGDK) {
         if (url == null) return null;
         
         HTMLEditorKit.Parser parser;
@@ -87,7 +96,7 @@ class HTMLJavadocParser {
                 }else if (urlStr.indexOf('#')>0){
                     // member javadoc info
                     String memberName = urlStr.substring(urlStr.indexOf('#')+1);
-                    if (memberName.length()>0) offsets = parseMember(reader, memberName, parser, charset != null);
+                    if (memberName.length()>0) offsets = parseMember(reader, memberName, parser, charset != null, isGDK);
                 }else{
                     // class javadoc info
                     offsets = parseClass(reader, parser, charset != null);
@@ -214,6 +223,7 @@ class HTMLJavadocParser {
             int nextHRPos = -1;
             int lastHRPos = -1;
 
+            @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.HR){
                     if (state[0] == TEXT_START){
@@ -223,6 +233,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.P && state[0] == CLASS_DATA_START){
                     state[0] = TEXT_START;
@@ -240,6 +251,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleComment(char[] data, int pos){
                 String comment = String.valueOf(data);
                 if (comment!=null){
@@ -255,6 +267,7 @@ class HTMLJavadocParser {
                 }
             }
             
+            @Override
             public void handleText(char[] data, int pos) {
                 if (state[0] == TEXT_START && offset[0] < 0)
                     offset[0] = pos;
@@ -266,9 +279,12 @@ class HTMLJavadocParser {
         return offset;
     }
 
+
+    
+    
     /** Retrieves the position (start offset and end offset) of member javadoc info
       * in the raw html file */
-    private static int[] parseMember(Reader reader, final String name, final HTMLEditorKit.Parser parser, boolean ignoreCharset) throws IOException {
+    private static int[] parseMember(Reader reader, final String name, final HTMLEditorKit.Parser parser, boolean ignoreCharset, final boolean isGDK) throws IOException {
         final int INIT = 0;
         // 'A' tag with the name we are looking for.
         final int A_OPEN = 1;
@@ -288,6 +304,50 @@ class HTMLJavadocParser {
 
             int hrPos = -1;
 
+            String methodName(String signature){
+                // System.out.println("methodName(signature): " + signature);
+                
+                if(signature ==  null){
+                    return "<NULL>";
+                }
+                
+                int idx = signature.indexOf("(");
+                if(idx != -1) {
+                    return signature.substring(0,idx);
+                } else {
+                    return signature;
+                }
+            }
+            
+            boolean checkSignatureLink(String signature, String attrName, final boolean isGDK) {
+                
+                // There's a difference in JavaDoc Link format. GDK comes with variable names:
+                // JDK: String.html#endsWith(java.lang.String)
+                // GDK: String.html#center(java.lang.Number%20numberOfChars,%20java.lang.String%20padding)
+                
+                if(signature == null && attrName == null){
+                    return false;
+                }
+               
+                if (isGDK) {
+                    // FIXME: we take the *first* match which will be wrong sometimes.
+                    // We need to compare count and type of arguments. Stay tuned.
+                    
+                    if(methodName(signature).equals(methodName(attrName))) {
+                        return true;
+                    }
+                    
+                } else { // This is the standart case we are dealing with JDK JavaDocs
+                    if (signature.equals(attrName)) {
+                        return true;
+                    }
+                }
+                return false;
+
+            }
+            
+            
+            @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.HR && state[0]!=INIT){
                     if (state[0] == PRE_CLOSE){
@@ -296,11 +356,12 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
                 if (t == HTML.Tag.A) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
-                    if (name.equals(attrName)){
+                    if (checkSignatureLink(name, attrName, isGDK)){
                         // we have found desired javadoc member info anchor
                         state[0] = A_OPEN;
                     } else {
@@ -316,6 +377,7 @@ class HTMLJavadocParser {
 
             }
 
+            @Override
             public void handleEndTag(HTML.Tag t, int pos){
                 if (t == HTML.Tag.A && state[0] == A_OPEN){
                     state[0] = A_CLOSE;
@@ -350,6 +412,7 @@ class HTMLJavadocParser {
 
             int hrPos = -1;
 
+            @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.HR && state[0]!=INIT){
                     if (state[0] == A_OPEN){
@@ -359,6 +422,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
                 if (t == HTML.Tag.A) {
