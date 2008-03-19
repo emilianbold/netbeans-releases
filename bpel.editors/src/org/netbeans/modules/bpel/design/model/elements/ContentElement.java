@@ -236,12 +236,12 @@ public class ContentElement extends VisualElement {
     }
     
     public static ContentElement createEndEvent() {
-        return new ContentElement(EVENT_SHAPE, EndEventIcon2D.INSTANCE);
+        return new ContentElement(START_END_EVENT_SHAPE, EndEventIcon2D.INSTANCE);
     }
     
 
     public static ContentElement createStartEvent() {
-        return new ContentElement(EVENT_SHAPE, null);
+        return new ContentElement(START_END_EVENT_SHAPE, null);
     }
 
     
@@ -281,11 +281,12 @@ public class ContentElement extends VisualElement {
     
     
     public static final FShape BADGE_SHAPE = new FEllipse(16, 16);
-    public static final FShape EVENT_SHAPE = new FEllipse(24, 24);
-    public static final FShape GATEWAY_SHAPE = new FRoumb(40, 40);
-    public static final FShape SMALL_GATEWAY_SHAPE = new FRoumb(24, 24);
-    public static final FShape TASK_SHAPE = new FRectangle(72, 40, 8);
-    public static final FShape COLLAPSED_SHAPE = new FRectangle(40, 40, 8);
+    public static final FShape START_END_EVENT_SHAPE = new FEllipse(20, 20);
+    public static final FShape EVENT_SHAPE = new FEllipse(28, 28); //new FEllipse(24, 24);
+    public static final FShape GATEWAY_SHAPE = new FRoumb(28, 28); //new FRoumb(40, 40);
+    public static final FShape SMALL_GATEWAY_SHAPE = new FRoumb(20, 20);
+    public static final FShape TASK_SHAPE = new FRectangle(40, 28, 6); //new FRectangle(72, 40, 8);
+    public static final FShape COLLAPSED_SHAPE = new FRectangle(28, 28, 6); //new FRectangle(40, 40, 8);
     
     
     private static final FStroke STROKE = new FStroke(1);
