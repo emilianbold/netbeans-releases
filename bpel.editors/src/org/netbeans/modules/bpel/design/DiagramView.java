@@ -56,6 +56,9 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     private PlaceHolderManager placeholderManager;
     private NameEditor nameEditor;
     private MouseHandler mouseHandler;
+    
+    private int offsetX;
+    private int offsetY;
 
     public DiagramView(DesignView designView) {
         super(new DiagramViewLayout());
@@ -102,6 +105,22 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         super.print(g);
         designView.setPrintMode(false);
     }
+     
+     
+    public void setOffsets(int offsetX, int offsetY) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+    }
+    
+//    public void doLayout() {
+//        FBounds bounds = getContentSize();
+//        double k = designView.getCorrectedZoom();
+//        
+//        offsetX = (int) Math.round((getWidth() - bounds.width * k) / 2);
+//        offsetY = (int) Math.round((getHeight() - bounds.height * k) / 2);
+//
+//        super.doLayout();
+//    }
     
     
     @Override
@@ -383,16 +402,15 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
 //        return p;
 //    }
     public FPoint convertScreenToDiagram(Point point, double zoom) {
-        double x = ((point.x - DiagramViewLayout.MARGIN_LEFT) / zoom) + LayoutManager.HMARGIN;
-
-        double y = ((point.y - DiagramViewLayout.MARGIN_TOP) / zoom) + LayoutManager.VMARGIN;
+        double x = ((point.x - offsetX) / zoom) + LayoutManager.HMARGIN;
+        double y = ((point.y - offsetY) / zoom) + LayoutManager.VMARGIN;
 
         return new FPoint(x, y);
     }
 
     public Point convertDiagramToScreen(FPoint point, double zoom) {
-        double x = (point.x - LayoutManager.HMARGIN) * zoom + DiagramViewLayout.MARGIN_LEFT;
-        double y = (point.y - LayoutManager.VMARGIN) * zoom + DiagramViewLayout.MARGIN_TOP;
+        double x = (point.x - LayoutManager.HMARGIN) * zoom + offsetX;
+        double y = (point.y - LayoutManager.VMARGIN) * zoom + offsetY;
 
         return new Point((int) Math.round(x), (int) Math.round(y));
     }

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,6 +84,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private CallStackFrame lastFrame = null;
+    private boolean withSource = true;
+    private boolean opened = false;
+    private boolean opening = false;
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
@@ -112,7 +116,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-        boolean withSource = false;
 
         synchronized (lines) {
             lines.clear();
@@ -134,9 +137,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 for (;;) {
                     int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    if (combinedPos != -1) {
-                        withSource = true;
-                    }
                     int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
                     
                     if (addressPos == -1) {
@@ -222,7 +222,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             pos = msg.indexOf("\"", end+1); // NOI18N
         }
-        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
     
     public void updateRegValues(String msg) {
@@ -243,10 +243,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Map<String, RegisterValuesProvider.RegisterValue> getRegisterValues() {
-        Map<String,RegisterValuesProvider.RegisterValue> res = new HashMap<String,RegisterValuesProvider.RegisterValue>();
+    public Collection<RegisterValue> getRegisterValues() {
+        Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.put(regNames.get(idx), new RegisterValuesProvider.RegisterValue(regValues.get(idx), regModified.contains(idx)));
+            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -255,9 +255,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
+        final boolean dis = opening;
+        opening = false;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateAnnotations(false);
+                updateAnnotations(dis);
             }
         });
     }
@@ -283,6 +285,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     private void reloadDis(boolean withSource, boolean force) {
+        this.withSource = withSource;
+        if (!opened) {
+            return;
+        }
         // reload disassembler if needed
         // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
@@ -436,11 +442,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static void open() {
         try {
             DataObject dobj = DataObject.find(getFileObject());
-            dobj.getNodeDelegate().setDisplayName(getHeader());
+            dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.updateAnnotations(true);
+                dis.opening = true;
+                dis.opened = true;
+                dis.reloadDis(true, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -459,6 +467,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getCookie(CloseCookie.class).close();
+            // TODO: check for correct close on debug close
+            Disassembly dis = getCurrent();
+            if (dis != null) {
+                dis.opened = false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

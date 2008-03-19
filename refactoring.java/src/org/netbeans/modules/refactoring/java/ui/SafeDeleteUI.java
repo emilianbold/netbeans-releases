@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -57,7 +58,9 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -101,9 +104,10 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements[0]));
     }
 
-    public SafeDeleteUI(NonRecursiveFolder nonRecursiveFolder) {
+    public SafeDeleteUI(NonRecursiveFolder nonRecursiveFolder, boolean regulardelete) {
         refactoring = new SafeDeleteRefactoring(Lookups.fixed(nonRecursiveFolder));
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(nonRecursiveFolder.getFolder()));
+        this.regulardelete = regulardelete;
     }
     
     /**
@@ -191,5 +195,46 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
         for (FileObject file:getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
             DataObject.find(file).delete();
         }
+        NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+        if (f!=null) {
+            deletePackage(f.getFolder());
+        }
+    }
+    
+    private void deletePackage(FileObject source) {
+        FileObject root = ClassPath.getClassPath(source, ClassPath.SOURCE).findOwnerRoot(source);
+
+        DataFolder dataFolder = DataFolder.findFolder(source);
+
+        FileObject parent = dataFolder.getPrimaryFile().getParent();
+        // First; delete all files except packages
+
+        try {
+            DataObject ch[] = dataFolder.getChildren();
+            boolean empty = true;
+            for (int i = 0; ch != null && i < ch.length; i++) {
+                if (!ch[i].getPrimaryFile().isFolder()) {
+                    ch[i].delete();
+                }
+                else {
+                    empty = false;
+                }
+            }
+
+            // If empty delete itself
+            if ( empty ) {
+                dataFolder.delete();
+            }
+
+            // Second; delete empty super packages
+            while (!parent.equals(root) && parent.getChildren().length == 0) {
+                FileObject newParent = parent.getParent();
+                parent.delete();
+                parent = newParent;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
 }

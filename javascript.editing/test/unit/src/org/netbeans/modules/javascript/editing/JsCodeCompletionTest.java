@@ -581,6 +581,18 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testExpressions2() throws Exception {
         checkCompletion("testfiles/completion/lib/expressions.js", "^toE");
     }
+
+    public void testExpressions2b() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions2.js", "ownerDocument.^");
+    }
+
+    public void testExpressions3() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions3.js", "specified.^");
+    }
+
+    public void testExpressions4() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions4.js", "document.b^");
+    }
     
 //
 //    public void testCompletion6() throws Exception {

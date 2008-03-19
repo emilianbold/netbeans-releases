@@ -93,19 +93,8 @@ public class DuplicateCompilerSetPanel extends javax.swing.JPanel implements Doc
     
     private void updateDataFamily() {
         CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
-        int n = 0;
-        String suggestedName = null;
-        while (true) {
-            suggestedName = flavor.toString() + (n > 0 ? ("_" + n) : ""); // NOI18N
-            if (csm.getCompilerSet(suggestedName) != null) {
-                n++;
-            }
-            else {
-                break;
-            }
-        }
+        String suggestedName = csm.getUniqueCompilerSetName(flavor.toString());
         tfName.setText(suggestedName);
-        
         updateDataName();
     }
     

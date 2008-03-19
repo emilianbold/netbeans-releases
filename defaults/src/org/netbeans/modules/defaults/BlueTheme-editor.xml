@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="line-number" foreColor="white"/>
     <fontcolor name="selection" bgColor="ff685d9c"/>
     <fontcolor name="status-bar"/>
-    <fontcolor name="status-bar-bold" foreColor="white" bgColor="red"/>
+    <fontcolor name="status-bar-bold" foreColor="red"/>
     <fontcolor name="caret-color-insert-mode" foreColor="yellow" />
     <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>

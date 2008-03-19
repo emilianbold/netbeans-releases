@@ -257,6 +257,9 @@
 
     <!--ID for Find dialog-->
 <mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
+
+    <!--ID for Replace dialog-->
+<mapID target="editing.find" url="files/files_search.html" />    
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />

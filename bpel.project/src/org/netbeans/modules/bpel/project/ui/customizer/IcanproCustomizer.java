@@ -397,7 +397,7 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
             setName( description.name );
             setDisplayName( description.displayName );
             if ( description.iconBase != null ) {
-                setIconBase( description.iconBase );
+                setIconBaseWithExtension(description.iconBase);
             }
             this.customizer = description.customizer;
         }

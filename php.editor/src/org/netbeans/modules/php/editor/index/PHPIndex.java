@@ -335,7 +335,7 @@ public class PHPIndex {
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(name, name, kind, result, ALL_SCOPE, TERMS_FQN);
+        search(PHPIndexer.FIELD_FQN, name, kind, result, ALL_SCOPE, TERMS_FQN);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
@@ -346,9 +346,12 @@ public class PHPIndex {
                 }
 
                 for (String signature : signatures) {
+                    int firstSemicolon = signature.indexOf(";");
+                    
+                    String funcName = signature.substring(0, firstSemicolon);
 
                     IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            map.getPersistentUrl(), signature, "", 0, this, false);
+                            map.getPersistentUrl(), funcName, null, 0, this, false);
 
                     functions.add(func);
                 }

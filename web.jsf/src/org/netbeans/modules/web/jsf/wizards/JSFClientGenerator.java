@@ -60,15 +60,18 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -136,7 +139,7 @@ public class JSFClientGenerator {
     private static String INDEX_PAGE = "index.jsp"; //NOI18N
     private static String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
     
-    public static void generateJSFPages(Project project, final String entityClass, String jsfFolder, String controllerClass, FileObject pkg, FileObject controllerFileObject) throws IOException {
+    public static void generateJSFPages(Project project, final String entityClass, String jsfFolder, String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
         final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
         
         String simpleControllerName = simpleClassName(controllerClass);
@@ -221,7 +224,7 @@ public class JSFClientGenerator {
         }
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
-                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject);
+                entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport);
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
         FileObject converter = generateConverter(controllerFileObject, pkg, simpleConverterName, controllerClass, simpleControllerName, entityClass, 
@@ -230,24 +233,24 @@ public class JSFClientGenerator {
         final String indexJspToUse = addLinkToListJspIntoIndexJsp(wm, jsfFolder, simpleEntityName);
         final String linkToIndex = indexJspToUse != null ? "<br />\n<a href=\"" + wm.getContextPath() + "/" + indexJspToUse + "\">Index</a>\n" : "";  //NOI18N
 
-        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc);
+        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport);
         
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot);
+                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport);
             }
         }, true);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot);
+                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport);
             }
         }, true);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot);
+                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport);
             }
         }, true);
         
@@ -281,7 +284,7 @@ public class JSFClientGenerator {
                 replace.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
                 replace.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
-                replace.append("Show All " + simpleEntityName + "s");
+                replace.append("Show All " + simpleEntityName + " Items");
                 replace.append("\"/>");
                 replace.append(endLine);
                 if (needsForm) {
@@ -297,7 +300,7 @@ public class JSFClientGenerator {
     }
 
     private static void generateListJsp(final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
-            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc) throws FileStateInvalidException, IOException {
+            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
@@ -305,11 +308,11 @@ public class JSFClientGenerator {
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
                 + "<html>\n<head>\n <meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
-                + "<title>Listing " + simpleEntityName + "s</title>\n"
+                + "<title>Listing " + simpleEntityName + " Items</title>\n"
                 + "</head>\n<body>\n<f:view>\n  <h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
-        listSb.append("<h1>Listing " + simpleEntityName + "s</h1>\n");
+        listSb.append("<h1>Listing " + simpleEntityName + " Items</h1>\n");
         listSb.append("<h:form>\n");
-        listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + "s Found)<br />\" rendered=\"#{" + managedBean + ".itemCount == 0}\" />\n");
+        listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + " Items Found)<br />\" rendered=\"#{" + managedBean + ".itemCount == 0}\" />\n");
         listSb.append("<h:panelGroup rendered=\"#{" + managedBean + ".itemCount > 0}\">\n");
         listSb.append(MessageFormat.format("<h:outputText value=\"Item #'{'{0}.firstItem + 1'}'..#'{'{0}.lastItem'}' of #'{'{0}.itemCount}\"/>"
                 + "&nbsp;\n"
@@ -335,7 +338,7 @@ public class JSFClientGenerator {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, null);
+                JsfTable.createTable(controller, typeElement, managedBean + "." + fieldName, listSb, commands, embeddedPkSupport);
             }
         }, true);
         listSb.append("</h:dataTable>\n</h:panelGroup>\n");
@@ -374,7 +377,7 @@ public class JSFClientGenerator {
     }
     
     private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
         newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -387,12 +390,12 @@ public class JSFClientGenerator {
         newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass, embeddedPkSupport);
         newSb.append("</h:panelGrid>\n<br />\n");
         
         newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
         
-        newSb.append("<br />\n<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\" immediate=\"true\"/>\n " + linkToIndex
+        newSb.append("<br />\n<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + " Items\" immediate=\"true\"/>\n " + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
         
         try {
@@ -426,7 +429,7 @@ public class JSFClientGenerator {
     }
     
     private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+            String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
         editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -440,7 +443,7 @@ public class JSFClientGenerator {
                 + "<h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass, embeddedPkSupport);
         editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\">\n"
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\"/>\n"
                 + "</h:commandLink>\n"
@@ -449,7 +452,7 @@ public class JSFClientGenerator {
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\"/>\n"
                 + "</h:commandLink>\n"
                 + "<br />\n"
-                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\" immediate=\"true\"/>\n" + linkToIndex
+                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + " Items\" immediate=\"true\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
         try {
@@ -484,7 +487,7 @@ public class JSFClientGenerator {
     }
 
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
-            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot) throws FileStateInvalidException, IOException {
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -497,8 +500,8 @@ public class JSFClientGenerator {
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass);
-        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport);
+        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport);
         detailSb.append("</h:panelGrid>\n");
         detailSb.append("<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
@@ -511,7 +514,7 @@ public class JSFClientGenerator {
                 + "</h:commandLink>\n"
                 + "<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".createSetup}\" value=\"New " + simpleEntityName + "\" />\n<br />\n"
-                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + "s\"/>\n" + linkToIndex
+                + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + " Items\"/>\n" + linkToIndex
                 + "</h:form>\n </f:view>\n</body>\n</html>\n");
 
         try {
@@ -744,7 +747,11 @@ public class JSFClientGenerator {
                     getAsStringBody.append("Object " + propName + "Obj = id.g" + setter.getName().substring(1) + "();\n" +
                             "String " + propName + " = " + propName + "Obj == null ? \"\" : String.valueOf(" + propName + "Obj);\n");
                 }
-                getAsStringBody.append(propName + " = " + propName + ".replace(escape, escape + escape);\n" +
+                getAsStringBody.append(propName + " = ");
+                if (isString) {
+                    getAsStringBody.append(propName + " == null ? \"\" : ");
+                }
+                getAsStringBody.append(propName + ".replace(escape, escape + escape);\n" +
                         propName + " = " + propName + ".replace(delim, escape + delim);\n");
             }
             getAsStringBody.append("return ");
@@ -818,10 +825,12 @@ public class JSFClientGenerator {
             final List<ElementHandle<ExecutableElement>> toManyRelMethods,
             final boolean isInjection,
             final boolean isFieldAccess,
-            final FileObject controllerFileObject) throws IOException {
+            final FileObject controllerFileObject, 
+            final EmbeddedPkSupport embeddedPkSupport) throws IOException {
         
             final String[] idPropertyType = new String[1];
             final String[] idGetterName = new String[1];
+            final boolean[] embeddable = new boolean[] { false };
             
             JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -831,9 +840,11 @@ public class JSFClientGenerator {
                     ExecutableElement idGetterElement = idGetter.resolve(workingCopy);
                     idGetterName[0] = idGetterElement.getSimpleName().toString();
                     TypeMirror idType = idGetterElement.getReturnType();
+                    TypeElement idClass = null;
                     if (TypeKind.DECLARED == idType.getKind()) {
                         DeclaredType declaredType = (DeclaredType) idType;
-                        TypeElement idClass = (TypeElement) declaredType.asElement();
+                        idClass = (TypeElement) declaredType.asElement();
+                        embeddable[0] = idClass != null && JsfForm.isEmbeddableClass(idClass);
                         idPropertyType[0] = idClass.getQualifiedName().toString();
                     }
                     
@@ -932,7 +943,6 @@ public class JSFClientGenerator {
                         modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
                     }
 
-                    String entityReferenceName = entityClass;
                     String oldMe = null;
             
                     // <editor-fold desc=" all relations ">
@@ -991,7 +1001,7 @@ public class JSFClientGenerator {
                                                             "if (" + scalarRelFieldName + "OrphanCheck != null) {\n");
                                 illegalOrphansInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "OrphanCheck." + relrelGetterName + "();\n");
                                 illegalOrphansInCreate.append("if (" + relrelInstanceName + " != null) {\n" + 
-                                        "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "OrphanCheck + \" already has a " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please select another " + relTypeReference + ".\");\n" +
+                                        "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "OrphanCheck + \" already has an item of type " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please make another selection for the " + scalarRelFieldName + " field.\");\n" +
                                                 "illegalOrphans = true;\n" +
                                         "}\n");
                                 illegalOrphansInCreate.append("}\n");
@@ -1066,15 +1076,19 @@ public class JSFClientGenerator {
                                 }
                                 if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relColumnNullable) {
                                     updateRelatedInEditPost.append(
-                                        "for(" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
+                                        "for (" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
+                                        "if (!" + relFieldNew + ".contains(" + oldScalarRelFieldName + ")) {\n" +
                                         ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? oldScalarRelFieldName + ".s" + otherName.substring(1) + "(null);\n" :
-                                            oldScalarRelFieldName + "." + otherName + "().remove(" + fieldName +");\n") +
-                                        oldScalarRelFieldName + " = em.merge(" + oldScalarRelFieldName + ");\n}\n");
+                                            oldScalarRelFieldName + "." + otherName + "().remove(" + fieldName + ");\n") +
+                                        oldScalarRelFieldName + " = em.merge(" + oldScalarRelFieldName + ");\n" +
+                                        "}\n" +
+                                        "}\n");
                                 }
                                 if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
                                    updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + newScalarRelFieldName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
                                 }
-                                updateRelatedInEditPost.append("for(" + relTypeReference + " " + newScalarRelFieldName + " : " + relFieldNew + ") {\n" +
+                                updateRelatedInEditPost.append("for (" + relTypeReference + " " + newScalarRelFieldName + " : " + relFieldNew + ") {\n" +
+                                "if (!" + relFieldOld + ".contains(" + newScalarRelFieldName + ")) {\n" +
                                 ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + oldOfNew + " = " + newScalarRelFieldName + "." + relrelGetterName + "();\n" +
                                     newScalarRelFieldName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                     newScalarRelFieldName + "." + otherName + "().add(" + fieldName +");\n") +
@@ -1091,7 +1105,7 @@ public class JSFClientGenerator {
                                         relTypeListName + ".add(" + newScalarRelFieldName + ");\n" +
                                         "}\n");
                                 }
-                                updateRelatedInEditPost.append("}\n");
+                                updateRelatedInEditPost.append("}\n}\n");
                                 if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
                                         updateRelatedInEditPost.append("for (" + simpleEntityName + " " + oldOfNew + " : " + newScalarRelFieldName + "sToRemove.keySet()) {\n" +
                                         "List<" + relTypeReference + "> " + relTypeListName + " = " + newScalarRelFieldName + "sToRemove.get(" + oldOfNew + ");\n" +
@@ -1122,7 +1136,7 @@ public class JSFClientGenerator {
                                         "if(" + scalarRelFieldName + "New != null && !" + scalarRelFieldName + "New.equals(" + scalarRelFieldName + "Old)) {\n");
                                     illegalOrphansInEdit.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "New." + relrelGetterName + "();\n" + 
                                                 "if (" + relrelInstanceName + " != null) {\n" + 
-                                                "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "New + \" cannot be selected in the " + scalarRelFieldName + " field, since it already has an item of type " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please make another selection for the " + scalarRelFieldName + " field.\");\n" +
+                                                "addErrorMessage(\"The " + relTypeReference + " \" + " + scalarRelFieldName + "New + \" already has an item of type " + simpleEntityName + " whose " + scalarRelFieldName + " column cannot be null. Please make another selection for the " + scalarRelFieldName + " field.\");\n" +
                                                 "illegalOrphans = true;\n" +
                                                 "}\n");
                                     illegalOrphansInEdit.append("}\n");
@@ -1234,6 +1248,7 @@ public class JSFClientGenerator {
                     
                     bodyText = "reset(false);\n" +
                             fieldName + " = new " + simpleEntityName + "();\n" + 
+                            (embeddable[0] && idClass != null ? fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" : "") +
                             "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1252,8 +1267,20 @@ public class JSFClientGenerator {
                                 "return null;\n" +
                                 "}\n");
                     }
+                    
+                    TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
+                    StringBuffer codeToPopulatePkFields = new StringBuffer();
+                    if (embeddable[0] && idClass != null) {
+                        for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
+                            if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
+                                codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
+                                    fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(workingCopy, entityType, pkMethod) + ");\n");
+                            }
+                        }
+                    }
 
-                    bodyText = illegalOrphansInCreate.toString() + 
+                    bodyText = codeToPopulatePkFields.toString() +
+                            illegalOrphansInCreate.toString() +
                             "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
@@ -1299,7 +1326,8 @@ public class JSFClientGenerator {
                                 "}\n");
                     }                    
                     
-                    bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                    bodyText = codeToPopulatePkFields.toString() + 
+                            simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "String " + currentEntityStringVar + " = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                             "if " + entityStringVar + " == null || " + entityStringVar + ".length() == 0 || !" + entityStringVar + ".equals(" + currentEntityStringVar + ")) {\n" +
@@ -1514,8 +1542,17 @@ public class JSFClientGenerator {
                     methodInfo = new MethodInfo("getAsString", publicModifier, asStringType, null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
 
+                    String newEntityStringInit;
+                    if (embeddable[0] && idClass != null) {
+                        newEntityStringInit = simpleEntityName + " new" + simpleEntityName + " = new " + simpleEntityName + "();\n" +
+                                "new" + simpleEntityName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
+                                "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
+                    }
+                    else {
+                        newEntityStringInit = "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n";
+                    }
                     bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
-                            "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n" +
+                            newEntityStringInit +
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +
                             "createSetup();\n" +
@@ -2067,5 +2104,189 @@ public class JSFClientGenerator {
         }
         
     }
-
+    
+    public static class EmbeddedPkSupport {
+        private Map<TypeElement,EmbeddedPkSupportInfo> typeToInfo = new HashMap<TypeElement,EmbeddedPkSupportInfo>();
+        
+        public Set<ExecutableElement> getPkAccessorMethods(CompilationController controller, TypeElement type) {
+            EmbeddedPkSupportInfo info = getInfo(controller, type);
+            return info.getPkAccessorMethods();
+        }
+        
+        public String getCodeToPopulatePkField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
+            EmbeddedPkSupportInfo info = getInfo(controller, type);
+            String code = info.getCodeToPopulatePkField(pkAccessorMethod);
+            if (code != null) {
+                return code;
+            }
+            
+            code = "";
+            ExecutableElement relationshipMethod = info.getRelationshipMethod(pkAccessorMethod);
+            String referencedColumnName = info.getReferencedColumnName(pkAccessorMethod);
+            if (relationshipMethod == null || referencedColumnName == null) {
+                info.putCodeToPopulatePkField(pkAccessorMethod, code);
+                return code;
+            }
+            
+            TypeMirror relationshipTypeMirror = relationshipMethod.getReturnType();
+            if (TypeKind.DECLARED != relationshipTypeMirror.getKind()) {
+                info.putCodeToPopulatePkField(pkAccessorMethod, code);
+                return code;
+            }
+            DeclaredType declaredType = (DeclaredType) relationshipTypeMirror;
+            TypeElement relationshipType = (TypeElement) declaredType.asElement();
+            
+            EmbeddedPkSupportInfo relatedInfo = getInfo(controller, relationshipType);
+            String accessorString = relatedInfo.getAccessorString(referencedColumnName);
+            if (accessorString == null) {
+                info.putCodeToPopulatePkField(pkAccessorMethod, code);
+                return code;
+            }
+            
+            code = relationshipMethod.getSimpleName().toString() + "()." + accessorString;
+            info.putCodeToPopulatePkField(pkAccessorMethod, code);
+            return code;
+        }
+        
+        public boolean isRedundantWithRelationshipField(CompilationController controller, TypeElement type, ExecutableElement pkAccessorMethod) {
+            return getCodeToPopulatePkField(controller, type, pkAccessorMethod).length() > 0;
+        }
+        
+        private EmbeddedPkSupportInfo getInfo(CompilationController controller, TypeElement type) {
+            EmbeddedPkSupportInfo info = typeToInfo.get(type);
+            if (info == null) {
+                info = new EmbeddedPkSupportInfo(controller, type);
+                typeToInfo.put(type, info);
+            }
+            return info;
+        }
+    }
+    
+    private static class EmbeddedPkSupportInfo {
+        private TypeElement type;
+        private Map<String,ExecutableElement> joinColumnNameToRelationshipMethod = new HashMap<String,ExecutableElement>();
+        private Map<String,String> joinColumnNameToReferencedColumnName = new HashMap<String,String>();
+        private Map<String,String> columnNameToAccessorString = new HashMap<String,String>();
+        private Map<ExecutableElement,String> pkAccessorMethodToColumnName = new HashMap<ExecutableElement,String>();
+        private Map<ExecutableElement,String> pkAccessorMethodToPopulationCode = new HashMap<ExecutableElement,String>(); //derived
+        private boolean isFieldAccess;
+        
+        public Set<ExecutableElement> getPkAccessorMethods() {
+            return pkAccessorMethodToColumnName.keySet();
+        }
+        
+        public ExecutableElement getRelationshipMethod(ExecutableElement pkAccessorMethod) {
+            String columnName = pkAccessorMethodToColumnName.get(pkAccessorMethod);
+            if (columnName == null) {
+                return null;
+            }
+            return joinColumnNameToRelationshipMethod.get(columnName);
+        }
+        
+        public String getReferencedColumnName(ExecutableElement pkAccessorMethod) {
+            String columnName = pkAccessorMethodToColumnName.get(pkAccessorMethod);
+            if (columnName == null) {
+                return null;
+            }
+            return joinColumnNameToReferencedColumnName.get(columnName);
+        }
+        
+        public String getAccessorString(String columnName) {
+            return columnNameToAccessorString.get(columnName);
+        }
+        
+        public String getCodeToPopulatePkField(ExecutableElement pkAccessorMethod) {
+            return pkAccessorMethodToPopulationCode.get(pkAccessorMethod);
+        }
+        
+        public void putCodeToPopulatePkField(ExecutableElement pkAccessorMethod, String code) {
+            pkAccessorMethodToPopulationCode.put(pkAccessorMethod, code);
+        }
+        
+        EmbeddedPkSupportInfo(CompilationController controller, TypeElement type) {
+            this.type = type;
+            isFieldAccess = JsfForm.isFieldAccess(type);
+            for (ExecutableElement method : JsfForm.getEntityMethods(type)) {
+                String methodName = method.getSimpleName().toString();
+                if (methodName.startsWith("get")) {
+                    Element f = isFieldAccess ? JsfForm.guessField(controller, method) : method;
+                    if (f != null) {
+                        int a = -1;
+                        AnnotationMirror columnAnnotation = null;
+                        String[] columnAnnotationFqns = {"javax.persistence.EmbeddedId", "javax.persistence.JoinColumns", "javax.persistence.JoinColumn", "javax.persistence.Column"}; //NOI18N
+                        for (int i = 0; i < columnAnnotationFqns.length; i++) {
+                            String columnAnnotationFqn = columnAnnotationFqns[i];
+                            AnnotationMirror columnAnnotationMirror = JsfForm.findAnnotation(f, columnAnnotationFqn);
+                            if (columnAnnotationMirror != null) {
+                                a = i;
+                                columnAnnotation = columnAnnotationMirror;
+                                break;
+                            }
+                        }
+                        if (a == 0) {
+                            //populate pkAccessorMethodToColumnName and columnNameToAccessorString
+                            populateMapsForEmbedded(controller, method);
+                        } else if ( (a == 1 || a == 2) && 
+                                (JsfForm.isAnnotatedWith(f, "javax.persistence.OneToOne") ||
+                                JsfForm.isAnnotatedWith(f, "javax.persistence.ManyToOne")) )  {
+                            //populate joinColumnNameToRelationshipMethod and joinColumnNameToReferencedColumnName
+                            populateJoinColumnNameMaps(method, columnAnnotationFqns[a], columnAnnotation);
+                        }
+                        else if (a == 3) {
+                            //populate columnNameToAccessorString
+                            String columnName = JsfForm.findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
+                            if (columnName != null) {
+                                columnNameToAccessorString.put(columnName, method.getSimpleName().toString() + "()");
+                            }
+                        } 
+                    }
+                }
+            }
+        }
+        
+        private void populateMapsForEmbedded(CompilationController controller, ExecutableElement idGetterElement) {
+            TypeMirror idType = idGetterElement.getReturnType();
+            if (TypeKind.DECLARED != idType.getKind()) {
+                return;
+            }
+            DeclaredType declaredType = (DeclaredType) idType;
+            TypeElement idClass = (TypeElement) declaredType.asElement();
+            
+            for (ExecutableElement pkMethod : ElementFilter.methodsIn(idClass.getEnclosedElements())) {
+                String pkMethodName = pkMethod.getSimpleName().toString();
+                if (pkMethodName.startsWith("get")) {
+                    Element pkFieldElement = isFieldAccess ? JsfForm.guessField(controller, pkMethod) : pkMethod;
+                    AnnotationMirror columnAnnotation = JsfForm.findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
+                    if (columnAnnotation != null) {
+                        String columnName = JsfForm.findAnnotationValueAsString(columnAnnotation, "name"); //NOI18N
+                        if (columnName != null) {
+                            pkAccessorMethodToColumnName.put(pkMethod, columnName);
+                            columnNameToAccessorString.put(columnName, 
+                                    idGetterElement.getSimpleName().toString() + "()." + 
+                                    pkMethod.getSimpleName() + "()");
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void populateJoinColumnNameMaps(ExecutableElement m, String columnAnnotationFqn, AnnotationMirror columnAnnotation) {
+            List<AnnotationMirror> joinColumnAnnotations;
+            if ("javax.persistence.JoinColumn".equals(columnAnnotationFqn)) {
+                joinColumnAnnotations = new ArrayList<AnnotationMirror>();
+                joinColumnAnnotations.add(columnAnnotation);
+            }
+            else {  //columnAnnotation is a javax.persistence.JoinColumns
+                joinColumnAnnotations = JsfForm.findNestedAnnotations(columnAnnotation, "javax.persistence.JoinColumn"); //NOI18N
+            }
+            for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
+                String columnName = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "name"); //NOI18N
+                if (columnName != null) {
+                    String referencedColumnName = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "referencedColumnName"); //NOI18N
+                    joinColumnNameToRelationshipMethod.put(columnName, m);
+                    joinColumnNameToReferencedColumnName.put(columnName, referencedColumnName);
+                }
+            }
+        }
+    }
 }

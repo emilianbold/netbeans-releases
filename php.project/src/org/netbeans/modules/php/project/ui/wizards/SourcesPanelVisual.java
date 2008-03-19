@@ -39,38 +39,31 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
-import java.awt.event.ActionListener;
-import java.io.File;
-import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
+import java.util.regex.Pattern;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.plaf.UIResource;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
- * @author  Tomas Mysik
+ * @author Tomas Mysik
  */
-public class SourcesPanelVisual extends JPanel {
+public class SourcesPanelVisual extends JPanel implements DocumentListener, ChangeListener {
 
     private static final long serialVersionUID = -358263102348820543L;
-    static final LocalServer defaultLocalServer = new LocalServer(null, null,
-            NbBundle.getMessage(SourcesPanelVisual.class, "LBL_UseProjectFolder"), false);
+
+    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
+    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
 
     private final WebFolderNameProvider webFolderNameProvider;
-    MutableComboBoxModel localServerComboBoxModel = new LocalServerComboBoxModel();
-    private final LocalServerComboBoxEditor localServerComboBoxEditor = new LocalServerComboBoxEditor();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private MutableComboBoxModel localServerComboBoxModel;
+    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
+
 
     /** Creates new form SourcesPanelVisual */
     public SourcesPanelVisual(WebFolderNameProvider webFolderNameProvider) {
@@ -80,13 +73,21 @@ public class SourcesPanelVisual extends JPanel {
     }
 
     private void init() {
+        localServerComboBoxModel = new LocalServer.ComboBoxModel(ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
+
         localServerComboBox.setModel(localServerComboBoxModel);
-        localServerComboBox.setRenderer(new LocalServerComboBoxRenderer());
+        localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
         localServerComboBox.setEditor(localServerComboBoxEditor);
+
+        urlTextField.getDocument().addDocumentListener(this);
     }
 
     void addSourcesListener(ChangeListener listener) {
-        localServerComboBoxEditor.changeSupport.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
+    }
+
+    void removeSourcesListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -103,6 +104,9 @@ public class SourcesPanelVisual extends JPanel {
         locateButton = new javax.swing.JButton();
         browseButton = new javax.swing.JButton();
         localServerLabel = new javax.swing.JLabel();
+        urlInfoLabel = new javax.swing.JLabel();
+        urlLabel = new javax.swing.JLabel();
+        urlTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Sources")); // NOI18N
 
@@ -125,21 +129,32 @@ public class SourcesPanelVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_LocalServer")); // NOI18N
         localServerLabel.setEnabled(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(urlInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "TXT_Url")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(SourcesPanelVisual.class, "LBL_Url")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(sourcesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 319, Short.MAX_VALUE)
+                        .add(sourcesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locateButton)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(localServerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(localServerComboBox, 0, 319, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(locateButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))))
+                    .add(urlInfoLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(urlLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton)))
+                        .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -152,42 +167,23 @@ public class SourcesPanelVisual extends JPanel {
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(localServerLabel)
+                .add(18, 18, 18)
+                .add(urlInfoLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(urlLabel)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
-        String newLocation = Utils.browseLocationAction(this, ls.getDocumentRoot());
-        if (newLocation == null) {
-            return;
-        }
-
-        String projectLocation = new File(newLocation, webFolderNameProvider.getWebFolderName()).getAbsolutePath();
-        for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
-            LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
-            if (projectLocation.equals(element.getSrcRoot())) {
-                localServerComboBox.setSelectedIndex(i);
-                return;
-            }
-        }
-        LocalServer localServer = new LocalServer(newLocation, projectLocation);
-        localServerComboBoxModel.addElement(localServer);
-        localServerComboBox.setSelectedItem(localServer);
-        Utils.sortComboBoxModel(localServerComboBoxModel);
+        Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
+                webFolderNameProvider.getWebFolderName());
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
-        // XXX
-        String message = "Not implemented yet."; // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor(
-                message,
-                message,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(descriptor);
+        Utils.locateLocalServerAction();
     }//GEN-LAST:event_locateButtonActionPerformed
 
 
@@ -197,10 +193,13 @@ public class SourcesPanelVisual extends JPanel {
     private javax.swing.JLabel localServerLabel;
     private javax.swing.JButton locateButton;
     private javax.swing.JLabel sourcesLabel;
+    private javax.swing.JLabel urlInfoLabel;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
-    static boolean isProjectFolder(LocalServer localServer) {
-        return defaultLocalServer.equals(localServer);
+    static boolean isValidUrl(String url) {
+        return URL_PATTERN.matcher(url).matches();
     }
 
     LocalServer getSourcesLocation() {
@@ -220,213 +219,32 @@ public class SourcesPanelVisual extends JPanel {
         localServerComboBox.setSelectedItem(localServer);
     }
 
-    static class LocalServer implements Comparable<LocalServer> {
-        private final String virtualHost;
-        private final String documentRoot;
-        private final boolean editable;
-        private String srcRoot;
-
-        public LocalServer(final LocalServer localServer) {
-            this.virtualHost = localServer.virtualHost;
-            this.documentRoot = localServer.documentRoot;
-            this.srcRoot = localServer.srcRoot;
-            this.editable = localServer.editable;
-        }
-
-        public LocalServer(String srcRoot) {
-            this(null, null, srcRoot);
-        }
-
-        public LocalServer(String documentRoot, String srcRoot) {
-            this(null, documentRoot, srcRoot);
-        }
-
-        public LocalServer(String virtualHost, String documentRoot, String srcRoot) {
-            this(virtualHost, documentRoot, srcRoot, true);
-        }
-
-        public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
-            this.virtualHost = virtualHost;
-            this.documentRoot = documentRoot;
-            this.srcRoot = srcRoot;
-            this.editable = editable;
-        }
-
-        public String getVirtualHost() {
-            return virtualHost;
-        }
-
-        public String getDocumentRoot() {
-            return documentRoot;
-        }
-
-        public String getSrcRoot() {
-            return srcRoot;
-        }
-
-        public void setSrcRoot(String srcRoot) {
-            if (!editable) {
-                throw new UnsupportedOperationException("srcRoot cannot be changed because instance is not editable");
-            }
-            this.srcRoot = srcRoot;
-        }
-
-        public boolean isEditable() {
-            return editable;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(getClass().getName());
-            sb.append("[virtualHost: ");
-            sb.append(virtualHost);
-            sb.append(", documentRoot: ");
-            sb.append(documentRoot);
-            sb.append(", srcRoot: ");
-            sb.append(srcRoot);
-            sb.append(", editable: ");
-            sb.append(editable);
-            sb.append("]");
-            return sb.toString();
-        }
-
-        public int compareTo(LocalServer ls) {
-            if (!editable) {
-                return -1;
-            }
-            return srcRoot.compareTo(ls.getSrcRoot());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final LocalServer other = (LocalServer) obj;
-            if (virtualHost != other.virtualHost && (virtualHost == null || !virtualHost.equals(other.virtualHost))) {
-                return false;
-            }
-            if (documentRoot != other.documentRoot && (documentRoot == null || !documentRoot.equals(other.documentRoot))) {
-                return false;
-            }
-            if (editable != other.editable) {
-                return false;
-            }
-            if (srcRoot != other.srcRoot && (srcRoot == null || !srcRoot.equals(other.srcRoot))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 97 * hash + (virtualHost != null ? virtualHost.hashCode() : 0);
-            hash = 97 * hash + (documentRoot != null ? documentRoot.hashCode() : 0);
-            hash = 97 * hash + (editable ? 1 : 0);
-            hash = 97 * hash + (srcRoot != null ? srcRoot.hashCode() : 0);
-            return hash;
-        }
+    String getUrl() {
+        return urlTextField.getText().trim();
     }
 
-    static interface WebFolderNameProvider {
-        String getWebFolderName();
+    void setUrl(String url) {
+        urlTextField.setText(url);
     }
 
-    private static class LocalServerComboBoxModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = 193082264935872743L;
-
-        public LocalServerComboBoxModel() {
-            addElement(defaultLocalServer);
-        }
+    // listeners
+    public void insertUpdate(DocumentEvent e) {
+        processUpdate();
     }
 
-    private static class LocalServerComboBoxRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 31965318763243602L;
-
-        public LocalServerComboBoxRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            assert value instanceof LocalServer;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((LocalServer) value).getSrcRoot());
-
-            // never selected
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-            return this;
-        }
+    public void removeUpdate(DocumentEvent e) {
+        processUpdate();
     }
 
-    private static class LocalServerComboBoxEditor implements ComboBoxEditor, UIResource, DocumentListener {
-        private static final long serialVersionUID = -4527321803090719483L;
+    public void changedUpdate(DocumentEvent e) {
+        processUpdate();
+    }
 
-        final JTextField component = new JTextField();
-        private LocalServer activeItem;
-        final ChangeSupport changeSupport = new ChangeSupport(this);
+    private void processUpdate() {
+        changeSupport.fireChange();
+    }
 
-        public LocalServerComboBoxEditor() {
-            component.setOpaque(true);
-            component.getDocument().addDocumentListener(this);
-        }
-
-        public Component getEditorComponent() {
-            return component;
-        }
-
-        public void setItem(Object anObject) {
-            if (anObject == null) {
-                return;
-            }
-            assert anObject instanceof LocalServer;
-            activeItem = (LocalServer) anObject;
-            component.setText(activeItem.getSrcRoot());
-        }
-
-        public Object getItem() {
-            return new LocalServer(activeItem);
-        }
-
-        public void selectAll() {
-            component.selectAll();
-            component.requestFocus();
-        }
-
-        public void addActionListener(ActionListener l) {
-            component.addActionListener(l);
-        }
-
-        public void removeActionListener(ActionListener l) {
-            component.removeActionListener(l);
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            processUpdate();
-        }
-
-        private void processUpdate() {
-            boolean enabled = false;
-            if (activeItem.isEditable()) {
-                enabled = true;
-                activeItem.setSrcRoot(component.getText().trim());
-            }
-            component.setEnabled(enabled);
-            changeSupport.fireChange();
-        }
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
     }
 }

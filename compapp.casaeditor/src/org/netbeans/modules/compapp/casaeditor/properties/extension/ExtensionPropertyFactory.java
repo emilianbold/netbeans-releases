@@ -54,7 +54,30 @@ import org.openide.util.Lookup;
  * @author jqian
  */
 public class ExtensionPropertyFactory {
+    
+    private static final String BOOLEAN_TYPE = "boolean"; // NOI18N
+    private static final String INTEGER_TYPE = "integer"; // NOI18N
+    private static final String POSITIVE_INTEGER_TYPE = "positiveInteger"; // NOI18N
+    private static final String NEGATIVE_INTEGER_TYPE = "negativeInteger"; // NOI18N
+    private static final String NON_POSITIVE_INTEGER_TYPE = "nonPositiveInteger"; // NOI18N
+    private static final String NON_NEGATIVE_INTEGER_TYPE = "nonNegativeInteger"; // NOI18N
+    private static final String QNAME_TYPE = "qName"; // NOI18N
+    private static final String STRING_TYPE = "string"; // NOI18N
 
+    /**
+     * Gets a non-null node property.
+     * 
+     * @param node
+     * @param extensionPointComponent
+     * @param firstEE
+     * @param lastEE
+     * @param propertyType
+     * @param attrType
+     * @param attributeName
+     * @param displayName
+     * @param description
+     * @return
+     */
     public static Node.Property getProperty(
             CasaNode node,
             CasaComponent extensionPointComponent,
@@ -68,29 +91,39 @@ public class ExtensionPropertyFactory {
 
         Class propertyClass = null;
 
-        try {
-            if (attrType.equalsIgnoreCase("integer")) { // NOI18N
-                propertyClass = IntegerExtensionProperty.class;
-            } else if (attrType.equalsIgnoreCase("qname")) { // NOI18N
-                propertyClass = QNameExtensionProperty.class;
-            } else if (attrType.equalsIgnoreCase("string")) { // NOI18N
-                propertyClass = StringExtensionProperty.class;
-            } else if (attrType.equalsIgnoreCase("boolean")) { // NOI18N
-                propertyClass = BooleanExtensionProperty.class;
-            } else {
-                Lookup.Result result = Lookup.getDefault().lookup(
-                        new Lookup.Template<ExtensionPropertyClassProvider>(ExtensionPropertyClassProvider.class));
-                
-                for (Object obj : result.allInstances()) {
-                    ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;
-                    propertyClass = provider.getExtensionPropertyClass(attrType);
-                    if (propertyClass != null) {
-                        break;
-                    }
+        if (attrType.equalsIgnoreCase(INTEGER_TYPE)) {
+            propertyClass = IntegerExtensionProperty.Regular.class;
+        } else if (attrType.equalsIgnoreCase(POSITIVE_INTEGER_TYPE)) {
+            propertyClass = IntegerExtensionProperty.Positive.class;
+        } else if (attrType.equalsIgnoreCase(NEGATIVE_INTEGER_TYPE)) {
+            propertyClass = IntegerExtensionProperty.Negative.class;
+        } else if (attrType.equalsIgnoreCase(NON_POSITIVE_INTEGER_TYPE)) {
+            propertyClass = IntegerExtensionProperty.NonPositive.class;
+        } else if (attrType.equalsIgnoreCase(NON_NEGATIVE_INTEGER_TYPE)) {
+            propertyClass = IntegerExtensionProperty.NonNegative.class;
+        } else if (attrType.equalsIgnoreCase(QNAME_TYPE)) {
+            propertyClass = QNameExtensionProperty.class;
+        } else if (attrType.equalsIgnoreCase(STRING_TYPE)) {
+            propertyClass = StringExtensionProperty.class;
+        } else if (attrType.equalsIgnoreCase(BOOLEAN_TYPE)) {
+            propertyClass = BooleanExtensionProperty.class;
+        } else {
+            Lookup.Result result = Lookup.getDefault().lookup(
+                    new Lookup.Template<ExtensionPropertyClassProvider>(ExtensionPropertyClassProvider.class));
+
+            for (Object obj : result.allInstances()) {
+                ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;
+                propertyClass = provider.getExtensionPropertyClass(attrType);
+                if (propertyClass != null) {
+                    break;
                 }
             }
+        }
 
-            if (propertyClass != null) {
+        if (propertyClass == null) {
+            throw new RuntimeException("Unknown or unsupported type for " + attributeName + ": " + attrType); // NOI18N
+        } else {
+            try {
                 Constructor constructor = propertyClass.getConstructor(
                         CasaNode.class, CasaComponent.class,
                         CasaExtensibilityElement.class,
@@ -100,16 +133,14 @@ public class ExtensionPropertyFactory {
                         String.class,
                         String.class);
 
-                return (Node.Property) constructor.newInstance(node, 
+                return (Node.Property) constructor.newInstance(node,
                         extensionPointComponent,
-                        firstEE, lastEE, propertyType, 
+                        firstEE, lastEE, propertyType,
                         attributeName, displayName, description);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        
-        return null;
     }
 
     public static ChoiceExtensionProperty getProperty(
@@ -133,7 +164,7 @@ public class ExtensionPropertyFactory {
                 attributeName,
                 displayName,
                 discription,
-                choiceMap, 
+                choiceMap,
                 defaultChoice);
     }
 }

@@ -36,18 +36,15 @@ public final class SoaPaletteFactory {
    * @return a new soa palette
    */
   public static PaletteController getPalette() {
-      if (ourPalette == null) {
-          try {
-              ourPalette = PaletteFactory.createPalette(
-                  SOA_PALETTE_FOLDER, 
-                  new StubPaletteActions()
-              );
-          }
-          catch (IOException e) {
-              e.printStackTrace();
-          }
+    if (ourPalette == null) {
+      try {
+        ourPalette = PaletteFactory.createPalette(SOA_PALETTE_FOLDER, new StubPaletteActions());
       }
-      return ourPalette;
+      catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return ourPalette;
   }
   
   private static final String SOA_PALETTE_FOLDER = "SoaPalette"; // NOI18N

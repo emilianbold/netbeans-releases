@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,7 +58,6 @@ import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -74,7 +73,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 
 /**
  * Action for jumping from a testfile to its original file or vice versa.
@@ -160,11 +158,7 @@ public class GotoTest implements TestLocator {
     private File findMatching(File file, String pattern1, String pattern2) {
         assert file.getPath().equals(file.getAbsolutePath()) : "This method requires absolute paths";
 
-        String path = file.getPath();
-
-        if (File.separatorChar != '/') {
-            path = path.replace(File.separatorChar, '/');
-        }
+        String path = slashifyPathForRE(file.getPath());
 
         // Do suffix matching
         Pattern pattern = Pattern.compile("(.*)" + pattern1); // NOI18N
@@ -187,12 +181,7 @@ public class GotoTest implements TestLocator {
             appendRegexp(sb, pattern2.substring(nameIndex + FILE.length(), extIndex));
             appendRegexp(sb, ext);
 
-            String otherPath = sb.toString();
-
-            // Strip out regexp escape chars
-            if (File.separatorChar != '/') {
-                otherPath = otherPath.replace(File.separatorChar, '/');
-            }
+            String otherPath = slashifyPathForRE(sb.toString());
 
             File otherFile = new File(otherPath);
 
@@ -211,7 +200,7 @@ public class GotoTest implements TestLocator {
                 File[] children = parent.listFiles();
                 if (children != null) {
                     for (File f : children) {
-                        if (p2.matcher(f.getPath()).matches()) {
+                        if (p2.matcher(slashifyPathForRE(f.getPath())).matches()) {
                             return f;
                         }
                     }
@@ -543,5 +532,10 @@ public class GotoTest implements TestLocator {
         return name.indexOf("_test") != -1 || name.indexOf("test_") != -1 || name.indexOf("_spec") != -1 ? // NOI18N
             TestLocator.FileType.TEST :
             TestLocator.FileType.TESTED;
+    }
+
+    /** Strips out backslashes (windows path separators). */
+    private static String slashifyPathForRE(String path) {
+        return (File.separatorChar == '/') ? path : path.replace(File.separatorChar, '/');
     }
 }

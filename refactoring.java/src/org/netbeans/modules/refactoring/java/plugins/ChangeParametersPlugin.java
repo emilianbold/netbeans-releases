@@ -189,7 +189,11 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
             TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
-            createAndAddElements(a, transform, elements, refactoring);
+            Problem p = createAndAddElements(a, transform, elements, refactoring);
+            if (p != null) {
+                fireProgressListenerStop();
+                return p;
+            }
         }
         fireProgressListenerStop();
         return null;

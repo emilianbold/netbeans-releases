@@ -676,6 +676,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return null;
     }
     
+    public void rebuildRoot(URL toRebuild, boolean forceClean) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Rebuild Root Called", new Exception());
+        }
+
+        submit(Work.filterChange(Collections.singletonList(toRebuild), forceClean));
+    }
+    
     public void rebuildAll(boolean forceClean) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Rebuild All Called", new Exception());
@@ -691,6 +699,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         submit(Work.filterChange(toRebuild, forceClean));
+    }
+    
+    /**For IncorrectErrorBadges
+     */
+    public static int getDelay() {
+        return DELAY;
     }
     
     private void registerClassPath(URL root, ClassPath cp, ClasspathInfo.PathKind kind) {
@@ -819,6 +833,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         depGraph.put(rootURL, deps);
         cycleDetector.pop();
+    }
+    
+    public synchronized boolean isRULocked() {
+        return lockRU > 0;
     }
     
     public synchronized void lockRU() {

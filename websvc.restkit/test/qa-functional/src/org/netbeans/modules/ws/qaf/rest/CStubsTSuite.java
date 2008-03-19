@@ -150,7 +150,9 @@ public class CStubsTSuite extends RestTestBase {
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         new JRadioButtonOperator(wo, 1).clickMouse();
-        new JTextFieldOperator(wo, 2).typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
+        JTextFieldOperator jtfo = new JTextFieldOperator(wo, 2);
+        jtfo.clearText();
+        jtfo.typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         //http://www.netbeans.org/issues/show_bug.cgi?id=123573
         new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
         wo.finish();

@@ -488,14 +488,6 @@ public class Resolver3 implements Resolver {
                             
                         }
                     }
-                } else {
-                    gatherMaps(file);
-                    if( currTypedef != null ) {
-                        CsmType type = currTypedef.getType();
-                        if( type != null ) {
-                            result = getTypeClassifier(type);
-                        }
-                    }
                 }
             }
         }

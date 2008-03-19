@@ -48,16 +48,17 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.openide.util.ChangeSupport;
 
-class OptionsPanelVisual extends JPanel {
+class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListener {
 
     private static final long serialVersionUID = -38388194985L;
 
-    public static final String LBL_INDEX_FILE_PATH = "LBL_PathToIndexFile"; // NOI18N
-    //private static final String MSG_ILLEGAL_INDEX_FILE_NAME
-    //                                     = "MSG_IllegalIndexFileName";     // NOI18N
+    final ChangeSupport changeSupport = new ChangeSupport(this);
 
     OptionsPanelVisual(String originalEncoding) {
         initComponents();
@@ -65,21 +66,19 @@ class OptionsPanelVisual extends JPanel {
     }
 
     private void init(String originalEncoding) {
-        createIndexCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                indexNameTextField.setEnabled(createIndexCheckBox.isSelected());
-            }
-        });
+        createIndexCheckBox.addActionListener(this);
+        indexNameTextField.getDocument().addDocumentListener(this);
+
         encodingComboBox.setModel(new EncodingModel(originalEncoding));
         encodingComboBox.setRenderer(new EncodingRenderer());
     }
 
-    void addCreateIndexListener(ActionListener listener) {
-        createIndexCheckBox.addActionListener(listener);
+    void addOptionsListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 
-    void addIndexNameListener(DocumentListener listener) {
-        indexNameTextField.getDocument().addDocumentListener(listener);
+    void removeOptionsListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     /** This method is called from within the constructor to
@@ -240,5 +239,27 @@ class OptionsPanelVisual extends JPanel {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
+    }
+
+    // listeners
+    public void insertUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        processUpdate();
+    }
+
+    private void processUpdate() {
+        changeSupport.fireChange();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        indexNameTextField.setEnabled(createIndexCheckBox.isSelected());
+        changeSupport.fireChange();
     }
 }

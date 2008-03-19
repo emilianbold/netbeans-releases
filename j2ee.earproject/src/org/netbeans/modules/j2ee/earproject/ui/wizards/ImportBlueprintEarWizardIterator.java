@@ -53,14 +53,16 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.PanelSharability;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,10 +81,15 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(PROP_NAME_INDEX,
-                    NbBundle.getBundle(ImportBlueprintEarWizardIterator.class),
-                    new HelpCtx(this.getClass()), true),
-            new PanelSharability(WizardProperties.PROJECT_DIR, WizardProperties.SERVER_INSTANCE_ID, false),
+            new ProjectImportLocationWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_ImportInstructions1")),
+            new ProjectServerWizardPanel(J2eeModule.EAR, 
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
+                    NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
+                    false, false, false, false, false),
             new PanelModuleDetection()
         };
     }
@@ -90,7 +97,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NWP1_ProjectTitleName"),
-            NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "PanelShareabilityVisual.label"), 
+            NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "NewEarProjectWizardIterator.secondStep"), 
             NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_IW_ApplicationModulesStep")
         };
     }
@@ -104,7 +111,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         handle.start(3);
         handle.progress(NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
         }
@@ -112,18 +119,18 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         if (srcF != null) {
             srcF = FileUtil.normalizeFile(srcF);
         }
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+        String name = (String) wiz.getProperty(ProjectLocationWizardPanel.NAME);
+        String j2eeLevel = (String) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
         //        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
-        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
-        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        String serverInstanceID = (String) wiz.getProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID);
+        String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
         @SuppressWarnings("unchecked")
         Map<FileObject, ModuleType> userModules = (Map<FileObject, ModuleType>)
                 wiz.getProperty(WizardProperties.USER_MODULES);
         String librariesDefinition =
-                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(PanelSharability.WIZARD_SHARED_LIBRARIES));
-        String serverLibraryName = (String) wiz.getProperty(PanelSharability.WIZARD_SERVER_LIBRARY);
+                SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
+        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(platformName, sourceLevel, j2eeLevel, dirF,
                 srcF, serverInstanceID, name, userModules, handle, librariesDefinition, serverLibraryName);
     }
@@ -186,8 +193,8 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
 
     public void uninitialize(WizardDescriptor wiz) {
         if (this.wiz != null) {
-            this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-            this.wiz.putProperty(WizardProperties.NAME,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.PROJECT_DIR,null);
+            this.wiz.putProperty(ProjectLocationWizardPanel.NAME,null);
         }
         this.wiz = null;
         panels = null;

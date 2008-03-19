@@ -73,7 +73,7 @@
                 </folder>
                 <file name="maxAttempts">
                     <attr name="type" stringvalue="Integer"/>
-                    <attr name="description" stringvalue="Maximum redelivery attempts"/>
+                    <attr name="description" stringvalue="Maximum redelivery attempts. Use -1 for infinite."/>
                 </file>
                 <file name="waitTime">
                     <attr name="type" stringvalue="Integer"/>

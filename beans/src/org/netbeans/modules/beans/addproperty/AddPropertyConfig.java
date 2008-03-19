@@ -55,6 +55,7 @@ public class AddPropertyConfig {
     private String name;
     private String initializer;
     private String type;
+    private String className;
 
     private ACCESS access = AddPropertyConfig.ACCESS.PRIVATE;
     
@@ -76,16 +77,11 @@ public class AddPropertyConfig {
     private boolean generatePropertyChangeSupport;
     private boolean generateVetoableChangeSupport;
 
-    public AddPropertyConfig(String name, String type) {
-        this.name = name;
-        this.type = type;       
-        this.propName = "PROP_" + name.toUpperCase(); // NOI18N
-    }
-    
     public AddPropertyConfig(
             String name,
             String initializer,
             String type,
+            String className,
             ACCESS access,
             boolean _static,
             boolean _final,
@@ -102,6 +98,7 @@ public class AddPropertyConfig {
         this.name = name;
         this.initializer = initializer;
         this.type = type;
+        this.className = className;
         this.access = access;
         this._static = _static;
         this._final = _final;
@@ -243,6 +240,10 @@ public class AddPropertyConfig {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getClassName() {
+        return className;
     }
 
     public boolean isVetoable() {

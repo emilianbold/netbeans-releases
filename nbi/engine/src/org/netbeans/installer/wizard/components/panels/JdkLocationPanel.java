@@ -233,6 +233,23 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return new File(jdkLocation);
         }
         
+        final Object obj = getWizard().
+                getContext().
+                get(Product.class);
+        if (obj != null && obj instanceof Product) {
+            final Product product = (Product) obj;
+            final String jdkSysPropName = product.getUid() + StringUtils.DOT +
+                    JdkLocationPanel.JDK_LOCATION_PROPERTY;
+            final String jdkSysProp = System.getProperty(jdkSysPropName);
+            if (jdkSysProp != null) {                                
+                final File f = new File(jdkSysProp);
+                if (jdkLocations.contains(f)) {                    
+                    LogManager.log("... using JDK from system property " + jdkSysPropName + " : " + jdkSysProp);
+                    return f;
+                }
+            }
+        }
+        
         if ((lastSelectedJava != null) &&
                 jdkLocations.contains(lastSelectedJava)) {
             return lastSelectedJava;

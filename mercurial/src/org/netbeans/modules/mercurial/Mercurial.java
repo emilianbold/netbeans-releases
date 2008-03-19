@@ -324,13 +324,16 @@ public class Mercurial {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
+        LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+
+        // We can get status returned as UptoDate instead of LocallyNew
+        // because refreshing of status after creation has been scheduled
+        // but may not have happened yet.
 
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) {
-                throw new IOException("Unable to get BASE revision of " + workingCopy);
-            }
+            if (original == null) return;
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();
         } catch (IOException e) {

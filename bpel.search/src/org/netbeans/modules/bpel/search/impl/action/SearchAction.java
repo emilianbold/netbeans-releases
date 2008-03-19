@@ -76,7 +76,7 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class SearchAction extends IconAction {
 
   public SearchAction() {
-    this(null, "TLT_Search_Action", "search"); // NOI18N
+    this("LBL_Search_Action", "TLT_Search_Action", "search"); // NOI18N
   }
 
   private SearchAction(String name, String toolTip, String icon) {
