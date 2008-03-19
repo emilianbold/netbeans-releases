@@ -77,7 +77,7 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
 
                 // Change the package attribute <hibernate-mapping> tag
                 String pkgName = hbMapping.getAttributeValue("package"); //NOI18N
-                if (pkgName.contains(oldName)) {
+                if (pkgName != null && pkgName.contains(oldName)) {
                     String newWholePkgName = pkgName.replaceFirst(oldName, newName);
                     hbMapping.setAttributeValue("package", newWholePkgName);
                 }
@@ -86,7 +86,7 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
                 MyClass[] myClazz = hbMapping.getMyClass();
                 for (int ci = 0; ci < myClazz.length; ci++) {
                     String clsName = myClazz[ci].getAttributeValue("name"); // NOI18N
-                    if (clsName.startsWith(oldName)) {
+                    if (clsName != null && clsName.startsWith(oldName)) {
                         String nameBinaryClassName = clsName.replaceFirst(oldName, newName);
                         myClazz[ci].setAttributeValue("name", nameBinaryClassName); // NOI18N
                     }
