@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -416,8 +417,8 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         } else {
             oldLink.setSource(source);
             oldLink.setTarget(target);
-            if (oldTreePath != treePath) {
-                resultGraph.addLink(oldLink);
+            resultGraph.addLink(oldLink);
+            if (!Utils.equal(oldTreePath, treePath)) {
                 fireGraphChanged(oldTreePath);
                 mRightTreeModel.fireTreeChanged(this, oldTreePath);
             }
@@ -591,7 +592,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         }
         //
         TreePath oldTreePath = graphSubset.getTreePath();
-        if (oldTreePath != treePath) {
+        if (!Utils.equal(oldTreePath, treePath)) {
             fireGraphChanged(oldTreePath);
             mRightTreeModel.fireTreeChanged(this, oldTreePath);
         }
