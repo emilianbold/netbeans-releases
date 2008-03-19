@@ -246,14 +246,14 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      */
-    public int data_list_register_values(String regIds) {
-        return engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
+    public int data_list_register_values(CommandBuffer cb, String regIds) {
+        return engine.sendCommand(cb, "-data-list-register-values x " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_changed_registers() {
-        return engine.sendCommand("-data-list-changed-registers"); // NOI18N
+    public int data_list_changed_registers(CommandBuffer cb) {
+        return engine.sendCommand(cb, "-data-list-changed-registers"); // NOI18N
     }
     
     /*

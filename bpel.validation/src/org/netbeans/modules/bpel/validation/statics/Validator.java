@@ -495,12 +495,11 @@ public final class Validator extends BpelValidator {
         if ( links== null ) {
             return;
         }
-        Map<String,Collection<Component>> map = 
-            new HashMap<String, Collection<Component>>();
+        Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+
         for (Link link : links) {
             addNamedToMap(link, map );
         }
-        
         addErrorForNamed( map , FIX_MULTIPLE_NAMED_LINKS );
     }
 
@@ -515,8 +514,8 @@ public final class Validator extends BpelValidator {
         if ( sources == null ) {
             return;
         }
-        Map<String,Collection<Component>> map = 
-            new HashMap<String, Collection<Component>>();
+        Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+
         for (Source source : sources) {
             addNamedToMap( source, map, LazyHolder.SOURCE_LINK_NAME_ACCESS );
         }
@@ -536,8 +535,8 @@ public final class Validator extends BpelValidator {
         if ( targets == null ) {
             return;
         }
-        Map<String,Collection<Component>> map = 
-            new HashMap<String, Collection<Component>>();
+        Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+
         for (Target target : targets) {
             addNamedToMap(target, map, LazyHolder.TARGET_LINK_NAME_ACCESS );
         }
@@ -941,8 +940,8 @@ public final class Validator extends BpelValidator {
         if ( correlations == null ){
             return;
         }
-        Map<String,Collection<Component>> map = 
-            new HashMap<String, Collection<Component>>();
+        Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+
         for (CorrelationSet correlation : correlations) {
             addNamedToMap( correlation , map );
         }
@@ -961,8 +960,8 @@ public final class Validator extends BpelValidator {
         if ( links == null ){
             return;
         }
-        Map<String,Collection<Component>> map = 
-            new HashMap<String, Collection<Component>>();
+        Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+
         for (PartnerLink link : links) {
             addNamedToMap( link , map );
         }
@@ -1362,7 +1361,7 @@ public final class Validator extends BpelValidator {
 
             if (collection!= null && collection.size() > 1 ) {
                 for (Component component : collection) {
-                    addError(key, component);
+                    addError(key, component, getName(component));
                 }
             }
         }
@@ -1789,15 +1788,12 @@ public final class Validator extends BpelValidator {
         if (variables == null) {
             return;
         }
-
         Map<String, Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
         for (Variable variable : variables) {
             addNamedToMap(variable, map);
         }
-
         addErrorForNamed(map, FIX_DUPLICATE_VARIABLE_NAME);
-
     }
 
     private void checkImplicitlyDeclaredVars( OnEvent onEvent ) {
@@ -1835,7 +1831,6 @@ public final class Validator extends BpelValidator {
                 }
             }
         }
-
         addErrorForNamed(map, FIX_DUPLICATE_VARIABLE_NAME_ON_EVENT);
     }
     

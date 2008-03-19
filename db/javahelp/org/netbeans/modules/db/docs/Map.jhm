@@ -84,4 +84,9 @@ made subject to such option by the copyright holder.
 <!-- connect to db dialog -->
 <mapID target="db_save_password" url="csh_connectdb.html" />
 <mapID target="new_db_save_password" url="csh_newconnectdb.html" />
+
+<!-- MySQL topics -->
+
+<mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />
+
 </map>

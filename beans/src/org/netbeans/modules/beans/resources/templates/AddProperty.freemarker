@@ -20,7 +20,7 @@
      */
 </#if>
     public <#if static >static </#if>${type}<#if indexed >[]</#if> <#if type = "boolean" >is<#else>get</#if>${capitalizedName}() {
-        return <#if !static >this.</#if>${name};
+        return ${name};
     }
 </#if>
 <#if generateSetter >
@@ -30,22 +30,22 @@
     /**
      * Set the value of ${name}
      *
-     * @param new${capitalizedName} new value of ${name}
+     * @param ${name} new value of ${name}
 <#if vetoable>
      * @throws java.beans.PropertyVetoException
 </#if>
      */
 </#if>
-    public <#if static >static </#if>void set${capitalizedName}(${type}<#if indexed >[]</#if> new${capitalizedName})<#if vetoable> throws java.beans.PropertyVetoException</#if> {
+    public <#if static >static </#if>void set${capitalizedName}(${type}<#if indexed >[]</#if> ${name})<#if vetoable> throws java.beans.PropertyVetoException</#if> {
 <#if bound >
-        ${type}<#if indexed >[]</#if> old${name} = ${name};
+        ${type}<#if indexed >[]</#if> old${capitalizedName} = ${name};
 <#if vetoable> 
-        ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${name}, new${capitalizedName});
+        ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${capitalizedName}, ${name});
 </#if>
 </#if>
-        <#if !static >this.</#if>${name} = new${capitalizedName};
+        <#if static >${className}.<#else>this.</#if>${name} = ${name};
 <#if bound >
-        ${propertyChangeSupport}.firePropertyChange(${PROP_NAME}, old${name}, new${capitalizedName});
+        ${propertyChangeSupport}.firePropertyChange(${PROP_NAME}, old${capitalizedName}, ${name});
 </#if>
     }
 </#if>
@@ -79,14 +79,14 @@
 </#if>
     public <#if static >static </#if>void set${capitalizedName}(int index, ${type} new${capitalizedName})<#if vetoable> throws java.beans.PropertyVetoException</#if> {
 <#if bound >
-        ${type} old${name} = ${name}[index];
+        ${type} old${capitalizedName} = ${name}[index];
 <#if vetoable> 
-        ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${name}, new${capitalizedName});
+        ${vetoableChangeSupport}.fireVetoableChange(${PROP_NAME}, old${capitalizedName}, new${capitalizedName});
 </#if>
 </#if>
         <#if !static >this.</#if>${name}[index] = new${capitalizedName};
 <#if bound >
-        ${propertyChangeSupport}.fireIndexedPropertyChange(${PROP_NAME}, index, old${name}, new${capitalizedName});
+        ${propertyChangeSupport}.fireIndexedPropertyChange(${PROP_NAME}, index, old${capitalizedName}, new${capitalizedName});
 </#if>
     }
 </#if>
