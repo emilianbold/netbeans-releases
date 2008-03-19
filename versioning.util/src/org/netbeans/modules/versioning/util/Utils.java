@@ -79,6 +79,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Utilities class.
@@ -823,6 +824,28 @@ public final class Utils {
      */
     public static void logWarn(Object caller, Throwable e) {
         logWarn(caller.getClass(), e);
+    }
+
+    /**
+     * Sets or resets r/o flag.
+     * 
+     * @param file a file to modify
+     * @param ro true to make the file r/o, false to make the file r/w
+     */
+    public static void setReadOnly(File file, boolean readOnly) {
+        // TODO: update for Java6
+        String [] args;
+        if (Utilities.isWindows()) {
+            args = new String [] {"attrib", readOnly ? "+r": "-r", file.getName()}; //NOI18N
+        } else {
+            args = new String [] {"chmod", readOnly ? "u-w": "u+w", file.getName()}; //NOI18N
+        }
+        try {
+            Process process = Runtime.getRuntime().exec(args, null, file.getParentFile());
+            process.waitFor();
+        } catch (Exception e) {
+            logWarn(Utils.class, e);
+        }
     }
 
     private static class ViewEnv implements CloneableEditorSupport.Env {

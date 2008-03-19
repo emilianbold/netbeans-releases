@@ -95,7 +95,7 @@
 	<mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html"/>
-        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity.html"/>
+        <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="web/create/tag/framework/jsf/file_jsffromentity.html1"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html"/>
@@ -108,8 +108,9 @@
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" url="web/csh/dbox_projprops/CustomizerWSServiceHostDisabled.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizerSources.html"/>
-	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html"/>
-	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_WAR" url="web/csh/projwiz_standard/ThePanel.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_WAR" url="web/csh/projwiz_standard/PanelConfigureProject.html"/>
+        <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR" url="web/csh/projwiz_standard/PanelConfigureProject_servers.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html"/>

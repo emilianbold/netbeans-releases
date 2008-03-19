@@ -3629,4 +3629,31 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
                 "}\n");
     }
+
+    public void testIZ130538() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+        setLoadDocumentText(
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
+                "{\n" +
+                "    foo(a,\n" +
+                "   b);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
+                "{\n" +
+                "    foo (a,\n" +
+                "         b);\n" +
+                "}\n");
+    }
 }
