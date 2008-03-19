@@ -412,8 +412,10 @@ public class EditorOptions {
         gnu.put(indentCasesFromSwitch, false);
         gnu.put(alignMultilineCallArgs, true);
         gnu.put(alignMultilineMethodParams, true);
-        apache.put(alignMultilineIfCondition, true);
-        apache.put(alignMultilineWhileCondition, true);
+        gnu.put(alignMultilineIfCondition, true);
+        gnu.put(alignMultilineWhileCondition, true);
+        gnu.put(spaceBeforeMethodCallParen, true);
+        gnu.put(spaceBeforeMethodDeclParen, true);
         gnu.put(newLineCatch, true);
         gnu.put(newLineElse, true);
         gnu.put(newLineWhile, true);
