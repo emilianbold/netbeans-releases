@@ -51,38 +51,32 @@ import org.netbeans.modules.gsf.api.NameKind;
  * @author Tor Norbye
  */
 public class FunctionCache {
-    static FunctionCache instance = new FunctionCache();
-    static final IndexedElement NONE = new IndexedProperty(null, null, null, null, null, 0, ElementKind.OTHER);
+    public static final FunctionCache INSTANCE = new FunctionCache();
+    static final String NONE = new String("NONE");
     
-    Map<String,IndexedElement> cache = new HashMap<String,IndexedElement>(500);
+    Map<String,String> cache = new HashMap<String,String>(500);
     
     public String getType(String fqn, JsIndex index) {
-        IndexedElement element = cache.get(fqn);
-        if (element == NONE) {
+        String type = cache.get(fqn);
+        if (type == NONE) {
             return null;
-        } else if (element == null) {
-            Set<IndexedElement> elements = index.getElements(fqn, null, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, null);
-            if (elements.size() > 0) {
-                IndexedElement firstElement = elements.iterator().next();
-                cache.put(fqn, firstElement);
-                return firstElement.getType();
-            } else {
+        } else if (type == null) {
+            type = index.getType(fqn);
+            if (type == null) {
                 cache.put(fqn, NONE);
+                return null;
+            } else {
+                cache.put(fqn, type);
             }
-            return null;
-        } else {
-            return element.getType();
         }
+        
+        return type;
     }
     
     public void wipe(String fqn) {
         cache.remove(fqn);
     }
     
-    public static FunctionCache getInstance() {
-        return instance;
-    }
-
     boolean isEmpty() {
         return cache.size() == 0;
     }

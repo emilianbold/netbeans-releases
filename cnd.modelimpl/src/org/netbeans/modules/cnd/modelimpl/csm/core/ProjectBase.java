@@ -1024,6 +1024,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
     
+    public void onFileExternalChange(FileImpl file) {
+        DeepReparsingUtils.reparseOnEdit(file, this);
+   }
+    
     public CsmFile findFile(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;

@@ -36,59 +36,48 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.core;
 
 import javax.swing.event.ChangeListener;
+import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.netbeans.api.project.Project;
 
 /**
- *
- * @author Ajit
+ * This API displays the web service and client nodes in this project.
+ * @author Ajit Bhate
  */
-public abstract class ProjectWebServiceViewImpl implements ProjectWebServiceView {
+public interface ProjectWebServiceViewImpl {
 
-    private ChangeSupport serviceListeners,  clientListeners;
-    
-    protected ProjectWebServiceViewImpl() {
-        serviceListeners = new ChangeSupport(this);
-        clientListeners = new ChangeSupport(this);
-    }
+    /** 
+     * Add changeListener for given type (service or client)
+     */
+    void addChangeListener(ChangeListener l, ProjectWebServiceView.ViewType viewType);
+    /** 
+     * Remove changeListener for given type (service or client)
+     */
+    void removeChangeListener(ChangeListener l, ProjectWebServiceView.ViewType viewType);
 
-    public void addChangeListener(ChangeListener l, ViewType viewType) {
-        switch (viewType) {
-            case SERVICE:
-                serviceListeners.addChangeListener(l);
-                break;
-            case CLIENT:
-                clientListeners.addChangeListener(l);
-                break;
-        }
-    }
+    /** 
+     * Create view for given type (service or client)
+     */
+    Node[] createView(ProjectWebServiceView.ViewType viewType);
 
-    public void removeChangeListener(ChangeListener l, ViewType viewType) {
-        switch (viewType) {
-            case SERVICE:
-                if (serviceListeners != null) {
-                    serviceListeners.removeChangeListener(l);
-                }
-                break;
-            case CLIENT:
-                if (clientListeners != null) {
-                    clientListeners.removeChangeListener(l);
-                }
-                break;
-        }
-    }
+    /** 
+     * If a view for given type (service or client) is empty.
+     */
+    boolean isViewEmpty(ProjectWebServiceView.ViewType viewType);
 
-    protected void fireChange(ViewType viewType) {
-        switch (viewType) {
-            case SERVICE:
-                serviceListeners.fireChange();
-                return;
-            case CLIENT:
-                clientListeners.fireChange();
-                return;
-        }
-    }
+    /** 
+     * Notify that this view is in use.
+     * Subclasses may add listeners here
+     */
+    void addNotify();
+
+    /** 
+     * Notify that this view is not in use.
+     * Subclasses may remove listeners here.
+     */
+    void removeNotify();
+
 }

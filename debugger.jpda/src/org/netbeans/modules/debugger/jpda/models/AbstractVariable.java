@@ -337,7 +337,7 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     protected void setInnerValue (Value v) {
         value = v;
         // refresh tree
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", null, value);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, "value", null, v);
         Object[] ls;
         synchronized (listeners) {
             ls = listeners.toArray();
@@ -370,11 +370,15 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     }
     
     public final void addPropertyChangeListener(PropertyChangeListener l) {
-        listeners.add(l);
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
     
     public final void removePropertyChangeListener(PropertyChangeListener l) {
-        listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
     
     public String toString () {
