@@ -516,7 +516,16 @@ public class WebProjectProperties {
         
         // Encode all paths (this may change the project properties)
         List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = project.getAntProjectHelper().getProperties(
+                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+        }
         
+        String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
@@ -554,6 +563,11 @@ public class WebProjectProperties {
             needsUpdate = false;
         }
         
+        // Save all paths
+        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
         //Handle platform selection and javac.source javac.target properties
@@ -571,9 +585,6 @@ public class WebProjectProperties {
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
                     J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            final String oldServInstID = privateProperties.getProperty(J2EE_SERVER_INSTANCE);
-
-            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
             setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
 
@@ -586,13 +597,6 @@ public class WebProjectProperties {
             setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
                     project, projectProperties, privateProperties, true);
         }
-
-        String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
-        
-        // Save all paths
-        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
-        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
-        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         
         // Set new context path
         try {

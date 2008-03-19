@@ -128,14 +128,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getItemPath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getItemPath().startsWith(s)){
                             continue;
                         }
                     }
                     p = getProperty(RESTRICT_COMPILE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getCompilePath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getCompilePath().startsWith(s)){
                             continue;
                         }
                     }
@@ -245,6 +245,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                         source.process(cu);
+                        if (source.getCompilePath() == null){
+                            if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has NULL compile path in file "+objFileName);  // NOI18N
+                            continue;
+                        }
                         list.add(source);
                     }
                 }
