@@ -107,8 +107,6 @@ public class JDKPanel extends DestinationPanel {
             super(panel, container);
             
             this.panel = panel;
-            
-            initComponents();
         }
         
         // protected ////////////////////////////////////////////////////////////////
@@ -148,11 +146,6 @@ public class JDKPanel extends DestinationPanel {
                     errorMessage = ERROR_SPACE_IN_PATH;                
             }
             return errorMessage;
-        }
-        
-        // private //////////////////////////////////////////////////////////////////
-        private void initComponents() {
-            
         }
     }
     
