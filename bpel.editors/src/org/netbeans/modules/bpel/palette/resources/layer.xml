@@ -53,6 +53,8 @@
 
     <folder name="Actions">
         <folder name="BpelNodes">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.palette.resources.Bundle"/>
+
             <file name="org-netbeans-modules-bpel-nodes-actions-FindUsagesAction.instance"/>
             <file name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
             <file name="org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
