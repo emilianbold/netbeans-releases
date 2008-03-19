@@ -496,12 +496,13 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** Builds and returns activated nodes array for Navigator TopComponent.
      */
     private Node[] obtainActivatedNodes () {
-        Collection<? extends Node> nodes = getPanelLookup().lookupAll(Node.class);
-        if (nodes.isEmpty()) {
-            // set Navigator's active node to be the same as the content it is showing
+        Lookup selLookup = getSelectedPanelLookup();
+        if (selLookup == null) {
+            // set Navigator's active node to be the same as the content
+            // it is showing if no lookup from selected panel
             return curNodes.toArray(new Node[0]);
         } else {
-            return nodes.toArray(new Node[0]);
+            return selLookup.lookupAll(Node.class).toArray(new Node[0]);
         }
     }
     
@@ -604,6 +605,18 @@ public final class NavigatorController implements LookupListener, ActionListener
         }
     } // end of ESCHandler
 
+    /** Returns lookup of selected panel or null */
+    private Lookup getSelectedPanelLookup () {
+        NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
+        if (selPanel != null) {
+            Lookup panelLkp = selPanel.getLookup();
+            if (panelLkp != null) {
+                return panelLkp;
+            }
+        }
+        return null;
+    }
+    
     /** Lookup delegating to lookup of currently selected panel.
      * If no panel is selected or panels' lookup is null, then acts as
      * dummy empty lookup.
@@ -611,14 +624,8 @@ public final class NavigatorController implements LookupListener, ActionListener
     private final class PanelLookupWrapper implements Lookup.Provider {
         
         public Lookup getLookup () {
-            NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
-            if (selPanel != null) {
-                Lookup panelLkp = selPanel.getLookup();
-                if (panelLkp != null) {
-                    return panelLkp;
-                }
-            }
-            return Lookup.EMPTY;
+            Lookup selLookup = getSelectedPanelLookup();
+            return selLookup != null ? selLookup : Lookup.EMPTY;
         }
         
     } // end of PanelLookupWrapper
