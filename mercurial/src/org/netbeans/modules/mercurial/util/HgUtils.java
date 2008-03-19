@@ -306,7 +306,6 @@ public class HgUtils {
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
         String path = file.getPath();
-        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -332,8 +331,14 @@ public class HgUtils {
                 return true;
             }
         }
+        // If a parent of the file matches a pattern ignore the file
+        File parentFile = file.getParentFile();
+        while (!parentFile.equals(topFile)) {
+            if (isIgnored(parentFile, false)) return true;
+            parentFile = parentFile.getParentFile();
+        }
 
-        if (FILENAME_HGIGNORE.equals(name)) return false;
+        if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
             if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
