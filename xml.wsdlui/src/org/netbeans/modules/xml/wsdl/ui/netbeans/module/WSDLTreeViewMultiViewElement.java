@@ -46,8 +46,8 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 
+import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -66,6 +66,7 @@ import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.cookies.RefreshExtensibilityElementNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSettings.ViewMode;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
@@ -150,6 +151,21 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                 }
             }             
         };
+        
+        //Refresh Nodes cookie
+        RefreshExtensibilityElementNodeCookie reenc = new RefreshExtensibilityElementNodeCookie() {
+
+            public void refresh() {
+                if (categoryPane != null) {
+                    Collection<? extends RefreshExtensibilityElementNodeCookie> lookupAll = categoryPane.getCategory().getLookup().lookupAll(RefreshExtensibilityElementNodeCookie.class);
+                    for (RefreshExtensibilityElementNodeCookie cookie : lookupAll) {
+                        if (cookie != null && cookie != this) {
+                            cookie.refresh();
+                        }
+                    }
+                }
+            }
+        };
 
         Node delegate = mObj.getNodeDelegate();
         nodesMediator = new ActivatedNodesMediator(delegate);
@@ -163,7 +179,8 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                         // project is closed.
                         mObj,
                         // The Show Cookie in lookup to show the component
-                        showCookie
+                        showCookie,
+                        reenc
                 }),
                 nodesMediator.getLookup(),
                 // The Node delegate Lookup must be the last one in the list

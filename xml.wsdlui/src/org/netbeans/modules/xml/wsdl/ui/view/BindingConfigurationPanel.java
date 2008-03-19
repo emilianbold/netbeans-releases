@@ -79,7 +79,7 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
     
     /** Creates new form BindingAndServiceConfigurationPanel */
     public BindingConfigurationPanel() {
-        factory = new ExtensibilityElementTemplateFactory();
+        factory = ExtensibilityElementTemplateFactory.getDefault();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         protocols = new Vector<LocalizedTemplateGroup>();
         

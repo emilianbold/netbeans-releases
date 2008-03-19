@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.cookies.RefreshExtensibilityElementNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSettings.ViewMode;
 import org.netbeans.modules.xml.wsdl.ui.search.AttributeNameSearchProvider;
 import org.netbeans.modules.xml.wsdl.ui.search.AttributeValueSearchProvider;
@@ -90,8 +91,17 @@ public class WSDLTreeCategory extends AbstractCategory {
             new AttributeNameSearchProvider(model, this),
             new AttributeValueSearchProvider(model, this),
         };
+        RefreshExtensibilityElementNodeCookie reenc = new RefreshExtensibilityElementNodeCookie() {
+
+            public void refresh() {
+                if (component != null) {
+                    component.refreshNodes();
+                }
+            }
+        };
         this.lookup = new ProxyLookup(new Lookup[] {
             lookup,
+            Lookups.fixed(reenc),
             Lookups.fixed(searchers)
         });
     }

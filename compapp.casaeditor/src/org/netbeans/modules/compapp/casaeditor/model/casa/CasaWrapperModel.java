@@ -738,7 +738,7 @@ public class CasaWrapperModel extends CasaModel {
         assert portType != null;
         String wsdlLocation = casaWrapperModel.getWSDLLocation(interfaceQName);
 
-        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;

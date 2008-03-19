@@ -53,31 +53,74 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemp
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.xml.sax.SAXException;
 
 public class ExtensibilityElementTemplateFactory {
 
-    private static Map<String, TemplateGroup> templateGroupMap;
-    private static Map<String, ExtensibilityElementTemplateProvider> providerMap;
+    private Map<String, TemplateGroup> templateGroupMap;
+    private Map<String, ExtensibilityElementTemplateProvider> providerMap;
     
-    private static Map<TemplateGroup, LocalizedTemplateGroup> localizedTemplateGroupMap;
+    private Map<TemplateGroup, LocalizedTemplateGroup> localizedTemplateGroupMap;
     
-    public ExtensibilityElementTemplateFactory() {
+    private static ExtensibilityElementTemplateFactory factory;
+    enum State {
+        CHANGE_REQUIRED,
+        CHANGING,
+        CHANGE_COMPLETED
+    }
+    private State hasChanged = State.CHANGE_REQUIRED;
+    
+    private ExtensibilityElementTemplateFactory() {
         initialise();
-        localizedTemplateGroupMap = new HashMap<TemplateGroup, LocalizedTemplateGroup>();
-        
+    }
+    
+    public static ExtensibilityElementTemplateFactory getDefault() {
+        if (factory == null) {
+            createFactory();
+        }
+        return factory;
+    }
+    
+    static void createFactory() {
+        synchronized (ExtensibilityElementTemplateFactory.class) {
+            if (factory == null) {
+                factory = new ExtensibilityElementTemplateFactory();
+            }
+        }
+    }
+
+    private void checkUpdates() {
+        if (hasChanged == State.CHANGE_REQUIRED) {
+            lookupProviders();
+        }
     }
 
     private void initialise() {
+        Result<ExtensibilityElementTemplateProvider> lookupResult = Lookup.getDefault().lookupResult(ExtensibilityElementTemplateProvider.class);
+        lookupResult.addLookupListener(new LookupListener() {
+
+            public void resultChanged(LookupEvent ev) {
+                hasChanged = State.CHANGE_REQUIRED;
+            }
+        });
+        templateGroupMap = new HashMap<String, TemplateGroup>();
+        providerMap = new HashMap<String, ExtensibilityElementTemplateProvider>();
+        localizedTemplateGroupMap = new HashMap<TemplateGroup, LocalizedTemplateGroup>();
+        
         lookupProviders();
     }
     
     public TemplateGroup getExtensibilityElementTemplateGroup(String namespace) {
+        checkUpdates();
         if (templateGroupMap == null || namespace == null) return null;
         return templateGroupMap.get(namespace);
     }
     
     public Collection<TemplateGroup> getExtensibilityElementTemplateGroups() {
+        checkUpdates();
         if (templateGroupMap == null) return null;
         return templateGroupMap.values();
     }
@@ -85,6 +128,7 @@ public class ExtensibilityElementTemplateFactory {
     public String getLocalizedMessage(String namespace, String str, Object[] objs) {
         assert namespace != null : "namespace cannot be null";
         assert str != null : "message key cannot be null";
+        checkUpdates();
         
         ExtensibilityElementTemplateProvider provider = providerMap.get(namespace);
         if (provider != null) {
@@ -95,6 +139,7 @@ public class ExtensibilityElementTemplateFactory {
     }
     
     public LocalizedTemplateGroup getLocalizedTemplateGroup(TemplateGroup group) {
+        checkUpdates();
         String namespace = group.getNamespace();
         ExtensibilityElementTemplateProvider provider = providerMap.get(namespace);
         
@@ -110,17 +155,16 @@ public class ExtensibilityElementTemplateFactory {
     }
     
     private synchronized void lookupProviders() {
-        if(templateGroupMap != null)
-            return;
+        if (hasChanged == State.CHANGE_COMPLETED) return;
         
-        templateGroupMap = new HashMap<String, TemplateGroup>();
-        providerMap = new HashMap<String, ExtensibilityElementTemplateProvider>();
+        hasChanged = State.CHANGING;
         
-        Lookup.Result result = Lookup.getDefault().lookup(
-                new Lookup.Template<ExtensibilityElementTemplateProvider>(ExtensibilityElementTemplateProvider.class));
+        localizedTemplateGroupMap.clear();
+        providerMap.clear();
+        templateGroupMap.clear();
+
         
-        for(Object obj: result.allInstances()) {
-            ExtensibilityElementTemplateProvider provider = (ExtensibilityElementTemplateProvider) obj;
+        for(ExtensibilityElementTemplateProvider provider : Lookup.getDefault().lookupAll(ExtensibilityElementTemplateProvider.class)) {
             InputStream stream = provider.getTemplateInputStream();
             if (stream != null) {
                 TemplateGroup group;
@@ -137,6 +181,8 @@ public class ExtensibilityElementTemplateFactory {
                 }
             }
         }
+        
+        if (hasChanged == State.CHANGING) hasChanged = State.CHANGE_COMPLETED;
         
     }
     
