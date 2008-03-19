@@ -128,7 +128,13 @@ public final class UI {
   }
 
   public static JButton createButton(Action action) {
-    return (JButton) createAbstractButton(new JButton(), action);
+    JButton button = (JButton) createAbstractButton(new JButton(), action);
+    Object name = action.getValue(Action.NAME);
+
+    if (name == null) {
+      setButtonSize(button);
+    }
+    return button;
   }
 
   public static JCheckBox createCheckBox(Action action) {
@@ -395,11 +401,10 @@ public final class UI {
     return (DataObject) node.getLookup().lookup(DataObject.class);
   }
 
-  public static void setImageSize(JButton button) {
-    final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
-    button.setMaximumSize(IMAGE_BUTTON_SIZE);
-    button.setMinimumSize(IMAGE_BUTTON_SIZE);
-    button.setPreferredSize(IMAGE_BUTTON_SIZE);
+  private static void setButtonSize(JButton button) {
+    button.setMaximumSize(BUTTON_SIZE);
+    button.setMinimumSize(BUTTON_SIZE);
+    button.setPreferredSize(BUTTON_SIZE);
   }
 
   public static JComponent getResizable(JPanel panel) {
@@ -787,10 +792,11 @@ public final class UI {
   private static Stack<Long> ourTimes = new Stack<Long>();
 
   public static final int TINY_INSET = 2;
-  public static final int SMALL_INSET = 7;
-  public static final int MEDIUM_INSET = 11;
+  public static final int SMALL_INSET = 8;
+  public static final int MEDIUM_INSET = 13;
 
   private static final double MILLIS = 1000.0;
+  private static final Dimension BUTTON_SIZE = new Dimension(24, 24);
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N

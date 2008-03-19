@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,21 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.impl.action;
+package org.netbeans.modules.ruby.platform.execution;
 
-import javax.swing.Action;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-/**
- * @author Vladimir Yaroslavskiy
- * @version 2006.04.24
- */
-public final class PrintPreviewAction extends PrintPreviewMenu {
+public final class StopActionTest extends RubyTestBase {
 
-  public PrintPreviewAction() {
-    super(null, "TLT_Print_Preview_Action", "print"); // NOI18N
-    setEnabled(true);
-  }
+    public StopActionTest(String testName) {
+        super(testName);
+    }
 
-  public static final Action DEFAULT = new PrintPreviewAction();
+    public void testSetFinishAction() throws InterruptedException, InvocationTargetException {
+        final Semaphore semaphore = new Semaphore(1);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        semaphore.acquire();
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                StopAction sa = new StopAction();
+                sa.setFinishAction(new Runnable() {
+                    public void run() {
+                        finished.set(true);
+                        semaphore.release();
+                    }
+                });
+                sa.actionPerformed(null);
+            }
+        });
+        semaphore.acquire();
+        assertTrue("finish action performed", finished.get());
+    }
+
+    public void testNullFinishAction() throws InterruptedException, InvocationTargetException { // #130493
+        StopAction sa = new StopAction();
+        sa.actionPerformed(null);
+    }
+    
 }

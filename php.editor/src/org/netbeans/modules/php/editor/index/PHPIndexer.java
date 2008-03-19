@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -58,9 +59,12 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -109,25 +113,21 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
     
-    
-    public PHPIndexer(){
-        System.err.println("PHP Indexer");
-    }
     public boolean isIndexable(ParserFile file) {
         if (file.getExtension().equals("php")) { // NOI18N
 
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
-            if (PREINDEXING) {
-                try {
-                    //if (file.getRelativePath().startsWith("action_view")) {
-                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
-                        return false;
-                    }
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+//            if (PREINDEXING) {
+//                try {
+//                    //if (file.getRelativePath().startsWith("action_view")) {
+//                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
+//                        return false;
+//                    }
+//                } catch (FileStateInvalidException ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
             return true;
         }
         
@@ -157,11 +157,11 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.111"; // NOI18N
+        return "6.2"; // NOI18N
     }
 
     public String getIndexerName() {
-        return "javascript"; // NOI18N
+        return "php"; // NOI18N
     }
     
     private static class TreeAnalyzer {
@@ -210,10 +210,27 @@ public class PHPIndexer implements Indexer {
                 if (statement instanceof FunctionDeclaration){
                     FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
                     
-                    String name = functionDeclaration.getFunctionName().getName();
+                    StringBuilder fqn = new StringBuilder();
+                    //fqn.append(";;;");
+                    fqn.append(functionDeclaration.getFunctionName().getName() + ";");
                     
-                    document.addPair(FIELD_FQN, name, true);
-                    System.err.println("PHP Indexer: indexed function " + name);
+                    for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator();
+                            it.hasNext();){
+                        
+                        FormalParameter param = it.next();
+                        Variable var = (Variable) param.getParameterName();
+                        Identifier id = (Identifier) var.getName();
+                        fqn.append(id.getName());
+                        
+                        if (it.hasNext()){
+                            fqn.append(",");
+                        }
+                    }
+                    
+                    fqn.append(";;;");
+                    System.err.println("Indexing " + fqn);
+                    
+                    document.addPair(FIELD_FQN, fqn.toString(), true);
                 }
             }
             
@@ -262,7 +279,7 @@ public class PHPIndexer implements Indexer {
 
         private void indexClass(AstElement element, IndexDocument document, String signature) {
             final String name = element.getName();
-            document.addPair(FIELD_CLASS, name+ ";" + signature, true);
+            document.addPair(FIELD_CLASS, name+ "," + signature, true);
         }
 
         private String computeSignature(AstElement element) {
@@ -350,38 +367,38 @@ public class PHPIndexer implements Indexer {
             return null;
         }
 
-        private void indexFuncOrProperty(AstElement element, IndexDocument document, String signature) {
-            String in = element.getIn();
-            String name = element.getName();
-            StringBuilder base = new StringBuilder();
-            base.append(name.toLowerCase());
-            base.append(';');                
-            if (in != null) {
-                base.append(in);
-            }
-            base.append(';');
-            base.append(name);
-            base.append(';');
-            base.append(signature);
-            document.addPair(FIELD_BASE, base.toString(), true);
-            
-            StringBuilder fqn = new StringBuilder();
-            if (in != null && in.length() > 0) {
-                fqn.append(in.toLowerCase());
-                fqn.append('.');
-            }
-            fqn.append(name.toLowerCase());
-            fqn.append(';');
-            fqn.append(';');
-            if (in != null && in.length() > 0) {
-                fqn.append(in);
-                fqn.append('.');
-            }
-            fqn.append(name);
-            fqn.append(';');
-            fqn.append(signature);
-            document.addPair(FIELD_FQN, fqn.toString(), true);
-        }
+//        private void indexFuncOrProperty(FunctionDeclaration element, IndexDocument document, String signature) {
+//            String in = null;//element.getIn();
+//            String name = element.getName();
+//            StringBuilder base = new StringBuilder();
+//            base.append(name.toLowerCase());
+//            base.append(';');                
+//            if (in != null) {
+//                base.append(in);
+//            }
+//            base.append(';');
+//            base.append(name);
+//            base.append(';');
+//            base.append(signature);
+//            document.addPair(FIELD_BASE, base.toString(), true);
+//            
+//            StringBuilder fqn = new StringBuilder();
+//            if (in != null && in.length() > 0) {
+//                fqn.append(in.toLowerCase());
+//                fqn.append('.');
+//            }
+//            fqn.append(name.toLowerCase());
+//            fqn.append(';');
+//            fqn.append(';');
+//            if (in != null && in.length() > 0) {
+//                fqn.append(in);
+//                fqn.append('.');
+//            }
+//            fqn.append(name);
+//            fqn.append(';');
+//            fqn.append(signature);
+//            document.addPair(FIELD_FQN, fqn.toString(), true);
+//        }
         
         private int getDocumentationOffset(AstElement element) {
 //            int offset = element.getNode().getSourceStart();
