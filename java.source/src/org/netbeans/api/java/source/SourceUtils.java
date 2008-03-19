@@ -155,7 +155,7 @@ public class SourceUtils {
     
     /**
      * Returns the type element within which this member or constructor
-     * is declared. Does not accept pakages
+     * is declared. Does not accept packages
      * If this is the declaration of a top-level type (a non-nested class
      * or interface), returns null.
      *
@@ -737,8 +737,8 @@ out:                    for (URL e : roots) {
      * It returns all the open project source roots which have either
      * direct or transitive dependency on the given source root.
      * @param root to find the dependent roots for
-     * @return {@link Set} of {@link URL}s containinig at least the
-     * incomming root, never returns null.
+     * @return {@link Set} of {@link URL}s containing at least the
+     * incoming root, never returns null.
      * @since 0.10
      */
     public static Set<URL> getDependentRoots (final URL root) {
