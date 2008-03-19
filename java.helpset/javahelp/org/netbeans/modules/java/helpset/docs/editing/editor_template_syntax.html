@@ -19,107 +19,54 @@
             sequences of reserved words and common code patterns. For example, 
             if you enter <tt>forc</tt> and press the Tab key, it expands into the
         following:</p>
-        <pre>for (Iterator it = collection.iterator(); it.hasNext();) {
-       Object elem = (Object) it.next();
-        } </pre>
+<pre>for (Iterator it = collection.iterator(); it.hasNext();) {
+  Object elem = (Object) it.next();
+} </pre>
         
         <p>When you create code templates, there are several constructs
             that you can use to customize the way the code template behaves.
-            The most useful 
-            of these constructs are listed below. You can look at the default IDE code 
+            You can look at the default IDE code 
         templates in the Options window, under the Tools 
         menu, for examples from which you can learn.</p>
         
-        <table border="1">
-            <tbody><tr>
-                    <th rowspan="1" colspan="1">
-                        <p class="TableHead">
-                        <a name="pgfId-1167035"></a>Code Template Syntax Construct</p>
-                        
-                    </th>
-                    <th rowspan="1" colspan="1">
-                        <p class="TableHead">
-                        <a name="pgfId-1167037"></a>Explanation</p>
-                    </th>
-                </tr>
-                <tr valign="top">
-                    <td><tt>${cursor}</tt>
-                    </td>
-                    
-                    <td>Indicates where the insertion point should go after the code snippet 
-                        has been added to your code. 
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td><tt>${<i>Identifier</i>}</tt>
-                    </td>
-                    <td>Indicates an identifer that needs to be filled in when you use the code 
-                        template. When you use this construct in a template definition, replace <i>Identifier</i> with the 
-                        identifer name that you want to appear in the template.
-                    </td>
-                    
-                </tr>
-                <tr valign="top">
-                    <td><tt>index</tt>
-                    </td>
-                    <td>An attribute that you can use within a <tt>${<i>Identifier</i>}</tt> segment 
-                        to designate that an unused variable name should be generated in the code snippet. 
-                        For example, you could use <tt>${ind&nbsp;index}</tt>.
-                    </td>
-                    
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${selection} </tt> </td>
-                    <td> Defines a position for pasting a content of the editor selection. Used by <i>selection templates</i>, which appear as hints whenever you select some text in the editor (see next item).</td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${selection line allowSurround} </tt> </td>
-                    <td> Defines a selection template by using the <tt>allowSurround</tt> parameter. When there is an editor selection, a lightbulb is presented to the
-                        user, and all the surround-with code templates are listed as possible
-                    fixes.</td>
-                </tr>
-                <tr valign="top" class="wikitable">
-                    <td><tt> ${<i>param_name</i> default="value"} </tt> </td>
-                    <td> Defines the parameter's default value. Set to <code>empty</code> to create a tab stop.</td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${<i>param_name</i> editable=false} </tt> </td>
-                    <td> Can be used to disable user's editing of the parameter. Useful for creating caret locations (tab stops).</td>
-                </tr>
-                <tr valign="top" class="wikitable">
-                    <td><tt> ${class} </tt> </td>
-                    <td> Expands to the name of the class surrounding the template expansion location, such as <tt>Foo</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${classfqn} </tt> </td>
-                    <td> Same as <tt> ${class} </tt>, but instead of just the class name expands to the fully qualified class name, such as <tt>Bar::Baz::Foo</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable">
-                    <td><tt> ${superclass} </tt> </td>
-                    <td> Expands to the name of the superclass of the class surrounding the template expansion location, such as <tt>SuperFoo</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${method} </tt> </td>
-                    <td> Expands to the name of the method surrounding the template expansion location, such as <tt>foo</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable">
-                    <td><tt> ${methodfqn} </tt> </td>
-                    <td> Same as <tt> ${method} </tt>, but instead of just the class method expands to the fully qualified name, such as <tt>Bar::Baz::Foo#foo</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${file} </tt> </td>
-                    <td> Expands to the name of the current file, such as <tt>foo_bar.rb</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable">
-                    <td><tt> ${path} </tt> </td>
-                    <td> Expands to the name of the current full file path, such as <tt>/foo/bar/baz.rb</tt></td>
-                </tr>
-                <tr valign="top" class="wikitable" >
-                    <td><tt> ${unusedlocal defaults="i,j,k"} </tt> </td>
-                    <td> Picks the name of an unused local variable in the current scope. It will first try each of the candidates listed in the <tt>defaults</tt> attribute, and if none of those succeed, create another unique name.</td>
-                </tr>
-        </tbody></table>
-        
+      <p>In general, a code template parameter can be specified by its name and a 
+        set of optional hints. Hints serve as guidance when
+        computing the values assigned by the infrastructure to the parameters on template expansion.
+Syntax for parameter definition is as follows:
+
+<p><tt>${param_name hint=value hint=value ...}</tt>
+
+<p>However, boolean hints that can be written without the value part:
+
+<p><tt>${param_name hint}  translates to  ${param_name hint=true}</tt>
+
+<p>Some parameter names are reserved by the code template infrastructure:
+
+<ul><p><li><tt>${cursor}</tt> defines the position where
+the caret will be located after the editing of the code template values finishes.
+
+<p><li><tt>${selection}</tt> defines the position for pasting the content of 
+the editor selection, which is used by the 'selection templates'
+that appear as hints whenever the user selects text in the editor.</ul>
+
+<p>Similarly, some of the hint names are reserved by the code template infrastructure:
+
+<ul>
+    <p><li><tt>${param_name default="value"}</tt> defines the parameter's default value.
+<p><li><tt>${param_name editable=false}</tt> can be used to disable user's editing of the parameter.
+<p><li><tt>${param_name instanceof="java.util.Collection"}</tt> requires the parameter value to be an instance of the given type.
+<p><li><tt>${param_name array}</tt> requires the parameter value to be of an array type (including arrays of primitive data types).
+<p><li><tt>${param_name iterable}</tt> requires the parameter value to be of an array type or an instance of "java.lang.Iterable". Can
+be used in 'for-each' cycles.
+<p><li><tt>${param type="java.util.Iterator"}</tt> requires the parameter value to be the given type. The infrastructure will try to use
+short name Iterator and import java.util.Iterator if possible.
+<p><li><tt>${param_name iterableElementType}</tt> requires the parameter value to be the type of the iterable element. Can be used in
+'for-each' cycles.
+<p><li><tt>${param_name leftSideType}</tt> requires the parameter value to be the type of the expression on the assignment's left side.
+<p><li><tt>${param_name rightSideType}</tt> requires the parameter value to be the type of the expression on the assignment's right side.
+<p><li><tt>${param_name cast}</tt> defines that the parameter value would be a type cast if necessary.
+<p><li><tt>${param_name newVarName}</tt> defines that the parameter value should be a 'fresh' unused variable name in the given context.
+</ul>
         <hr>
         
         <small><a href="../credits.html">Legal Notices</a></small>
