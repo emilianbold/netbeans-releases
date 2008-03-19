@@ -117,11 +117,16 @@ public class CodeCompleter implements Completable {
         
         if (gdoc.exists() && gdoc.isDirectory()) {
             
-            if(Utilities.isWindows()){
-                gHomeDoc = gHomeDoc.replace("\\", "/");
-                }
+            String fileURL = "";
             
-            groovyJavaDocBase = "file:/" + gHomeDoc;
+            if (Utilities.isWindows()) {
+                gHomeDoc = gHomeDoc.replace("\\", "/");
+                fileURL = "file:/";
+            } else {
+                fileURL = "file://";
+            }
+            
+            groovyJavaDocBase = fileURL + gHomeDoc;
             LOG.log(Level.FINEST, "GDK Doc path: " + groovyJavaDocBase);
         }
 
