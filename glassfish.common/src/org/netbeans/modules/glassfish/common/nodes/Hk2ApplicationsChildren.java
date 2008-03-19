@@ -104,14 +104,15 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
         }, 0);
     }
     
-    private static java.util.Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();;
+    private static volatile java.util.Map<String, Decorator> decoratorMap;
     
-    static {
-        initDecorators();
-    }
-    
-    private static void initDecorators() {
+    private static synchronized void initDecorators() {
+        if(decoratorMap != null) {
+            return;
+        }
+        
         // Find all decorator support, categorize by type.
+        decoratorMap = new HashMap<String, Decorator>();;
         for (DecoratorFactory decoratorFactory : 
                 Lookups.forPath("Servers/GlassFish").lookupAll(DecoratorFactory.class)) {
             java.util.Map<String, Decorator> map = decoratorFactory.getAllDecorators();
@@ -120,6 +121,10 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
     }
     
     private Decorator findDecorator(String type, Decorator defaultDecorator) {
+        if(decoratorMap == null) {
+            initDecorators();
+        }
+        
         Decorator d = decoratorMap.get(type);
         return d != null ? d : defaultDecorator;
     }
