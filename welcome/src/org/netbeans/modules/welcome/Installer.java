@@ -43,21 +43,23 @@ public class Installer extends ModuleInstall implements Runnable {
 
     @Override
     public boolean closing() {
-        WelcomeComponent topComp = null;
-        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        for (TopComponent tc: tcs) {
-            if (tc instanceof WelcomeComponent) {                
-                topComp = (WelcomeComponent) tc;               
-                break;
+        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
+            WelcomeComponent topComp = null;
+            Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+            for (TopComponent tc: tcs) {
+                if (tc instanceof WelcomeComponent) {                
+                    topComp = (WelcomeComponent) tc;               
+                    break;
+                }
             }
+            if(topComp == null){            
+                topComp = WelcomeComponent.findComp();
+            }
+            //activate welcome screen at shutdown to avoid editor initialization
+            //before the welcome screen is activated again at startup
+            topComp.open();
+            topComp.requestActive();
         }
-        if(topComp == null){            
-            topComp = WelcomeComponent.findComp();
-        }
-        //activate welcome screen at shutdown to avoid editor initialization
-        //before the welcome screen is activated again at startup
-        topComp.open();
-        topComp.requestActive();
         return super.closing();
     }
 
