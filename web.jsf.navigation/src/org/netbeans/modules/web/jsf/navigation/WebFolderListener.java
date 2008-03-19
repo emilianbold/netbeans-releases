@@ -256,7 +256,11 @@ public class WebFolderListener extends FileChangeAdapter {
 
         //If we are in project view scope
         if (pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT)) {
-            assert oldNode != null;
+//            assert oldNode != null;
+            if (oldNode == null) {
+                // XXX #152498 Avoiding the assertion error.
+                return;
+            }
         }
 
         if (abstractNode != null) {

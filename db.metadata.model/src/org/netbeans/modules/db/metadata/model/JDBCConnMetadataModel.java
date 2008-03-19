@@ -46,8 +46,6 @@ import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
@@ -55,36 +53,41 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.mssql.MSSQLMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
-import org.openide.util.Mutex;
 
 /**
  *
  * @author Andrei Badea
  */
-public class DBConnMetadataModel implements MetadataModelImplementation {
+public class JDBCConnMetadataModel implements MetadataModelImplementation {
 
-    private final static Logger LOGGER = Logger.getLogger(DBConnMetadataModel.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(JDBCConnMetadataModel.class.getName());
 
     private final ReentrantLock lock = new ReentrantLock();
-    private final WeakReference<DatabaseConnection> dbconnRef;
+    private final WeakReference<Connection> connRef;
+    private final String defaultSchemaName;
 
     private JDBCMetadata jdbcMetadata;
 
-    public DBConnMetadataModel(DatabaseConnection dbconn) {
-        this.dbconnRef = new WeakReference<DatabaseConnection>(dbconn);
+    public JDBCConnMetadataModel(Connection conn, String defaultSchemaName) {
+        this.connRef = new WeakReference<Connection>(conn);
+        if (defaultSchemaName != null && defaultSchemaName.trim().length() == 0) {
+            this.defaultSchemaName = null;
+        } else {
+            this.defaultSchemaName = defaultSchemaName;
+        }
     }
 
     public void runReadAction(Action<Metadata> action) throws MetadataModelException {
         lock.lock();
         try {
-            // Prevent dbconn from being GC'd while under read access
+            // Prevent conn from being GC'd while under read access
             // by holding it in a variable.
-            DatabaseConnection dbconn = dbconnRef.get();
-            if (dbconn == null) {
+            Connection conn = connRef.get();
+            if (conn == null) {
                 return;
             }
             try {
-                enterReadAccess(dbconn);
+                enterReadAccess(conn);
                 if (jdbcMetadata != null) {
                     Metadata metadata = jdbcMetadata.getMetadata();
                     action.run(metadata);
@@ -121,23 +124,12 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         }
     }
 
-    private void enterReadAccess(final DatabaseConnection dbconn) throws SQLException {
-        Connection conn = dbconn.getJDBCConnection();
+    private void enterReadAccess(final Connection conn) throws SQLException {
         if (conn == null) {
-            conn = Mutex.EVENT.readAccess(new org.openide.util.Mutex.Action<Connection>() {
-                public Connection run() {
-                    ConnectionManager.getDefault().showConnectionDialog(dbconn);
-                    return dbconn.getJDBCConnection();
-                }
-            });
+            throw new NullPointerException("Connection can not be null");
         }
         Connection oldConn = (jdbcMetadata != null) ? jdbcMetadata.getConnection() : null;
         if (oldConn != conn) {
-            // If the connection has been reconnected, reinit the metadata.
-            String defaultSchemaName = dbconn.getSchema();
-            if (defaultSchemaName.trim().length() == 0) {
-                defaultSchemaName = null;
-            }
             if (conn != null) {
                 jdbcMetadata = createMetadata(conn, defaultSchemaName);
             } else {

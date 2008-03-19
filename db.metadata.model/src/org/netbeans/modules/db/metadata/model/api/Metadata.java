@@ -114,6 +114,10 @@ public class Metadata {
         impl.refresh();
     }
 
+    public void refreshTable(String tablename) {
+        impl.refreshTable(tablename);
+    }
+
     private static final class MetadataAccessorImpl extends MetadataAccessor {
 
         @Override

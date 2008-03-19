@@ -77,6 +77,8 @@ public final class ConnectionProcessor implements Runnable {
     }
     
     synchronized private void setQuoter() throws DatabaseException {
+        // Enforces the invariant relationship between the database connection
+        // and the quoter 
         try {
             if (conn != null && ! conn.isClosed()) {
                 this.quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
@@ -112,12 +114,12 @@ public final class ConnectionProcessor implements Runnable {
 
             // Send a command to the server, if it fails we know the connection is invalid.
             conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-            quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
         } catch (SQLException e) {
             conn = null;
-            quoter = null;
             LOGGER.log(Level.FINE, null, e);
             throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
+        } finally {
+            setQuoter();
         }
     }
     

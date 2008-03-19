@@ -46,16 +46,24 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -68,6 +76,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -104,6 +113,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -112,6 +122,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -296,7 +307,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             QuerySupport.createSourceLevelQuery(evaluator()),
             new J2SESources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
             cpe,
             buildExtender,
@@ -798,4 +809,109 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
     }
 
+    private static final class CoSAwareFileBuiltQueryImpl implements FileBuiltQueryImplementation, PropertyChangeListener {
+
+        private final FileBuiltQueryImplementation delegate;
+        private final J2SEProject project;
+        private final AtomicBoolean cosEnabled = new AtomicBoolean();
+        private final Map<FileObject, Reference<StatusImpl>> file2Status = new WeakHashMap<FileObject, Reference<StatusImpl>>();
+
+        public CoSAwareFileBuiltQueryImpl(FileBuiltQueryImplementation delegate, J2SEProject project) {
+            this.delegate = delegate;
+            this.project = project;
+
+            project.evaluator().addPropertyChangeListener(this);
+
+            setCoSEnabledAndXor();
+        }
+
+        private synchronized StatusImpl readFromCache(FileObject file) {
+            Reference<StatusImpl> r = file2Status.get(file);
+
+            return r != null ? r.get() : null;
+        }
+        
+        public Status getStatus(FileObject file) {
+            StatusImpl result = readFromCache(file);
+
+            if (result != null) {
+                return result;
+            }
+
+            Status status = delegate.getStatus(file);
+
+            if (status == null) {
+                return null;
+            }
+
+            synchronized (this) {
+                StatusImpl foisted = readFromCache(file);
+
+                if (foisted != null) {
+                    return foisted;
+                }
+                
+                file2Status.put(file, new WeakReference<StatusImpl>(result = new StatusImpl(cosEnabled, status)));
+            }
+
+            return result;
+        }
+
+        boolean setCoSEnabledAndXor() {
+            boolean nue = J2SEProjectUtil.isCompileOnSaveEnabled(project);
+            boolean old = cosEnabled.getAndSet(nue);
+
+            return old != nue;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!setCoSEnabledAndXor()) {
+                return ;
+            }
+
+            Collection<Reference<StatusImpl>> toRefresh;
+
+            synchronized (this) {
+                toRefresh = new LinkedList<Reference<StatusImpl>>(file2Status.values());
+            }
+            
+            for (Reference<StatusImpl> r : toRefresh) {
+                StatusImpl s = r.get();
+
+                if (s != null) {
+                    s.stateChanged(null);
+                }
+            }
+        }
+
+        private static final class StatusImpl implements Status, ChangeListener {
+
+            private final ChangeSupport cs = new ChangeSupport(this);
+            private final AtomicBoolean cosEnabled;
+            private final Status delegate;
+
+            public StatusImpl(AtomicBoolean cosEnabled, Status delegate) {
+                this.cosEnabled = cosEnabled;
+                this.delegate = delegate;
+            }
+
+            public boolean isBuilt() {
+                return cosEnabled.get() || delegate.isBuilt();
+            }
+
+            public void addChangeListener(ChangeListener l) {
+                cs.addChangeListener(l);
+            }
+
+            public void removeChangeListener(ChangeListener l) {
+                cs.removeChangeListener(l);
+            }
+
+            public void stateChanged(ChangeEvent e) {
+                cs.fireChange();
+            }
+            
+        }
+    }
+    
 }

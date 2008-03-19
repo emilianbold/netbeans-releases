@@ -56,6 +56,12 @@ public class AppClientWsValidation extends EjbWsValidation {
     }
 
     @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        assertServerRunning();
+    }
+
+    @Override
     protected ProjectType getProjectType() {
         return ProjectType.APPCLIENT;
     }

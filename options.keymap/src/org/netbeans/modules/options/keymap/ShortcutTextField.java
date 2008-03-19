@@ -55,7 +55,6 @@ import java.util.Vector;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.ScrollPaneConstants;
@@ -71,7 +70,6 @@ public class ShortcutTextField extends JTextField {
     private Popup popup;
     JList list  = new JList();
     JScrollPane pane = new JScrollPane();
-    private PopupFactory popupFactory;
 
     public ShortcutTextField(String text) {
         super(text);
@@ -161,9 +159,8 @@ public class ShortcutTextField extends JTextField {
 
                 Point p = new Point(tf.getX(), tf.getY());
                 SwingUtilities.convertPointToScreen(p, tf.getParent());
-                popupFactory = PopupFactory.getSharedInstance();
                 
-                popup = popupFactory.getPopup(tf, pane, p.x, p.y + tf.getHeight() + 1);
+                popup = PopupFactory.getSharedInstance().getPopup(tf, pane, p.x, p.y + tf.getHeight() + 1);
             }
 
             pane.setPreferredSize(new Dimension(list.getPreferredSize().width + pane.getVerticalScrollBar().getPreferredSize().width + 2, Math.min(350, list.getPreferredSize().height) + 5));

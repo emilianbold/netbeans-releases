@@ -44,6 +44,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
@@ -51,10 +52,15 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,6 +87,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     private TableSorter sorter;
 
     private JPopupMenu popup = new JPopupMenu();
+
+    //search fields
+    private Popup searchPopup;
+    JList list  = new JList();
 
     /** Creates new form KeymapPanel */
     public KeymapPanel() {
@@ -190,6 +200,28 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         cbProfile.addActionListener(this);
         bDelete.addActionListener(this);
         bDuplicate.addActionListener(this);
+
+        list.setListData(new String[] {"TAB", "ESCAPE"});//NOI18N
+        list.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (searchPopup != null) {
+                    searchPopup.hide();
+                    searchPopup = null;
+                }
+
+                int index = list.locationToIndex(new Point(e.getX(), e.getY()));
+                String scText = searchSCField.getText();
+                final String space = " "; //NOI18N
+                if (scText.length() == 0 || scText.endsWith(space) || scText.endsWith("+"))
+                    searchSCField.setText(scText + list.getModel().getElementAt(index));
+                else
+                    searchSCField.setText(scText + space + list.getModel().getElementAt(index));
+
+                    
+            }
+        });
     }
 
     private void deleteCurrentProfile() {
@@ -204,6 +236,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     //todo: maerge with update
     private void narrowByShortcut() {
         if (searchSCField.getText().length() != 0) {
+            String searchText = searchSCField.getText();
             getModel().getDataVector().removeAllElements();
             for (String category : getModel().getCategories().get("")) {
                 for (Object o : getModel().getItems(category)) {
@@ -212,7 +245,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                         String[] shortcuts = getModel().getShortcuts(sca);
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
-                            if (shortcut.toString().equals(searchSCField.getText()))
+                            if (searched(shortcut, searchText))
                                 getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(shortcut), category, ""});
                         }
                     }
@@ -283,6 +316,21 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     }
 
     /**
+     * @param shortcut shortcut compared with searched text
+     * @return true if search text is empty || shortcut starts with or contains
+     * searchtext
+     */
+    private boolean searched(String shortcut, String searchText) {
+        //shortcut.equals(searchSCField.getText())
+        if (searchText.length() == 0 || shortcut.startsWith(searchText) ||
+                shortcut.contains(searchText))
+            return true;
+        else
+            return false;
+    }
+
+
+    /**
      * Adjust column widths
      */
     private void setColumnWidths() {
@@ -328,6 +376,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         searchLabel = new javax.swing.JLabel();
         searchSCLabel = new javax.swing.JLabel();
         searchSCField = new javax.swing.JTextField();
+        moreButton = new javax.swing.JButton();
 
         lProfile.setLabelFor(cbProfile);
         org.openide.awt.Mnemonics.setLocalizedText(lProfile, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Keymap_Name")); // NOI18N
@@ -353,33 +402,46 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
         searchSCField.setText(org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.searchSCField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(moreButton, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.moreButton.text")); // NOI18N
+        moreButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        moreButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moreButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
-                    .add(spShortcuts, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(lProfile)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbProfile, 0, 162, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bDuplicate)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bDelete))
-                    .add(layout.createSequentialGroup()
-                        .add(searchLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchSCLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchSCField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                            .add(spShortcuts, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 175, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(layout.createSequentialGroup()
+                                .add(lProfile)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(cbProfile, 0, 200, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(bDuplicate)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(bDelete))
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE)
+                                .add(searchLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(searchField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(searchSCLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(searchSCField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(0, 0, 0)
+                                .add(moreButton)))))
+                .add(0, 0, 0))
         );
 
         layout.linkSize(new java.awt.Component[] {searchField, searchSCField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -397,12 +459,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(searchField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(searchLabel)
+                    .add(moreButton)
+                    .add(searchSCField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(searchSCLabel)
-                    .add(searchSCField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(searchField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(searchLabel))
                 .add(12, 12, 12)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(spShortcuts, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -410,6 +473,21 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
         searchField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.searchField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    /**
+     * Shows popup with ESC and TAB keys
+     */
+    private void moreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moreButtonActionPerformed
+        if (searchPopup == null) {
+            JComponent tf = (JComponent) evt.getSource();
+            Point p = new Point(tf.getX(), tf.getY());
+            SwingUtilities.convertPointToScreen(p, this);
+            //show special key popup
+            searchPopup = PopupFactory.getSharedInstance().getPopup(this, list, p.x, p.y);
+            searchPopup.show();
+        }
+}//GEN-LAST:event_moreButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable actionsTable;
     private javax.swing.JButton bDelete;
@@ -419,6 +497,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lProfile;
     private javax.swing.JList liShortcuts;
+    private javax.swing.JButton moreButton;
     private javax.swing.JTextField searchField;
     private javax.swing.JLabel searchLabel;
     private javax.swing.JTextField searchSCField;

@@ -71,7 +71,6 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderInstance;
-import org.openide.loaders.InstanceSupport;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
@@ -615,19 +614,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 super.waitFinished();
             }
             
-
-    	    /** If no instance cookie, tries to create execution action on the
-             * data object.
-             */
-    	    protected @Override InstanceCookie acceptDataObject (DataObject dob) {
-                InstanceCookie ic = super.acceptDataObject(dob);
-                if (ic == null) {
-                    JMenuItem item = ExecBridge.createMenuItem(dob);
-                    return item != null ? new InstanceSupport.Instance(item) : null;
-                } else {
-                    return ic;
-                }
-    	    }
 
     	    /**
              * Accepts only cookies that can provide <code>Menu</code>.

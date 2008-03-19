@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Micro//Systems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Micro//Systems, Inc. Portions Copyright 1997-2008 Sun
  * Micro//Systems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.JemmyException;
@@ -66,6 +65,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 
 /**
+ *  Duration of this test suite: aprox. 2min
  *
  * @author Jindrich Sedek
  */

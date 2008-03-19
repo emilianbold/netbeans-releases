@@ -112,7 +112,7 @@ public final class IntrospectedInfo {
     
     private Map<String,IntrospectedClass> clazzes = Collections.synchronizedMap(new TreeMap<String,IntrospectedClass>());
     /** definitions first by kind then by name to class name */
-    private Map<String,Map<String,String>> namedefs = new TreeMap<String,Map<String,String>>();
+    private final Map<String,Map<String,String>> namedefs = new TreeMap<String,Map<String,String>>();
     
     private final ChangeSupport cs = new ChangeSupport(this);
     

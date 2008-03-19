@@ -44,13 +44,17 @@ package org.netbeans.core;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
-import org.netbeans.junit.*;
-import org.openide.filesystems.*;
+import org.netbeans.junit.NbTestCase;
 
 /** Test NbKeymap.
  * @author Jesse Glick
@@ -60,6 +64,7 @@ public class NbKeymapTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected boolean runInEQ () {
         return true;
     }
@@ -194,6 +199,7 @@ public class NbKeymapTest extends NbTestCase {
             this.name = name;
         }
         public void actionPerformed(ActionEvent e) {}
+        @Override
         public String toString() {
             return "DummyAction[" + name + "]";
         }

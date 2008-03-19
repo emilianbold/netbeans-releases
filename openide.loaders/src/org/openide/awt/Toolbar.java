@@ -994,23 +994,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             return Toolbar.this.getClass();
         }
 
-        /** If no instance cookie, tries to create execution action on the
-         * data object.
-         */
-        @Override
-        protected InstanceCookie acceptDataObject (DataObject dob) {
-            InstanceCookie ic = super.acceptDataObject (dob);
-            if (ic == null) {
-                JButton button = ExecBridge.createButton (dob);
-                if (button != null) {
-                    button.putClientProperty ("file", dob);
-                }
-                return button != null ? new InstanceSupport.Instance (button) : null;
-            } else {
-                return ic;
-            }
-        }
-        
     private Map<Object, Object> cookiesToObjects = new HashMap<Object, Object>();
     
         @Override

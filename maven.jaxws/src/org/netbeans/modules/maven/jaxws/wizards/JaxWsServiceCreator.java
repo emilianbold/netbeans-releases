@@ -41,11 +41,8 @@
 package org.netbeans.modules.maven.jaxws.wizards;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import java.io.IOException;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -54,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 
+import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -154,7 +152,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
             //add the JAXWS 2.0 library, if not already added
             if (addJaxWsLib) {
-                addJaxws21Library(project);
+                MavenModelUtils.addJaxws21Library(project);
             }
             generateJaxWSImplFromTemplate(pkg);
             handle.finish();
@@ -173,22 +171,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
         openFileInEditor(dobj);
 
         return createdFile;
-    }
-    
-    private void addJaxws21Library(Project project) throws IOException {
-        
-        //add the JAXWS 2.1 library
-        Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-        if (jaxws21_ext == null) {
-            throw new IOException("Unable to find JAXWS 21 Library."); //NOI18N
-        }
-        try {
-            SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            ProjectClassPathModifier.addLibraries(new Library[] {jaxws21_ext}, srcGroups[0].getRootFolder(), ClassPath.COMPILE);
-        } catch (IOException e) {
-            throw new IOException("Unable to add JAXWS 21 Library. " + e.getMessage()); //NOI18N
-        }
-
     }
     
     private ClassPath getClassPathForFile(Project project, FileObject file) {

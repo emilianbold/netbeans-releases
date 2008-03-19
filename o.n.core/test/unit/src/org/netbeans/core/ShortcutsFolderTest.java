@@ -63,7 +63,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.loaders.Environment;
+import org.openide.loaders.InstanceSupport;
+import org.openide.loaders.XMLDataObject;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Document;
 
 public class ShortcutsFolderTest extends NbTestCase {
     private ErrorManager err;
@@ -76,10 +82,12 @@ public class ShortcutsFolderTest extends NbTestCase {
         super(s);
     }
     
+    @Override
     protected Level logLevel() {
         return Level.ALL;
     }
     
+    @Override
     protected void setUp() throws Exception {
         MockServices.setServices(ENV.class);
 
@@ -127,10 +135,10 @@ public class ShortcutsFolderTest extends NbTestCase {
         err.log("children are here");
         
         assertEquals ("One element is there", 1, arr.length);
-        org.openide.loaders.DataObject obj = org.openide.loaders.DataObject.find (arr[0]);
+        DataObject obj = DataObject.find (arr[0]);
         err.log("Object is here" + obj);
         
-        assertEquals ("It is DataShadow", org.openide.loaders.DataShadow.class, obj.getClass ());
+        assertEquals("It is DataShadow", DataShadow.class, obj.getClass());
 
         Object a = keymap.getAction (stroke);
         assertNotNull ("There is an action", a);
@@ -154,7 +162,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         lock.releaseLock ();
         
         DataObject obj = DataObject.find (inst);
-        assertEquals ("XML Data object", org.openide.loaders.XMLDataObject.class, obj.getClass());
+        assertEquals ("XML Data object", XMLDataObject.class, obj.getClass());
         InstanceCookie ic = obj.getCookie(InstanceCookie.class);
         assertNotNull ("Has cookie", ic);
 
@@ -177,14 +185,14 @@ public class ShortcutsFolderTest extends NbTestCase {
         public void actionPerformed (ActionEvent ae) {}
     }
     
-    public static class ENV extends Object implements org.openide.loaders.Environment.Provider {
+    public static class ENV extends Object implements Environment.Provider {
         public Lookup getEnvironment(DataObject obj) {
-            if (obj instanceof org.openide.loaders.XMLDataObject) {
+            if (obj instanceof XMLDataObject) {
                 try {
-                    org.w3c.dom.Document doc = ((org.openide.loaders.XMLDataObject)obj).getDocument();
+                    Document doc = ((XMLDataObject) obj).getDocument();
                     if (doc.getDocumentElement().getNodeName().equals ("project")) {
-                        return org.openide.util.lookup.Lookups.singleton (
-                            new org.openide.loaders.InstanceSupport.Instance (
+                        return Lookups.singleton(
+                            new InstanceSupport.Instance(
                                 new TestAction ()
                             )
                         );
@@ -194,7 +202,7 @@ public class ShortcutsFolderTest extends NbTestCase {
                     fail ("No exception: " + ex.getMessage());
                 }
             }
-            return org.openide.util.Lookup.EMPTY;
+            return Lookup.EMPTY;
         }
     }
     

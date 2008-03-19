@@ -1825,7 +1825,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         }
 
         public int getRowCount() {
-            return columns.size();
+            return (columns == null) ? 0 : columns.size();
         }
 
         public int getColumnCount() {

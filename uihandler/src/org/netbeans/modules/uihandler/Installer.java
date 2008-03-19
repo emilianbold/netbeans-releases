@@ -63,6 +63,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
@@ -70,6 +71,7 @@ import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
@@ -1568,9 +1570,9 @@ public class Installer extends ModuleInstall implements Runnable {
 
         private boolean checkUserName(ReportPanel panel) {
             checkingResult = true;
-            String login = panel.getUserName();
-            String passwd = panel.getPasswd();
             try {
+                String login = URLEncoder.encode(panel.getUserName(), "UTF-8");
+                String passwd = URLEncoder.encode(panel.getPasswd(), "UTF-8");
                 char[] array = new char[100];
                 URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
                 URLConnection connection = checkingServerURL.openConnection();
@@ -1579,6 +1581,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 Reader reader = new InputStreamReader(connection.getInputStream());
                 int length = reader.read(array);
                 checkingResult = new Boolean(new String(array, 0, length));
+            } catch (UnsupportedEncodingException ex) {
+                Exceptions.printStackTrace(ex);
             }catch (SocketTimeoutException ste){
                 Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Connection timeout", ste); // NOI18N
             } catch (Exception exception) {

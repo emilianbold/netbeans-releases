@@ -357,6 +357,10 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         final boolean[] result = new boolean[] { false };
         if (referenceFO != null) {
             JavaSource javaSource = JavaSource.forFileObject(referenceFO);
+            if (javaSource == null) {
+                return result[0];
+            }
+
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

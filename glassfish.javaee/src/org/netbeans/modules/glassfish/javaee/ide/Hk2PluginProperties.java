@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
@@ -190,7 +191,8 @@ public class Hk2PluginProperties {
                 // Prelude doesn't have the javax.javaee jar, since it is not a
                 // complete Java EE 5 implementation.
                 File modulesDir = new File(serverDir.getAbsolutePath() + File.separatorChar + ServerUtilities.GFV3_MODULES_DIR_NAME);
-                jars = ServerUtilities.filterByManifest(jars, modulesDir, 0, true);
+                FileObject mDFO = FileUtil.toFileObject(FileUtil.normalizeFile(modulesDir));
+                jars = ServerUtilities.filterByManifest(jars, mDFO, 0, true);
             }
             
             // add webservices.jar if exists

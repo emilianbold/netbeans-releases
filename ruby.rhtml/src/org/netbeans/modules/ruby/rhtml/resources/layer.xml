@@ -189,7 +189,19 @@
                         <attr name="position" intvalue="1960"/>
                     </file>                    
                 </folder>
-                
+
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr intvalue="30000" name="position"/>
+                        </file>
+                        <file name="toggle-comment">
+                            <attr intvalue="30100" name="position"/>
+                        </file>
+                    </folder>
+                </folder>
+
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">

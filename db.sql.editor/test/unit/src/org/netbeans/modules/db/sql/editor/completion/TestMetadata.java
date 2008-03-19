@@ -194,6 +194,9 @@ public class TestMetadata extends MetadataImplementation {
     public void refresh() {
     }
 
+    public void refreshTable(String tablename) {
+    }
+
     static final class TestCatalog extends CatalogImplementation {
 
         private final String name;

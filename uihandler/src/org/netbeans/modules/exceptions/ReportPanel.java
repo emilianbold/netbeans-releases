@@ -43,6 +43,8 @@ package org.netbeans.modules.exceptions;
 
 import java.awt.Cursor;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.openide.awt.HtmlBrowser;
 
 /**
@@ -279,8 +281,7 @@ public class ReportPanel extends javax.swing.JPanel {
             boolean rememberPasswd = rememberCheckBox.isSelected();
             exSettings.setRememberPasswd(rememberPasswd);
             if (rememberPasswd){
-                String passwd = new String(jPasswordField1.getPassword());
-                exSettings.setPasswd(passwd);
+                exSettings.setPasswd(getPasswd());
             }else{
                 exSettings.setPasswd("");   //NOI18N
             }
@@ -295,7 +296,17 @@ public class ReportPanel extends javax.swing.JPanel {
         }
 
         public String getPasswd(){
-            return new String(jPasswordField1.getPassword());
+            char[] passwd = jPasswordField1.getPassword();
+            if (passwd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
+                passwd = copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
+            }
+            return new String(passwd);
+        }
+
+        public static char[] copyOf(char[] original, int newLength) {
+            char[] copy = new char[newLength];
+            System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+            return copy;
         }
 
         public String getSummary() {

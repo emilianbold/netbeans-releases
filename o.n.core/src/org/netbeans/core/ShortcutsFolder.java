@@ -155,9 +155,9 @@ class ShortcutsFolder {
     private void readShortcuts (NbKeymap keymap, FileObject fileObject) {
         debug.fine("\nreadShortcuts " + fileObject);
         DataFolder folder = DataFolder.findFolder (fileObject);
-        Enumeration en = folder.children (false);
+        Enumeration<DataObject> en = folder.children(false);
         while (en.hasMoreElements ()) {
-            DataObject dataObject = (DataObject) en.nextElement ();
+            DataObject dataObject = en.nextElement();
             if (dataObject instanceof DataFolder) continue;
             InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
             if (ic == null) continue;
