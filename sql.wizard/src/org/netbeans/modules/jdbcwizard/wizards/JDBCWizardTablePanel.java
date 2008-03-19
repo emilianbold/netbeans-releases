@@ -45,7 +45,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
 
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -870,12 +869,6 @@ public class JDBCWizardTablePanel extends JPanel {
         }
     }
 
-    /* font selection for column data in table body */
-    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 12);
-
-    /* font selection for column headers in table body */
-    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 12);
-
     private JPanel headerPnl;
 
     /* table to display meta data */
@@ -965,8 +958,6 @@ public class JDBCWizardTablePanel extends JPanel {
      */
     public void addTable(final List testList) {
         this.metaDataTable = new MetaTableComponent();
-        this.metaDataTable.setFont(JDBCWizardTablePanel.FONT_TABLE_COLUMNS);
-        this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
         this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advacned.."));
