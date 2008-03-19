@@ -41,9 +41,13 @@ package org.netbeans.modules.glassfish.common.actions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
+import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -58,20 +62,31 @@ public class ViewAdminConsoleAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        try {
-            Hk2InstanceNode node = activatedNodes[0].getLookup().lookup(Hk2InstanceNode.class);
-            URL url = new URL(node.getAdminUrl());
-            URLDisplayer.getDefault().showURL(url);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        GlassfishModule commonSupport = activatedNodes[0].getLookup().lookup(GlassfishModule.class);
+        if(commonSupport != null) {
+            if(commonSupport.getServerState() == ServerState.RUNNING) {
+                try {
+                    Map<String, String> ip = commonSupport.getInstanceProperties();
+                    String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                    String adminPort = ip.get(GlassfishModule.ADMINPORT_ATTR);
+                    URL url = new URL("http://" + host + ":" + adminPort);
+                    URLDisplayer.getDefault().showURL(url);
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                }
+            } else {
+                String message = NbBundle.getMessage(ViewAdminConsoleAction.class, 
+                        "MSG_ServerMustBeRunning");
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                        NotifyDescriptor.DEFAULT_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+            }
         }
     }
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        // !PW FIXME enable based on server running status (or start server 
-        // before executing action).
-        return true;
+        return activatedNodes != null && activatedNodes.length == 1;
     }
 
     @Override
