@@ -182,7 +182,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     
     final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
-    final boolean NEW_INITIALIZE = Boolean.getBoolean("org.openide.text.CloneableEditor.newInitialize"); // NOI18N
+    final boolean NEW_INITIALIZE = !Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize"); // NOI18N
 
     class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
