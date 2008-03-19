@@ -1145,7 +1145,16 @@ public class CCFormatSupport extends ExtFormatSupport {
                     indent = getLineIndent(getPosition(firstNWS.getToken(), 0), true) + 1;
 
                     // If the line is inside multi-line comment and doesn't contain '*'
-                    if (!isIndentOnly()) {
+                    if (isIndentOnly()) {
+                        if (getChar(firstNWS) != '*') { // e.g. not for '*/'
+                            if (isCCDocComment(firstNWS.getToken())) {
+                                if (getFormatLeadingStarInComment()) {
+                                    insertString(firstNWS, "* "); // NOI18N
+                                    setIndentShift(2);
+                                }
+                            }
+                        }
+                    } else {
                         if (getChar(firstNWS) != '*') {
                             if (isCCDocComment(firstNWS.getToken())) {
                                 if (getFormatLeadingStarInComment()) {
@@ -1156,27 +1165,22 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 indent = getLineIndent(pos, true);
                             }
                         }
-                    } else {
-                        if (getChar(firstNWS) != '*') { // e.g. not for '*/'
-                            if (isCCDocComment(firstNWS.getToken())) {
-                                if (getFormatLeadingStarInComment()) {
-                                    insertString(firstNWS, "* "); // NOI18N
-                                    setIndentShift(2);
-                                }
-                            }
-                        }
                     }
                 } else if (!isMultiLineComment(firstNWS)) { // line-comment
                     indent = firstNWS.equals(findLineStart(firstNWS)) ? getLineIndent(firstNWS, true) : findIndent(firstNWS.getToken());
                 } else { // multi-line comment
-                    if (isCCDocComment(firstNWS.getToken())) {
-                        indent = findIndent(firstNWS.getToken());
+                    if (isIndentOnly() && firstNWS.getOffset() != 0) {
+                        return pos;
                     } else {
-                        // check whether the multiline comment isn't finished on the same line (see issue 12821)
-                        if (firstNWS.getToken().getImage().indexOf('\n') == -1) {
+                        if (isCCDocComment(firstNWS.getToken())) {
                             indent = findIndent(firstNWS.getToken());
                         } else {
-                            indent = getLineIndent(firstNWS, true);
+                            // check whether the multiline comment isn't finished on the same line (see issue 12821)
+                            if (firstNWS.getToken().getImage().indexOf('\n') == -1) {
+                                indent = findIndent(firstNWS.getToken());
+                            } else {
+                                indent = getLineIndent(firstNWS, true);
+                            }
                         }
                     }
                 }
