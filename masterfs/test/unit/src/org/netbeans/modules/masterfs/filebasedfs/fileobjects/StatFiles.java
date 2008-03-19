@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import junit.framework.Assert;
 
 /**
  *
@@ -168,6 +169,13 @@ public class StatFiles extends SecurityManager {
             forWrite.putAll(results.forWrite);
             forDelete.putAll(results.forDelete);
             return this;
+        }
+
+        void assertResult(int cnt, int type) {
+            int real = statResult(type);
+            if (cnt != real) {
+                Assert.fail("Expected " + cnt + " but was " + real + "\n  Read: " + forRead + "\n  Write: " + forWrite + "\n  Delete: " + forDelete);
+            }
         }
 
         Set<File> getFiles() {
