@@ -319,6 +319,37 @@ class HTMLJavadocParser {
                 }
             }
             
+            int countParameters(String signature){
+                // System.out.println("methodName(signature): " + signature);
+                
+                int openSign  = signature.indexOf("(");
+                int closeSign = signature.indexOf(")");
+                
+                if(openSign == -1 || closeSign == -1 || (closeSign <= openSign)){
+                    return -1;
+                }
+            
+                // "()" means no parameter
+                if((closeSign - openSign) == 1){
+                    return 0;
+                } else {
+                    // count the number of commas:
+                    String paramList = signature.substring(openSign + 1, closeSign);
+                    
+                    int num = 0;
+                    int idx = 0;
+                    
+                    while((idx = paramList.indexOf(",", idx)) != -1 ){
+                        idx++;
+                        num++;
+                    }
+                    
+                    return num + 1;
+                }
+                
+            }
+            
+            
             boolean checkSignatureLink(String signature, String attrName, final boolean isGDK) {
                 
                 // There's a difference in JavaDoc Link format. GDK comes with variable names:
@@ -330,11 +361,16 @@ class HTMLJavadocParser {
                 }
                
                 if (isGDK) {
-                    // FIXME: we take the *first* match which will be wrong sometimes.
-                    // We need to compare count and type of arguments. Stay tuned.
+                    // FIXME: now we are a little bit smarter: We count the 
+                    // number of parameters. Alas, if the count is equal, but 
+                    // not of the same type we match the first one (which will
+                    // be wrong sometimes [see Object.use(...)] )
                     
                     if(methodName(signature).equals(methodName(attrName))) {
-                        return true;
+                        if (countParameters(signature) == countParameters(attrName)) {
+                            return true;
+                        }
+
                     }
                     
                 } else { // This is the standart case we are dealing with JDK JavaDocs
