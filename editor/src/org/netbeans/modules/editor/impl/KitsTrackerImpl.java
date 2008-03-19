@@ -201,8 +201,15 @@ public final class KitsTrackerImpl extends KitsTracker {
         "org.netbeans.editor.BaseKit", //NOI18N
         "org.netbeans.editor.ext.ExtKit", //NOI18N
         "org.netbeans.modules.editor.NbEditorKit", //NOI18N
+        
+        // Schliemann and GSF kits are provided on the fly by the frameworks' MimeDataProvider
+        "org.netbeans.modules.languages.dataobject.LanguagesEditorKit", //NOI18N
+        "org.netbeans.modules.gsf.GsfEditorKitFactory$GsfEditorKit", //NOI18N
+        
+        // common superclass of some XML related kits
+        "org.netbeans.modules.xml.text.syntax.UniKit", //NOI18N
     }));
-    
+
     private final ThreadLocal<Stack<String>> contexts = new ThreadLocal<Stack<String>>();
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
