@@ -629,6 +629,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             boolean created;
             public void fileDataCreated(FileEvent e) {
                 created = true;
+                synchronized(BaseFileObjectTestHid.this) {
+                    BaseFileObjectTestHid.this.notifyAll();
+                }
             }
         }        
         FCLImpl fl = new FCLImpl();        
@@ -644,6 +647,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         
         parent.refresh();
+        synchronized(this) {
+            wait(1000);
+        }
         parent.removeFileChangeListener(fl);
         assertTrue("Didn't receive a FileEvent on the parent.", fl.created);
     }
