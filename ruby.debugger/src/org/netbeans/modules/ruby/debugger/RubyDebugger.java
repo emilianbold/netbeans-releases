@@ -54,7 +54,6 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -195,7 +194,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
     /** Package private for unit test. */
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
         assert platform.isValid() : platform + " is a valid platform";
 

@@ -59,8 +59,6 @@ public final class Util {
     
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
     
-    private static final String SPECIFICATIONS = "specifications"; // NOI18N
-    
     private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     private static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
@@ -154,7 +152,7 @@ public final class Util {
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
             return false;
         }
-        String message = NbBundle.getMessage(RubyDebugger.class, messageKey, problems);
+        String message = NbBundle.getMessage(Util.class, messageKey, problems);
         RubyDebugInstallPanel rubyDebugPanel = new RubyDebugInstallPanel(strict, message);
         DialogDescriptor descriptor = new DialogDescriptor(rubyDebugPanel,
                 NbBundle.getMessage(Util.class, "Util.installation.panel.title"));
