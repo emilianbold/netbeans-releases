@@ -51,12 +51,14 @@ import java.awt.event.ActionEvent;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
+import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.mapper.model.customitems.BpelXPathCustomFunction;
 import org.netbeans.modules.bpel.mapper.model.customitems.WrapServiceRefHandler;
 import org.netbeans.modules.soa.mappercore.Mapper;
@@ -86,9 +88,20 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
+    // vlv: print
+    JButton button = createPrintPreviewButton();
+
+    if (button != null) {
+      c.weightx = 0.0;
+      c.anchor = GridBagConstraints.EAST;
+      c.fill = GridBagConstraints.NONE;
+      c.insets = new Insets(0, 0, 0, TINY_INSET);
+      panel.add(button, c);
+    }
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.fill = GridBagConstraints.NONE;
+    c.insets = new Insets(0, 0, 0, 0);
     panel.add(createCollapseExpandAllButton(), c);
 
     panel.setBorder(new Border());
@@ -128,10 +141,18 @@ public final class Palette {
         myIsCollapsed = !myIsCollapsed;
       }
     });
-    setImageSize(button);
     a11y(button, i18n(Palette.class, "ACS_Collapse_Expand")); // NOI18N
     
     return button;
+  }
+
+  private JButton createPrintPreviewButton() {
+    Action action = Lookup.getDefault().lookup(Action.class);
+
+    if (action == null) {
+      return null;
+    }
+    return createButton(action);
   }
 
   public void hideMenu() {
