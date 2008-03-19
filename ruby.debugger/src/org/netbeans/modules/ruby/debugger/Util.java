@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -131,6 +131,13 @@ public final class Util {
             currentEngine.lookupFirst(null, RubySession.class);
     }
     
+    /**
+     * Offers to install fast debugger iff the debugger is not already installed.
+     * 
+     * @param platform platform for which to do a check and possibly installation
+     * @return <tt>true</tt> if the debugger is either installed or was
+     * successfully installed; <tt>false</tt> otherwise
+     */
     static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
         return Util.ensureRubyDebuggerIsPresent(platform, false, "RubyDebugger.askMessage");
     }

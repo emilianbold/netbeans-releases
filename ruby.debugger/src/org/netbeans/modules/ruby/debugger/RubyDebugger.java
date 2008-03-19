@@ -205,10 +205,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
         // Offers to install only for fast native Ruby debugger. Installation
         // does not work for jruby ruby-debug-base yet.
-        //
-        // Asks for the first time - see issue #114183
-        if (!jrubySet && prefs.isFirstTime()) {
-            prefs.setFirstTime(false);
+        if (!jrubySet) {
             Util.offerToInstallFastDebugger(platform);
         }
         
