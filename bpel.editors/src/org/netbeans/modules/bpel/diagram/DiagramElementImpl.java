@@ -37,7 +37,7 @@ final class DiagramElementImpl implements DiagramElement {
     myElement = element;
   }
 
-  public String getText() {
+  public String getName() {
     return myElement.getText();
   }
 
@@ -45,7 +45,7 @@ final class DiagramElementImpl implements DiagramElement {
     Util.goToSource(getComponent());
   }
 
-  public void select() {
+  public void gotoDesign() {
     Pattern pattern = myElement.getPattern();
     DesignView view = pattern.getModel().getView();
 
@@ -56,11 +56,15 @@ final class DiagramElementImpl implements DiagramElement {
     getDecorator().select(getComponent());
 
     // scroll
-//todo FIXME: myElement.scrollTo();
+    // myElement.scrollTo();
   }
 
-  public void highlight(boolean highlighted) {
-    getDecorator().highlight(getComponent(), highlighted);
+  public void highlight() {
+    getDecorator().doHighlight(getComponent(), true);
+  }
+
+  public void unhighlight() {
+    getDecorator().doHighlight(getComponent(), false);
   }
 
   private DiagramDecorator getDecorator() {

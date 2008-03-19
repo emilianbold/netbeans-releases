@@ -363,7 +363,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
     protected String getOverridingStatements() {
         String text = "";
-        for (ParameterInfo param : getBean().getQueryParameters()) {
+        List<ParameterInfo> params = Util.filterParametersByAuth(
+                getBean().getAuthenticationType(), getBean().getAuthentication(),
+                getBean().getQueryParameters());
+        for (ParameterInfo param : params) {
             if(param.isApiKey() || param.isSessionKey() || param.isFixed())
                 continue;
             String name = getParameterName(param, true, true, true);
@@ -762,45 +765,41 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
     
     protected String getParameterName(ParameterInfo param) {
-        return param.getName();
+        return Util.getParameterName(param);
     }
     
     protected String getParameterName(ParameterInfo param, 
             boolean camelize, boolean normalize) {
-        return getParameterName(param, camelize, normalize, false);
+        return Util.getParameterName(param, camelize, normalize, false);
     }
     
     protected String getParameterName(ParameterInfo param, 
             boolean camelize, boolean normalize, boolean trimBraces) {
-        String name = param.getName();
-        if (Util.isKeyword(name)) {
-            return name + "Param";
-        }
-        
-        if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
-                && name.startsWith("{") && name.endsWith("}")) {
-            name = name.substring(0, name.length()-1);
-        }
-        if(normalize) {
-            name = Util.normailizeName(name);
-        }
-        if(camelize) {
-            name = Inflector.getInstance().camelize(name, true);
-        }
-        return name;
+        return Util.getParameterName(param, camelize, normalize, trimBraces);
     }
     
-    protected String getVariableName(String name, 
+    protected String getVariableName(String name) {
+        return Util.getVariableName(name, true, true, true);
+    }
+    
+    protected String getVariableName(final String name, 
             boolean camelize, boolean normalize, boolean trimBraces) {
-        if(trimBraces && name.startsWith("{") && name.endsWith("}")) {
-            name = name.substring(0, name.length()-1);
+        return Util.getVariableName(name, camelize, normalize, trimBraces);
+    }
+    
+    protected Object[] getParamValues(List<ParameterInfo> params) {
+        List<Object> results = new ArrayList<Object>();
+        
+        for (ParameterInfo param : params) {
+            Object defaultValue = null;
+            
+            if (param.getStyle() != ParamStyle.QUERY) {
+                defaultValue = param.getDefaultValue();
+            }
+            
+            results.add(defaultValue);
         }
-        if(normalize) {
-            name = Util.normailizeName(name);
-        }
-        if(camelize) {
-            name = Inflector.getInstance().camelize(name, true);
-        }
-        return name;
+        
+        return results.toArray(new Object[results.size()]);
     }
 }

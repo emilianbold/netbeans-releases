@@ -153,4 +153,10 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
 	}
     }
    
+    protected void sleep(long timeout) {
+        try {
+            Thread.sleep(timeout);
+        } catch( InterruptedException e ) {
+        }
+    }
 }

@@ -346,6 +346,10 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
         return new Attribute(loggerName, value);
     }
 
+    protected boolean needRefresh(String notificationSourceType) {
+        return false;
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JBINode.class);

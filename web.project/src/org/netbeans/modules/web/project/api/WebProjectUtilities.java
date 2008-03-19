@@ -179,7 +179,7 @@ public class WebProjectUtilities {
     }
     
     private static AntProjectHelper createProjectImpl(final WebProjectCreateData createData, 
-            FileObject projectDir) throws IOException {
+            final FileObject projectDir) throws IOException {
         String name = createData.getName();
         String serverInstanceID = createData.getServerInstanceID();
         String sourceStructure = createData.getSourceStructure();
@@ -195,9 +195,12 @@ public class WebProjectUtilities {
         
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
-        
+
+        final String serverLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
+                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
+
         final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID,
-                j2eeLevel, createData.getLibrariesDefinition(), createData.getServerLibraryName());
+                j2eeLevel, createData.getLibrariesDefinition(), serverLibraryName);
         
         FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
@@ -448,8 +451,11 @@ public class WebProjectUtilities {
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
+        final String serverLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
+                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
+        
         final AntProjectHelper antProjectHelper = setupProject(projectDir, name,
-                serverInstanceID, j2eeLevel, createData.getLibrariesDefinition(), createData.getServerLibraryName());
+                serverInstanceID, j2eeLevel, createData.getLibrariesDefinition(), serverLibraryName);
         
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
@@ -607,16 +613,28 @@ public class WebProjectUtilities {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-
-        if (h.isSharableProject() && data.getServerLibraryName() != null  && SharabilityUtility.findSharedServerLibrary(
-                h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName()) == null) {
-
-            SharabilityUtility.createLibrary(
-                h.resolveFile(h.getLibrariesLocation()), data.getServerLibraryName(),
-                data.getServerInstanceID());
-        }
     }
-    
+
+    private static String configureServerLibrary(final String librariesDefinition,
+            final String serverInstanceId, final FileObject projectDir, final boolean serverLibrary) {
+
+        String serverLibraryName = null;
+        if (librariesDefinition != null && serverLibrary) {
+            try {
+                serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
+                    public String run() throws Exception {
+                        return SharabilityUtility.findOrCreateLibrary(
+                                PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
+                                serverInstanceId).getName();
+                    }
+                });
+            } catch (MutexException ex) {
+                Exceptions.printStackTrace(ex.getException());
+            }
+        }
+        return serverLibraryName;
+    }
+
     private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject sourceprojectFO, FileObject referencedFO) {
         if (FileUtil.isParentOf(projectFO, referencedFO)) {
             return relativePath(projectFO, referencedFO);
@@ -699,6 +717,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.LAUNCH_URL_RELATIVE, ""); // NOI18N
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
+        ep.setProperty(WebProjectProperties.DEBUG_SERVER, "true"); // NOI18N
+        
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N

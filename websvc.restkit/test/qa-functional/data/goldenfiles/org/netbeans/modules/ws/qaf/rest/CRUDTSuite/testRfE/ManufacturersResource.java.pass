@@ -1,7 +1,7 @@
 /*
  *  ManufacturersResource
  *
- * Created on December 6, 2007, 2:14 PM
+ * Created on March 11, 2008, 10:39 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -15,11 +15,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.UriParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import o.n.m.ws.qaf.rest.crud.Product;
@@ -34,9 +34,9 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
 
 @Path("/manufacturers/")
 public class ManufacturersResource {
-    @HttpContext
+    @Context
     private UriInfo context;
-  
+    
     /** Creates a new instance of ManufacturersResource */
     public ManufacturersResource() {
     }
@@ -96,7 +96,7 @@ public class ManufacturersResource {
      * @return an instance of ManufacturerResource
      */
     @Path("{manufacturerId}/")
-    public ManufacturerResource getManufacturerResource(@UriParam("manufacturerId")
+    public ManufacturerResource getManufacturerResource(@PathParam("manufacturerId")
     Integer id) {
         return new ManufacturerResource(id, context);
     }

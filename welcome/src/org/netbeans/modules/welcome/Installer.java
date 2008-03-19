@@ -27,7 +27,9 @@
  */
 package org.netbeans.modules.welcome;
 
+import java.util.Set;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -37,6 +39,28 @@ public class Installer extends ModuleInstall implements Runnable {
 
     @Override public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(this);
+    }
+
+    @Override
+    public boolean closing() {
+        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
+            WelcomeComponent topComp = null;
+            Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+            for (TopComponent tc: tcs) {
+                if (tc instanceof WelcomeComponent) {                
+                    topComp = (WelcomeComponent) tc;               
+                    break;
+                }
+            }
+            if(topComp == null){            
+                topComp = WelcomeComponent.findComp();
+            }
+            //activate welcome screen at shutdown to avoid editor initialization
+            //before the welcome screen is activated again at startup
+            topComp.open();
+            topComp.requestActive();
+        }
+        return super.closing();
     }
 
     public void run() {

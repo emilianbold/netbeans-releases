@@ -65,6 +65,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
@@ -83,13 +84,11 @@ public class ServiceUnitNode extends CasaNode {
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
     private static final String CHILD_ID_CONSUMES_LIST = "ConsumesList";        // NOI18N
-    
-    
+        
     public ServiceUnitNode(CasaServiceEngineServiceUnit component, CasaNodeFactory factory) {
         super(component, new MyChildren(component, factory), factory);
     }
-    
-    
+        
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
@@ -107,14 +106,12 @@ public class ServiceUnitNode extends CasaNode {
 
     @Override
     public String getName() {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        /*
+        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData(); 
         if (su != null) {
-            return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
+            //return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
+            return su.getUnitName();
         }
         return super.getName();
-        */
-        return su.getUnitName();
     }
 
     /*
@@ -219,7 +216,8 @@ public class ServiceUnitNode extends CasaNode {
         public Object getChildKeys(Object data)  {
             List<String> children = new ArrayList<String>();
             Set<String> processInfo = getProcessNames();
-            if (processInfo.size() == 0) {
+            if (!CasaFactory.getCasaCustomizer().getBOOLEAN_CLASSIC_SESU_LAYOUT_STYLE() 
+                    || processInfo.size() == 0) {
                 children.add(CHILD_ID_CONSUMES_LIST);
                 children.add(CHILD_ID_PROVIDES_LIST);
             } else {

@@ -132,11 +132,9 @@ public class J2SEProjectUtil {
      * @throws MalformedURLException if the URL cannot be created
      */
     public static URL getRootURL (File root, String offset) throws MalformedURLException {
-        URL url = root.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        } else if (!root.exists()) {
-            url = new URL(url.toExternalForm() + "/"); // NOI18N
+        URL url = FileUtil.urlForArchiveOrDir(root);
+        if (url == null) {
+            throw new IllegalArgumentException(root.getAbsolutePath());
         }
         if (offset != null) {
             assert offset.endsWith("/");    //NOI18N

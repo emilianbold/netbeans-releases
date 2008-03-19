@@ -92,11 +92,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
-                <attr name="createDataObject" boolvalue="false"/>
-                <file name="language.nbs" url="RHTML.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
-                </file>
-                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
@@ -137,9 +132,17 @@
                     </folder>
                 </folder>
 
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-ruby-rhtml-editor-preferences.xml" url="editor-preferences.xml"/>
+                    </folder>
+                </folder>
+                
                 <file name="Settings.settings" url="RhtmlOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
             
                 <folder name="CodeTemplates">
@@ -218,6 +221,11 @@
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
+                </file>
+                
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
                 </file>
             </folder>
         </folder>

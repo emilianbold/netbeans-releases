@@ -802,9 +802,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Shutdownable ==================================
-    public boolean canShutdown() {
+    public boolean canShutdown(boolean force) {
         return canStop() ||
-                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState());
+                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState()) ||
+                force && !JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
     public void shutdown(boolean force) {
@@ -857,8 +858,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Uninstallable =================================
-    public boolean canUninstall() {
-        return canShutdown() ||
+    public boolean canUninstall(boolean force) {
+        return force || canShutdown(force) ||
                 !busy && JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
@@ -883,7 +884,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
-        if (canUndeploy()) {
+        if (canUndeploy(force)) {
             if (!undeploy(force)) { // undeployment cancelled or failed
                 return;
             }
@@ -894,7 +895,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return;
         }
 
-        if (canShutdown()) {
+        if (canShutdown(force)) {
             shutdown(force);
         }
 
@@ -1306,7 +1307,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             RuntimeManagementServiceWrapper mgmtService =
                     getRuntimeManagementServiceWrapper();
             if (mgmtService == null) {
@@ -1354,19 +1355,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (saNames.size() > 0) {
 
                 JBINode jbiNode = (JBINode) getParentNode().getParentNode();
+                Node[] jbiNodeChildren = jbiNode.getChildren().getNodes();
 
-                JBIComponentContainerNode sesNode =
-                        (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
-                // Can't do refresh: NPE while invoking undeployment on multiple components.
-                sesNode.refresh();
-
-                JBIComponentContainerNode bcsNode =
-                        (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
-                bcsNode.refresh();
-
-                JBIServiceAssembliesNode sasNode =
-                        (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
-                sasNode.refresh();
+                Node sesNode = jbiNodeChildren[0];
+                Node bcsNode = jbiNodeChildren[1];
+                Node sasNode = jbiNodeChildren[3];
 
                 try {
                     List<String> componentsNeedingStart =
@@ -1432,7 +1425,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             }
                         }
 
-                        Node startableNode = isBC ? getChildNode(bcsNode, componentNeedingStart) : getChildNode(sesNode, componentNeedingStart);
+                        Node startableNode = isBC ? 
+                            getChildNode(bcsNode, componentNeedingStart) : 
+                            getChildNode(sesNode, componentNeedingStart);
                         ((Startable) startableNode).start();
                     }
                 } catch (ManagementRemoteException e) {
@@ -1449,8 +1444,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         success = success && ((Undeployable) saNode).undeploy(force);
                     }
                 }
-
-                sasNode.refresh();
             }
 
             return success;
@@ -1780,7 +1773,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             return false;
         }
 

@@ -9,8 +9,11 @@
 
 package Templates.Classes;
 
-import javax.ws.rs.core.HttpContext;
+import javax.annotation.Resource;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Context;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * REST Web Service
@@ -19,8 +22,14 @@ import javax.ws.rs.core.UriInfo;
  */
 
 public class __NAME__ {
-    @HttpContext
+    @Context
     private UriInfo context;
+
+    @Resource
+    HttpServletRequest request;
+    
+    @Resource
+    HttpServletResponse response;
 
     /** Creates a new instance of __NAME__ */
     public __NAME__() {

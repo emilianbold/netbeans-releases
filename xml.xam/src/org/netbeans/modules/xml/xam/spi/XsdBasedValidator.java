@@ -132,18 +132,20 @@ public abstract class XsdBasedValidator implements Validator {
      */
     protected Source getSource(Model model, Handler handler) {
         Source source = (Source) model.getModelSource().getLookup().lookup(Source.class);
-
-        // Try to get Source via File from lookup.
-        if(source == null) {
-            File file = (File) model.getModelSource().getLookup().lookup(File.class);
-            if(file != null) {
-                try {
-                    source =  new SAXSource(new InputSource(new FileInputStream(file)));
-		    source.setSystemId(file.toURI().toString());
-                } catch (FileNotFoundException ex) {
-                    // catch error.
-                }
-            }
+        if(source != null)
+            return source;
+        
+        File file = (File) model.getModelSource().getLookup().lookup(File.class);
+        //issue 128703: no warning or error when can't find file
+        //associated with the document from global catalog
+        if(file == null)
+            return null;
+        
+        try {
+            source =  new SAXSource(new InputSource(new FileInputStream(file)));
+            source.setSystemId(file.toURI().toString());
+        } catch (FileNotFoundException ex) {
+            // catch error.
         }
         
         if (source == null) {
