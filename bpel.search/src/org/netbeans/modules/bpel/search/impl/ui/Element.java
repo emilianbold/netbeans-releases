@@ -65,9 +65,9 @@ public final class Element extends SearchElement.Adapter {
   }
 
   @Override
-  public void select()
+  public void gotoDesign()
   {
-    myElement.select();
+    myElement.gotoDesign();
   }
 
   private static String getName(SearchElement element) {

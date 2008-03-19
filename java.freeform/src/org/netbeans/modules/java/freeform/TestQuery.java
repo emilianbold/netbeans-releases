@@ -42,7 +42,6 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,26 +140,7 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
 
     private URL evalTextToURL(String evaltext) {
         File location = helper.resolveFile(evaltext);
-        URL u;
-        try {
-            u = location.toURI().toURL();
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
-        }
-        if (FileUtil.isArchiveFile(u)) {
-            return FileUtil.getArchiveRoot(u);
-        } else {
-            String us = u.toExternalForm();
-            if (us.endsWith("/")) {
-                return u;
-            } else {
-                try {
-                    return new URL(us + '/');
-                } catch (MalformedURLException e) {
-                    throw new AssertionError(e);
-                }
-            }
-        }
+        return FileUtil.urlForArchiveOrDir(location);
     }
     
 }

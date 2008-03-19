@@ -159,7 +159,7 @@ public class ToolTipAnnotation extends Annotation
 
     private void evaluate( Line.Part part ){
         Line line = part.getLine();
-        if (line != null) {
+        if (line == null) {
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
