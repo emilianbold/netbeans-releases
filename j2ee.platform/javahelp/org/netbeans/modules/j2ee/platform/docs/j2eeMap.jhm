@@ -39,6 +39,7 @@
 	<mapID target="config_ws_dd" url="webservice/configure/config_ws_dd.html" />
         <mapID target="about_annotations" url="webservice/configure/about_annotations.html" />
         <mapID target="config_ws_annotations" url="webservice/configure/config_ws_annotations.html" />
+        <mapID target="configure_axis" url="webservice/configure/configure_axis.html" />
 	<!-- End of "Configure" section -->
 	<!-- Start of "Build" section -->
 	<mapID target="about_build_ws" url="webservice/build/about_build_ws.html" />
@@ -168,7 +169,8 @@
     <mapID target="send_email" url="enterprise/general/send_email.html" />
 
     <!-- New Enterprise Application Project Wizard csh -->
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
      
@@ -223,12 +225,13 @@
     <!-- EJB Module CSH -->  
       
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportLocation" url="ejb/csh/ejb_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EJB" url="ejb/csh/ejb_with_source_wizard1.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
-    
 
-    <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelConfigureProject" url="ejb/csh/ejb_new_wizard.html" />
+    <!-- EJB Module Project Wizard dialog box csh: -->
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EJB" url="ejb/csh/ejb_new_wizard.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB" url="ejb/csh/ejb_new_wizard_server.html" />
+
 
     <!-- Standard EJB Module project properties dialog box: -->
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" url="ejb/csh/stand-ejb-properties-sources.html" />
@@ -300,8 +303,9 @@
     <!-- Start of Application Client CSH -->
     
     <!-- New App Client Wizards -->
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelConfigureProject" url="appclient/csh/new_appclient.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.ImportLocation" url="appclient/csh/appclient_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_APPCLIENT" url="appclient/csh/new_appclient.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT" url="appclient/csh/new_appclient_server.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_APPCLIENT" url="appclient/csh/appclient_with_source_wizard1.html" />
     <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelSourceFolders"  url="appclient/csh/appclient_with_source_wizard2.html" />
     
     <!-- App Client Project Properties -->

@@ -50,7 +50,7 @@ import static org.netbeans.modules.print.impl.util.UI.*;
 public final class PrintPreviewAction extends PrintPreviewMenu {
 
   public PrintPreviewAction() {
-    super("LBL_Print_Preview_Action", "TLT_Print_Preview_Action", "print"); // NOI18N
+    super(null, "TLT_Print_Preview_Action", "print"); // NOI18N
     setEnabled(true);
   }
 

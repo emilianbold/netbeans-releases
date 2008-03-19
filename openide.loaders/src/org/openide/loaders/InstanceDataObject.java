@@ -584,6 +584,38 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         return supe;
     }
 
+    @Override
+    void checkCookieSet(Class<?> clazz) {
+        if (getPrimaryFile().hasExt(XML_EXT)) {
+            // #24683 fix: do not return any cookie until the .settings file is written
+            // successfully; PROP_COOKIE is fired when cookies are available.
+            String filename = getPrimaryFile().getPath();
+            if (createdIDOs.contains(filename)) return;
+
+            Object res = getCookieFromEP(clazz);
+            if (res != null) {
+//                getCookieSet().assign(clazz, res);
+            }
+        }
+    }
+    
+    private Lookup lkp;
+    private static Object INIT_LOOKUP = new Object();
+    @Override
+    public Lookup getLookup() {
+        synchronized(INIT_LOOKUP) {
+            if (lkp != null) {
+                return lkp;
+            }
+            if (getPrimaryFile().hasExt("ser")) {
+                lkp = getCookieSet().getLookup();
+            } else {
+                lkp = new ProxyLookup(getCookieSet().getLookup(), getCookiesLookup());
+            }
+            return lkp;
+        }
+    }
+
     private Lookup.Result cookieResult = null;
     private Lookup.Result nodeResult = null;
     private Lookup cookiesLkp = null;
@@ -621,7 +653,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         
         return cookiesLkp;        
     }
-
+    
     private void initNodeResult() {
         if (nodeResult != null && nodeLsnr != null) {
             nodeResult.removeLookupListener(nodeLsnr);

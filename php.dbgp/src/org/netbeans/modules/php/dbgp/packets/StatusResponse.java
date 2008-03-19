@@ -87,7 +87,7 @@ public class StatusResponse extends DbgpResponse {
         {
             StopCommand stopCommand = new StopCommand( session.getTransactionId() );
             session.sendCommandLater(stopCommand);
-            session.setStop();
+            session.stop();
         }
     }
 
