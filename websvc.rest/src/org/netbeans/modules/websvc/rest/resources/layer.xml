@@ -113,7 +113,7 @@
             <file name="JsGenericStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsGenericStub.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JsReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
+            <file name="JsReadme.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="DojoRestStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoRestStore.template">
@@ -131,7 +131,7 @@
             <file name="DojoTestResourcesTable.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoTestResourcesTable.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JmakiReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
+            <file name="JmakiReadme.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JmakiComponent.css" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentCss.template">

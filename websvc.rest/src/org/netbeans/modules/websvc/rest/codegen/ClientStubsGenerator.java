@@ -100,6 +100,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS = "js"; //NOI18N
     public static final String HTML = "html"; //NOI18N
     public static final String HTM = "htm"; //NOI18N
+    public static final String TXT = "txt"; //NOI18N
     public static final String JSON = "json"; //NOI18N
     public static final String GIF = "gif"; //NOI18N
     public static final String JSP = "jsp"; //NOI18N
@@ -123,7 +124,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/JsContainerStub.js"; //NOI18N
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
-    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
+    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.txt"; //NOI18N
      
     //Dojo templates
     public static final String DOJO_RESTSTORE = "RestStore";//NOI18N
@@ -147,7 +148,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JMAKI_RESOURCESTABLE_DEST = "rtable"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEUP_DEST = "rtableUp"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEDOWN_DEST = "rtableDown"; //NOI18N
-    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.html"; //NOI18N
+    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.txt"; //NOI18N
     public static final String JMAKI_COMPONENTCSS_TEMPLATE = "Templates/WebServices/JmakiComponent.css"; //NOI18N
     public static final String JMAKI_COMPONENTHTM_TEMPLATE = "Templates/WebServices/JmakiComponent.htm"; //NOI18N
     public static final String JMAKI_COMPONENTJS_TEMPLATE = "Templates/WebServices/JmakiComponent.js"; //NOI18N
@@ -342,14 +343,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             if (testFile != null) {
                 files.add(testFile);
             }
-            FileObject readme = restDir.getFileObject(JMAKI_README, HTML);
+            FileObject readme = restDir.getFileObject(JMAKI_README, TXT);
             if(readme != null)
                 files.add(readme);
         } else {
             FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
             if(rjsTest != null)
                 files.add(rjsTest);
-            FileObject readme = rjsDir.getFileObject(JS_README, HTML);
+            FileObject readme = rjsDir.getFileObject(JS_README, TXT);
             if(readme != null)
                 files.add(readme);
         }
@@ -466,7 +467,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private void initJs(Project p) throws IOException {
         createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
-        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, canOverwrite());
+        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, TXT, canOverwrite());
     }
 
     private void initDojo(Project p, List<Resource> resourceList) throws IOException {
@@ -495,7 +496,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
-        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, TXT, canOverwrite());
         createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
                 
         //find first container 
