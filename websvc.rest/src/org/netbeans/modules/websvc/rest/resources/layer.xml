@@ -80,9 +80,6 @@
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="WrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/WrapperResource.template">
-                <attr name="position" intvalue="0"/>
-            </file>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template">
                 <attr name="position" intvalue="0"/>
             </file>
