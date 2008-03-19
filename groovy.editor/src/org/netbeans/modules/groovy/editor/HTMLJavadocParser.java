@@ -66,7 +66,7 @@ class HTMLJavadocParser {
     private final Logger LOG = Logger.getLogger(HTMLJavadocParser.class.getName());
 
     public HTMLJavadocParser() {
-        LOG.setLevel(Level.FINEST);
+        // LOG.setLevel(Level.FINEST);
     }
     
     

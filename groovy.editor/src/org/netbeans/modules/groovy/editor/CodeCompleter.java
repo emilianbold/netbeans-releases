@@ -154,11 +154,12 @@ public class CodeCompleter implements Completable {
     private void printMethod(MetaMethod mm) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------");
-        LOG.log(Level.FINEST, "Methods.getName()       : " + mm.getName());
-        LOG.log(Level.FINEST, "Methods.toString()      : " + mm.toString());
-        LOG.log(Level.FINEST, "Methods.getDescriptor() : " + mm.getDescriptor());
-        LOG.log(Level.FINEST, "Methods.getSignature()  : " + mm.getSignature());
-        LOG.log(Level.FINEST, "Methods.getParamTypes() : " + mm.getParamTypes());
+        LOG.log(Level.FINEST, "getName()           : " + mm.getName());
+        LOG.log(Level.FINEST, "toString()          : " + mm.toString());
+        LOG.log(Level.FINEST, "getDescriptor()     : " + mm.getDescriptor());
+        LOG.log(Level.FINEST, "getSignature()      : " + mm.getSignature());
+        LOG.log(Level.FINEST, "getParamTypes()     : " + mm.getParamTypes());
+        LOG.log(Level.FINEST, "getDeclaringClass() : " + mm.getDeclaringClass());
     }
 
     private boolean startsWith(String theString, String prefix) {
@@ -344,10 +345,21 @@ public class CodeCompleter implements Completable {
             
             // enable this to troubleshoot subtle differences in JDK/GDK signatures
             printMethod(ame.getMethod());
-
+            
+            // some (artificial) methods are declared on other Classes
+            // we have to figure this out.
+            
+            Class clz;
+            
+            if(ame.isGDK()){
+                clz = ame.getMethod().getDeclaringClass().getCachedClass();
+            } else {
+                clz = ame.getClz();
+                }
+            
             // create path from fq java package name:
             // java.lang.String -> java/lang/String.html
-            String classNamePath = ame.getClz().getName().replace(".", "/");
+            String classNamePath = clz.getName().replace(".", "/");
             classNamePath = classNamePath + ".html";
 
             // create the signature-string of the method
@@ -374,7 +386,9 @@ public class CodeCompleter implements Completable {
                 doctext = "Sorry, I'm unable to find the documentation.";
             }
 
-            doctext = "<h3>" + sig + "</h3><BR>" + doctext;
+            doctext =   "<h2>" + clz.getName() + "</h2><BR>" +
+                        "<h3>" + sig           + "</h3><BR>" + 
+                        doctext;
 
         }
         return doctext;
