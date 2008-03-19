@@ -171,7 +171,7 @@
     <!-- New Enterprise Application Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EAR" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
      
     <!-- Enterprise Application Project Properties dialog box csh -->

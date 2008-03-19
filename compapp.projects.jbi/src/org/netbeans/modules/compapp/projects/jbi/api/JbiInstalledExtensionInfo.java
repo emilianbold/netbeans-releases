@@ -88,6 +88,11 @@ public class JbiInstalledExtensionInfo {
     /**
      * DOCUMENT ME!
      */
+    public static final String EXT_PROVIDER = "extensionClassProvider"; // NOI18N
+
+    /**
+     * DOCUMENT ME!
+     */
     public static final String EXT_NAMESPACE = "namespace"; // NOI18N
     /**
      * DOCUMENT ME!
@@ -169,6 +174,7 @@ public class JbiInstalledExtensionInfo {
                     String target = ""; // NOI18N
                     String ns = ""; // NOI18N
                     String desc = ""; // NOI18N
+                    String provider = ""; // NOI18N
                     URL icon = null;
 
                     FileObject compFO = extsDO.getPrimaryFile();
@@ -186,6 +192,8 @@ public class JbiInstalledExtensionInfo {
                             ns = (String) attrObj;
                         } else if (attrName.equals(EXT_ICON)) {
                             icon = (URL) attrObj;
+                        } else if (attrName.equals(EXT_PROVIDER)) {
+                            provider = (String) attrObj;
                         }
                     }
                    
@@ -193,7 +201,7 @@ public class JbiInstalledExtensionInfo {
 
                     @SuppressWarnings("unchecked")
                     JbiExtensionInfo extInfo = new JbiExtensionInfo(name, type, 
-                            target, file, ns, desc, icon, children[0]);
+                            target, file, ns, desc, icon, provider, children[0]);
                     singleton.extensionList.add(extInfo);
                     singleton.extensionMap.put(name, extInfo);
                 }
