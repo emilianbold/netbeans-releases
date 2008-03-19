@@ -39,6 +39,7 @@
 	<mapID target="config_ws_dd" url="webservice/configure/config_ws_dd.html" />
         <mapID target="about_annotations" url="webservice/configure/about_annotations.html" />
         <mapID target="config_ws_annotations" url="webservice/configure/config_ws_annotations.html" />
+        <mapID target="configure_axis" url="webservice/configure/configure_axis.html" />
 	<!-- End of "Configure" section -->
 	<!-- Start of "Build" section -->
 	<mapID target="about_build_ws" url="webservice/build/about_build_ws.html" />
