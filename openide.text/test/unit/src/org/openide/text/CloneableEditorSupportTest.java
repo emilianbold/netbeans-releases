@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
@@ -71,6 +72,18 @@ implements CloneableEditorSupport.Env {
     private CloneableEditorSupport support;
     /** the content of lookup of support */
     private InstanceContent ic;
+    
+    public static Test suite() {
+        return new CloneableEditorSupportTest("testDocumentIsNotGCedIfOpenedInEditor");
+        //return new NbTestSuite(CloneableEditorSupportTest.class);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    
 
     public void testDocumentBeGarbageCollectedWhenNotModifiedButOpened () throws Exception {
         content = "Ahoj\nMyDoc";
@@ -171,17 +184,6 @@ implements CloneableEditorSupport.Env {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloneableEditorSupportTest.class);
-        
-        return suite;
-    }
-    
-
     @Override
     protected void setUp () {
         ic = new InstanceContent ();
