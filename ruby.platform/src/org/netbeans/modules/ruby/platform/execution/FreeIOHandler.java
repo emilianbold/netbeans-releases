@@ -51,20 +51,42 @@ import org.openide.windows.InputOutput;
 
 final class FreeIOHandler {
     
-    private FreeIOHandler() {}
-
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
      * Map from tab to tab display name.
      * @see "#43001"
      */
-    private static final Map<InputOutput, String> FREE_IOS =
-            new WeakHashMap<InputOutput, String>();
+    private static final Map<InputOutput, Data> FREE_IOS =
+            new WeakHashMap<InputOutput, Data>();
 
-    static void addFreeIO(InputOutput io, String displayName) {
+    private final InputOutput io;
+    private final Data data;
+    
+    private FreeIOHandler(final InputOutput io, final Data data) {
+        this.io = io;
+        this.data = data;
+    }
+    
+    InputOutput getIO() {
+        return io;
+    }
+
+    String getDisplayName() {
+        return data.displayName;
+    }
+
+    StopAction getStopAction() {
+        return data.stopAction;
+    }
+
+    RerunAction getRerunAction() {
+        return data.rerunAction;
+    }
+    
+    static void addFreeIO(InputOutput io, String displayName, StopAction stopAction, RerunAction rerunAction) {
         synchronized (FREE_IOS) {
-            FREE_IOS.put(io, displayName);
+            FREE_IOS.put(io, new Data(displayName, stopAction, rerunAction));
         }
     }
 
@@ -72,37 +94,27 @@ final class FreeIOHandler {
      * Tries to find free Output Window tab for the given name.
      * 
      * @param name the name of the free tab. Other free tabs are ignored.
-     * @param toFront to front or not
      * @return free tab and its current display name or <tt>null</tt>
      */
-    static Entry<InputOutput, String> findFreeIO(final String name, final boolean toFront) {
-        Entry<InputOutput, String> result = null;
+    static FreeIOHandler findFreeIO(final String name) {
+        FreeIOHandler result = null;
         synchronized (FREE_IOS) {
-            for (Iterator<Entry<InputOutput, String>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
-                Entry<InputOutput, String> entry = it.next();
+            for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
+                Entry<InputOutput, Data> entry = it.next();
                 final InputOutput freeIO = entry.getKey();
-                final String freeName = entry.getValue();
+                final Data data = entry.getValue();
                 if (freeIO.isClosed()) {
                     it.remove();
                     continue;
                 }
 
-                if (result == null && ExecutionService.isAppropriateName(name, freeName)) {
+                if (result == null && ExecutionService.isAppropriateName(name, data.displayName)) {
                     // Reuse it.
-                    result = new Entry<InputOutput, String>() {
-                        public InputOutput getKey() { return freeIO; }
-                        public String getValue() { return freeName; }
-                        public String setValue(String value) {
-                            throw new UnsupportedOperationException("Not supported yet.");
-                        }
-                    };
+                    result = new FreeIOHandler(freeIO, data);
                     try {
                         freeIO.getOut().reset();
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
-                    }
-                    if (toFront) {
-                        freeIO.select();
                     }
                     it.remove();
                     // continue to remove all closed tabs
@@ -116,4 +128,16 @@ final class FreeIOHandler {
         return result;
     }
 
-}
+    private static class Data {
+        
+        final String displayName;
+        final StopAction stopAction;
+        final RerunAction rerunAction;
+        
+        Data(final String displayName, final StopAction stopAction, final RerunAction rerunAction) {
+            this.displayName = displayName;
+            this.stopAction = stopAction;
+            this.rerunAction = rerunAction;
+        }
+    }
+}    

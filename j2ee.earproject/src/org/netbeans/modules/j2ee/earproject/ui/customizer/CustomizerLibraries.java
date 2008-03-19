@@ -246,7 +246,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(layout.createSequentialGroup()
                         .add(sharedLibrariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
+                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                     .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -258,7 +258,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveUp, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonMoveDown, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
-            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -323,7 +323,9 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                libs.add(item.getLibrary().getName());
+                if (!item.isBroken()) {
+                    libs.add(item.getLibrary().getName());
+                }
             }
             if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
                 if (item.getReference() != null) {

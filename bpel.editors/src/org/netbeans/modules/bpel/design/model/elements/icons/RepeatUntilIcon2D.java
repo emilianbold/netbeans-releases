@@ -50,9 +50,9 @@ public class RepeatUntilIcon2D extends Icon2D {
     
     
     static {
-        final double r = 7;
-        final double kt = 6;
-        final double kn = 4;
+        final double r = 5;
+        final double kt = 5.4;
+        final double kn = 2.8;
         
         final double start = -45 + 180;
         final double delta = 270;

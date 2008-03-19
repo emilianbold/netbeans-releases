@@ -140,6 +140,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         
         JavadocContext jdctx = new JavadocContext();
+        items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
         Future<Void> f = runInJavac(JavaSource.forDocument(doc), jdctx);
         if (f != null && !f.isDone()) {
@@ -203,7 +204,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         jdctx.handle = ElementHandle.create(elm);
         jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(jdctx.doc, this.caretOffset);
         jdctx.positions = DocPositions.get(javac, javadoc, jdctx.jdts);
-        items = new  ArrayList<CompletionItem>();
     }
     
     private void analyzeContext(JavadocContext jdctx) {
@@ -461,8 +461,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         
         jdts.move(span[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
-        jdts.moveNext(); // @see|@link|@throws
-        jdts.moveNext(); // white space
+        // @see|@link|@throws
+        if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
+            return;
+        }
+        // white space
+        if (!jdts.moveNext() || caretOffset <= jdts.offset()) {
+            return;
+        }
         
         boolean noPrefix = false;
         
@@ -542,8 +548,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         int[] span = jdctx.positions.getTagSpan(tag);
         
         jdts.move(span[0]);
-        jdts.moveNext(); // @param
-        jdts.moveNext(); // white space
+        // @param
+        if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
+            return;
+        }
+        // white space
+        if (!jdts.moveNext() || caretOffset <= jdts.offset()) {
+            return;
+        }
         
         if (caretOffset <= jdts.offset() + jdts.token().length()) {
             int pos = caretOffset - jdts.offset();

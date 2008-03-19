@@ -190,6 +190,7 @@
                 <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
                 <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
                 <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
+                <tocitem text="Configuring Axis2 Web Services" target="configure_axis"></tocitem>
             </tocitem>  
             <tocitem text="Building Web Services" >
                 <tocitem text="About Building Web Services" target="about_build_ws" />

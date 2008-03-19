@@ -42,24 +42,37 @@ package org.netbeans.modules.web.webmodule;
 
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.openide.util.Exceptions;
 
 /**
  * This class provides access to the {@link WebModule}'s private constructor
  * from outside in the way that this class is implemented by an inner class of
- * {@link WebModule} and the instance is set into the {@link #DEFAULT}.
+ * {@link WebModule} and the instance is set via {@link #setDefault(WebModuleAccessor)}.
  */
 public abstract class WebModuleAccessor {
 
-    public static WebModuleAccessor DEFAULT;
+    private static volatile WebModuleAccessor accessor;
 
-    // force loading of the WebModule class. That will set DEFAULT variable.
-    static {
+    public static void setDefault(WebModuleAccessor accessor) {
+        if (WebModuleAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor"); // NOI18N
+        }
+        WebModuleAccessor.accessor = accessor;
+    }
+
+    public static WebModuleAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
         Class c = WebModule.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
+
+        return accessor;
     }
 
     public abstract WebModule createWebModule(WebModuleImplementation spiWebmodule);
