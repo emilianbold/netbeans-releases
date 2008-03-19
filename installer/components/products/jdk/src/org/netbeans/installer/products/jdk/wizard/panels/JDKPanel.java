@@ -76,6 +76,21 @@ public class JDKPanel extends DestinationPanel {
         
         return wizardUi;
     }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        // add jdk.getInstallationLocation() to the all java list so that 
+        // in silent installation this location is initialized and used by default        
+        final Object objectContext = getWizard().getContext().get(Product.class);
+        if (objectContext != null && objectContext instanceof Product) {
+            Product jdk = (Product) objectContext;
+            SearchForJavaAction.addJavaLocation(
+                    jdk.getInstallationLocation(),
+                    jdk.getVersion(),
+                    JDK_VENDOR);
+        }
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
