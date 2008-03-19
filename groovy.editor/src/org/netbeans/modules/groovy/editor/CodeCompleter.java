@@ -353,9 +353,8 @@ public class CodeCompleter implements Completable {
             // create the signature-string of the method
             String sig = ame.getMethod().getSignature();
             int firstblank = sig.indexOf(" ");
-            sig = sig.substring(firstblank + 1);
-
-            String urlName = base + classNamePath + "#" + sig;
+            String sigName = sig.substring(firstblank + 1);
+            String urlName = base + classNamePath + "#" + sigName;
 
             try {
                 LOG.log(Level.FINEST, "Trying to load URL = " + urlName);
@@ -367,6 +366,7 @@ public class CodeCompleter implements Completable {
                 return ERROR;
             }
 
+            doctext = "<h3>" + sig + "</h3><BR>" + doctext;
 
         }
         return doctext;
