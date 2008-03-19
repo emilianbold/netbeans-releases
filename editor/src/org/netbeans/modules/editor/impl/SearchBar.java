@@ -70,7 +70,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Timer;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -90,6 +92,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
@@ -97,6 +100,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 
@@ -112,6 +116,13 @@ public final class SearchBar extends JPanel {
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
+    
+    // Delay times for incremental search [ms]
+    private static final int SEARCH_DELAY_TIME_LONG = 300; // < 3 chars
+    private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
+    
+    private static final int defaultIncremantalSearchComboWidth = 200;
+    private static final int maxIncremantalSearchComboWidth = 350;
     
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
@@ -281,11 +292,34 @@ public final class SearchBar extends JPanel {
             public @Override Dimension getMaximumSize() {
                 return getPreferredSize();
             }
+
+            @Override
+            public Dimension getPreferredSize() {
+                int width;
+                int editsize = this.getEditor().getEditorComponent().getPreferredSize().width + 10;
+                if (editsize > defaultIncremantalSearchComboWidth && editsize <  maxIncremantalSearchComboWidth)
+                    width = editsize;
+                else if (editsize >= maxIncremantalSearchComboWidth)
+                    width = maxIncremantalSearchComboWidth;
+                else width = defaultIncremantalSearchComboWidth;
+                return new Dimension(width,
+                        super.getPreferredSize().height);
+            }
         };
+        
         incrementalSearchComboBox.setEditable(true);
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
 
+        ActionListener al = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                incrementalSearch();
+            }
+        };
+
+        final Timer searchDelayTimer = new Timer(SEARCH_DELAY_TIME_LONG, al);
+        searchDelayTimer.setRepeats(false);
+        
         // listen on text change
         incrementalSearchTextFieldListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -293,12 +327,16 @@ public final class SearchBar extends JPanel {
 
             public void insertUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
-                incrementalSearch();
+                computeLayout();
+                if(incrementalSearchTextField.getText().length() > 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
+                searchDelayTimer.restart();
             }
 
             public void removeUpdate(DocumentEvent e) {
                 // text changed - attempt incremental search
-                incrementalSearch();
+                computeLayout();
+                if(incrementalSearchTextField.getText().length() <= 3) searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_LONG);
+                searchDelayTimer.restart();
             }
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
@@ -353,28 +391,34 @@ public final class SearchBar extends JPanel {
         Mnemonics.setLocalizedText(matchCaseCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_MatchCase")); // NOI18N
         matchCaseCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                switchMatchCase();
                 // Put focus back in the incremental search textField
                 incrementalSearch();
                 incrementalSearchTextField.requestFocusInWindow();
             }
         });
+        matchCaseCheckBox.setSelected(getMatchCase());
         processButton(matchCaseCheckBox);
 
         wholeWordsCheckBox = new JCheckBox();
         Mnemonics.setLocalizedText(wholeWordsCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_WholeWords")); // NOI18N
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                switchWholeWords();
                 // Put focus back in the incremental search textField
                 incrementalSearch();
                 incrementalSearchTextField.requestFocusInWindow();
             }
         });
+        wholeWordsCheckBox.setSelected(getWholeWords());
+        wholeWordsCheckBox.setEnabled(!getRegExp());
         processButton(wholeWordsCheckBox);
         
         regexpCheckBox = new JCheckBox();
         Mnemonics.setLocalizedText(regexpCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Regexp")); // NOI18N
         regexpCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                switchRegExp();
                 // Switch other checkbozes on/off
                 wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 // Put focus back in the incremental search textField
@@ -382,18 +426,20 @@ public final class SearchBar extends JPanel {
                 incrementalSearchTextField.requestFocusInWindow();
             }
         });
+        regexpCheckBox.setSelected(getRegExp());
         processButton(regexpCheckBox);
         
         highlightCheckBox = new JCheckBox();
         Mnemonics.setLocalizedText(highlightCheckBox, NbBundle.getMessage(SearchBar.class, "CTL_Highlight")); // NOI18N
         highlightCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                switchHighlightResults();
                 // Put focus back in the incremental search textField
                 incrementalSearch();
                 incrementalSearchTextField.requestFocusInWindow();
             }
         });
-        highlightCheckBox.setSelected(true);
+        highlightCheckBox.setSelected(getHighlightResults());
         processButton(highlightCheckBox);
         
         expandPopup = new JPopupMenu();
@@ -437,10 +483,18 @@ public final class SearchBar extends JPanel {
         
         add(findLabel);
         add(incrementalSearchComboBox);
-        add(new JToolBar.Separator());
+        
+        JToolBar.Separator leftSeparator = new JToolBar.Separator();
+        leftSeparator.setOrientation(SwingConstants.VERTICAL);
+        add(leftSeparator);
+        
         add(findPreviousButton);
         add(findNextButton);
-        add(new JToolBar.Separator());
+        
+        JToolBar.Separator rightSeparator = new JToolBar.Separator();
+        rightSeparator.setOrientation(SwingConstants.VERTICAL);
+        add(rightSeparator);
+        
         add(matchCaseCheckBox);
         add(wholeWordsCheckBox);
         add(regexpCheckBox);
@@ -864,5 +918,47 @@ public final class SearchBar extends JPanel {
             }
         }
         return null;
+    }
+    
+    // preferences
+    private static final String IS_HIGHLIGHT_RESULTS = "isHighlightResults";
+    private static final String IS_REG_EXP = "isRegExp";
+    private static final String IS_MATCH_CASE = "isMatchCase";
+    private static final String IS_WHOLE_WORDS = "isWholeWords";
+    
+    private Preferences prefs() {
+        return NbPreferences.forModule(SearchBar.class);
+    }
+    
+    private boolean getMatchCase() {
+        return prefs().getBoolean(IS_MATCH_CASE, false); // NOI18N 
+    }
+    
+    private void switchMatchCase() {
+        prefs().putBoolean(IS_MATCH_CASE, !getMatchCase());
+    }
+    
+    private boolean getWholeWords() {
+        return prefs().getBoolean(IS_WHOLE_WORDS, false); // NOI18N 
+    }
+    
+    private void switchWholeWords() {
+        prefs().putBoolean(IS_WHOLE_WORDS, !getWholeWords());
+    }
+    
+    private boolean getRegExp() {
+        return prefs().getBoolean(IS_REG_EXP, false); // NOI18N 
+    }
+    
+    private void switchRegExp() {
+        prefs().putBoolean(IS_REG_EXP, !getRegExp());
+    }
+    
+    private boolean getHighlightResults() {
+        return prefs().getBoolean(IS_HIGHLIGHT_RESULTS, true); // NOI18N 
+    }
+    
+    private void switchHighlightResults() {
+        prefs().putBoolean(IS_HIGHLIGHT_RESULTS, !getHighlightResults());
     }
 }

@@ -53,8 +53,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.masterindex.plugin.TargetDBSchemaGenerator;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
@@ -79,7 +78,7 @@ public class MasterIndexAction  extends CallableSystemAction {
     String parentPrimaryKey = null;
     ArrayList childrenForeignKey = new ArrayList();
     ArrayList orderByFields = new ArrayList();
-    private static transient final Logger mLogger = LogUtil.getLogger(MasterIndexAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(MasterIndexAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static String objDefn = null;
     

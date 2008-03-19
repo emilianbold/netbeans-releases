@@ -46,27 +46,11 @@ public class WizardProperties {
     private WizardProperties() {
     }
 
-    public static final String PROJECT_DIR = "projdir"; //NOI18N
-    public static final String NAME = "name"; //NOI18N
     public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
-
-    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
-    public static final String SERVER_INSTANCE_ID = "serverInstanceID"; //NOI18N
-    public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
     
     public static final String DOC_BASE = "docBase"; //NOI18N
     public static final String JAVA_ROOT = "javaRoot"; //NOI18N
     public static final String LIB_FOLDER = "libFolder"; //NOI18N
-    public static final String WAR_NAME = "warName"; // NOI18N
-    public static final String JAR_NAME = "jarName"; // NOI18N
-    public static final String CAR_NAME = "carName"; // NOI18N
-    public static final String CREATE_WAR = "createWAR"; // NOI18N
-    public static final String CREATE_JAR = "createJAR"; // NOI18N
-    public static final String CREATE_CAR = "createCAR"; // NOI18N
-    
-    public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
-    public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
-    public static final String MAIN_CLASS = "mainClass"; // NOI18N
     
     public static final String USER_MODULES = "userModules"; // NOI18N
 }

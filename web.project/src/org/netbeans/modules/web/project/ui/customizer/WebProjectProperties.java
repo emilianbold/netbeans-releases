@@ -78,6 +78,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
@@ -162,6 +163,10 @@ public class WebProjectProperties {
 
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
+    
+    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
+    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
+    public static final String JSDEBUGGER_AVAILABLE = "debug.client.available"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
@@ -248,6 +253,10 @@ public class WebProjectProperties {
     Document LAUNCH_URL_RELATIVE_MODEL;
     ButtonModel DISPLAY_BROWSER_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
+
+    // CustomizerDebug
+    ButtonModel DEBUG_SERVER_MODEL;
+    ButtonModel DEBUG_CLIENT_MODEL;
     
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
@@ -381,6 +390,10 @@ public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
+        
+        // CustomizerDebug
+        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
+        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
     }
 
     public void save() {
@@ -502,7 +515,8 @@ public class WebProjectProperties {
         }
         
         // Encode all paths (this may change the project properties)
-        String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );
+        List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
+        
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );
         String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
@@ -540,11 +554,6 @@ public class WebProjectProperties {
             needsUpdate = false;
         }
         
-        // Save all paths
-        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
-        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
-        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
-        
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
         //Handle platform selection and javac.source javac.target properties
@@ -554,25 +563,37 @@ public class WebProjectProperties {
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
-        
+
         // Configure new server instance
         boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
                 WebProjectProperties.J2EE_PLATFORM_CLASSPATH);
-        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {            
-            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
-                    project, projectProperties, privateProperties, !serverLibUsed);
+
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
+                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+            final String oldServInstID = privateProperties.getProperty(J2EE_SERVER_INSTANCE);
+
+            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
+            setNewServerInstanceValue(instanceId, project, projectProperties, privateProperties, !serverLibUsed);
         }
 
         // Configure server libraries (if any)
         boolean configured = setServerClasspathProperties(projectProperties, privateProperties,
-                cs, ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
+                cs, javaClasspathList);
 
         // Configure classpath from server (no server libraries)
-        if (!configured) {
+        if (!configured && J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()),
                     project, projectProperties, privateProperties, true);
         }
 
+        String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
+        
+        // Save all paths
+        projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
+        
         // Set new context path
         try {
 	    String cp = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
@@ -764,7 +785,9 @@ public class WebProjectProperties {
     
     private static void setNewServerInstanceValue(String newServInstID, Project project,
             EditableProperties projectProps, EditableProperties privateProps, boolean setFromServer) {
-        
+
+        assert newServInstID != null : "Server isntance id to set can't be null"; // NOI18N
+
         // update j2ee.platform.classpath
         String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);
         if (oldServInstID != null) {
@@ -896,11 +919,11 @@ public class WebProjectProperties {
             }
         }
 
-        removeServerClasspathProperties(privateProps);
         if (serverItems.isEmpty()) {
             removeServerClasspathProperties(props);
             return false;
         }
+        removeServerClasspathProperties(privateProps);
 
         props.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
         removeReferences(serverItems);
@@ -920,7 +943,7 @@ public class WebProjectProperties {
                 cs.encodeToStrings(serverItems, null, "wsjwsdp")); // NOI18N
         return true;
     }
-
+    
     private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
         for (ClassPathSupport.Item item : items) {
             item.setReference(null);

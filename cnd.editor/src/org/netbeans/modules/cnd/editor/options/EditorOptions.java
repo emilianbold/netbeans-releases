@@ -95,6 +95,8 @@ public class EditorOptions {
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
     public static final boolean indentCasesFromSwitchDefault = true;
+    public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
+    public static final boolean absoluteLabelIndentDefault = true;
 
     public static final String indentNamespace = "indentNamespace"; //NOI18N
     public static final boolean indentNamespaceDefault = true;
@@ -140,6 +142,12 @@ public class EditorOptions {
     public static final boolean alignMultilineCallArgsDefault = false;
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final boolean alignMultilineMethodParamsDefault = false;
+    public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
+    public static final boolean alignMultilineForDefault = false;
+    public static final String alignMultilineIfCondition = "alignMultilineIfCondition"; //NOI18N
+    public static final boolean alignMultilineIfConditionDefault = false;
+    public static final String alignMultilineWhileCondition = "alignMultilineWhileCondition"; //NOI18N
+    public static final boolean alignMultilineWhileConditionDefault = false;
 
     //NewLine
     public static final String newLineCatch = "newLineCatch"; //NOI18N
@@ -268,9 +276,10 @@ public class EditorOptions {
     
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
+    private static final String GNU_PROFILE = "GNU"; // NOI18N
 
     public static final String[] PREDEFINED_STYLES = new String[]
-                              {DEFAULT_PROFILE, APACHE_PROFILE};
+                              {DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE};
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
@@ -288,6 +297,7 @@ public class EditorOptions {
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
         defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+        defaults.put(absoluteLabelIndent, absoluteLabelIndentDefault);
 
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
@@ -298,6 +308,9 @@ public class EditorOptions {
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
         defaults.put(alignMultilineCallArgs,alignMultilineCallArgsDefault);
         defaults.put(alignMultilineMethodParams,alignMultilineMethodParamsDefault);
+        defaults.put(alignMultilineFor,alignMultilineForDefault);
+        defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
+        defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
         //NewLine
         defaults.put(newLineCatch,newLineCatchDefault);
         defaults.put(newLineElse,newLineElseDefault);
@@ -387,10 +400,29 @@ public class EditorOptions {
         apache.put(indentCasesFromSwitch, false);
         apache.put(alignMultilineCallArgs, true);
         apache.put(alignMultilineMethodParams, true);
+        apache.put(alignMultilineIfCondition, true);
+        apache.put(alignMultilineWhileCondition, true);
         apache.put(newLineCatch, true);
         apache.put(newLineElse, true);
         apache.put(newLineWhile, true);
-        
+// I see that GNU style differ from apache only in half indent
+// Is it true?
+        Map<String,Object> gnu = new HashMap<String,Object>();
+        namedDefaults.put(GNU_PROFILE, gnu);
+        gnu.put(indentCasesFromSwitch, false);
+        gnu.put(alignMultilineCallArgs, true);
+        gnu.put(alignMultilineMethodParams, true);
+        gnu.put(alignMultilineIfCondition, true);
+        gnu.put(alignMultilineWhileCondition, true);
+        gnu.put(spaceBeforeMethodCallParen, true);
+        gnu.put(spaceBeforeMethodDeclParen, true);
+        gnu.put(newLineCatch, true);
+        gnu.put(newLineElse, true);
+        gnu.put(newLineWhile, true);
+        gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){

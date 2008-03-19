@@ -387,7 +387,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
         return null;
     }
     
-    boolean invokeDefaultAction() {
+    boolean invokeDefaultAction(boolean onlyActive) {
         JTextComponent comp = this.comp;
         if (comp == null) {
             Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
@@ -403,15 +403,35 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                 Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());            
                 int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
                 AnnotationDesc desc = annotations.getActiveAnnotation(line);
+                ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
+                
+                if (annotation == null) {
+                    if (onlyActive) {
+                        return false;
+                    }
+                    
+                    AnnotationDesc[] pas = annotations.getPasiveAnnotations(line);
+                    
+                    if (pas == null) {
+                        return false;
+                    }
+                    
+                    for (AnnotationDesc ad : pas) {
+                        if ((annotation = findAnnotation(doc, ad, line)) != null) {
+                            break;
+                        }
+                    }
+
+                    if (annotation == null) {
+                        return false;
+                    }
+                }
+                
                 Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
                 p.y += carretRectangle.height;
                 if( comp.getParent() instanceof JViewport ) {
                     p.x += ((JViewport)comp.getParent()).getViewPosition().x;
                 }
-                ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
-                
-                if (annotation == null)
-                    return false;
                 
                 showPopup(annotation.getFixes(), annotation.getDescription(), comp, p);
                 
@@ -441,7 +461,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
             if (   e.getModifiersEx() == (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)
                 || e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
                 if ( !popupShowing) {
-                    invokeDefaultAction();
+                    invokeDefaultAction(false);
                     e.consume();
                 }
             } else if ( e.getModifiersEx() == 0 ) {

@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="ln -s '${basedir}/../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
+            <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
         </exec>
     </target>
     
@@ -84,11 +84,11 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
                 
-        <echo message="Building ${baseide.pkg.name} into ${basedir}/../../build/${baseide.pkg.name}"/>
+        <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/${baseide.pkg.name} -f ${basedir}/build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
+            <arg value="/Developer/Tools/packagemaker -build -v -p ${basedir}/../../build/baseide.pkg -f ${basedir}/build/app -i ${basedir}/build/Info.plist -r ${basedir}/pkg/scripts -d ${basedir}/pkg/scripts/Description.plist"/>
         </exec>
     </target>
     

@@ -4,7 +4,7 @@
     <welcome file="Welcome.txt"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
-    <options allow-external-scripts="no" customize="allow" rootVolumeOnly="false"></options>
+    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
     <script>
 /* js:pkmk:start */
 function installationCheckRAM() {
@@ -217,6 +217,6 @@ function checkChoiceUpgradeAction() {
     <choice id="ruby" title="Ruby" description="Complete tool set for creating Ruby and Ruby on Rails applications. Includes JRuby interpreter, Ruby on Rails framework, powerful editor, debugger, gem manager, and interactive Ruby shell. Supports easily creating, modifying, and running Ruby on Rails applications." start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>
-    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="50068" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="24740" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
 </installer-gui-script>

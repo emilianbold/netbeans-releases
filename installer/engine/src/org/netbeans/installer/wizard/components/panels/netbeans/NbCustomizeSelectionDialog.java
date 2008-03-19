@@ -811,8 +811,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 @Override
                 public void mouseReleased(MouseEvent event) {
                     if (checkBox.isVisible() &&
-                            checkBox.getBounds().contains(event.getPoint()) ||
-                            titleLabel.getBounds().contains(event.getPoint())) {
+                            checkBox.getBounds().contains(event.getPoint())) {
                         ComponentsListModel model =
                                 (ComponentsListModel) componentsList.getModel();
                         

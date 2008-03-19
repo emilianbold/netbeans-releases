@@ -169,10 +169,30 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[]{new Info(), aux, helper.createCacheDirectoryProvider(), spp, new MakeActionProvider(this), new MakeLogicalViewProvider(this, spp), new MakeCustomizerProvider(this, projectDescriptorProvider), new MakeArtifactProviderImpl(), new //new CustomActionsHookImpl(),
-        ProjectXmlSavedHookImpl(), new ProjectOpenedHookImpl(), new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())), new MakeSources(this, helper), new AntProjectHelperProvider(), projectDescriptorProvider, new MakeProjectConfigurationProvider(this, projectDescriptorProvider), new NativeProjectProvider(this, projectDescriptorProvider), new RecommendedTemplatesImpl(), new MakeProjectOperations(this), new FolderSearchInfo(projectDescriptorProvider), new MakeProjectType
-
-        ()});
+        return Lookups.fixed(new Object[]{
+            new Info(),
+            aux,
+            helper.createCacheDirectoryProvider(),
+            spp,
+            new MakeActionProvider(this),
+            new MakeLogicalViewProvider(this, spp),
+            new MakeCustomizerProvider(this, projectDescriptorProvider),
+            new MakeArtifactProviderImpl(),
+            new //new CustomActionsHookImpl(),
+            ProjectXmlSavedHookImpl(),
+            new ProjectOpenedHookImpl(),
+            new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
+            new MakeSources(this, helper),
+            new AntProjectHelperProvider(),
+            projectDescriptorProvider,
+            new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
+            new NativeProjectProvider(this, projectDescriptorProvider),
+            new RecommendedTemplatesImpl(),
+            new MakeProjectOperations(this),
+            new FolderSearchInfo(projectDescriptorProvider),
+            new MakeProjectType(),
+            new MakeProjectEncodingQueryImpl(projectDescriptorProvider)
+        });
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -198,10 +218,46 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
-        private static final String[] RECOMMENDED_TYPES = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "asm-types"}; // NOI18N
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "fortran-types", "asm-types"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/fortranFiles/fortranEmptyFile.f90", "Templates/fortranFiles/fortranFixedFormatFile.f", "Templates/fortranFiles/fortranFreeFormatFile.f90", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES = new String[]{
+            "c-types",
+            "cpp-types",
+            "shell-types",
+            "makefile-types",
+            "c-types",
+            "simple-files",
+            "asm-types"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{
+            "c-types",
+            "cpp-types",
+            "shell-types",
+            "makefile-types",
+            "c-types",
+            "simple-files",
+            "fortran-types",
+            "asm-types"}; // NOI18N
+        private static final String[] PRIVILEGED_NAMES = new String[]{
+            "Templates/cFiles/main.c",
+            "Templates/cFiles/file.c",
+            "Templates/cFiles/file.h",
+            "Templates/cppFiles/main.cc",
+            "Templates/cppFiles/file.cc",
+            "Templates/cppFiles/file.h",
+            "Templates/MakeTemplates/ComplexMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
+        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{
+            "Templates/cFiles/main.c",
+            "Templates/cFiles/file.c",
+            "Templates/cFiles/file.h",
+            "Templates/cppFiles/main.cc",
+            "Templates/cppFiles/file.cc",
+            "Templates/cppFiles/file.h",
+            "Templates/fortranFiles/fortranFreeFormatFile.f90",
+            "Templates/MakeTemplates/ComplexMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
             if (CppSettings.getDefault().isFortranEnabled()) {

@@ -102,6 +102,21 @@ NodeActionsProviderFilter, Constants {
         String columnID, 
         Object value
     ) throws UnknownTypeException {
+        if ( (columnID == Constants.WATCH_VALUE_COLUMN_ID ||
+              columnID == Constants.WATCH_TO_STRING_COLUMN_ID ||
+              columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
+              columnID == Constants.LOCALS_TO_STRING_COLUMN_ID) && 
+            node instanceof Variable && 
+            isIntegralType ((Variable) node) &&
+            value instanceof String
+        ) {
+            Variable var = (Variable) node;
+            value = setValue (
+                var, 
+                (NumericDisplaySettings) variableToDisplaySettings.get (var),
+                (String) value
+            );
+        }
         original.setValueAt(node, columnID, value);
     }
 
@@ -250,6 +265,31 @@ NodeActionsProviderFilter, Constants {
         }
     }
 
+    private Object setValue (Variable var, NumericDisplaySettings settings, String origValue) {
+        if (settings == null) return origValue;
+        String type = var.getType ();
+        try {
+            switch (settings.getDisplayAs ()) {
+            case NumericDisplaySettings.BINARY:
+                if ("int".equals(type))
+                    return Integer.toString(Integer.parseInt(origValue, 2));
+                else if ("short".equals(type)) {
+                    return Short.toString(Short.parseShort(origValue, 2));
+                } else if ("byte".equals(type)) {
+                    return Byte.toString(Byte.parseByte(origValue, 2));
+                } else if ("char".equals(type)) {
+                    return "'"+Character.toString((char) Integer.parseInt(origValue, 2))+"'";
+                } else {//if ("long".equals(type)) {
+                    return Long.toString(Long.parseLong(origValue, 2))+"l";
+                }
+            default:
+                return origValue;
+            }
+        } catch (NumberFormatException nfex) {
+            return nfex.getLocalizedMessage();
+        }
+    }
+    
     private boolean isIntegralType (Variable v) {
         if (!VariablesTreeModelFilter.isEvaluated(v)) {
             return false;

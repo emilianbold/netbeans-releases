@@ -60,15 +60,15 @@ public class TriScrollPane extends JScrollPane {
         this.left = left;
         this.right = right;
         this.center = center;
+        
+        left.setBackground(SIDE_BACKGROUND);
+        right.setBackground(SIDE_BACKGROUND);
 
         leftComponent = new SideComponent(left);
-        leftComponent.setBorder(LEFT_SIDE_BORDER);
-
         rightComponent = new SideComponent(right);
-        rightComponent.setBorder(RIGHT_SIDE_BORDER);
 
-        add(leftComponent);
-        add(rightComponent);
+        add(leftComponent, 0);
+        add(rightComponent, 0);
         
         if (overlayPanel != null) {
             add(overlayPanel, 0);
@@ -86,7 +86,15 @@ public class TriScrollPane extends JScrollPane {
         leftComponent.getViewport().addChangeListener(myScrollListener);
         rightComponent.getViewport().addChangeListener(myScrollListener);
     }
+    
+    public int getLeftPreferredWidth() {
+        return (left.isVisible()) ? leftComponent.getPreferredSize().width : 0;
+    }
 
+    public int getRightPreferredWidth() {
+        return (right.isVisible()) ? rightComponent.getPreferredSize().width : 0;
+    }
+    
     public void addScrollListener(ScrollListener l) {
         scrollListeners.add(l);
     }
@@ -95,29 +103,32 @@ public class TriScrollPane extends JScrollPane {
         scrollListeners.remove(l);
     }
 
-
-
-    public int getWidth() {
-        if (layoutNow) {
-            int leftWidth = (!left.isVisible()) ? 0
-                    : leftComponent.getPreferredSize().width;
-            int rightWidth = (!right.isVisible()) ? 0
-                    : rightComponent.getPreferredSize().width;
-
-            return super.getWidth() - leftWidth - rightWidth;
-        }
-
-        return super.getWidth();
+    @Override
+    public boolean isOptimizedDrawingEnabled() {
+        return false;
     }
+
+//    public int getWidth() {
+//        if (layoutNow) {
+//            int leftWidth = (!left.isVisible()) ? 0
+//                    : leftComponent.getPreferredSize().width;
+//            int rightWidth = (!right.isVisible()) ? 0
+//                    : rightComponent.getPreferredSize().width;
+//
+//            return super.getWidth() - leftWidth - rightWidth;
+//        }
+//
+//        return super.getWidth();
+//    }
 
     public Rectangle getBounds() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 
     public void doLayout() {
-        layoutNow = true;
+//        layoutNow = true;
         super.doLayout();
-        layoutNow = false;
+//        layoutNow = false;
 
         boolean leftVisible = left.isVisible();
         boolean rightVisible = right.isVisible();
@@ -126,58 +137,77 @@ public class TriScrollPane extends JScrollPane {
                 : leftComponent.getPreferredSize().width;
         int rightWidth = (!rightVisible) ? 0
                 : rightComponent.getPreferredSize().width;
-
-        JScrollBar vsb = getVerticalScrollBar();
-        JScrollBar hsb = getHorizontalScrollBar();
+        
+        System.out.println("LW=" + leftWidth);
+        System.out.println("RW=" + rightWidth);
+//
+//        JScrollBar vsb = getVerticalScrollBar();
+//        JScrollBar hsb = getHorizontalScrollBar();
+//
+//        Rectangle viewportBounds = getViewport().getBounds();
+//        
+//        if (handToolPanel != null) {
+//            handToolPanel.setBounds(viewportBounds.x, viewportBounds.y, 
+//                    leftWidth + viewportBounds.width + rightWidth,
+//                    viewportBounds.height);
+//        }
+//        
+//        if (overlayPanel != null) {
+//            overlayPanel.setBounds(viewportBounds.x, viewportBounds.y, 
+//                    leftWidth + viewportBounds.width + rightWidth,
+//                    viewportBounds.height);
+//        }
+//        
+//        
+//        Rectangle vsbBounds = (vsb.isVisible()) ? vsb.getBounds() : null;
+//        Rectangle hsbBounds = (hsb.isVisible()) ? hsb.getBounds() : null;
+//
+//        int vsbOffset = leftWidth + rightWidth;
+//
+//        if (leftWidth != 0) {
+//            viewportBounds.x += leftWidth;
+//            viewport.setBounds(viewportBounds);
+//        }
+//
+//        if (vsbOffset != 0) {
+//            if (vsbBounds != null) {
+//                vsbBounds.x += vsbOffset;
+//                vsb.setBounds(vsbBounds);
+//            }
+//
+//            if (hsbBounds != null) {
+//                hsbBounds.width += vsbOffset;
+//                hsb.setBounds(hsbBounds);
+//            }
+//        }
 
         Rectangle viewportBounds = getViewport().getBounds();
         
-        if (handToolPanel != null) {
-            handToolPanel.setBounds(viewportBounds.x, viewportBounds.y, 
-                    leftWidth + viewportBounds.width + rightWidth,
-                    viewportBounds.height);
-        }
+        System.out.println("viewportBounds=" + viewportBounds);
         
-        if (overlayPanel != null) {
-            overlayPanel.setBounds(viewportBounds.x, viewportBounds.y, 
-                    leftWidth + viewportBounds.width + rightWidth,
-                    viewportBounds.height);
-        }
-        
-        
-        Rectangle vsbBounds = (vsb.isVisible()) ? vsb.getBounds() : null;
-        Rectangle hsbBounds = (hsb.isVisible()) ? hsb.getBounds() : null;
-
-        int vsbOffset = leftWidth + rightWidth;
-
-        if (leftWidth != 0) {
-            viewportBounds.x += leftWidth;
-            viewport.setBounds(viewportBounds);
-        }
-
-        if (vsbOffset != 0) {
-            if (vsbBounds != null) {
-                vsbBounds.x += vsbOffset;
-                vsb.setBounds(vsbBounds);
-            }
-
-            if (hsbBounds != null) {
-                hsbBounds.width += vsbOffset;
-                hsb.setBounds(hsbBounds);
-            }
-        }
-
         if (leftVisible) {
             leftComponent.setVisible(true);
-            leftComponent.setBounds(viewportBounds.x - leftWidth,
-                    viewportBounds.y, leftWidth, viewportBounds.height);
+            leftComponent.setBounds(viewportBounds.x, viewportBounds.y, 
+                    leftWidth, viewportBounds.height);
         }
 
         if (rightVisible) {
             rightComponent.setVisible(true);
-            rightComponent.setBounds(viewportBounds.x + viewportBounds.width,
-                    viewportBounds.y, rightWidth, viewportBounds.height);
+            rightComponent.setBounds(viewportBounds.x + viewportBounds.width 
+                    - rightWidth, viewportBounds.y, 
+                    rightWidth, viewportBounds.height);
         }
+        
+        if (overlayPanel != null) {
+            overlayPanel.setBounds(viewportBounds);
+        }
+        
+        if (handToolPanel != null) {
+            handToolPanel.setBounds(viewportBounds);
+        }
+
+        System.out.println("LB=" + leftComponent.getBounds());
+        System.out.println("RB=" + rightComponent.getBounds());
     }
 
     public JComponent getComponent(Point pt) {
@@ -198,77 +228,65 @@ public class TriScrollPane extends JScrollPane {
         boolean leftVisible = left.isVisible();
         boolean rightVisible = right.isVisible();
 
-        int leftWidth = (!left.isVisible()) ? 0
+        int leftWidth = (!leftVisible) ? 0
                 : leftComponent.getPreferredSize().width;
-        int rightWidth = (!right.isVisible()) ? 0
+        int rightWidth = (!rightVisible) ? 0
                 : rightComponent.getPreferredSize().width;
 
-        size.width += leftWidth + rightWidth;
+        size.width = Math.max(size.width, leftWidth + 120 + rightWidth);
 
         return size;
     }
 
-    private static class SideComponent extends JPanel implements
+    private static class SideComponent extends JScrollPane implements
             ChangeListener, MouseWheelListener, ActionListener {
 
         JButton scrollUpButton;
         JButton scrollDownButton;
-        JScrollPane scrollPane;
         Timer scrollTimer;
         int scrollTimerDirection = 0;
 
         SideComponent(JComponent content) {
-            scrollPane = new JScrollPane(content,
-                    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setBorder(null);
-            scrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+            super(content);
+            setOpaque(false);
+            setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
+            setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
+            setBorder(null);
+            getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+            getViewport().setOpaque(false);
+
             scrollUpButton = new UpButton();
             scrollDownButton = new DownButton();
 
-            add(scrollUpButton, BorderLayout.NORTH);
-            add(scrollDownButton, BorderLayout.SOUTH);
-            add(scrollPane, BorderLayout.CENTER);
+            add(scrollUpButton, 0);
+            add(scrollDownButton, 0);
 
-            scrollPane.getViewport().addChangeListener(this);
-            scrollPane.addMouseWheelListener(this);
+            getViewport().addChangeListener(this);
+            addMouseWheelListener(this);
+            
             scrollUpButton.getModel().addChangeListener(this);
             scrollDownButton.getModel().addChangeListener(this);
 
             scrollTimer = new Timer(100, this);
         }
 
-        public JViewport getViewport(){
-            return scrollPane.getViewport();
-        }
-        
         public Dimension getPreferredSize() {
-            Insets insets = getInsets();
+            Dimension size = super.getPreferredSize();
 
-            Dimension size = scrollPane.getPreferredSize();
-
-            int w = Math.max(size.width, BUTTON_SIZE + BUTTON_PADDING * 2);
-            int h = Math.max(size.height, 2 * BUTTON_SIZE + BUTTON_PADDING * 2 + BUTTON_MARGIN);
-
-            size.width = w + insets.left + insets.right;
-            size.height = h + insets.top + insets.bottom;
+            size.width = Math.max(size.width, BUTTON_SIZE + BUTTON_PADDING * 2);
+            size.height = Math.max(size.height, 
+                    2 * BUTTON_SIZE + BUTTON_PADDING * 2 + BUTTON_MARGIN);
 
             return size;
         }
 
         public void doLayout() {
+            super.doLayout();
+
+            int x = 0;
+            int y = 0;
             int w = getWidth();
             int h = getHeight();
-
-            Insets insets = getInsets();
-
-            int x = insets.left;
-            int y = insets.top;
-
-            w -= insets.left + insets.right;
-            h -= insets.top + insets.bottom;
-
-            scrollPane.setBounds(x, y, w, h);
 
             int buttonX = x + (w - BUTTON_SIZE) / 2;
 
@@ -283,7 +301,7 @@ public class TriScrollPane extends JScrollPane {
         }
 
         private void updateButtonsVisibility() {
-            JViewport viewport = scrollPane.getViewport();
+            JViewport viewport = getViewport();
 
             Rectangle viewRect = viewport.getViewRect();
             Dimension viewSize = viewport.getViewSize();
@@ -299,7 +317,7 @@ public class TriScrollPane extends JScrollPane {
 
             int delta = scrollUnits * 10;
 
-            JViewport viewport = scrollPane.getViewport();
+            JViewport viewport = getViewport();
 
             Point viewPosition = viewport.getViewPosition();
 
@@ -315,7 +333,7 @@ public class TriScrollPane extends JScrollPane {
         }
 
         public void stateChanged(ChangeEvent e) {
-            if (e.getSource() == scrollPane.getViewport()) {
+            if (e.getSource() == getViewport()) {
                 updateButtonsVisibility();
             } else if (e.getSource() == scrollUpButton.getModel()) {
                 if (scrollUpButton.getModel().isPressed()) {
@@ -521,6 +539,7 @@ public class TriScrollPane extends JScrollPane {
     public interface ScrollListener {
         void viewScrolled(JComponent view);
     }
+    
     private static final int BUTTON_SIZE = 23;
     private static final int BUTTON_PADDING = 4;
     private static final int BUTTON_MARGIN = 4;
@@ -534,4 +553,6 @@ public class TriScrollPane extends JScrollPane {
     private static final Color ICON_COLOR_ROLLOVER = new Color(0xFFFFFF);
     private static final float COS_30 = (float) Math.cos(Math.PI / 6);
     private static final float SIN_30 = (float) Math.sin(Math.PI / 6);
+    
+    private static final Color SIDE_BACKGROUND = new Color(0x44000000 | (new Color(0xFCFAF5).darker().getRGB() & 0xFFFFFF), true);
 }
