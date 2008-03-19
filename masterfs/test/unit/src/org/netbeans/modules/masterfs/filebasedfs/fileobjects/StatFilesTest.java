@@ -100,7 +100,7 @@ public class StatFilesTest extends NbTestCase {
         monitor.reset();
         monitor();
         assertNotNull(FileUtil.toFileObject(workDir));
-        assertEquals(3, monitor.getResults().statResult(StatFiles.ALL));
+        monitor.getResults().assertResult(3, StatFiles.ALL);
     }
 
     public void testGetFileObject23() throws IOException {      
