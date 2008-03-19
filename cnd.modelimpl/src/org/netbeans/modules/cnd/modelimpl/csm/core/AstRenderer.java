@@ -393,9 +393,11 @@ public class AstRenderer {
     private boolean renderLinkageSpec(AST ast, FileImpl file, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if( ast != null ) {
             AST token = ast.getFirstChild();
-            if( token.getType() == CPPTokenTypes.CSM_LINKAGE_SPECIFICATION ) {
-                render(token, currentNamespace, container);
-                return true;
+            if (token != null) {
+                if (token.getType() == CPPTokenTypes.CSM_LINKAGE_SPECIFICATION) {
+                    render(token, currentNamespace, container);
+                    return true;
+                }
             }
         }
         return false;
