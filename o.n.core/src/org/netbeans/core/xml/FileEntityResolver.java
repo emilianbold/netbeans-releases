@@ -436,6 +436,8 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     throw (IllegalStateException)ex;
                 }
                 
+                ex = new IOException("Parsing File " + src + ": " + ex.getMessage(), ex); // NOI18N
+                
                 try {
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
