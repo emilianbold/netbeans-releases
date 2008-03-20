@@ -337,9 +337,11 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
          settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, pkg);
          try {
              FileObject fo = getLocationValue().getRootFolder();
-             FileObject targetFolder = fo.getFileObject(pkg);
+             String pkgSlashes = pkg.replace('.', '/');
+             FileObject targetFolder = fo.getFileObject(pkgSlashes);
              if (targetFolder == null) {
-                 targetFolder = fo.createFolder(pkg);
+//                 targetFolder = fo.createFolder(pkg);
+                targetFolder = FileUtil.createFolder(fo, pkgSlashes);
              }
              Templates.setTargetFolder(settings, targetFolder);
          } catch (IOException ex) {

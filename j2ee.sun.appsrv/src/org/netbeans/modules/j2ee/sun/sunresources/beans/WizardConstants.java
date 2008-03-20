@@ -62,6 +62,7 @@ public interface WizardConstants {
     public static final String __Name = "name";
     public static final String __DatasourceClassname = "datasource-classname";
     public static final String __XADatasourceClassname = "datasource-classname-xa";
+    public static final String __CPDatasourceClassname = "datasource-classname-cp";
     public static final String __ResType = "res-type";
     public static final String __SteadyPoolSize = "steady-pool-size";
     public static final String __MaxPoolSize = "max-pool-size";

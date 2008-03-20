@@ -118,10 +118,13 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** One dot thin line compatible with Swing default caret */
     public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N
-    
+
+    /** @since 1.23 */
+    public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
-
+    
     static {
         // Compatibility debugging flags mapping to logger levels
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
@@ -129,7 +132,7 @@ AtomicLockListener, FoldHierarchyListener {
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus.extra") && LOG.getLevel().intValue() < Level.FINER.intValue())
             LOG.setLevel(Level.FINER);
     }
-    
+
     /**
      * Implementation of various listeners.
      */
@@ -175,6 +178,9 @@ AtomicLockListener, FoldHierarchyListener {
     /** Type of the caret */
     String type;
 
+    /** Width of thick caret */
+    int width;
+    
     /** Is the caret italic for italic fonts */
     boolean italic;
 
@@ -280,6 +286,7 @@ AtomicLockListener, FoldHierarchyListener {
             Class kitClass = Utilities.getKitClass(c);
             if (kitClass==null) return;
             String newType;
+            int newWidth = 0;
             boolean newItalic;
             Color caretColor;
             if (overwriteMode) {
@@ -297,6 +304,9 @@ AtomicLockListener, FoldHierarchyListener {
             } else { // insert mode
                 newType = SettingsUtil.getString(kitClass,
                                                  SettingsNames.CARET_TYPE_INSERT_MODE, LINE_CARET);
+                newWidth = SettingsUtil.getInteger(kitClass,
+                                                 SettingsNames.THICK_CARET_WIDTH, SettingsDefaults.defaultThickCaretWidth);
+                                                 
                 newItalic = SettingsUtil.getBoolean(kitClass,
                                                     SettingsNames.CARET_ITALIC_INSERT_MODE, false);
                 caretColor = getColor( kitClass, SettingsNames.CARET_COLOR_INSERT_MODE,
@@ -305,6 +315,7 @@ AtomicLockListener, FoldHierarchyListener {
 
             this.type = newType;
             this.italic = newItalic;
+            this.width = newWidth;
             c.setCaretColor(caretColor);
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer("Updating caret color:" + caretColor + '\n'); // NOI18N
@@ -506,7 +517,15 @@ AtomicLockListener, FoldHierarchyListener {
                 }
                 g.drawLine((int)upperX, caretBounds.y, caretBounds.x,
                         (caretBounds.y + caretBounds.height - 1));
-
+            } else if (THICK_LINE_CARET.equals(type)) { // thick caret
+                int blkWidth = this.width;
+                if (blkWidth <= 0) blkWidth = 5; // sanity check
+                if (afterCaretFont != null) g.setFont(afterCaretFont);
+                Color textBackgroundColor = c.getBackground();
+                if (textBackgroundColor != null) {
+                    g.setXORMode( textBackgroundColor);
+                }
+                g.fillRect(caretBounds.x, caretBounds.y, blkWidth, caretBounds.height - 1);
             } else if (BLOCK_CARET.equals(type)) { // block caret
                 if (afterCaretFont != null) g.setFont(afterCaretFont);
                 if (afterCaretFont != null && afterCaretFont.isItalic() && italic) { // paint italic caret
@@ -799,7 +818,7 @@ AtomicLockListener, FoldHierarchyListener {
             c.repaint(repaintRect);
         }
     }
-    
+
     private String dumpVisibility() {
         return "visible=" + isVisible() + ", blinkVisible=" + blinkVisible;
     }
@@ -932,11 +951,11 @@ AtomicLockListener, FoldHierarchyListener {
     */
     public int getMark() {
         if (component != null) {
-            try {
-                return selectionMark.getOffset();
-            } catch (InvalidMarkException e) {
+                try {
+                    return selectionMark.getOffset();
+                } catch (InvalidMarkException e) {
+                }
             }
-        }
         return 0;
     }
 
@@ -1072,7 +1091,7 @@ AtomicLockListener, FoldHierarchyListener {
                     Utilities.moveMark(doc, caretMark, offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
-                    }
+                        }
                 } catch (BadLocationException e) {
                     throw new IllegalStateException(e.toString());
                     // position is incorrect
@@ -1516,7 +1535,7 @@ AtomicLockListener, FoldHierarchyListener {
                 if (component.isEnabled()) {
                     if (component.isEditable()) {
                         setVisible(true);
-                    }
+                }
                     setSelectionVisible(true);
                 }
                 if (LOG.isLoggable(Level.FINER)) {

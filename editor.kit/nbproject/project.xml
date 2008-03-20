@@ -5,15 +5,13 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.editor.kit</code-name-base>
             <module-dependencies>
-                <!-- commenting out module from gsf and j2ee clusters 
                 <dependency>
                     <code-name-base>org.netbeans.modules.css.visual</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.2</specification-version>
                     </run-dependency>
                 </dependency>
-                -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.flyingsaucer</code-name-base>
                     <run-dependency>
@@ -74,6 +72,13 @@
                     <code-name-base>org.netbeans.modules.languages.diff</code-name-base>
                     <run-dependency>
                         <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript.kit</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.103</specification-version>
                     </run-dependency>
                 </dependency>
 <!--

@@ -93,9 +93,7 @@ import org.openide.filesystems.FileObject;
  * @author nam
  */
 abstract public class SaasCodeGenerator extends AbstractGenerator {
-    
-    public static final String RESTCONNECTION_PACKAGE = "org.netbeans.saas";
-    
+
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;
     private FileObject wrapperResourceFile;
@@ -268,7 +266,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
             addImportsToWrapperResource();
             addSupportingMethods();
-            modifyGetMethod();
+            modifyHttpMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
         }
@@ -278,7 +276,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] {RESTCONNECTION_PACKAGE+"."+REST_CONNECTION});
+                JavaSourceHelper.addImports(copy, new String[] {REST_CONNECTION_PACKAGE+"."+REST_CONNECTION});
             }
         });
         result.commit();
@@ -338,7 +336,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     /**
      *  Return target and generated file objects
      */
-    protected void modifyGetMethod() throws IOException {
+    protected void modifyHttpMethod() throws IOException {
         ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -353,7 +351,8 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
                 methodBody += "}"; //NOI18N
                 for(MimeType mime:getBean().getMimeTypes()) {
-                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, getBean().getGetMethodName(mime));
+                    MethodTree methodTree = JavaSourceHelper.getMethodByName(
+                            copy, getBean().getHttpMethodName(getBean().getHttpMethod(), mime));
                     JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
                 }
             }
@@ -714,9 +713,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     
     public static void createRestConnectionFile(Project project) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
-        String pkg = RESTCONNECTION_PACKAGE;
+        String pkg = REST_CONNECTION_PACKAGE;
         FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
+        JavaSourceHelper.createJavaSource(REST_RESPONSE_TEMPLATE, targetFolder, pkg, REST_RESPONSE);
     }
     
     
