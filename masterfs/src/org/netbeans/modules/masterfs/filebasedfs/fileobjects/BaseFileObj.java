@@ -140,7 +140,8 @@ public abstract class BaseFileObj extends FileObject {
 
     public boolean canWrite() {
         final File file = getFileName().getFile();        
-        return file.canWrite();
+        ProvidedExtensions extension = getProvidedExtensions();
+        return extension.canWrite(file);
     }
 
     public final boolean isData() {
@@ -374,7 +375,8 @@ public abstract class BaseFileObj extends FileObject {
 
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
-        return !f.canWrite() && FileChangedManager.getInstance().exists(f);
+        ProvidedExtensions extension = getProvidedExtensions();
+        return !extension.canWrite(f) && FileChangedManager.getInstance().exists(f);
     }
 
     public final FileObject getParent() {
