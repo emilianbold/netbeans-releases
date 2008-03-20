@@ -111,7 +111,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
             String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
             folder = folder + firstLower;
-            String controller = controllerPkg + "." + simpleClassName + "Controller";
+            String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + simpleClassName + "Controller";
             JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport);
         }
         
