@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /** Utility class for viewing Javdoc comments as HTML.
  *
@@ -90,6 +91,7 @@ public class ElementJavadoc {
     private static final String LINKPLAIN_TAG = "@linkplain"; //NOI18N
     private static final String CODE_TAG = "@code"; //NOI18N
     private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
+    private static final String VALUE_TAG = "@value"; //NOI18N
     
     /** Creates an object describing the Javadoc of given element. The object
      * is capable of getting the text formated into HTML, resolve the links,
@@ -911,23 +913,35 @@ public class ElementJavadoc {
         for (Tag tag : tags) {
             if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
-                ClassDoc refClass = stag.referencedClass();
-                String memberName = stag.referencedMemberName();
-                String label = stag.label();
-                boolean plain = LINKPLAIN_TAG.equals(stag.name());
-                if (memberName != null) {
-                    if (refClass != null) {
-                        createLink(sb, eu.elementFor(stag.referencedMember()), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + (plain ? "" : "</code>")); //NOI18N
-                    } else {
-                        sb.append(stag.referencedClassName());
-                        sb.append('.'); //NOI18N
-                        sb.append(memberName);
-                    }
+                if (VALUE_TAG.equals(tag.name())) {
+                    Doc mdoc = stag.referencedMember();
+                    if (mdoc == null && tag.text().length() == 0)
+                        mdoc = stag.holder();
+                    if (mdoc != null && mdoc.isField()) {
+                        try {
+                            sb.append(XMLUtil.toElementContent(((FieldDoc)mdoc).constantValueExpression()));
+                        } catch (IOException ioe) {
+                        }
+                    }                    
                 } else {
-                    if (refClass != null) {
-                        createLink(sb, eu.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
+                    ClassDoc refClass = stag.referencedClass();
+                    String memberName = stag.referencedMemberName();
+                    String label = stag.label();
+                    boolean plain = LINKPLAIN_TAG.equals(stag.name());
+                    if (memberName != null) {
+                        if (refClass != null) {
+                            createLink(sb, eu.elementFor(stag.referencedMember()), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + (plain ? "" : "</code>")); //NOI18N
+                        } else {
+                            sb.append(stag.referencedClassName());
+                            sb.append('.'); //NOI18N
+                            sb.append(memberName);
+                        }
                     } else {
-                        sb.append(stag.referencedClassName());
+                        if (refClass != null) {
+                            createLink(sb, eu.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
+                        } else {
+                            sb.append(stag.referencedClassName());
+                        }
                     }
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {

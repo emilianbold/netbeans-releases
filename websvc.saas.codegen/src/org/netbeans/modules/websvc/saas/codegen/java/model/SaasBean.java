@@ -83,10 +83,11 @@ public abstract class SaasBean extends GenericResourceBean {
     private SaasBean.SaasAuthentication auth;
     private String authProfile;
 
-    public SaasBean(String name, String packageName, String uriTemplate, MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
+    public SaasBean(String name, String packageName, String uriTemplate, 
+            MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
     }
-
+    
     protected void setInputParameters(List<ParameterInfo> inputParams) {
         this.inputParams = inputParams;
     }
@@ -111,6 +112,16 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return headerParams;
+    }
+    
+    @Override
+    public String[] getUriParams() {
+        List<String> uriParams = new ArrayList<String>();
+
+        for (ParameterInfo param : getTemplateParameters()) {
+            uriParams.add(param.getName());
+        }
+        return uriParams.toArray(new String[0]);
     }
     
     public List<ParameterInfo> getTemplateParameters() {
@@ -156,6 +167,10 @@ public abstract class SaasBean extends GenericResourceBean {
             outputWrapperName += AbstractGenerator.CONVERTER_SUFFIX;
         }
         return outputWrapperName;
+    }
+    
+    public void setOutputWrapperName(String outputWrapperName) {
+        this.outputWrapperName = outputWrapperName;
     }
 
     public String getOutputWrapperPackageName() {
@@ -368,14 +383,16 @@ public abstract class SaasBean extends GenericResourceBean {
                 schemaType = schemaType.substring(index+1);
             }
             
-            if(schemaType.equals("string")) {     //NOI18N
+            if(schemaType.equalsIgnoreCase("string")) {     //NOI18N
                 return String.class;
-            } else if(schemaType.equals("int")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("int")) {       //NOI18N
                 return Integer.class;
-            } else if(schemaType.equals("date")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("date")) {       //NOI18N
                 return Date.class;
-            } else if(schemaType.equals("time")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("time")) {       //NOI18N
                 return Time.class;
+            } else if(schemaType.equalsIgnoreCase("httpMethod")) {       //NOI18N
+                return HttpMethodType.class;
             }
         }
         

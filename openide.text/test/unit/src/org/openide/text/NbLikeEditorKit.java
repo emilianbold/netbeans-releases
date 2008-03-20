@@ -43,6 +43,7 @@
 package org.openide.text;
 
 import java.beans.VetoableChangeListener;
+import java.util.concurrent.Callable;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 
@@ -52,7 +53,7 @@ import javax.swing.undo.UndoManager;
  *
  * @author  Jaroslav Tulach
  */
-class NbLikeEditorKit extends DefaultEditorKit {
+class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
     public javax.swing.text.Document createDefaultDocument() {
         return new Doc ();
     }
@@ -218,4 +219,10 @@ class NbLikeEditorKit extends DefaultEditorKit {
         }
 
     } // end of Doc
+
+    Thread callThread;
+    public Void call() throws Exception {
+        callThread = Thread.currentThread();
+        return null;
+    }
 }

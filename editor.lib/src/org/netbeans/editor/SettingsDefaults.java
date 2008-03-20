@@ -183,6 +183,8 @@ public class SettingsDefaults {
     public static final Boolean defaultExpandTabs = Boolean.TRUE;
 
     public static final String defaultCaretTypeInsertMode = BaseCaret.LINE_CARET;
+    /** @since 1.23 */
+    public static final Integer defaultThickCaretWidth = 5;
     public static final String defaultCaretTypeOverwriteMode = BaseCaret.BLOCK_CARET;
     public static final Color defaultCaretColorInsertMode = Color.black;
     public static final Color defaultCaretColorOvwerwriteMode = Color.black;
