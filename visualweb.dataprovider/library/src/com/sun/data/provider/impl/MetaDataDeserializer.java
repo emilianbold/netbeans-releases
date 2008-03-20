@@ -81,7 +81,9 @@ public class MetaDataDeserializer {
             ex.printStackTrace();
         } finally {
             try {
-                is.close();
+                if (is != null) {
+                    is.close();
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

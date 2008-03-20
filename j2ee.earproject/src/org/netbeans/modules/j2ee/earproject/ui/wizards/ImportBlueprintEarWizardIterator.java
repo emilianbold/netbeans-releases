@@ -89,7 +89,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             new ProjectServerWizardPanel(J2eeModule.EAR, 
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_ImportProject"),
-                    false, false, false, false, false),
+                    false, false, false, false, true, false),
             new PanelModuleDetection()
         };
     }

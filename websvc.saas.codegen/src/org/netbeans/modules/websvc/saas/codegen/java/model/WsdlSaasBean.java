@@ -59,7 +59,8 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 public class WsdlSaasBean extends SaasBean {
     
     private JaxwsOperationInfo[] jaxwsInfos;
-  
+    private WsdlSaasMethod m;
+    
     public WsdlSaasBean(WsdlSaasMethod m, Project project) {
         this(Util.deriveResourceName(m.getName()), 
                 toJaxwsOperationInfos(m, project));
@@ -81,7 +82,7 @@ public class WsdlSaasBean extends SaasBean {
               new HttpMethodType[] { HttpMethodType.GET });
         this.jaxwsInfos = jaxwsInfos;
     }
-      
+
     private static JaxwsOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
             Project project) {
         List<JaxwsOperationInfo> infos = new ArrayList<JaxwsOperationInfo>();

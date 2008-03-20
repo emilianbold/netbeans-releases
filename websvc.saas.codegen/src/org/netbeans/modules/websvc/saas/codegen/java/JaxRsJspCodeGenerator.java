@@ -108,7 +108,10 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         String methodBody = "";
         methodBody += "             try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "                 String result = " + getSaasServicePackageName() + "." + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "                 String result = " + 
+                getBean().getSaasServicePackageName() + "." + 
+                getBean().getSaasServiceName() + "." + 
+                getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
         methodBody += "             } catch (java.io.IOException ex) {\n";
         methodBody += "                 //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";

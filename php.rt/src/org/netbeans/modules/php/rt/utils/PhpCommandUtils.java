@@ -124,12 +124,13 @@ public class PhpCommandUtils {
         FileObject[] files = getActionFiles();
         for (FileObject fileObject : files) {
             Project ownerProject = FileOwnerQuery.getOwner(fileObject);
-            
-            // alresdy retrieved sources arecached
-            FileObject[] sources = getAndCacheSources(projectToSrc, ownerProject);
-            for (FileObject source : sources) {
-                if (source.equals(fileObject)) {
-                    return true;
+            if (ownerProject != null) {
+                // alresdy retrieved sources arecached
+                FileObject[] sources = getAndCacheSources(projectToSrc, ownerProject);
+                for (FileObject source : sources) {
+                    if (source.equals(fileObject)) {
+                        return true;
+                    }
                 }
             }
         }
