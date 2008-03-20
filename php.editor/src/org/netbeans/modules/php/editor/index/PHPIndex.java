@@ -335,11 +335,11 @@ public class PHPIndex {
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(PHPIndexer.FIELD_FQN, name, kind, result, ALL_SCOPE, TERMS_FQN);
+        search(PHPIndexer.FIELD_BASE, name, kind, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_FQN);
+                String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
 
                 if (signatures == null) {
                     continue;
@@ -550,109 +550,109 @@ public class PHPIndex {
 //        return elements;
 //    }
     /** Try to find the type of a symbol and return it */
-    public String getType(String symbol) {
-        //assert in != null && in.length() > 0;
-
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-
-        String field = PHPIndexer.FIELD_FQN;
-        Set<String> terms = TERMS_BASE;
-        String lcsymbol = symbol.toLowerCase();
-        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
-
-//        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-//        String searchUrl = null;
-//        if (context != null) {
-//            try {
-//                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-//            } catch (FileStateInvalidException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-
-        for (SearchResult map : result) {
-            String[] signatures = map.getValues(field);
-
-            if (signatures != null) {
-//                // Check if this file even applies
-//                if (context != null) {
-//                    String fileUrl = map.getPersistentUrl();
-//                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-//                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-//                        if (!isLibrary && !isReachable(context, fileUrl)) {
-//                            continue;
-//                        }
+//    public String getType(String symbol) {
+//        //assert in != null && in.length() > 0;
+//
+//        final Set<SearchResult> result = new HashSet<SearchResult>();
+//
+//        String field = PHPIndexer.FIELD_FQN;
+//        Set<String> terms = TERMS_BASE;
+//        String lcsymbol = symbol.toLowerCase();
+//        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
+//
+////        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
+////        String searchUrl = null;
+////        if (context != null) {
+////            try {
+////                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+////            } catch (FileStateInvalidException ex) {
+////                Exceptions.printStackTrace(ex);
+////            }
+////        }
+//
+//        for (SearchResult map : result) {
+//            String[] signatures = map.getValues(field);
+//
+//            if (signatures != null) {
+////                // Check if this file even applies
+////                if (context != null) {
+////                    String fileUrl = map.getPersistentUrl();
+////                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
+////                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
+////                        if (!isLibrary && !isReachable(context, fileUrl)) {
+////                            continue;
+////                        }
+////                    }
+////                }
+//
+//                for (String signature : signatures) {
+//                    // Lucene returns some inexact matches, TODO investigate why this is necessary
+//                    // Make sure the name matches exactly
+//                    // We know that the prefix is correct from the first part of
+//                    // this if clause, by the signature may have more
+//                    if (((signature.length() > lcsymbol.length()) &&
+//                            (signature.charAt(lcsymbol.length()) != ';'))) {
+//                        continue;
+//                    }
+//
+//                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
+//                    assert map != null;
+//
+//                    String elementName = null;
+//                    int nameEndIdx = signature.indexOf(';');
+//                    assert nameEndIdx != -1;
+//                    elementName = signature.substring(0, nameEndIdx);
+//                    if (!elementName.startsWith(symbol)) {
+//                        continue;
+//                    }
+//                    nameEndIdx++;
+//
+//                    String funcIn = null;
+//                    int inEndIdx = signature.indexOf(';', nameEndIdx);
+//                    assert inEndIdx != -1;
+//                    if (inEndIdx > nameEndIdx + 1) {
+//                        funcIn = signature.substring(nameEndIdx, inEndIdx);
+//                    }
+//                    inEndIdx++;
+//
+//                    int startCs = inEndIdx;
+//                    inEndIdx = signature.indexOf(';', startCs);
+//                    assert inEndIdx != -1;
+////                    if (inEndIdx > startCs) {
+////                        // Compute the case sensitive name
+////                        elementName = signature.substring(startCs, inEndIdx);
+////                    }
+//                    inEndIdx++;
+//
+//                    // Filter out methods on other classes
+////                    if (!includeMethods && (funcIn != null)) {
+////                        continue;
+////                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
+////                        continue;
+////                    }
+//
+//                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+////                    boolean isFunction = element instanceof IndexedFunction;
+////                    if (isFunction && !includeMethods) {
+////                        continue;
+////                    } else if (!isFunction && !includeProperties) {
+////                        continue;
+////                    }
+////                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
+////                        continue;
+////                    }
+////                    elements.add(element);
+//
+//                    String type = element.getType();
+//                    if (type != null) {
+//                        return type;
 //                    }
 //                }
-
-                for (String signature : signatures) {
-                    // Lucene returns some inexact matches, TODO investigate why this is necessary
-                    // Make sure the name matches exactly
-                    // We know that the prefix is correct from the first part of
-                    // this if clause, by the signature may have more
-                    if (((signature.length() > lcsymbol.length()) &&
-                            (signature.charAt(lcsymbol.length()) != ';'))) {
-                        continue;
-                    }
-
-                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                    assert map != null;
-
-                    String elementName = null;
-                    int nameEndIdx = signature.indexOf(';');
-                    assert nameEndIdx != -1;
-                    elementName = signature.substring(0, nameEndIdx);
-                    if (!elementName.startsWith(symbol)) {
-                        continue;
-                    }
-                    nameEndIdx++;
-
-                    String funcIn = null;
-                    int inEndIdx = signature.indexOf(';', nameEndIdx);
-                    assert inEndIdx != -1;
-                    if (inEndIdx > nameEndIdx + 1) {
-                        funcIn = signature.substring(nameEndIdx, inEndIdx);
-                    }
-                    inEndIdx++;
-
-                    int startCs = inEndIdx;
-                    inEndIdx = signature.indexOf(';', startCs);
-                    assert inEndIdx != -1;
-//                    if (inEndIdx > startCs) {
-//                        // Compute the case sensitive name
-//                        elementName = signature.substring(startCs, inEndIdx);
-//                    }
-                    inEndIdx++;
-
-                    // Filter out methods on other classes
-//                    if (!includeMethods && (funcIn != null)) {
-//                        continue;
-//                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
-//                        continue;
-//                    }
-
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-//                    boolean isFunction = element instanceof IndexedFunction;
-//                    if (isFunction && !includeMethods) {
-//                        continue;
-//                    } else if (!isFunction && !includeProperties) {
-//                        continue;
-//                    }
-//                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
-//                        continue;
-//                    }
-//                    elements.add(element);
-
-                    String type = element.getType();
-                    if (type != null) {
-                        return type;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /** 
      * Decide whether the given url is included from the current compilation

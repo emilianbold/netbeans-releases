@@ -690,6 +690,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * <P>
     * If the document is not loaded the method blocks until
     * it is.
+    * 
+    * <p>Method will throw {@link org.openide.util.UserQuestionException} exception
+    * if file size is too big. This exception could be caught and 
+    * its method {@link org.openide.util.UserQuestionException#confirmed} 
+    * can be used for confirmation. You need to call {@link #openDocument}}
+    * one more time after confirmation.
     *
     * @return the styled document for this cookie that
     *   understands the guarded attribute
