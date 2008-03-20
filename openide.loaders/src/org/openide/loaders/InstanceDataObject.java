@@ -599,21 +599,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }
     }
     
-    private Lookup lkp;
-    private static Object INIT_LOOKUP = new Object();
     @Override
     public Lookup getLookup() {
-        synchronized(INIT_LOOKUP) {
-            if (lkp != null) {
-                return lkp;
-            }
-            if (getPrimaryFile().hasExt("ser")) {
-                lkp = getCookieSet().getLookup();
-            } else {
-                lkp = new ProxyLookup(getCookieSet().getLookup(), getCookiesLookup());
-            }
-            return lkp;
-        }
+        return getCookieSet().getLookup();
     }
 
     private Lookup.Result cookieResult = null;
