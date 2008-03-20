@@ -125,6 +125,41 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(workDirFo.createData("a"));
     }
     
+    public void testAsyncCall() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        File f = new File(getWorkDir(), "a");
+        assertNull(workDirFo.getFileObject("a"));
+        assertTrue(f.createNewFile());
+        final Thread t = Thread.currentThread();
+        class FileChange extends FileChangeAdapter {
+            private boolean called = false;
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                assertNotSame(t, Thread.currentThread());
+                called = true;
+                synchronized (workDirFo) {
+                    workDirFo.notifyAll();
+                }
+            }
+            public boolean isCalled() {
+                return called;
+            }            
+        } 
+        FileChange fcl = new FileChange();
+        workDirFo.addFileChangeListener(fcl);
+        try {
+            assertNotNull(FileUtil.toFileObject(f));
+            synchronized(workDirFo) {
+                workDirFo.wait();
+            }
+            assertNotNull(workDirFo.getFileObject("a"));                
+            assertTrue(fcl.isCalled());
+        } finally {
+            workDirFo.removeFileChangeListener(fcl);
+        }
+    }
+    
+    
     public void testBug128234() throws Exception {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
         FileObject fo = workDirFo.createData("a");
