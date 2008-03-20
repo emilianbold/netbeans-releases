@@ -555,7 +555,7 @@ public class JsAnalyzer implements StructureScanner {
                         currentFunction.nodeType = Node.UNKNOWN_TYPE;
                     } else if (currentFunction.nodeType == null) {
                         currentFunction.nodeType = type;
-                    } else {
+                    } else if (type != null) {
                         if (currentFunction.nodeType.indexOf(type) == -1) {
                             currentFunction.nodeType = currentFunction.nodeType + "|" + type; // NOI18N
                         }

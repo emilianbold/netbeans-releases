@@ -40,12 +40,15 @@
  */
 package org.netbeans.modules.bpel.validation.wsdl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -67,6 +70,86 @@ public final class Validator extends WsdlValidator {
 
   public WSDLVisitor getVisitor() {
     return new ChildVisitor() {
+      // # 120419
+      @Override
+      public void visit(Definitions definitions) {
+//out();
+//out("definitions: " + definitions);
+        List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();
+        collectPropertyAliases(definitions, aliases);
+//out("aliases: " + aliases.size());
+
+        for (int i=0; i < aliases.size(); i++) {
+          for (int j=i+1; j < aliases.size(); j++) {
+            if (theSame(aliases.get(i), aliases.get(j))) {
+//out("the same");
+              addError("FIX_Identical_Property_Aliases", aliases.get(i)); // NOI18N
+              addError("FIX_Identical_Property_Aliases", aliases.get(j)); // NOI18N
+            }
+          }
+        }
+      }
+
+      private boolean theSame(PropertyAlias alias1, PropertyAlias alias2) {
+        if (alias1 == null || alias2 == null) {
+          return false;
+        }
+        return
+          getProperty(alias1) == getProperty(alias2) &&
+          getMessage(alias1) == getMessage(alias2) &&
+          alias1.getPart() == alias2.getPart() &&
+          alias1.getQuery() == alias2.getQuery() &&
+          getGlobalType(alias1) == getGlobalType(alias2) &&
+          getGlobalElement(alias1) == getGlobalElement(alias2);
+      }
+
+      private CorrelationProperty getProperty(PropertyAlias alias) {
+        NamedComponentReference<CorrelationProperty> ref = alias.getPropertyName();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private Message getMessage(PropertyAlias alias) {
+        NamedComponentReference<Message> ref = alias.getMessageType();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private GlobalType getGlobalType(PropertyAlias alias) {
+        NamedComponentReference<GlobalType> ref = alias.getType();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private GlobalElement getGlobalElement(PropertyAlias alias) {
+        NamedComponentReference<GlobalElement> ref = alias.getElement();
+
+        if (ref == null) {
+          return null;
+        }
+        return ref.get();
+      }
+
+      private void collectPropertyAliases(WSDLComponent component, List<PropertyAlias> aliases) {
+        if (component instanceof PropertyAlias) {
+          aliases.add((PropertyAlias) component);
+        }
+        List<WSDLComponent> children = component.getChildren();
+
+        for (WSDLComponent child : children) {
+          collectPropertyAliases(child, aliases);
+        }
+      }
+
       @Override
       public void visit(ExtensibilityElement element) {
 //out("WSDL VISIT: " + element);

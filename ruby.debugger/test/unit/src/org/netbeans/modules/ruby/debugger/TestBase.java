@@ -141,7 +141,8 @@ public abstract class TestBase extends RubyTestBase {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform,
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
-        Process process = RubyDebugger.startDebugging(desc);
+        RubySession session = RubyDebugger.startDebugging(desc);
+        Process process = session.getProxy().getDebugTarged().getProcess();
         if (waitForSuspension) {
             waitForSuspension();
         }

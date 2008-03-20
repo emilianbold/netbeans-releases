@@ -50,7 +50,8 @@ public enum Axis2Attributes implements Attribute {
     attrDatabindingName("databindingName"), //NOI18N
     attrPackageName("packageName"), //NOI18N
     attrServiceName("serviceName"), //NOI18N
-    attrPortName("portName"); //NOI18N
+    attrPortName("portName"), //NOI18N
+    attrOptions("options"); //NOI18N
 
     private String name;
     private Class type;

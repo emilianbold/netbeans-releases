@@ -280,12 +280,14 @@ public class JsIndexer implements Indexer {
             }
 
             Map<String,String> classExtends = ar.getExtendsMap();
-            if (classExtends != null) {
+            if (classExtends != null && classExtends.size() > 0) {
                 for (Map.Entry<String,String> entry : classExtends.entrySet()) {
                     String clz = entry.getKey();
                     String superClz = entry.getValue();
                     document.addPair(FIELD_EXTEND, clz.toLowerCase() + ";" + clz + ";" + superClz, true); // NOI18N
                 }
+                
+                ClassCache.INSTANCE.refresh();
             }
         }
 
@@ -519,7 +521,7 @@ public class JsIndexer implements Indexer {
             fqn.append(signature);
             document.addPair(FIELD_FQN, fqn.toString(), true);
 
-            FunctionCache cache = FunctionCache.getInstance();
+            FunctionCache cache = FunctionCache.INSTANCE;
             if (!cache.isEmpty()) {
                 cache.wipe(in != null && in.length() > 0 ? in + "." + name : name);
             }

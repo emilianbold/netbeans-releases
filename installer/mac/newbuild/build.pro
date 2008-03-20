@@ -39,7 +39,7 @@
     <property name="cpp.appname" value="C/C++"/>
     <property name="php.appname" value="PHP"/>
 
-    <property name="dmg.prefix.name" value="_${prefix}-${buildnumber}"/>
+    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>
 
     <property name="welcome.cpp" value="NetBeans IDE ${appversion} with the C/C++ pack"/>
     <property name="welcome.javase" value="NetBeans IDE ${appversion} with the Java SE pack"/>

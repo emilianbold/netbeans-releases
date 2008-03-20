@@ -105,14 +105,14 @@ made subject to such option by the copyright holder.
                     <xsl:variable name="portName" select="axis2:java-generator/@portName"/>
                     <xsl:variable name="packageName" select="axis2:java-generator/@packageName"/>
                     <xsl:variable name="databindingName" select="axis2:java-generator/@databindingName"/>
+                    <xsl:variable name="wsdlToJavaOptions" select="axis2:java-generator/@options"/>
                   
                     <target name="wsdl2java-{$wsname}" depends="init">
                         <delete dir="${{build.dir}}/axis2"/>
                         <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
                             <arg line="-uri {$wsdlUrl}"/>
-                            <arg line="-s"/>
-                            <arg line="-ss"/>
-                            <arg line="-sd"/>
+                            <arg line="-ss -sd"/>
+                            <arg line="{$wsdlToJavaOptions}"/> 
                             <xsl:if test="axis2:java-generator/@sei"><arg line="-ssi"/></xsl:if>
                             <xsl:if test="axis2:java-generator/@databindingName = 'jibx'"><arg line="-uw"/></xsl:if>
                             <arg line="-sn {$serviceName}"/>
@@ -139,9 +139,8 @@ made subject to such option by the copyright holder.
                         <delete dir="${{build.dir}}/axis2"/>
                         <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
                             <arg line="-uri ${{basedir}}/xml-resources/axis2/META-INF/{$serviceName}.wsdl"/>
-                            <arg line="-s"/>
-                            <arg line="-ss"/>
-                            <arg line="-sd"/>
+                            <arg line="-ss -sd"/>
+                            <arg line="{$wsdlToJavaOptions}"/>
                             <xsl:if test="axis2:java-generator/@sei"><arg line="-ssi"/></xsl:if>
                             <xsl:if test="axis2:java-generator/@databindingName = 'jibx'"><arg line="-uw"/></xsl:if>
                             <arg line="-sn {$serviceName}"/>

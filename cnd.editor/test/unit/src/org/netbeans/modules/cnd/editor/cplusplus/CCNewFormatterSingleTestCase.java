@@ -164,25 +164,30 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testOperatorEQformatting() {
+    public void testIZ130538() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         setLoadDocumentText(
-                "class real_c_float\n" +
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
                 "{\n" +
-                "  const real_c_float & operator=(long l){ from_long(l);\n" +
-                "    return *this;\n" +
-                "  }\n" +
-                "};\n");
+                "    foo(a,\n" +
+                "   b);\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect operator = formatting",
-                "class real_c_float\n" +
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
                 "{\n" +
-                "\n" +
-                "    const real_c_float & operator=(long l)\n" +
-                "    {\n" +
-                "        from_long(l);\n" +
-                "        return *this;\n" +
-                "    }\n" +
-                "};\n");
+                "    foo (a,\n" +
+                "         b);\n" +
+                "}\n");
     }
 }
