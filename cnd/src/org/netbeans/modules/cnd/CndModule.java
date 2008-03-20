@@ -92,7 +92,7 @@ public class CndModule extends ModuleInstall {
             } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
                 setExecutionPermission("bin/GdbHelper-Linux-x86.so"); // NOI18N
             } else if (Utilities.isMac()) {
-                setExecutionPermission("bin/GdbHelper-Mac_OS_X-x86.dylib");
+                setExecutionPermission("bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
             }
         }
     }

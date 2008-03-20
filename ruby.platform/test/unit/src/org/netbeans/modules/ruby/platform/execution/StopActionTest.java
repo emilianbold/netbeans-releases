@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,67 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.rest.projects;
+package org.netbeans.modules.ruby.platform.execution;
 
-import org.openide.util.NbBundle;
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-/**
- *
- * @author nam
- */
-public class CustomizerOption {
+public final class StopActionTest extends RubyTestBase {
 
-    private static CustomizerOption[] options;
-    private String name;
-    private Class type;
-    private String description;
-    private Object defaultValue;
-    private Object value;
-
-    public CustomizerOption(String name, Class type, Object defaultValue, String description) {
-        this.name = name;
-        this.type = type;
-        this.description = description;
-        this.defaultValue = defaultValue;
+    public StopActionTest(String testName) {
+        super(testName);
     }
 
-    private static CustomizerOption create(String name, Class type, Object defaultValue, String description) {
-        return new CustomizerOption(name, type, defaultValue, description);
+    public void testSetFinishAction() throws InterruptedException, InvocationTargetException {
+        final Semaphore semaphore = new Semaphore(1);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        semaphore.acquire();
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                StopAction sa = new StopAction();
+                sa.setFinishAction(new Runnable() {
+                    public void run() {
+                        finished.set(true);
+                        semaphore.release();
+                    }
+                });
+                sa.actionPerformed(null);
+            }
+        });
+        semaphore.acquire();
+        assertTrue("finish action performed", finished.get());
     }
 
-    public static CustomizerOption[] createOptions() {
-        return new CustomizerOption[]{
-            create("redirect", Boolean.class, Boolean.TRUE, getBundle("DESC_Redirect")),
-            create("normalizeURI", Boolean.class, Boolean.TRUE, getBundle("DESC_NormalizeURI")),
-            create("canonicalizeURIPath", Boolean.class, Boolean.TRUE, getBundle("DESC_CannonicalizeURI")),
-            create("ignoreMatrixParams", Boolean.class, Boolean.TRUE, getBundle("DESC_IgnoreMatrixParam"))};
+    public void testNullFinishAction() throws InterruptedException, InvocationTargetException { // #130493
+        StopAction sa = new StopAction();
+        sa.actionPerformed(null);
     }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Class getType() {
-        return type;
-    }
-
-    private static String getBundle(String key) {
-        return NbBundle.getMessage(CustomizerOption.class, key);
-    }
+    
 }
