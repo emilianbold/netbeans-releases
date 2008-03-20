@@ -47,13 +47,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 /**
  * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenWebFiles extends WebPerformanceTestCase {
+public class OpenWebFiles extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;

@@ -168,8 +168,9 @@ public class CStubsTSuite extends RestTestBase {
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         addProject(wo, sourcePath);
-        //http://www.netbeans.org/issues/show_bug.cgi?id=123573
-        new JCheckBoxOperator(wo, 0).setSelected(useJMaki());
+        if (useJMaki()) {
+            new JCheckBoxOperator(wo, 0).setSelected(true);
+        }
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");

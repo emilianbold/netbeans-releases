@@ -100,7 +100,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void testOpening20kBJavaFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -110,7 +110,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void testOpening20kBTxtFile(){
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 1000;
         setPlainTextEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -120,7 +120,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void testOpening20kBXmlFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -131,7 +131,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     
     protected void initialize(){
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare(){
@@ -147,6 +147,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
         log("------------------------- after popup invocation ------------");
         
         try {
+            repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
             popup.pushMenu(this.menuItem);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             tee.printStackTrace(getLog());

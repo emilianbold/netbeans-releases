@@ -144,7 +144,7 @@ public class ExtensionPropertyHelper {
                                 node.getPropertySet(sheet, extInfo.getName());
                         createExistingProperties(node, document, extElement,
                                 extPropertySet, casaExtPoint,
-                                ee, ee, namespace);
+                                ee, ee, namespace, extInfo.getProvider());
                         break;
                     }
                 }
@@ -178,7 +178,7 @@ public class ExtensionPropertyHelper {
                     // extensibility element yet               
                     createNonExistingProperties(node, document,
                             extElement, extPropertySet,
-                            casaExtPoint, null, null, namespace, true);
+                            casaExtPoint, null, null, namespace, extInfo.getProvider(), true);
                 }
             }
         }
@@ -212,6 +212,7 @@ public class ExtensionPropertyHelper {
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
             String namespace,
+            String provider,
             boolean install) {
 
         CasaWrapperModel casaModel = (CasaWrapperModel) casaExtPoint.getModel();
@@ -246,7 +247,7 @@ public class ExtensionPropertyHelper {
                 CasaExtensibilityElement childEE =
                         createNonExistingProperties(node, document,
                         childElement, extSheetSet,
-                        lastEE, null, null, namespace, false);
+                        lastEE, null, null, namespace, provider, false);
                 choiceMap.put(childElement.getName(), childEE);
             }
 
@@ -281,7 +282,7 @@ public class ExtensionPropertyHelper {
                                 extSheetSet, node, casaExtPoint,
                                 firstEE, lastEE,
                                 CasaNode.ALWAYS_WRITABLE_PROPERTY, attrType,
-                                attrName, attrName, attrDescription);
+                                attrName, attrName, attrDescription, provider);
                     }
                 }
             }
@@ -292,7 +293,7 @@ public class ExtensionPropertyHelper {
                 for (JbiExtensionElement childElement : childExtElements) {
                     createNonExistingProperties(node, document,
                             childElement, extSheetSet,
-                            casaExtPoint, firstEE, lastEE, namespace,
+                            casaExtPoint, firstEE, lastEE, namespace, provider,
                             true);
                 }
             }
@@ -308,7 +309,8 @@ public class ExtensionPropertyHelper {
             CasaComponent casaExtPoint,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String namespace) {
+            String namespace,
+            String provider) {
 
         // Add a property for choice extension element.
         if (extElement instanceof JbiChoiceExtensionElement) {
@@ -343,7 +345,7 @@ public class ExtensionPropertyHelper {
                         CasaExtensibilityElement childEE =
                                 createNonExistingProperties(node, document,
                                 childElement, extSheetSet,
-                                casaExtPoint, null, null, namespace, false);
+                                casaExtPoint, null, null, namespace, provider, false);
                         choiceMap.put(childElementName, childEE);
                     }
                 }
@@ -380,7 +382,7 @@ public class ExtensionPropertyHelper {
                         firstEE, lastEE,
                         CasaNode.ALWAYS_WRITABLE_PROPERTY,
                         attrType,
-                        attrName, attrName, attrDescription);
+                        attrName, attrName, attrDescription, provider);
             }
         }
 
@@ -395,7 +397,7 @@ public class ExtensionPropertyHelper {
                         createExistingProperties(node, document,
                                 childExtElement,
                                 extSheetSet, casaExtPoint,
-                                firstEE, ee, namespace);
+                                firstEE, ee, namespace, provider);
                         found = true;
                         break;
                     }
