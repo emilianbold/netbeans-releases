@@ -219,6 +219,7 @@ public class ETLSourceMultiViewElement extends CloneableEditor implements MultiV
         // When the user is switching from the source view sync the text
         // with the wsdl model (treat it as a focus change).
         etlDataObject.getETLEditorSupport().syncModel();
+        etlDataObject.getETLEditorSupport().removeUndoManagerFromDocument();
     }
     
     @Override
