@@ -262,6 +262,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeKeywordParen));
         sheet.put(set);
         
         set = new Sheet.Set();
