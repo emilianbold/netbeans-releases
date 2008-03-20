@@ -75,8 +75,7 @@ public class MetaDataSerializer {
      * @param mdFileName absolute filename 
      * @return
      */
-    public boolean mdFileNameExists(String mdFileName) {
-        mdFileName = mdFileName.replaceAll("\\n", ""); // NOI18N
+    public boolean mdFileNameExists(String mdFileName) {  
         return new File(mdFileName).exists();
     }
     
@@ -89,10 +88,7 @@ public class MetaDataSerializer {
         mdFileName = mdFileName.replaceAll("\\n", ""); // NOI18N
         if (resultSetMetaData != null) {
             ObjectOutputStream os = null;
-            try {
-                if (mdFileName.length() > 200) {
-                    mdFileName = mdFileName.substring(0, 200);
-                }
+            try {                
                 os = new ObjectOutputStream(new FileOutputStream(mdFileName));
                 os.writeObject(resultSetMetaData);
             } catch (IOException ex) {
