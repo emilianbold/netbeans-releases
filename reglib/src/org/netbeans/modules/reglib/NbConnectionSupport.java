@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.reglib;
 
-import com.sun.servicetag.RegistrationData;
+import org.netbeans.modules.servicetag.RegistrationData;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

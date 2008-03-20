@@ -79,7 +79,10 @@ public class ServiceConfigurationAction extends NodeAction  {
     }
     
     protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes!=null && activatedNodes.length == 1;
+        if (activatedNodes==null || activatedNodes.length != 1) return false;
+        Service service = activatedNodes[0].getLookup().lookup(Service.class);
+        if (service != null && service.getWsdlUrl() == null) return true;
+        return false;
     }
     
     protected void performAction(Node[] activatedNodes) {

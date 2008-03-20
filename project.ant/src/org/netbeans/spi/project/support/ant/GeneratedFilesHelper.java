@@ -673,12 +673,8 @@ public final class GeneratedFilesHelper {
 
     /** Find the time the file this URL represents was last modified xor its size, if possible. */
     private static long checkFootprint(URL u) {
-        URL nested = FileUtil.getArchiveFile(u);
-        if (nested != null) {
-            u = nested;
-        }
-        if (u.getProtocol().equals("file")) { // NOI18N
-            File f = new File(URI.create(u.toExternalForm()));
+        File f = FileUtil.archiveOrDirForURL(u);
+        if (f != null) {
             return f.lastModified() ^ f.length();
         } else {
             return 0L;

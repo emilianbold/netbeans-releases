@@ -136,11 +136,7 @@ public class CCFormatter extends ExtFormatter {
     }
 
     public FormatSupport createFormatSupport(FormatWriter fw) {
-        if (CKit.class.equals(getKitClass())){
-            return new CCFormatSupport(CodeStyle.Language.C, fw);
-        } else {
-            return new CCFormatSupport(CodeStyle.Language.CPP, fw);
-        }
+        return new CCFormatSupport(fw);
     }
 
     public class StripEndWhitespaceLayer extends AbstractFormatLayer {
@@ -153,7 +149,7 @@ public class CCFormatter extends ExtFormatter {
 
         @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
-            return new CCFormatSupport(language, fw);
+            return new CCFormatSupport(fw);
         }
 
         public void format(FormatWriter fw) {
@@ -183,7 +179,7 @@ public class CCFormatter extends ExtFormatter {
 
         @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
-            return new CCFormatSupport(language, fw);
+            return new CCFormatSupport(fw);
         }
 
         public void format(FormatWriter fw) {

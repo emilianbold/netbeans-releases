@@ -20,7 +20,7 @@ Open issues:
     <resources base="https://api.del.icio.us/v1">
         <resource path="posts">
             <resource path="get">
-                <method name="GET" id="delicious.posts_get">
+                <method name="GET" id="getPosts">
                     <doc>
 Returns posts matching the arguments. If no date or url is given, the most recent date will be used.
 More at: http://del.icio.us/help/api/posts
@@ -45,7 +45,7 @@ More at: http://del.icio.us/help/api/posts
                 </method>
             </resource>
             <resource path="recent">
-                <method name="GET" id="delicious.posts_recent">
+                <method name="GET" id="recentPosts">
                     <doc>
 Returns a list of the most recent posts, filtered by argument. Maximum 100.
 More at: http://del.icio.us/help/api/posts
@@ -65,7 +65,7 @@ More at: http://del.icio.us/help/api/posts
                 </method>
             </resource>
             <resource path="all">
-                <method name="GET" id="delicious.posts_all">
+                <method name="GET" id="allPosts">
                     <doc>
 Returns all posts. Please use sparingly. Call the update method to see 
 if you need to fetch this information at all.
@@ -83,7 +83,7 @@ More at: http://del.icio.us/help/api/posts
                 </method>
             </resource>
             <resource path="dates">
-                <method name="GET" id="delicious.posts_dates">
+                <method name="GET" id="postsDates">
                     <doc>
 Returns a list of dates with the number of posts for each date. 
 More at: http://del.icio.us/help/api/posts
@@ -100,7 +100,7 @@ More at: http://del.icio.us/help/api/posts
                 </method>
             </resource>
             <resource path="add">
-                <method name="GET" id="delicious.posts_add">
+                <method name="GET" id="addPosts">
                     <doc>
                     Add a post to your user area at del.icio.us.
                     More at: http://del.icio.us/help/api/posts
@@ -136,7 +136,7 @@ More at: http://del.icio.us/help/api/posts
                 </method>
             </resource>
             <resource path="update">
-                <method name="GET" id="delicious.posts_update">
+                <method name="GET" id="updatePosts">
                     <doc>			
 Returns the last update time for the user. Use this method 
 to see if the data has changed since the last fetch
@@ -150,7 +150,7 @@ More at: http://del.icio.us/help/api/update.
                 </method>
             </resource>
             <resource path="delete">
-                <method name="GET" id="delicious.posts_delete">
+                <method name="GET" id="deletePosts">
                     <doc>			
 Delete a post from del.icio.us.
 More at: http://del.icio.us/help/api/posts.
@@ -169,7 +169,7 @@ More at: http://del.icio.us/help/api/posts.
         </resource>
         <resource path="tags">
             <resource path="get">
-                <method name="GET" id="delicious.tags_get">
+                <method name="GET" id="getTags">
                     <doc>
 Returns a list of tags and number of times used by a user. See 
 https://api.del.icio.us/help/api/tags.
@@ -181,7 +181,7 @@ https://api.del.icio.us/help/api/tags.
                 </method>
             </resource>
             <resource path="rename">
-                <method name="GET" id="delicious.tags_rename">
+                <method name="GET" id="renameTags">
                     <doc>
 Renames an existing tag with a new tag name. See 
 https://api.del.icio.us/help/api/tags.
@@ -201,7 +201,7 @@ https://api.del.icio.us/help/api/tags.
             </resource>
             <resource path="bundles">
                 <resource path="all">
-                    <method name="GET" id="delicious.bundles_all">
+                    <method name="GET" id="allBundles">
                         <doc>
 Retrieve all of a user's bundles. See 
 https://api.del.icio.us/help/api/bundles.
@@ -213,7 +213,7 @@ https://api.del.icio.us/help/api/bundles.
                     </method>
                 </resource>
                 <resource path="set">
-                    <method name="GET" id="delicious.bundles_set">
+                    <method name="GET" id="setBundles">
                         <doc>
 Assign a set of tags to a single bundle, wipes away previous settings for bundle. See 
 https://api.del.icio.us/help/api/bundles.
@@ -232,7 +232,7 @@ https://api.del.icio.us/help/api/bundles.
                     </method>
                 </resource>
                 <resource path="delete">
-                    <method name="GET" id="delicious.bundles_delete">
+                    <method name="GET" id="bundles_delete">
                         <doc>
 Delete a bundle. See https://api.del.icio.us/help/api/bundles.
                         </doc>

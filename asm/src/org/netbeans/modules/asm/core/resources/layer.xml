@@ -63,7 +63,9 @@
                                
                 
                 <file name="EditorKit.instance">                    
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.asm.core.editor.AsmEditorKit"/>                    
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.asm.core.editor.AsmEditorKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.asm.core.editor.AsmEditorKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>                                                
             </folder>            
         </folder>        

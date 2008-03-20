@@ -50,8 +50,8 @@
                api-doc="http://wiki.developers.facebook.com/index.php/API"
                url="org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookWadl.xml">
     
-    <description>Facebook Service</description>
-    <display-name>Facebook</display-name>
+    <description>Social Networking Service</description>
+    <display-name>Social Networking Service</display-name>
     
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
@@ -59,35 +59,38 @@
 
         <authentication profile="SaaSServices/Facebook/profile.properties">
             <session-key api-id="api_key" session-id="session_key" sig-id="sig">
-                <sign>
+                <sign id="sig">
                     <params>
                         <param name="method" type="string" required="true"/>
                         <param name="v" type="string" required="true" default="1.0"/>
-                        <param name="api_key" type="string" required="true"/>
-                        <param name="auth_token" type="string" required="true"/>
+                        <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
+                        <param id="session_key={session_key}" name="session_key" type="string" required="true"/>
                     </params>
                 </sign>
                 <login>
-                    <sign>
+                    <sign id="sig">
                         <params>
                             <param name="method" type="string" required="true"/>
                             <param name="v" type="string" required="true" default="1.0"/>
                             <param name="api_key" type="string" required="true"/>
-                            <param name="auth_token" type="string" required="true"/>
+                            <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
                         </params>
                     </sign>
-                    <method id="sessionKey={session_key},sessionSecret={secret}" name="login" href="#facebook.auth_getSession"/>
+                    <method id="sessionKey={session_key},secret={secret}" name="login" href="#facebook.auth_getSession"/>
                 </login>
-                <token>
-                    <sign>
+                <token id="auth_token">
+                    <sign id="sig">
                         <params>
                             <param name="method" type="string" required="true"/>
                             <param name="v" type="string" required="true" default="1.0"/>
                             <param name="api_key" type="string" required="true"/>
                         </params>
                     </sign>
-                    <method id="token={auth_createToken_response}" name="getToken" href="#facebook.auth_createToken"/>
-                    <frame url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v}&amp;auth_token={token}"/>
+                    <method id="auth_token={auth_createToken_response}" name="getToken" href="#facebook.auth_createToken"/>
+                    <prompt>
+                        <desktop url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v}&amp;auth_token={auth_token}"/>
+                        <web url="http://www.facebook.com/login.php?api_key={apiKey}&amp;v={v:1.0}"/>
+                    </prompt>
                 </token>
                 <logout/>
             </session-key>

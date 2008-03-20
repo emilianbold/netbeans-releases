@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.editing.lexer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -66,6 +67,7 @@ public class Call {
     private final String lhs;
     private final boolean isStatic;
     private final boolean methodExpected;
+    private int prevCallParenPos = -1;
 
     public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
         super();
@@ -89,6 +91,10 @@ public class Call {
 
     public boolean isStatic() {
         return isStatic;
+    }
+    
+    public int getPrevCallParenPos() {
+        return prevCallParenPos;
     }
 
     public boolean isSimpleIdentifier() {
@@ -118,7 +124,7 @@ public class Call {
         } else if (this == UNKNOWN) {
             return "UNKNOWN"; // NOI18N
         } else {
-            return "Call(" + type + "," + lhs + "," + isStatic + ")"; // NOI18N
+            return "Call(" + type + "," + lhs + "," + isStatic + "," + prevCallParenPos + ")"; // NOI18N
         }
     }
 
@@ -270,15 +276,13 @@ public class Call {
 
                 if (id == JsTokenId.WHITESPACE) {
                     break;
-                } else if (id == JsTokenId.RBRACKET) {
-                    // Looks like we're operating on an array, e.g.
-                    //  [1,2,3].each|
-                    return new Call("Array", null, false, methodExpected);
-//                } else if (id == JsTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
-//                                                       // Looks like we're operating on a hash, e.g.
-//                                                       //  {1=>foo,2=>bar}.each|
-//
-//                    return new Call("Hash", null, false, methodExpected);
+//                } else if (id == JsTokenId.RBRACKET) {
+//                    // Looks like we're operating on an array, e.g.
+//                    //  [1,2,3].each|
+//                    
+//                    // No, it's more likely that we have something like this:  foo[0] -- which is not an array, it's an element of an array of unknown type
+//                    
+//                    return new Call("Array", null, false, methodExpected);
                 } else if ((id == JsTokenId.STRING_LITERAL) || (id == JsTokenId.STRING_END)) {
                     return new Call("String", null, false, methodExpected);
                 } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
@@ -305,6 +309,28 @@ public class Call {
                     // in this case we can do top level completion
                     // TODO: There are probably more valid contexts here
                     break;
+                } else if (id == JsTokenId.RPAREN) {
+                    Call call = new Call(null, null, false, false);
+                    call.prevCallParenPos = ts.offset();
+                    // The starting offset is more accurate for finding the AST node
+                    // corresponding to the call
+                    OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
+                    if (matching != OffsetRange.NONE){
+                        call.prevCallParenPos = matching.getStart();
+                    }
+                    
+                    return call;
+                } else if (id == JsTokenId.RBRACKET) { // Parenthesis
+                    Call call = new Call(null, null, false, false);
+                    call.prevCallParenPos = ts.offset();
+                    // The starting offset is more accurate for finding the AST node
+                    // corresponding to the call
+                    OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.LBRACKET);
+                    if (matching != OffsetRange.NONE){
+                        call.prevCallParenPos = matching.getStart();
+                    }
+                    
+                    return call;
                 } else {
                     // Something else - such as "getFoo().x|" - at this point we don't know the type
                     // so we'll just return unknown

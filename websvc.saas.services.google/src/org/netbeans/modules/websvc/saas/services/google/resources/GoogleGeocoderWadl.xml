@@ -7,7 +7,7 @@
     <grammars/>
     <resources base="http://maps.google.com/maps">
 	<resource path="geo">
-	    <method name="GET" id="google.Geocode">
+	    <method name="GET" id="geocode">
 		<doc xml:lang="en">
 		    A GET call to google.Geocode
                     returns a longitude and latitude for a given address. 

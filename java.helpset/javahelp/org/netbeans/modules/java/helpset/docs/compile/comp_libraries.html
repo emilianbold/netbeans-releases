@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -12,9 +12,9 @@
 <h2>About Java Class Libraries</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>A Java class library is a group of resources needed by a project. Typically 
-    they include one or more JAR files containing compiled classes, the source files 
+    a class library includes one or more JAR files containing compiled classes, the source files 
     needed to debug the classes, and Javadoc documentation for the classes. In the 
-    IDE, you create and edit libraries using the Library Manager. To open the Library 
+    IDE, you can create and edit libraries using the Library Manager. To open the Library 
 Manager choose Tools &gt; Libraries.</p> 
 <p>By creating Java class libraries within which to store the JAR files on your
 project classpath, you can do the following:</p> 
@@ -25,7 +25,13 @@ project classpath, you can do the following:</p>
   <li>Attach source code to your classes. This enables you to step through the source 
     code when debugging your program or use the Go To Source command to open the source file.</li>
 </ul>
+<p><b>Notes:</b></p>
 <ul class="note">
+    <li>You can also associate sources or Javadoc documentation with an individual 
+    JAR file that you have added to your project. In the Projects window, 
+    right-click the project's node and choose Properties. Then select the Libraries 
+    panel, select the JAR file from the list of libraries, and click Edit. You can 
+add references to sources and Javadoc documentation.</li>
     <li> When you attach Javadoc documentation and source code to a JAR file in 
       the Library Manager, the IDE automatically registers the documentation and 
       source code in every project that has that JAR file on its classpath. You 

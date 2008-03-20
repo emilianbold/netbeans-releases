@@ -82,8 +82,8 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
@@ -321,15 +321,6 @@ public class BaseOptions extends OptionSupport {
     // Mime type
     // ------------------------------------------------------------------------
     
-    /**
-     * <b>ALWAYS OVERWRITE THIS AND PROVIDE VALID MIME TYPE!</b>
-     * @return The mime type for this BaseOptions instance.
-     */
-    protected String getContentType() {
-        BaseKit kit = BaseKit.getKit(getKitClass());
-        return kit.getContentType();
-    }
-
     // diagnostics for #101078
     private String getCTImpl() {
         String mimeType = getContentType();
@@ -542,12 +533,19 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings API instead.
      */
     public Map<String, String> getAbbrevMap() {
-        // Use Settings so that registered initializer, filters and evaluators
-        // still stand a chance.
-        @SuppressWarnings("unchecked")
-        Map<String, String> map = (Map<String, String>) Settings.getValue(
-            getKitClass(), SettingsNames.ABBREV_MAP, true);
-        return map;
+        boolean reset = setContextMimeType(); //NOI18N
+        try {
+            // Use Settings so that registered initializer, filters and evaluators
+            // still stand a chance.
+            @SuppressWarnings("unchecked")
+            Map<String, String> map = (Map<String, String>) Settings.getValue(
+                getKitClass(), SettingsNames.ABBREV_MAP, true);
+            return map;
+        } finally {
+            if (reset) {
+                resetContextMimeType();
+            }
+        }
     }
     
     /** 
@@ -597,12 +595,19 @@ public class BaseOptions extends OptionSupport {
     }
     
     private List<? extends MultiKeyBinding> getKBList() {
-        // Use Settings so that registered initializer, filters and evaluators
-        // still stand a chance.
-        @SuppressWarnings("unchecked")
-        List<? extends MultiKeyBinding> list = (List<? extends MultiKeyBinding>) Settings.getValue(
-            getKitClass(), SettingsNames.KEY_BINDING_LIST, true);
-        return list;
+        boolean reset = setContextMimeType(); //NOI18N
+        try {
+            // Use Settings so that registered initializer, filters and evaluators
+            // still stand a chance.
+            @SuppressWarnings("unchecked")
+            List<? extends MultiKeyBinding> list = (List<? extends MultiKeyBinding>) Settings.getValue(
+                getKitClass(), SettingsNames.KEY_BINDING_LIST, true);
+            return list;
+        } finally {
+            if (reset) {
+                resetContextMimeType();
+            }
+        }
     }
     
     /** 
@@ -720,7 +725,14 @@ public class BaseOptions extends OptionSupport {
         if (coloringMap != null) {
             Settings.update(new Runnable() {
                 public void run() {
-                    SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
+                    boolean reset = setContextMimeType(); //NOI18N
+                    try {
+                        SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
+                    } finally {
+                        if (reset) {
+                            resetContextMimeType();
+                        }
+                    }
                 }
             });
         }
@@ -1434,7 +1446,7 @@ public class BaseOptions extends OptionSupport {
     private void refreshIndentEngineSettings() {
         // Touches the settings
         Settings.update(new Runnable(){
-            public void run(){
+            public void run() {
                 Settings.touchValue(getKitClass(), NbEditorDocument.INDENT_ENGINE);
                 Settings.touchValue(getKitClass(), NbEditorDocument.FORMATTER);
             }

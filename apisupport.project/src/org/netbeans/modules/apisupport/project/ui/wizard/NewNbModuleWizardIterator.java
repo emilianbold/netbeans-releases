@@ -77,6 +77,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         MODULE,
         /** Suite wizard. */
         SUITE,
+        /** Application-mode suite. */
+        APPLICATION,
         /** Library wrapper module wizard. */
         LIBRARY_MODULE,
         /** Pure suite component wizard. */
@@ -130,6 +132,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         return new NewNbModuleWizardIterator(Type.SUITE);
     }
     
+    public static NewNbModuleWizardIterator createApplicationIterator() {
+        return new NewNbModuleWizardIterator(Type.APPLICATION);
+    }
+    
     /**
      * Returns wizard for creating library wrapper module
      * <strong>only</strong>. Given project <strong>must</strong> have an
@@ -159,7 +165,11 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         switch (data.getWizardType()) {
             case SUITE:
                 ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
-                SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID());
+                SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID(), false);
+                break;
+            case APPLICATION:
+                ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
+                SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID(), true);
                 break;
             case MODULE:
             case SUITE_COMPONENT:
@@ -235,6 +245,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                 steps = initModuleWizard();
                 break;
             case SUITE:
+            case APPLICATION:
                 steps = initSuiteModuleWizard();
                 break;
             case LIBRARY_MODULE:

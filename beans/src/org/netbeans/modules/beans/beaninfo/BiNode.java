@@ -547,7 +547,15 @@ public final class BiNode extends AbstractNode {
     }
     
     public static Node createBiNode(BiAnalyser bia) {
-        if (!bia.bis.isNbBeanInfo()) {
+        if (bia == null) {
+            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoState");
+            return new Error(msg);
+        } else if (bia.isBeanBroken()) {
+            String msg = NbBundle.getMessage(
+                    BiNode.class, "MSG_BrokenBean",
+                    bia.bis.getSourceDataObject().getPrimaryFile().getNameExt());
+            return new Error(msg);
+        } else if (!bia.bis.isNbBeanInfo()) {
             String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoFormat");
             return new Error(msg);
         } else if (bia.bis.getSourceDataObject() == null) {

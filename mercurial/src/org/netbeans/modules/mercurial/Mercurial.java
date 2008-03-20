@@ -66,6 +66,13 @@ import org.openide.DialogDisplayer;
  * @author Maros Sandor
  */
 public class Mercurial {
+    public static final int HG_FETCH_20_REVISIONS = 20;
+    public static final int HG_FETCH_50_REVISIONS = 50;
+    public static final int HG_FETCH_ALL_REVISIONS = -1;
+    public static final int HG_NUMBER_FETCH_OPTIONS = 3;
+    public static final int HG_NUMBER_TO_FETCH_DEFAULT = 7;
+    public static final int HG_MAX_REVISION_COMBO_SIZE = HG_NUMBER_TO_FETCH_DEFAULT + HG_NUMBER_FETCH_OPTIONS;
+    
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
@@ -88,6 +95,7 @@ public class Mercurial {
     private static final String MERCURIAL_SUPPORTED_VERSION_093 = "0.9.3"; // NOI18N
     private static final String MERCURIAL_SUPPORTED_VERSION_094 = "0.9.4"; // NOI18N
     private static final String MERCURIAL_SUPPORTED_VERSION_095 = "0.9.5"; // NOI18N
+    private static final String MERCURIAL_SUPPORTED_VERSION_100 = "1.0"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -144,7 +152,8 @@ public class Mercurial {
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
                           version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095);
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
             if (!goodVersion){
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
@@ -315,13 +324,16 @@ public class Mercurial {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
+        LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+
+        // We can get status returned as UptoDate instead of LocallyNew
+        // because refreshing of status after creation has been scheduled
+        // but may not have happened yet.
 
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-            if (original == null) {
-                throw new IOException("Unable to get BASE revision of " + workingCopy);
-            }
+            if (original == null) return;
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();
         } catch (IOException e) {

@@ -141,7 +141,7 @@ public final class ClassIndexManager {
         return Thread.currentThread().equals(this.owner);
     }
     
-    public synchronized ClassIndexImpl getUsagesQuery (final URL root) throws IOException {
+    public synchronized ClassIndexImpl getUsagesQuery (final URL root) {
         assert root != null;
         if (invalid) {
             return null;

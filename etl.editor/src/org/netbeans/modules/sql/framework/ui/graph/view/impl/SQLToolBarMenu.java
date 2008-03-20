@@ -89,7 +89,6 @@ import javax.swing.border.MatteBorder;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorManager;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoCategory;
@@ -112,7 +111,7 @@ public class SQLToolBarMenu extends JToggleButton {
     private List mMenuItemModelList;
     private List mMenuItemList;
     private ButtonPopupMenu mButtonMenu;
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLToolBarMenu.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLToolBarMenu.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLToolBarMenu(IOperatorXmlInfoCategory catNode, IOperatorManager manager, SQLToolBar toolbar) {
@@ -155,8 +154,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         });
-        String nbBundle = mLoc.t("PRSR001: Operators");
-        this.setToolTipText(catNode.getDisplayName() + " " + Localizer.parse(nbBundle));
+        String nbBundle = mLoc.t("BUND330: Operators");
+        this.setToolTipText(catNode.getDisplayName() + " " + nbBundle.substring(15));
     }
 
     public void setToolBar(SQLToolBar group) {
@@ -305,9 +304,9 @@ public class SQLToolBarMenu extends JToggleButton {
 
             addSeparator();
 
-            String nbBundle1 = mLoc.t("PRSR001: Settings...");
-            AbstractButton setupButton = new JButton(Localizer.parse(nbBundle1));
-            setupButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
+            String nbBundle1 = mLoc.t("BUND331: Settings...");
+            AbstractButton setupButton = new JButton(nbBundle1.substring(15));
+            setupButton.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
             addButton(1, setupButton);
             mButtonHeight = setupButton.getPreferredSize().height + 2;
             setupButton.addActionListener(new ActionListener() {

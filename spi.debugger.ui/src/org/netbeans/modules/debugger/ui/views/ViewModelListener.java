@@ -202,6 +202,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     
     private synchronized void refreshModel() {
         models.clear();
+        if (treeModels == null) {
+            // Destroyed
+            return ;
+        }
         synchronized (treeModels) {
             models.add(new ArrayList(treeModels));
         }

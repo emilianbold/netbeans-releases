@@ -397,7 +397,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     if (pkg[0]!= null) {
-                        return new SafeDeleteUI(pkg[0]);
+                        return new SafeDeleteUI(pkg[0],b);
                     } else{                
                         return new SafeDeleteUI(selectedElements, handles, b);
                     }

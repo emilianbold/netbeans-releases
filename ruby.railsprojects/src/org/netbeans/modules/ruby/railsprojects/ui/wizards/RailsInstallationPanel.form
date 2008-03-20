@@ -27,7 +27,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="installedLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="1" pref="569" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="440" max="32767" attributes="0"/>
                   <Component id="jrubyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="proxyButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jrubySslLabel" alignment="0" min="-2" max="-2" attributes="0"/>

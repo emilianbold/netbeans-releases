@@ -608,7 +608,7 @@ interface DrawGraphics {
             }
 
             // If no text on the line then return + handle incorrect conditions
-            if (startOffset < 0 || startOffset >= endOffset || endOffset > buffer.length) {
+            if (startOffset < 0 || startOffset >= endOffset || startOffset - endOffset > buffer.length) {
                 startOffset = -1;
                 return;
             }
@@ -628,7 +628,7 @@ interface DrawGraphics {
             // Text framing support
             if (topBorderLineColor != null) {
                 graphics.setColor(topBorderLineColor);
-                graphics.drawLine(startX, startY, x, startY);
+                graphics.drawLine(startX, startY, x - 1, startY);
             }
             if (rightBorderLineColor != null) {
                 graphics.setColor(rightBorderLineColor);
@@ -636,7 +636,7 @@ interface DrawGraphics {
             }
             if (bottomBorderLineColor != null) {
                 graphics.setColor(bottomBorderLineColor);
-                graphics.drawLine(startX, startY + lineHeight - 1, x, startY + lineHeight - 1);
+                graphics.drawLine(startX, startY + lineHeight - 1, x - 1, startY + lineHeight - 1);
             }
             if (leftBorderLineColor != null) {
                 graphics.setColor(leftBorderLineColor);

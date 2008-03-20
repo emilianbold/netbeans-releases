@@ -68,7 +68,7 @@ public class SpringXMLConfigGroupPanel implements WizardDescriptor.Panel<WizardD
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(SpringXMLConfigGroupPanel.class);
+        return null;
     }
 
     public void readSettings(WizardDescriptor settings) {

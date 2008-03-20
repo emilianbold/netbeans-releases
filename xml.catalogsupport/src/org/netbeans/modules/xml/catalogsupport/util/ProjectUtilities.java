@@ -62,8 +62,16 @@ public class ProjectUtilities {
 
   private ProjectUtilities() {}
     
+  public static List<FileObject> getXSDFilesRecursively(Project project) {
+    return getFilesRecursively(project, XSD);
+  }
+
   public static List<FileObject> getWSDLFilesRecursively(Project project) {
-    final List<FileObject> wsdls = new ArrayList<FileObject>();
+    return getFilesRecursively(project, WSDL);
+  }
+
+  private static List<FileObject> getFilesRecursively(Project project, final String extension) {
+    final List<FileObject> files = new ArrayList<FileObject>();
 
     ProjectUtilities.visitRecursively(project, new ProjectVisitor() {
       public void visit(Project project) {
@@ -71,20 +79,20 @@ public class ProjectUtilities {
         SourceGroup [] groups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
 
         for (SourceGroup group : groups) {
-          Enumeration files = group.getRootFolder().getChildren(true);
+          Enumeration children = group.getRootFolder().getChildren(true);
 
-          while (files.hasMoreElements()) {
-            FileObject file = (FileObject) files.nextElement();
+          while (children.hasMoreElements()) {
+            FileObject file = (FileObject) children.nextElement();
 
-            if (file.getExt().toLowerCase().equals("wsdl")) { // NOI18N
-              wsdls.add(file);
+            if (file.getExt().toLowerCase().equals(extension)) {
+              files.add(file);
             }
           }
         }
       }
     });
 
-    return wsdls;
+    return files;
   }
 
   public static List<ProjectWSDL> getProjectWSDLRecursively(Project project) {
@@ -101,7 +109,7 @@ public class ProjectUtilities {
           while (files.hasMoreElements()) {
             FileObject file = (FileObject) files.nextElement();
 
-            if (file.getExt().toLowerCase().equals("wsdl")) { // NOI18N
+            if (file.getExt().toLowerCase().equals(WSDL)) {
               wsdls.add(new ProjectWSDL(file, project));
             }
           }
@@ -143,6 +151,8 @@ public class ProjectUtilities {
     return project.getProjectDirectory().getFileObject(SRC_FOLDER);
   }
 
+  private static final String XSD = "xsd"; // NOI18N
+  private static final String WSDL = "wsdl"; // NOI18N
   private static final String SRC_FOLDER = "src"; // NOI18N
   public static final String SLASHED_SRC = "/" + SRC_FOLDER + "/"; // NOI18N
 }

@@ -306,7 +306,7 @@ public class HTTPComponentValidator
         Collection<ResultItem> results = mValidationResult.getValidationResult();
         
         Verb verb = binding.getVerb();
-        if (verb == null || (!verb.equals("GET") && !verb.equals("PUT"))) {
+        if (verb == null) {
             results.add(
                     new Validator.ResultItem(this,
                         Validator.ResultType.ERROR,

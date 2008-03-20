@@ -40,6 +40,8 @@ package org.netbeans.modules.compapp.projects.jbi.ui;
 
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
@@ -137,7 +139,7 @@ public class ServiceCompositionNode extends FilterNode {
             return new ServiceCompositionNode(dobj.getNodeDelegate());
         } catch (Exception ex) {
             // failed to open casa...
-            ex.printStackTrace();
+            Logger.getLogger(ServiceCompositionNode.class.getName()).log(Level.FINE,ex.getMessage(), ex);                    
         }
         return null;
     }

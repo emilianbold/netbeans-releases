@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.project.Localizer;
+
 
 /**
  *
@@ -26,7 +26,7 @@ public class ETLBLPackager {
     String projecthome = null;
     HashMap<String, String> modelAndEngineFilesMap = new HashMap();
     ArrayList triggerStrings = new ArrayList();
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLBLPackager.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLBLPackager.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ETLBLPackager() {
@@ -218,12 +218,12 @@ public class ETLBLPackager {
                         out.write("\n" + this.triggerStrings.get(j).toString());
                     }
                 } catch (IOException ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR023: Exception :{0}", ex.getMessage()), ex);
+                    mLogger.errorNoloc(mLoc.t("PRJS023: Exception :{0}", ex.getMessage()), ex);
                 } finally {
                     try {
                         out.close();
                     } catch (IOException ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR024: Exception :{0}", ex.getMessage()), ex);
+                        mLogger.errorNoloc(mLoc.t("PRJS024: Exception :{0}", ex.getMessage()), ex);
                     }
                 }
             }

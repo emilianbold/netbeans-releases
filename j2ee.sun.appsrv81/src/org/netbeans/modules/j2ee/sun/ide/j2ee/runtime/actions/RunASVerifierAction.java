@@ -108,7 +108,7 @@ public class RunASVerifierAction extends NodeAction {
     }    
     
     public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_RunASVeriferAction");
+        return NbBundle.getMessage(RunASVerifierAction.class, "LBL_RunASVeriferAction");
     }
     
     protected String iconResource() {

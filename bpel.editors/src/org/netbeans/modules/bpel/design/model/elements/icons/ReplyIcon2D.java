@@ -45,9 +45,9 @@ public class ReplyIcon2D extends Icon2D {
     public static final Icon2D INSTANCE = new ReplyIcon2D();
     
     
-    private static final Shape SHAPE_1 = new Arc2D.Float(-12, -5, 24, 10, 
+    private static final Shape SHAPE_1 = new Arc2D.Float(-7, -4, 14, 8, 
             -90, 180, Arc2D.OPEN);
     
-    private static final Shape SHAPE_2 = new Triangle(0, 5 - 3.5, 
-            0, 5 + 3.5, -10, 5);
+    private static final Shape SHAPE_2 = new Triangle(0, 4 - 1.7, 
+            0, 4 + 1.7, -6, 4);
 }

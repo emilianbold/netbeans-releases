@@ -73,6 +73,11 @@ public class CsmOffsetUtilities {
         CsmOffsetable offs = (CsmOffsetable)obj;
         if ((offs.getStartOffset() <= offset) &&
                 (offset <= offs.getEndOffset())) {
+            if (offset == offs.getEndOffset() && CsmKindUtilities.isType(obj)) {
+                CsmType type = (CsmType)obj;
+                // we do not accept type if offset is after '*', '&' or '[]' 
+                return !type.isPointer() && !type.isReference() && (type.getArrayDepth() == 0);
+            }
             return true;
         } else {
             return false;

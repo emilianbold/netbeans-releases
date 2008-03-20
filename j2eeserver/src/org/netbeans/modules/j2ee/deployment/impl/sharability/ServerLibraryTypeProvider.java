@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public final class ServerLibraryTypeProvider implements LibraryTypeProvider {
 
-    public static final String LIBRARY_TYPE = "j2eeshared"; // NOI18N
+    public static final String LIBRARY_TYPE = "serverlibrary"; // NOI18N
 
     public static final String VOLUME_CLASSPATH = "classpath";
 

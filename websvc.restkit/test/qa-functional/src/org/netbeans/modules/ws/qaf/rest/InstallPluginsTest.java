@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
@@ -56,18 +56,15 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test installation of plugins
- * 
+ *
  * @author lukas
  */
 public class InstallPluginsTest extends JellyTestCase {
 
-    static final String REST_FLAG = ".rest.plugin.installed"; //NOI18N
-    static final String REST_KIT_LABEL = "RESTful Web Services"; //NOI18N
     static final String JMAKI_FLAG = ".jmaki.plugin.installed"; //NOI18N
     static final String JMAKI_KIT_LABEL = "jMaki Ajax support"; //NOI18N
-    private File flagF;
-    private File flagF2;
-    
+    private File flag;
+
     public InstallPluginsTest(String name) {
         super(name);
     }
@@ -77,36 +74,18 @@ public class InstallPluginsTest extends JellyTestCase {
         super.setUp();
         if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
             //XTest execution
-            flagF = new File(System.getProperty("xtest.tmpdir"), REST_FLAG); //NOI18N
-            flagF2 = new File(System.getProperty("xtest.tmpdir"), JMAKI_FLAG); //NOI18N
+            flag = new File(System.getProperty("xtest.tmpdir"), JMAKI_FLAG); //NOI18N
         } else {
             //Internal-execution
-            flagF = new File(System.getProperty("java.io.tmpdir"), REST_FLAG); //NOI18N
-            flagF2 = new File(System.getProperty("java.io.tmpdir"), JMAKI_FLAG); //NOI18N
-        }
-    }
-
-    /**
-     * Install RESTful plugin iff it is not already installed
-     * 
-     * @throws java.io.IOException
-     */
-    public void testInstallRest() throws IOException {
-        try {
-            Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
-            fail(REST_KIT_LABEL + " is already installed.");
-        } catch (ClassNotFoundException cnfe) {
-            flagF.createNewFile();
-            PluginsOperator po = PluginsOperator.invoke();
-            po.install(REST_KIT_LABEL);
+            flag = new File(System.getProperty("java.io.tmpdir"), JMAKI_FLAG); //NOI18N
         }
     }
 
     /**
      * Install jMaki plugin iff it is not already installed
-     * 
+     *
      * <b>Important:</b> Runs only if plugins.jmaki.skip=false or is not set at all
-     * 
+     *
      * @throws java.io.IOException
      */
     public void testInstallJMaki() throws IOException {
@@ -117,7 +96,7 @@ public class InstallPluginsTest extends JellyTestCase {
             Class.forName("org.netbeans.modules.sun.jmaki.Installer"); //NOI18N
             fail(JMAKI_KIT_LABEL + " is already installed.");
         } catch (ClassNotFoundException cnfe) {
-            flagF2.createNewFile();
+            flag.createNewFile();
             installPlugin();
         }
     }
@@ -169,15 +148,16 @@ public class InstallPluginsTest extends JellyTestCase {
         installerOper.finish();
     }
 
-    public TestSuite suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new InstallPluginsTest("testInstallRest")); //NOI18N
         if (!Boolean.getBoolean("plugins.jmaki.skip")) { //NOI18N
             suite.addTest(new InstallPluginsTest("testInstallJMaki")); //NOI18N
+        } else {
+            suite.addTest(new JMakiTest("testJMakiTestsSkipped")); //NOI18N
         }
         return suite;
     }
-    
+
     public static void main(String... args) {
         TestRunner.run(InstallPluginsTest.class);
     }

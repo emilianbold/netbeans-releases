@@ -34,6 +34,14 @@ echo Configuring GlassFish in `pwd`
 
 ant_bin=./lib/ant/bin/ant
 
+java_exe=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java
+
+getPort() {
+   basePort=$1
+   freePort=`$java_exe -jar "$script_dir"/getport.jar $basePort`
+   echo $freePort
+}
+
 if [ -f $ant_bin ]
 then
   echo Ant found:
@@ -43,7 +51,14 @@ then
     echo Making ant executable: $ant_bin
     chmod a+x $ant_bin
   fi
-  $ant_bin -f setup.xml
+
+  admin_port=`getPort 4848`
+  instance_port=`getPort 8080`
+  orb_port=`getPort 3700`
+  imq_port=`getPort 7676`
+  https_port=`getPort 8181`
+
+  $ant_bin -f setup.xml -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dorb.port=$orb_port -Dimq.port=$imq_port -Dhttps.port=$https_port
 else
   echo No ant found: $ant_bin
 fi

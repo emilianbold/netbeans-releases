@@ -68,7 +68,7 @@ public class Engine extends SearchEngine.Adapter {
     List<DiagramElement> elements = diagram.getElements(useSelection);
 
     for (DiagramElement element : elements) {
-      String text = element.getText();
+      String text = element.getName();
 //out(indent + " see: " + text);
 
       if (accepts(text)) {

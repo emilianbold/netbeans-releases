@@ -114,7 +114,7 @@ public abstract class EntityCatalog implements EntityResolver {
                 }
             }
 
-            if (systemID.startsWith("http")) { // NOI18N
+            if (systemID != null && systemID.startsWith("http")) { // NOI18N
                 Logger.getLogger(EntityCatalog.class.getName()).warning("No resolver found for " + systemID);
             }
             return null;

@@ -34,13 +34,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.impl.IEPComponentBase;
 
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -181,4 +186,6 @@ public class Util {
 			}
 			return prefix;
 		}	
+                
+                
 }

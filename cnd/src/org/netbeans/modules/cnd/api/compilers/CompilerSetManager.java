@@ -47,14 +47,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
-import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -118,7 +125,27 @@ public class CompilerSetManager {
     
     public static synchronized CompilerSetManager getDefault(boolean doCreate) {
         if (instance == null && doCreate) {
-            instance = new CompilerSetManager();
+            instance = restoreFromDisk();
+            if (instance == null) {
+                instance = new CompilerSetManager();
+                if (instance.getCompilerSets().size() > 0 && instance.getCompilerSets().get(0).getName() != CompilerSet.None) {
+                    instance.saveToDisk();
+                } else {
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                        new NoCompilersPanel(),
+                        getString("NO_COMPILERS_FOUND_TITLE"),
+                        true,
+                        new Object[]{DialogDescriptor.OK_OPTION},
+                        DialogDescriptor.OK_OPTION,
+                        DialogDescriptor.BOTTOM_ALIGN,
+                        null,
+                        null);
+                    DialogDisplayer.getDefault().notify(dialogDescriptor);
+                }
+            }
+        }
+        if (instance != null && instance.getCompilerSets().size() == 0) { // No compilers found
+            instance.add(CompilerSet.createEmptyCompilerSet());
         }
         return instance;
     }
@@ -127,8 +154,26 @@ public class CompilerSetManager {
      * Replace the default CompilerSetManager. Let registered listeners know its been updated.
      */
     public static synchronized void setDefault(CompilerSetManager csm) {
+        if (csm.getCompilerSets().size() == 0) { // No compilers found
+            csm.add(CompilerSet.createEmptyCompilerSet());
+        }
         instance = csm;
 //        fireCompilerSetChangeNotification(csm);
+    }
+    
+    public String getUniqueCompilerSetName(String baseName) {
+        int n = 0;
+        String suggestedName = baseName;
+        while (true) {
+            suggestedName = baseName + (n > 0 ? ("_" + n) : ""); // NOI18N
+            if (getCompilerSet(suggestedName) != null) {
+                n++;
+            }
+            else {
+                break;
+            }
+        }
+        return suggestedName;
     }
     
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
@@ -224,7 +269,7 @@ public class CompilerSetManager {
             }
             for (String name : list) {
                 File file = new File(dir, name);
-                if (file.exists() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
+                if (file.exists() && !file.isDirectory() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
                     cs.addTool(name, path, kind);
                     break;
                 }
@@ -270,7 +315,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -308,7 +353,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -346,7 +391,7 @@ public class CompilerSetManager {
                 if (Utilities.isWindows()) {
                     name = name + ".exe"; // NOI18N
                 }
-                if (new File(dir, name).exists()) { // NOI18N
+                if (new File(dir, name).exists() && !new File(dir, name).isDirectory()) { // NOI18N
                     cs.addTool(name, path, kind);
                     return;
                 }
@@ -359,6 +404,28 @@ public class CompilerSetManager {
      * tool. If selected, this will tell the build validation things are OK.
      */
     private void completeCompilerSets() {
+        CompilerSet sun = getCompilerSet(CompilerFlavor.Sun);
+        if (sun == null) {
+            // find 'best' Sun set and copy it
+            sun = getCompilerSet(CompilerFlavor.Sun12);
+            if (sun == null)
+                sun = getCompilerSet(CompilerFlavor.Sun11);
+            if (sun == null)
+                sun = getCompilerSet(CompilerFlavor.Sun10);
+            if (sun == null)
+                sun = getCompilerSet(CompilerFlavor.Sun9);
+            if (sun == null)
+                sun = getCompilerSet(CompilerFlavor.Sun8);
+            if (sun != null) {
+                sun = sun.createCopy();
+                sun.setName(CompilerFlavor.Sun.toString());
+                sun.setFlavor(CompilerFlavor.Sun);
+                sun.setAsDefault(false);
+                sun.setAutoGenerated(true);
+                add(sun);
+            }
+        }
+        
         for (CompilerSet cs : sets) {
             completeCompilerSet(cs);
         }
@@ -368,7 +435,7 @@ public class CompilerSetManager {
         }
     }
     
-    private void completeCompilerSet(CompilerSet cs) {
+    private static void completeCompilerSet(CompilerSet cs) {
         if (cs.getTool(Tool.CCompiler) == null) {
             cs.addTool("", "", Tool.CCompiler); // NOI18N
         }
@@ -424,18 +491,18 @@ public class CompilerSetManager {
      * @param cs The CompilerSet to (possibly) add
      */
     public void add(CompilerSet cs) {
-        String csdir = cs.getDirectory();
+//        String csdir = cs.getDirectory();
         
         if (sets.size() == 1 && sets.get(0).getName() == CompilerSet.None) {
             sets.remove(0);
         }
-        if (cs.isAutoGenerated()) {
-            for (CompilerSet cs2 : sets) {
-                if (cs2.getDirectory().equals(csdir)) {
-                    return;
-                }
-            }
-        }
+//        if (cs.isAutoGenerated()) {
+//            for (CompilerSet cs2 : sets) {
+//                if (cs2.getDirectory().equals(csdir)) {
+//                    return;
+//                }
+//            }
+//        }
         sets.add(cs);
         if (sets.size() == 1) {
             setDefault(cs);
@@ -452,10 +519,10 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         if (sets.contains(cs)) {
             sets.remove(cs);
-            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
-            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
-                CppSettings.getDefault().setCompilerSetName("");
-            }
+//            CompilerSet.removeCompilerSet(cs); // has it's own cache!!!!!!
+//            if (CppSettings.getDefault().getCompilerSetName().equals(cs.getName())) {
+//                CppSettings.getDefault().setCompilerSetName("");
+//            }
 //            if (this == instance) {
 //                fireCompilerSetChangeNotification(instance);
 //            }
@@ -599,5 +666,109 @@ public class CompilerSetManager {
         public boolean accept(File dir, String name) {
             return pc != null && pc.matcher(name).matches();
         }
+    }
+    
+    
+    
+    /*
+     * Persistence ...
+     */
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(CompilerSetManager.class);
+    }
+    
+    private static String NO_SETS = "csm.noOfSets"; // NOI18N
+    private static String SET_NAME = "csm.setName"; // NOI18N
+    private static String SET_FLAVOR = "csm.setFlavor"; // NOI18N
+    private static String SET_DIRECTORY = "csm.setDirectory"; // NOI18N
+    private static String SET_AUTO = "csm.autoGenerated"; // NOI18N
+    private static String NO_TOOLS = "csm.noOfTools"; // NOI18N
+    private static String TOOL_NAME = "csm.toolName"; // NOI18N
+    private static String TOOL_DISPLAYNAME = "csm.toolDisplayName"; // NOI18N
+    private static String TOOL_KIND = "csm.toolKind"; // NOI18N
+    private static String TOOL_PATH = "csm.toolPath"; // NOI18N
+    private static String TOOL_FLAVOR = "csm.toolFlavor"; // NOI18N
+    
+    public void saveToDisk() {
+        getPreferences().putInt(NO_SETS, sets.size());
+        int setCount = 0;
+        for (CompilerSet cs : getCompilerSets()) {
+            getPreferences().put(SET_NAME + '.' + setCount, cs.getName());
+            getPreferences().put(SET_FLAVOR + '.' + setCount, cs.getCompilerFlavor().toString());
+            getPreferences().put(SET_DIRECTORY + '.' + setCount, cs.getDirectory());
+            getPreferences().putBoolean(SET_AUTO + '.' + setCount, cs.isAutoGenerated());
+            List<Tool> tools = cs.getTools();
+            getPreferences().putInt(NO_TOOLS + '.' + setCount, tools.size());
+            int toolCount = 0;
+            for (Tool tool : tools) {
+                getPreferences().put(TOOL_NAME + '.' + setCount+ '.' + toolCount, tool.getName());
+                getPreferences().put(TOOL_DISPLAYNAME + '-' + setCount+ '.' + toolCount, tool.getDisplayName());
+                getPreferences().putInt(TOOL_KIND + '.' + setCount+ '.' + toolCount, tool.getKind());
+                getPreferences().put(TOOL_PATH + '.' + setCount+ '.' + toolCount, tool.getPath());
+                getPreferences().put(TOOL_FLAVOR + '.' + setCount+ '.' + toolCount, tool.getFlavor().toString());
+                toolCount++;
+            }
+            setCount++;
+        }
+    }
+    
+    private static CompilerProvider compilerProvider = null;
+    private static CompilerProvider getCompilerProvider() {
+        if (compilerProvider == null) {
+            compilerProvider = (CompilerProvider) Lookup.getDefault().lookup(CompilerProvider.class);
+        }
+        if (compilerProvider == null) {
+            compilerProvider = new DefaultCompilerProvider();
+        }
+        return compilerProvider;
+    }
+        
+    public static CompilerSetManager restoreFromDisk() {
+        ArrayList<CompilerSet> css = new ArrayList<CompilerSet>();
+        int noSets = getPreferences().getInt(NO_SETS, -1);
+        if (noSets < 0) {
+            return null;
+        } 
+        for (int setCount = 0; setCount < noSets; setCount++) {
+            String setName = getPreferences().get(SET_NAME + '.' + setCount, null);
+            String setFlavorName = getPreferences().get(SET_FLAVOR + '.' + setCount, null);
+            CompilerFlavor flavor = null;
+            if (setFlavorName != null) {
+                flavor = CompilerFlavor.toFlavor(setFlavorName);
+            }
+            String setDirectory = getPreferences().get(SET_DIRECTORY + '.' + setCount, null);
+            if (setName == null || setFlavorName == null || flavor == null) {
+                // FIXUP: error
+                continue;
+            }
+            Boolean auto = getPreferences().getBoolean(SET_AUTO + '.' + setCount, false);
+            CompilerSet cs = new CompilerSet(flavor, setDirectory, setName);
+            cs.setAutoGenerated(auto);
+            int noTools = getPreferences().getInt(NO_TOOLS + '.' + setCount, -1);
+            for (int toolCount = 0; toolCount < noTools; toolCount++) {
+                String toolName = getPreferences().get(TOOL_NAME + '.' + setCount + '.' + toolCount, null);
+                String toolDisplayName = getPreferences().get(TOOL_DISPLAYNAME + '-' + setCount+ '.' + toolCount, null);
+                int toolKind = getPreferences().getInt(TOOL_KIND + '.' + setCount + '.' + toolCount, -1);
+                String toolPath = getPreferences().get(TOOL_PATH + '.' + setCount + '.' + toolCount, null);
+                String toolFlavorName = getPreferences().get(TOOL_FLAVOR + '.' + setCount + '.' + toolCount, null);
+                CompilerFlavor toolFlavor = null;
+                if (toolFlavorName != null) {
+                    toolFlavor = CompilerFlavor.toFlavor(toolFlavorName);
+                }
+                Tool tool = getCompilerProvider().createCompiler(toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                tool.setName(toolName);
+                cs.addTool(tool);
+            }
+            completeCompilerSet(cs);
+            css.add(cs);
+        }
+        
+        return new CompilerSetManager(css);
+    }
+    
+    /** Look up i18n strings here */
+    private static String getString(String s) {
+        return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 }

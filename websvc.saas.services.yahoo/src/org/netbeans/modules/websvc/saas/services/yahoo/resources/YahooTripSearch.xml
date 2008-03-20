@@ -52,7 +52,7 @@
 
     <description>Yahoo Trip Service</description>
     
-    <display-name>YahooTripService</display-name>
+    <display-name>Trip Service</display-name>
 
     <saas-metadata>
 
@@ -67,9 +67,11 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="tripSearch" href="#yahoo.TripSearch"/>
         <method name="getTrip" href="#yahoo.getTrip"/>
     </methods>
-
+    -->
+    
 </saas-services>

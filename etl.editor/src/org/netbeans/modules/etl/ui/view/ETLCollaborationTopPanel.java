@@ -90,7 +90,6 @@ import java.io.Externalizable;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BirdsEyeView;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
@@ -105,7 +104,7 @@ import org.openide.awt.StatusDisplayer;
  */
 public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Externalizable {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationTopPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLCollaborationTopPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class ValidationThread extends SwingWorker {
@@ -132,12 +131,12 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         @Override
         public void finished() {
             if (execModel.getAllObjects().size() == 0) {
-                String nbBundle1 = mLoc.t("PRSR001: \nNo items to validate in this collaboration.");
-                String msg = Localizer.parse(nbBundle1);
+                String nbBundle1 = mLoc.t("BUND158: \nNo items to validate in this collaboration.");
+                String msg = nbBundle1.substring(15);
                 StatusDisplayer.getDefault().setStatusText("\n" + msg);
             } else if (execModel.getTargetTables().size() == 0) {
-                String nbBundle2 = mLoc.t("PRSR001: \nNo target table defined.");
-                String msg = Localizer.parse(nbBundle2);
+                String nbBundle2 = mLoc.t("BUND159: \nNo target table defined.");
+                String msg = nbBundle2.substring(15);
                 StatusDisplayer.getDefault().setStatusText("\n" + msg);
             } else if (list.size() == 0) {
                 StatusDisplayer.getDefault().setStatusText("\nCollaboration is valid.");
@@ -208,14 +207,14 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
 
         cLayout.first(this);
 
-        String nbBundle3 = mLoc.t("PRSR001: Validation");
+        String nbBundle3 = mLoc.t("BUND383: Validation");
         validationView = new SQLValidationView(this.getGraphView());
-        String validationLabel = Localizer.parse(nbBundle3);
+        String validationLabel = nbBundle3.substring(15);
         validationView.setName(validationLabel);
 
         logView = new SQLLogView();
-        String nbBundle4 = mLoc.t("PRSR001: Execution Log");
-        String logLabel = Localizer.parse(nbBundle4);
+        String nbBundle4 = mLoc.t("BUND160: Execution Log");
+        String logLabel = nbBundle4.substring(15);
         logView.setName(logLabel);
     }
 
@@ -245,12 +244,12 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
             return true;
         }
 
-        String nbBundle5 = mLoc.t("PRSR001: Please check out {0} before modifying it.",DataObjectProvider.getProvider().getActiveDataObject().getName());
+        String nbBundle5 = mLoc.t("BUND161: Please check out {0} before modifying it.",DataObjectProvider.getProvider().getActiveDataObject().getName());
         try {
-            String msg = Localizer.parse(nbBundle5);
+            String msg = nbBundle5.substring(15);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR044: Can't get name of data object{0}", DataObjectProvider.getProvider().getActiveDataObject()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT044: Can't get name of data object{0}", DataObjectProvider.getProvider().getActiveDataObject()), ex);
         }
 
         return false;
@@ -270,9 +269,9 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
                 vThread.start();
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR045: \nError occurred during validation:{0}", ex.getMessage()), ex);
-            String nbBundle6 = mLoc.t("PRSR001: \nError occurred during validation: {0}",ex.getMessage());
-            validationView.appendToView(Localizer.parse(nbBundle6));
+            mLogger.errorNoloc(mLoc.t("EDIT045: \nError occurred during validation:{0}", ex.getMessage()), ex);
+            String nbBundle6 = mLoc.t("BUND162: \nError occurred during validation: {0}",ex.getMessage());
+            validationView.appendToView(nbBundle6.substring(15));
         }
     }
 
@@ -280,10 +279,10 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
      * Displays dialog box to edit database properties.
      */
     public void editDBModel() {
-        String nbBundle7 = mLoc.t("PRSR001: Modify design-time database properties for this session.");
-        JLabel panelTitle = new JLabel(Localizer.parse(nbBundle7));
-        panelTitle.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
-        panelTitle.setDisplayedMnemonic(Localizer.parse(nbBundle7).charAt(0));
+        String nbBundle7 = mLoc.t("BUND163: Modify design-time database properties for this session.");
+        JLabel panelTitle = new JLabel(nbBundle7.substring(15));
+        panelTitle.getAccessibleContext().setAccessibleName(nbBundle7.substring(15));
+        panelTitle.setDisplayedMnemonic(nbBundle7.substring(15).charAt(0));
         panelTitle.setFont(panelTitle.getFont().deriveFont(Font.BOLD));
         panelTitle.setFocusable(false);
         panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
@@ -296,8 +295,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         contentPane.add(panelTitle, BorderLayout.NORTH);
         contentPane.add(editPanel, BorderLayout.CENTER);
 
-        String nbBundle8 = mLoc.t("PRSR001: Edit Database Properties");
-        DialogDescriptor dd = new DialogDescriptor(contentPane,Localizer.parse(nbBundle8));
+        String nbBundle8 = mLoc.t("BUND164: Edit Database Properties");
+        DialogDescriptor dd = new DialogDescriptor(contentPane,nbBundle8.substring(15));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.getAccessibleContext().setAccessibleDescription("This is the dialog to edit database properties");
         dlg.setSize(new Dimension(600, 450));
@@ -506,9 +505,9 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
     private void logReloadException(Exception e) {
-        String nbBundle9 = mLoc.t("PRSR001: Error encountered while loading eTL collaboration {0}",getName());
-        mLogger.errorNoloc(mLoc.t("PRSR046: Error in executing reload {0}", ETLCollaborationTopPanel.class.getName()), e);
-        NotifyDescriptor d = new NotifyDescriptor.Message(Localizer.parse(nbBundle9), NotifyDescriptor.WARNING_MESSAGE);
+        String nbBundle9 = mLoc.t("BUND165: Error encountered while loading eTL collaboration {0}",getName());
+        mLogger.errorNoloc(mLoc.t("EDIT046: Error in executing reload {0}", ETLCollaborationTopPanel.class.getName()), e);
+        NotifyDescriptor d = new NotifyDescriptor.Message(nbBundle9.substring(15), NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(d);
     }
 
@@ -545,7 +544,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Ext
      * @see reload()
      */
     public void refresh() {
-        mLogger.infoNoloc(mLoc.t("PRSR047: Refresh called{0}in {1}", new java.util.Date(), ETLCollaborationTopPanel.class.getName()));
+        mLogger.infoNoloc(mLoc.t("EDIT047: Refresh called{0}in {1}", new java.util.Date(), ETLCollaborationTopPanel.class.getName()));
         this.reload();
     }
 

@@ -67,6 +67,8 @@ public class APTGnuCFilter extends APTStdCFilter {
         filter("__inline", APTTokenTypes.LITERAL___inline); // NOI18N
         filter("__inline__", APTTokenTypes.LITERAL___inline__); // NOI18N
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N
+        filter("restrict", APTTokenTypes.LITERAL_restrict); // NOI18N
+        filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
         filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
         filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
         filter("__typeof", APTTokenTypes.LITERAL___typeof); // NOI18N

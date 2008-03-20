@@ -26,6 +26,8 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.Scope;
+import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +62,19 @@ public class WrapWithForeachAction extends AbstractWrapWithAction<ForEach> {
     }
 
     public Activity getWrapEntity(BpelContainer parent) {
-        return parent.getBpelModel().getBuilder().createForEach();
+        ForEach forEach = parent.getBpelModel().getBuilder().createForEach();
+        forEach.setParallel(TBoolean.NO);
+        
+        try {
+            forEach.setCounterName(forEach.getName() + "Counter"); // NOI18N
+        } catch (VetoException ex) {
+            // Somebody does not like this counter name 
+            // or property is not supported or something else.
+            // Anyway we unable to determine cause of problem, 
+            // so will ignore this exception.
+        }
+        
+        return  forEach;
     }
     
 }

@@ -949,13 +949,18 @@ public class LinkTool extends MapperPropertyAccess {
         Graph graph = (Graph) targetPin;
 
         if (oldLink != null) {
-            return oldLink.getTarget() == graph 
-                    && Utils.equal(oldTreePath, treePath);
+            if (oldLink.getTarget() == graph) {
+                return Utils.equal(oldTreePath, treePath) || 
+                        oldLink.getSource() instanceof TreeSourcePin;
+            } else {
+                return !graph.hasOutgoingLinks() && 
+                        (Utils.equal(oldTreePath, treePath) ||
+                        oldLink.getSource() instanceof TreeSourcePin);
+            }
         } 
         
         return !graph.hasOutgoingLinks();
     }
-    
     
     private boolean canConnectIngoing(TreePath treePath, SourcePin sourcePin) {
         if (sourcePin instanceof Vertex) {

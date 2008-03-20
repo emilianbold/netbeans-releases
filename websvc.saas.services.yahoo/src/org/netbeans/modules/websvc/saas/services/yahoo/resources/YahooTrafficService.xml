@@ -52,7 +52,7 @@
 
     <description>Yahoo Traffic Service</description>
     
-    <display-name>YahooTrafficService</display-name>
+    <display-name>Traffic Report Service</display-name>
 
     <saas-metadata>
 
@@ -67,8 +67,9 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getTrafficData" href="#yahoo.trafficData"/>
     </methods>
-
+    -->
 </saas-services>

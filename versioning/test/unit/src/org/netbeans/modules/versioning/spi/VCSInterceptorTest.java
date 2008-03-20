@@ -80,6 +80,22 @@ public class VCSInterceptorTest extends TestCase {
         inteceptor.clearTestData();
     }
 
+    public void testIsMutable() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createData("checkme.txt");
+        File file = FileUtil.toFile(fo);
+        fo.canWrite();
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(file));
+        assertTrue(inteceptor.getDoCreateFiles().contains(file));
+        assertTrue(inteceptor.getCreatedFiles().contains(file));
+        assertFalse(inteceptor.getIsMutableFiles().contains(file));
+        
+        file.setReadOnly();
+        fo.canWrite();
+        assertTrue(inteceptor.getIsMutableFiles().contains(file));
+    }
+
     public void testChangedFile() throws IOException {
         File f = new File(dataRootDir, "workdir/root-test-versioned");
         FileObject fo = FileUtil.toFileObject(f);

@@ -72,7 +72,7 @@ public class DebugSession implements Runnable {
 
     DebugSession( Socket socket ){
         mySocket = socket;
-        isStop = new AtomicBoolean( false );
+        isStopped = new AtomicBoolean( false );
         myCommands = new LinkedList<DbgpCommand>();
         mySessionId = new AtomicReference<SessionId>();
         myBridge = new IDESessionBridge();
@@ -89,7 +89,7 @@ public class DebugSession implements Runnable {
         synchronized ( myCommands ){
             moreCommands = myCommands.size() > 0;
         }
-        while( !isStop.get() || moreCommands ){
+        while( !isStopped.get() || moreCommands ){
             try { 
                 sendCommands();
                 receiveData();
@@ -151,8 +151,8 @@ public class DebugSession implements Runnable {
         return myTransactionId.getAndIncrement() +"";
     }
     
-    public void setStop() {
-        isStop.set( true );
+    public void stop() {
+        isStopped.set( true );
         getBridge().setSuspended( false );
         getBridge().hideAnnotations();
         StartActionProviderImpl.getInstance().removeSession( this );
@@ -161,6 +161,8 @@ public class DebugSession implements Runnable {
         getBridge().getThreadsModel().update();
         getBridge().getVariablesModel().clearModel();
         getBridge().getWatchesModel().clearModel();
+        Session session = (Session) getBridge().getEngine().lookupFirst(null, Session.class);
+        StartActionProviderImpl.getInstance().stop(session);
     }
 
     public void setId( InitMessage message ) {
@@ -320,7 +322,7 @@ public class DebugSession implements Runnable {
     
     private Socket mySocket;
     
-    private AtomicBoolean isStop;
+    private AtomicBoolean isStopped;
     
     private Thread mySessionThread;
     

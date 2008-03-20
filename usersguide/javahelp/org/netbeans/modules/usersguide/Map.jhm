@@ -105,7 +105,6 @@
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
-<mapID target="workspace.window.mode" url="configure/workspace/window_modes.html" />
 <mapID target="configure.menucustomize" url="configure/workspace/menu_customize.html" />
 <mapID target="configure.menucommands" url="configure/workspace/menu_commands.html" />
 <mapID target="configure.menucontextual" url="configure/workspace/menu_contextual.html" />
@@ -258,6 +257,9 @@
 
     <!--ID for Find dialog-->
 <mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
+
+    <!--ID for Replace dialog-->
+<mapID target="editing.find" url="files/files_search.html" />    
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />

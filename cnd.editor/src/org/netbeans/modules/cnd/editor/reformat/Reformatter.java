@@ -169,10 +169,21 @@ public class Reformatter implements ReformatTask {
     private boolean checkRemoved(String whatRemoved){
         for(int i = 0; i < whatRemoved.length(); i++){
             char c = whatRemoved.charAt(i);
-            if (c == ' ' || c == '\n' || c == '\t') {
-                continue;
+            switch(c){
+                case ' ':
+                case '\n':
+                case '\t':
+                case '\r':
+                case '\f':
+                case 0x0b:
+                case 0x1c:
+                case 0x1d:
+                case 0x1e:
+                case 0x1f:
+                    break;
+                default:
+                    return false;
             }
-            return false;
         }
         return true;
     }

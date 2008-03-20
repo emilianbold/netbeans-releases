@@ -281,7 +281,9 @@ made subject to such option by the copyright holder.
     </folder>
                 
     <folder name="SVGXMLPalette">
-        <folder name="Basic Shapes">
+        <folder name="BasicShapes">
+            <attr name="SystemFileSystem.localizingBundle"  stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
+            
             <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
             <file name="rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/rectangle.xml"/>
             <file name="round_rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/round_rectangle.xml"/>

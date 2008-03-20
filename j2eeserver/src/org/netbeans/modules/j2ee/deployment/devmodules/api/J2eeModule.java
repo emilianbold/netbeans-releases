@@ -266,7 +266,7 @@ public class J2eeModule {
     }
     
     static {
-        J2eeModuleAccessor.DEFAULT = new J2eeModuleAccessor() {
+        J2eeModuleAccessor.setDefault(new J2eeModuleAccessor() {
             public J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
                 return new J2eeModule(impl);
             }
@@ -278,6 +278,6 @@ public class J2eeModule {
             public void setJ2eeModuleProvider(J2eeModule j2eeModule, J2eeModuleProvider j2eeModuleProvider) {
                 j2eeModule.setJ2eeModuleProvider(j2eeModuleProvider);
             }
-        };
+        });
     }
 }

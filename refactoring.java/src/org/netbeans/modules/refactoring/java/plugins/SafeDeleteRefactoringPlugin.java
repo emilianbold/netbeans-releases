@@ -120,7 +120,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             
             if (!files.contains(treePathHandle.getFileObject())) {
                 TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
-                createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
+                Problem problem = createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
+                if (problem != null) {
+                    fireProgressListenerStop();
+                    return problem;
+                }
             }
             fireProgressListenerStep();
         }
@@ -234,6 +238,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         grips.clear();
         for (final FileObject f: lookupJavaFileObjects()) {
             JavaSource source = JavaSource.forFileObject(f);
+            if (source == null) {
+                continue;
+            }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
                     public void cancel() {

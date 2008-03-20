@@ -152,8 +152,8 @@ public class CndCoreTestUtils {
         
         return panes[0];
     }      
-    
-    public static void copyToWorkDir(File resource, File toFile) throws IOException {
+
+    public static void copyToFile(File resource, File toFile) throws IOException {
         InputStream is = new FileInputStream(resource);
         OutputStream outs = new FileOutputStream(toFile);
         int read;
@@ -162,6 +162,10 @@ public class CndCoreTestUtils {
         }
         outs.close();
         is.close();
+    }  
+    
+    public static void copyToWorkDir(File resource, File toFile) throws IOException {
+        copyToFile(resource, toFile);
     }         
     
     public static void copyDirToWorkDir(File sourceDir, File toDir) throws IOException {

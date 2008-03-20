@@ -65,7 +65,7 @@ public class SpringXMLConfigNamespacesPanel implements WizardDescriptor.Panel<Wi
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(SpringXMLConfigNamespacesPanel.class);
+        return null;
     }
 
     public boolean isValid() {

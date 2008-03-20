@@ -150,7 +150,8 @@ public class DesignView extends JPanel implements
     private OverlayPanel overlayView;
 
     private TriScrollPane scrollPane;
-
+    private boolean printMode = false;
+    
     // Memory leak probing
     private static final Logger TIMERS = Logger.getLogger("TIMER.bpel"); // NOI18N
 
@@ -269,7 +270,19 @@ public class DesignView extends JPanel implements
     public RightStripe getRightStripe() {
         return rightStripe;
     }
-
+    
+    public boolean getPrintMode() {
+        return printMode;
+    }
+    
+    public void setPrintMode(boolean printMode) {
+        this.printMode = printMode;
+    }
+    
+    public TriScrollPane getScrollPane() {
+        return scrollPane;
+    }
+    
     @Override
     public void doLayout() {
         int w = getWidth();

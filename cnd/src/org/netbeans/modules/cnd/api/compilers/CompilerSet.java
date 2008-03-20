@@ -467,12 +467,12 @@ public class CompilerSet {
 //        return new CompilerSet(CompilerFlavor.GNU, directory);
     }
     
-    public static void removeCompilerSet(CompilerSet cs) {
-//        csmap.remove(cs.getDirectory());
-//        for (Tool tool : cs.getTools()) {
-//            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
-//        }
-    }
+//    public static void removeCompilerSet(CompilerSet cs) {
+////        csmap.remove(cs.getDirectory());
+////        for (Tool tool : cs.getTools()) {
+////            cache.remove(cs.getDirectory() + File.separator + tool.getKind());
+////        }
+//    }
     
     /**
      * If no compilers are found an empty compiler set is created so we don't have an empty list.
@@ -585,6 +585,10 @@ public class CompilerSet {
         return flavor;
     }
     
+    public void setFlavor(CompilerFlavor flavor) {
+        this.flavor = flavor;
+    }
+    
     public void addDirectory(String path) {
         if (directory.length() == 0) {
             directory.append(path);
@@ -600,6 +604,10 @@ public class CompilerSet {
     
     public String getName() {
         return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getDisplayName() {
@@ -703,7 +711,7 @@ public class CompilerSet {
         Tool t;
 //        if (kind == Tool.MakeTool || kind == Tool.DebuggerTool) {
             // Fixup: all tools should go here ....
-            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+            t = compilerProvider.createCompiler(getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
 //        }
 //        else {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N

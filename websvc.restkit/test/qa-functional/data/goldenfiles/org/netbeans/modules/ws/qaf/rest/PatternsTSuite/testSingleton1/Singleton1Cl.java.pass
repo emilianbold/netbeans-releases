@@ -1,7 +1,7 @@
 /*
  *  Singleton1Cl
  *
- * Created on February 19, 2008, 7:17 PM
+ * Created on March 11, 2008, 10:41 PM
  *
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
@@ -9,7 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
@@ -26,9 +26,9 @@ import org.codehaus.jettison.json.JSONString;
 
 @Path("Singleton1URI")
 public class Singleton1Cl {
-    @HttpContext
+    @Context
     private UriInfo context;
-
+    
     /** Creates a new instance of Singleton1Cl */
     public Singleton1Cl() {
     }

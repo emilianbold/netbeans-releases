@@ -555,7 +555,12 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             fe.setParallel(TBoolean.NO);
             try {
                 fe.setCounterName(fe.getName() + "Counter"); // NOI18N
-            } catch (VetoException ex) {}
+            } catch (VetoException ex) {
+                // Somebody does not like this counter name 
+                // or property is not supported or something else.
+                // Anyway we unable to determine cause of problem, 
+                // so will ignore this exception.            
+            }
             return fe;
         } else if (item.equals("scope")) { // NOI18N
             return builder.createScope();

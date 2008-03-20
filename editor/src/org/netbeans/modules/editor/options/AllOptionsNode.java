@@ -47,7 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
-import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;

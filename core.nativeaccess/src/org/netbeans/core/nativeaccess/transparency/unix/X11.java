@@ -1,14 +1,44 @@
-/* Copyright (c) 2007 Timothy Wall, All Rights Reserved
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * <p/>
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.  
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * 
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+/*
+ * Original file is from http://jna.dev.java.net/
  */
 package org.netbeans.core.nativeaccess.transparency.unix;
 
@@ -28,6 +58,11 @@ import com.sun.jna.ptr.PointerByReference;
 /** Definition (incomplete) of the X library. */
 public interface X11 extends Library {
     
+    public static class VisualID extends NativeLong {
+	public VisualID() { }
+	public VisualID(long value) { super(value); }
+    }
+
     public static class XID implements NativeMapped {
         public static final XID None = null;
         private Integer id = new Integer(0);
@@ -47,6 +82,9 @@ public interface X11 extends Library {
         }
         public Object toNative() {
             return id;
+        }
+        public String toString() {
+            return "0x" + Integer.toHexString(id.intValue());
         }
     }
     public static class Atom extends XID {
@@ -80,7 +118,7 @@ public interface X11 extends Library {
     public static class AtomByReference extends ByReference {
         public AtomByReference() { super(4); }
         public Atom getValue() {
-        	int value = getPointer().getInt(0);
+	    int value = getPointer().getInt(0);
             return (Atom)new Atom().fromNative(new Integer(value), null);
         }
     }
@@ -149,11 +187,22 @@ public interface X11 extends Library {
     // TODO: define structure
     public static class Display extends PointerType { }
     // TODO: define structure
-    public static class Visual extends PointerType { }
+    public static class Visual extends PointerType {
+        public NativeLong getVisualID() {
+	    if (getPointer() != null)
+		return getPointer().getNativeLong(Native.POINTER_SIZE);
+	    return new NativeLong(0);
+        }
+        public String toString() {
+            return "Visual: VisualID=0x" + Long.toHexString(getVisualID().longValue());
+        }
+    }
     // TODO: define structure
     public static class Screen extends PointerType { }
     // TODO: define structure
     public static class GC extends PointerType { }
+    // TODO: define structure
+    public static class XImage extends PointerType { }
     
     /** Definition (incomplete) of the Xext library. */
     public interface Xext extends Library {
@@ -177,16 +226,21 @@ public interface X11 extends Library {
     public interface Xrender extends Library {
         Xrender INSTANCE = (Xrender)Native.loadLibrary("Xrender", Xrender.class);
         public static class XRenderDirectFormat extends Structure {
+            public short red, redMask;
             public short green, greenMask;
             public short blue, blueMask;
             public short alpha, alphaMask;
         }
+	public static class PictFormat extends NativeLong {
+	    public PictFormat(long value) { super(value); }
+	    public PictFormat() { }
+	}
         public static class XRenderPictFormat extends Structure {
-            public int id;
+            public PictFormat id;
             public int type;
             public int depth;
             public XRenderDirectFormat direct;
-            public int colormap;
+            public Colormap colormap;
         }
         int PictTypeIndexed = 0x0;
         int PictTypeDirect = 0x1;
@@ -344,7 +398,7 @@ public interface X11 extends Library {
     int DirectColor = 0x5;
     public static class XVisualInfo extends Structure {
         public Visual visual;
-        public int visualID;
+        public VisualID visualid;
         public int screen;
         public int depth;
         public int c_class;
@@ -354,6 +408,10 @@ public interface X11 extends Library {
         public int colormap_size;
         public int bits_per_rgb;
     }
+    public static class XPoint extends Structure {
+        public short x, y;
+    }
+
     int AllocNone = 0;
     int AllocAll = 1;
     
@@ -416,6 +474,11 @@ public interface X11 extends Library {
     int XFreePixmap(Display display, Pixmap pixmap);
     GC XCreateGC(Display display, Drawable drawable, NativeLong mask, Pointer values);
     int XFreeGC(Display display, GC gc);
+    int XDrawPoint(Display display, Drawable drawable, GC gc, int x, int y);
+    int CoordModeOrigin = 0;
+    int CoordModePrevious = 1;
+    int XDrawPoints(Display display, Drawable drawable, GC gc,
+                    XPoint[] points, int npoints, int mode);
     int XFillRectangle(Display display, Drawable drawable, GC gc, 
                        int x, int y, int width, int height);
     int XSetForeground(Display display, GC gc, NativeLong color);
@@ -493,4 +556,15 @@ public interface X11 extends Library {
     Atom XInternAtom(Display display, String name, boolean only_if_exists);
     int XCopyArea(Display dpy, Drawable src, Drawable dst, GC gc, 
                   int src_x, int src_y, int w, int h, int dst_x, int dst_y);
+
+    int XYBitmap = 0;
+    int XYPixmap = 1;
+    int ZPixmap = 2;
+    XImage XCreateImage(Display dpy, Visual visual, int depth, int format,
+                        int offset, Pointer data, int width, int height,
+                        int bitmap_pad, int bytes_per_line);
+    int XPutImage(Display dpy, Drawable d, GC gc, XImage image, 
+                  int src_x, int src_y, int dest_x, int dest_y,
+                  int width, int height);
+    int XDestroyImage(XImage image);
 }

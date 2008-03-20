@@ -191,7 +191,8 @@ public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, Ite
                     (String)wiz.getProperty(WizardProperties.PROP_PORT_NAME),
                     (String)wiz.getProperty(WizardProperties.PROP_PACKAGE_NAME),
                     (String)wiz.getProperty(WizardProperties.PROP_DATABINDING_NAME),
-                    ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue());
+                    ((Boolean)wiz.getProperty(WizardProperties.PROP_SEI)).booleanValue(),
+                    (String)wiz.getProperty(WizardProperties.PROP_WS_TO_JAVA_OPTIONS));
                 DataObject dObj = DataObject.find(axis2Fo);
                 if (dObj != null) {
                     SaveCookie save = dObj.getCookie(SaveCookie.class);

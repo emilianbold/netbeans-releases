@@ -218,8 +218,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (int i=0; i<mimes.length; i++) {
             MimeType mime = mimes[i];
             String type = types[i];
-            tree = addGetMethod(mime, type, copy, tree);
             
+            if (bean.getMethodTypes().contains(HttpMethodType.GET)) {
+                tree = addGetMethod(mime, type, copy, tree);
+            }
+
             if (bean.getMethodTypes().contains(HttpMethodType.POST)) {
                 tree = addPostMethod(mime, type, copy, tree);
             }
@@ -254,7 +257,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         bodyText += "throw new UnsupportedOperationException(); }";
         
         List<ParameterInfo> queryParams = bean.filterParametersByAuth(
-                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
+                    bean.filterParameters(bean.getQueryParameters(), 
+                    new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
         String[] parameters = getGetParamNames(queryParams);
         Object[] paramTypes = getGetParamTypes(queryParams);
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);
@@ -506,16 +510,18 @@ public class GenericResourceGenerator extends AbstractGenerator {
     
     private String[] getPostPutParams() {
         List<String> params = new ArrayList<String>(Arrays.asList(bean.getUriParams()));
+        params.add("contentType");  //NO18N
         params.add("content");  //NO18N
         return params.toArray(new String[params.size()]);
     }
     
     private String[] getPostPutParamTypes(String representatinType) {
         String defaultType = String.class.getName();
-        String[] types = new String[bean.getUriParams().length + 1];
+        String[] types = new String[bean.getUriParams().length + 2];
         for (int i=0; i < types.length; i++) {
             types[i] = defaultType;
         }
+        types[types.length-2] = defaultType;
         types[types.length-1] = representatinType;
         return types;
     }

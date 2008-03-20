@@ -123,8 +123,8 @@ public class TreeModelRoot implements ModelListener {
                             } else {
                                 tmNode.refresh();
                             }
-                            return ; // We're done
                         }
+                        return ; // We're done
                     }
                 }
                 if (event instanceof ModelEvent.NodeChanged) {
@@ -134,8 +134,8 @@ public class TreeModelRoot implements ModelListener {
                         TreeModelNode tmNode = findNode(node);
                         if (tmNode != null) {
                             tmNode.refresh(nchEvent.getChange());
-                            return ; // We're done
                         }
+                        return ; // We're done
                     }
                 }
                 rootNode.setObject (model.getRoot ());

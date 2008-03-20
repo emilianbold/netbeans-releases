@@ -325,7 +325,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor == null)
             return null;
-        return (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+        Configurations confs = makeConfigurationDescriptor.getConfs();
+        if( confs == null )
+            return null;
+        return (MakeConfiguration)confs.getActive();
     }
     
     public NativeProject getNativeProject() {

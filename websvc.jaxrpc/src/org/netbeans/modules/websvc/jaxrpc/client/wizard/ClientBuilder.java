@@ -200,6 +200,17 @@ public class ClientBuilder {
         }
     }
 
+    private String uniqueClientName(final FileObject wsdlFolder, String origName) {
+        FileObject[] webServices = wsdlFolder.getChildren();
+        Set<String> serviceNames = new HashSet<String>(webServices.length);
+        for(FileObject service: webServices){
+            if(service.hasExt("wsdl") || service.hasExt("xml") && service.getName().
+                    endsWith(WsCompileConfigDataObject.WSCOMPILE_CONFIG_FILENAME_SUFFIX))
+            serviceNames.add(service.getName());
+        }
+        return uniqueServiceName(origName, serviceNames);
+    }
+
     public Set/*FileObject*/ generate(final ProgressHandle handle) {
         Set result = Collections.EMPTY_SET;
 
@@ -247,18 +258,18 @@ public class ClientBuilder {
             // 1. Copy wsdl file to wsdl folder -- DONE
             final FileObject wsdlFolder = projectSupport.getWsdlFolder(true);
 
-            // First ensure neither the target wsdl or -config.xml files exist.
-            FileObject target = wsdlFolder.getFileObject(wsdlSource.getName(), "wsdl"); //NOI18N
-            if (target != null) {
-                target.delete();
-            }
-            target = wsdlFolder.getFileObject(wsdlSource.getName() + WsCompileConfigDataObject.WSCOMPILE_CONFIG_FILENAME_SUFFIX, "xml"); // NOI18N
-            if (target != null) {
-                target.delete();
-            }
+//            // First ensure neither the target wsdl or -config.xml files exist.
+//            FileObject target = wsdlFolder.getFileObject(wsdlSource.getName(), "wsdl"); //NOI18N
+//            if (target != null) {
+//                target.delete();
+//            }
+//            target = wsdlFolder.getFileObject(wsdlSource.getName() + WsCompileConfigDataObject.WSCOMPILE_CONFIG_FILENAME_SUFFIX, "xml"); // NOI18N
+//            if (target != null) {
+//                target.delete();
+//            }
 
             // Now copy the wsdl file.
-            wsdlTarget = wsdlSource.copy(wsdlFolder, wsdlSource.getName(), "wsdl"); //NOI18N
+            wsdlTarget = wsdlSource.copy(wsdlFolder, uniqueClientName(wsdlFolder,wsdlSource.getName()), "wsdl"); //NOI18N
             if (handler.isServiceNameConflict()) {
                 handleServiceConflicts(wsdlTarget);
             }

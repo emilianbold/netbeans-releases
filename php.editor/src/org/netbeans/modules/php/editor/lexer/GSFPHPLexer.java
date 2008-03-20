@@ -103,7 +103,6 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
     
     private Token<PHPTokenId> createToken(PHPTokenId id, int length) {
         String fixedText = id.fixedText();
-
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, length);
     }

@@ -740,7 +740,7 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 });
             } else {
-                genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
                                                   false);
             }
@@ -1007,7 +1007,7 @@ public final class WebProject implements Project, AntProjectListener {
             // unregister project's classpaths to GlobalPathRegistry
             GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
                 org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
                 //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
             }
@@ -1117,7 +1117,9 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/Persistence/JsfFromDB", // NOI18N                    
         "Templates/WebServices/WebService.java",    // NOI18N
         "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N                    
+        "Templates/WebServices/WebServiceClient",   // NOI18N  
+        "Templates/WebServices/RestServicesFromEntities", // NOI18N
+        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
         "Templates/Other/Folder",                   // NOI18N
     };
 

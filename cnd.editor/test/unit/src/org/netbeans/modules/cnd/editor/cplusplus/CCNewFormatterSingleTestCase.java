@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -167,40 +163,23 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    public void testBlankLineAfterEndLineComment() {
+    
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.indentNamespace, false);
         setLoadDocumentText(
-                "namespace AC\n" +
-                "{\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect blak line after end line comment",
-                "namespace AC\n" +
-                "{\n" +
-                "\n" +
-                "class ClassA : InterfaceA, InterfaceB, IntefaceC\n" +
-                "{\n" +
-                "public:\n" +
-                "    int number;\n" +
-                "    char** cc;\n" +
-                "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
-                "    {\n" +
-                "    }\n" +
-                "} FAR ct_data;\n" +
-                "}\n"
-                );
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
 }

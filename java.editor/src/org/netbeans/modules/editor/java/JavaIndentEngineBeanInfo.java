@@ -66,6 +66,7 @@ public class JavaIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
             beanDescriptor.setDisplayName(getString("LAB_JavaIndentEngine"));
             beanDescriptor.setShortDescription(getString("HINT_JavaIndentEngine"));
             beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
+            beanDescriptor.setHidden(true);
         }
         return beanDescriptor;
     }

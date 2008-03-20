@@ -1334,7 +1334,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         }
         
         private void typeUsed(Element decl, TreePath expr) {
-            if (decl != null && expr.getLeaf().getKind() == Kind.IDENTIFIER) {
+            if (decl != null && (expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
                 ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString());
 
                 if (imp != null) {

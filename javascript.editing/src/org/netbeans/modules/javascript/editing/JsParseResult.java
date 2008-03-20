@@ -40,12 +40,20 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.mozilla.javascript.Node;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -137,7 +145,47 @@ public class JsParseResult extends ParserResult {
     @NonNull
     public JsAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            analysisResult = JsAnalyzer.analyze(this, getInfo());
+            CompilationInfo info = getInfo();
+            if (info == null) {
+                try {
+                    info = new CompilationInfo(getFile().getFileObject()) {
+
+                        @Override
+                        public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
+                            if (mimeType.equals(JsMimeResolver.JAVASCRIPT_MIME_TYPE)) {
+                                return Collections.singleton(JsParseResult.this);
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public ParserResult getEmbeddedResult(String mimeType, int offset) {
+                            if (mimeType.equals(JsMimeResolver.JAVASCRIPT_MIME_TYPE)) {
+                                return JsParseResult.this;
+                            }
+                            return null;
+                        }
+
+                        @Override
+                        public String getText() {
+                            return getSource();
+                        }
+
+                        @Override
+                        public Index getIndex(String mimeType) {
+                            return null;
+                        }
+
+                        @Override
+                        public List<Error> getErrors() {
+                            return Collections.emptyList();
+                        }
+                    };
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+            analysisResult = JsAnalyzer.analyze(this, info);
         }
         return analysisResult;
     }

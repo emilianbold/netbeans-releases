@@ -58,7 +58,9 @@ import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -68,6 +70,10 @@ import org.openide.util.lookup.Lookups;
 public class EarProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private final EarProject project;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
     
     public EarProjectOperations(EarProject project) {
         this.project = project;
@@ -117,7 +123,7 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
     }
    
     public void notifyCopying() {
-        //nothing.
+        rememberLibraryLocation();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -126,10 +132,14 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
             return ;
         }
         
+        EarProjectOperations origOperations = original.getLookup().lookup(EarProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        
         project.setName(nueName);
     }
     
     public void notifyMoving() throws IOException {
+        rememberLibraryLocation();
         notifyDeleting();
     }
     
@@ -138,6 +148,9 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }
+        
+        EarProjectOperations origOperations = original.getLookup().lookup(EarProjectOperations.class);
+        fixLibraryLocation(origOperations);
 	
 	final String oldProjectName = project.getName();
         
@@ -159,5 +172,34 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
         });
 
     }
+    
+    private void fixLibraryLocation(EarProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                File file = original.libraryFile;
+                if (file == null) {
+                    // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                    return;
+                }
+                String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                if (relativized != null) {
+                    project.getAntProjectHelper().setLibrariesLocation(relativized);
+                } else {
+                    //cannot relativize, use absolute path
+                    project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+    
+    
+    private void rememberLibraryLocation() {
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            libraryFile = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), libraryPath);
+        }
+    }
+    
         
 }

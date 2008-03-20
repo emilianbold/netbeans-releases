@@ -119,7 +119,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     public ConfigSupportImpl (J2eeModuleProvider provider) {
         this.provider = provider;
         j2eeModule = provider.getJ2eeModule();
-        J2eeModuleAccessor.DEFAULT.setJ2eeModuleProvider(j2eeModule, provider);
+        J2eeModuleAccessor.getDefault().setJ2eeModuleProvider(j2eeModule, provider);
         String serverInstanceId = provider.getServerInstanceID();
         if (serverInstanceId != null) {
             instance = ServerRegistry.getInstance().getServerInstance(serverInstanceId);

@@ -51,7 +51,7 @@ public class WizardConstants {
     
     public static final String WIZARD_FIRST_PANEL_SELECTION_KEY = "WIZARD_FIRST_PANEL_SELECTION_KEY";
     
-    public static final String WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY = "WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY";
+//    public static final String WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY = "WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY";
     
     public static final String WIZARD_SELECTED_ATTRIBUTE_LIST_KEY = "WIZARD_SELECTED_ATTRIBUTE_LIST_KEY";
 }

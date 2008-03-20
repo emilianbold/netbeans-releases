@@ -5,20 +5,23 @@
 
 package org.netbeans.module.iep.editor.xsd.nodes;
 
+import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
-
 /**
  *
  * @author radval
  */
-public abstract class AbstractSchemaArtifactNode extends DefaultMutableTreeNode {
+public abstract class AbstractSchemaArtifactNode extends DefaultMutableTreeNode  {
 
+    protected Icon mIcon;
+    
     public AbstractSchemaArtifactNode(Object userObject) {
         super(userObject);
     }
-    
-    public AbstractSchemaArtifactNode(Object userObject, boolean allowsChildren) {
-        super(userObject, allowsChildren);
+   
+   public Icon getIcon() {
+        return mIcon;
     }
     
+   
 }

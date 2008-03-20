@@ -12,7 +12,7 @@
     <!-- This is the description for this SaaS component. It is not localized. -->
     <description>Generates ad code snippets to include in a publisher's web pages displaying contextual advertising</description>
     
-    <display-name>GoogleAdSenseForContent</display-name>
+    <display-name>AdSenseForContent Service</display-name>
 
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>

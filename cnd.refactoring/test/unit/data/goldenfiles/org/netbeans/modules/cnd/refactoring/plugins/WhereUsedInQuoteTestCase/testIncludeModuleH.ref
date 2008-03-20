@@ -1,0 +1,10 @@
+References in file quote_nosyshdr/cpu.h
+[2139-2139] #include "module.h"
+References in file quote_nosyshdr/disk.h
+[2135-2135] #include "module.h"
+References in file quote_nosyshdr/memory.h
+[2139-2139] #include "module.h"
+References in file quote_nosyshdr/module.cc
+[2186-2186] #include "module.h"
+References in file quote_nosyshdr/system.h
+[2145-2145] #include "module.h"

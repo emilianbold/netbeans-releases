@@ -61,23 +61,20 @@
                      myRole="inventoryServiceRequester"
                      partnerRole="inventoryService"/>
     </partnerLinks>
+
     <variables>
-        <variable name="purchaseOrderRequest"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderFault"
-                  messageType="pos:orderFaultType"></variable>
-        <variable name="inventoryServiceRequest"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryServiceReply"
-                  messageType="invs:InventoryMessage"></variable>
+        <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
+        <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
+        <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
     </variables>
+
     <correlationSets>
         <correlationSet name="CorrelationSet" properties="pos:corrprop"/>
-        <correlationSet name="POCorrelationSet"
-                        properties="invs:orderID"/>
+        <correlationSet name="POCorrelationSet" properties="invs:orderID"/>
     </correlationSets>
+
     <sequence>
         <receive name="sendPurchaseOrder"
                  partnerLink="POServicePLink"
@@ -95,10 +92,8 @@
                 <to>$purchaseOrderRequest.purchaseOrder/po:price</to>
             </copy>
             <copy>
-                <from variable="purchaseOrderRequest"
-                      part="purchaseOrder"/>
-                <to variable="inventoryServiceRequest"
-                    part="purchaseOrder"/>
+                <from variable="purchaseOrderRequest" part="purchaseOrder"/>
+                <to variable="inventoryServiceRequest" part="purchaseOrder"/>
             </copy>
         </assign>
         <invoke name="inventoryService"
@@ -107,8 +102,7 @@
                 operation="inventoryService"
                 inputVariable="inventoryServiceRequest">
             <correlations>
-                <correlation set="POCorrelationSet"
-                             initiate="yes"/>
+                <correlation set="POCorrelationSet" initiate="yes"/>
             </correlations>
         </invoke>
         <pick name="Event_Based_Decision"
@@ -118,8 +112,7 @@
                        operation="inventoryServiceResponse"
                        variable="inventoryServiceReply">
                 <correlations>
-                    <correlation set="POCorrelationSet"
-                                 initiate="no"/>
+                    <correlation set="POCorrelationSet" initiate="no"/>
                 </correlations>
                 <sequence>
                     <if name="Decision">
