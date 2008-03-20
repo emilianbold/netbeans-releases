@@ -63,6 +63,7 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -115,6 +116,12 @@ public class PHPCodeCompletion implements Completable {
         
         for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
             proposals.add(new FunctionItem(function, request));
+        }
+        
+        // CONSTANTS
+        
+        for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
+            proposals.add(new ConstantItem(constant.getName(), request));
         }
 
         return proposals;
@@ -271,6 +278,35 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
+        }
+        
+        @Override
+        public String getRhsHtml() {
+            if (description != null) {
+                return description;
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private class ConstantItem extends PHPCompletionItem {
+        private String description = null;
+        private String constName = null;
+
+        ConstantItem(String constName, CompletionRequest request) {
+            super(null, request);
+            this.constName = constName;
+        }
+
+        @Override
+        public String getName() {
+            return constName;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.GLOBAL;
         }
         
         @Override
