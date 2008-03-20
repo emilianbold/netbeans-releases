@@ -149,7 +149,8 @@ public class JSFClientGenerator {
         }
         
         Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
-        String pkgName = controllerClass.substring(0, controllerClass.lastIndexOf('.'));
+        int lastIndexOfDotInControllerClass = controllerClass.lastIndexOf('.');
+        String pkgName = lastIndexOfDotInControllerClass == -1 ? "" : controllerClass.substring(0, lastIndexOfDotInControllerClass);
         
         String persistenceUnit = null;
         PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
@@ -167,7 +168,7 @@ public class JSFClientGenerator {
         final FileObject jsfRoot = FileUtil.createFolder(sgWeb[0].getRootFolder(), jsfFolder);
         
         String simpleConverterName = simpleEntityName + "Converter"; //NOI18N
-        String converterName = pkgName + "." + simpleConverterName;
+        String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = fieldFromClassName(simpleEntityName);
 
         final List<ElementHandle<ExecutableElement>> idGetter = new ArrayList<ElementHandle<ExecutableElement>>();
@@ -223,7 +224,7 @@ public class JSFClientGenerator {
             wme.extend(wm);
         }
         
-        controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
+        controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, 
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport);
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
@@ -259,15 +260,18 @@ public class JSFClientGenerator {
 
     private static String addLinkToListJspIntoIndexJsp(WebModule wm, String jsfFolder, String simpleEntityName) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
-        FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
-        String indexjspString = INDEX_PAGE;
-        String find = "<title>JSP Page</title>"; // NOI18N
-        if (indexjsp == null) {
-            indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-            indexjspString = "faces/" + WELCOME_JSF_PAGE;
-            find = "<h1><h:outputText value=\"JavaServer Faces\" /></h1>"; //NOI18N
-        }
-        if (indexjsp != null){
+        
+        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
+        String indexjspString = "faces/" + WELCOME_JSF_PAGE;
+        String find = "<h1><h:outputText value=\"JavaServer Faces\" /></h1>"; //NOI18N
+        
+//        if (indexjsp == null) {
+//            indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
+//            indexjspString = INDEX_PAGE;
+//            find = "<title>JSP Page</title>"; // NOI18N
+//        }
+        
+        if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
             String endLine = System.getProperty("line.separator"); //NOI18N
             if ( content.indexOf(find) > 0){
@@ -818,7 +822,7 @@ public class JSFClientGenerator {
             final FileObject pkg, 
             final ElementHandle<ExecutableElement> idGetter, 
             final String persistenceUnit, 
-            final String simpleControllerName, 
+            final String controllerClass, 
             final String entityClass, 
             final String simpleEntityName,
             final List<ElementHandle<ExecutableElement>> toOneRelMethods,
@@ -972,6 +976,10 @@ public class JSFClientGenerator {
                             
                             String relFieldToAttach = relFieldName + relTypeReference + "ToAttach";
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
+                            
+                            if (!isCollection && !controllerClass.equals(entityClass + "Controller")) {
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
+                            }
                             
                             if (isCollection) {
                                 String refOrMergeString = "em.merge(" + relFieldToAttach + ");\n";

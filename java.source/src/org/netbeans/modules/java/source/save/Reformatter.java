@@ -176,36 +176,71 @@ public class Reformatter implements ReformatTask {
             String text = diff.getText();
             if (startOffset > end || endOffset <= start || embeddingOffset >= start)
                 continue;
-            if (startOffset > start) {
+            if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                    if (ts != null) {
-                        int d = ts.move(startOffset);
-                        if ((d == 0 && ts.movePrevious()) || ts.moveNext()) {
-                            if (ts.token().id() == WHITESPACE) {
-                                String t = ts.token().text().toString();
-                                t = t.substring(0, startOffset - ts.offset());
-                                int idx1, idx2;
-                                while ((idx1 = t.indexOf('\n')) >=0 && (idx2 = text.indexOf('\n')) >= 0) { //NOI18N
-                                    t = t.substring(idx1 + 1);
-                                    text = text.substring(idx2 + 1);
-                                }
-                                if ((idx1 = t.lastIndexOf('\n')) >= 0) { //NOI18N
-                                    t = t.substring(idx1 + 1);
-                                    if (text.trim().length() > 0)
-                                        text = ""; //NOI18N
-                                }
-                                if ((idx2 = text.lastIndexOf('\n')) >= 0) //NOI18N
-                                    text = text.substring(idx1 + 1);
-                                text = text.length() > t.length() ? text.substring(t.length()) : null;
+                    if (ts == null)
+                        continue;
+                    if (ts.move(startOffset) == 0) {
+                        if (!ts.movePrevious() && !ts.moveNext())
+                            continue;
+                    } else {
+                        if (!ts.moveNext() && !ts.movePrevious())
+                            continue;
+                    }
+                    if (ts.token().id() == WHITESPACE) {
+                        String t = ts.token().text().toString();
+                        t = t.substring(0, startOffset - ts.offset());
+                        if (templateEdit) {
+                            int idx = t.lastIndexOf('\n'); //NOI18N
+                            if (idx >= 0) {
+                                t = t.substring(idx + 1);
+                                idx = text.lastIndexOf('\n'); //NOI18N
+                                if (idx >= 0)
+                                    text = text.substring(idx + 1);
+                                if (text.trim().length() > 0)
+                                    text = null;
+                                else if (text.length() > t.length())
+                                    text = text.substring(t.length());
+                                else
+                                    text = null;
+                            } else {
+                                text = null;
                             }
+                        } else {
+                            int idx1 = 0;
+                            int idx2 = 0;
+                            int lastIdx1 = 0;
+                            int lastIdx2 = 0;
+                            while ((idx1 = t.indexOf('\n', lastIdx1)) >=0 && (idx2 = text.indexOf('\n', lastIdx2)) >= 0) { //NOI18N
+                                lastIdx1 = idx1 + 1;
+                                lastIdx2 = idx2 + 1;
+                            }
+                            if ((idx2 = text.lastIndexOf('\n')) >= 0 && idx2 >= lastIdx2) { //NOI18N
+                                if (lastIdx1 == 0) {
+                                    t = null;
+                                } else {
+                                    text = text.substring(idx2 + 1);
+                                    t = t.substring(lastIdx1);
+                                }
+                            } else if ((idx1 = t.lastIndexOf('\n')) >= 0 && idx1 >= lastIdx1) { //NOI18N
+                                t = t.substring(idx1 + 1);
+                                text = text.substring(lastIdx2);
+                            } else {
+                                t = t.substring(lastIdx1);
+                                text = text.substring(lastIdx2);
+                            }
+                            if (text != null && t != null)
+                                text = text.length() > t.length() ? text.substring(t.length()) : null;
                         }
+                    } else if (templateEdit) {
+                        text = null;
                     }
                 }
                 start = startOffset;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0) {
+                if (text != null && text.length() > 0 && !templateEdit) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts != null) {
                         ts.move(endOffset);
@@ -1103,7 +1138,7 @@ public class Reformatter implements ReformatTask {
             if (node instanceof FakeBlock) {
                 blankLines(0);
                 col = indent + 1;
-                diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), "}")); //NOI18N
+                appendToDiff("}"); //NOI18N
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;

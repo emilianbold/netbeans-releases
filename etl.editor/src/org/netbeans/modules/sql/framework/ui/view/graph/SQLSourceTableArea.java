@@ -169,7 +169,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
 
             addSelectVisibleColumnsPopUpMenu(aListener);
             synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
-            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.ALT_DOWN_MASK));
+            synchroniseItem.setAccelerator(KeyStroke.getKeyStroke('R',InputEvent.SHIFT_DOWN_MASK));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 

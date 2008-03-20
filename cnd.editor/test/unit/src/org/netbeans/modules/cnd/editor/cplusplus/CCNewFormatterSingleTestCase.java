@@ -164,18 +164,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testConcurrentSpacing() {
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int foo(char* a, class B* b)\n" +
-                "{\n" +
-                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
-                "}\n");
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect new style cast formating",
-                "int foo(char* a, class B* b)\n" +
-                "{\n" +
-                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
-                "}\n");
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
 }
