@@ -515,7 +515,7 @@ public final class Validator extends BpelValidator {
       return false;
     }
 //out("    view: " + getName(corr));
-    return corr == set && correlation.getInitiate() == Initiate.YES;
+    return corr == set && correlation.getInitiate() != Initiate.NO;
   }
 
   private void checkReplies(Reply reply1, Reply reply2) {

@@ -243,4 +243,34 @@ public final class SharabilityUtility {
             }
         }
     }
+
+    public static boolean isLibrarySwitchIntended(String instanceId, String oldServInstID,
+            List<ClassPathSupport.Item> javaClasspathList, UpdateHelper updateHelper) throws IOException {
+
+        boolean containLibs = false;
+
+        if (instanceId != null && !instanceId.equals(oldServInstID)
+                && updateHelper.getAntProjectHelper().getLibrariesLocation() != null) {
+
+            AntProjectHelper helper = updateHelper.getAntProjectHelper();
+            File location = helper.resolveFile(helper.getLibrariesLocation());
+
+            // remove old libraries
+            Set<String> names = new HashSet<String>();
+            for (Library foundLib : SharabilityUtility.getLibraries(location, oldServInstID)) {
+                names.add(foundLib.getName());
+            }
+
+            for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext();) {
+                ClassPathSupport.Item item = it.next();
+                if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
+                        && names.contains(item.getLibrary().getName())) {
+                    containLibs = true;
+                    break;
+                }
+            }
+        }
+        return containLibs;
+    }
 }

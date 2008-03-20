@@ -38,14 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.property;
 
 import com.sun.sql.framework.exception.BaseException;
+import java.util.List;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.openide.util.Exceptions;
-
 
 /**
  * @author Ahimanikya Satapathy
@@ -76,7 +76,7 @@ public class SQLCollaborationProperties {
     public Integer getExecutionStrategyCode() {
         return this.sqlDef.getExecutionStrategyCode();
     }
-    
+
     /**
      * Sets display name to given value.
      *
@@ -85,7 +85,7 @@ public class SQLCollaborationProperties {
     public void setDisplayName(String newName) {
         this.sqlDef.setDisplayName(newName);
     }
-    
+
     /**
      * Sets execution stratergy codefor this collaboration.
      * @param code execution stratergy code
@@ -94,44 +94,53 @@ public class SQLCollaborationProperties {
         this.sqlDef.setExecutionStrategyCode(code);
         setDirty(true);
     }
-    
-    
+
     public void setWorkingFolder(String appDataRoot) {
         this.sqlDef.setWorkingFolder(appDataRoot);
         setDirty(true);
     }
-    
+
     public void setDbInstanceName(String dbInstanceName) {
         this.sqlDef.setDbInstanceName(dbInstanceName);
         setDirty(true);
     }
-    
+
     public String getWorkingFolder() {
         return this.sqlDef.getDBWorkingFolder();
     }
-    
+
     public String getDbInstanceName() {
         return this.sqlDef.getDbInstanceName();
     }
-    
-    public String getSourceModelName(){
+
+    public String getSourceModelName() {
+         try {
+            //Check if the list is zero
+            List<SQLDBModel> list = this.sqlDef.getSourceDatabaseModels();
+            if (!(list.isEmpty())) {                
+                return list.get(0).getETLDBConnectionDefinition().getConnectionURL();
+            }
+            return "";
+        } catch (BaseException ex) {
+            Exceptions.printStackTrace(ex);
+            return "";
+        }      
+    }
+
+    public String getTargetModelName() {
         try {
-            return this.sqlDef.getSourceDatabaseModels().get(0).getETLDBConnectionDefinition().getConnectionURL();
+            //Check if the list is zero
+            List<SQLDBModel> list = this.sqlDef.getTargetDatabaseModels();
+            if (!(list.isEmpty())) {                
+                return list.get(0).getETLDBConnectionDefinition().getConnectionURL();
+            }
+            return "";
         } catch (BaseException ex) {
             Exceptions.printStackTrace(ex);
             return "";
         }
     }
-    
-    public String getTargetModelName(){
-        try {
-            return this.sqlDef.getTargetDatabaseModels().get(0).getETLDBConnectionDefinition().getConnectionURL();
-        } catch (BaseException ex) {
-            Exceptions.printStackTrace(ex);
-            return "";
-        }
-    }
-    
+
     protected void setDirty(boolean dirty) {
         editor.setDirty(dirty);
     }
