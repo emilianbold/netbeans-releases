@@ -138,17 +138,19 @@ public class HibernateMovePlugin implements RefactoringPlugin {
 
                 if (newBinaryName != null) {
 
-                    Map<FileObject, OccurrenceItem> occurrences =
+                    Map<FileObject, List<OccurrenceItem>> occurrences =
                             HibernateRefactoringUtil.getJavaClassOccurrences(mappingFileObjs, oldBinaryName);
 
                     for (FileObject mFileObj : occurrences.keySet()) {
-                        OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                        HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
-                                oldBinaryName,
-                                newBinaryName,
-                                foundPlace.getLocation(),
-                                foundPlace.getText());
-                        refactoringElements.add(refactoring, elem);
+                        List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+                        for (OccurrenceItem foundPlace : foundPlaces) {
+                            HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                                    oldBinaryName,
+                                    newBinaryName,
+                                    foundPlace.getLocation(),
+                                    foundPlace.getText());
+                            refactoringElements.add(refactoring, elem);
+                        }
                     }
 
                     refactoringElements.registerTransaction(new JavaClassRenameTransaction(occurrences.keySet(), oldBinaryName, newBinaryName));

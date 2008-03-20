@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
+import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.openide.ErrorManager;
@@ -75,11 +76,31 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
                 MyClass[] myClazz = hbMapping.getMyClass();
                 for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NOI18N
+                    String clsName = myClazz[ci].getAttributeValue(HibernateMappingXmlConstants.NAME_ATTRIB); 
                     if (clsName.equals(oldName)) {
-                        myClazz[ci].setAttributeValue("name", newName); // NOI18N
+                        myClazz[ci].setAttributeValue(HibernateMappingXmlConstants.NAME_ATTRIB, newName); // NOI18N
                     }
                 }
+                
+                // TODO: need to search on 
+                /*HibernateMappingXmlConstants.ONE_TO_MANY_TAG HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                HibernateMappingXmlConstants.COMPOSITE_ID_TAG HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAGHibernateMappingXmlConstants.CLASS_ATTRIB);
+                HibernateMappingXmlConstants.MANY_TO_ONE_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
+                HibernateMappingXmlConstants.ONE_TO_ONE_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
+                HibernateMappingXmlConstants.COMPONENT_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
+                HibernateMappingXmlConstants.SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
+                                                          HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
+                                                                 HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                                                                 HibernateMappingXmlConstants.PERSISTER_ATTRIB);
+                HibernateMappingXmlConstants.UNION_SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
+                                                                HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                                                                HibernateMappingXmlConstants.PERSISTER_ATTRIB);
+                HibernateMappingXmlConstants.IMPORT_TAG  HibernateMappingXmlConstants.CLASS_ATTRIB);
+                HibernateMappingXmlConstants.MANY_TO_MANY_TAG  HibernateMappingXmlConstants.CLASS_ATTRIB);
+                */
+                
                 outs = mappingFileObject.getOutputStream();
                 hbMapping.write(outs);
                 
