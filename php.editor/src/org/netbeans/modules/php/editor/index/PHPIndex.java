@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -662,6 +663,14 @@ public class PHPIndex {
      * from the current file.
      */
     public boolean isReachable(PHPParseResult result, String url) {
+        try {
+            if (url.equals(result.getFile().getFileObject().getURL().toExternalForm())){
+                return true;
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         Collection<String> includes = new ArrayList<String>();
         
         for (Statement statement : result.getProgram().getStatements()) {
