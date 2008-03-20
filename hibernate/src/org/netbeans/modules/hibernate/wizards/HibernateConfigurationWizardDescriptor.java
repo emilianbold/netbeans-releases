@@ -63,7 +63,7 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
 
     public java.awt.Component getComponent() {
         if (panel == null) {
-            panel = new HibernateConfigurationWizardPanel(this);
+            panel = new HibernateConfigurationWizardPanel();
             panel.addChangeListener(this);
         }
         return panel;
@@ -107,6 +107,10 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
 
     Project getProject() {
         return project;
+    }
+    
+    String getSessionName() {
+        return panel == null ? null : panel.getSessionName();
     }
 
     String getDialectName() {
