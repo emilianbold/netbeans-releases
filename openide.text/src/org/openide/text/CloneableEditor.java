@@ -331,6 +331,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             tmp.setEditorKit(kit);
             tmp.setDocument(doc);
             return true;
+        }
+        
+        private void initVisual() {
             if (!initDocument()) {
                 return;
             }
