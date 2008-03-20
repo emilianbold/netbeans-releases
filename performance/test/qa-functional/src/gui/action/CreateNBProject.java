@@ -74,7 +74,7 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     public CreateNBProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=10000;
     }
     
     /**
@@ -85,7 +85,7 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     public CreateNBProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=10000;
     }
     
     public void testCreateModuleProject(){
