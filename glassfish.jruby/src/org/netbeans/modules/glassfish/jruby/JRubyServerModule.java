@@ -118,7 +118,7 @@ public class JRubyServerModule implements RubyInstance {
         if(commonModule != null) {
             // !PW XXX check for pre-existing different platform
             commonModule.setEnvironmentProperty(GlassfishModule.JRUBY_HOME, 
-                    platform.getHome().getAbsolutePath());
+                    platform.getHome().getAbsolutePath(), false);
             return wrapTask(commonModule.startServer(new OperationStateListener() {
                 public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
                     Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
@@ -138,7 +138,7 @@ public class JRubyServerModule implements RubyInstance {
             // !PW XXX check for pre-existing different platform
             String requestedPlatformDir = platform.getHome().getAbsolutePath();
             String currentPlatformDir = commonModule.setEnvironmentProperty(
-                    GlassfishModule.JRUBY_HOME, requestedPlatformDir);
+                    GlassfishModule.JRUBY_HOME, requestedPlatformDir, false);
             
             if(!requestedPlatformDir.equals(currentPlatformDir)) {
                 // !PW XXX Server using different platform, fail until platform

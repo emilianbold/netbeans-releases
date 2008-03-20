@@ -63,7 +63,13 @@ public interface GlassfishModule {
     public static final String HTTPPORT_ATTR = "httpportnumber"; // NOI18N
     public static final String HOSTNAME_ATTR = "host"; // NOI18N
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
-
+    
+    public static final String DEBUG_PORT = "debugPort"; // NOI18N
+    public static final String JVM_MODE = "jvmMode"; // NOI18N
+    public static final String NORMAL_MODE = "normalMode"; // NOI18N
+    public static final String DEBUG_MODE = "debugMode"; // NOI18N
+    public static final String PROFILE_MODE = "profileMode"; // NOI18N
+    
     // Contract provider constants (identify the different containers in V3)
     public static final String WEB_CONTAINER = "web_ContractProvider";
     public static final String JRUBY_CONTAINER = "jruby_ContractProvider";
@@ -105,11 +111,12 @@ public interface GlassfishModule {
      * 
      * @param name key for this map entry. 
      * @param value value for this key.
+     * @param overwrite true if you want to overwrite the existing key value if any.
      * 
-     * @return the current value of this key, if present in the map already.
-     *   Otherwise, returns the new value being set.
+     * @return the current value of this key, if present in the map already
+     *   and overwrite is false.  Otherwise, returns the new value being set.
      */
-    public String setEnvironmentProperty(String name, String value);
+    public String setEnvironmentProperty(String name, String value, boolean overwrite);    
     
     /**
      * Start the server.

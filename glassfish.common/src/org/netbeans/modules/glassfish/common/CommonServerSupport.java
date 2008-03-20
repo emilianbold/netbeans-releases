@@ -103,6 +103,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         properties.put(ADMINPORT_ATTR, Integer.toString(adminPort));
         properties.put(HTTPPORT_ATTR, Integer.toString(httpPort));
         properties.put(HOSTNAME_ATTR, hostName);
+        properties.put(JVM_MODE, NORMAL_MODE);
+        properties.put(DEBUG_PORT, "8787");
         
         boolean isRunning = isRunning(hostName, httpPort);
         setServerState(isRunning ? ServerState.RUNNING : ServerState.STOPPED);
@@ -272,12 +274,13 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         changeSupport.removeChangeListener(listener);
     }
     
-    public String setEnvironmentProperty(final String name, final String value) {
+    public String setEnvironmentProperty(final String name, final String value, 
+            final boolean overwrite) {    
         String result = null;
 
         synchronized (properties) {
             result = properties.get(name);
-            if(result == null) {
+            if(result == null || overwrite == true) {
                 properties.put(name, value);
                 result = value;
             }

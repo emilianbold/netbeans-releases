@@ -158,13 +158,9 @@ public class StartTask extends BasicTask<OperationState> {
         List<String> envp = new ArrayList<String>();
         FileObject fo = platform.getInstallFolders().iterator().next();
         String javaHome = FileUtil.toFile(fo).getAbsolutePath();
-        envp.add("JAVA_HOME=" + javaHome); // NOI18N
-        
-//        String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
-//        if(jrubyHome != null) {
-//            envp.add(GlassfishModule.JRUBY_HOME + "=" + jrubyHome);
-//        }
-        
+        String javaEnv = "JAVA_HOME=" + javaHome;
+        envp.add(javaEnv); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv);
         return (String[]) envp.toArray(new String[envp.size()]);
     }
     
@@ -181,30 +177,39 @@ public class StartTask extends BasicTask<OperationState> {
             }
         }
         
-        // !PW FIXME DEBUGGING
-//        StringBuilder javaOpts = new StringBuilder();
-//        if(startServer.getMode() == Hk2StartServer.MODE.DEBUG) {
-//            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-//                    append(dm.getProperties().getDebugPort()).
-//                    append(",server=y,suspend=n"); // NOI18N
-//        }
-
-        String systemVars = getSystemVars();
-        return new NbProcessDescriptor(startScript, systemVars + " -jar \"" + jarLocation + "\""); // NOI18N
+        StringBuilder argumentBuf = new StringBuilder(1024);
+        appendSystemVars(argumentBuf);
+        appendJavaOpts(argumentBuf);
+        argumentBuf.append(" -client -jar \"");
+        argumentBuf.append(jarLocation);
+        argumentBuf.append("\"");
+        
+        String arguments = argumentBuf.toString();
+        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments);
+        return new NbProcessDescriptor(startScript, arguments); // NOI18N
     }
     
-    private String getSystemVars() {
-        StringBuilder systemVars = new StringBuilder(500);
-        String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
-        if(jrubyHome != null) {
-            systemVars.append("-D");
-            systemVars.append(GlassfishModule.JRUBY_HOME);
-            systemVars.append("=\"");
-            systemVars.append(jrubyHome);
-            systemVars.append("\"");
+    private StringBuilder appendJavaOpts(StringBuilder argumentBuf) {
+        if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
+//            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
+            argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=");
+            argumentBuf.append(ip.get(GlassfishModule.DEBUG_PORT));
+            argumentBuf.append(",server=y,suspend=n"); // NOI18N
         }
-        return systemVars.toString();
+        return argumentBuf;
     }
+    
+    private StringBuilder appendSystemVars(StringBuilder argumentBuf) {
+         String jrubyHome = ip.get(GlassfishModule.JRUBY_HOME);
+         if(jrubyHome != null) {
+            argumentBuf.append(" -D");
+            argumentBuf.append(GlassfishModule.JRUBY_HOME);
+            argumentBuf.append("=\"");
+            argumentBuf.append(jrubyHome);
+            argumentBuf.append("\"");
+        }
+        return argumentBuf;
+    }    
     
     private Process createProcess() {
         Process process = null;
