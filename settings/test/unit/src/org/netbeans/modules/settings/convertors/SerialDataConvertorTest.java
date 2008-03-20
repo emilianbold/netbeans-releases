@@ -54,7 +54,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import junit.framework.Test;
 import org.netbeans.junit.*;
 import org.openide.nodes.Node;
 
@@ -70,11 +69,6 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Creates new DataFolderTest */
     public SerialDataConvertorTest(String name) {
         super (name);
-    }
-    
-    public static Test suite() {
-        //return new SerialDataConvertorTest("testSaveCookieChanges");
-        return new NbTestSuite(SerialDataConvertorTest.class);
     }
 
     @Override
