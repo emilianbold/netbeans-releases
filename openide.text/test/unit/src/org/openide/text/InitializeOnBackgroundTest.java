@@ -43,8 +43,11 @@
 package org.openide.text;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.*;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 
@@ -54,6 +57,8 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /** Checks that the default impl of Documents UndoRedo really locks
@@ -94,7 +99,7 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
     
     
 
-    public void testInitializeOnBackground() throws Exception {
+    public void XtestInitializeOnBackground() throws Exception {
         support.open();
         
         class R implements Runnable {
@@ -118,7 +123,7 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
         }
     }
     
-    public void testInitializeOnBackgroundInAWT() throws Exception {
+    public void XtestInitializeOnBackgroundInAWT() throws Exception {
         assertTrue("Running in AWT", SwingUtilities.isEventDispatchThread());
         
         support.open();
@@ -132,6 +137,41 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
         R r = new R();
         r.run();
         assertNotNull(r.p);
+        
+        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
+            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
+            assertNotNull("call method called", nb.callThread);
+            if (nb.callThread.getName().contains("AWT")) {
+                fail("wrong thread: " + nb.callThread);
+            }
+        } else {
+            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
+        }
+    }
+
+    public void testInitializeAndBlockInAWT() throws Exception {
+        assertTrue("Running in AWT", SwingUtilities.isEventDispatchThread());
+        
+        class R implements PropertyChangeListener {
+            JEditorPane p;
+            public void run() {
+                p = support.getOpenedPanes()[0];
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                    run();
+                }
+            }
+        }
+        R r = new R();
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(r);
+        
+        final Object LOCK = new JPanel().getTreeLock();
+        synchronized (LOCK) {
+            support.open();
+            assertNotNull(r.p);
+        }
         
         if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
             NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
