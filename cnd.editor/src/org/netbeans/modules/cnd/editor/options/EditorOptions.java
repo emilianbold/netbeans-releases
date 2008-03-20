@@ -103,9 +103,9 @@ public class EditorOptions {
     
     //BracesPlacement
     public static final String newLineBeforeBraceNamespace = "newLineBeforeBraceNamespace"; //NOI18N
-    public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceNamespaceDefault = BracePlacement.SAME_LINE.name();
     public static final String newLineBeforeBraceClass = "newLineBeforeBraceClass"; //NOI18N
-    public static final String newLineBeforeBraceClassDefault = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceClassDefault = BracePlacement.SAME_LINE.name();
     /**
      * Whether insert extra new-line before the declaration or not.
      * Values: java.lang.Boolean instances
@@ -119,7 +119,7 @@ public class EditorOptions {
      *         }
      */
     public static final String newLineBeforeBraceDeclaration = "newLineBeforeBraceDeclaration"; //NOI18N
-    public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.NEW_LINE.name();
+    public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.SAME_LINE.name();
     /**
      * Whether insert extra new-line before the compound bracket or not.
      * Values: java.lang.Boolean instances
@@ -150,6 +150,8 @@ public class EditorOptions {
     public static final boolean alignMultilineWhileConditionDefault = false;
 
     //NewLine
+    public static final String newLineFunctionDefinitionName = "newLineFunctionDefinitionName"; //NOI18N
+    public static final boolean newLineFunctionDefinitionNameDefault = false;
     public static final String newLineCatch = "newLineCatch"; //NOI18N
     public static final boolean newLineCatchDefault = false;
     public static final String newLineElse = "newLineElse"; //NOI18N
@@ -312,6 +314,7 @@ public class EditorOptions {
         defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
         defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
         //NewLine
+        defaults.put(newLineFunctionDefinitionName,newLineFunctionDefinitionNameDefault);
         defaults.put(newLineCatch,newLineCatchDefault);
         defaults.put(newLineElse,newLineElseDefault);
         defaults.put(newLineWhile,newLineWhileDefault);
@@ -405,6 +408,9 @@ public class EditorOptions {
         apache.put(newLineCatch, true);
         apache.put(newLineElse, true);
         apache.put(newLineWhile, true);
+        apache.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
+        apache.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
+        apache.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
 // I see that GNU style differ from apache only in half indent
 // Is it true?
         Map<String,Object> gnu = new HashMap<String,Object>();
@@ -416,6 +422,7 @@ public class EditorOptions {
         gnu.put(alignMultilineWhileCondition, true);
         gnu.put(spaceBeforeMethodCallParen, true);
         gnu.put(spaceBeforeMethodDeclParen, true);
+        gnu.put(newLineFunctionDefinitionName, true);
         gnu.put(newLineCatch, true);
         gnu.put(newLineElse, true);
         gnu.put(newLineWhile, true);
@@ -423,6 +430,7 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){

@@ -133,6 +133,7 @@
         
     <target name="test-5">
         <!-- correlation -->
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/outoforder"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationOnePropBPEL"/></antcall>
