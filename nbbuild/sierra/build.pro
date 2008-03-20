@@ -141,7 +141,7 @@
     <property name="cache" value="${home}/../cache"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
     <property name="netbeans.dir" value=".netbeans/dev"/>
-    <property name="jbi" location="${test}/${test.cvs.path}"/>
+    <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
     <property name="samples" value="${home}/bpel.samples/resources"/>
     <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>
 </project>
