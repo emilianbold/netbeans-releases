@@ -92,6 +92,8 @@ made subject to such option by the copyright holder.
             <arg value="-f"/>
             <arg value="${nb_all}/jellytools/build.xml"/>
             <arg value="jar-library"/>
+            <!-- Ignore jdk-5-check for tests because we need to run them both on 1.5 and 1.6. -->
+            <jvmarg value="-Dpermit.jdk6.builds=true"/>
         </java>
     </target>
 

@@ -90,6 +90,11 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      */
+    private String provider;
+
+    /**
+     * DOCUMENT ME!
+     */
     private List<JbiExtensionElement> elements;
 
     /**
@@ -106,13 +111,14 @@ public class JbiExtensionInfo implements Serializable {
      */
     public JbiExtensionInfo(String name, String type, String target,
                             String file, String ns, String description, URL icon,
-                            List<JbiExtensionElement> elements) {
+                            String provider, List<JbiExtensionElement> elements) {
         this.name = name;
         this.type = type;
         this.target = target;
         this.file = file;
         this.ns = ns;
         this.icon = icon;
+        this.provider = provider;
         this.description = description;
         this.elements = elements;
     }
@@ -184,6 +190,15 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
+     * @return the provider
+     */
+    public String getProvider() {
+        return this.provider;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return the extension elements
      */
     public List<JbiExtensionElement> getElements() {
@@ -200,6 +215,7 @@ public class JbiExtensionInfo implements Serializable {
                 .append(" ns=").append(getNameSpace())
                 .append(" target=").append(getTarget())
                 .append(" icon=").append(getIcon())
+                .append(" provider=").append(getProvider())
                 .append(" description=").append(getDescription());
         
         for (JbiExtensionElement element : getElements()) {

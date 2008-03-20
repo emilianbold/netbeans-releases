@@ -192,7 +192,7 @@ public final class SharabilityUtility {
         }
         return instances.toArray(new String[instances.size()]);
     }
-    
+
     public static void switchServerLibrary(String instanceId, String oldServInstID,
             List<ClassPathSupport.Item> javaClasspathList, UpdateHelper updateHelper) throws IOException {
 
@@ -208,13 +208,18 @@ public final class SharabilityUtility {
                 names.add(foundLib.getName());
             }
             boolean containLibs = false;
-            for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext();) {
+
+            int i = 0;
+            int position = 0;
+
+            for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext(); i++) {
                 ClassPathSupport.Item item = it.next();
                 if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
                         && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
                         && names.contains(item.getLibrary().getName())) {
                     it.remove();
                     containLibs = true;
+                    position = i;
                 }
             }
 
@@ -233,7 +238,7 @@ public final class SharabilityUtility {
                     }
                 }
                 if (add) {
-                    javaClasspathList.add(ClassPathSupport.Item.create(lib, null));
+                    javaClasspathList.add(position, ClassPathSupport.Item.create(lib, null));
                 }
             }
         }

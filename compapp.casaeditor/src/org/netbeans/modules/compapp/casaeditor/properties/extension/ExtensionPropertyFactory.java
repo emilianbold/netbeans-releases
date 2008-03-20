@@ -87,7 +87,8 @@ public class ExtensionPropertyFactory {
             String attrType,
             String attributeName,
             String displayName,
-            String description) {
+            String description,
+            String providerName) {
 
         Class propertyClass = null;
 
@@ -112,11 +113,14 @@ public class ExtensionPropertyFactory {
                     new Lookup.Template<ExtensionPropertyClassProvider>(ExtensionPropertyClassProvider.class));
 
             for (Object obj : result.allInstances()) {
-                ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;
-                propertyClass = provider.getExtensionPropertyClass(attrType);
-                if (propertyClass != null) {
-                    break;
-                }
+                // todo: 03/18/08, added a provider for each extension package
+                // if (obj.getClass().getName().equals(providerName)) {
+                    ExtensionPropertyClassProvider provider = (ExtensionPropertyClassProvider) obj;
+                    propertyClass = provider.getExtensionPropertyClass(attrType);
+                    if (propertyClass != null) {
+                        break;
+                    }
+                //}
             }
         }
 

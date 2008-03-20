@@ -40,6 +40,8 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +63,7 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -86,6 +89,7 @@ public class PHPCodeCompletion implements Completable {
 
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
+        request.formatter = formatter;
 
         // KEYWORDS
 
@@ -241,11 +245,11 @@ public class PHPCodeCompletion implements Completable {
     }
 
     private class KeywordItem extends PHPCompletionItem {
-
-        private String keyword;
+        private String description = null;
+        private String keyword = null;
 
         KeywordItem(String keyword, CompletionRequest request) {
-            super(request);
+            super(null, request);
             this.keyword = keyword;
         }
 
@@ -258,34 +262,103 @@ public class PHPCodeCompletion implements Completable {
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
+        
+        @Override
+        public String getRhsHtml() {
+            if (description != null) {
+                return description;
+            } else {
+                return null;
+            }
+        }
     }
     
     private class FunctionItem extends PHPCompletionItem {
 
-        private IndexedFunction function;
-
         FunctionItem(IndexedFunction function, CompletionRequest request) {
-            super(request);
-            this.function = function;
+            super(function, request);
+        }
+        
+        public IndexedFunction getFunction(){
+            return (IndexedFunction)getElement();
         }
 
         @Override
         public String getName() {
-            return function.getName();
+            return getElement().getName();
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.METHOD;
         }
+        
+        @Override public String getLhsHtml() {
+            ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+//            boolean emphasize = true; //!function.isInherited();
+//            if (emphasize) {
+//                formatter.emphasis(true);
+//            }
+            formatter.name(kind, true);
+            formatter.appendText(getName());
+            formatter.name(kind, false);
+            
+//            if (strike) {
+//                formatter.deprecated(false);
+//            }
+//            
+            Collection<String> parameters = getFunction().getParameters();
+
+            formatter.appendHtml("("); // NOI18N
+            if ((parameters != null) && (parameters.size() > 0)) {
+
+                Iterator<String> it = parameters.iterator();
+
+                while (it.hasNext()) { // && tIt.hasNext()) {
+                    formatter.parameters(true);
+                    String param = it.next();
+                    int typeIndex = param.indexOf(':');
+                    if (typeIndex != -1) {
+                        formatter.type(true);
+                        formatter.appendText(param, typeIndex+1, param.length());
+                        formatter.type(false);
+                        formatter.appendHtml(" ");
+                        
+                        formatter.appendText(param, 0, typeIndex);
+                    } else {
+                        formatter.appendText(param);
+                    }
+                    formatter.parameters(false);
+
+                    if (it.hasNext()) {
+                        formatter.appendText(", "); // NOI18N
+                    }
+                }
+
+            }
+            formatter.appendHtml(")"); // NOI18N
+
+            if (getFunction().getType() != null && 
+                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
+                formatter.appendHtml(" : ");
+                formatter.appendText(getFunction().getType());
+            }
+            
+            return formatter.getText();
+        }
     }
 
     private static class PHPCompletionItem implements CompletionProposal {
 
         protected final CompletionRequest request;
+        private final ElementHandle element;
 
-        PHPCompletionItem(CompletionRequest request) {
+        PHPCompletionItem(ElementHandle element, CompletionRequest request) {
             this.request = request;
+            this.element = element;
         }
 
         public int getAnchorOffset() {
@@ -293,7 +366,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public ElementHandle getElement() {
-            return null;
+            return element;
         }
 
         public String getName() {
@@ -309,11 +382,10 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getLhsHtml() {
-            return getName();
-        }
-
-        public String getRhsHtml() {
-            return null;
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
         }
 
         public ElementKind getKind() {
@@ -341,12 +413,36 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String[] getParamListDelimiters() {
+            return new String[] { "(", ")" }; // NOI18N
+        }
+        
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+            if (element.getIn() != null) {
+                formatter.appendText(element.getIn());
+                return formatter.getText();
+            } else if (element instanceof IndexedElement) {
+                IndexedElement ie = (IndexedElement)element;
+                String filename = ie.getFilenameUrl();
+                if (filename != null) {
+                    int index = filename.lastIndexOf('/');
+                    if (index != -1) {
+                        filename = filename.substring(index + 1);
+                    }
+
+                    formatter.appendText(filename);
+                    return formatter.getText();
+                }
+            }
+            
             return null;
         }
     }
 
     private static class CompletionRequest {
-
+        private HtmlFormatter formatter;
         private int anchor;
     }
 }
