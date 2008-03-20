@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -79,6 +80,7 @@ public class PHPIndex {
     static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     private static final Set<String> TERMS_FQN = Collections.singleton(PHPIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
+    private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
     private static final Set<String> TERMS_EXTEND = Collections.singleton(PHPIndexer.FIELD_EXTEND);
     private final Index index;
 
@@ -359,6 +361,32 @@ public class PHPIndex {
             }
         }
         return functions;
+    }
+    
+    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+
+                    IndexedConstant constant = new IndexedConstant(signature, null,
+                            this, map.getPersistentUrl(), null, 0, ElementKind.GLOBAL);
+
+                    constants.add(constant);
+                }
+            }
+        }
+        
+        return constants;
     }
 
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
