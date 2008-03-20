@@ -64,7 +64,10 @@
 					<tocitem text="Empty" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.EMPTY" />
 					<tocitem text="Wait" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.WAIT" />
 					<tocitem text="Throw" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.THROW" />
+					<tocitem text="Rethrow" target="orch_elements_rethrow" />
 					<tocitem text="Exit" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.EXIT" />
+					<tocitem text="Compensate" target="orch_elements_compensate" />
+					<tocitem text="Compensate Scope" target="orch_elements_compensatescope" />
 				</tocitem>
 				<tocitem text="BPEL Designer Palette: Structured Activities" target="orch_elements_palette_struct_acts" expand="false">
 					<tocitem text="If" target="org.netbeans.modules.bpel.editors.api.nodes.NodeType.IF" />
@@ -84,6 +87,8 @@
 					<tocitem text="Adding On Alarm Elements" target="orch_elements_event_handler_onalarm" />
 					<tocitem text="Adding On Event Elements" target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" />
 				</tocitem>
+				<tocitem text="BPEL Designer: Adding Compensation Handlers" target="orch_elements_add_compensation_handler" />
+				<tocitem text="BPEL Designer: Adding Termination Handlers" target="orch_elements_add_termination_handler" />
 				<tocitem text="Working with Correlation Sets" expand="false">
 					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation" />
 					<tocitem text="Adding Correlation Sets Manually" target="orch_design_correlation_manually" />
@@ -119,9 +124,4 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
-	<tocitem text="BPEL Designer: Adding Compensation Handlers" target="add_compensation_handler" />
-	<tocitem text="BPEL Designer: Adding Termination Handlers" target="add_termination_handler" />
-	<tocitem text="Compensate" target="compensate" />
-	<tocitem text="Compensate Scope" target="compensatescope" />
-	<tocitem text="Rethrow" target="rethrow" />
 </toc>

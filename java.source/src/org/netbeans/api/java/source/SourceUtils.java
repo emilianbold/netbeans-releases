@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -155,7 +155,7 @@ public class SourceUtils {
     
     /**
      * Returns the type element within which this member or constructor
-     * is declared. Does not accept pakages
+     * is declared. Does not accept packages
      * If this is the declaration of a top-level type (a non-nested class
      * or interface), returns null.
      *
@@ -164,7 +164,8 @@ public class SourceUtils {
      * @throws IllegalArgumentException if the provided element is a package element
      */
     public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-	
+	Element param = element;
+        
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
 	}
@@ -174,10 +175,27 @@ public class SourceUtils {
             return null;
         }
         
-	while( !(element.getEnclosingElement().getKind().isClass() || 
+	while(element != null && !(element.getEnclosingElement().getKind().isClass() || 
 	       element.getEnclosingElement().getKind().isInterface()) ) {
 	    element = element.getEnclosingElement();
 	}
+        
+        if (element == null) {
+            //#130505:
+            StringBuilder sb = new StringBuilder();
+            
+            while (param != null) {
+                sb.append(param.getKind());
+                sb.append(':');
+                sb.append(param.toString());
+                sb.append('/');
+                param = param.getEnclosingElement();
+            }
+            
+            NullPointerException npe = new NullPointerException();
+            
+            throw Exceptions.attachMessage(npe, sb.toString());
+        }
 	
 	return (TypeElement)element.getEnclosingElement(); // Wrong
     }
@@ -737,8 +755,8 @@ out:                    for (URL e : roots) {
      * It returns all the open project source roots which have either
      * direct or transitive dependency on the given source root.
      * @param root to find the dependent roots for
-     * @return {@link Set} of {@link URL}s containinig at least the
-     * incomming root, never returns null.
+     * @return {@link Set} of {@link URL}s containing at least the
+     * incoming root, never returns null.
      * @since 0.10
      */
     public static Set<URL> getDependentRoots (final URL root) {

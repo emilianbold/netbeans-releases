@@ -315,9 +315,9 @@ public final class CreateElement implements ErrorRule<Void> {
                 return Collections.<Fix>emptyList();
             }
             
-            target = (TypeElement) clazz;
+            TypeElement clazzTarget = (TypeElement) clazz;
             
-            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, target), target, "<init>", nct.getArguments(), null));
+            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null));
         }
         
         //field like or class (type):

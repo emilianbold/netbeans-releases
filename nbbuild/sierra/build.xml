@@ -42,20 +42,31 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.tst"/>
     
-    <target name="all" depends="init,get-netbeans,build-xtest,clean,build-and-create"/>
-    <target name="build-and-create" depends="build-fcs,create-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
+    <target name="all" depends="init,get-netbeans,clean,build-tiny,zip-tiny,build-dev,zip-dev,build-xtest"/>
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="init">
+        <delete dir="${cache}/dist"/>
+        <mkdir dir="${cache}/dist"/>
+        <delete dir="${cache}/latest"/>
+        <mkdir dir="${cache}/latest"/>
+
         <property name="env.BUILD_NUMBER" value=""/>
+        
         <tstamp>
             <format property="long_stamp" pattern="yyyyMMdd_HHmm"/>
         </tstamp>
+
         <tstamp>
             <format property="short_stamp" pattern="yyyyMMdd"/>
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="bootstrap"/>
+    </target>
+
+    <target name="build-xtest">
+        <ant dir="${home}/xtest" target="clean"/>
+        <ant dir="${home}/xtest" target="netbeans"/>
     </target>
 
     <!-- netbeans -->
@@ -64,39 +75,27 @@
             <sysproperty key="url" value="${netbeans.host}/${netbeans.path}"/>
         </java>
 
-        <mkdir dir="${netbeans}"/>
+        <mkdir dir="${cache}/netbeans"/>
         <property name="netbeans.url" value="${netbeans.host}/${netbeans.path}/${netbeans.file}"/>
-        <get src="${netbeans.url}" dest="${netbeans}/netbeans.zip" usetimestamp="true"/>
+        <get src="${netbeans.url}" dest="${cache}/netbeans/netbeans.zip" usetimestamp="true"/>
 
         <delete dir="${home}/nbbuild/netbeans"/>
-        <unzip src="${netbeans}/netbeans.zip" dest="${home}/nbbuild"/>
+        <unzip src="${cache}/netbeans/netbeans.zip" dest="${home}/nbbuild"/>
         <delete dir="${home}/nbbuild/netbeans/soa2"/>
-        <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
-    </target>
-
-    <target name="build-xtest">
-        <ant dir="${home}/xtest" target="clean"/>
-        <ant dir="${home}/xtest" target="netbeans"/>
-    </target>
-
-    <!-- zip -->
-    <target name="create-init">
-        <delete dir="${dist}"/>
-        <mkdir dir="${dist}"/>
-        <delete dir="${latest}"/>
-        <mkdir dir="${latest}"/>
 
         <replace file="${home}/nbbuild/netbeans/etc/netbeans.conf" token="${netbeans.dir}" value="${sierra.dir}"/>
         <property name="env.BUILD_NUMBER" value=""/>
 
+        <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
         <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
         <echo file="${build.number}" message="sierra build: ${long_stamp}${line.separator}" append="true"/>
 
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>
 
-    <target name="create-zip">
-        <zip destfile="${dist}/sierra_${env.BUILD_NUMBER}_${short_stamp}.zip">
+    <!-- zip -->
+    <target name="zip-tiny">
+        <zip destfile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${short_stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/bin/**"/>
                 <include name="netbeans/enterprise5/**"/>
@@ -109,13 +108,12 @@
                 <include name="netbeans/platform8/**"/>
                 <include name="netbeans/soa2/**"/>
                 <include name="netbeans/xml2/**"/>
-                <exclude name="netbeans/soa2/**/*-etl-*"/>
                 <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
     </target>
 
-    <target name="create-zip-fcs" depends="run-extra">
+    <!--target name="create-zip-fcs" depends="run-extra">
         <zip destfile="${latest}/sierra.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
@@ -126,18 +124,18 @@
         </zip>
 
         <copy file="${latest}/sierra.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}.zip"/>
-    </target>
+    </target-->
 
-    <target name="create-zip-dev" depends="run-extra">
-        <zip destfile="${latest}/sierra_dev.zip">
+    <target name="zip-dev" depends="run-extra">
+        <zip destfile="${cache}/latest/sierra_dev.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
-                <exclude name="netbeans/testtools/**"/>
+                <!--exclude name="netbeans/testtools/**"/-->
                 <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>
 
-        <copy file="${latest}/sierra_dev.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}_dev.zip"/>
+        <copy file="${cache}/latest/sierra_dev.zip" tofile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${long_stamp}_dev.zip"/>
     </target>
 
     <!-- extra -->
@@ -155,38 +153,38 @@
     <target name="run-daily" depends="check-daily,do-daily"/>
     
     <target name="check-daily">
-        <mkdir dir="${lock}"/>
+        <mkdir dir="${cache}/lock"/>
 
         <tstamp>
             <format property="daily" pattern="yyyyMMdd"/>
         </tstamp>
 
-        <available property="lock.available" file="${lock}/${daily}"/>
+        <available property="lock.available" file="${cache}/lock/${daily}"/>
     </target>
 
     <target name="do-daily" unless="lock.available">
         <delete>
-            <fileset dir="${lock}" includes="*"/>
+            <fileset dir="${cache}/lock" includes="*"/>
         </delete>
 
-        <echo file="${lock}/${daily}" message="${daily}"/>
+        <echo file="${cache}/lock/${daily}" message="${daily}"/>
 
         <antcall target="get-test"/>
     </target>
 
     <target name="get-test">
-        <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${test}" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
+        <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${cache}/test" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
     </target>
 
     <!-- clean & build -->
-    <target name="build" depends="build-fcs,build-dev"/>
-    <target name="clean" depends="clean-fcs,clean-dev"/>
+    <target name="build" depends="build-tiny,build-dev"/>
+    <target name="clean" depends="clean-tiny,clean-dev"/>
 
-    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-etl, build-xslt"/>
-    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-etl, clean-xslt"/>
+    <target name="build-tiny" depends="build-print,build-libs,build-compapp,build-soa,build-bpel,build-xslt"/>
+    <target name="clean-tiny" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel,clean-xslt"/>
 
-    <target name="build-dev" depends="build-iep,build-sql,build-wsdlextensions"/>
-    <target name="clean-dev" depends="clean-iep,clean-sql,clean-wsdlextensions"/>
+    <target name="build-dev" depends="build-etl,build-iep,build-sql,build-wsdlextensions"/>
+    <target name="clean-dev" depends="clean-etl,clean-iep,clean-sql,clean-wsdlextensions"/>
 
     <!-- print -->
     <target name="build-print"><antcall target="do-print"><param name="action" value="netbeans"/></antcall></target>
