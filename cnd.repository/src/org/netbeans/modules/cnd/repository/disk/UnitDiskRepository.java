@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  *
  * @author Nickolay Dalmatov
  */
-public class UnitDiskRepository extends AbstractDiskRepository {
+public class UnitDiskRepository implements AbstractDiskRepository {
     private AbstractDiskRepository    defBehRepository;
     private AbstractDiskRepository    nonDefBehRepository;
     private String                    unitName;

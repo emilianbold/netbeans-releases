@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.repository.disk.AbstractDiskRepository;
  *
  * @author Vladimir Kvashin
  */
-public abstract class FileStorage extends AbstractDiskRepository {
+public abstract class FileStorage implements AbstractDiskRepository {
     
     public static FileStorage create(File basePath) throws IOException {
         return  new DoubleFileStorage(basePath);

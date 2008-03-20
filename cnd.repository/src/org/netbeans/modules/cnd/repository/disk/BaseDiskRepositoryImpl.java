@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  * The implementation of the repository, which uses HDD
  * @author Nickolay Dalmatov 
  */
-public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
+public class BaseDiskRepositoryImpl implements AbstractDiskRepository {
     
     final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
     
