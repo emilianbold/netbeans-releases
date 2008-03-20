@@ -50,6 +50,7 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -71,7 +72,14 @@ import org.openide.util.Utilities;
  */
 public final class Utils {
 
+    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
+    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
+
     private Utils() {
+    }
+
+    public static boolean isValidUrl(String url) {
+        return URL_PATTERN.matcher(url).matches();
     }
 
     public static String browseLocationAction(final Component parent, String path, String title) {
@@ -201,21 +209,22 @@ public final class Utils {
      * @param projectPath the path to validate
      * @param type the type for error messages, currently "Project", "Sources" and "Folder".
      *             Add other to Bundle.properties file if more types are needed.
+     * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
      * @return localized error message in case of error, <code>null</code> otherwise.
      */
-    public static String validateProjectDirectory(String projectPath, String type) {
+    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty) {
         assert projectPath != null;
         assert type != null;
 
         // not allow to create project on unix root folder, see #82339
         File cfl = Utils.getCanonicalFile(new File(projectPath));
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "InRootNotSupported");
+            return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
         }
 
         final File destFolder = new File(projectPath).getAbsoluteFile();
         if (Utils.getCanonicalFile(destFolder) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+            return NbBundle.getMessage(Utils.class, "MSG_Illegal" + type + "Location");
         }
 
         File projLoc = FileUtil.normalizeFile(destFolder);
@@ -223,17 +232,19 @@ public final class Utils {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderReadOnly");
+            return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderReadOnly");
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_Illegal" + type + "Location");
+            return NbBundle.getMessage(Utils.class, "MSG_Illegal" + type + "Location");
         }
 
-        File[] kids = destFolder.listFiles();
-        if (destFolder.exists() && kids != null && kids.length > 0) {
-            // Folder exists and is not empty
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_" + type + "FolderExists");
+        if (!allowNonEmpty) {
+            File[] kids = destFolder.listFiles();
+            if (destFolder.exists() && kids != null && kids.length > 0) {
+                // Folder exists and is not empty
+                return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderExists");
+            }
         }
         return null;
     }

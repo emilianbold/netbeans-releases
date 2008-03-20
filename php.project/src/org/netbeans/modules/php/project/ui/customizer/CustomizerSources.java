@@ -47,6 +47,8 @@ import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
@@ -56,7 +58,6 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
 import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
-import org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -86,9 +87,11 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         initEncoding();
         LocalServer sources = initSources();
         boolean copyFiles = initCopyFiles();
+        initUrl();
 
         localServerVisual = new LocalServerVisual(this,
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
+        localServerVisual.selectLocalServer(sources);
         localServerPanel.add(BorderLayout.NORTH, localServerVisual);
 
         copyFilesVisual = new CopyFilesVisual(this);
@@ -108,11 +111,28 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         });
         localServerVisual.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                String err = LocalServerVisual.validateLocalServer(localServerVisual.getLocalServer());
-                category.setErrorMessage(err);
-                category.setValid(err == null);
+                validateFields(category);
             }
         });
+        copyFilesVisual.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                validateFields(category);
+            }
+        });
+        urlTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                validateFields(category);
+            }
+            public void removeUpdate(DocumentEvent e) {
+                validateFields(category);
+            }
+            public void changedUpdate(DocumentEvent e) {
+                validateFields(category);
+            }
+        });
+
+        // check init values
+        validateFields(category);
     }
 
     private void initEncoding() {
@@ -134,12 +154,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
             // src directory doesn't exist?!
-            return new LocalServer(src);
-        }
-        if (FileUtil.isParentOf(projectFolder, resolvedFO)) {
-            // project folder
-            String srcRoot = NbBundle.getMessage(CustomizerSources.class, "LBL_UseProjectFolder", File.separator, src);
-            return new LocalServer(null, null, srcRoot, false);
+            return new LocalServer(resolvedFile.getAbsolutePath());
         }
         return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
     }
@@ -148,8 +163,63 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         return Boolean.valueOf(evaluator.getProperty(PhpProject.COPY_SRC_FILES));
     }
 
+    private void initUrl() {
+        urlTextField.setText(evaluator.getProperty(PhpProject.URL));
+    }
+
     public String getWebFolderName() {
         return new File(projectFolderTextField.getText()).getName();
+    }
+
+    void validateFields(Category category) {
+        category.setErrorMessage(null);
+        category.setValid(true);
+
+        // sources
+        String err = LocalServerVisual.validateLocalServer(localServerVisual.getLocalServer(), "Sources", true); // NOI18N
+        if (err != null) {
+            category.setErrorMessage(err);
+            category.setValid(false);
+            return;
+        }
+
+        // copy files
+        boolean isCopyFiles = copyFilesVisual.isCopyFiles();
+        if (isCopyFiles) {
+            err = LocalServerVisual.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", false); // NOI18N
+            if (err != null) {
+                category.setErrorMessage(err);
+                category.setValid(false);
+                return;
+            }
+        }
+
+        // url
+        boolean validUrl = Utils.isValidUrl(urlTextField.getText());
+        if (!validUrl) {
+            err = NbBundle.getMessage(CustomizerSources.class, "MSG_InvalidUrl");
+            category.setErrorMessage(err);
+            category.setValid(false);
+            return;
+        }
+
+        // everything ok
+        File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
+        File srcDir = getSrcDir();
+        String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
+        if (srcPath.startsWith("../")) { // NOI18N
+            // relative path, change to absolute
+            srcPath = srcDir.getAbsolutePath();
+        }
+        properties.setProperty(PhpProject.SRC, srcPath);
+        properties.setProperty(PhpProject.COPY_SRC_FILES, String.valueOf(isCopyFiles));
+        properties.setProperty(PhpProject.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
+        properties.setProperty(PhpProject.URL, urlTextField.getText());
+    }
+
+    private File getSrcDir() {
+        LocalServer localServer = localServerVisual.getLocalServer();
+        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
     /** This method is called from within the constructor to

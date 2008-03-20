@@ -103,6 +103,10 @@ public class LocalServerVisual extends JPanel {
         localServerComboBox.setModel(localServerComboBoxModel);
     }
 
+    public void addLocalServer(LocalServer localServer) {
+        localServerComboBox.addItem(localServer);
+    }
+
     public void selectLocalServer(LocalServer localServer) {
         localServerComboBox.setSelectedItem(localServer);
     }
@@ -165,9 +169,11 @@ public class LocalServerVisual extends JPanel {
     /**
      * Validate given local server instance, its source root.
      * @param localServer local server to validate.
+     * @param type the type for error messages.
      * @return error message or <code>null</null> if source root is ok.
+     * @see Utils#validateProjectDirectory(java.lang.String, java.lang.String, boolean)
      */
-    public static String validateLocalServer(final LocalServer localServer) {
+    public static String validateLocalServer(final LocalServer localServer, String type, boolean allowNonEmpty) {
         if (!localServer.isEditable()) {
             return null;
         }
@@ -176,9 +182,9 @@ public class LocalServerVisual extends JPanel {
         File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation.trim().length() == 0
                 || !Utils.isValidFileName(sources.getName())) {
-            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+            err = NbBundle.getMessage(LocalServerVisual.class, "MSG_Illegal" + type + "Name");
         } else {
-            err = Utils.validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+            err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty);
         }
         return err;
     }

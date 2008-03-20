@@ -79,7 +79,6 @@ public class LocalServer implements Comparable<LocalServer> {
     }
 
     public LocalServer(String virtualHost, String documentRoot, String srcRoot, boolean editable) {
-        assert srcRoot != null;
         this.virtualHost = virtualHost;
         this.documentRoot = documentRoot;
         this.srcRoot = srcRoot;

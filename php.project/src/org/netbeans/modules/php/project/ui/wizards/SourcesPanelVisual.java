@@ -59,9 +59,6 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
 
     private static final long serialVersionUID = -358263102348820543L;
 
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
-    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
-
     private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -202,10 +199,6 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
     private javax.swing.JLabel urlLabel;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
-
-    static boolean isValidUrl(String url) {
-        return URL_PATTERN.matcher(url).matches();
-    }
 
     LocalServer getSourcesLocation() {
         return (LocalServer) localServerComboBox.getSelectedItem();

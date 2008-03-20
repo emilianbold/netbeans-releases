@@ -317,7 +317,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (Utils.getCanonicalFile(f) == null) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalProjectLocation");
         }
-        return Utils.validateProjectDirectory(projectPath, "Project"); // NOI18N
+        return Utils.validateProjectDirectory(projectPath, "Project", false); // NOI18N
     }
 
     private String validateSources() {
@@ -331,14 +331,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 
-            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+            String err = Utils.validateProjectDirectory(sourcesLocation, "Sources", true); // NOI18N
             if (err != null) {
                 return err;
             }
         }
 
         String url = sourcesPanelVisual.getUrl();
-        if (!SourcesPanelVisual.isValidUrl(url)) {
+        if (!Utils.isValidUrl(url)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
         }
 

@@ -36,20 +36,20 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.wizards;
+package org.netbeans.modules.php.project.ui;
 
 import org.netbeans.junit.NbTestCase;
 
 /**
  * @author Tomas Mysik
  */
-public class UrlValidatorTest extends NbTestCase {
+public class UtilsTest extends NbTestCase {
 
-    public UrlValidatorTest(String name) {
+    public UtilsTest(String name) {
         super(name);
     }
 
-    public void testUrlRegExp() throws Exception {
+    public void testvalidUrl() throws Exception {
         final String[] correctUrls = new String[] {
             "http://localhost/phpProject1",
             "http://localhost:8080/phpProject1",
@@ -58,6 +58,7 @@ public class UrlValidatorTest extends NbTestCase {
             "http://www.swiz.cz/phpProject1#bb45",
             "https://localhost/phpProject1/subdir1/subdir2",
             "https://localhost/phpProject1/subdir1/subdir2/",
+            "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
             "https://user:pwd@localhost/phpProject1",
         };
         final String[] incorrectUrls = new String[] {
@@ -73,10 +74,10 @@ public class UrlValidatorTest extends NbTestCase {
         };
 
         for (String url : correctUrls) {
-            assertTrue("incorrect url: [" + url + "]", SourcesPanelVisual.isValidUrl(url));
+            assertTrue("incorrect url: [" + url + "]", Utils.isValidUrl(url));
         }
         for (String url : incorrectUrls) {
-            assertFalse("correct url: [" + url + "]", SourcesPanelVisual.isValidUrl(url));
+            assertFalse("correct url: [" + url + "]", Utils.isValidUrl(url));
         }
     }
 }

@@ -180,7 +180,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
         }
 
-        return Utils.validateProjectDirectory(sourcesLocation, "Folder"); // NOI18N
+        return Utils.validateProjectDirectory(sourcesLocation, "Folder", false); // NOI18N
     }
 
     private void registerListeners() {
