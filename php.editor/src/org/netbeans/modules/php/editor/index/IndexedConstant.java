@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,64 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.rest;
+package org.netbeans.modules.php.editor.index;
 
-import java.beans.Introspector;
-import java.io.IOException;
-import org.netbeans.modules.websvc.rest.component.palette.RestPaletteFactory;
-import org.netbeans.modules.websvc.rest.component.palette.RestPaletteListener;
-import org.netbeans.spi.palette.PaletteController;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.ModuleInstall;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author tomslot
  */
-public class RestModuleInstall extends ModuleInstall {
+public class IndexedConstant extends IndexedElement {
+    public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
+            String attributes, int flags, ElementKind kind){
+        super(name, in, index, fileUrl, attributes, flags, kind);
+    }
 
-    private static final long serialVersionUID = 1L; // DO NOT CHANGE!
-    
-    private static RestPaletteListener listener = null;
-    
-    /**
-     *
-     *
-     */
-    public RestModuleInstall() {
-        super();
-    }
-    
-    /**
-     *
-     *
-     */
-    public void installed() {
-        Introspector.flushCaches();
-        restored();
-    }
-    
-    /**
-     *
-     *
-     */
-    public void restored() {
-        /*TopComponent.getRegistry().removePropertyChangeListener(listener);
-        
-        listener = new RestPaletteListener();        
-        TopComponent.getRegistry().addPropertyChangeListener(listener);
-        
-        try {
-            FileObject restCompFolder = RestPaletteFactory.getRestComponentsFolder();
-            restCompFolder.addFileChangeListener(listener);
-        } catch (IOException ex) {
-        }*/
-    }
-    
-    /*public static PaletteController getPaletteController() {
-        return listener.getController();
-    }*/
 }

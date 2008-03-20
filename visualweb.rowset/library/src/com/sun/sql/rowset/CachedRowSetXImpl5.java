@@ -2257,6 +2257,10 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
                  Log.getLogger().finest("Connection: " + tempConn +
                                         "  DataSourceName: " + getDataSourceName() +
                                         "  URL: " + getUrl());
+                 
+                 if (tempConn == null) {
+                     throw new NamingException(rb.getString("NAME_NOT_FOUND") + " " + getDataSourceName()); //NOI18N
+                 } 
                  tempPS = tempConn.prepareStatement(getCommand());
                  // System.out.println("Prepared Statement: " + tempPS);
 
@@ -2287,8 +2291,9 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
                  initMetaData(rowSetMD, rsmd);
                  // System.out.println("After calling initMetaData, rsmd: " + rsmd);
              }
-             // catch (SQLException e) {
-             // }
+             catch (NamingException e) {
+                 Log.getLogger().finest("Caught exception: " + e + " " + e.getMessage());
+             }
              finally {
                  if (tempPS != null) {
                      tempPS.close();

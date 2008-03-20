@@ -35,6 +35,18 @@ buildnumber=$3
 ml_build=$4
 ml_postfix=""
 
+instrumentation_options=""
+if [ -n "$5" ] && [ -n "$6"] && [ -n "$7"] ; then
+   instrumentation_options="-Dinstrument.jars=true -Demma.sh.file=\"$5\" -Demma.txt.file=\"$6\" -Demma.jar.file=\"$7\""
+
+   if [ -n "$8" ] ; then
+	bash_exec="$8"
+   else 
+	bash_exec=/bin/bash
+   fi
+   instrumentation_options="$instrumentation_options  -Dbash.executable=\"$bash_exec\""
+fi
+
 if [ 1 -eq $ml_build ] ; then
 ml_postfix="-ml"
 fi
@@ -47,5 +59,5 @@ chmod -R a+x *.sh
 
 commonname=$zipmodulclustersdir/$prefix-$buildnumber 
 
-ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST 
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options
 
