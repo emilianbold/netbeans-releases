@@ -1125,6 +1125,7 @@ public class ResourceUtils implements WizardConstants{
         //Get Values from JDBC Connection Pool : driver
         ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
         String dsClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
+        String resType = (String)mejb.getAttribute(connPoolObj, "res-type"); //NOI18N
         String url = ""; //NOI18N
         String username = ""; //NOI18N
         String password = ""; //NOI18N
@@ -1185,7 +1186,7 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }
             } else if (url.equals("")) { //NOI18N
-                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName);
+                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName, resType);
                 String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                 if (serverName != null) {
                     if (vName.equals("sybase2")) { //NOI18N
@@ -1359,6 +1360,7 @@ public class ResourceUtils implements WizardConstants{
     
     private static HashMap formatPoolMap(HashMap poolValues){
         String driverClassName = getStringVal(poolValues.get("dsClassName")); //NOI18N
+        String resType = getStringVal(poolValues.get("resType")); //NOI18N
         String url = ""; //NOI18N
         String serverName = getStringVal(poolValues.get(__ServerName));
         String portNo     = getStringVal(poolValues.get(__DerbyPortNumber));
@@ -1391,7 +1393,7 @@ public class ResourceUtils implements WizardConstants{
                     url = in_url;
                 }
                 if (url.equals("")) {  //NOI18N
-                    String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
+                    String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName, resType);
                     String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
                     if (serverName != null) {
                         if (vName.equals("sun_oracle")) {    //NOI18N

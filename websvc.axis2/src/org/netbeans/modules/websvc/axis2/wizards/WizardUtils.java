@@ -193,7 +193,7 @@ public class WizardUtils {
      * @param databinding
      * @param isSEI
      */
-    static void addService(Axis2Model axis2Model, String wsdlUrl, String serviceClass, String serviceName, String portName, String packageName, String databinding, boolean isSEI) {
+    static void addService(Axis2Model axis2Model, String wsdlUrl, String serviceClass, String serviceName, String portName, String packageName, String databinding, boolean isSEI, String moreOptions) {
         Axis2ComponentFactory factory = axis2Model.getFactory();
 
         Axis2 axis2 = axis2Model.getRootComponent();
@@ -209,6 +209,7 @@ public class WizardUtils {
             javaGenerator.setPortNameAttr(portName);
             javaGenerator.setPackageNameAttr(packageName);
             javaGenerator.setSEIAttr(isSEI);
+            javaGenerator.setOptionsAttr(moreOptions);
             service.setJavaGenerator(javaGenerator);
             axis2.addService(service);
             axis2Model.endTransaction();

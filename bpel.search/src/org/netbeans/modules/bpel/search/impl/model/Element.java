@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.search.api.SearchElement;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -72,8 +73,9 @@ final class Element extends SearchElement.Adapter {
   }
 
   @Override
-  public void select()
+  public void gotoDesign()
   {
+//out("GO TO DESIGN");
     Util.goToDesign(myComponent, myCookie, myView);
   }
 

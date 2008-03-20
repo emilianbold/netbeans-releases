@@ -53,7 +53,6 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
             int w = 0;
             int h = 0;
 
-
             double k = designView.getCorrectedZoom();
 
             FBounds bounds = diagramView.getContentSize();
@@ -62,16 +61,22 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
             h = (int) Math.round(k * bounds.height + MARGIN_TOP + MARGIN_BOTTOM);
             
             if (parent instanceof ProcessView) {
-                int count = diagramView.getComponentCount();
-                for (int i = 0; i < count; i++) {
-                    Component c = diagramView.getComponent(i);
-                    if (c instanceof NavigationTools) {
-                        continue;
-                    }
-
-                    w = Math.max(w, c.getX() + c.getWidth() + MARGIN_RIGHT);
-                    h = Math.max(h, c.getY() + c.getHeight() + MARGIN_BOTTOM);
-                }
+//                int count = diagramView.getComponentCount();
+//                for (int i = 0; i < count; i++) {
+//                    Component c = diagramView.getComponent(i);
+//                    if (c instanceof NavigationTools) {
+//                        continue;
+//                    }
+//
+//                    w = Math.max(w, c.getX() + c.getWidth() + MARGIN_RIGHT);
+//                    h = Math.max(h, c.getY() + c.getHeight() + MARGIN_BOTTOM);
+//                }
+                
+                TriScrollPane scrollPane = designView.getScrollPane();
+                int leftWidth = scrollPane.getLeftPreferredWidth();
+                int rightWidth = scrollPane.getRightPreferredWidth();
+                
+                w += leftWidth + rightWidth;
             }
 
             return new Dimension(w, h);
@@ -84,15 +89,29 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
 
     public void layoutContainer(Container parent) {
         synchronized (parent.getTreeLock()) {
-            if (parent.getComponentCount() == 0) {
-                return;
+            DiagramView diagramView = (DiagramView) parent;
+            DesignView designView = diagramView.getDesignView();
+
+            double k = designView.getCorrectedZoom();
+
+            FBounds bounds = diagramView.getContentSize();
+            
+            int offsetX = (int) Math.round((diagramView.getWidth() 
+                    - bounds.width * k) / 2.0);
+            int offsetY = (int) Math.round((diagramView.getHeight() 
+                    - bounds.height * k) / 2.0);
+            
+             diagramView.setOffsets(offsetX, offsetY);
+
+            if (parent.getComponentCount() > 0) {
+                repositionDecorations(parent);
             }
-            repositionDecorations(parent);
-            Component component = parent.getComponent(0);
-            if (!(component instanceof NavigationTools)) {
-                return;
-            }
-            component.setBounds(0, 0, parent.getWidth(), parent.getHeight());
+
+//            Component component = parent.getComponent(0);
+//            if (!(component instanceof NavigationTools)) {
+//                return;
+//            }
+//            component.setBounds(0, 0, parent.getWidth(), parent.getHeight());
             
             
         }

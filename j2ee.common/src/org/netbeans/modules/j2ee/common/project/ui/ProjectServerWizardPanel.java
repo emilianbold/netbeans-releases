@@ -79,6 +79,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     private boolean mainAppClientClass;
     private boolean showContextPath;
     private boolean createProjects;
+    private boolean importScenario;
     private Object j2eeModuleType;
     private String name;
     private String title;
@@ -86,7 +87,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     /** Create the wizard panel descriptor. */
     public ProjectServerWizardPanel(Object j2eeModuleType, String name, String title, 
             boolean showAddToEar, boolean mainAppClientClass, 
-            boolean showContextPath, boolean createProjects, boolean finishable) {
+            boolean showContextPath, boolean createProjects, boolean importScenario, boolean finishable) {
         this.finishable = finishable;
         this.showAddToEar = showAddToEar;
         this.mainAppClientClass = mainAppClientClass;
@@ -95,6 +96,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
         this.j2eeModuleType = j2eeModuleType;
         this.name = name;
         this.title = title;
+        this.importScenario = importScenario;
     }
     
     public boolean isFinishPanel() {
@@ -109,7 +111,11 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(ProjectServerWizardPanel.class);
+        String helpID = ProjectImportLocationPanel.generateHelpID(ProjectServerWizardPanel.class, j2eeModuleType);
+        if (importScenario) {
+            helpID += "_IMPORT"; // NOI18N
+        }
+        return new HelpCtx(helpID);
     }
     
     public boolean isValid() {

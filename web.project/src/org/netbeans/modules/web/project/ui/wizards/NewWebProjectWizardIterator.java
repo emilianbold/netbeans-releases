@@ -237,7 +237,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 new ProjectServerWizardPanel(J2eeModule.WAR, 
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
-                        true, false, true, false, true),
+                        true, false, true, false, false, true),
 		new PanelSupportedFrameworks()
 	    };
 	else
@@ -250,7 +250,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 new ProjectServerWizardPanel(J2eeModule.WAR, 
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                         NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_NewWebApp"),
-                        true, false, true, false, true),
+                        true, false, true, false, false, true),
 	    };
         panelsCount = panels.length;
         

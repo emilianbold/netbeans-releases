@@ -102,7 +102,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
             new ProjectServerWizardPanel(J2eeModule.EJB, 
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "NewEjbJarProjectWizardIterator.secondpanel"),
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_ImportEJBModule"),
-                    true, false, false, false, false),
+                    true, false, false, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }

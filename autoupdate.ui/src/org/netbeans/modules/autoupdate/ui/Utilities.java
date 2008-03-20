@@ -98,6 +98,7 @@ public class Utilities {
     
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String TIME_OF_MODEL_INITIALIZATION = "time_of_model_initialization"; // NOI18N
+    public static final String TIME_OF_REFRESH_UPDATE_CENTERS = "time_of_refresh_update_centers"; // NOI18N
     
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
@@ -173,6 +174,14 @@ public class Utilities {
         getPreferences ().putLong (TIME_OF_MODEL_INITIALIZATION, time);
     }
     
+    public static long getTimeOfRefreshUpdateCenters () {
+        return getPreferences ().getLong (TIME_OF_REFRESH_UPDATE_CENTERS, 0);
+    }
+
+    public static void putTimeOfRefreshUpdateCenters (long time) {
+        getPreferences ().putLong (TIME_OF_REFRESH_UPDATE_CENTERS, time);
+    }
+
     private static List<UnitCategory> makeFirstClassUpdateCategories () {
         Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         List<UnitCategory> res = new ArrayList<UnitCategory> ();

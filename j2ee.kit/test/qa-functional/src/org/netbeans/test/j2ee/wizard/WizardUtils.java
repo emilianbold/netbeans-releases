@@ -112,14 +112,8 @@ public class WizardUtils {
     
     public static NewProjectNameLocationStepOperator setJ2eeSpecVersion(
             NewProjectNameLocationStepOperator op, int moduleType, String version) {
-        JComboBoxOperator jcbo = null;
-        switch (moduleType) {
-        case MODULE_WAR: jcbo = new JComboBoxOperator(op, 2); break;
-        case MODULE_EJB: jcbo = new JComboBoxOperator(op, 0); break;
-        case MODULE_EAR: jcbo = new JComboBoxOperator(op, 1); break;
-        case MODULE_CAR: jcbo = new JComboBoxOperator(op, 2); break;
-        default: throw new IllegalArgumentException("Invalid module type");
-        }
+        op.next();
+        JComboBoxOperator jcbo = new JComboBoxOperator(op, 0);
         boolean found = false;
         int i = 0;
         for (; i < jcbo.getItemCount(); i++) {
