@@ -55,11 +55,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class RefreshAction extends NodeAction {
     
-    protected void performAction(Node[] nodes) {
-        performActionImpl(nodes);
-    }
-    
-    private static void performActionImpl(Node[] activatedNodes) {
+    protected void performAction(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
             GlassfishModule commonSupport = 
                     node.getLookup().lookup(GlassfishModule.class);
@@ -68,16 +64,12 @@ public class RefreshAction extends NodeAction {
             }
         }
     }
-
+    
     private static void performActionImpl(GlassfishModule commonSupport) {
         // Tell the server instance to refresh it's status.
     }
 
-    protected boolean enable(Node[] nodes) {
-        return enableImpl(nodes);
-    }
-    
-    private static boolean enableImpl(Node[] activatedNodes) {
+    protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
         if(activatedNodes != null && activatedNodes.length > 0) {
             for(Node node : activatedNodes) {
@@ -95,7 +87,7 @@ public class RefreshAction extends NodeAction {
         }
         return result;
     }
-
+    
     private static boolean enableImpl(GlassfishModule commonSupport) {
         // !PW FIXME what should this be?
 //        if (commonSupport == null || commonSupport.getServerState() == ServerInstance.STATE_WAITING) {
