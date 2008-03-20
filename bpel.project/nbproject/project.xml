@@ -323,12 +323,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.bpel.samples</friend>
                 <package>org.netbeans.modules.bpel.project</package>
-                <package>org.netbeans.modules.bpel.project.portmap</package>
-                <package>org.netbeans.modules.bpel.project.refactoring</package>
-                <package>org.netbeans.modules.bpel.project.wizards</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

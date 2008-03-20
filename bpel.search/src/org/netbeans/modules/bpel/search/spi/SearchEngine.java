@@ -120,7 +120,7 @@ public interface SearchEngine {
         createSearchPattern(option);
       }
       catch (PatternSyntaxException e) {
-        throw new SearchException(e);
+        throw new SearchException(e.getMessage());
       }
       SearchEvent event = new SearchEvent.Adapter(option, null);
 
