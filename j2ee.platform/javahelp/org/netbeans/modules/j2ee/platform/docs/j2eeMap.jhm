@@ -172,6 +172,7 @@
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EAR" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR_IMPORT" url="enterprise/csh/ImportBlueprintEarWizardIterator_servers.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
      
     <!-- Enterprise Application Project Properties dialog box csh -->
@@ -226,6 +227,7 @@
       
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EJB" url="ejb/csh/ejb_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB_IMPORT" url="ejb/csh/ejb_new_wizard_server.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
 
     <!-- EJB Module Project Wizard dialog box csh: -->
@@ -306,6 +308,7 @@
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_APPCLIENT" url="appclient/csh/new_appclient.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT" url="appclient/csh/new_appclient_server.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_APPCLIENT" url="appclient/csh/appclient_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT_IMPORT" url="appclient/csh/new_appclient_server.html" />
     <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelSourceFolders"  url="appclient/csh/appclient_with_source_wizard2.html" />
     
     <!-- App Client Project Properties -->

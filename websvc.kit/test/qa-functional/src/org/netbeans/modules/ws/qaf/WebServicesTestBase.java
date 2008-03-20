@@ -167,7 +167,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 case WEB:
                 case EJB:
                 case APPCLIENT:
-                    return 1;
+                    return 0;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -184,7 +184,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 case WEB:
                 case APPCLIENT:
                 case EJB:
-                    return 0;
+                    return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
