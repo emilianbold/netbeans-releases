@@ -218,13 +218,13 @@ public class PHPIndexer implements Indexer {
                             it.hasNext();){
                         
                         FormalParameter param = it.next();
-                        Variable var = (Variable) param.getParameterName();
-                        Identifier id = (Identifier) var.getName();
-                        fqn.append(id.getName());
-                        
-                        if (it.hasNext()){
-                            fqn.append(",");
-                        }
+//                        Variable var = (Variable) param.getParameterName();
+//                        Identifier id = (Identifier) var.getName();
+//                        fqn.append(id.getName());
+//                        
+//                        if (it.hasNext()){
+//                            fqn.append(",");
+//                        }
                     }
                     
                     fqn.append(";;;");
@@ -432,14 +432,6 @@ public class PHPIndexer implements Indexer {
     }
     
     public FileObject getPreindexedDb() {
-        if (preindexedDb == null) {
-            File preindexed = InstalledFileLocator.getDefault().locate(
-                    "preindexed-javascript", "org.netbeans.modules.javascript.editing", false); // NOI18N
-            if (preindexed == null || !preindexed.isDirectory()) {
-                throw new RuntimeException("Can't locate preindexed directory. Installation might be damaged"); // NOI18N
-            }
-            preindexedDb = FileUtil.toFileObject(preindexed);
-        }
-        return preindexedDb;
+        return null;
     }
 }
