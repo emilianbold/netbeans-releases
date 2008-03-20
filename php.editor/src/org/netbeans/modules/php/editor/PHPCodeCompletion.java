@@ -77,7 +77,17 @@ import org.openide.util.Exceptions;
  */
 public class PHPCodeCompletion implements Completable {
 
-    private final static String[] PHP_KEYWORDS = {"do", "for", "function", "if", "while"};
+    private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if",
+        "include()", "include_once()", "isset()", "list()", "new",
+        "print()", "require()", "require_once()", "return()", "static",
+        "switch", "unset()", "use", "var", "while",
+        "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
+        "interface", "implements", "extends", "public", "private",
+        "protected", "abstract", "clone", "try", "catch", "throw"
+    };
+    
     private boolean caseSensitive;
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
@@ -295,7 +305,7 @@ public class PHPCodeCompletion implements Completable {
         
         @Override
         public String getInsertPrefix() {
-            return getName() + "(" + getParamsStr() + ");";
+            return getName() + "(" + getParamsStr() + ")";
         }
         
         @Override public String getLhsHtml() {
