@@ -293,6 +293,11 @@ public class PHPCodeCompletion implements Completable {
             return ElementKind.METHOD;
         }
         
+        @Override
+        public String getInsertPrefix() {
+            return getName() + "(" + getParamsStr() + ");";
+        }
+        
         @Override public String getLhsHtml() {
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
@@ -310,44 +315,39 @@ public class PHPCodeCompletion implements Completable {
 //                formatter.deprecated(false);
 //            }
 //            
-            Collection<String> parameters = getFunction().getParameters();
-
             formatter.appendHtml("("); // NOI18N
-            if ((parameters != null) && (parameters.size() > 0)) {
+            formatter.parameters(true);
+            formatter.appendText(getParamsStr());
+            formatter.parameters(false);
+            formatter.appendHtml(")"); // NOI18N
 
+//            if (getFunction().getType() != null && 
+//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
+//                formatter.appendHtml(" : ");
+//                formatter.appendText(getFunction().getType());
+//            }
+            
+            return formatter.getText();
+        }
+        
+        private String getParamsStr(){
+            StringBuilder builder = new StringBuilder();
+            Collection<String> parameters = getFunction().getParameters();
+            
+            if ((parameters != null) && (parameters.size() > 0)) {
                 Iterator<String> it = parameters.iterator();
 
                 while (it.hasNext()) { // && tIt.hasNext()) {
-                    formatter.parameters(true);
                     String param = it.next();
-                    int typeIndex = param.indexOf(':');
-                    if (typeIndex != -1) {
-                        formatter.type(true);
-                        formatter.appendText(param, typeIndex+1, param.length());
-                        formatter.type(false);
-                        formatter.appendHtml(" ");
-                        
-                        formatter.appendText(param, 0, typeIndex);
-                    } else {
-                        formatter.appendText(param);
-                    }
-                    formatter.parameters(false);
+                    builder.append("$" + param);
 
                     if (it.hasNext()) {
-                        formatter.appendText(", "); // NOI18N
+                        builder.append(", "); // NOI18N
                     }
                 }
-
-            }
-            formatter.appendHtml(")"); // NOI18N
-
-            if (getFunction().getType() != null && 
-                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
-                formatter.appendHtml(" : ");
-                formatter.appendText(getFunction().getType());
             }
             
-            return formatter.getText();
+            return builder.toString();
         }
     }
 

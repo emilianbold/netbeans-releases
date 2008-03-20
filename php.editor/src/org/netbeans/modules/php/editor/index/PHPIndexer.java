@@ -59,6 +59,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -157,7 +158,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "6.2"; // NOI18N
+        return "0.1"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -210,27 +211,32 @@ public class PHPIndexer implements Indexer {
                 if (statement instanceof FunctionDeclaration){
                     FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
                     
-                    StringBuilder fqn = new StringBuilder();
-                    //fqn.append(";;;");
-                    fqn.append(functionDeclaration.getFunctionName().getName() + ";");
+                    StringBuilder signature = new StringBuilder();
+                    signature.append(functionDeclaration.getFunctionName().getName() + ";");
                     
                     for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator();
                             it.hasNext();){
                         
                         FormalParameter param = it.next();
-//                        Variable var = (Variable) param.getParameterName();
-//                        Identifier id = (Identifier) var.getName();
-//                        fqn.append(id.getName());
-//                        
-//                        if (it.hasNext()){
-//                            fqn.append(",");
-//                        }
+                        Expression paramNameExpr =  param.getParameterName();
+                        String paramName = null;
+                        
+                        if (paramNameExpr instanceof Variable){
+                            Variable var = (Variable) paramNameExpr;
+                            Identifier id = (Identifier) var.getName();
+                            paramName = id.getName();
+                        }
+  
+                        signature.append(paramName);
+                        
+                        if (it.hasNext()){
+                            signature.append(",");
+                        }
                     }
+                    signature.append(";");
+                    System.err.println("indexing " + signature);
                     
-                    fqn.append(";;;");
-                    System.err.println("Indexing " + fqn);
-                    
-                    document.addPair(FIELD_FQN, fqn.toString(), true);
+                    document.addPair(FIELD_BASE, signature.toString(), true);
                 }
             }
             
