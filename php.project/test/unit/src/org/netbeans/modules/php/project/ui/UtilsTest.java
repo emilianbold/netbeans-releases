@@ -58,7 +58,6 @@ public class UtilsTest extends NbTestCase {
             "http://www.swiz.cz/phpProject1#bb45",
             "https://localhost/phpProject1/subdir1/subdir2",
             "https://localhost/phpProject1/subdir1/subdir2/",
-            "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
             "https://user:pwd@localhost/phpProject1",
         };
         final String[] incorrectUrls = new String[] {
@@ -70,7 +69,8 @@ public class UtilsTest extends NbTestCase {
             "ftp://www:localhost/test",
             "aaa:/www:localhost/test",
             "test",
-            "https://user : pwd @ localhost/phpPr oject1",
+            "https://user : pwd @ localhost/phpProject1",
+            "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
         };
 
         for (String url : correctUrls) {

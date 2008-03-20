@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
  */
 public final class Utils {
 
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?#]*(\\?[^#]*)?(#\\w*)?$";
+    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$";
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
 
     private Utils() {
