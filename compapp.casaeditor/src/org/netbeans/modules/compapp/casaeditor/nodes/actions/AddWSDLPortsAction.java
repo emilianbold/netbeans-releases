@@ -105,7 +105,7 @@ public class AddWSDLPortsAction extends NodeAction {
     */
 
     private Map<String, LocalizedTemplateGroup> getWsdlTemplates() {
-        ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
+        ExtensibilityElementTemplateFactory factory = ExtensibilityElementTemplateFactory.getDefault();
         Collection<TemplateGroup> groups = factory.getExtensibilityElementTemplateGroups();
         Vector<LocalizedTemplateGroup> protocols = new Vector<LocalizedTemplateGroup>();
         LocalizedTemplateGroup ltg = null;

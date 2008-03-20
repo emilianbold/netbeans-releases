@@ -43,6 +43,7 @@
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/redelivery"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.redelivery.RedirectTargetExtenionPropertyClassProvider"/>
             <folder name="redelivery">
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>

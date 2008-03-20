@@ -42,24 +42,42 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.netbeans.api.project.Project;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  * This API displays the web service and client nodes in this project.
  * @author Ajit Bhate
  */
-public abstract class ProjectWebServiceView {
+public final class ProjectWebServiceView {
 
     private static final Lookup.Result<ProjectWebServiceViewProvider> implementations;
+    private static final LookupListener lookupListener;
+    private static Hashtable<Project, ProjectWebServiceView> views;
     
 
     static {
         implementations = Lookup.getDefault().lookup(new Lookup.Template<ProjectWebServiceViewProvider>(ProjectWebServiceViewProvider.class));
+        lookupListener = new LookupListener() {
+
+            public void resultChanged(LookupEvent ev) {
+                if (views == null) {
+                    return;
+                }
+                for (ProjectWebServiceView view : views.values()) {
+                    view.updateImpls(true);
+                }
+            }
+        };
+        implementations.addLookupListener(lookupListener);
     }
 
     /** 
@@ -69,71 +87,223 @@ public abstract class ProjectWebServiceView {
 
         SERVICE, CLIENT
     }
-    private ChangeSupport serviceListeners,  clientListeners;
+    private Project project;
+    private List<ProjectWebServiceViewImpl> impls;
+    private List<ChangeListener> serviceListeners,  clientListeners;
+    private ChangeListener serviceListener,  clientListener;
 
-    protected ProjectWebServiceView() {
-        serviceListeners = new ChangeSupport(this);
-        clientListeners = new ChangeSupport(this);
+    private ProjectWebServiceView(Project project) {
+        this.project = project;
+        serviceListener = new ChangeListenerDelegate(ViewType.SERVICE);
+        clientListener = new ChangeListenerDelegate(ViewType.CLIENT);
     }
 
-    protected void addChangeListener(ChangeListener l, ViewType viewType) {
+    List<ProjectWebServiceViewImpl> getWebServiceViews() {
+        return impls != null ? Collections.unmodifiableList(impls) : impls;
+    }
+
+    final void addChangeListener(ChangeListener l, ViewType viewType) {
         switch (viewType) {
             case SERVICE:
-                serviceListeners.addChangeListener(l);
+                if (serviceListeners == null) {
+                    serviceListeners = new ArrayList<ChangeListener>();
+                }
+                serviceListeners.add(l);
                 break;
             case CLIENT:
-                clientListeners.addChangeListener(l);
+                if (clientListeners == null) {
+                    clientListeners = new ArrayList<ChangeListener>();
+                }
+                clientListeners.add(l);
                 break;
         }
     }
 
-    protected void removeChangeListener(ChangeListener l, ViewType viewType) {
+    final void removeChangeListener(ChangeListener l, ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 if (serviceListeners != null) {
-                    serviceListeners.removeChangeListener(l);
+                    serviceListeners.remove(l);
                 }
                 break;
             case CLIENT:
                 if (clientListeners != null) {
-                    clientListeners.removeChangeListener(l);
+                    clientListeners.remove(l);
                 }
                 break;
         }
     }
 
-    protected void fireChange(ViewType viewType) {
-        switch (viewType) {
-            case SERVICE:
-                serviceListeners.fireChange();
-                return;
-            case CLIENT:
-                clientListeners.fireChange();
-                return;
+    final void fireChange(ChangeEvent evt, ViewType viewType) {
+        if (evt == null) {
+            evt = new ChangeEvent(this);
+        }
+        try {
+            switch (viewType) {
+                case SERVICE:
+                    for (ChangeListener l : serviceListeners) {
+                        l.stateChanged(evt);
+                    }
+                    return;
+                case CLIENT:
+                    for (ChangeListener l : clientListeners) {
+                        l.stateChanged(evt);
+                    }
+                    return;
+            }
+        } catch (RuntimeException x) {
         }
     }
 
     /** 
      * Create view for given type (service or client)
      */
-    protected abstract Node[] createView(ViewType viewType);
+    private final Node[] createView(ViewType viewType) {
+        initImpls();
+        List<Node> result = new ArrayList<Node>();
+        for (ProjectWebServiceViewImpl view : getWebServiceViews()) {
+            if (!view.isViewEmpty(viewType)) {
+                result.addAll(Arrays.<Node>asList(view.createView(viewType)));
+            }
+        }
+        return result.toArray(new Node[result.size()]);
+    }
 
     /** 
      * If a view for given type (service or client) is empty.
      */
-    protected abstract boolean isViewEmpty(ViewType viewType);
+    final boolean isViewEmpty(ViewType viewType) {
+        initImpls();
+        for (ProjectWebServiceViewImpl view : getWebServiceViews()) {
+            if (!view.isViewEmpty(viewType)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /** 
      * Notify that this view is in use.
      * Subclasses may add listeners here
      */
-    protected abstract void addNotify();
+    void addNotify() {
+        if (views == null) {
+            views = new Hashtable<Project, ProjectWebServiceView>();
+        }
+        views.put(project, this);
+        initImpls();
+        for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
+            impl.addNotify();
+            impl.addChangeListener(serviceListener, ViewType.SERVICE);
+            impl.addChangeListener(clientListener, ViewType.CLIENT);
+        }
+    }
 
     /** 
      * Notify that this view is not in use.
      * Subclasses may remove listeners here.
      */
-    protected abstract void removeNotify();
+    void removeNotify() {
+        if (views != null && views.get(project) == this) {
+            views.remove(project);
+        }
+        if (getWebServiceViews() != null) {
+            for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
+                impl.removeChangeListener(serviceListener, ViewType.SERVICE);
+                impl.removeChangeListener(clientListener, ViewType.CLIENT);
+                impl.removeNotify();
+            }
+        }
+    }
+
+    private void callImplAddNotify(ProjectWebServiceViewImpl impl) {
+        impl.addNotify();
+        impl.addChangeListener(serviceListener, ViewType.SERVICE);
+        impl.addChangeListener(clientListener, ViewType.CLIENT);
+    }
+
+    private void callImplRemoveNotify(ProjectWebServiceViewImpl impl) {
+        impl.removeChangeListener(serviceListener, ViewType.SERVICE);
+        impl.removeChangeListener(clientListener, ViewType.CLIENT);
+        impl.removeNotify();
+    }
+
+    private void initImpls() {
+        if (getWebServiceViews() == null) {
+            impls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(project));
+        }
+    }
+
+    private void updateImpls(boolean fireEvents) {
+        if (getWebServiceViews() == null) {
+            initImpls();
+            if (fireEvents) {
+                for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
+                    fireChange(new ChangeEvent(impl), ViewType.SERVICE);
+                    fireChange(new ChangeEvent(impl), ViewType.CLIENT);
+                    callImplAddNotify(impl);
+                }
+            }
+            return;
+        }
+        List<ProjectWebServiceViewImpl> oldImpls = new ArrayList<ProjectWebServiceViewImpl>(getWebServiceViews());
+        List<ProjectWebServiceViewImpl> newImpls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(project));
+        if (oldImpls.containsAll(newImpls)) {
+            oldImpls.removeAll(newImpls);
+            for (ProjectWebServiceViewImpl impl : oldImpls) {
+                if (fireEvents) {
+                    fireChange(new ChangeEvent(impl), ViewType.SERVICE);
+                    fireChange(new ChangeEvent(impl), ViewType.CLIENT);
+                    callImplRemoveNotify(impl);
+                }
+                impls.remove(impl);
+            }
+            return;
+        }
+        if (newImpls.containsAll(oldImpls)) {
+            newImpls.removeAll(oldImpls);
+            for (ProjectWebServiceViewImpl impl : newImpls) {
+                if (fireEvents) {
+                    fireChange(new ChangeEvent(impl), ViewType.SERVICE);
+                    fireChange(new ChangeEvent(impl), ViewType.CLIENT);
+                    callImplAddNotify(impl);
+                }
+                impls.add(impl);
+            }
+            return;
+        }
+        oldImpls.removeAll(newImpls);
+        newImpls.removeAll(getWebServiceViews());
+        for (ProjectWebServiceViewImpl impl : oldImpls) {
+            if (fireEvents) {
+                fireChange(new ChangeEvent(impl), ViewType.SERVICE);
+                fireChange(new ChangeEvent(impl), ViewType.CLIENT);
+                callImplRemoveNotify(impl);
+            }
+            impls.remove(impl);
+        }
+        for (ProjectWebServiceViewImpl impl : newImpls) {
+            if (fireEvents) {
+                fireChange(new ChangeEvent(impl), ViewType.SERVICE);
+                fireChange(new ChangeEvent(impl), ViewType.CLIENT);
+                callImplAddNotify(impl);
+            }
+            impls.add(impl);
+        }
+    }
+
+    private final class ChangeListenerDelegate implements ChangeListener {
+
+        private final ViewType viewType;
+
+        private ChangeListenerDelegate(ViewType viewType) {
+            this.viewType = viewType;
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            fireChange(e, viewType);
+        }
+    }
 
     /**
      * Returns lookup.result for ProjectWebServiceViewProviders
@@ -143,17 +313,25 @@ public abstract class ProjectWebServiceView {
         return implementations;
     }
 
+    static ProjectWebServiceView getProjectWebServiceView(Project project) {
+        ProjectWebServiceView result;
+        if (views == null || (result = views.get(project)) == null) {
+            return new ProjectWebServiceView(project);
+        }
+        return result;
+    }
+
     /**
      * Creates WebServiceViews for given project.
      * @param project Project for which WebServiceViews are to be created.
      * @return list of WebServiceViews.
      */
-    public static List<ProjectWebServiceView> createWebServiceViews(Project project) {
+    private static List<ProjectWebServiceViewImpl> createWebServiceViews(Project project) {
         Collection<? extends ProjectWebServiceViewProvider> providers = getProviders().allInstances();
         if (providers == null || providers.isEmpty()) {
-            return Collections.<ProjectWebServiceView>emptyList();
+            return Collections.<ProjectWebServiceViewImpl>emptyList();
         }
-        List<ProjectWebServiceView> views = new ArrayList<ProjectWebServiceView>();
+        List<ProjectWebServiceViewImpl> views = new ArrayList<ProjectWebServiceViewImpl>();
         for (ProjectWebServiceViewProvider provider : providers) {
             views.add(provider.createProjectWebServiceView(project));
         }
@@ -185,9 +363,9 @@ public abstract class ProjectWebServiceView {
      * @return array of nodes representing Web Services/Clients in given project.
      */
     private static Node[] createWebServiceNodes(Project project, ViewType viewType) {
-        List<ProjectWebServiceView> views = createWebServiceViews(project);
+        List<ProjectWebServiceViewImpl> impls = createWebServiceViews(project);
         List<Node> result = new ArrayList<Node>();
-        for (ProjectWebServiceView view : views) {
+        for (ProjectWebServiceViewImpl view : impls) {
             if (!view.isViewEmpty(viewType)) {
                 result.addAll(Arrays.<Node>asList(view.createView(viewType)));
             }

@@ -94,7 +94,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
             new ProjectServerWizardPanel(J2eeModule.EJB, 
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "NewEjbJarProjectWizardIterator.secondpanel"),
                     NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "TXT_NewWebApp"),
-                    true, false, false, false, true),
+                    true, false, false, false, false, true),
         };
     }
 

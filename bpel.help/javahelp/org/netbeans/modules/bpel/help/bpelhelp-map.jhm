@@ -104,9 +104,9 @@
 	<mapID target="orch_windows_editors_cloning" url="windows_editors/cloning.html"/>
 	<mapID target="orch_design_about_correlation" url="design/about_correlation_and_wizard.html"/>
 	<mapID target="orch_design_correlation_manually" url="design/create_correlation_manually.html"/>
-	<mapID target="add_compensation_handler" url="elements/add_compensation_handler.html"/>
-	<mapID target="add_termination_handler" url="elements/add_termination_handler.html"/>
-	<mapID target="compensate" url="elements/compensate.html"/>
-	<mapID target="compensatescope" url="elements/compensatescope.html"/>
-	<mapID target="rethrow" url="elements/rethrow.html"/>
+	<mapID target="orch_elements_add_compensation_handler" url="elements/add_compensation_handler.html"/>
+	<mapID target="orch_elements_add_termination_handler" url="elements/add_termination_handler.html"/>
+	<mapID target="orch_elements_compensate" url="elements/compensate.html"/>
+	<mapID target="orch_elements_compensatescope" url="elements/compensatescope.html"/>
+	<mapID target="orch_elements_rethrow" url="elements/rethrow.html"/>
 </map>
