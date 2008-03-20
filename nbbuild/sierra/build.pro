@@ -80,6 +80,7 @@
         ${test.cvs.path}/clusterSupport/ClusterBPEL
         ${test.cvs.path}/compensation/IterativeScopes
         ${test.cvs.path}/compensation/NestedScope
+        ${test.cvs.path}/correlation/correlationBPEL
         ${test.cvs.path}/correlation/correlationBPEL2
         ${test.cvs.path}/correlation/outoforder
         ${test.cvs.path}/correlation/CorrelationOnePropBPEL
