@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.glassfish.jruby</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

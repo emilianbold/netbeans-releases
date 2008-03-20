@@ -46,6 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -53,9 +54,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.spi.glassfish.CustomizerCookie;
 import org.netbeans.spi.glassfish.GlassfishModuleFactory;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
@@ -222,9 +226,27 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     
     public JComponent getCustomizer() {
         // !PW FIXME use real customizer
-        javax.swing.JPanel customizer = new javax.swing.JPanel();
-        customizer.add(new javax.swing.JLabel("TODO V3 Server Customizer"));
-        return customizer;
+        JPanel commonCustomizer = new JPanel();
+        commonCustomizer.setName("Common");
+        commonCustomizer.add(new javax.swing.JLabel("TODO V3 Server Common Properties"));
+        
+        Collection<JPanel> pages = new LinkedList<JPanel>();
+        Collection<? extends CustomizerCookie> lookupAll = lookup.lookupAll(CustomizerCookie.class);
+        for(CustomizerCookie cookie : lookupAll) {
+            pages.addAll(cookie.getCustomizerPages());
+        }
+
+        JTabbedPane tabbedPane = null;
+        for(JPanel page : pages) {
+            if(tabbedPane == null) {
+                tabbedPane = new JTabbedPane();
+                tabbedPane.add(commonCustomizer);
+            }
+            
+            tabbedPane.add(page);
+        }
+        
+        return tabbedPane != null ? tabbedPane : commonCustomizer;
     }
 
     public boolean isRemovable() {

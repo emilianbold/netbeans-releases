@@ -40,6 +40,8 @@
 package org.netbeans.modules.glassfish.jruby;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -48,9 +50,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.spi.glassfish.CustomizerCookie;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.openide.util.Lookup;
@@ -61,7 +66,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Peter Williams
  */
-public class JRubyServerModule implements RubyInstance {
+public class JRubyServerModule implements RubyInstance, CustomizerCookie {
 
     private Lookup lookup;
     
@@ -388,6 +393,15 @@ public class JRubyServerModule implements RubyInstance {
 
         Logger.getLogger("glassfish-jruby").log(Level.INFO, "Invalid operation state: " + state);
         return OperationState.FAILED;
+    }
+
+    // ------------------------------------------------------------------------
+    //  CustomizerCookie implementation
+    // ------------------------------------------------------------------------
+    public Collection<JPanel> getCustomizerPages() {
+        Collection<JPanel> result = new LinkedList<JPanel>();
+        result.add(new JRubyServerCustomizer());
+        return result;
     }
 
 }
