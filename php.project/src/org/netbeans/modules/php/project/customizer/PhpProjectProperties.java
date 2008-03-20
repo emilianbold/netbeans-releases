@@ -199,11 +199,12 @@ public class PhpProjectProperties {
         
     }
 
-    PhpProject getProject() {
+    public PhpProject getProject() {
         return myProject;
     }
 
-    EditableProperties load() {
+    // XXX remove this method
+    public EditableProperties load() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
 
             public Host run() {

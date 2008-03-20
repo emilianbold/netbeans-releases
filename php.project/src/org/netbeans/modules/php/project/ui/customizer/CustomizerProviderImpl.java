@@ -86,6 +86,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             return;
         }
         PhpProjectProperties uiProperties = new PhpProjectProperties((PhpProject) project);
+        uiProperties.load();
         Lookup context = Lookups.fixed(new Object[] {
             project,
             uiProperties,

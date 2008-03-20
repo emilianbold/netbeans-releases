@@ -232,7 +232,7 @@ public class PhpProject implements Project, AntProjectListener {
         return myHelper;
     }
     
-    PropertyEvaluator getEvaluator() {
+    public PropertyEvaluator getEvaluator() {
         if ( myEvaluator == null ) {
             myEvaluator = getHelper().getStandardPropertyEvaluator();
         }

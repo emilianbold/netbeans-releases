@@ -46,8 +46,10 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -170,7 +172,8 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectLocation());
+        String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
         setProjectLocation(newLocation);
     }//GEN-LAST:event_browseButtonActionPerformed
 

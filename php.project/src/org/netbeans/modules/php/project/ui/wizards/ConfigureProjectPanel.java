@@ -39,19 +39,21 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -324,7 +326,8 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             String sourcesLocation = localServer.getSrcRoot();
 
             File sources = FileUtil.normalizeFile(new File(sourcesLocation));
-            if (!Utils.isValidFileName(sources.getName())) {
+            if (sourcesLocation.trim().length() == 0
+                    || !Utils.isValidFileName(sources.getName())) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
             }
 

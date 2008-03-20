@@ -1,0 +1,185 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.php.project.ui;
+
+import java.io.File;
+import javax.swing.JPanel;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
+
+/**
+ * UI panel for selecting local server.
+ * @author Tomas Mysik
+ */
+public class LocalServerVisual extends JPanel {
+    private static final long serialVersionUID = -94986070361530982L;
+
+    private final WebFolderNameProvider webFolderNameProvider;
+    private final String browseDialogTitle;
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private /*final*/ MutableComboBoxModel localServerComboBoxModel;
+    private final LocalServer.ComboBoxEditor localServerComboBoxEditor;
+
+    public LocalServerVisual(WebFolderNameProvider webFolderNameProvider, String browseDialogTitle,
+            LocalServer... defaultLocalServers) {
+        initComponents();
+
+        this.webFolderNameProvider = webFolderNameProvider;
+        this.browseDialogTitle = browseDialogTitle;
+        localServerComboBoxModel = new LocalServer.ComboBoxModel(defaultLocalServers);
+        localServerComboBoxEditor = new LocalServer.ComboBoxEditor();
+
+        localServerComboBox.setModel(localServerComboBoxModel);
+        localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
+        localServerComboBox.setEditor(localServerComboBoxEditor);
+
+        localServerComboBoxEditor.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
+            }
+        });
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public LocalServer getLocalServer() {
+        return (LocalServer) localServerComboBox.getSelectedItem();
+    }
+
+    public MutableComboBoxModel getLocalServerModel() {
+        return localServerComboBoxModel;
+    }
+
+    public void setLocalServerModel(MutableComboBoxModel localServers) {
+        localServerComboBoxModel = localServers;
+        localServerComboBox.setModel(localServerComboBoxModel);
+    }
+
+    public void selectLocalServer(LocalServer localServer) {
+        localServerComboBox.setSelectedItem(localServer);
+    }
+
+    // to enable/disable components
+    public void setState(boolean enabled) {
+        localServerComboBox.setEnabled(enabled);
+        browseButton.setEnabled(enabled);
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        localServerComboBox = new javax.swing.JComboBox();
+        browseButton = new javax.swing.JButton();
+
+        localServerComboBox.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(LocalServerVisual.class, "LBL_Browse")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(localServerComboBox, 0, 305, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(browseButton))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(browseButton)
+                .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
+                webFolderNameProvider.getWebFolderName(), browseDialogTitle);
+    }//GEN-LAST:event_browseButtonActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
+    private javax.swing.JComboBox localServerComboBox;
+    // End of variables declaration//GEN-END:variables
+
+    /**
+     * Validate given local server instance, its source root.
+     * @param localServer local server to validate.
+     * @return error message or <code>null</null> if source root is ok.
+     */
+    public static String validateLocalServer(final LocalServer localServer) {
+        if (!localServer.isEditable()) {
+            return null;
+        }
+        String err = null;
+        String sourcesLocation = localServer.getSrcRoot();
+        File sources = FileUtil.normalizeFile(new File(sourcesLocation));
+        if (sourcesLocation.trim().length() == 0
+                || !Utils.isValidFileName(sources.getName())) {
+            err = NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_IllegalSourcesName");
+        } else {
+            err = Utils.validateProjectDirectory(sourcesLocation, "Sources"); // NOI18N
+        }
+        return err;
+    }
+}

@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

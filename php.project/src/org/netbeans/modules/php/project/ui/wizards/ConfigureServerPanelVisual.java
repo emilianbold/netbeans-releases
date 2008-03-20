@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -59,7 +62,7 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private MutableComboBoxModel localServerComboBoxModel;
-    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
+    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor();
 
     public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
         this.wizardPanel = wizardPanel;
@@ -150,7 +153,7 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
                         .addContainerGap()
                         .add(localServerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerComboBox, 0, 205, Short.MAX_VALUE)
+                        .add(localServerComboBox, 0, 152, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(locateButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -187,7 +190,8 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
-                webFolderNameProvider.getWebFolderName());
+                webFolderNameProvider.getWebFolderName(),
+                NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_SelectWebServerLocation"));
     }//GEN-LAST:event_browseButtonActionPerformed
 
 

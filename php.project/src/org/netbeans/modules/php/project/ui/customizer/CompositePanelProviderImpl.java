@@ -53,7 +53,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
-    private static final String SERVER_CONFIGURATION = "ServerConfiguration"; // NOI18N
     private static final String COMMAND_LINE = "CommandLine"; // NOI18N
 
     private final String name;
@@ -77,12 +76,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_PhpIncludePath"),
                     null,
                     categories);
-        } else if (SERVER_CONFIGURATION.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    SERVER_CONFIGURATION,
-                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_ServerConfiguration"),
-                    null,
-                    categories);
         } else if (COMMAND_LINE.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     COMMAND_LINE,
@@ -101,8 +94,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerSources(category, uiProps);
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerPhpIncludePath(category, uiProps);
-        } else if (SERVER_CONFIGURATION.equals(nm)) {
-            return new CustomizerServerConfiguration(category, uiProps);
         } else if (COMMAND_LINE.equals(nm)) {
             return new CustomizerCommandLine(category, uiProps);
         }
@@ -115,10 +106,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static CompositePanelProviderImpl createPhpIncludePath() {
         return new CompositePanelProviderImpl(PHP_INCLUDE_PATH);
-    }
-
-    public static CompositePanelProviderImpl createServerConfiguration() {
-        return new CompositePanelProviderImpl(SERVER_CONFIGURATION);
     }
 
     public static CompositePanelProviderImpl createCommandLine() {

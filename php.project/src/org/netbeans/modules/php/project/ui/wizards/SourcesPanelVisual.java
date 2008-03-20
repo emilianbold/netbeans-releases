@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
@@ -46,7 +48,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -62,7 +66,7 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private MutableComboBoxModel localServerComboBoxModel;
-    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
+    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor();
 
 
     /** Creates new form SourcesPanelVisual */
@@ -179,7 +183,8 @@ public class SourcesPanelVisual extends JPanel implements DocumentListener, Chan
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
-                webFolderNameProvider.getWebFolderName());
+                webFolderNameProvider.getWebFolderName(),
+                NbBundle.getMessage(SourcesPanelVisual.class, "LBL_SelectSourcesLocation"));
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
