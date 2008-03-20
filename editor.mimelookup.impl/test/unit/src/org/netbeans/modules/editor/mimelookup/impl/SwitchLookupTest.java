@@ -42,11 +42,16 @@
 package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.util.Collection;
+import javax.swing.JPanel;
+import junit.framework.Test;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -57,6 +62,11 @@ public class SwitchLookupTest extends NbTestCase {
     /** Creates a new instance of FolderPathLookupTest */
     public SwitchLookupTest(String name) {
         super(name);
+    }
+    
+    public static Test suite() {
+        //return new SwitchLookupTest("testSimpleWhileSomeOneElseHoldsAWTLock");
+        return new NbTestSuite(SwitchLookupTest.class);
     }
 
     protected @Override void setUp() throws Exception {
@@ -89,7 +99,7 @@ public class SwitchLookupTest extends NbTestCase {
         
         assertEquals("Wrong number of instances", 0, instances.size());
     }
-
+    
     public void testAddingMimePath() throws Exception {
         // Create lookup over a non-existing mime path
         Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
