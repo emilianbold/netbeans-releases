@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.actions.DebugAction;
 import org.netbeans.modules.glassfish.common.actions.RefreshAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
@@ -257,8 +258,8 @@ public class LogViewMgr {
 
             Action[] actions = new Action[] {
                 new StartServerAction.OutputAction(commonSupport),
-//                new DebugAction.OutputAction(node),
-//                new RestartAction.OutputAction(node),
+                new DebugAction.OutputAction(commonSupport),
+//                new RestartAction.OutputAction(commonSupport),
                 new StopServerAction.OutputAction(commonSupport),
                 new RefreshAction.OutputAction(commonSupport)
             };
