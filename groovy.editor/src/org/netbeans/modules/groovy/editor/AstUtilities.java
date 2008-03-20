@@ -82,7 +82,6 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class AstUtilities {
     
-    
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult("text/x-groovy", 0);
@@ -221,15 +220,38 @@ public class AstUtilities {
             
             // happens in some cases when groovy source uses some non-imported java class
             if (doc != null) {
+                
+                // if we are dealing with an empty groovy-file, we have take into consideration,
+                // that even though we're running on an ClassNode, there is no "class " String 
+                // in the sourcefile. So take doc.getLength() as maximum.
+                
                 int start = getOffset(doc, lineNumber, columnNumber) + "class".length(); // NOI18N
+                int docLength = doc.getLength();
+                
+                if (start > docLength) {
+                    start = docLength;
+                } 
+                
                 try {
                     start = Utilities.getFirstNonWhiteFwd(doc, start);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+                
+                // This seems to happen every now and then ...
+                if (start < 0){
+                    start = 0;
+                }
 
                 ClassNode classNode = (ClassNode) node;
-                return new OffsetRange(start, start + classNode.getNameWithoutPackage().length());
+                
+                int end = start + classNode.getNameWithoutPackage().length();
+                
+                if (end > docLength) {
+                    end = docLength;
+                }
+                
+                return new OffsetRange(start, end);
             }
         } else if (node instanceof ConstructorNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
@@ -278,8 +300,8 @@ public class AstUtilities {
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
         
-        Logger LOG = Logger.getLogger(AstUtilities.class.getName());
-        LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
+        // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
+        // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
         
         List<ASTNode> children = new ArrayList<ASTNode>();
         
@@ -311,7 +333,7 @@ public class AstUtilities {
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }
-                LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
+                // PRIV_LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
             }
             
             
@@ -335,7 +357,7 @@ public class AstUtilities {
             children = astChildrenSupport.children();
         }
         
-        LOG.log(Level.FINEST, "List:" + children.toString());
+        // PRIV_LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
     
@@ -348,6 +370,12 @@ public class AstUtilities {
 
         int offset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         offset += (columnNumber - 1);
+        
+        // some sanity checks 
+        if (offset < 0){
+            offset = 0;
+        }
+        
         return offset;
     }
     
