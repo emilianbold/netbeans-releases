@@ -44,9 +44,6 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import org.netbeans.modules.cnd.repository.disk.api.RepFilesAccessStrategy;
-import org.netbeans.modules.cnd.repository.disk.api.RepositoryFilesHelperCacheStrategy;
-import org.netbeans.modules.cnd.repository.impl.*;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentBufferedRWAccess;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -56,14 +53,14 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  *
  * @author Nickolay Dalmatov
  */
-public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy {
+public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
-    private RepositoryFilesHelperCacheStrategy theCache;
+    private RepositoryHelperCache theCache;
     private Object cacheLock = new String("Repository file cache lock"); //NOI18N
     
     /** Creates a new instance of SimpleRepositoryFilesHelper */
-    public SimpleRepFilesAccessStrategyImpl(int openFilesLimit) {
-        theCache = SimpleRepositoryHelperCacheImpl.getInstance(openFilesLimit);
+    public FilesAccessStrategyImpl(int openFilesLimit) {
+        theCache = RepositoryHelperCache.getInstance(openFilesLimit);
     }
     
     public ConcurrentFileRWAccess getFileForObj(Key id, final boolean read) throws IOException {

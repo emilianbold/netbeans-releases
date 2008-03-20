@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.disk.api.RepFilesAccessStrategy;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -58,14 +57,14 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
     
     final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
     
-    private RepFilesAccessStrategy theFilesHelper;
+    private FilesAccessStrategy theFilesHelper;
     private int openFilesLimit = DEFAULT_REPOSITORY_OPEN_FILES_LIMIT;
     
     /** Creates a new instance of BaseDiskRepository */
     public BaseDiskRepositoryImpl() {
         super();
         // use the simple helper implementation
-        theFilesHelper = new SimpleRepFilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
+        theFilesHelper = new FilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
     }
     
     public void setOpenFilesLimit (int limit) throws IOException {
@@ -74,11 +73,11 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
     }
     
     /** Creates a new instance of SimpleDiskRepository */
-    public BaseDiskRepositoryImpl(RepFilesAccessStrategy aFilesHelper) {
+    public BaseDiskRepositoryImpl(FilesAccessStrategy aFilesHelper) {
         theFilesHelper = aFilesHelper;
     }
     
-    public void setFilesHelper(RepFilesAccessStrategy aNavigator) {
+    public void setFilesHelper(FilesAccessStrategy aNavigator) {
         theFilesHelper = aNavigator;
     }
     
