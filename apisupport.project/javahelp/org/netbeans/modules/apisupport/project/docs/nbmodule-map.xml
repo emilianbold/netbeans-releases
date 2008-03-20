@@ -28,6 +28,7 @@
     <mapID target="apisupport_create_module" url="create_plugin/projectlevel_create/create_module.html"/>
     <mapID target="apisupport_create_library_wrapper_module" url="create_plugin/projectlevel_create/create_library_wrapper_module.html"/>
     <mapID target="apisupport_create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
+    <mapID target="apisupport_create_platform_application" url="create_plugin/projectlevel_create/create_platform_application.html"/>
     <!-- Start of "File-level Creating" section -->
     <mapID target="apisupport_about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>
     <mapID target="apisupport_about_j2se_library_descriptors" url="create_plugin/filelevel_create/about_j2se_library_descriptors.html"/>	
@@ -100,8 +101,8 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="csh/BasicConfWizardPanel.html"/>
     <!-- Module Suite Project -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="csh/BasicInfoWizardPanel_suite.html"/>
-    <!-- XXX could use a separate page if desired: -->
-    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_application" url="csh/BasicInfoWizardPanel_suite.html"/>
+    <!-- NetBeans Platform Application could use a separate page if desired: -->
+    <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_application" url="csh/BasicInfoWizardPanel_application.html"/>
     <!-- Library Wrapper Module Project -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>

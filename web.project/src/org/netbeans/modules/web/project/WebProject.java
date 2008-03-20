@@ -1117,7 +1117,9 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/Persistence/JsfFromDB", // NOI18N                    
         "Templates/WebServices/WebService.java",    // NOI18N
         "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N                    
+        "Templates/WebServices/WebServiceClient",   // NOI18N  
+        "Templates/WebServices/RestServicesFromEntities", // NOI18N
+        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
         "Templates/Other/Folder",                   // NOI18N
     };
 
