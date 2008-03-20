@@ -40,18 +40,11 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.NodeAction;
 
 /**
