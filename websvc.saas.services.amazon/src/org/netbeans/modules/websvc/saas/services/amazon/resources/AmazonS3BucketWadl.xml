@@ -69,6 +69,24 @@
                 </response>
             </method>
             
+            <method name="PUT" id="createBucket">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+            
+            <method name="DELETE" id="deleteBucket">
+                <request>
+                    <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                </request>
+                <response>
+                    <representation mediaType="application/xml"/>
+                </response>
+            </method>
+            
             <method name="GET" id="getLocation">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
