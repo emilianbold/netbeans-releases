@@ -323,11 +323,18 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             }
         }
         
+        if (treeItem instanceof Part) {
+            if (((Part) treeItem).getType() != null ) {
+                return ((Part) treeItem).getType().getRefString() ;
+            }
+            if (((Part) treeItem).getElement() != null) {
+                return ((Part) treeItem).getElement().getRefString() ;
+            }
+        }
         if (treeItem instanceof LocalElement) {
-            if (((LocalElement)treeItem).getType() != null &&
-                    ((LocalElement)treeItem).getType().get() != null)
+            if (((LocalElement)treeItem).getType() != null)
             {
-                return ((LocalElement)treeItem).getType().get().getName();
+                return ((LocalElement)treeItem).getType().getRefString();
             }
         }
         
@@ -338,6 +345,7 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         
         if (treeItem instanceof GlobalAttribute) {
+            
             if (((GlobalAttribute)treeItem).getType() != null) {
                 return ((GlobalAttribute)treeItem).getType().getRefString();
             }
@@ -346,13 +354,16 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof GlobalType) {
             return ((GlobalType)treeItem).getName();
         }
-
+        
         if (treeItem instanceof Variable) {
             if (((Variable) treeItem).getMessageType() != null) {
                 return ((Variable) treeItem).getMessageType().getRefString();
             }
             if (((Variable) treeItem).getType() != null) {
                 return ((Variable) treeItem).getType().getRefString();
+            }
+            if (((Variable) treeItem).getElementType() != null) {
+                return ((Variable) treeItem).getElementType().getName();
             }
         }    
         return "not named type";

@@ -233,7 +233,7 @@ public final class CustomizableSideBar {
         return sideBarsMap;
     }
 
-    private static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
+    public static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
         
         Lookup.Result<SideBarFactoriesProvider> lR = LR.get(mimePath);

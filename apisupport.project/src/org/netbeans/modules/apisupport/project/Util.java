@@ -224,57 +224,25 @@ public final class Util {
         return to;
     }
 
-    // CANDIDATES FOR FileUtil (#59311):
-    
     /**
-     * Creates a URL for a directory on disk.
-     * Works correctly even if the directory does not currently exist.
+     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
      */
     public static URL urlForDir(File dir) {
-        try {
-            URL u = FileUtil.normalizeFile(dir).toURI().toURL();
-            String s = u.toExternalForm();
-            if (s.endsWith("/")) { // NOI18N
-                return u;
-            } else {
-                return new URL(s + "/"); // NOI18N
-            }
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
-        }
+        return FileUtil.urlForArchiveOrDir(dir);
     }
     
     /**
-     * Creates a URL for the root of a JAR on disk.
+     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
      */
     public static URL urlForJar(File jar) {
-        try {
-            return FileUtil.getArchiveRoot(FileUtil.normalizeFile(jar).toURI().toURL());
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
-        }
+        return FileUtil.urlForArchiveOrDir(jar);
     }
     
     /**
-     * Creates a URL for a directory on disk or the root of a JAR.
-     * Works correctly whether or not the directory or JAR currently exists.
-     * Detects whether the file is supposed to be a directory or a JAR.
+     * @deprecated Use FileUtil#urlForArchiveOrDir instead.
      */
     public static URL urlForDirOrJar(File location) {
-        try {
-            URL u = FileUtil.normalizeFile(location).toURI().toURL();
-            if (FileUtil.isArchiveFile(u)) {
-                u = FileUtil.getArchiveRoot(u);
-            } else {
-                String us = u.toExternalForm();
-                if (!us.endsWith("/")) { // NOI18N
-                    u = new URL(us + "/"); // NOI18N
-                }
-            }
-            return u;
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
-        }
+        return FileUtil.urlForArchiveOrDir(location);
     }
     
     /**

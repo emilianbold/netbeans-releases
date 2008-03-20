@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,7 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -115,10 +115,12 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
 
         // remove and check
         gemManager.removeGemPath(dummyRepo);
+        // XXX this is neeeded on Windows. But we do use FileObject everywhere (?!)
+        platform.getLibFO().refresh();
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
         gemManager = platform.getGemManager();
-        assertEquals("two repositories", 1, RubyPlatformManager.getDefaultPlatform().getGemManager().getRepositories().size());
+        assertEquals("two repositories", 1, gemManager.getRepositories().size());
         gemManager.removeGemPath(dummyRepo);
     }
 

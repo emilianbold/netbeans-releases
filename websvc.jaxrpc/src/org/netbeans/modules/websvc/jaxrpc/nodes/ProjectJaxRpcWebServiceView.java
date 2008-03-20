@@ -44,8 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.core.ProjectWebServiceView;
@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
+import org.netbeans.modules.websvc.core.AbstractProjectWebServiceViewImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -72,16 +73,14 @@ import org.openide.util.WeakListeners;
  *
  * @author Ajit
  */
-final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
+final class ProjectJaxRpcWebServiceView extends AbstractProjectWebServiceViewImpl {
 
     private static final String WS_DD = "webservices.xml"; //NOI18N
 
     private static final String WSDL_EXT = "wsdl"; //NOI18N
 
-    private Project project;
     private WebServicesSupport wss;
     private WebServicesClientSupport wscs;
-    private ArrayList<FileObject> roots;
     boolean wsdlFolderCreated = false;
     private final FileChangeListener wsdlCreationListener;
     private final FileChangeListener wsddCreationListener;
@@ -90,28 +89,17 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     private int noOfClients = -1;
 
     ProjectJaxRpcWebServiceView(Project p) {
-        super();
-        project = p;
-        FileObject projectDir = project.getProjectDirectory();
+        super(p);
+        FileObject projectDir = p.getProjectDirectory();
         wss = WebServicesSupport.getWebServicesSupport(projectDir);
         wscs = WebServicesClientSupport.getWebServicesClientSupport(projectDir);
-        roots = new ArrayList<FileObject>();
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        if (sources != null) {
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (groups != null) {
-                for (SourceGroup group : groups) {
-                    roots.add(group.getRootFolder());
-                }
-            }
-        }
         projectXmlListener = new ProjectXmlListener();
         wsddCreationListener = new WSDDCreationListener();
         wsddListener = new WSDDListener();
         wsdlCreationListener = new WsdlCreationListener();
     }
 
-    protected Node[] createView(ViewType viewType) {
+    public Node[] createView(ProjectWebServiceView.ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 return createServiceNodes();
@@ -122,9 +110,22 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     }
 
     private Node[] createServiceNodes() {
+        if(wss==null) {
+            return new Node[0];
+        }
         try {
             Webservices webServices = DDProvider.getDefault().getDDRoot(wss.getWebservicesDD());
             if (webServices == null) {
+                return new Node[0];
+            }
+            ArrayList<FileObject> roots = new ArrayList<FileObject>();
+            SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (groups != null) {
+                for (SourceGroup group : groups) {
+                    roots.add(group.getRootFolder());
+                }
+            }
+            if (roots == null || roots.isEmpty()) {
                 return new Node[0];
             }
             ArrayList<Node> nodes = new ArrayList<Node>();
@@ -145,6 +146,9 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     }
 
     private Node[] createClientNodes() {
+        if(wscs==null) {
+            return new Node[0];
+        }
         ArrayList<Node> nodes = new ArrayList<Node>();
         FileObject wsdlFolder = wscs.getWsdlFolder();
         FileObject[] wsdls = wsdlFolder.getChildren();
@@ -194,7 +198,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         return false;
     }
 
-    protected boolean isViewEmpty(ViewType viewType) {
+    public boolean isViewEmpty(ProjectWebServiceView.ViewType viewType) {
         switch (viewType) {
             case SERVICE:
                 return wss == null || wss.getServices().isEmpty();
@@ -217,7 +221,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         return true;
     }
 
-    protected void addNotify() {
+    public void addNotify() {
         if (wss != null) {
             FileObject wsddFolder = wss.getWsDDFolder();
             if (wsddFolder != null) {
@@ -232,7 +236,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
             }
         }
         if (wscs != null) {
-            FileObject prjXml = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+            FileObject prjXml = getProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
             if (prjXml != null) {
                 prjXml.addFileChangeListener(FileUtil.weakFileChangeListener(projectXmlListener, prjXml));
             }
@@ -244,7 +248,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         }
     }
 
-    protected void removeNotify() {
+    public void removeNotify() {
         if (wss != null) {
             FileObject wsddFolder = wss.getWsDDFolder();
             if (wsddFolder != null) {
@@ -261,7 +265,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
             }
         }
         if (wscs != null) {
-            FileObject prjXml = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+            FileObject prjXml = getProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
             if (prjXml != null) {
                 prjXml.removeFileChangeListener(projectXmlListener);
             }
@@ -291,7 +295,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         @Override
         public void fileDataCreated(FileEvent fe) {
             if (WS_DD.equalsIgnoreCase(fe.getFile().getNameExt())) {
-                fireChange(ViewType.SERVICE);
+                fireChange(ProjectWebServiceView.ViewType.SERVICE);
                 try {
                     Webservices webServices = DDProvider.getDefault().getDDRoot(wss.getWebservicesDD());
                     if (webServices != null) {
@@ -305,7 +309,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         @Override
         public void fileDeleted(FileEvent fe) {
             if (WS_DD.equalsIgnoreCase(fe.getFile().getNameExt())) {
-                fireChange(ViewType.SERVICE);
+                fireChange(ProjectWebServiceView.ViewType.SERVICE);
             }
         }
     }
@@ -315,16 +319,16 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
         @Override
         public void fileDataCreated(FileEvent fe) {
             if (WSDL_EXT.equalsIgnoreCase(fe.getFile().getExt())) {
-                fireChange(ViewType.CLIENT);
+                fireChange(ProjectWebServiceView.ViewType.CLIENT);
             }
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
             if (WSDL_EXT.equalsIgnoreCase(fe.getFile().getExt())) {
-                fireChange(ViewType.CLIENT);
+                fireChange(ProjectWebServiceView.ViewType.CLIENT);
             } else if (fe.getFile().isFolder() && WSDL_EXT.equals(fe.getFile().getName())) {
-                fireChange(ViewType.CLIENT);
+                fireChange(ProjectWebServiceView.ViewType.CLIENT);
             }
         }
     }
@@ -332,7 +336,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
     private final class WSDDListener implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            fireChange(ViewType.SERVICE);
+            fireChange(ProjectWebServiceView.ViewType.SERVICE);
         }
     }
 
@@ -343,7 +347,7 @@ final class ProjectJaxRpcWebServiceView extends ProjectWebServiceView {
             int newNoOfClients = wscs.getServiceClients().size();
             if (newNoOfClients != noOfClients) {
                 noOfClients = newNoOfClients;
-                fireChange(ViewType.CLIENT);
+                fireChange(ProjectWebServiceView.ViewType.CLIENT);
             }
             if (!wsdlFolderCreated) {
                 FileObject wsdlFolder = wscs.getWsdlFolder();
