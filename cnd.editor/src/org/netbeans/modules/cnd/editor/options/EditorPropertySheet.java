@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -92,12 +94,22 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
     private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
-    private PropertySheet holder = new PropertySheet();
+    private PropertySheet holder;
 
 
     EditorPropertySheet(EditorOptionsPanelController topControler) {
         this.topControler = topControler;
         initComponents();
+
+        holder = new PropertySheet();
+        GridBagConstraints fillConstraints = new GridBagConstraints();
+        fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        fillConstraints.weightx = 1.0;
+        fillConstraints.weighty = 1.0;
+        categoryPanel.add(holder, fillConstraints);
+        
         manageStyles.setMinimumSize(new Dimension(126,26));
         setName("Tab_Name"); // NOI18N (used as a bundle key)
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
@@ -224,6 +236,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setName("NewLine"); // NOI18N
 	set.setDisplayName(getString("LBL_NewLine")); // NOI18N
 	set.setShortDescription(getString("HINT_NewLine")); // NOI18N
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineFunctionDefinitionName));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineCatch));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineWhile));
@@ -327,22 +340,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.addLeadingStarInComment));
         sheet.put(set);
 
-        categoryPanel.setVisible(false);
-        categoryPanel.removeAll();
-        holder.removeNotify();
+        if (TRACE && lastSheetPreferences != null) {
+            //Because NPE in PropertySheet in 586 line: Arrays.asList(nodes)
+            Logger.getLogger(PropertySheet.class.getName()).setLevel(Level.FINE);
+        }
         DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
         holder.setNodes(dummyNodes);
-        GridBagConstraints fillConstraints = new GridBagConstraints();
-        fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        fillConstraints.weightx = 1.0;
-        fillConstraints.weighty = 1.0;
-        categoryPanel.add(holder, fillConstraints);
-        categoryPanel.validate();
-        categoryPanel.repaint();
-        categoryPanel.setVisible(true);
     
         preferences.addPreferenceChangeListener(this);
         lastSheetPreferences = preferences;
@@ -590,8 +594,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jLabel2, gridBagConstraints);
 
-        languagesComboBox.setMinimumSize(new java.awt.Dimension(50, 18));
-        languagesComboBox.setPreferredSize(new java.awt.Dimension(50, 22));
+        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
+        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 22));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
