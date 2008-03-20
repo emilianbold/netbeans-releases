@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.Project;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import javax.swing.SwingUtilities;
@@ -60,7 +62,10 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -80,36 +85,55 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         env = project.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
         String[] configFiles = getConfigFilesFromProject(project);
         this.cmbResource.setModel(new DefaultComboBoxModel(configFiles));
-        databaseTables = env.getAllDatabaseTablesForProject();
-        this.cmbDatabaseTable.setModel(new DefaultComboBoxModel(databaseTables.toArray()));
+        fillDatabaseTable();
         this.browseButton.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
-            }                
+            }
         });
     }
-    
+
+    // This fills the databaseTable drop down with a list of tables
+    public void fillDatabaseTable() {
+        if (cmbResource.getItemCount() == 0) {
+            this.cmbDatabaseTable.setModel(new DefaultComboBoxModel(new String[]{}));
+        } else {
+            if (cmbResource.getSelectedIndex() != -1) {
+                try {
+                    HibernateConfiguration hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbResource.getSelectedIndex()))).getHibernateConfiguration();
+                    databaseTables = env.getAllDatabaseTables(hibConf);
+                    // adding an empty element to the list
+                    databaseTables.add(0, "");
+                    this.cmbDatabaseTable.setModel(new DefaultComboBoxModel(databaseTables.toArray()));
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
     private void browseButtonActionPerformed(ActionEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
 
-                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
-                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
-                            }
+                    public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
+                        return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                    }
 
-                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
-                                return true;
-                            }
-                        });
+                    public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                        return true;
+                    }
+                });
 
                 if (handle != null) {
                     txtClassName.setText(handle.getQualifiedName());
                 }
             }
         });
-        
+
     }
 
     @Override
@@ -120,7 +144,7 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
     public String getClassName() {
         if (txtClassName.getText() != null) {
             return txtClassName.getText().trim();
-        } 
+        }
         return null;
     }
 
@@ -130,10 +154,10 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         }
         return null;
     }
-    
+
     public String getDatabaseTable() {
         if (cmbDatabaseTable.getSelectedIndex() != -1) {
-            return cmbDatabaseTable.getSelectedItem().toString();
+            return cmbDatabaseTable.getSelectedItem().toString().trim();
         }
         return null;
     }
@@ -181,6 +205,11 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
         jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateMappingWizardPanel.class, "HibernateMappingWizardPanel.jLabel2.text")); // NOI18N
 
         cmbResource.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbResource.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbResourceActionPerformed(evt);
+            }
+        });
 
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/hibernate/wizards/Bundle").getString("Database_mnemonic").charAt(0));
         jLabel3.setLabelFor(cmbDatabaseTable);
@@ -229,6 +258,11 @@ public class HibernateMappingWizardPanel extends javax.swing.JPanel {
                 .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+    private void cmbResourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbResourceActionPerformed
+        // TODO add your handling code here:
+        fillDatabaseTable();
+    }//GEN-LAST:event_cmbResourceActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JComboBox cmbDatabaseTable;
