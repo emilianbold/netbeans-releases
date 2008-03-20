@@ -217,7 +217,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 csm.remove(csm.getCompilerSets().get(0));
             }
 //        }
-        gdbEnabled = IpeUtils.isGdbEnabled();
+        gdbEnabled = !IpeUtils.isDbxguiEnabled();
         
 //        cSelections = new HashMap();
 //        cppSelections = new HashMap();
@@ -1937,7 +1937,9 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     versions.append(getToolVersion(currentCompilerSet.findTool(Tool.CCCompiler), tfCppPath) + "\n"); // NOI18N
     versions.append(getToolVersion(currentCompilerSet.findTool(Tool.FortranCompiler), tfFortranPath) + "\n"); // NOI18N
     versions.append(getToolVersion(currentCompilerSet.findTool(Tool.MakeTool), tfMakePath) + "\n"); // NOI18N
-    versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+    if (gdbEnabled) {
+        versions.append(getToolVersion(currentCompilerSet.findTool(Tool.DebuggerTool), tfGdbPath) + "\n"); // NOI18N
+    }
     
     NotifyDescriptor nd = new NotifyDescriptor.Message(versions.toString());
 

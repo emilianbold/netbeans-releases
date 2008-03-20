@@ -27,7 +27,7 @@
 					<tocitem text="Navigating in the BPEL Design View" target="orch_windows_editors_design_navig" />
 					<tocitem text="Switching Between Design and Source Views" target="orch_windows_editors_design_src_switch" />
 					<tocitem text="Cloning Document Views" target="orch_windows_editors_cloning" />
-					<tocitem text="Printing BPEL Diagrams and Source Files" target="org.netbeans.modules.print.impl.ui.Attribute" />
+					<tocitem text="Printing BPEL Diagrams and Source Files" target="orch_windows_editors_print" />
 					<tocitem text="Validating BPEL Processes " target="orch_design_validation" />
 					<tocitem text="Applying Filters To Diagram Elements" target="orch_design_apply_filters" />
 					<tocitem text="Using Find in the Design View" target="orch_design_find" />
@@ -87,8 +87,8 @@
 					<tocitem text="Adding On Alarm Elements" target="orch_elements_event_handler_onalarm" />
 					<tocitem text="Adding On Event Elements" target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" />
 				</tocitem>
-				<tocitem text="BPEL Designer: Adding Compensation Handlers" target="orch_elements_add_compensation_handler" />
-				<tocitem text="BPEL Designer: Adding Termination Handlers" target="orch_elements_add_termination_handler" />
+				<tocitem text="Adding Compensation Handlers" target="orch_elements_add_compensation_handler" />
+				<tocitem text="Adding Termination Handlers" target="orch_elements_add_termination_handler" />
 				<tocitem text="Working with Correlation Sets" expand="false">
 					<tocitem text="Understanding Correlation. Using the Correlation Wizard" target="orch_design_about_correlation" />
 					<tocitem text="Adding Correlation Sets Manually" target="orch_design_correlation_manually" />
