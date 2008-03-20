@@ -104,6 +104,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
 
     // New
     public CollabSQLUIModelImpl(String collaborationName) { // throws BaseException {
+
         this();
         this.sqlDefinition = SQLModelObjectFactory.getInstance().createSQLDefinition(collaborationName);
         sqlDefinition.addSQLObjectListener(this);
@@ -112,6 +113,8 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
     }
 
     public void addObject(SQLObject sqlObject) throws BaseException {
+        //Have to add it first so that it reflects when you switch from the Source and Design View in the first time 
+        sqlDefinition.addObject(sqlObject);
         super.addObject(sqlObject);
         addObjectIgnoreUndo(sqlObject);
     }
