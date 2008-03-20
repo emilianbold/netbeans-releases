@@ -34,20 +34,25 @@
             <li>Select whether or not to generate a WSDL file when you build the 
                 project, to bundle into the AAR. This is the same option you have 
         when creating an Axis2 service from Java.</li></ul>
-        <p>If you want to edit the WSDL file, Generate WSDL File must be 
-        selected in the configuration.  When it is selected in the configuration,
-        select Generate WSDL from the service's context menu, and the WSDL is 
-        created immediately rather than when the project is built. Select Edit 
-        WSDL, and that WSDL file opens in an editor. After editing and saving 
-        changes to the WSDL, propagate those changes back to the Java classes 
-        by selecting Refresh. 
+        <p>You can edit the WSDL file if the web service was created from WSDL, 
+        because the WSDL file is downloaded from the original location to the 
+        project's xml-resources directory. To open the WSDL file in the IDE's 
+        editor, select Edit WSDL from the web service node context menu. After 
+        you save the edited WSDL, select Refresh from the web service node 
+        context menu. This action regenerates the Java artifacts so they are 
+        synchronized with the modified WSDL file.</p> 
+        <p>You can also edit the WSDL file for a web service generated from a 
+        Java class. After you modify and save the Java class, select Generate 
+        WSDL from the web service node context menu. This action regenerates a 
+        WSDL file synchronized with the Java class. Note that Generate WSDL File 
+        must be selected in the service's configuration.  
         </p>
         <dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-    <dd><a href="../create/create_axis.html">Creating Axis2 Web Services</a></dd>
-    <dd><a href="../expose/deploy_test_axis.html">Deploying and Testing Axis2 Web Services</a></dd>
-    <dd><a href="../create_wsdl_file.html">Creating a WSDL File</a></dd>
-</dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="../create/create_axis.html">Creating Axis2 Web Services</a></dd>
+            <dd><a href="../expose/deploy_test_axis.html">Deploying and Testing Axis2 Web Services</a></dd>
+            <dd><a href="../create_wsdl_file.html">Creating a WSDL File</a></dd>
+        </dl>
     </body>
 </html>

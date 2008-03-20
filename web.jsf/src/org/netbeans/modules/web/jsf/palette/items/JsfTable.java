@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
@@ -80,8 +82,8 @@ public final class JsfTable implements ActiveEditorDrop {
     };
     private static String [] ITEM = {
         "",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\"/>\n</h:column>\n",
-        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'item.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\" #'{'item.{2}'}'\"/>\n</h:column>\n",
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\" #'{'item.{2}'}'\">\n <f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
 //        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n"
 //                + "<h:commandLink action=\"#'{'{4}'}'\" value=\"#'{'item.{2}'}'\"/>\n </h:column>\n",
     };
@@ -143,7 +145,7 @@ public final class JsfTable implements ActiveEditorDrop {
      *  it will be formated using {0} = iterator variable
      */
     public static void createTable(CompilationController controller, TypeElement bean, String variable, StringBuffer stringBuffer, 
-            String commands, String setupDetail) {
+            String commands, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport) {
         int formType = 1;
         ExecutableElement[] methods = JsfForm.getEntityMethods(bean);
         boolean fieldAccess = JsfForm.isFieldAccess(bean);
@@ -153,10 +155,26 @@ public final class JsfTable implements ActiveEditorDrop {
             if (methodName.startsWith("get")) {
                 int isRelationship = JsfForm.isRelationship(controller, method, fieldAccess);
                 String name = methodName.substring(3);
-                String propName = name.substring(0,1).toLowerCase() + name.substring(1);
-                if (setupDetail != null && JsfForm.isId(controller, method, fieldAccess)) {
-                    String managedBeanName = JSFClientGenerator.getManagedBeanName(bean.getSimpleName().toString());
-                    stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName}));
+                String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
+                if (JsfForm.isId(controller, method, fieldAccess)) {
+                    TypeMirror rType = method.getReturnType();
+                    if (TypeKind.DECLARED == rType.getKind()) {
+                        DeclaredType rTypeDeclared = (DeclaredType)rType;
+                        TypeElement rTypeElement = (TypeElement) rTypeDeclared.asElement();
+                        if (JsfForm.isEmbeddableClass(rTypeElement)) {
+                            for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
+                                if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                    String pkMethodName = pkMethod.getSimpleName().toString();
+                                    String pkPropTitle = pkMethodName.substring(3);
+                                    String pkPropName = propName + "." + JSFClientGenerator.getPropNameFromMethod(pkMethodName);
+                                    stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {pkPropTitle, null, pkPropName}));
+                                }
+                            }
+                        }
+                        else {
+                            stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName}));
+                        }
+                    }
                 } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
                     //param 3 - temporal, param 4 - date/time format
                     String temporal = JsfForm.getTemporal(controller, method, fieldAccess);
