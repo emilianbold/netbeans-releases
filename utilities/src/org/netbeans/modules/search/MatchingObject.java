@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -96,6 +96,11 @@ final class MatchingObject implements PropertyChangeListener {
      * (usually a {@code DataObject})
      */
     final Object object;
+    /**
+     * charset used for full-text search of the object.
+     * It is {@code null} if the object was not full-text searched.
+     */
+    private final Charset charset;
     
     /**
      * holds information on whether the {@code object} is selected
@@ -146,10 +151,12 @@ final class MatchingObject implements PropertyChangeListener {
      * 
      * @param  object  found object returned by the {@code SearchGroup}
      *                 (usually a {@code DataObject}) - must not be {@code null}
+     * @param  charset  charset used for full-text search of the object,
+     *                  or {@code null} if the object was not full-text searched
      * @exception  java.lang.IllegalArgumentException
      *             if the passed {@code object} is {@code null}
      */
-    MatchingObject(ResultModel resultModel, Object object) {
+    MatchingObject(ResultModel resultModel, Object object, Charset charset) {
         if (resultModel == null) {
             throw new IllegalArgumentException("resultModel = null");   //NOI18N
         }
@@ -159,6 +166,7 @@ final class MatchingObject implements PropertyChangeListener {
         
         this.resultModel = resultModel;
         this.object = object;
+        this.charset = charset;
         
         FileObject fileObject = getFileObject();
         file = FileUtil.toFile(fileObject);
@@ -428,7 +436,6 @@ final class MatchingObject implements PropertyChangeListener {
         
         ByteBuffer buf = getByteBuffer();
         if (buf != null) {
-            Charset charset = BasicSearchCriteria.getCharset(getFileObject());
             CharBuffer cbuf = decodeByteBuffer(buf, charset);
             String terminator
                     = System.getProperty("line.separator");         //NOI18N
@@ -726,7 +733,7 @@ final class MatchingObject implements PropertyChangeListener {
             try {
                 writer = new OutputStreamWriter(
                         fileObject.getOutputStream(fileLock),
-                        BasicSearchCriteria.getCharset(fileObject));
+                        charset);
                 writer.write(text.toString());
             } finally {
                 if (writer != null) {
