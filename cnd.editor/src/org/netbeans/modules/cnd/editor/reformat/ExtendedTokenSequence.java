@@ -479,7 +479,8 @@ public class ExtendedTokenSequence {
                 if (ts.token().id() == LPAREN){
                     parenDepth--;
                     if (parenDepth == 0){
-                        return getTokenPosition()+1;
+                        ts.moveNext();
+                        return getTokenPosition();
                     }
                 } else if (ts.token().id() == RPAREN){
                     parenDepth++;

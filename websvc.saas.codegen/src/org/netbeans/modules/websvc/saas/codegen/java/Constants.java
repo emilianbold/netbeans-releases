@@ -71,7 +71,7 @@ public class Constants {
     
     public static final String PATH_ANNOTATION = "Path"; //NOI18N
     
-    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
+    public static final String URI_PARAM_ANNOTATION = "PathParam";       //NOI18N
     
     public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
     
@@ -241,7 +241,7 @@ public class Constants {
         HTTP_BASIC("HttpBasic", "http-basic"), 
         API_KEY("ApiKey", "api-key"),
         CUSTOM("Custom", "custom"),
-        SIGNED_URL("SingedUrl", "singed-url"),
+        SIGNED_URL("SignedUrl", "signed-url"),
         SESSION_KEY("SessionKey", "session-key");
         
         private String classId;

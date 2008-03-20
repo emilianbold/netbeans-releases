@@ -359,12 +359,18 @@ public class ReformatterImpl {
                 case MINUSMINUS: //("--","operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
-                            spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
-                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
-                        } else {
+                        if (isOperator()) {
                             spaceBefore(previous, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && 
+                               (prev.id() == SEMICOLON || prev.id() == COMMA)){
+                               // do nothing because already formated
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                            }
+                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                         }
                     }
                     break;
@@ -373,18 +379,24 @@ public class ReformatterImpl {
                 case MINUS: //("-", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
                                 spaceAfter(current, codeStyle.spaceAroundBinaryOps());
                             } else if (kind == OperatorKind.UNARY){
-                                spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                                Token<CppTokenId> prev = ts.lookPreviousImportant();
+                                if (prev != null && 
+                                   (prev.id() == SEMICOLON || prev.id() == COMMA)){
+                                   // do nothing because already formated
+                                } else {
+                                    spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                                }
                                 spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -393,7 +405,10 @@ public class ReformatterImpl {
                 case AMP: //("&", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
@@ -401,9 +416,6 @@ public class ReformatterImpl {
                             } else if (kind == OperatorKind.TYPE_MODIFIER){
                                 //TODO style of type declaration
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -412,7 +424,17 @@ public class ReformatterImpl {
                 case LT: //("<", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else if (isNewStyleCast(current)){
+                            if (current.id()==LT) {
+                                spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinTypeCastParens());
+                                spaceAfter(current, codeStyle.spaceAfterTypeCast());
+                            }
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
@@ -420,9 +442,6 @@ public class ReformatterImpl {
                             } else if (kind == OperatorKind.SEPARATOR){
                                 //TODO style of template declaration
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -440,12 +459,12 @@ public class ReformatterImpl {
                 case GTGT: //(">>", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
-                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
-                            spaceAfter(current, codeStyle.spaceAroundBinaryOps());
-                        } else {
+                        if (isOperator()) {
                             spaceBefore(previous, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
+                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
+                            spaceAfter(current, codeStyle.spaceAroundBinaryOps());
                         }
                     }
                     break;
@@ -623,6 +642,17 @@ public class ReformatterImpl {
                         }
                         spaceAfter(current, false);
                     }
+                    break;
+                }
+                case REINTERPRET_CAST:
+                case STATIC_CAST:
+                case CONST_CAST:
+                case DYNAMIC_CAST:
+                {
+                    if (doFormat()) {
+                        spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                    }
+                    break;
                 }
             }
             previous = current;
@@ -1527,12 +1557,17 @@ public class ReformatterImpl {
                 return true;
             } else if (curr == COLON) {
                 return true;
-            } else if (prev == OPERATOR) {
+            } else if (curr == LT) {
+                return true;
+            } else if (curr == GT) {
                 return true;
             }
             return false;
         } else if (OPERATOR_CATEGORY.equals(prevCategory)) {
             if (OPERATOR_CATEGORY.equals(currCategory)) {
+                if (curr == GT && (prev == STAR || prev == AMP)){
+                    return true;
+                }
                 return false;
             }
             return true;
@@ -1577,7 +1612,8 @@ public class ReformatterImpl {
                     Token<CppTokenId> n2 = ts.lookNext(2);
                     if (n2 == null ||
                         SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
-                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
+                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory()) ||
+                        (KEYWORD_CATEGORY.equals(current.id().primaryCategory()) && n2.id() == LT)){
                         ts.replaceNext(current, next, 0, 0);
                     }
                 }
@@ -1736,6 +1772,54 @@ public class ReformatterImpl {
         return p != null && p.id() == OPERATOR;
     }
 
+    private boolean isNewStyleCast(Token<CppTokenId> current){
+        if (current.id() == LT) {
+            Token<CppTokenId> p = ts.lookPreviousImportant(1);
+            if (p != null) {
+                return p.id() == REINTERPRET_CAST ||
+                       p.id() == STATIC_CAST ||
+                       p.id() == CONST_CAST ||
+                       p.id() == DYNAMIC_CAST;
+            }
+            return false;
+        } else if (current.id() == GT) {
+            // TODO fing matched LT
+            int index = ts.index();
+            try {
+                int depth = 1;
+                while (ts.movePrevious()) {
+                    switch (ts.token().id()) {
+                        case GT:
+                            depth++;
+                            break;
+                        case LT:
+                        {
+                            depth--;
+                            if (depth <=0) {
+                                Token<CppTokenId> p = ts.lookPreviousImportant(1);
+                                if (p != null) {
+                                    return p.id() == REINTERPRET_CAST ||
+                                           p.id() == STATIC_CAST ||
+                                           p.id() == CONST_CAST ||
+                                           p.id() == DYNAMIC_CAST;
+                                }
+                                return false;
+                            }
+                            break;
+                        }
+                        case LBRACE:
+                        case RBRACE:
+                        case SEMICOLON:
+                            return false;
+                    }
+                }
+            } finally {
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
+        }
+        return false;
+    }
     
     // <importantFrom><WS><NL><WS><importantTo>
     // where <NL> replaced on nonNL

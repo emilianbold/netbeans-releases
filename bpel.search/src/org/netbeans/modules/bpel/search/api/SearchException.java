@@ -48,11 +48,14 @@ public class SearchException extends Exception {
 
   /**
    * Creates a new instance of SearchException.
-   * @param cause the cause
    */
-  public SearchException(Throwable cause) {
-    super(cause.getMessage());
-  }
+  public SearchException() {}
 
-  private static final long serialVersionUID = 1L;
+  /**
+   * Creates a new instance of SearchException.
+   * @param message the message
+   */
+  public SearchException(String message) {
+    super(message);
+  }
 }

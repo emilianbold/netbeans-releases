@@ -50,24 +50,57 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 public class ExtensibilityElementConfiguratorFactory {
-    private static Map<QName, ExtensibilityElementConfigurator> configurators;
 
-    public ExtensibilityElementConfiguratorFactory() {
+    private Map<QName, ExtensibilityElementConfigurator> configurators;
+    private static ExtensibilityElementConfiguratorFactory factory;
+    private boolean hasChanged = false;
+
+    private ExtensibilityElementConfiguratorFactory() {
         initialise();
     }
 
     private void initialise() {
+        configurators = new HashMap<QName, ExtensibilityElementConfigurator>();
+        Result<ExtensibilityElementConfigurator> lookupResult = Lookup.getDefault().lookupResult(ExtensibilityElementConfigurator.class);
+        lookupResult.addLookupListener(new LookupListener() {
+
+            public void resultChanged(LookupEvent ev) {
+                hasChanged = true;
+            }
+        });
         lookupFactories();
     }
     
+    public static ExtensibilityElementConfiguratorFactory getDefault() {
+        if (factory == null) {
+            createFactory();
+        }
+        return factory;
+    }
+    
+    private static void createFactory() {
+        synchronized (ExtensibilityElementConfiguratorFactory.class) {
+            if (factory == null) {
+                factory = new ExtensibilityElementConfiguratorFactory();
+            }
+        }
+    }
+    
+    
+    
     public ExtensibilityElementConfigurator getExtensibilityElementConfigurator(QName qname) {
+        checkUpdates();
         if (configurators == null || qname == null) return null;
         return configurators.get(qname);
     }
     
     public Node.Property getNodeProperty(ExtensibilityElement element, QName qname, String attributeName) {
+        checkUpdates();
         if (configurators == null) return null;
         
         ExtensibilityElementConfigurator configurator = configurators.get(qname);
@@ -77,23 +110,25 @@ public class ExtensibilityElementConfiguratorFactory {
         return null;
     }
     
+    
+    private void checkUpdates() {
+        if (hasChanged) {
+            lookupFactories();
+            hasChanged = false;
+        }
+    }
+    
     private synchronized void lookupFactories() {
-        if(configurators != null)
-            return;
+      
+        configurators.clear();
         
-        configurators = new HashMap<QName, ExtensibilityElementConfigurator>();
-        
-        Lookup.Result result = Lookup.getDefault().lookup(
-                new Lookup.Template(ExtensibilityElementConfigurator.class));
-        
-        for(Object obj: result.allInstances()) {
-            ExtensibilityElementConfigurator factory = (ExtensibilityElementConfigurator) obj;
+        for(ExtensibilityElementConfigurator configurator : Lookup.getDefault().lookupAll(ExtensibilityElementConfigurator.class)) {
             
-            for (QName qname : factory.getSupportedQNames()) {
+            for (QName qname : configurator.getSupportedQNames()) {
                 if (configurators.containsKey(qname)) {
                     ErrorManager.getDefault().notify(new Exception("There is a ExtensibilityConfigurator already present for this "  + qname.toString()));
                 }
-                configurators.put(qname, factory);
+                configurators.put(qname, configurator);
             }
         }
         

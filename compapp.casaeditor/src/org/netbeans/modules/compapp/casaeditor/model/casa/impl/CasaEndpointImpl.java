@@ -120,7 +120,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     Map pfx = root.getPrefixes();
                     int count = 0;
                     while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
+                        prefix = "ns" + count;       // NOI18N
                         count++;
                     }
                     root.addPrefix(prefix, namespace);
@@ -171,7 +171,7 @@ public class CasaEndpointImpl extends CasaComponentImpl
                     Map pfx = root.getPrefixes();
                     int count = 0;
                     while (pfx.get(prefix) != null) {
-                        prefix = "ns" + count;
+                        prefix = "ns" + count;       // NOI18N
                         count++;
                     }
                     root.addPrefix(prefix, namespace);

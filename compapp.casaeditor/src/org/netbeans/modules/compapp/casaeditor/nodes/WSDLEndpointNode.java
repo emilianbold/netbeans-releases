@@ -171,6 +171,12 @@ public class WSDLEndpointNode extends CasaNode {
                 break;
             }
         }
+
+
+        // Add JBI extensions on connection
+        String bcName = this.getModel().getBindingComponentName(casaPort);
+        ExtensionPropertyHelper.setupExtensionPropertySheet(this,
+                casaPort, sheet, "port", bcName); // NOI18N
     }
     
     private static void addPortChildrenProperties(Sheet sheet, Children children, boolean bEditable) {
