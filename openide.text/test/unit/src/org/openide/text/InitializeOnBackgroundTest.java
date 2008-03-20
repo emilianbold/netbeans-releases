@@ -49,6 +49,7 @@ import java.lang.reflect.*;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.junit.NbTestCase;
@@ -249,9 +250,6 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
 
     /** Implementation of the CES */
     private final class CES extends CloneableEditorSupport {
-        public boolean plain;
-        
-        
         public CES (Env env, org.openide.util.Lookup l) {
             super (env, l);
         }
@@ -277,55 +275,23 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
         }        
 
         protected javax.swing.text.EditorKit createEditorKit() {
-            if (plain) {
-                return super.createEditorKit ();
-            } else {
-                return new NbLikeEditorKit ();
-            }
+            return new K();
         }
     } // end of CES
 
-    private static final class FakeEdit implements javax.swing.undo.UndoableEdit {
-        public boolean addEdit(javax.swing.undo.UndoableEdit anEdit) {
-            return false;
+    private static final class K extends NbLikeEditorKit {
+/* Uncomment this code to simulate the deadlock with mimelookup that uses two locks
+        @Override
+        public synchronized Document createDefaultDocument() {
+            return super.createDefaultDocument();
         }
 
-        public boolean canRedo() {
-            return true;
+        @Override
+        public synchronized Void call() throws Exception {
+            synchronized (new JPanel().getTreeLock()) {
+            }
+            return super.call();
         }
-
-        public boolean canUndo() {
-            return true;
-        }
-
-        public void die() {
-        }
-
-        public java.lang.String getPresentationName() {
-            return "";
-        }
-
-        public java.lang.String getRedoPresentationName() {
-            return "";
-        }
-
-        public java.lang.String getUndoPresentationName() {
-            return "";
-        }
-
-        public boolean isSignificant() {
-            return false;
-        }
-
-        public void redo() throws javax.swing.undo.CannotRedoException {
-        }
-
-        public boolean replaceEdit(javax.swing.undo.UndoableEdit anEdit) {
-            return true;
-        }
-
-        public void undo() throws javax.swing.undo.CannotUndoException {
-        }
-        
-    } // end of UndoableEdit
+ */
+    }
 }
