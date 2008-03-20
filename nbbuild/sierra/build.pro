@@ -139,14 +139,9 @@
     "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
-    <property name="dist" value="${cache}/dist"/>
-    <property name="lock" value="${cache}/lock"/>
-    <property name="test" value="${cache}/test"/>
-    <property name="jbi" location="${test}/${test.cvs.path}"/>
-    <property name="latest" value="${cache}/latest"/>
-    <property name="netbeans" value="${cache}/netbeans"/>
-    <property name="netbeans.dir" value=".netbeans/dev"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
+    <property name="netbeans.dir" value=".netbeans/dev"/>
+    <property name="jbi" location="${test}/${test.cvs.path}"/>
     <property name="samples" value="${home}/bpel.samples/resources"/>
     <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>
 </project>
