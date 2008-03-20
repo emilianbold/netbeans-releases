@@ -546,8 +546,8 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
-                //initialArgs(options).
-                //additionalArgs(getApplicationArguments()).
+                // see #130264
+                additionalArgs("--irb=irb --noreadline"). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
