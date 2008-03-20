@@ -51,6 +51,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1029,4 +1030,52 @@ public class Utilities {
             return DATE_FORMAT.parse(date);
         }
     }    
+    
+    public static boolean canWriteInCluster (File cluster) {
+        assert cluster != null : "dir cannot be null";
+        if (cluster == null || ! cluster.exists () || ! cluster.isDirectory ()) {
+            getLogger ().log (Level.INFO, "Nonexistent cluster " + cluster);
+            return cluster.canWrite ();
+        }
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (cluster.canWrite () && cluster.canRead () && org.openide.util.Utilities.isWindows ()) {
+            File trackings = new File (cluster, UpdateTracking.TRACKING_FILE_NAME);
+            if (trackings.exists () && trackings.isDirectory ()) {
+                for (File f : trackings.listFiles ()) {
+                    if (f.exists () && f.isFile ()) {
+                        getLogger ().log (Level.FINE, "Can write into " + cluster + "? " + canWrite (f));
+                        return canWrite (f);
+                    }
+                }
+            }
+        }
+        getLogger ().log (Level.FINE, "Can write into " + cluster + "? " + cluster.canWrite ());
+        return cluster.canWrite ();
+    }
+    
+    public static boolean canWrite (File f) {
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (org.openide.util.Utilities.isWindows ()) {
+            FileWriter fw = null;
+            try {
+                fw = new FileWriter (f);
+            } catch (IOException ioe) {
+                // just check of write permission
+                getLogger ().log (Level.FINE, f + " has no write permission", ioe);
+                return false;
+            } finally {
+                try {
+                    if (fw != null) {
+                        fw.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            getLogger ().log (Level.FINE, f + " has write permission");
+            return true;
+        } else {
+            return f.canWrite ();
+        }
+    }
 }

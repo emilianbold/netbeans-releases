@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -86,6 +87,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -104,7 +108,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     private JavaSource jaxbOutputWrapperJS;
     private String subresourceLocatorName;
     private String subresourceLocatorUriTemplate;
-    private Collection<String> existingUriTemplates;
+    private Collection<String> existingUriTemplates = Collections.emptyList();
     private JTextComponent targetComponent;
 
     public SaasCodeGenerator(JTextComponent targetComponent, 
@@ -613,7 +617,13 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
     public Collection<String> getExistingUriTemplates() {
         if (existingUriTemplates == null) {
-            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
+            try {
+                if (targetFile != null && DataObject.find(targetFile) != null
+                        && Util.isJava(DataObject.find(targetFile))) {
+                    existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
+                }
+            } catch (DataObjectNotFoundException ex) {//ignore
+            }
         }
 
         return existingUriTemplates;
