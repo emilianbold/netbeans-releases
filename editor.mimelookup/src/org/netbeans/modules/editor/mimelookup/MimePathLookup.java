@@ -66,9 +66,10 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     
     private static final Logger LOG = Logger.getLogger(MimePathLookup.class.getName());
     
-    private MimePath mimePath;
-    private Lookup.Result<MimeDataProvider> dataProviders;
-    private Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
+    private final MimePath mimePath;
+    private final boolean mimePathBanned;
+    private final Lookup.Result<MimeDataProvider> dataProviders;
+    private final Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
     
     /** Creates a new instance of MimePathLookup */
     public MimePathLookup(MimePath mimePath) {
@@ -79,6 +80,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         }
         
         this.mimePath = mimePath;
+        this.mimePathBanned = mimePath.size() > 0 && mimePath.getMimeType(0).contains("text/base"); //NOI18N
 
         dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
         dataProviders.addLookupListener(WeakListeners.create(LookupListener.class, this, dataProviders));
@@ -98,6 +100,9 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
 
         // Add lookups from MimeDataProviders
         for (MimeDataProvider provider : dataProviders.allInstances()) {
+            if (mimePathBanned && !isDefaultProvider(provider)) {
+                continue;
+            }
             Lookup mimePathLookup = provider.getLookup(mimePath);
             if (mimePathLookup != null) {
                 lookups.add(mimePathLookup);
@@ -148,6 +153,10 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         }
         
         setLookups(lookups.toArray(new Lookup[lookups.size()]));
+    }
+    
+    private boolean isDefaultProvider(MimeDataProvider provider) {
+        return provider.getClass().equals("org.netbeans.modules.editor.mimelookup.impl.DefaultMimeDataProvider"); //NOI18N
     }
     
     //-------------------------------------------------------------

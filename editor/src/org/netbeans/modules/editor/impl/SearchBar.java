@@ -170,6 +170,8 @@ public final class SearchBar extends JPanel {
     private Map<Object, Object> findProps;
     private JPopupMenu expandPopup;
     private JPanel padding;
+    private boolean navigateOnFocusLost = false;
+    
     /**
      * contains everything that is in Search bar and is possible to move to expand popup
      */
@@ -343,6 +345,7 @@ public final class SearchBar extends JPanel {
 
         incrementalSearchTextField.addFocusListener(new FocusAdapter() {
             public @Override void focusLost(FocusEvent e) {
+                navigateOnFocusLost = false;
                 looseFocus();
             }
         });
@@ -645,6 +648,12 @@ public final class SearchBar extends JPanel {
             isPopupGoingToShow = false;
             return;
         }
+        
+        if (navigateOnFocusLost) {
+            findNext();
+        }
+        
+        org.netbeans.editor.Utilities.setStatusText(component, null);
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
@@ -681,30 +690,40 @@ public final class SearchBar extends JPanel {
 
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
+            String patternErrorMsg = null;
             try {
                 pattern = Pattern.compile(incrementalSearchText);
             } catch (PatternSyntaxException e) {
                 pattern = null;
+                patternErrorMsg = e.getDescription();
             }
             if (pattern != null) {
                 // valid regexp
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
+                org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // invalid regexp
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(INVALID_REGEXP);
+                org.netbeans.editor.Utilities.setStatusBoldText(component, NbBundle.getMessage(
+                    SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
             }
         } else {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(Color.BLACK);
+                navigateOnFocusLost = !empty;
+                org.netbeans.editor.Utilities.setStatusText(component, null);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
                 incrementalSearchTextField.setBackground(null);
                 incrementalSearchTextField.setForeground(NOT_FOUND);
+                navigateOnFocusLost = false;
+                org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
+                    SearchBar.class, "incremental-search-not-found", incrementalSearchText)); //NOI18N
                 Toolkit.getDefaultToolkit().beep();
             }
         }
@@ -757,6 +776,7 @@ public final class SearchBar extends JPanel {
             incrementalSearchTextField.setForeground(NOT_FOUND);
             Toolkit.getDefaultToolkit().beep();
         }
+        navigateOnFocusLost = false;
     }
 
     private void processButton(AbstractButton button) {

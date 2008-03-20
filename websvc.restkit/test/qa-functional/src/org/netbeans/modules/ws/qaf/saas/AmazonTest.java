@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,64 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ws.qaf.saas;
 
-package org.netbeans.modules.websvc.rest;
-
-import java.beans.Introspector;
-import java.io.IOException;
-import org.netbeans.modules.websvc.rest.component.palette.RestPaletteFactory;
-import org.netbeans.modules.websvc.rest.component.palette.RestPaletteListener;
-import org.netbeans.spi.palette.PaletteController;
-import org.openide.filesystems.FileObject;
-import org.openide.modules.ModuleInstall;
-import org.openide.windows.TopComponent;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author lukas
  */
-public class RestModuleInstall extends ModuleInstall {
+public class AmazonTest extends SaasTestBase {
 
-    private static final long serialVersionUID = 1L; // DO NOT CHANGE!
-    
-    private static RestPaletteListener listener = null;
-    
-    /**
-     *
-     *
-     */
-    public RestModuleInstall() {
-        super();
+    public AmazonTest(String name) {
+        super(name);
     }
-    
-    /**
-     *
-     *
-     */
-    public void installed() {
-        Introspector.flushCaches();
-        restored();
+
+    @Override
+    protected String getSaasServiceID() {
+        return "AS3S"; //Amazon S3 Service
     }
-    
-    /**
-     *
-     *
-     */
-    public void restored() {
-        /*TopComponent.getRegistry().removePropertyChangeListener(listener);
-        
-        listener = new RestPaletteListener();        
-        TopComponent.getRegistry().addPropertyChangeListener(listener);
-        
-        try {
-            FileObject restCompFolder = RestPaletteFactory.getRestComponentsFolder();
-            restCompFolder.addFileChangeListener(listener);
-        } catch (IOException ex) {
-        }*/
+
+    @Override
+    protected String getSaasServiceNodePath() {
+        return "Amazon|S3 Service|[/]|getBuckets";
     }
-    
-    /*public static PaletteController getPaletteController() {
-        return listener.getController();
-    }*/
+
+    public static TestSuite suite() {
+        TestSuite ts = new NbTestSuite();
+        ts.addTest(new AmazonTest("testRestDrop"));
+        ts.addTest(new AmazonTest("testJspDrop"));
+        ts.addTest(new AmazonTest("testServletDrop"));
+        ts.addTest(new AmazonTest("testJavaDrop"));
+        return ts;
+    }
+
+    public static void main(String... args) {
+        TestRunner.run(suite());
+    }
 }

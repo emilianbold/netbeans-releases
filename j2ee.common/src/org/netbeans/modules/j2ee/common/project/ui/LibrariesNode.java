@@ -332,11 +332,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                 }
             }

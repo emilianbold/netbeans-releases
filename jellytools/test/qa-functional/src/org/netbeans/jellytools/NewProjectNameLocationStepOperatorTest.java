@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,16 +40,10 @@
  */
 package org.netbeans.jellytools;
 
-import java.io.File;
-import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 
 /**
  * Test of org.netbeans.jellytools.NameLocationStepOperator.
@@ -77,6 +71,7 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
         return suite;
     }
     
+    @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
     }
@@ -187,8 +182,6 @@ public class NewProjectNameLocationStepOperatorTest extends JellyTestCase {
         stpop.txtProjectLocation().setText("/tmp");//TODO I18N
         stpop.txtProjectFolder().getText();
         stpop.cbSetAsMainProject().setSelected(false);
-        assertEquals(stpop.txtContextPath().getText(), "/NewProject");  //NOI18N
-        stpop.selectJ2EEVersion("J2EE 1.4");  // NOI18N
         stpop.cancel();
     }
 }
