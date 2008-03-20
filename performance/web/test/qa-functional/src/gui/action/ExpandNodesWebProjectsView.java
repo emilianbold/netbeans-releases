@@ -51,13 +51,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
 
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandNodesWebProjectsView extends WebPerformanceTestCase {
+public class ExpandNodesWebProjectsView extends PerformanceTestCase {
     /** Name of the folder which test creates and expands */
     private static String project;
     /** Path to the folder which test creates and expands */
