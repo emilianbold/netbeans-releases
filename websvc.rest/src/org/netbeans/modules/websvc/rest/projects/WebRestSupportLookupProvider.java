@@ -62,18 +62,18 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         final Project prj = baseContext.lookup(Project.class);
         final RestSupport restSupport = new WebProjectRestSupport(prj);
         
-        PrivilegedTemplates templates = new PrivilegedTemplates() {
-            public String[] getPrivilegedTemplates() {
-                return new String[] {
-                    "Templates/WebServices/RestServicesFromEntities", // NOI18N
-                    "Templates/WebServices/RestServicesFromPatterns"  //NOI18N
-                    //"Templates/WebServices/RestClientStubs"    //NOI18N
-                };
-            }
-        };
+//        PrivilegedTemplates templates = new PrivilegedTemplates() {
+//            public String[] getPrivilegedTemplates() {
+//                return new String[] {
+//                    "Templates/WebServices/RestServicesFromEntities", // NOI18N
+//                    "Templates/WebServices/RestServicesFromPatterns"  //NOI18N
+//                    //"Templates/WebServices/RestClientStubs"    //NOI18N
+//                };
+//            }
+//        };
         
         //ProjectRestServiceNotifier servicesNotifier = new ProjectRestServiceNotifier(prj);
-        return Lookups.fixed(new Object[] {restSupport, templates});
+        return Lookups.fixed(new Object[] {restSupport});
     }
     
 }
