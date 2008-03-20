@@ -246,7 +246,7 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     
     public void showWizardDialog() {
-        String errMsg = WizardUtils.checkActivityIsReadyForCorrelation(correlatedActivity);
+        String errMsg = WizardUtils.validateActivity(correlatedActivity);
         if (errMsg != null) {
             UserNotification.showMessage(errMsg);
             return;
@@ -469,8 +469,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
         protected ChangeSupport changeSupport = new ChangeSupport(this);
-        protected int insetX = CommonUtils.isMacOS() ? 10 : 6, 
-                      insetY = CommonUtils.isMacOS() ? 10 : 6;
+        protected int insetX = CommonUtils.isMacOS() ? 12 : 6, 
+                      insetY = CommonUtils.isMacOS() ? 20 : 6;
         
         protected JPanel createWizardPanel() {
             JPanel panel = new JPanel();
@@ -568,7 +568,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 NbBundle.getMessage(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
 
             if (isOK) {
-                String errMsg = WizardUtils.checkActivityIsReadyForCorrelation(
+                String errMsg = WizardUtils.validateActivity(
                     (BpelEntity) activityComboBox.getSelectedItem());
                 isOK &= (errMsg == null);
                 wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, errMsg);                              
@@ -1963,7 +1963,7 @@ class WizardUtils implements WizardConstants {
         return null;
     }
 
-    public static String checkActivityIsReadyForCorrelation(BpelEntity bpelEntity) {
+    public static String validateActivity(BpelEntity bpelEntity) {
         if (getBpelEntityPortType(bpelEntity) == null) {
             return NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_ErrMsg_Activity_Has_Wrong_PortType");
         }
