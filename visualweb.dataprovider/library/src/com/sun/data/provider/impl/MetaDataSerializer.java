@@ -89,7 +89,10 @@ public class MetaDataSerializer {
         mdFileName = mdFileName.replaceAll("\\n", ""); // NOI18N
         if (resultSetMetaData != null) {
             ObjectOutputStream os = null;
-            try {    
+            try {
+                if (mdFileName.length() > 200) {
+                    mdFileName = mdFileName.substring(0, 200);
+                }
                 os = new ObjectOutputStream(new FileOutputStream(mdFileName));
                 os.writeObject(resultSetMetaData);
             } catch (IOException ex) {
