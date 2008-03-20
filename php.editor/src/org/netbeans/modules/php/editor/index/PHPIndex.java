@@ -681,7 +681,7 @@ public class PHPIndex {
             // start of provisional code
             //TODO: a more sophisticated check here,
             // currently only basic, same dir includes are support
-            String incl = includeInQuotes.substring(1, includeInQuotes.length() - 1);
+            String incl = dequote(includeInQuotes);
             
             if (url.endsWith(incl)){
                 return true;
@@ -691,5 +691,12 @@ public class PHPIndex {
         }
 
         return false;
+    }
+    
+    static String dequote(String string){
+        assert string.length() >= 2;
+        assert string.startsWith("\"") || string.startsWith("'");
+        assert string.endsWith("\"") || string.endsWith("'");
+        return string.substring(1, string.length() - 1);
     }
 }

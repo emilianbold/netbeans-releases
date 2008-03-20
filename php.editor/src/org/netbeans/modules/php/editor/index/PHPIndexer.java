@@ -60,10 +60,13 @@ import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
@@ -113,6 +116,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
+    static final String FIELD_CONST = "const"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
         if (file.getExtension().equals("php")) { // NOI18N
@@ -209,34 +213,9 @@ public class PHPIndexer implements Indexer {
             
             for (Statement statement : program.getStatements()){
                 if (statement instanceof FunctionDeclaration){
-                    FunctionDeclaration functionDeclaration = (FunctionDeclaration)statement;
-                    
-                    StringBuilder signature = new StringBuilder();
-                    signature.append(functionDeclaration.getFunctionName().getName() + ";");
-                    
-                    for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator();
-                            it.hasNext();){
-                        
-                        FormalParameter param = it.next();
-                        Expression paramNameExpr =  param.getParameterName();
-                        String paramName = null;
-                        
-                        if (paramNameExpr instanceof Variable){
-                            Variable var = (Variable) paramNameExpr;
-                            Identifier id = (Identifier) var.getName();
-                            paramName = id.getName();
-                        }
-  
-                        signature.append(paramName);
-                        
-                        if (it.hasNext()){
-                            signature.append(",");
-                        }
-                    }
-                    signature.append(";");
-                    System.err.println("indexing " + signature);
-                    
-                    document.addPair(FIELD_BASE, signature.toString(), true);
+                    indexFunction((FunctionDeclaration)statement, document);
+                } else if (statement instanceof ExpressionStatement){
+                    indexConstant(statement, document);
                 }
             }
             
@@ -423,6 +402,58 @@ public class PHPIndexer implements Indexer {
 //                return -1;
 //            }
             return -1;
+        }
+
+        private void indexConstant(Statement statement, IndexDocument document) {
+            ExpressionStatement exprStmt = (ExpressionStatement) statement;
+            Expression expr = exprStmt.getExpression();
+
+            if (expr instanceof FunctionInvocation) {
+                FunctionInvocation invocation = (FunctionInvocation) expr;
+
+                if (invocation.getFunctionName().getName() instanceof Identifier) {
+                    Identifier id = (Identifier) invocation.getFunctionName().getName();
+
+                    if ("define".equals(id.getName())) {
+                        if (invocation.getParameters().size() == 2) {
+                            Expression paramExpr = invocation.getParameters().get(0);
+
+                            if (paramExpr instanceof Scalar) {
+                                String defineVal = PHPIndex.dequote(((Scalar) paramExpr).getStringValue());
+
+                                document.addPair(FIELD_CONST, defineVal, false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void indexFunction(FunctionDeclaration functionDeclaration, IndexDocument document) {
+            StringBuilder signature = new StringBuilder();
+            signature.append(functionDeclaration.getFunctionName().getName() + ";");
+
+            for (Iterator<FormalParameter> it = functionDeclaration.getFormalParameters().iterator(); it.hasNext();) {
+
+                FormalParameter param = it.next();
+                Expression paramNameExpr = param.getParameterName();
+                String paramName = null;
+
+                if (paramNameExpr instanceof Variable) {
+                    Variable var = (Variable) paramNameExpr;
+                    Identifier id = (Identifier) var.getName();
+                    paramName = id.getName();
+                }
+
+                signature.append(paramName);
+
+                if (it.hasNext()) {
+                    signature.append(",");
+                }
+            }
+            signature.append(";");
+
+            document.addPair(FIELD_BASE, signature.toString(), true);
         }
     }
     
