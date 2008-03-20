@@ -42,20 +42,33 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 
 /**
- * Debug server action starts the server in the debug mode.
+ * Restart action stops the server and then starts it again in the mode it 
+ * was running in before (normal or debug).
  *
- * @author Peter Williams
+ * @author sherold
  */
-public class DebugAction extends NodeAction {
+public class RestartAction extends NodeAction {
+    
+    public static final int RESTART_DELAY = 3000;
+    
+    public String getName() {
+        return NbBundle.getMessage(RestartAction.class, "LBL_Restart");
+    }
     
     protected void performAction(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
@@ -68,32 +81,23 @@ public class DebugAction extends NodeAction {
     }
     
     private static void performActionImpl(final GlassfishModule commonSupport) {
-//        Map<String, String> ip = commonSupport.getInstanceProperties();
-//        String title = NbBundle.getMessage(DebugAction.class, "LBL_Debugging", ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
-        commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
-        commonSupport.startServer(null);
+//        String title = NbBundle.getMessage(RestartAction.class, "LBL_Restarting", si.getDisplayName());
+        final Future<OperationState> stopTask = commonSupport.stopServer(null);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    OperationState stopResult = stopTask.get();
+                    if(stopResult == OperationState.COMPLETED) {
+                        commonSupport.startServer(null);
+                    }
+                } catch(InterruptedException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                } catch(ExecutionException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
+            }
+        });
     }
-
-//    private static void performActionImpl(final ServerInstance si) {
-//        if (si != null) {
-//            RequestProcessor.getDefault().post(new Runnable() {
-//                public void run() {
-//                    String title = NbBundle.getMessage(DebugAction.class, "LBL_Debugging", si.getDisplayName());
-//                    ProgressUI progressUI = new ProgressUI(title, false);
-//                    try {
-//                        progressUI.start();
-//                        si.startDebug(progressUI);
-//                    } catch (ServerException ex) {
-//                        String msg = ex.getLocalizedMessage();
-//                        NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-//                        DialogDisplayer.getDefault().notify(desc);
-//                    } finally {
-//                        progressUI.finish();
-//                    }
-//                }
-//            });
-//        }
-//    }
 
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
@@ -114,32 +118,42 @@ public class DebugAction extends NodeAction {
         return result;
     }
     
-    private static boolean enableImpl(GlassfishModule commonSupport) {
-        return commonSupport.getServerState() == ServerState.STOPPED;
+    private static boolean enableImpl(final GlassfishModule commonSupport) {
+        // !PW FIXME remote servers?
+//        if(!commonSupport.canStartServer()) {
+//            return false;
+//        }
+        
+        ServerState state = commonSupport.getServerState();
+        if(state != ServerState.RUNNING
+                // !PW FIXME support other states - debugging, profiling, etc.
+//            && state != ServerInstance.STATE_DEBUGGING
+//            && state != ServerInstance.STATE_PROFILING
+//            && state != ServerInstance.STATE_PROFILER_BLOCKING) {
+                ) {
+            return false;
+        }
+        return true;
     }
 
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
     @Override
     protected boolean asynchronous() { 
         return false; 
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(DebugAction.class, "LBL_Debug");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
     
     /** This action will be displayed in the server output window */
     public static class OutputAction extends AbstractOutputAction {
         
         private static final String ICON = 
-                "org/netbeans/modules/glassfish/common/resources/debug.png"; // NOI18N
+                "org/netbeans/modules/glassfish/common/resources/restart.png"; // NOI18N
         
         public OutputAction(final GlassfishModule commonSupport) {
-            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_DebugOutput"), // NOI18N
-                    NbBundle.getMessage(RefreshAction.class, "LBL_DebugOutputDesc"), // NOI18N
+            super(commonSupport, NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutput"), // NOI18N
+                    NbBundle.getMessage(RefreshAction.class, "LBL_RestartOutputDesc"), // NOI18N
                     ICON);
         }
         
