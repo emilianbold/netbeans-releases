@@ -150,7 +150,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Dis update */
     public static final String          DIS_UPDATE = "dis_update"; // NOI18N
     
-    private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint";
+    private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint"; // NOI18N
     
     private GdbProxy gdb;
     private ContextProvider lookupProvider;
@@ -811,7 +811,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c")) { // NOI18N
             if (msg.contains("auto; currently c++")) { // NOI18N
                 cplusplus = true;
-                DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++");
+                DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
             }
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
             cb = CommandBuffer.getCommandBuffer(itok);

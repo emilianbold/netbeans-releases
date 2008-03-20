@@ -46,5 +46,5 @@ import org.netbeans.api.project.Project;
  * @author Ajit
  */
 public interface ProjectWebServiceViewProvider {
-    ProjectWebServiceView createProjectWebServiceView(Project p);
+    ProjectWebServiceViewImpl createProjectWebServiceView(Project p);
 }

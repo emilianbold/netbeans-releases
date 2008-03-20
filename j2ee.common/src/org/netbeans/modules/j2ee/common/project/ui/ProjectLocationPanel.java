@@ -59,6 +59,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 final class ProjectLocationPanel extends JPanel implements DocumentListener {
@@ -523,4 +524,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         return null;
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectLocationPanel.class, j2eeModuleType));
+    }
 }

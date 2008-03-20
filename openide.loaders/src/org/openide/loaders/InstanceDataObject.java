@@ -607,10 +607,10 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (lkp != null) {
                 return lkp;
             }
-            if (getPrimaryFile().hasExt("ser")) {
-                lkp = getCookieSet().getLookup();
-            } else {
+            if (getPrimaryFile().hasExt(XML_EXT)) {
                 lkp = new ProxyLookup(getCookieSet().getLookup(), getCookiesLookup());
+            } else {
+                lkp = getCookieSet().getLookup();
             }
             return lkp;
         }

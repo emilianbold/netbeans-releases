@@ -150,6 +150,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
             metadata = VisualSQLEditorMetaDataImpl.getDataSourceCache(dsName);
         } catch (java.sql.SQLException e) {
             // JDTODO
+        } catch (NamingException ne) {
+            Exceptions.printStackTrace(ne);
         }
         
         // Get the DatabaseConnection, to be passed to the Visual SQL Editor
@@ -201,8 +203,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         String dsName ;
         if ( dataSourceName == null ) {
             // we should never be here, but just in case ...
-            NamingException ne = new NamingException("Data Source Name is required:  none provided." ) ; // NOI18N
-            throw ne ;
+            throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName) ; // NOI18N
         }
         
         javax.naming.Context ctx = new javax.naming.InitialContext();
@@ -214,7 +215,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         
         DesignTimeDataSource ds = (DesignTimeDataSource) ctx.lookup( dsName );
         if (ds == null) {
-            throw new SQLException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName); //NOI18N
+            throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName); //NOI18N
         }
         return ds ;
     }
