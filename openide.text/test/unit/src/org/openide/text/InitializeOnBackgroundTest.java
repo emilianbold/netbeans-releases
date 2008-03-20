@@ -99,7 +99,7 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
     
     
 
-    public void XtestInitializeOnBackground() throws Exception {
+    public void testInitializeOnBackground() throws Exception {
         support.open();
         
         class R implements Runnable {
@@ -123,7 +123,7 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
         }
     }
     
-    public void XtestInitializeOnBackgroundInAWT() throws Exception {
+    public void testInitializeOnBackgroundInAWT() throws Exception {
         assertTrue("Running in AWT", SwingUtilities.isEventDispatchThread());
         
         support.open();
