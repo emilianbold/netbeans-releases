@@ -164,18 +164,30 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testConcurrentSpacing() {
+    public void testIZ130538() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         setLoadDocumentText(
-                "int foo(char* a, class B* b)\n" +
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
                 "{\n" +
-                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
+                "    foo(a,\n" +
+                "   b);\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect new style cast formating",
-                "int foo(char* a, class B* b)\n" +
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
                 "{\n" +
-                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
+                "    foo (a,\n" +
+                "         b);\n" +
                 "}\n");
     }
 }

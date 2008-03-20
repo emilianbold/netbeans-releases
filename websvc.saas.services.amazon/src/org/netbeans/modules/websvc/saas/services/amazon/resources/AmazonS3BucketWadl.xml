@@ -90,7 +90,7 @@
                 </response>
             </method>
             
-            <resource path="{object}" id="amazons3.object">
+            <resource path="{object}/" id="amazons3.object">
                 <param name="object" type="xsd:string" style="template" required="true"/>
                 <method name="GET" id="getObject">
                     <request>
