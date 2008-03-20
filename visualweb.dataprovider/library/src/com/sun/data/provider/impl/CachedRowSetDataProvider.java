@@ -1716,18 +1716,13 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     }        
     
     private String generateFilename() {
-        // Serialize ResultSetMetaData for improved design-time performance
-
         String dataSourceName = getCachedRowSet().getDataSourceName().replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
-        String commandName = getCachedRowSet().getCommand().replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
+        String commandName = getCachedRowSet().getCommand().replaceAll("\\n", ""); // NOI18N
+        commandName = commandName.replaceAll("\\r", "");  // NOI18N
+        commandName = commandName.replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
         commandName = commandName.toLowerCase();
         commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
-        commandName = commandName.replaceFirst("selectall", ""); // NOI18N
-
-        if (commandName.length() > 200) {
-            commandName = commandName.substring(0, 200);
-        }
-
+        commandName = commandName.replaceFirst("selectall", ""); // NOI18N        
         return dataSourceName + "_"  + "_" + commandName; // NOI18N
     }
 }
