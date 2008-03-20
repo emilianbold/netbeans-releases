@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -62,7 +63,7 @@ public class UnitDiskRepository extends AbstractDiskRepository {
        assert unitName != null;
        
        this.unitName = unitName;
-       defBehRepository = FileStorage.create(unitName); 
+       defBehRepository = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
        nonDefBehRepository = new BaseDiskRepositoryImpl();
     }
     
