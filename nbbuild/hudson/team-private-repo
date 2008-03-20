@@ -102,8 +102,8 @@ if [ "$action" = "sync" ]; then
     ant commit-validation # || exit 3
 
     echo hg push https://\"$push_username\":\"$push_password\"@hg.netbeans.org/$repository
-    echo "Test push:"
-    hg push /export/chau/Workspace/src/jsdebugger-testpush
+    echo "Only test push for now:"
+    hg push ../../testpush-repo
     exit 0
 fi
 # Something wrong here

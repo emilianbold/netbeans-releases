@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.rest.component.palette;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.editor.index;
+
+import org.netbeans.modules.gsf.api.ElementKind;
 
 /**
  *
- * @author Owner
+ * @author tomslot
  */
-public class AddPaletteItemAction extends AbstractAction {
-    
-    private Lookup item;
-    
-    public AddPaletteItemAction() {
+public class IndexedConstant extends IndexedElement {
+    public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
+            String attributes, int flags, ElementKind kind){
+        super(name, in, index, fileUrl, attributes, flags, kind);
     }
 
-    public AddPaletteItemAction(Lookup item) {
-        this.item = item;
-    }
-    
-    public void actionPerformed(ActionEvent e) {
-        AddPaletteItemPanel panel = new AddPaletteItemPanel();
-        DialogDescriptor desc = new DialogDescriptor(panel,
-                NbBundle.getMessage(AddPaletteItemAction.class, "TTL_AddPaletteItemPanel"));
-        Object res = DialogDisplayer.getDefault().notify(desc);
-        if (res.equals(NotifyDescriptor.YES_OPTION)) {
-            String name = panel.getPaletteItemName();
-            String description = panel.getPaletteItemDescription();
-            String iconUrl = panel.getPaletteItemIconUrl();
-        };        
-    }
 }
