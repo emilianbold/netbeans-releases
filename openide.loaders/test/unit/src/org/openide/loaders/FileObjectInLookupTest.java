@@ -120,6 +120,9 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
 
     public void testShadow() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         DataObject obj = DataObject.find(root.getFileObject("adir/file.own"));
         DataShadow shadow = obj.createShadow(obj.getFolder().getFolder());
         assertEquals(OwnDataLoader.class, obj.getLoader().getClass());

@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
-import org.netbeans.modules.php.project.ui.wizards.SourcesPanelVisual.LocalServer;
+import org.netbeans.modules.php.project.ui.wizards.LocalServer;
 import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -92,9 +92,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
         wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
         wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        wizard.putProperty(ConfigureProjectPanel.URL, null);
         wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
         wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
+        wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
 
         panels = null;
         descriptor = null;
@@ -125,8 +129,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         resultSet.add(sourceDir);
 
         // index file
-        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
-        if (indexFile != null) {
+        Boolean createIndexFile = (Boolean) descriptor.getProperty(ConfigureProjectPanel.CREATE_INDEX_FILE);
+        if (createIndexFile != null && createIndexFile) {
             msg = NbBundle.getMessage(
                     NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingIndexFile");
             handle.progress(msg, 4);
@@ -179,8 +183,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private WizardDescriptor.Panel[] createPanels() {
+        String[] steps = new String[] {
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectTitleName"),
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_ProjectServer"),
+        };
+
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps);
         return new WizardDescriptor.Panel[] {
-            new ConfigureProjectPanel(),
+            configureProjectPanel,
+            new ConfigureServerPanel(steps, configureProjectPanel),
         };
     }
 
@@ -201,6 +212,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         configureSources(helper, properties);
         configureEncoding(properties);
+        configureCopyFiles(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -214,9 +226,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
         if (ConfigureProjectPanel.isProjectFolder(localServer)) {
             File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-            return new File(projectDirectory, "web"); // NOI18N
+            return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER);
         }
-        return new File(localServer.getSrcRoot());
+        return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
     private void configureSources(AntProjectHelper helper, EditableProperties properties) {
@@ -227,13 +239,27 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-
         properties.setProperty(PhpProject.SRC, srcPath);
+
+        properties.setProperty(PhpProject.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
     }
 
     private void configureEncoding(EditableProperties properties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
         properties.setProperty(PhpProject.SOURCE_ENCODING, charset.name());
+    }
+
+    private void configureCopyFiles(EditableProperties properties) {
+        String copyFilesString = Boolean.FALSE.toString();
+        String copyTargetString = ""; // NOI18N
+        Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
+        if (copyFiles != null && copyFiles) {
+            copyFilesString = Boolean.TRUE.toString();
+            LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+            copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
+        }
+        properties.setProperty(PhpProject.COPY_SRC_FILES, copyFilesString);
+        properties.setProperty(PhpProject.COPY_SRC_TARGET, copyTargetString);
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {

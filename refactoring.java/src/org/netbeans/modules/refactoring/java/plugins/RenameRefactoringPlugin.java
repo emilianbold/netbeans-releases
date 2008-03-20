@@ -449,9 +449,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
-        createAndAddElements(a, transform, elements, refactoring);
+        Problem problem = createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();
-        return null;
+        return problem;
     }
 
     private static int getAccessLevel(Element e) {

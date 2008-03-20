@@ -61,8 +61,8 @@
         <group name="Amazon">
         </group>
 
-        <authentication profile="SaaSServices/Amazon/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="SaaSServices/AmazonECS/profile.properties">
+            <api-key id="AWSAccessKeyId"/>
         </authentication>
 
     </saas-metadata>

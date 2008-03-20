@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.netbeans.spi.viewmodel.Models;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.WeakSet;
 
 /**
@@ -57,10 +56,9 @@ import org.openide.util.WeakSet;
 public class DefaultTreeExpansionManager {
     
     private static Map<Models.CompoundModel, DefaultTreeExpansionManager> managers = new WeakHashMap<Models.CompoundModel, DefaultTreeExpansionManager>();
-    
-    private Children currentChildren;
-    private Map<Children, Set<Object>> expandedNodes = new WeakHashMap<Children, Set<Object>>();
-    private Map<Children, Set<Object>> collapsedNodes = new WeakHashMap<Children, Set<Object>>();
+
+    private Object currentChildren;
+    private Map<Object, Set<Object>> expandedNodes = new HashMap<Object, Set<Object>>();
     
     public static synchronized DefaultTreeExpansionManager get(Models.CompoundModel model) {
         if (model == null) throw new NullPointerException();
@@ -72,60 +70,57 @@ public class DefaultTreeExpansionManager {
         return manager;
     }
     
+    public static synchronized void copyExpansions(Models.CompoundModel oldCM, Models.CompoundModel newCM) {
+        DefaultTreeExpansionManager oldManager = get(oldCM);
+        DefaultTreeExpansionManager newManager = get(newCM);
+        Map<Object, Set<Object>> expandedNodes;
+        synchronized (oldManager) {
+            expandedNodes = new java.util.HashMap(oldManager.expandedNodes);
+        }
+        synchronized (newManager) {
+            newManager.expandedNodes.putAll(expandedNodes);
+        }
+    }
+    
     private DefaultTreeExpansionManager() {}
     
     /** Must be called before every query, external synchronization with the model call is required. */
-    public void setChildrenToActOn(Children ch) {
+    public void setChildrenToActOn(Object ch) {
         currentChildren = ch;
     }
     
     /** External synchronization with currentNode required. */
-    public boolean isExpanded(Object child) {
+    public synchronized boolean isExpanded(Object child) {
         if (currentChildren == null) throw new NullPointerException("Call setChildrenToActOn() before!!!");
         try {
             Set<Object> expanded = expandedNodes.get(currentChildren);
-            Set<Object> collapsed = collapsedNodes.get(currentChildren);
             if (expanded != null && expanded.contains(child)) {
                 return true;
             }
-            if (collapsed != null && collapsed.contains(child)) {
-                return false;
-            }
-            // Default behavior follows:
             return false;
         } finally {
             currentChildren = null;
         }
     }
 
-    public void setExpanded(Object child) {
+    public synchronized void setExpanded(Object child) {
         if (currentChildren == null) throw new NullPointerException("Call setChildrenToActOn() before!!!");
         try {
             Set<Object> expanded = expandedNodes.get(currentChildren);
-            Set<Object> collapsed = collapsedNodes.get(currentChildren);
             if (expanded == null) {
                 expanded = new WeakSet<Object>();
                 expandedNodes.put(currentChildren, expanded);
             }
             expanded.add(child);
-            if (collapsed != null) {
-                collapsed.remove(child);
-            }
         } finally {
             currentChildren = null;
         }
     }
 
-    public void setCollapsed(Object child) {
+    public synchronized void setCollapsed(Object child) {
         if (currentChildren == null) throw new NullPointerException("Call setChildrenToActOn() before!!!");
         try {
             Set<Object> expanded = expandedNodes.get(currentChildren);
-            Set<Object> collapsed = collapsedNodes.get(currentChildren);
-            if (collapsed == null) {
-                collapsed = new WeakSet<Object>();
-                collapsedNodes.put(currentChildren, collapsed);
-            }
-            collapsed.add(child);
             if (expanded != null) {
                 expanded.remove(child);
             }

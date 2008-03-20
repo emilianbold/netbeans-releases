@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,6 +85,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
     private CallStackFrame lastFrame = null;
+    private boolean withSource = true;
+    private boolean opened = false;
+    private boolean opening = false;
+    private int disLength = 0;
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
@@ -112,73 +118,73 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-        boolean withSource = false;
 
         synchronized (lines) {
             lines.clear();
-            int pos = RESPONSE_HEADER.length();
+            disLength = 0;
 
-            CountingWriter writer = null;
-            
+            DataObject dobj;
             try {
-                boolean nameSet = false;
-                
-                DataObject dobj = DataObject.find(getFileObject());
-                Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
-                if (doc != null) {
-                    doc.removeDocumentListener(this);
-                    doc.addDocumentListener(this);
-                }
-
-                writer = new CountingWriter(getFileObject().getOutputStream());
-
-                for (;;) {
-                    int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    if (combinedPos != -1) {
-                        withSource = true;
-                    }
-                    int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
-                    
-                    if (addressPos == -1) {
-                        break;
-                    }
-                    
-                    if (combinedPos != -1 && combinedPos < addressPos) {
-                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
-                        String path = debugger.getRunDirectory();
-                        String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                        File file = new File(path, fileStr);
-                        FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                        if (src_fo != null) {
-                            writer.writeLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
-                        } else {
-                            writer.writeLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
-                        }
-                        pos = combinedPos+1;
-                    } else {
-                        // read instruction in this line
-                        int idx = writer.getLineNo();
-                        Line line = new Line(msg, addressPos, nameSet ? idx : idx+1);
-                        if (!nameSet) {
-                            functionName = line.function;
-                            dobj.getNodeDelegate().setDisplayName(getHeader());
-                            writer.writeLine(functionName + "()\n"); // NOI18N
-                            nameSet = true;
-                        }
-                        if (functionName.equals(line.function)) {
-                            lines.add(line);
-                            writer.writeLine(line + "\n"); // NOI18N
-                        }
-                        pos = addressPos+1;
-                    }
-                }
-            } catch (Exception ioe) {
-                ioe.printStackTrace();
+                dobj = DataObject.find(getFileObject());
+            } catch (DataObjectNotFoundException doe) {
+                // we failed, no need to do anything else
+                doe.printStackTrace();
+                return;
             }
-            try {
-                if (writer != null) {
-                    writer.close();
+            Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
+            if (doc != null) {
+                doc.removeDocumentListener(this);
+                doc.addDocumentListener(this);
+            }
+
+            DisText text = new DisText();
+
+            int pos = RESPONSE_HEADER.length();
+            boolean nameSet = false;
+            for (;;) {
+                int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
+
+                if (addressPos == -1) {
+                    break;
                 }
+
+                if (combinedPos != -1 && combinedPos < addressPos) {
+                    int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                    String path = debugger.getRunDirectory();
+                    String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                    File file = new File(path, fileStr);
+                    FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    if (src_fo != null) {
+                        try {
+                            text.addLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                        } catch (DataObjectNotFoundException doe) {
+                            // do nothing
+                        }
+                    } else {
+                        text.addLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                    }
+                    pos = combinedPos+1;
+                } else {
+                    // read instruction in this line
+                    int idx = text.getLineNo();
+                    Line line = new Line(msg, addressPos, nameSet ? idx : idx+1);
+                    if (!nameSet) {
+                        functionName = line.function;
+                        dobj.getNodeDelegate().setDisplayName(getHeader());
+                        text.addLine(functionName + "()\n"); // NOI18N
+                        nameSet = true;
+                    }
+                    if (functionName.equals(line.function)) {
+                        lines.add(line);
+                        text.addLine(line + "\n"); // NOI18N
+                    }
+                    pos = addressPos+1;
+                }
+            }
+            disLength = text.getLength();
+            try {
+                text.save(getFileObject().getOutputStream());
             } catch (IOException ioe) {
                 // do nothing
             }
@@ -222,7 +228,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             pos = msg.indexOf("\"", end+1); // NOI18N
         }
-        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
     
     public void updateRegValues(String msg) {
@@ -243,10 +249,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Map<String, RegisterValuesProvider.RegisterValue> getRegisterValues() {
-        Map<String,RegisterValuesProvider.RegisterValue> res = new HashMap<String,RegisterValuesProvider.RegisterValue>();
+    public Collection<RegisterValue> getRegisterValues() {
+        Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.put(regNames.get(idx), new RegisterValuesProvider.RegisterValue(regValues.get(idx), regModified.contains(idx)));
+            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -255,11 +261,16 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateAnnotations(false);
-            }
-        });
+        // update anything on full load only
+        if (e.getOffset() + e.getLength() >= disLength) {
+            final boolean dis = opening;
+            opening = false;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateAnnotations(dis);
+                }
+            });
+        }
     }
     
     private void updateAnnotations(boolean open) {
@@ -283,6 +294,10 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     private void reloadDis(boolean withSource, boolean force) {
+        this.withSource = withSource;
+        if (!opened) {
+            return;
+        }
         // reload disassembler if needed
         // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
@@ -436,11 +451,13 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public static void open() {
         try {
             DataObject dobj = DataObject.find(getFileObject());
-            dobj.getNodeDelegate().setDisplayName(getHeader());
+            dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.updateAnnotations(true);
+                dis.opening = true;
+                dis.opened = true;
+                dis.reloadDis(true, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -459,29 +476,38 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getCookie(CloseCookie.class).close();
+            // TODO: check for correct close on debug close
+            Disassembly dis = getCurrent();
+            if (dis != null) {
+                dis.opened = false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
-    private static class CountingWriter {
-        private final OutputStreamWriter writer;
+    private static class DisText {
         private int lineNo = 1;
-
-        public CountingWriter(OutputStream out) {
-            this.writer = new OutputStreamWriter(out);
-        }
+        private int length = 0;
+        private final StringBuffer data = new StringBuffer();
 
         public int getLineNo() {
             return lineNo;
         }
         
-        public void writeLine(String line) throws IOException {
-            writer.write(line);
-            lineNo++;
+        public int getLength() {
+            return length;
         }
         
-        public void close() throws IOException {
+        public void addLine(String line) {
+            data.append(line);
+            lineNo++;
+            length += line.length();
+        }
+        
+        public void save(OutputStream out) throws IOException {
+            Writer writer = new OutputStreamWriter(out);
+            writer.write(data.toString());
             writer.close();
         }
     }

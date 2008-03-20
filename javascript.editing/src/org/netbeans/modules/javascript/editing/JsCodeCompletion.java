@@ -322,7 +322,14 @@ public class JsCodeCompletion implements Completable {
             }
             
             if (root != null) {
-                final AstPath path = new AstPath(root, astOffset);
+                int offset = astOffset;
+                
+                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
+                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
+                    offset = sanitizedRange.getStart();
+                }
+
+                final AstPath path = new AstPath(root, offset);
                 request.path = path;
                 request.fqn = AstUtilities.getFqn(path, null, null);
 
@@ -930,7 +937,20 @@ public class JsCodeCompletion implements Completable {
             String type = call.getType();
             String lhs = call.getLhs();
 
-            if (call.getPrevCallParenPos() != -1) {
+            if (type == null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+                if (method != null) {
+                    List<Node> nodes = new ArrayList<Node>();
+                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.javascript.Token.MISSING_DOT }, nodes);
+                    if (nodes.size() > 0) {
+                        Node exprNode = nodes.get(0);
+                        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                        type = analyzer.getType(exprNode.getParentNode());
+                    }
+                }
+            }
+            
+            if (type == null && call.getPrevCallParenPos() != -1) {
                 // It's some sort of call
                 assert call.getType() == null;
                 assert call.getLhs() == null;
@@ -952,8 +972,23 @@ public class JsCodeCompletion implements Completable {
                                 type = analyzer.getType(callNode);
                             }
                             break;
+                        } else if (callNode.getType() == org.mozilla.javascript.Token.GETELEM) {
+                            Node method = AstUtilities.findLocalScope(node, path);
+
+                            if (method != null) {
+                                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                                type = analyzer.getType(callNode);
+                            }
+                            break;
                         }
                     }
+                }
+            } else if (type == null && lhs != null && node != null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+
+                if (method != null) {
+                    JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                    type = analyzer.getType(node);
                 }
             }
 

@@ -47,6 +47,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
@@ -228,7 +229,11 @@ public class PreprocessorFormatter {
 
     private int getPreprocessorIndent(int shift) {
         if (shift > 0) {
-            return shift * codeStyle.indentSize();
+            if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED) {
+                return shift * (codeStyle.indentSize()/2);
+            } else {
+                return shift * codeStyle.indentSize();
+            }
         } else {
             return 0;
         }

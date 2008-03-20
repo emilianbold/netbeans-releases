@@ -276,15 +276,13 @@ public class Call {
 
                 if (id == JsTokenId.WHITESPACE) {
                     break;
-                } else if (id == JsTokenId.RBRACKET) {
-                    // Looks like we're operating on an array, e.g.
-                    //  [1,2,3].each|
-                    return new Call("Array", null, false, methodExpected);
-//                } else if (id == JsTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
-//                                                       // Looks like we're operating on a hash, e.g.
-//                                                       //  {1=>foo,2=>bar}.each|
-//
-//                    return new Call("Hash", null, false, methodExpected);
+//                } else if (id == JsTokenId.RBRACKET) {
+//                    // Looks like we're operating on an array, e.g.
+//                    //  [1,2,3].each|
+//                    
+//                    // No, it's more likely that we have something like this:  foo[0] -- which is not an array, it's an element of an array of unknown type
+//                    
+//                    return new Call("Array", null, false, methodExpected);
                 } else if ((id == JsTokenId.STRING_LITERAL) || (id == JsTokenId.STRING_END)) {
                     return new Call("String", null, false, methodExpected);
                 } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
@@ -317,6 +315,17 @@ public class Call {
                     // The starting offset is more accurate for finding the AST node
                     // corresponding to the call
                     OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
+                    if (matching != OffsetRange.NONE){
+                        call.prevCallParenPos = matching.getStart();
+                    }
+                    
+                    return call;
+                } else if (id == JsTokenId.RBRACKET) { // Parenthesis
+                    Call call = new Call(null, null, false, false);
+                    call.prevCallParenPos = ts.offset();
+                    // The starting offset is more accurate for finding the AST node
+                    // corresponding to the call
+                    OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.LBRACKET);
                     if (matching != OffsetRange.NONE){
                         call.prevCallParenPos = matching.getStart();
                     }

@@ -517,7 +517,6 @@ public class WSUtils {
         } catch (IOException ex) {
             ErrorManager.getDefault().log(ex.getLocalizedMessage());
         } catch (SAXException ex) {
-            System.out.println("SAX = "+ex.getMessage());
             if (WsdlNamespaceHandler.SAX_PARSER_FINISHED_OK.equals(ex.getMessage())) {
                 // THIS IS OK, parser finished correctly
             } else {

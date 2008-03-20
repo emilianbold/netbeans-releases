@@ -691,29 +691,26 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         }
         
         private Action[] getAdditionalActions(){
-                if (myActions == null) {
-                    List<Action> actions = new LinkedList<Action>();
-                    
-                    for (Action action : super.getActions(false)){
-                        actions.add(action);
-                    }
+            List<Action> actions = new LinkedList<Action>();
 
-                    // want to add recent after 'NewFile' action.
-                    // use fixed index not to search for 'NewFile' 
-                    // in seper actions each time (this wuill need to create 
-                    // CommonProjectActions.newFileAction() and check equals() )
-                    int pos = 2;
-                    for (Action action : getProviderActions()){
-                        actions.add(pos++, action);
-                    }
-                    
-                    for (Action action : getFolderActions()){
-                        actions.add(pos++, action);
-                    }
+            for (Action action : super.getActions(false)) {
+                actions.add(action);
+            }
 
-                    myActions = actions.toArray(new Action[]{});
-                }
-                return myActions;
+            // want to add recent after 'NewFile' action.
+            // use fixed index not to search for 'NewFile' 
+            // in seper actions each time (this wuill need to create 
+            // CommonProjectActions.newFileAction() and check equals() )
+            int pos = 2;
+            for (Action action : getProviderActions()) {
+                actions.add(pos++, action);
+            }
+
+            for (Action action : getFolderActions()) {
+                actions.add(pos++, action);
+            }
+
+            return actions.toArray(new Action[]{});
         }
 
         private Action[] getFolderActions() {
@@ -725,11 +722,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                 null,
                 SystemAction.get(FileSystemAction.class)};
             return actions;
-        }
-        
-        Action[] myActions;
-
-        
+        }                
     }
 
     private boolean isInvokedForProject(){
@@ -796,29 +789,25 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             }
         }
         
-        private Action[] getAdditionalActions(){
-                if (myActions == null) {
-                    List<Action> actions = new LinkedList<Action>();
-                    
-                    actions.add(SystemAction.get(OpenAction.class));
-                    actions.add(null);
-                        
-                    for (Action action : getProviderActions()){
-                        actions.add(action);
-                    }
-                    
-                    for (Action action : getObjectActions()){
-                        actions.add(action);
-                    }
+        private Action[] getAdditionalActions() {
+            List<Action> actions = new LinkedList<Action>();
 
-                    for (Action action : super.getActions(false)){
-                        actions.add(action);
-                    }
-                    
-                    myActions = actions.toArray(new Action[]{});
-                }
-                
-                return myActions;
+            actions.add(SystemAction.get(OpenAction.class));
+            actions.add(null);
+
+            for (Action action : getProviderActions()) {
+                actions.add(action);
+            }
+
+            for (Action action : getObjectActions()) {
+                actions.add(action);
+            }
+
+            for (Action action : super.getActions(false)) {
+                actions.add(action);
+            }
+            
+            return actions.toArray(new Action[]{});
         }
         
         private Action[] getObjectActions(){
@@ -839,9 +828,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
                 SystemAction.get(FileSystemAction.class)
             };
             return actions;
-        }
-
-        Action[] myActions;
+        }        
 
     }
 
