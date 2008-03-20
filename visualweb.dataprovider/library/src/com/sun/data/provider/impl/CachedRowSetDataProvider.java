@@ -1716,13 +1716,17 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     }        
     
     private String generateFilename() {
+        int fixedDirLength = (System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata").length() + ".ser".length();  // NOI18N
         String dataSourceName = getCachedRowSet().getDataSourceName().replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
         String commandName = getCachedRowSet().getCommand().replaceAll("\\n", ""); // NOI18N
         commandName = commandName.replaceAll("\\r", "");  // NOI18N
         commandName = commandName.replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
         commandName = commandName.toLowerCase();
         commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
-        commandName = commandName.replaceFirst("selectall", ""); // NOI18N        
+        commandName = commandName.replaceFirst("selectall", ""); // NOI18N  
+        if (fixedDirLength + (commandName + ".ser").length() > 200) {
+            commandName = commandName.substring(0, 200 - fixedDirLength);  // NOI18N
+        }
         return dataSourceName + "_"  + "_" + commandName; // NOI18N
     }
 }
