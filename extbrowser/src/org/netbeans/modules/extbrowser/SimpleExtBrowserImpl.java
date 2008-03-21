@@ -43,10 +43,13 @@ package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.execution.NbProcessDescriptor;
 
@@ -73,11 +76,15 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
         
         try {
             url = URLUtil.createExternalURL(url, false);
+            URI uri = url.toURI();
+            
             NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
             if (np != null) {
-                np.exec(new SimpleExtBrowser.BrowserFormat((url == null)? "": url.toString())); // NOI18N
+                np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
             }
             this.url = url;
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             org.openide.DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
