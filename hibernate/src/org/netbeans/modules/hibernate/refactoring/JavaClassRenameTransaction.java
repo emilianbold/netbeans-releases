@@ -90,12 +90,7 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
                 
                 // The class attribute of <import>s
-                for (int i = 0; i < hbMapping.sizeImport(); i++) {
-                    String importClsName = hbMapping.getAttributeValue(HibernateMapping.IMPORT, i, "Class");
-                    if (importClsName != null && importClsName.equals(origName)) {
-                        hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, "Class", newName);
-                    }
-                }
+                refactoringImports(hbMapping);
                 
                 // Change all the occurrences in <class> elements
                 refactoringMyClasses(hbMapping.getMyClass());
@@ -118,10 +113,20 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
                 try {
-                    outs.close();
+                    if( outs != null )
+                        outs.close();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }
+            }
+        }
+    }
+    
+    private void refactoringImports(HibernateMapping hbMapping) {
+        for (int i = 0; i < hbMapping.sizeImport(); i++) {
+            String importClsName = hbMapping.getAttributeValue(HibernateMapping.IMPORT, i, "Class");
+            if (importClsName != null && importClsName.equals(origName)) {
+                hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, "Class", newName);
             }
         }
     }

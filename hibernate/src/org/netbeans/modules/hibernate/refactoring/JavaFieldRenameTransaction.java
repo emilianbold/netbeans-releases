@@ -120,7 +120,8 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
                 try {
-                    outs.close();
+                    if(outs != null)
+                        outs.close();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }

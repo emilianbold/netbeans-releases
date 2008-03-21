@@ -586,7 +586,7 @@ public class HibernateRefactoringUtil {
         return null;
     }
     
-    private static String getPackageName(String binaryClassName) {
+    public static String getPackageName(String binaryClassName) {
         if(binaryClassName == null)
             return null;
         

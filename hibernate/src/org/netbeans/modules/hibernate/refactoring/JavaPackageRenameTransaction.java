@@ -65,8 +65,8 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
      */
     public void doChanges() {
         
-        String oldName = getOriginalName();
-        String newName = getNewName();
+        // This is the thing that will do all the replacements
+        JavaRenameChanger renamer = new JavaRenameChanger(true, origName, newName);
         
         for (FileObject mappingFileObject : getToBeModifiedFiles()) {
             
@@ -76,21 +76,26 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
 
                 // Change the package attribute <hibernate-mapping> tag
-                String pkgName = hbMapping.getAttributeValue("package"); //NOI18N
-                if (pkgName != null && pkgName.contains(oldName)) {
-                    String newWholePkgName = pkgName.replaceFirst(oldName, newName);
-                    hbMapping.setAttributeValue("package", newWholePkgName);
+                String pkgName = hbMapping.getAttributeValue("Package"); //NOI18N
+                if (pkgName != null && pkgName.equals(origName)) {
+                    hbMapping.setAttributeValue("Package", newName);
                 }
+                
+                 // The class attribute of <import>s
+                renamer.refactoringImports(hbMapping);
+                
+                // Change all the occurrences in <class> elements
+                renamer.refactoringMyClasses(hbMapping.getMyClass());
+                
+                // Change all the occurrences in <subclass> elements
+                renamer.refactoringSublasses(hbMapping.getSubclass());
+                
+                // Change all the occurrences in <joined-subclass> elements
+                renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+                
+                // Change all the occurrences in <union-subclass> elements
+                renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
 
-                // Change the name attribute <class> tag
-                MyClass[] myClazz = hbMapping.getMyClass();
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NOI18N
-                    if (clsName != null && clsName.startsWith(oldName)) {
-                        String nameBinaryClassName = clsName.replaceFirst(oldName, newName);
-                        myClazz[ci].setAttributeValue("name", nameBinaryClassName); // NOI18N
-                    }
-                }
                 outs = mappingFileObject.getOutputStream();
                 hbMapping.write(outs);
                 
@@ -100,7 +105,8 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
                 try {
-                    outs.close();
+                    if(outs != null)
+                        outs.close();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }
