@@ -59,7 +59,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
-import org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
