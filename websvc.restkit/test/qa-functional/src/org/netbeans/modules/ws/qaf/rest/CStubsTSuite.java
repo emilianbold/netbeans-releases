@@ -56,6 +56,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -76,24 +77,12 @@ public class CStubsTSuite extends RestTestBase {
         return "RESTClient"; //NOI18N
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static TestSuite suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
-        suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    }
-
     /**
-     * Test the wizard - add 2 projects, remove 1 and then Cancel the wizard
+     * Test the wizard:
+     * - select target folder using browse... (browse folders dialog)
+     * - add 2 projects
+     * - remove 1 project
+     * - then Cancel the wizard
      */
     public void testWizard() {
         //invoke the wizard
@@ -103,6 +92,22 @@ public class CStubsTSuite extends RestTestBase {
         String path2 = FileUtil.toFile(getProject("FromPatterns").getProjectDirectory()).getAbsolutePath(); //NOI18N
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
+        //browse to set target folder
+        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Browse");
+        JButtonOperator jbo = new JButtonOperator(wo, browseLabel, 1);
+        jbo.pushNoBlock();
+        String browseFoldersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolders");
+        NbDialogOperator  ndo = new NbDialogOperator(browseFoldersLabel);
+        JTreeOperator jto = new JTreeOperator(ndo);
+        new org.netbeans.jellytools.nodes.Node(jto, jto.findPath("Source Packages")).select(); //NOI18N
+        ndo.ok();
+        assertEquals("browse selection not propagated", "", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
+        jbo.pushNoBlock();
+        ndo = new NbDialogOperator(browseFoldersLabel);
+        jto = new JTreeOperator(ndo);
+        new org.netbeans.jellytools.nodes.Node(jto, "Web Pages|WEB-INF").select(); //NOI18N
+        ndo.ok();
+        assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
         //add project
         addProject(wo, path);
         JListOperator jlo = new JListOperator(wo, 1);
@@ -149,6 +154,12 @@ public class CStubsTSuite extends RestTestBase {
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
+        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Browse");
+        String browseFoldersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolders");
+        JButtonOperator jbo = new JButtonOperator(wo, browseLabel, 1);
+        jbo.pushNoBlock();
+        new NbDialogOperator(browseFoldersLabel).cancel();
+        assertEquals("browse selection propagated", "resources", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
         //click on the use wadl button
         JRadioButtonOperator jrbo = new JRadioButtonOperator(wo, 1);
         jrbo.clickMouse();
@@ -209,4 +220,25 @@ public class CStubsTSuite extends RestTestBase {
         ProjectRootNode n = ProjectsTabOperator.invoke().getProjectRootNode(name);
         return ((Node)n.getOpenideNode()).getLookup().lookup(Project.class);
     }
+    
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
+        suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
+        suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
+        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
+        return suite;
+    }
+
+    /**
+     * Method allowing test execution directly from the IDE.
+     */
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        TestRunner.run(suite());
+    }
+
 }
