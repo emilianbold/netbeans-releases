@@ -467,11 +467,7 @@
    
        <!-- Persistence Unit Visual Editor CSH -->
     <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
-
-
-<!-- TODO: Need help ids for this
-    <mapID target=" " url="persistence/csh/persist_new_persistenceunit.html" />
--->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" url="persistence/csh/persist_new_persistenceunit.html" />
 
 <!-- Profiling topic -->
     <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
