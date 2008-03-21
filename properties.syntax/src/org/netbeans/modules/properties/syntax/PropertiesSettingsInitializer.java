@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.properties.syntax;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
-import org.netbeans.editor.TokenContext;
 
 /** 
  * Initializes properties editor kit settings. 
@@ -51,8 +52,8 @@ import org.netbeans.editor.TokenContext;
  * @author  Mila Metelka
  */
 public final class PropertiesSettingsInitializer {
-    public static TokenContext[] getTokenContext() {
-        return new TokenContext[] { PropertiesTokenContext.context };
+    public static List getTokenContext() {
+        return Collections.singletonList(PropertiesTokenContext.context);
     }
 
     public static Acceptor getIdentifierAcceptor() {

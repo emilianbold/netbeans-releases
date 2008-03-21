@@ -206,6 +206,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new NbDialogOperator(title).yes();
     }
     
+    @Override
     protected void shutdown() {
         super.shutdown();
         rto = RuntimeTabOperator.invoke();

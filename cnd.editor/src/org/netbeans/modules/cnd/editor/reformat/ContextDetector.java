@@ -346,7 +346,22 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){
                 if (next.id() == IDENTIFIER) {
-                     return OperatorKind.BINARY;
+                    if (isPreviousStatementParen()) {
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                                return OperatorKind.TYPE_MODIFIER;
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    } else {
+                        return OperatorKind.BINARY;
+                    }
                 }
             }
             if (previous.id() == IDENTIFIER){
@@ -390,6 +405,8 @@ public class ContextDetector extends ExtendedTokenSequence {
                         case AMP:
                             if (braces.isDeclarationLevel()) {
                                 return OperatorKind.TYPE_MODIFIER;
+                            } else if (isLikeForDeclaration()) {
+                                return OperatorKind.TYPE_MODIFIER;
                             } else if (isLikeExpession()) {
                                 return OperatorKind.BINARY;
                             }
@@ -413,6 +430,112 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
         }
         return OperatorKind.SEPARATOR;
+    }
+    
+    private boolean isPreviousStatementParen(){
+        int index = index();
+        try {
+            while(movePrevious()){
+                switch (token().id()) {
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return isStatementParen();
+                }
+            }
+            return true;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
+    private boolean isLikeForDeclaration(){
+        StackEntry entry = braces.peek();
+        if (entry == null || entry.getKind() != FOR){
+            return false;
+        }
+        int index = index();
+        int level = 1;
+        try {
+            while (movePrevious()) {
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        break;
+                    case FOR:
+                        if (level == 0) {
+                            return true;
+                        }
+                        return false;
+                    case SEMICOLON:
+                    case EQ:
+                        return false;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
+    private boolean isStatementParen(){
+        if (token().id() == RPAREN){
+            int level = 1;
+            while(movePrevious()){
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        if (level == 0){
+                            Token<CppTokenId> previous = lookPreviousImportant();
+                            if (previous != null) {
+                                switch (previous.id()) {
+                                    case FOR:
+                                    case IF:
+                                    case WHILE:
+                                    case CATCH:
+                                    case SWITCH:
+                                        return true;
+                                    default:
+                                        while(movePrevious()){
+                                            switch (token().id()) {
+                                                case WHITESPACE:
+                                                case ESCAPED_WHITESPACE:
+                                                case NEW_LINE:
+                                                case LINE_COMMENT:
+                                                case BLOCK_COMMENT:
+                                                case DOXYGEN_COMMENT:
+                                                case PREPROCESSOR_DIRECTIVE:
+                                                    break;
+                                                default:
+                                                    return index() == braces.lastStatementStart;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            return false;
+                        }
+                        break;
+                }
+            }
+        }
+        return false;
     }
     
     private boolean isLikeExpession(){

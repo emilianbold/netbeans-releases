@@ -43,11 +43,15 @@ package gui.actions;
 
 
 
+import gui.window.ProjectsWindow;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Log;
 import org.openide.util.Lookup;
 
@@ -92,23 +96,28 @@ public class WatchProjects extends JellyTestCase {
         LOG.fine("getOpenProjects: " + getProjects);
     }
     
-    public static void assertProjects() throws Exception {
+    public void assertProjects() throws Exception {
         closeProjects.invoke(
             projectManager,
             getProjects.invoke(projectManager)
         );
         
         System.setProperty("assertgc.paths", "20");
+        
+        ProjectsTabOperator.invoke();
+        new EventTool().waitNoEvent(2000);
+        PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + java.io.File.separator + "screen_before_testGCProjects.png");
+        
         Log.assertInstances("Checking if all projects and DesignView are really garbage collected");
     }
 
     public void testInitGCProjects() throws Exception {
-        WatchProjects.initialize();
+        initialize();
     }
     
     
     public void testGCProjects() throws Exception {
-        WatchProjects.assertProjects();
+        assertProjects();
     }
 
     

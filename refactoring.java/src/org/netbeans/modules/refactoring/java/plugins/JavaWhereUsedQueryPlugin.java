@@ -182,9 +182,14 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     public Problem prepare(final RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        processFiles(a, new FindTask(elements));
+        Problem problem = null;
+        try {
+            processFiles(a, new FindTask(elements));
+        } catch (IOException e) {
+            problem = createProblemAndLog(null, e);
+        }
         fireProgressListenerStop();
-        return null;
+        return problem;
     }
     
     @Override

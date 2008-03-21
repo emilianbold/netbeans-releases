@@ -48,6 +48,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -114,10 +115,13 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
         doMeasurement();
     }
     
+    @Override
     public void initialize() {
         log("::initialize");
         
         Node projectRoot = null;
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
         try {
             projectRoot = new ProjectsTabOperator().getProjectRootNode("VisualWebProject");
             projectRoot.select();
@@ -125,6 +129,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);        
         
         PaletteOperator.invoke();
     }

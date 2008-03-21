@@ -105,6 +105,9 @@ public class RowSetMetaDataXImpl extends RowSetMetaDataImpl implements RowSetMet
     public String getColumnClassName(int columnIndex) throws SQLException {
         checkColumnIndex(columnIndex);
         String className = columnClassName[columnIndex];
+        if (className == null) {
+            throw new SQLException(rb.getString("SCHEMA_HAS_CHANGED"));
+        }
         if (className.equals("byte[]")) {
             className = new byte[0].getClass().getName(); //"[B";
         } else if (className.equals("char[]")) {

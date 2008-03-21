@@ -68,16 +68,20 @@ public class ResourceConfigurationHelper {
     }
     
     public static void writeFile(final File file, final BaseBean bean) throws ConfigurationException {
+        assert file != null : "File to write can't be null"; // NOI18N
+        assert file.getParentFile() != null : "File parent folder can't be null"; // NOI18N
+
         try {
-            FileObject cfolder = FileUtil.toFileObject(file.getParentFile());
+            FileObject cfolder = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
             if (cfolder == null) {
-                File parentFile = file.getParentFile();
                 try {
-                    cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
-                } catch (IOException ioe) {
-                    throw new ConfigurationException(NbBundle.getMessage(ResourceConfigurationHelper.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
+                    cfolder = FileUtil.createFolder(FileUtil.normalizeFile(file.getParentFile()));
+                } catch (IOException ex) {
+                    throw new ConfigurationException(NbBundle.getMessage(ResourceConfigurationHelper.class,
+                            "MSG_FailedToCreateConfigFolder", file.getParentFile().getAbsolutePath()));
                 }
             }
+
             final FileObject folder = cfolder;
             FileSystem fs = folder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {

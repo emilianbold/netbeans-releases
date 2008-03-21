@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -47,16 +47,18 @@ Java platform against which all source files are compiled and run. You open the
   <li><b><a href="../../compile/comp_dependencies.html">Project</a>.</b> The build 
     output, source files, and Javadoc files of another IDE project.</li>
 </ul>
-<p><b>Notes:</b>
+<p><b>Notes:</b></p>
 <ul>
   <li>If a JAR file with attached source code and Javadoc documentation is registered
   	with a project as a member of a Java Class Library, you can simply
   	add the JAR file to the classpath and the IDE finds the Javadoc documentation
-  	and source code automatically. <!--You should use the Add Library button if you
-  		want to add a library that contains several JAR files. -->
-	Adding a Java Class Library rather than a regular JAR file also makes it easier for other developers
-  		you share the project with to fix broken references to Javadoc documentation
-	and source code. </li>
+  	and source code automatically. This enables you to step into the 
+        sources of that classpath element when debugging, view Javadoc for that 
+        classpath element when using code completion, and so on.</li>
+        <li>You can also select an item in the list and use the Edit button to associate 
+sources and Javadoc documentation with an item for that project. However, if you plan 
+to use the classpath element in many projects, it is better to create a library for 
+that classpath element in the Library Manager (Tools &gt; Libraries).</li>
   <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="./glossary_freeform.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">

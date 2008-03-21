@@ -193,15 +193,31 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
 
     /**
      * Sets all node properties at once.
-     * 
-     * @param unitName  service unit name
-     * @param compName  component name, e.x., sun-bpel-engine
      */
-    public void setNodeProperties(String unitName, String compName) {
-        mTitleWidget.setLabel(unitName);  
-        mTitleWidget.setComponentName(compName);
+    public void setNodeProperties(String nodeName, String nodeType) {
+        boolean hasNodeName = nodeName != null && nodeName.length() >= 0;
+        boolean hasNodeType = nodeType != null && nodeType.length() > 0;
+        if (hasNodeType && hasNodeName) {
+            mTitleWidget.setLabel("(" + nodeType + ") " + nodeName); // NOI18N
+        } else if (hasNodeType) {
+            mTitleWidget.setLabel("(" + nodeType + ")"); // NOI18N
+        } else if (hasNodeName) {
+            mTitleWidget.setLabel(nodeName); // NOI18N
+        }
         readjustBounds();
     }
+    
+//    /**
+//     * Sets all node properties at once.
+//     * 
+//     * @param unitName  service unit name
+//     * @param compName  component name, e.x., sun-bpel-engine
+//     */
+//    public void setNodeProperties(String unitName, String compName) {
+//        mTitleWidget.setLabel(unitName);  
+//        mTitleWidget.setComponentName(compName);
+//        readjustBounds();
+//    }
 
     public void stateChanged() {
         setMinimized(mStateModel.getBooleanState());

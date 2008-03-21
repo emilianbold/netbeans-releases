@@ -42,18 +42,21 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Code generator for Accessing Saas services.
@@ -74,7 +77,11 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
 
         preGenerate();
         
+        //Create Authenticator classes
         createAuthenticatorClass();
+        
+        //Create Authorization classes
+        createAuthorizationClasses();
         
         createSaasServiceClass();
         addSaasServiceMethod();
@@ -82,6 +89,12 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
                 
         //Modify Authenticator class
         modifyAuthenticationClass(); 
+        
+        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+        if(!repTypesFromWadl.isEmpty()) {
+            getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
+            getBean().setOutputWrapperPackageName(getBean().getGroupName()+"."+getBean().getDisplayName());
+        }
         
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
         addImportsToTargetFile();
@@ -91,24 +104,60 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
+    /**
+     *  Create Authorization Frame
+     */
+    @Override
+    public void createAuthorizationClasses() throws IOException {
+        if (getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
+            try {
+                String authFileName = getBean().getAuthorizationFrameClassName();
+                FileObject authorizationFile;
+                JavaSource authorizationJS = JavaSourceHelper.createJavaSource(
+                        TEMPLATES_SAAS + Constants.SERVICE_AUTHORIZATION_FRAME+".java",
+                        getSaasServiceFolder(), getBean().getSaasServicePackageName(), authFileName);// NOI18n
+                Set<FileObject> files = new HashSet<FileObject>(authorizationJS.getFileObjects());
+                if (files != null && files.size() > 0) {
+                    authorizationFile = files.iterator().next();
+                }
+            } catch (Exception ex) {
+                throw new IOException(
+                    NbBundle.getMessage(AbstractGenerator.class,
+                    "MSG_CreateAuthFrameFailed", ex)); // NOI18N
+            }
+        }
+    }
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-        paramUse += getHeaderOrParameterUsage(filterParams);
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-
-        if(paramUse.endsWith(", "))
-            paramUse = paramUse.substring(0, paramUse.length()-2);
         
         String methodBody = "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "             System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
+        methodBody += "             "+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        if(getBean().getHttpMethod() == HttpMethodType.GET &&
+                    !getBean().findRepresentationTypes(getBean().getMethod()).isEmpty()) {
+            String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
+            methodBody += "        "+resultClass+" resultObj = null;\n";
+            methodBody += "             javax.xml.bind.JAXBContext jc = \n";
+            methodBody += "                 javax.xml.bind.JAXBContext.newInstance(\n"+resultClass+".class.getPackage().getName());\n";
+            methodBody += "             javax.xml.bind.Unmarshaller u = jc.createUnmarshaller();\n";
+            methodBody += "             resultObj = ("+resultClass+") u.unmarshal(\n";
+            methodBody += "                 new javax.xml.transform.stream.StreamSource(\n";
+            methodBody += "                     new java.io.StringReader(result.getDataAsString()))\n";
+            methodBody += "                 );\n";
+            methodBody += "             System.out.println(\"The SaasService returned: \"+resultObj.toString());\n";
+        } else {
+            methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+        }
+        methodBody += "        } catch (Exception ex) {\n";
         methodBody += "             //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
         methodBody += "             ex.printStackTrace();\n";
         methodBody += "        }\n";

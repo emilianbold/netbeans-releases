@@ -71,6 +71,16 @@ public class GdbVariable {
         return value;
     }
     
+    /**
+     * The value can change after creation if a Watch exists and the value changes before
+     * the associated AbstractVariable gets created from the GdbVariable.
+     * 
+     * @param value
+     */
+    public void setValue(String value) {
+        this.value = value;
+    }
+    
     @Override
     public boolean equals(Object o) {
         return o instanceof GdbVariable && ((GdbVariable) o).getName().equals(name);

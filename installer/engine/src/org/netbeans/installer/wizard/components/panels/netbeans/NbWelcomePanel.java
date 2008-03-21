@@ -245,7 +245,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         (product.getStatus() == Status.TO_BE_INSTALLED)) {
                     BundleType tp = BundleType.getType(System.getProperty(
                             WELCOME_PAGE_TYPE_PROPERTY));
-                    if(tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK)) {
+                    boolean stateFileUsed = System.getProperty(
+                            Registry.SOURCE_STATE_FILE_PATH_PROPERTY) != null;
+                    if(!stateFileUsed && 
+                            (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK))) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
                 } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk

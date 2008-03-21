@@ -61,7 +61,7 @@ public class FixAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        if (!HintsUI.getDefault().invokeDefaultAction()) {
+        if (!HintsUI.getDefault().invokeDefaultAction(true)) {
             Object source = e.getSource();
             
             if (!(source instanceof JTextComponent)) {

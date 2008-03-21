@@ -32,6 +32,11 @@
 					<tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
 					<tocitem text="Adding a JSF Data Table to a JSP Page" target="framework_jsf_datatable" />
 				</tocitem>
+                                <tocitem text="Spring">
+					<tocitem text="About Spring Web MVC Framework Support" target="framework_spring_about" />
+                                        <tocitem text="Creating a New Web Application with Spring MVC Framework Support" target="framework_spring_create" />                                        
+					<tocitem text="Adding Spring Web MVC Framework Support to an Existing Application" target="framework_spring_add" />					
+				</tocitem> 
 				<tocitem text="Struts">
 					<tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
 					<tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.editor.*;
 
 /**
@@ -55,8 +57,8 @@ public class FSettingsInitializer {
         return FSettingsDefaults.defaultIndentHotCharsAcceptor;
     }
     
-    public static TokenContext [] getTokenContext() {
-        return new TokenContext[] { FTokenContext.context };
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(FTokenContext.context);
     }
 }
  

@@ -159,10 +159,12 @@ public class MercurialInterceptor extends VCSInterceptor {
                 support.start(rp, root.getAbsolutePath(), 
                         org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
             } else {
+                Boolean isIgnored  = HgUtils.isIgnored(file, false);
+                Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} isIgnored {1}", new Object[] {file.getAbsolutePath(), isIgnored}); // NOI18N
+                file.delete();
+                if (root == null || isIgnored) return;
                 // If we are deleting a parent directory of this file
                 // skip the call to hg remove as we will do it for the directory
-                file.delete();
-                if (root == null) return;
                 for (File dir : dirsToDelete.keySet()) {
                     File tmpFile = file.getParentFile();
                     while (tmpFile != null) {

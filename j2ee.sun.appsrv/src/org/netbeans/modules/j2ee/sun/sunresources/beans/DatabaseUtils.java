@@ -59,6 +59,7 @@ public class DatabaseUtils {
     
     private static HashMap driverMap;
     private static HashMap dsClassMap;
+    private static HashMap cpClassMap;
     
     /** Creates a new instance of DatabaseUtils */
     private DatabaseUtils() {
@@ -98,15 +99,26 @@ public class DatabaseUtils {
      * @param inClass Datasource Classname
      * @return URL prefix for given Datasource Classname
      */
-    public static String getUrlPrefix(String inClass){
+    public static String getUrlPrefix(String inClass, String resType){
         String prefix = null;
-        Set urlKeys = dsClassMap.keySet();
+        if(resType.equals("javax.sql.ConnectionPoolDataSource")) { //NOI18N
+            prefix = getPrefix(cpClassMap, inClass);
+        }else {
+            prefix = getPrefix(dsClassMap, inClass);
+        }
+        return prefix;
+    }
+    
+    private static String getPrefix(HashMap classMap, String inClass){
+        String prefix = null;
+        Set urlKeys = classMap.keySet();
         Iterator it = urlKeys.iterator();
         while(it.hasNext()){
             String urlPrefix = (String)it.next();
-            String dsClass = (String)dsClassMap.get(urlPrefix);
-            if(dsClass.equalsIgnoreCase(inClass))
+            String dsClass = (String)classMap.get(urlPrefix);
+            if(dsClass.equalsIgnoreCase(inClass)){
                 return urlPrefix;           
+            }    
         }
         return prefix; 
     }
@@ -184,8 +196,8 @@ public class DatabaseUtils {
         //driverMap.put("jdbc:JTurbo:", "com.newatlanta.jturbo.driver.Driver");
         //Microsoft SQL Server (Sprinta driver)
         driverMap.put("jdbc:inetdae:", "com.inet.tds.TdsDriver");
-        //Microsoft SQL Server 2000 (Microsoft driver)
-        driverMap.put("jdbc:microsoft:sqlserver:", "com.microsoft.jdbc.sqlserver.SQLServerDriver");
+        //Microsoft SQL Server 2005 (Microsoft driver)
+        //driverMap.put("jdbc:microsoft:sqlserver:", "com.microsoft.jdbc.sqlserver.SQLServerDriver");
         driverMap.put("jdbc:sqlserver:", "com.microsoft.sqlserver.jdbc.SQLServerDriver"); //NOI18N
         //MySQL (Connector/J driver)
         driverMap.put("jdbc:mysql:", "com.mysql.jdbc.Driver");
@@ -288,13 +300,13 @@ public class DatabaseUtils {
         dsClassMap.put("jdbc:JTurbo:", "com.newatlanta.jturbo.driver.DataSource");
         //Microsoft SQL Server (Sprinta driver)
         dsClassMap.put("jdbc:inetdae:", "com.inet.tds.TdsDataSource");
-        //Microsoft SQL Server 2000 (Microsoft driver)
-        dsClassMap.put("jdbc:microsoft:sqlserver:", "com.microsoft.jdbc.sqlserver.SQLServerDataSource");
+        //Microsoft SQL Server 2005 (Microsoft driver)
+        //dsClassMap.put("jdbc:microsoft:sqlserver:", "com.microsoft.jdbc.sqlserver.SQLServerDataSource");
         dsClassMap.put("jdbc:sqlserver:", "com.microsoft.sqlserver.jdbc.SQLServerDataSource"); //NOI18N
         //MySQL (Connector/J driver)
         //dsClassMap.put("jdbc:mysql:", "com.mysql.jdbc.Driver");
         //MySQL (MM.MySQL driver)
-        dsClassMap.put("jdbc:mysql:", "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource");
+        dsClassMap.put("jdbc:mysql:", "com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
         
         //PostgreSQL (v6.5 and earlier)
         //dsClassMap.put("jdbc:postgresql:", "postgresql.Driver");
@@ -317,5 +329,55 @@ public class DatabaseUtils {
         //Sybase Driver
         dsClassMap.put("jdbc:sun:sybase:", "com.sun.sql.jdbcx.sybase.SybaseDataSource");
         
+    }
+    
+    static {
+        cpClassMap = new HashMap();
+        //Java DB (Net)
+        cpClassMap.put("jdbc:derby:", "org.apache.derby.jdbc.ClientConnectionPoolDataSource");
+        //DB2 Driver
+        cpClassMap.put("jdbc:sun:db2:", "com.sun.sql.jdbcx.db2.DB2DataSource");
+        //Microsoft SQL Server Driver
+        cpClassMap.put("jdbc:sun:sqlserver:", "com.sun.sql.jdbcx.sqlserver.SQLServerDataSource");
+        //Oracle Driver
+        cpClassMap.put("jdbc:sun:oracle:", "com.sun.sql.jdbcx.oracle.OracleDataSource");
+        //Sybase Driver
+        cpClassMap.put("jdbc:sun:sybase:", "com.sun.sql.jdbcx.sybase.SybaseDataSource");
+        //PostgreSQL (v7.0 and later)
+        cpClassMap.put("jdbc:postgresql:", "org.postgresql.ds.PGConnectionPoolDataSource");
+        //Microsoft SQL Server 2000 (Microsoft driver)
+        cpClassMap.put("jdbc:sqlserver:", "com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource"); 
+        //jTDS
+        cpClassMap.put("jdbc:jtds:sqlserver:", "net.sourceforge.jtds.jdbcx.JtdsDataSource");
+        //jTDS
+        cpClassMap.put("jdbc:jtds:sybase:", "net.sourceforge.jtds.jdbcx.JtdsDataSource");
+        //Oracle //OCI 8i
+        cpClassMap.put("jdbc:oracle:oci8:", "oracle.jdbc.pool.OracleConnectionPoolDataSource");
+        //Oracle-thin
+        cpClassMap.put("jdbc:oracle:thin:", "oracle.jdbc.pool.OracleConnectionPoolDataSource");
+        //IBM DB2 
+        cpClassMap.put("jdbc:db2:", "com.ibm.db2.jcc.DB2ConnectionPoolDataSource");
+        //Microsoft SQL Server (DataDirect Connect for JDBC)
+        cpClassMap.put("jdbc:datadirect:sqlserver:", "com.ddtek.jdbcx.sqlserver.SQLServerDataSource");
+        //Oracle (DataDirect Connect for JDBC)
+        cpClassMap.put("jdbc:datadirect:oracle:", "com.ddtek.jdbcx.oracle.OracleDataSource");
+        //IBM DB2 (DataDirect Connect for JDBC)
+        cpClassMap.put("jdbc:datadirect:db2:", "com.ddtek.jdbcx.db2.DB2DataSource");
+        //Informix Dynamic Server (DataDirect Connect for JDBC)
+        cpClassMap.put("jdbc:datadirect:informix:", "com.ddtek.jdbcx.informix.InformixDataSource");
+        //Sybase (DataDirect Connect for JDBC)
+        cpClassMap.put("jdbc:datadirect:sybase:", "com.ddtek.jdbcx.sybase.SybaseDataSource");
+        //Sybase (jConnect 5.2)
+        cpClassMap.put("jdbc:sybase:Tds:", "com.sybase.jdbc2.jdbc.SybConnectionPoolDataSource");
+        //PointBase
+        cpClassMap.put("jdbc:pointbase:", "com.pointbase.jdbc.jdbcDataSource");
+        //Cloudscape
+        cpClassMap.put("jdbc:cloudscape:", "COM.cloudscape.core.LocalConnectionPoolDataSource");
+        //Informix Dynamic Server
+        cpClassMap.put("jdbc:informix-sqli:", "com.informix.jdbcx.IfxConnectionPoolDataSource");
+        //MySQL (MM.MySQL driver)
+        cpClassMap.put("jdbc:mysql:", "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource");
+        //JDBC-ODBC Bridge
+        cpClassMap.put("jdbc:odbc:", "sun.jdbc.odbc.JdbcOdbcDriver");
     }
 }

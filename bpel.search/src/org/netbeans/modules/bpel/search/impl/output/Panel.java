@@ -114,7 +114,6 @@ final class Panel extends JPanel {
         }
       }
     );
-    setImageSize(button);
     toolBar.add(button);
 
     // collapse/expand
@@ -127,7 +126,6 @@ final class Panel extends JPanel {
         }
       }
     );
-    setImageSize(button);
     toolBar.add(button);
 
     // previous occurence
@@ -140,7 +138,6 @@ final class Panel extends JPanel {
         }
       }
     );
-    setImageSize(button);
     toolBar.add(button);
 
     // next occurence
@@ -153,7 +150,6 @@ final class Panel extends JPanel {
         }
       }
     );
-    setImageSize(button);
     toolBar.add(button);
 
     // export
@@ -166,12 +162,10 @@ final class Panel extends JPanel {
         }
       }
     );
-    setImageSize(button);
     toolBar.add(button);
 
     // vlv: print
     button = createButton(PrintManager.getDefault().getPrintPreviewAction());
-    setImageSize(button);
     toolBar.add(button);
 
     return toolBar;

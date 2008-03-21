@@ -112,10 +112,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         rawName = AstUtil.getRawNameInChildren(ast);
 
         AST child = ast.getFirstChild();
-        assert child != null;
         if (child != null) {
             setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
-        }   
+        } else {
+            System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());            
+        }
         if (!isStatic()) {
             for( CsmFunction fu : ((FileImpl) file).getStaticFunctionDeclarations() ) {
                 if( name.equals(fu.getName()) ) {

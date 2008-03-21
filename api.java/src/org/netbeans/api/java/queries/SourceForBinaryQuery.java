@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.queries.SFBQImpl2Result;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
@@ -115,13 +116,13 @@ public class SourceForBinaryQuery {
             if (impl instanceof SourceForBinaryQueryImplementation2) {
                 SourceForBinaryQueryImplementation2.Result _result = ((SourceForBinaryQueryImplementation2)impl).findSourceRoots2(binaryRoot);
                 if (_result != null) {                    
-                    result = new Result2New(_result);
+                    result = new Result2(_result);
                 }
             }
             else {
                 Result _result = impl.findSourceRoots(binaryRoot);
                 if (_result != null) {
-                    result = new Result2(_result);
+                    result = new Result2(new SFBQImpl2Result(_result));
                 }
             }
             if (result != null) {
@@ -183,12 +184,12 @@ public class SourceForBinaryQuery {
      */
     public static class Result2 implements Result {
         
-        private final Result delegate;
+        SourceForBinaryQueryImplementation2.Result delegate;
         //@GuardedBy(this)
         private ChangeListener spiListener;
         private final ChangeSupport changeSupport;
         
-        private Result2 (final Result result) {
+        private Result2 (final  SourceForBinaryQueryImplementation2.Result result) {
             assert result != null;
             this.delegate = result;
             this.changeSupport = new ChangeSupport(this);
@@ -225,33 +226,12 @@ public class SourceForBinaryQuery {
          * @return true if sources should be used by the java infrastructure
          */
         public boolean preferSources() {
-            //Preserve the old behavior from 4.0 to 6.1, ignore sources inside archives
-            final FileObject[] roots = this.delegate.getRoots();
-            for (FileObject root : roots) {
-                if (FileUtil.getArchiveFile(root) != null) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-    
-    private static final class Result2New extends Result2 {
-        
-        private final SourceForBinaryQueryImplementation2.Result delegate;
-        
-        private Result2New (final SourceForBinaryQueryImplementation2.Result delegate) {
-            super (delegate);
-            this.delegate = delegate;
-        }
-        
-        public boolean preferSources() {
             return this.delegate.preferSources();
         }
     }
     
     private static final Result EMPTY_RESULT = new EmptyResult();
-    private static final Result2 EMPTY_RESULT2 = new Result2 (EMPTY_RESULT);
+    private static final Result2 EMPTY_RESULT2 = new Result2 (new SFBQImpl2Result(EMPTY_RESULT));
     private static final class EmptyResult implements Result {
         private static final FileObject[] NO_ROOTS = new FileObject[0];
         EmptyResult() {}

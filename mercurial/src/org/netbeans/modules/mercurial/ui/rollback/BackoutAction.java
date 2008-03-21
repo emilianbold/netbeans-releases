@@ -93,6 +93,7 @@ public class BackoutAction extends ContextAction {
 
     public static void backout(final VCSContext ctx, final RepositoryRevision repoRev){
         final File root;        
+        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         if(repoRev != null){
             if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals("")){
                 return;
@@ -107,7 +108,7 @@ public class BackoutAction extends ContextAction {
         String rev = null;
         String commitMsg = null;
 
-        final Backout backout = new Backout(root, repoRev);
+        final Backout backout = new Backout(root, repoRev, files);
         if (!backout.showDialog()) {
             return;
         }

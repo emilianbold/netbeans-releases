@@ -23,7 +23,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jSeparator1" alignment="0" pref="738" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="0" pref="778" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
@@ -35,9 +35,9 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="locationCB" pref="530" max="32767" attributes="1"/>
-                                          <Component id="projectTextField" alignment="0" pref="530" max="32767" attributes="0"/>
-                                          <Component id="folderTextField" alignment="1" pref="530" max="32767" attributes="1"/>
+                                          <Component id="locationCB" pref="583" max="32767" attributes="1"/>
+                                          <Component id="projectTextField" alignment="0" pref="583" max="32767" attributes="0"/>
+                                          <Component id="folderTextField" alignment="1" pref="583" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
@@ -66,10 +66,10 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="738" max="32767" attributes="0"/>
+                  <Component id="jSeparator2" alignment="0" pref="778" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="wadlRadioButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="487" max="32767" attributes="0"/>
+                      <EmptySpace pref="507" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -320,10 +320,10 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="createJmakiCheckBox">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_CreateJmakiRestComponents" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="createJmakiCheckBoxStateChanged"/>

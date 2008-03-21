@@ -61,6 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -148,16 +149,19 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 public void windowOpened (WindowEvent e) {
                     final WindowAdapter waa = this;
                     setWaitingState (true);
-                    Utilities.startAsWorkerThread (PluginManagerUI.this, new Runnable () {
-                        public void run () {
-                            try {
-                                initTask.waitFinished ();
-                                w.removeWindowListener (waa);
-                            } finally {
-                                setWaitingState (false);
-                            }
-                        }
-                    }, NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"));
+                    Utilities.startAsWorkerThread (PluginManagerUI.this,
+                            new Runnable () {
+                                public void run () {
+                                    try {
+                                        initTask.waitFinished ();
+                                        w.removeWindowListener (waa);
+                                    } finally {
+                                        setWaitingState (false);
+                                    }
+                                }
+                            },
+                            NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"),
+                            Utilities.getTimeOfInitialization ());
                 }
             });
         }
@@ -203,6 +207,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
+                AutoupdateCheckScheduler.runCheckAvailableUpdates ();
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initTask) {
                     units = null;
@@ -507,6 +512,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
             LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
+            AutoupdateCheckScheduler.runCheckAvailableUpdates ();
             
             updateTableModel.setUnits(units);
             installTableModel.setUnits(units);

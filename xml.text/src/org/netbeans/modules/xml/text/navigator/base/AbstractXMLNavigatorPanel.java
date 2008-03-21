@@ -67,13 +67,6 @@ public abstract class AbstractXMLNavigatorPanel implements NavigatorPanel {
         }
     };
     
-    /**
-     * 
-     */
-    public AbstractXMLNavigatorPanel() {
-        getNavigatorUI();
-    }
-    
     public abstract String getDisplayHint();
     
     public abstract String getDisplayName();

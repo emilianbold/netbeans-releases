@@ -81,5 +81,4 @@ public interface SourceForBinaryQueryImplementation2 extends SourceForBinaryQuer
          */
         public boolean preferSources();
     }
-    
 }

@@ -52,7 +52,6 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.XmlUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -62,7 +61,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class ConfigParamsTreeView extends JPanel implements PropertyChangeListener {
 
     private String LOG_CATEGORY = DBModelTreeView.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(ConfigParamsTreeView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ConfigParamsTreeView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private JTree tree;
     private List srcdbModels;
@@ -290,7 +289,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(this.confFile)));
             rootNode = (Node) element;
         } catch (Exception ex) {
-            mLogger.infoNoloc(mLoc.t("PRSR041: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
+            mLogger.infoNoloc(mLoc.t("EDIT041: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
         }
         Node node;
         if (rootNode != null) {
@@ -298,7 +297,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             try {
                 sqlDefn = new SQLDefinitionImpl((Element) sqlNode);
             } catch (Exception ex) {
-                mLogger.infoNoloc(mLoc.t("PRSR042: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
+                mLogger.infoNoloc(mLoc.t("EDIT041: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
             }
         }
         if (isSource) {
@@ -498,15 +497,15 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 if (obj instanceof SQLDBModel) {
                     SQLDBModel dbModel = (SQLDBModel) obj;
                     String dbName = dbModel.getModelName();
-                    String nbBundle1 = mLoc.t("PRSR001: {0} [Source]",dbName);
-                    String nbBundle2 = mLoc.t("PRSR001: {0} [Target]",dbName);
+                    String nbBundle1 = mLoc.t("BUND156: {0} [Source]",dbName);
+                    String nbBundle2 = mLoc.t("BUND157: {0} [Target]",dbName);
                     switch (dbModel.getObjectType()) {
                         case SQLConstants.SOURCE_DBMODEL:
-                            dbName = Localizer.parse(nbBundle1);
+                            dbName = nbBundle1.substring(15);
                             break;
 
                         case SQLConstants.TARGET_DBMODEL:
-                            dbName = Localizer.parse(nbBundle2);
+                            dbName = nbBundle2.substring(15);
                             break;
 
                         default:

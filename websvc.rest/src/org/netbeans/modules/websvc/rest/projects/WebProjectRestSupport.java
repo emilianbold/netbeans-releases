@@ -44,8 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,6 +60,7 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -172,7 +171,7 @@ public class WebProjectRestSupport extends RestSupport {
         try {
             return hasRestServletAdaptor(getWebApp());
         } catch(IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Exceptions.printStackTrace(ioe);
             return false;
         }
     }

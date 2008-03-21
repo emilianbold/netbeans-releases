@@ -89,9 +89,6 @@
                 <package>org.netbeans.modules.bpel.model.api.support</package>
                 <package>org.netbeans.modules.bpel.model.ext.logging.api</package>
                 <package>org.netbeans.modules.bpel.model.spi</package>
-                <package>org.netbeans.modules.bpel.model.impl</package>
-                <package>org.netbeans.modules.bpel.model.impl.references</package>
-                <package>org.netbeans.modules.bpel.model.impl.services</package>
                 <package>org.netbeans.modules.bpel.model.xam</package>
             </friend-packages>
         </data>

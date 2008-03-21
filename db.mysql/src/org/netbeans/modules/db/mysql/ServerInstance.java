@@ -267,7 +267,8 @@ public class ServerInstance implements Node.Cookie {
 
 
     public String getHost() {
-        return OPTIONS.getHost();
+        return Utils.isEmpty(OPTIONS.getHost()) ?  
+            MySQLOptions.getDefaultHost() : OPTIONS.getHost();
     }
 
     public void setHost(String host) {

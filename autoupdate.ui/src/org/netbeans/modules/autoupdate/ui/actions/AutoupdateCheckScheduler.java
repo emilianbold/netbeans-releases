@@ -67,17 +67,21 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
-import org.netbeans.modules.autoupdate.ui.InstallUnitWizard;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Unit;
 import org.netbeans.modules.autoupdate.ui.UnitCategory;
 import org.netbeans.modules.autoupdate.ui.Utilities;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
+import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.WindowManager;
 
 /**
@@ -108,33 +112,34 @@ public class AutoupdateCheckScheduler {
             // install update checker when UI is ready (main window shown)
             WindowManager.getDefault().invokeWhenUIReady(new Runnable () {
                 public void run () {
-                    RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 5000);
+                    RequestProcessor.getDefault ().post (doCheckLazyUpdates, 11000);
                 }
             });
         }
     }
     
     private static void scheduleRefreshProviders () {
-        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
-        Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
-        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
-            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p));
-            refreshTasks.add (t);
-        }
-        err.log (Level.FINEST, "Waiting for all refreshTasks...");
-        for (RequestProcessor.Task t : refreshTasks) {
-            t.waitFinished ();
-        }
-        err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
-        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 500);
+        refreshUpdatCenters (null);
+        final int delay = 500;
+        final long startTime = System.currentTimeMillis ();
+        RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
+        t.addTaskListener (new TaskListener () {
+            public void taskFinished (Task task) {
+                task.removeTaskListener (this);
+                long time = (System.currentTimeMillis () - startTime - delay) / 1000;
+                if (time > 0) {
+                    Utilities.putTimeOfInitialization (time);
+                }
+            }
+        });
     }
     
-    private static Runnable getRefresher (final UpdateUnitProvider p) {
+    private static Runnable getRefresher (final UpdateUnitProvider p, final Collection<String> problems, final ProgressHandle progress) {
         return new Runnable () {
             public void run () {
                 try {
                     err.log (Level.FINE, "Start refresh " + p.getName () + "[" + p.getDisplayName () + "]");
-                    p.refresh (null, true);
+                    p.refresh (progress, true);
                     PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
                     if (pluginManagerUI != null) {
                         if (pluginManagerUI.initTask.isFinished ()) {
@@ -143,6 +148,9 @@ public class AutoupdateCheckScheduler {
                     }
                 } catch (IOException ioe) {
                     err.log (Level.INFO, ioe.getMessage (), ioe);
+                    if (problems != null) {
+                        problems.add (ioe.getLocalizedMessage ());
+                    }
                 } finally {
                     err.log (Level.FINEST, "Refresh of " + p.getName () + "[" + p.getDisplayName () + "]" + " is finish.");
                 }
@@ -158,26 +166,27 @@ public class AutoupdateCheckScheduler {
             }
             boolean hasUpdates = false;
             if (Utilities.shouldCheckAvailableUpdates ()) {
-                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE);
+                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE, false);
                 hasUpdates = updates != null && ! updates.isEmpty ();
-                if (hasUpdates) {
-                    notifyAvailable(updates, OperationType.UPDATE);
-                }
+                LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
-                notifyAvailable (checkUpdateElements (OperationType.INSTALL), OperationType.INSTALL);
+                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
             }
+            RequestProcessor.getDefault ().post (doCheckLazyUpdates, 500);
         }
     };
     
-    private static Collection<UpdateElement> checkUpdateElements (OperationType type) {
+    public static void runCheckAvailableUpdates () {
+        RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+    }
+    
+    public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
         // check
-        /*ProgressHandle handle = ProgressHandleFactory.createHandle (
-                NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_CheckingForUpdates"));
-        handle.setInitialDelay (0);
-        handle.start ();
-        try {*/
         err.log (Level.FINEST, "Check UpdateElements for " + type);
+        if (forceReload) {
+            refreshUpdatCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+        }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;
         Collection<UnitCategory> cats =  handleUpdates ?
@@ -222,15 +231,31 @@ public class AutoupdateCheckScheduler {
                 }
             }
         }
-        /*} finally {
-            if (handle != null) {
-                handle.finish ();
-            }
-        }*/
 
         // if any then notify updates
         err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
         return updates;
+    }
+    
+    private static Collection<String> refreshUpdatCenters (ProgressHandle progress) {
+        final long startTime = System.currentTimeMillis ();
+        Collection<String> problems = new HashSet<String> ();
+        assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
+        Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
+        for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
+            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p, problems, progress));
+            refreshTasks.add (t);
+        }
+        err.log (Level.FINEST, "Waiting for all refreshTasks...");
+        for (RequestProcessor.Task t : refreshTasks) {
+            t.waitFinished ();
+        }
+        err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
+        long time = (System.currentTimeMillis () - startTime) / 1000;
+        if (time > 0) {
+            Utilities.putTimeOfRefreshUpdateCenters (time);
+        }
+        return problems;
     }
     
     private static boolean timeToCheck () {
@@ -319,7 +344,23 @@ public class AutoupdateCheckScheduler {
             }
         }
     };
-
+    
+    private static Runnable doCheckLazyUpdates = new Runnable () {
+        public void run () {
+            if (SwingUtilities.isEventDispatchThread ()) {
+                RequestProcessor.getDefault ().post (doCheckLazyUpdates);
+                return ;
+            }
+            Collection<LazyUnit> updates = LazyUnit.loadLazyUnits (OperationType.UPDATE);
+            boolean hasUpdates = updates != null && ! updates.isEmpty ();
+            notifyAvailable (updates, OperationType.UPDATE);
+            if (! hasUpdates) {
+                Collection<LazyUnit> newUnits = LazyUnit.loadLazyUnits (OperationType.INSTALL);
+                notifyAvailable (newUnits, OperationType.INSTALL);
+            }
+        }
+    };
+    
     private static int getWaitPeriod () {
         switch (AutoupdateSettings.getPeriod ()) {
             case AutoupdateSettings.NEVER:
@@ -343,8 +384,12 @@ public class AutoupdateCheckScheduler {
     
     private static AvailableUpdatesNotification.UpdatesFlasher flasher;
     
-    private static void notifyAvailable (final Collection<UpdateElement> elems, final OperationType type) {
-        if (elems == null || elems.isEmpty ()) {
+    public static void notifyAvailable (final Collection<LazyUnit> units, final OperationType type) {
+        if (units == null || units.isEmpty ()) {
+            if (flasher != null) {
+                flasher.disappear ();
+            }
+            BalloonManager.dismiss ();
             return ;
         }
         // Some modules found
@@ -362,23 +407,7 @@ public class AutoupdateCheckScheduler {
                     return ;
                 }
                 try {
-                    OperationContainer oc = OperationType.UPDATE == type ?
-                        OperationContainer.createForUpdate() :
-                        OperationContainer.createForInstall();
-                    boolean allOk = true;
-                    for (UpdateElement el : elems) {
-                        allOk &= oc.canBeAdded (el.getUpdateUnit (), el);
-                    }
-                    if (allOk) {
-                        oc.add (elems);
-                    } else {
-                        if (flasher != null) {
-                            flasher.disappear ();
-                        }
-                        BalloonManager.dismiss ();
-                        return ;
-                    }
-                    wizardFinished = new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (type, oc));
+                    wizardFinished = new InstallUnitWizard ().invokeLazyWizard (units, type, false);
                 } finally {
                     if (wizardFinished) {
                         PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
@@ -389,53 +418,57 @@ public class AutoupdateCheckScheduler {
                             flasher.disappear ();
                         }
                         BalloonManager.dismiss ();
+                        RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
                     } else {
                         // notify available plugins/updates in the future
                     }
                 }
             }
         };
+        boolean wasFlashing = flasher != null;
         flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
         flasher.startFlashing ();
         final Runnable showBalloon = new Runnable() {
             public void run() {
-                JLabel balloon = new JLabel( elems.size() == 1 ?
+                JLabel balloon = new JLabel( units.size() == 1 ?
                             NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdateFound_ToolTip", elems.size()) : // NOI18N
+                                "AutoupdateCheckScheduler_UpdateFound_ToolTip", units.size()) : // NOI18N
                             NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                                "AutoupdateCheckScheduler_UpdatesFound_ToolTip", elems.size())); // NOI18N
+                                "AutoupdateCheckScheduler_UpdatesFound_ToolTip", units.size())); // NOI18N
                 BalloonManager.show( flasher, balloon, new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         onMouseClick.run();
                     }
-                }, 0);
+                }, 30*1000);
             }
         };
-        SwingUtilities.invokeLater( showBalloon );
-        flasher.addMouseListener( new MouseAdapter() {
-                Timer t;
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if( null != t ) {
-                        t.stop();
-                    }
-                    t = new Timer( ToolTipManager.sharedInstance().getInitialDelay(), new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            showBalloon.run();
+        if (! wasFlashing) {
+            SwingUtilities.invokeLater( showBalloon );
+            flasher.addMouseListener( new MouseAdapter() {
+                    Timer t;
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        if( null != t ) {
+                            t.stop();
                         }
-                    });
-                    t.start();
-                }
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    if( null != t ) {
-                        t.stop();
-                        t = null;
+                        t = new Timer( ToolTipManager.sharedInstance().getInitialDelay(), new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                showBalloon.run();
+                            }
+                        });
+                        t.start();
                     }
-                }
-            }    
-        );
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        if( null != t ) {
+                            t.stop();
+                            t = null;
+                        }
+                    }
+                }    
+            );
+        }
     }
     
 }

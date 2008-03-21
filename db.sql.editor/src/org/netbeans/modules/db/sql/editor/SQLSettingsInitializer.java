@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.db.sql.editor;
 
-import org.netbeans.editor.TokenContext;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Initializes the SQL Settings
@@ -50,7 +51,7 @@ import org.netbeans.editor.TokenContext;
  */
 public class SQLSettingsInitializer {
 
-    public static TokenContext[] getTokenContext() {
-        return new TokenContext[] { SQLTokenContext.context };
+    public static List getTokenContext() {
+        return Collections.singletonList(SQLTokenContext.context);
     }
 }

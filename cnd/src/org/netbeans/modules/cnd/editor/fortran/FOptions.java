@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import org.netbeans.modules.cnd.MIMENames;
 import org.openide.util.NbBundle;
 
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.Formatter;
-import org.netbeans.modules.editor.NbEditorDocument;
 
 import org.openide.util.HelpCtx;
 
@@ -62,7 +60,7 @@ public class FOptions extends org.netbeans.modules.editor.options.BaseOptions {
     }
   
     /** @return localized string */
-    protected String getString(String s) {
+    protected @Override String getString(String s) {
         try {
             String res = NbBundle.getBundle(FOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;
@@ -73,12 +71,16 @@ public class FOptions extends org.netbeans.modules.editor.options.BaseOptions {
     }
   
     /** Return the Fortran Indent Engine class */
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return FIndentEngine.class;
     }
 
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_editor_fortran"); // NOI18N
     }
 
+    protected @Override String getContentType() {
+        return MIMENames.FORTRAN_MIME_TYPE;
+    }
+    
 }

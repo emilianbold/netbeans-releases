@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -80,6 +80,7 @@ public final class RubySession {
     private final RubyVariable[] EMPTY_VARIABLES = new RubyVariable[0];
     
     private final RubyDebuggerProxy proxy;
+    private RubyDebuggerActionProvider actionProvider;
     private final FileLocator fileLocator;
     private RubyThread activeThread;
     private RubyFrame selectedFrame;
@@ -92,7 +93,7 @@ public final class RubySession {
 
     public enum State { STARTING, RUNNING, STOPPED };
 
-    public RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
+    RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
         this.proxy = proxy;
         this.fileLocator = fileLocator;
         this.sessionListener = new RubySessionListener();
@@ -102,18 +103,26 @@ public final class RubySession {
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
     }
 
+    void setActionProvider(RubyDebuggerActionProvider actionProvider) {
+        this.actionProvider = actionProvider;
+    }
+
+    RubyDebuggerActionProvider getActionProvider() {
+        return actionProvider;
+    }
+
     public State getState() {
         return state;
     }
 
-    public void resume() {
+    void resume() {
         beforeProceed();
         activeThread.resume();
         EditorUtil.unmarkCurrent();
         state = State.RUNNING;
     }
 
-    public void stepInto() {
+    void stepInto() {
         try {
             beforeProceed();
             if (!activeThread.canStepInto()) {
@@ -126,7 +135,7 @@ public final class RubySession {
         }
     }
     
-    public void stepOver() {
+    void stepOver() {
         try {
             beforeProceed();
             if (!activeThread.canStepOver()) {
@@ -139,7 +148,7 @@ public final class RubySession {
         }
     }
     
-    public void stepReturn() {
+    void stepReturn() {
         try {
             beforeProceed();
             activeThread.stepReturn();
@@ -149,7 +158,7 @@ public final class RubySession {
         }
     }
     
-    public void runToCursor() {
+    void runToCursor() {
         File file;
         int line;
         if (TEST) {
@@ -178,12 +187,12 @@ public final class RubySession {
         }
     }
 
-    public boolean isRunningTo(final File f, final int line) {
+    boolean isRunningTo(final File f, final int line) {
         assert f != null : "isRunningTo is not passed null File arg";
         return f.equals(runningToFile) && line == runningToLine;
     }
     
-    public void finish(final RubyDebugEventListener listener, final boolean terminate) {
+    void finish(final RubyDebugEventListener listener, final boolean terminate) {
         CallStackAnnotation.clearAnnotations();
         DebuggerManager.getDebuggerManager().removeDebuggerListener(sessionListener);
         proxy.removeRubyDebugEventListener(listener);
@@ -192,7 +201,7 @@ public final class RubySession {
         }
     }
 
-    public String getName() {
+    String getName() {
         return "localhost:" + proxy.getDebugTarged().getPort(); // NOI18N
     }
     
@@ -302,7 +311,7 @@ public final class RubySession {
         switchThread(thread, contextProvider);
     }
 
-    public void switchThread(final RubyThread thread, final ContextProviderWrapper contextProvider) {
+    void switchThread(final RubyThread thread, final ContextProviderWrapper contextProvider) {
         if (thread.isSuspended()) {
             activeThread = thread;
             try {
@@ -414,7 +423,7 @@ public final class RubySession {
         return proxy;
     }
     
-    public SessionProvider createSessionProvider() {
+    SessionProvider createSessionProvider() {
         return new SessionProvider() {
             public String getSessionName() {
                 return RubySession.this.getName();

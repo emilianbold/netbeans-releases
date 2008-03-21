@@ -26,12 +26,14 @@ made subject to such option by the copyright holder.
 package org.netbeans.core.windows.actions;
 
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.HelpCtx;
@@ -44,7 +46,7 @@ import org.openide.windows.WindowManager;
 /**
  * @author   S. Aubrecht
  */
-public class ToggleFullScreenAction extends SystemAction implements DynamicMenuContent {
+public class ToggleFullScreenAction extends SystemAction implements DynamicMenuContent, Runnable {
 
     private JCheckBoxMenuItem [] menuItems;
     
@@ -73,6 +75,15 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
     }
     
     private void updateState() {
+        if (EventQueue.isDispatchThread()) {
+            run();
+        } else {
+            SwingUtilities.invokeLater(this);
+        }
+    }
+    
+    /** Updates state of action. Uses Runnable interface impl to save one class */ 
+    public void run () {
         MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
         menuItems[0].setSelected(frame.isFullScreenMode());
     }

@@ -404,6 +404,9 @@ public class Util {
 
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String storeLocation = null;
+        if (project == null) {
+            return storeLocation;
+        }
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();

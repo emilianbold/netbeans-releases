@@ -85,11 +85,12 @@ public class StripAction extends ContextAction {
     public static void strip(final VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
+        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         String repository = root.getAbsolutePath();
          
         String rev = null;
 
-        final Strip strip = new Strip(root);
+        final Strip strip = new Strip(root, files);
         if (!strip.showDialog()) {
             return;
         }

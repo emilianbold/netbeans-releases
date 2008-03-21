@@ -543,7 +543,7 @@ public final class EditorFindSupport {
                     }
                     return result;
                 } else { // not found
-                    ComponentUtils.setStatusBoldText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
+                    ComponentUtils.setStatusText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
                                                     NOT_FOUND_LOCALE));
                     // issue 14189 - selection was not removed
                     c.getCaret().setDot(c.getCaret().getDot());
@@ -813,7 +813,7 @@ public final class EditorFindSupport {
                     if (findWhat != null) { // nothing to search for
                         exp = "'" + findWhat + "' "; // NOI18N
                     }
-                    ComponentUtils.setStatusBoldText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
+                    ComponentUtils.setStatusText(c, exp + NbBundle.getBundle(EditorFindSupport.class).getString(
                                 NOT_FOUND_LOCALE));
                 }else{
                     MessageFormat fmt = new MessageFormat(

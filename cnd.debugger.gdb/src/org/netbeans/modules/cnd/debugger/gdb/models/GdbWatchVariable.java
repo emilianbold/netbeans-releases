@@ -130,6 +130,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     model.fireTableValueChanged(ev.getSource(), null);
                 }
             });
+        } else if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
+            super.propertyChange(ev);
         }
     }
     

@@ -163,16 +163,16 @@ public class ElementUtilities {
         }
         
         // Insert browser icons... TODO - consult flags etc.
-        sb.append("<table width=\"100%\" border=\"0\"><tr>\n");
+        sb.append("<table width=\"100%\" border=\"0\"><tr>\n"); // NOI18N
 
-        sb.append("<td>");
+        sb.append("<td>"); // NOI18N
 
         if (element.getIn() != null) {
             String in = element.getIn();
             if (in != null && in.length() > 0) {
-                sb.append("<i>");
+                sb.append("<i>"); // NOI18N
                 sb.append(in);
-                sb.append("</i>");
+                sb.append("</i>"); // NOI18N
             
                 if (indexedElement != null) {
                     String url = indexedElement.getFilenameUrl();
@@ -183,101 +183,109 @@ public class ElementUtilities {
                     }
                 }
 
-                sb.append("<br>");
+                sb.append("<br>"); // NOI18N
             }
         }
         // TODO - share this between Navigator implementation and here...
-        sb.append("<b>");
+        sb.append("<b>"); // NOI18N
         sb.append(element.getName());
-        sb.append("</b>");
+        sb.append("</b>"); // NOI18N
 
         if (element instanceof FunctionElement) {
             FunctionElement executable = (FunctionElement) element;
             Collection<String> parameters = executable.getParameters();
 
             if ((parameters != null) && (parameters.size() > 0)) {
-                sb.append("(");
-
-                sb.append("<font color=\"#808080\">");
+                sb.append("("); // NOI18N
 
                 for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
                     String ve = it.next();
-                    // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
-                    sb.append(ve);
+                    int typeIndex = ve.indexOf(':');
+                    if (typeIndex != -1) {
+                        sb.append("<font color=\"#808080\">"); // NOI18N
+                        sb.append(ve, typeIndex+1, ve.length());
+                        sb.append("</font>"); // NOI18N
+                        sb.append(" ");
+                        sb.append("<font color=\"#a06001\">"); // NOI18N
+                        sb.append(ve, 0, typeIndex);
+                        sb.append("</font>"); // NOI18N
+                    } else {
+                        sb.append("<font color=\"#a06001\">"); // NOI18N
+                        sb.append(ve);
+                        sb.append("</font>"); // NOI18N
+                    }
 
                     if (it.hasNext()) {
-                        sb.append(", ");
+                        sb.append(", "); // NOI18N
                     }
                 }
 
-                sb.append("</font>");
-
-                sb.append(")");
+                sb.append(")"); // NOI18N
             }
         }
-        sb.append("</td>\n");
+        sb.append("</td>\n"); // NOI18N
         if (indexedElement != null) {
-            sb.append("<td width=\"100\">");
+            sb.append("<td width=\"100\">"); // NOI18N
             EnumSet<BrowserVersion> es = indexedElement.getCompatibility();
             try {
                 if (es.contains(BrowserVersion.FF3)) {
-                    appendImage(sb, "firefox20.png");
+                    appendImage(sb, "firefox20.png"); // NOI18N
                 } else {
-                    appendImage(sb, "firefox20-disabled.png");
+                    appendImage(sb, "firefox20-disabled.png"); // NOI18N
                 }
                 if (es.contains(BrowserVersion.IE7)) {
-                    appendImage(sb, "ie20.png");
+                    appendImage(sb, "ie20.png"); // NOI18N
                 } else {
-                    appendImage(sb, "ie20-disabled.png");
+                    appendImage(sb, "ie20-disabled.png"); // NOI18N
                 }
                 if (es.contains(BrowserVersion.SAFARI3)) {
-                    appendImage(sb, "safari20.png");
+                    appendImage(sb, "safari20.png"); // NOI18N
                 } else {
-                    appendImage(sb, "safari20-disabled.png");
+                    appendImage(sb, "safari20-disabled.png"); // NOI18N
                 }
                 if (es.contains(BrowserVersion.OPERA)) {
-                    appendImage(sb, "opera20.png");
+                    appendImage(sb, "opera20.png"); // NOI18N
                 } else {
-                    appendImage(sb, "opera20-disabled.png");
+                    appendImage(sb, "opera20-disabled.png"); // NOI18N
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            sb.append("</td>");
+            sb.append("</td>"); // NOI18N
         }
-        sb.append("</tr></table>");
+        sb.append("</tr></table>"); // NOI18N
 
         if (indexedElement != null && indexedElement.getFilenameUrl() != null && indexedElement.getFilenameUrl().indexOf("jsstubs") == -1) {
             sb.append(NbBundle.getMessage(JsCodeCompletion.class, "FileLabel"));
-            sb.append(" <tt>");
+            sb.append(" <tt>"); // NOI18N
             String file = indexedElement.getFilenameUrl();
             int baseIndex = file.lastIndexOf('/');
             if (baseIndex != -1) {
                 file = file.substring(baseIndex+1);
             }
             sb.append(file);
-            sb.append("</tt><br>");
+            sb.append("</tt><br>"); // NOI18N
         }
         
         // Generate compatibility notes
         if (indexedElement != null && !SupportedBrowsers.getInstance().isSupported(indexedElement.getCompatibility())) {
-            sb.append("<hr>");
-            sb.append("<p style=\"background:#ffcccc\">");
+            sb.append("<hr>"); // NOI18N
+            sb.append("<p style=\"background:#ffcccc\">"); // NOI18N
             sb.append(NbBundle.getMessage(JsCodeCompletion.class, "NotSupportedBr"));
-            sb.append("\n");
-            sb.append("<ul>");
+            sb.append("\n"); // NOI18N
+            sb.append("<ul>"); // NOI18N
             for (BrowserVersion v : BrowserVersion.ALL) {
                 if (SupportedBrowsers.getInstance().isSupported(v) && 
                         !indexedElement.getCompatibility().contains(v)) {
-                    sb.append("<li>");
+                    sb.append("<li>"); // NOI18N
                     sb.append(v.getDisplayName());
                 }
             }
-            sb.append("</ul>\n");
+            sb.append("</ul>\n"); // NOI18N
             //sb.append("Click <a href=\"netbeans:choosebrowsers\">here</a> to choose targeted browsers.\n");
             sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
-            sb.append("\n");
-            sb.append("</p>");
+            sb.append("\n"); // NOI18N
+            sb.append("</p>"); // NOI18N
         }
 
         return sb.toString();

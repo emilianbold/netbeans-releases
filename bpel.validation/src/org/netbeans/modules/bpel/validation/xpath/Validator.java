@@ -63,9 +63,9 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
-import org.netbeans.modules.bpel.model.impl.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -102,30 +102,23 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   @Override
   public void visit(Copy copy) {
 //out();
-    Component fromType = getTypeOfElement(getType(copy.getFrom()));
 //out("Assign: " + ((Named) copy.getParent()).getName());
+    Component fromType = getTypeOfElement(getType(copy.getFrom()));
 //out("FROM: " + fromType);
     Component toType = getTypeOfElement(getType(copy.getTo()));
-//out();
 //out("  TO: " + toType);
 
     if (fromType == null || toType == null) {
       return;
     }
     String fromName = ((Named) fromType).getName();
+//out("  form name: " + fromName);
     String toName = ((Named) toType).getName();
+//out("    to name: " + fromName);
 
     if (fromName != null && fromName.equals(toName)) {
       return;
     }
-    /*todo r
-    if (fromName.equals("anyURI") || toName.equals("anyURI")) {
-      return;
-    }
-    if (fromType instanceof GlobalSimpleType && toType instanceof GlobalSimpleType) {
-      return;
-    }
-    */
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }
@@ -186,15 +179,8 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (wsdlRef != null) {
       Message message = wsdlRef.get();
 
+      // # 130764
       if (message != null) {
-        Collection<Part> parts = message.getParts();
-
-        if (parts == null || parts.size() == 0) {
-          return null;
-        }
-        if (parts.size() == 1) {
-          return getPartType(parts.iterator().next());
-        }
         return message;
       }
     }

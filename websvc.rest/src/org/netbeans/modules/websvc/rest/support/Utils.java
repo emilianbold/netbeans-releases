@@ -53,12 +53,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -114,8 +114,7 @@ public class Utils {
                 });
             }
         } catch (Exception de) {
-            de.printStackTrace();
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            Exceptions.printStackTrace(de);
         }    
     }
 

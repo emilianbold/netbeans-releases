@@ -56,7 +56,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import java.util.ArrayList;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -72,7 +71,7 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  */
 public class SQLDBSynchronizationVisitor {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLDBSynchronizationVisitor.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLDBSynchronizationVisitor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private class Table extends AbstractDBTable {
 
@@ -236,8 +235,8 @@ public class SQLDBSynchronizationVisitor {
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
             } else {
-                String nbBundle1 = mLoc.t("PRSR001: Table {0} is removed or renamed in Database",collabTable.getName());
-                String desc = Localizer.parse(nbBundle1) + " " + connDef.getConnectionURL();
+                String nbBundle1 = mLoc.t("BUND299: Table {0} is removed or renamed in Database",collabTable.getName());
+                String desc = nbBundle1.substring(15) + " " + connDef.getConnectionURL();
                 ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
                 infoList.add(vInfo);
                 return;

@@ -120,6 +120,9 @@ public class FileObjectInLookupTest extends NbTestCase {
     }
 
     public void testShadow() throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         DataObject obj = DataObject.find(root.getFileObject("adir/file.own"));
         DataShadow shadow = obj.createShadow(obj.getFolder().getFolder());
         assertEquals(OwnDataLoader.class, obj.getLoader().getClass());
@@ -130,7 +133,9 @@ public class FileObjectInLookupTest extends NbTestCase {
         assertFileObjects("However FileObject of a shadow are delegated to the original", shadow, obj.files());
         obj.rename("kuk");
         assertFileObjects(obj);
-        assertFileObjects("However FileObject of a shadow are delegated to the original", shadow, obj.files());
+        if (!Boolean.getBoolean("ignore.random.failures")) {
+            assertFileObjects("However FileObject of a shadow are delegated to the original", shadow, obj.files());
+        }
         obj.move(obj.getFolder().getFolder());
         assertFileObjects(obj);
         assertFileObjects("However FileObject of a shadow are delegated to the original", shadow, obj.files());
@@ -167,7 +172,11 @@ public class FileObjectInLookupTest extends NbTestCase {
                 i++;
                 continue;
             }
-            fail(msg + "\nError at position " + i + " expected: " + fo + " but was: " + all.get(i) + "\nAll: " + all);
+            fail(msg + "\nError at position " + i + " expected: " + fo 
+                    + "@" + Integer.toHexString(fo.hashCode()) + 
+                    " but was: " + all.get(i) + "@" + Integer.toHexString(all.get(i).hashCode()) 
+                    + " \nAll: " + all
+            );
         }
     }
     
