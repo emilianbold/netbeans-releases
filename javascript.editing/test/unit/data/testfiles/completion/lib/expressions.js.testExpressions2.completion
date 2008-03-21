@@ -6,7 +6,7 @@ METHOD     toPrecision(precision) : Strin             Number
 METHOD     toSource() : void                          Number
 METHOD     toString(radix) : String                   Number
 METHOD     valueOf() : Number                         Number
-METHOD     watch(prop, handler)                       Number
+METHOD     watch(prop, handler) : void                Number
 PROPERTY   MAX_VALUE : Number                         Number
 PROPERTY   MIN_VALUE : Number                         Number
 PROPERTY   NEGATIVE_INFINITY : Number                 Number
@@ -15,16 +15,16 @@ PROPERTY   POSITIVE_INFINITY : Number                 Number
 PROPERTY   constructor                                Number
 PROPERTY   prototype                                  Number
 ------------------------------------
-METHOD     eval(string)                               Object
+METHOD     eval(string) : void                        Object
 METHOD     hasOwnProperty(prop) : Boolean             Object
 METHOD     isPrototypeOf(object) : Boolea             Object
 METHOD     propertyIsEnumerable(prop) : B             Object
 METHOD     toLocaleString() : String                  Object
 METHOD     toSource() : void                          Object
 METHOD     toString() : String                        Object
-METHOD     unwatch(prop)                              Object
+METHOD     unwatch(prop) : void                       Object
 METHOD     valueOf() : void                           Object
-METHOD     watch(prop, handler)                       Object
+METHOD     watch(prop, handler) : void                Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null

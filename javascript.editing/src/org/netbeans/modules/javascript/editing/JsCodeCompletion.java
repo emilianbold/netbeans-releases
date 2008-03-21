@@ -293,7 +293,7 @@ public class JsCodeCompletion implements Completable {
             request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            request.index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+            request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
@@ -864,7 +864,13 @@ public class JsCodeCompletion implements Completable {
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
         } else {
-            matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            if (prefix.length() == 0) {
+//                proposals.clear();
+//                proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                return true;
+//            } else {
+                matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            }
         }
         // Also add in non-fqn-prefixed elements
         Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
@@ -1065,7 +1071,13 @@ public class JsCodeCompletion implements Completable {
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
             if ((elements.size() == 0) && (prefix.length() > 0 || type == null)) {
-                elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                if (prefix.length() == 0) {
+//                    proposals.clear();
+//                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                    return true;
+//                } else {
+                    elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                }
             }
 
             for (IndexedElement element : elements) {
@@ -1370,6 +1382,14 @@ public class JsCodeCompletion implements Completable {
             }
             String html = sb.toString();
             return html;
+        } else if (element instanceof IndexedElement) {
+            IndexedElement ie = (IndexedElement)element;
+            if (!ie.isDocumented()) {
+                IndexedElement e = ie.findDocumentedSibling();
+                if (e != null) {
+                    element = e;
+                }
+            }
         }
 
         List<String> comments = ElementUtilities.getComments(info, element);
@@ -1859,6 +1879,18 @@ public class JsCodeCompletion implements Completable {
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
+
+            if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
+                if (element instanceof IndexedElement) {
+                    String origin = ((IndexedElement)element).getOrigin();
+                    if (origin != null) {
+                        formatter.appendText(origin);
+                        return formatter.getText();
+                    }
+                }
+                
+                return null;
+            }
             
             String in = element.getIn();
 
@@ -1876,12 +1908,12 @@ public class JsCodeCompletion implements Completable {
                         }
                         formatter.appendText(filename);
                         return formatter.getText();
-                    } else if (filename.indexOf("/stub_core_") != -1) { // NOI18N
-                        formatter.appendText("Core JS");
-                        return formatter.getText();
-                    } else if (filename.indexOf("/stub_") != -1) { // NOI18N
-                        formatter.appendText("DOM");
-                        return formatter.getText();
+                    } else {
+                        String origin = ie.getOrigin();
+                        if (origin != null) {
+                            formatter.appendText(origin);
+                            return formatter.getText();
+                        }
                     }
                 }
                 
