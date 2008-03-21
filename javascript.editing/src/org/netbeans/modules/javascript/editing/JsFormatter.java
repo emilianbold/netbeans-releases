@@ -328,7 +328,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         if (embeddedJavaScript) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             for (TokenSequence<?> embeddedTS : th.embeddedTokenSequences(begin, false)) {
-                if (JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(embeddedTS.language().mimeType())) {
+                if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(embeddedTS.language().mimeType())) {
                     ts = (TokenSequence<? extends JsTokenId>) embeddedTS;
                 }
             }

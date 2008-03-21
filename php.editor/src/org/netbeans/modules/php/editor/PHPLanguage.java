@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -70,4 +71,15 @@ public class PHPLanguage implements GsfLanguage {
         return Collections.EMPTY_LIST;
     }
 
+    public String getDisplayName() {
+        return "PHP";
+    }
+
+    public String getPreferredExtension() {
+        return "php"; // NOI18N
+    }
+
+    public Map<String, String> getSourceGroupNames() {
+        return Collections.emptyMap();
+    }
 }

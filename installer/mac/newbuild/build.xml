@@ -147,14 +147,13 @@ Microsystems, Inc. All Rights Reserved.
 	<condition property="do.instrumentation">
 	    <and>
 	        <isset property="instrument.jars"/>
-	        <not>
-	            <equals arg1="${instrument.jars}" arg2="true"/> 
-	         </not>
+	        <equals arg1="${instrument.jars}" arg2="true"/> 
 	    </and>
         </condition>
     </target>
 
     <target name="add-instrumentation-option" if="do.instrumentation">
+        <echo message="Adding instrumentation option to etc/netbeans.conf"/>
 	<property name="baseide.dir" value="${basedir}/netBeans/baseide/build/netbeans"/>
 	<mkdir dir="${baseide.dir}/emma-lib"/>
         <copy file="${emma.jar.file}" todir="${baseide.dir}/emma-lib"/>
@@ -167,6 +166,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="instrument-module" if="do.instrumentation">
+	<echo message="Instrumenting module ${module.name}..."/>
 	<exec executable="${bash.executable}" failonerror="true" dir="${basedir}/netBeans/${module.name}/build/netbeans">
                 <arg value="${emma.sh.file}"/>
                 <arg value="."/>
@@ -248,7 +248,7 @@ Microsystems, Inc. All Rights Reserved.
        <ant target="build-dmg"> 
            <property name="bundle.type" value=""/>
            <property name="welcome.message" value="${welcome.full}"/>
-           <property name="packages" value="./build/*pkg"/>          
+           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/cpp.pkg ./build/soa.pkg ./build/glassfish.pkg ./build/tomcat.pkg ./build/openesb.pkg"/>
        </ant>   
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-javase"/>      
