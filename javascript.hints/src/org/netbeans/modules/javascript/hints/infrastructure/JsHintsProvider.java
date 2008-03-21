@@ -50,7 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.javascript.editing.AstPath;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.hints.options.HintsSettings;
 import org.netbeans.modules.javascript.hints.spi.AstRule;
 import org.netbeans.modules.javascript.hints.spi.Description;
@@ -100,7 +100,7 @@ public class JsHintsProvider implements HintsProvider {
             Exceptions.printStackTrace(ex);
         }
 
-        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(JsTokenId.JAVASCRIPT_MIME_TYPE);
         if (embeddedResults.size() == 0) {
             return Collections.emptyList();
         }

@@ -186,6 +186,42 @@ public class InitializeOnBackgroundTest extends NbTestCase implements CloneableE
     }
     
     
+    public void testQueryDocumentInAWT() throws Exception {
+        assertTrue("Running in AWT", SwingUtilities.isEventDispatchThread());
+        
+        class R implements PropertyChangeListener {
+            JEditorPane p;
+            Document doc;
+            
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                   CloneableEditor ed = (CloneableEditor)WindowManager.getDefault().getRegistry().getActivated();
+                   p = ed.getEditorPane();
+                   doc = ed.getEditorPane().getDocument();
+                }
+            }
+        }
+        R r = new R();
+        WindowManager.getDefault().getRegistry().addPropertyChangeListener(r);
+        
+        final Object LOCK = new JPanel().getTreeLock();
+        synchronized (LOCK) {
+            support.open();
+            assertNotNull(r.p);
+        }
+        
+        if (r.p.getEditorKit() instanceof NbLikeEditorKit) {
+            NbLikeEditorKit nb = (NbLikeEditorKit)r.p.getEditorKit();
+            assertNotNull("call method called", nb.callThread);
+            if (nb.callThread.getName().contains("AWT")) {
+                fail("wrong thread: " + nb.callThread);
+            }
+        } else {
+            fail("Should use NbLikeEditorKit: " + r.p.getEditorKit());
+        }
+    }
+    
+    
     //
     // Implementation of the CloneableEditorSupport.Env
     //

@@ -42,6 +42,8 @@ package org.netbeans.modules.ruby;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -76,5 +78,22 @@ public class RubyLanguage implements GsfLanguage {
 
     public Collection<FileObject> getCoreLibraries() {
         return Collections.emptyList();
+    }
+
+    public String getDisplayName() {
+        return "Ruby";
+    }
+
+    public String getPreferredExtension() {
+        return "rb"; // NOI18N
+    }
+
+    public Map<String,String> getSourceGroupNames() {
+        Map<String,String> sourceGroups = new HashMap<String,String>();
+        sourceGroups.put("RubyProject", "ruby"); // NOI18N
+        sourceGroups.put("WebProject", "ruby"); // NOI18N
+        sourceGroups.put("RailsProject", "ruby"); // NOI18N
+        
+        return sourceGroups;
     }
 }

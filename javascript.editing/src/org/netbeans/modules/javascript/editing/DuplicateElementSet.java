@@ -34,33 +34,78 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
+package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.sun.manager.jbi.management.model.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
- * @author jqian
+ * A "set" which deliberately violates the Set contract - it's used to include duplicates that
+ * match on object equality
+ * 
+ * @author Tor Norbye
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxExclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxInclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinExclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinInclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.PatternConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.LengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxLengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinLengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.TotalDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.FractionDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.CompositeConstraintTest.class
-})
-public class ModelSuite {
+public class DuplicateElementSet implements Set<IndexedElement> {
+    private List<IndexedElement> elements = new ArrayList<IndexedElement>();
+
+    public DuplicateElementSet() {
+    }
+
+    public int size() {
+        return elements.size();
+    }
+
+    public boolean isEmpty() {
+        return elements.isEmpty();
+    }
+
+    public boolean contains(Object o) {
+        return elements.contains(o);
+    }
+
+    public Iterator<IndexedElement> iterator() {
+        return elements.iterator();
+    }
+
+    public Object[] toArray() {
+        return elements.toArray();
+    }
+
+    public <T> T[] toArray(T[] a) {
+        return elements.toArray(a);
+    }
+
+    public boolean add(IndexedElement o) {
+        return elements.add(o);
+    }
+
+    public boolean remove(Object o) {
+        return elements.remove(o);
+    }
+
+    public boolean containsAll(Collection<?> c) {
+        return elements.containsAll(c);
+    }
+
+    public boolean addAll(Collection<? extends IndexedElement> c) {
+        return elements.addAll(c);
+    }
+
+    public boolean retainAll(Collection<?> c) {
+        return elements.retainAll(c);
+    }
+
+    public boolean removeAll(Collection<?> c) {
+        return elements.removeAll(c);
+    }
+
+    public void clear() {
+        elements.clear();
+    }
 }

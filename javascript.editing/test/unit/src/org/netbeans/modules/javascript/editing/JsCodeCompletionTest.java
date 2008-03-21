@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -193,7 +194,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         initializeRegistry();
         // Force classpath initialization
         LanguageRegistry.getInstance().getLibraryUrls();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
         
         CompilationInfo ci = getInfo(file);
@@ -316,7 +317,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         initializeRegistry();
         // Force classpath initialization
         LanguageRegistry.getInstance().getLibraryUrls();
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
         
         CompilationInfo ci = getInfo(file);
@@ -592,6 +593,10 @@ public class JsCodeCompletionTest extends JsTestBase {
 
     public void testExpressions4() throws Exception {
         checkCompletion("testfiles/completion/lib/expressions4.js", "document.b^");
+    }
+
+    public void testExpressions5() throws Exception {
+        checkCompletion("testfiles/completion/lib/expressions5.js", "dur.^t");
     }
     
 //

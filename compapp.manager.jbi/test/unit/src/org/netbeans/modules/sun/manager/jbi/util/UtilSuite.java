@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.editing;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
+package org.netbeans.modules.sun.manager.jbi.util;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * Recognize JavaScript file types
- * 
- * @todo Replace with an XML resolver since those are processed faster, if
- *  I don't need any custom logic here
- * 
- * @author Tor Norbye
+ *
+ * @author jqian
  */
-public class JsMimeResolver extends MIMEResolver {
-    /**
-     * Extensions recognized as being JavaScript.
-     */
-    private final static String[] JAVASCRIPT_EXTENSIONS = new String[] {
-        "js", "json" // NOI18N
-    };
-    
-    /**
-     * MIME type for JavaScript. Don't change this without also consulting the various XML files
-     * that cannot reference this value directly.
-     */
-    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
-    
-    public JsMimeResolver() {
-    }
-    
-    public static boolean isJavaScriptExt(String ext) {
-        for (int i = 0; i < JAVASCRIPT_EXTENSIONS.length; i++) {
-            if (ext.equalsIgnoreCase(JAVASCRIPT_EXTENSIONS[i])) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public String findMIMEType(FileObject fo) {
-        return isJavaScriptExt(fo.getExt()) ? JAVASCRIPT_MIME_TYPE : null;
-    }
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReaderTest.class,
+        org.netbeans.modules.sun.manager.jbi.util.ServerInstanceTest.class,
+        org.netbeans.modules.sun.manager.jbi.util.UtilsTest.class
+})
+public class UtilSuite {
 }

@@ -262,7 +262,8 @@ public class JsModel {
                             // Insert a file link
                             //int sourceStart = ts.offset(); 
                             int sourceStart = 0;
-                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + sb.toString() + "');\n"; // NOI18N
+                            String path = sb.toString();
+                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
                             // This corresponds to a 0-size block in the source
                             int sourceEnd = sourceStart;
                             int generatedStart = buffer.length();
@@ -414,6 +415,9 @@ public class JsModel {
                     if (src != null) {
                         if (type == null || type.toLowerCase().indexOf("javascript") != -1) {
                             if (src.length() > 2 && src.startsWith("\"") && src.endsWith("\"")) {
+                                src = src.substring(1, src.length() - 1);
+                            }
+                            if (src.length() > 2 && src.startsWith("'") && src.endsWith("'")) {
                                 src = src.substring(1, src.length() - 1);
                             }
 

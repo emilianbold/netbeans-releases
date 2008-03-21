@@ -52,8 +52,8 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String[] args;
     private List<String> parameters;
     
-    IndexedFunction(String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
-        super(name, in, index, fileUrl, attributes, flags, kind);
+    IndexedFunction(String fqn, String name, String in, JsIndex index, String fileUrl, String attributes, int flags, ElementKind kind) {
+        super(fqn, name, in, index, fileUrl, attributes, flags, kind);
     }
     
     @Override
