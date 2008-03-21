@@ -64,10 +64,6 @@ import org.openide.filesystems.FileObject;
  */
 public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
 
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
     
     public JaxRsJspCodeGenerator(JTextComponent targetComponent,
@@ -108,7 +104,10 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         String methodBody = "";
         methodBody += "             try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "                 String result = " + getSaasServicePackageName() + "." + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += "                 String result = " + 
+                getBean().getSaasServicePackageName() + "." + 
+                getBean().getSaasServiceName() + "." + 
+                getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
         methodBody += "             } catch (java.io.IOException ex) {\n";
         methodBody += "                 //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";

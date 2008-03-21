@@ -190,6 +190,23 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         }
     }       
 
+    public boolean canWrite(final File f) {
+        final Boolean ret[] = new Boolean [] { null };
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ret[0] = ((ProvidedExtensions)iListener).canWrite(f);
+                    }
+                });                                                                                
+            }
+        }
+        return ret[0] != null ? ret[0] : super.canWrite(f);
+    }
+        
+    
     public void beforeChange(final FileObject f) {    
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
