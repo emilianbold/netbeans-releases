@@ -89,8 +89,7 @@ public class FacebookAuthenticator {
                             {"v", v},
                             {"auth_token", authToken}
                         });
-                String result = conn.get();
-
+                String result = conn.get().getDataAstString();
                 System.out.println("getSession result = " + result);
 
                 sessionKey = result.substring(result.indexOf("<session_key>") + 13,
