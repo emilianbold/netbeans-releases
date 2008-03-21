@@ -179,6 +179,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (wsdlRef != null) {
       Message message = wsdlRef.get();
 
+      // # 130764
       if (message != null) {
         return message;
       }

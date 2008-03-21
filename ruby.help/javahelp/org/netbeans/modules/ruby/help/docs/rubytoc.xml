@@ -15,5 +15,6 @@
 		<tocitem text="Using Database Servers With JRuby" target="nbruby_usedatabase" />
 		<tocitem text="Setting the Ruby Interpreter" target="nbruby_settingrubyinterpreter" />
 		<tocitem text="Using Interactive Ruby (IRB)" target="nbruby_usingirb" />
+		<tocitem text="Ruby Platform Manager" target="org.netbeans.modules.ruby.platform.RubyPlatformCustomizer" />
 	</tocitem>
 </toc>

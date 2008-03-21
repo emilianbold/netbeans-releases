@@ -1,0 +1,212 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.test.xml.cpr;
+
+import java.awt.Point;
+import java.util.zip.CRC32;
+import javax.swing.tree.TreePath;
+import junit.framework.TestSuite;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+//import org.netbeans.test.xml.schema.lib.util.Helpers;
+
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import java.io.File;
+import org.netbeans.jellytools.MainWindowOperator;
+import java.awt.event.KeyEvent;
+//import java.awt.Robot;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.*;
+import org.netbeans.api.project.ProjectInformation;
+import javax.swing.ListModel;
+
+/**
+ *
+ * @author michaelnazarov@netbeans.org
+ */
+
+public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
+    
+    static final String [] m_aTestMethods = {
+        "CreateBluePrint1Sample",
+        "CreateJAVAAPPModule",
+        "AddProjectReference",
+        "DeleteProjectReference",
+
+        "RenameSampleSchema",
+        "UndoRenameSampleSchema",
+        "RedoRenameSampleSchema",
+    };
+
+    static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
+    static final String SAMPLE_PROJECT_NAME = "BluePrint 1";
+    static final String SAMPLE_NAME = "SampleApplication2Java";
+
+    static final String MODULE_CATEGORY_NAME = "Java";
+    static final String MODULE_PROJECT_NAME = "Java Application";
+    static final String MODULE_NAME = "JavaApplication";
+
+    public AcceptanceTestCaseBPEL2JAVAAPP(String arg0) {
+        super(arg0);
+    }
+    
+    public static TestSuite suite() {
+        TestSuite testSuite = new TestSuite(AcceptanceTestCaseBPEL2JAVAAPP.class.getName());
+        
+        for (String strMethodName : m_aTestMethods) {
+            testSuite.addTest(new AcceptanceTestCaseBPEL2JAVAAPP(strMethodName));
+        }
+        
+        return testSuite;
+    }
+    
+    public void CreateBluePrint1Sample( )
+    {
+        startTest( );
+
+        CreateBluePrint1SampleInternal(
+            SAMPLE_CATEGORY_NAME,
+            SAMPLE_PROJECT_NAME,
+            SAMPLE_NAME
+          );
+
+        endTest( );
+    }
+    
+    public void CreateJAVAAPPModule( )
+    {
+        startTest( );
+
+        // Create BluePrint1 Sample
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
+        opNewProjectWizard.selectCategory( MODULE_CATEGORY_NAME );
+        opNewProjectWizard.selectProject( MODULE_PROJECT_NAME );
+        opNewProjectWizard.next( );
+
+        NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
+        opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "xtest.ide.open.projects" ) );
+        opNewProjectNameLocationStep.txtProjectName( ).setText( MODULE_NAME );
+        opNewProjectWizard.finish( );
+
+        endTest( );
+    }
+
+    public void AddProjectReference( )
+    {
+      startTest( );
+
+      AddProjectReferenceInternal( SAMPLE_NAME, MODULE_NAME );
+
+      endTest( );
+    }
+    
+    public void DeleteProjectReference( )
+    {
+      startTest( );
+
+      DeleteProjectReferenceInternal( SAMPLE_NAME, MODULE_NAME );
+
+      AddProjectReferenceInternal( SAMPLE_NAME, MODULE_NAME );
+
+      endTest( );
+    }
+
+    public void RenameSampleSchema( )
+    {
+      startTest( );
+
+      RenameSampleSchemaInternal( MODULE_NAME );
+
+      endTest( );
+    }
+
+    public void UndoRenameSampleSchema( )
+    {
+      startTest( );
+
+      UndoRenameSampleSchemaInternal( MODULE_NAME );
+
+      endTest( );
+    }
+
+    public void RedoRenameSampleSchema( )
+    {
+      startTest( );
+
+      RedoRenameSampleSchemaInternal( MODULE_NAME );
+
+      endTest( );
+    }
+
+    public void tearDown() {
+        new SaveAllAction().performAPI();
+    }
+
+    protected void startTest(){
+        super.startTest();
+        //Helpers.closeUMLWarningIfOpened();
+    }
+
+}
