@@ -193,6 +193,8 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                     }
                 } else if (TokenUtilities.textEquals("@namespace", text) || // NOI18N
                         TokenUtilities.textEquals("@extends", text) || // NOI18N
+                        TokenUtilities.textEquals("@method", text) || // NOI18N
+                        TokenUtilities.textEquals("@property", text) || // NOI18N
                         TokenUtilities.textEquals("@class", text)) { // NOI18N
                     String arg = nextIdentGroup(ts);
                     if (arg != null) {
@@ -209,7 +211,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         
         return result;
     }
-
+    
     /**
      * Searches for closest (to current token) type definition in curly braces.
      * Skips sequence IGNORED - LCURL - IGNORED where IGNORED is token ignored by {@link #nextNonIgnored}
@@ -217,7 +219,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token or null if no such token exists
      */
-    private static String nextType(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextType(TokenSequence<? extends JsCommentTokenId> ts) {
         StringBuilder sb = new StringBuilder();
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
@@ -249,7 +251,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token or null if no such token exists
      */
-    private static String nextIdent(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextIdent(TokenSequence<? extends JsCommentTokenId> ts) {
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is IDENT token return its text
@@ -265,7 +267,7 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
      * @param ts token sequence to perform the search from current token
      * @return found IDENT token group or null if no such token exists
      */
-    private static String nextIdentGroup(TokenSequence<? extends JsCommentTokenId> ts) {
+    public static String nextIdentGroup(TokenSequence<? extends JsCommentTokenId> ts) {
         // find next token which is not OTHER_TEXT
         Token<? extends JsCommentTokenId> nextToken = nextNonIgnored(ts);
         // if it is IDENT token return its text
