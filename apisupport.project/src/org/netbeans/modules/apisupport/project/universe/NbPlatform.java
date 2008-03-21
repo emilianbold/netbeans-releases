@@ -236,7 +236,7 @@ public final class NbPlatform {
     private static URL[] defaultPlatformJavadoc() {
         File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
         if (apidocsZip != null) {
-            return new URL[] {Util.urlForJar(apidocsZip)};
+            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
         } else {
             return new URL[0];
         }
@@ -277,7 +277,7 @@ public final class NbPlatform {
             if (parent != null && parent.getName().equals("nbbuild")) { // NOI18N
                 File superparent = parent.getParentFile();
                 if (superparent != null && ModuleList.isNetBeansOrg(superparent)) {
-                    sources = new URL[] {Util.urlForDir(superparent)};
+                    sources = new URL[] {FileUtil.urlForArchiveOrDir(superparent)};
                 }
             }
         }
@@ -445,7 +445,7 @@ public final class NbPlatform {
         URL[] urls = new URL[pieces.length];
         for (int i = 0; i < pieces.length; i++) {
             // XXX perhaps also support http: URLs somehow?
-            urls[i] = Util.urlForDirOrJar(FileUtil.normalizeFile(new File(pieces[i])));
+            urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
         }
         return urls;
     }

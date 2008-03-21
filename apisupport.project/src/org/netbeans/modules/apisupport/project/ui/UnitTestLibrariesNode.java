@@ -66,7 +66,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditTestDependencyPanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -82,6 +81,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -255,7 +255,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     ModuleEntry me = project.getModuleList().getEntry(cnb);
                     Icon icon = getLibrariesIcon(); // TODO a better icon for JUNIT
                     File junitJar = me.getJarLocation();
-                    URL junitURL = Util.urlForJar(junitJar);
+                    URL junitURL = FileUtil.urlForArchiveOrDir(junitJar);
                     assert junitURL != null;
                     FileObject junitFO = URLMapper.findFileObject(junitURL);
                     String name = me.getLocalizedName();
@@ -270,7 +270,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 File srcF = dep.getModule().getSourceLocation();
                 if (srcF == null) {
                     File jarF = dep.getModule().getJarLocation();
-                    URL jarRootURL = Util.urlForJar(jarF);
+                    URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                     assert jarRootURL != null;
                     FileObject root = URLMapper.findFileObject(jarRootURL);
                     ModuleEntry me = dep.getModule();
