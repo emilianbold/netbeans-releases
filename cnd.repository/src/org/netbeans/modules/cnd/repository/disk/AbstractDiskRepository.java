@@ -50,17 +50,13 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
  *
  * @author Sergey Grinev
  */
-public abstract class AbstractDiskRepository implements RepositoryWriter {
+public interface AbstractDiskRepository extends RepositoryWriter {
     
-    public abstract Persistent get(Key key) throws IOException;
+    public Persistent get(Key key) throws IOException;
     
-    public abstract void remove(Key id) throws IOException;
+    public void remove(Key id) throws IOException;
     
-    public abstract void close() throws IOException;
+    public void close() throws IOException;
     
-    abstract public int getFragmentationPercentage() throws IOException;    
-    
-    public Persistent tryGet(Key key) {
-	return null;
-    }
+    public int getFragmentationPercentage() throws IOException;    
 }

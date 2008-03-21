@@ -45,25 +45,23 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.cnd.repository.disk.api.RepositoryFilesHelperCacheStrategy;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.util.RepositoryCacheMap;
 
 
-class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrategy { 
-    private static volatile SimpleRepositoryHelperCacheImpl instance;
+class RepositoryHelperCache { 
+    private static volatile RepositoryHelperCache instance;
     private static Lock     lock = new ReentrantLock();
     
     private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
-    public static SimpleRepositoryHelperCacheImpl getInstance(int newCapacity) {
+    public static RepositoryHelperCache getInstance(int newCapacity) {
         
         if (instance == null) {
             try {
                 lock.lock();
                 if (instance == null) {
-                    instance =new SimpleRepositoryHelperCacheImpl(newCapacity);
+                    instance =new RepositoryHelperCache(newCapacity);
                 }
             } finally {
                 lock.unlock();
@@ -92,7 +90,7 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         }
     }
     
-    protected SimpleRepositoryHelperCacheImpl (int openFilesLimit) {
+    protected RepositoryHelperCache (int openFilesLimit) {
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(openFilesLimit);
     }
     
