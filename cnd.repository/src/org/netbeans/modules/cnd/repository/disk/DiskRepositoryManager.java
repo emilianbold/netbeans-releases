@@ -67,7 +67,8 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  *
  * @author Sergey Grinev
  */
-public final class DiskRepositoryManager extends AbstractDiskRepository implements Repository {
+public final class DiskRepositoryManager implements AbstractDiskRepository, Repository {
+
     private final Map<String, UnitDiskRepository> repositories;
     
     private static DiskRepositoryManager    instance = new DiskRepositoryManager();
@@ -346,5 +347,10 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
         public int compare(UnitDiskRepository o1, UnitDiskRepository o2) {
             return o2.getFragmentationPercentage() - o1.getFragmentationPercentage();
         }
-    }    
+    }
+
+    public Persistent tryGet(Key key) {
+        return null;
+    }
+   
 }

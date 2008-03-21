@@ -138,8 +138,8 @@ public class TriScrollPane extends JScrollPane {
         int rightWidth = (!rightVisible) ? 0
                 : rightComponent.getPreferredSize().width;
         
-        System.out.println("LW=" + leftWidth);
-        System.out.println("RW=" + rightWidth);
+//        System.out.println("LW=" + leftWidth);
+//        System.out.println("RW=" + rightWidth);
 //
 //        JScrollBar vsb = getVerticalScrollBar();
 //        JScrollBar hsb = getHorizontalScrollBar();
@@ -183,7 +183,7 @@ public class TriScrollPane extends JScrollPane {
 
         Rectangle viewportBounds = getViewport().getBounds();
         
-        System.out.println("viewportBounds=" + viewportBounds);
+//        System.out.println("viewportBounds=" + viewportBounds);
         
         if (leftVisible) {
             leftComponent.setVisible(true);
@@ -206,8 +206,8 @@ public class TriScrollPane extends JScrollPane {
             handToolPanel.setBounds(viewportBounds);
         }
 
-        System.out.println("LB=" + leftComponent.getBounds());
-        System.out.println("RB=" + rightComponent.getBounds());
+//        System.out.println("LB=" + leftComponent.getBounds());
+//        System.out.println("RB=" + rightComponent.getBounds());
     }
 
     public JComponent getComponent(Point pt) {

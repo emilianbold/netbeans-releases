@@ -4,4 +4,5 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/editor/macros/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/macros/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/editor/macros/Installer.class
+AutoUpdate-Show-In-Client: false
 

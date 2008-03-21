@@ -165,6 +165,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceBeforeSwitchParen,
                          EditorOptions.spaceBeforeSwitchParenDefault);
     }
+    public boolean spaceBeforeKeywordParen() {
+        return getOption(EditorOptions.spaceBeforeKeywordParen,
+                         EditorOptions.spaceBeforeKeywordParenDefault);
+    }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,

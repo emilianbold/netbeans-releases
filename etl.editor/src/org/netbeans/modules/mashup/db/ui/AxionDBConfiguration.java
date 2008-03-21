@@ -107,6 +107,7 @@ public class AxionDBConfiguration {
                 if (!driver.exists()) {
                     nbHomeDir = "";
                 }
+                java.util.logging.Logger.getLogger(AxionDBConfiguration.class.getName()).info("***** AxionDBConfiguration Axiond driver location "+nbHomeDir);
                 return nbHomeDir;
             }
         }
@@ -202,7 +203,7 @@ public class AxionDBConfiguration {
 
         // Check for mashup driver under soa cluster.
         String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                ".." + File.separator + "soa1" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
+                ".." + File.separator + "soa2" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
         File driver = new File(nbHomeDir);
         if (!driver.exists()) {
 

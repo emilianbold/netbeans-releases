@@ -1,12 +1,12 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
-
-</#if>
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -78,8 +78,7 @@ public class FacebookAuthenticator {
                                 {"auth_token", token}
                             });
                     
-                    String result = conn.get();
-
+                    String result = conn.get().getDataAsString();
                     sessionKey = result.substring(result.indexOf("<session_key>") + 13,
                             result.indexOf("</session_key>"));
 
@@ -117,7 +116,7 @@ public class FacebookAuthenticator {
                         {"sig", sig},
                         {"v", v}
                     });
-            String result = conn.get();
+            String result = conn.get().getDataAsString();
 
             token = result.substring(result.indexOf("<auth_createToken_response"),
                     result.indexOf("</auth_createToken_response>"));

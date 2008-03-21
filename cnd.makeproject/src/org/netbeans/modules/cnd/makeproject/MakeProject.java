@@ -218,10 +218,46 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
-        private static final String[] RECOMMENDED_TYPES = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "asm-types"}; // NOI18N
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "fortran-types", "asm-types"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
-        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/fortranFiles/fortranEmptyFile.f90", "Templates/fortranFiles/fortranFixedFormatFile.f", "Templates/fortranFiles/fortranFreeFormatFile.f90", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES = new String[]{
+            "c-types", // NOI18N
+            "cpp-types", // NOI18N
+            "shell-types", // NOI18N
+            "makefile-types", // NOI18N
+            "c-types", // NOI18N
+            "simple-files", // NOI18N
+            "asm-types"}; // NOI18N
+        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{
+            "c-types", // NOI18N
+            "cpp-types", // NOI18N
+            "shell-types", // NOI18N
+            "makefile-types", // NOI18N
+            "c-types", // NOI18N
+            "simple-files", // NOI18N
+            "fortran-types", // NOI18N
+            "asm-types"}; // NOI18N
+        private static final String[] PRIVILEGED_NAMES = new String[]{
+            "Templates/cFiles/main.c", // NOI18N
+            "Templates/cFiles/file.c", // NOI18N
+            "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/main.cc", // NOI18N
+            "Templates/cppFiles/file.cc", // NOI18N
+            "Templates/cppFiles/file.h", // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
+        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{
+            "Templates/cFiles/main.c", // NOI18N
+            "Templates/cFiles/file.c", // NOI18N
+            "Templates/cFiles/file.h", // NOI18N
+            "Templates/cppFiles/main.cc", // NOI18N
+            "Templates/cppFiles/file.cc", // NOI18N
+            "Templates/cppFiles/file.h", // NOI18N
+            "Templates/fortranFiles/fortranFreeFormatFile.f90", // NOI18N
+            "Templates/MakeTemplates/ComplexMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", // NOI18N
+            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"}; // NOI18N
 
         public String[] getRecommendedTypes() {
             if (CppSettings.getDefault().isFortranEnabled()) {

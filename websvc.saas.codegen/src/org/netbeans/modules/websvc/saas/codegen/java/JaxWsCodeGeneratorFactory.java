@@ -66,6 +66,9 @@ public class JaxWsCodeGeneratorFactory {
             } else if(Util.isServlet(d)) {
                 codegen = new JaxWsServletCodeGenerator(
                                 targetComponent, targetFO, method);
+            } else if(Util.isJsp(d)) {
+                codegen = new JaxWsJspCodeGenerator(
+                                targetComponent, targetFO, method);
             } else {
                 codegen = new JaxWsJavaClientCodeGenerator(
                                 targetComponent, targetFO, method);

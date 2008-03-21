@@ -652,7 +652,7 @@ function add_download_tab(name, url) {
    if(url) {
 	writeUrl(url,name);
    } else { 
-	message(name);
+	message('<span class="download_tab_active">' + name + '</span>');
    }
    download_tabs_number++;
 }

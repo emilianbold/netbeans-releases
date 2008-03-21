@@ -164,26 +164,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testDereferenceFormatting() {
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "int foo()\n" +
-                "{\n" +
-                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "TCHAR* tmp = list->field->toString();\n" +
-                "}\n" +
-                "CL_NS_STD(ostream)* infoStream;\n" +
-                "directory->deleteFile( *itr );\n" +
-                "}\n");
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect * formating",
-                "int foo()\n" +
-                "{\n" +
-                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
-                "        TCHAR* tmp = list->field->toString();\n" +
-                "    }\n" +
-                "    CL_NS_STD(ostream)* infoStream;\n" +
-                "    directory->deleteFile(*itr);\n" +
-                "}\n");
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
 }

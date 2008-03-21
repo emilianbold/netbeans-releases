@@ -121,7 +121,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         }
                         name = file.getPath();
                         set.add(name);
-                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), name));
+                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), name));
                     }
                 }
             }
@@ -140,7 +140,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                         String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
                         set.add(path);
-                        epd.getSourceRootsRaw().add(IpeUtils.toRelativePath(epd.getBaseDir(), path));
+                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), path));
                     }
                 }
             }

@@ -45,19 +45,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.repository.disk.AbstractDiskRepository;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class FileStorage extends AbstractDiskRepository {
+public abstract class FileStorage implements AbstractDiskRepository {
     
-    public static FileStorage create(String unitName) throws IOException {
-        return  new DoubleFileStorage(unitName);
+    public static FileStorage create(File basePath) throws IOException {
+        return  new DoubleFileStorage(basePath);
     }
     
     abstract public void dump(PrintStream ps) throws IOException;

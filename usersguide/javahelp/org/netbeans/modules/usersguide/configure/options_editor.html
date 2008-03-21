@@ -59,23 +59,21 @@
             <h3>Indentation tab</h3>
         <p>This tab enables you to specify the following Java source code formatting settings:</p>
         <ul>
-            <li><b>Statement Continuation Indent.</b> Specifies the shift (in spaces) for the second and subsequent lines in a multi-line statement.</li>
-            <li><b>Number of Spaces per Indent.</b> Specifies the number of spaces represented by one indentation level.</li>
             <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
             <!--The number of spaces inserted is set in the Number of Spaces per Tab property.-->
            When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
             possible. It also replaces preceding spaces with the tab character if possible.  
             The Source Editor calculates where to place tab characters based on the value 
-            of the Tab Size property. You set the Tab Size property in the Java Code category in the Options window.
-            <p>If Expand Tabs to Spaces is False and the Number of Spaces per Tab is different 
+            of the Tab Size property.
+            <p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Tab is different
             than the Tab Size property, the indentation created by typing the Tab key is 
             made up of a combination of spaces and tab characters.  It is easiest to predict 
             the location of tab characters if you set Number of Spaces per Tab to an even 
             multiple or divisor of Tab Size.
             </li>
-            <li><b>Add Leading Star in Comment.</b> When selected, automatically puts an asterisk (*) at the start of any line inside a block comment of a Java file.  </li>
-            <li><b>Add Newline Before Brace.</b> When selected, automatically puts curly braces on the following line in generated Java code.</li>
-            <li><b>Add Space Before Parenthesis.</b> When selected, adds a space before the opening parenthesis in generated Java code. </li>
+            <li><b>Number of Spaces per Indent.</b> Specifies the number of spaces represented by one indentation level.</li>
+            <li><b>Tab Size.</b> See the description of Expand Tabs to Spaces, above. </li>
+            <li><b>Right Margin.</b> Specifies the location of the right margin, which is 80 characters by default. </li>
         </ul>
         <p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
 

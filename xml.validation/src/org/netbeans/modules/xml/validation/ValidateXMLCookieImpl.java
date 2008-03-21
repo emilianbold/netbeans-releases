@@ -50,9 +50,7 @@ import org.netbeans.modules.xml.xam.Model;
  * @author Praveen Savur
  */
 public abstract class ValidateXMLCookieImpl implements ValidateXMLCookie {
-    
-    private Model model;
-    
+
     /**
      * Creates a new instance of ValidateXMLCookieImpl.
      */

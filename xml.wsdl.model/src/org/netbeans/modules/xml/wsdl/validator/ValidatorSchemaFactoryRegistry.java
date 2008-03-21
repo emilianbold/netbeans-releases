@@ -46,6 +46,9 @@ import java.util.Hashtable;
 
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 public class ValidatorSchemaFactoryRegistry {
     
@@ -65,11 +68,15 @@ public class ValidatorSchemaFactoryRegistry {
     
     private void initialize() {
         schemaFactories = new Hashtable<String, ValidatorSchemaFactory>();
-        Lookup.Result results = Lookup.getDefault().lookup(new Lookup.Template(ValidatorSchemaFactory.class));
-        for (Object service : results.allInstances()){
-            ValidatorSchemaFactory factory = (ValidatorSchemaFactory) service;
-            schemaFactories.put(factory.getNamespaceURI(), factory);
-        }
+        Result<ValidatorSchemaFactory> lookupResult = Lookup.getDefault().lookupResult(ValidatorSchemaFactory.class);
+        lookupResult.addLookupListener(new LookupListener() {
+
+            public void resultChanged(LookupEvent ev) {
+                refreshServices();
+            }
+        });
+        refreshServices();
+
     }
      
     public ValidatorSchemaFactory getValidatorSchemaFactory(String namespace) {
@@ -78,6 +85,13 @@ public class ValidatorSchemaFactoryRegistry {
     
     public Collection<ValidatorSchemaFactory> getAllValidatorSchemaFactories() {
         return schemaFactories.values();
+    }
+
+    private void refreshServices() {
+        schemaFactories.clear();
+        for (ValidatorSchemaFactory factory : Lookup.getDefault().lookupAll(ValidatorSchemaFactory.class)){
+            schemaFactories.put(factory.getNamespaceURI(), factory);
+        }
     }
 
 }
