@@ -100,7 +100,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
             new ProjectServerWizardPanel(J2eeModule.WAR, 
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step2"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
-                    true, false, true, false, false),
+                    true, false, true, false, true, false),
             new PanelSourceFolders.Panel()
         };
     }

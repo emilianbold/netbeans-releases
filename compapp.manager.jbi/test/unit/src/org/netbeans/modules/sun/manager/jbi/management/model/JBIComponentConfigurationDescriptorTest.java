@@ -80,7 +80,7 @@ public class JBIComponentConfigurationDescriptorTest {
                 JBIComponentConfigurationParser.parse(xmlText);
         
         threadCount = result.getChild("ThreadCount");
-        appConfig = result.getChild("JMSApplicationConfiguration");        
+        appConfig = result.getChild("ApplicationConfiguration");        
     }
 
     @AfterClass
@@ -103,7 +103,7 @@ public class JBIComponentConfigurationDescriptorTest {
         System.out.println("getName");
         
         assertEquals("ThreadCount", threadCount.getName());
-        assertEquals("JMSApplicationConfiguration", appConfig.getName());
+        assertEquals("ApplicationConfiguration", appConfig.getName());
     }
 
     /**
@@ -114,7 +114,7 @@ public class JBIComponentConfigurationDescriptorTest {
         System.out.println("getDisplayName");
         
         assertEquals("Number of Threads", threadCount.getDisplayName());
-        assertEquals("JMS BC Application Configuration", appConfig.getDisplayName());
+        assertEquals("Application Configuration", appConfig.getDisplayName());
     }
 
     /**
@@ -125,7 +125,7 @@ public class JBIComponentConfigurationDescriptorTest {
         System.out.println("getDescription");
         
         assertEquals("# of threads to proccess outbound JMS requests and Message Exchange responses concurrentlty", threadCount.getDescription());
-        assertEquals("Describes JMS connection properties", appConfig.getDescription());
+        assertEquals("Application Configuration", appConfig.getDescription());
     }
 
     /**
@@ -205,21 +205,24 @@ public class JBIComponentConfigurationDescriptorTest {
         assertTrue(childrenNames.contains("ApplicationConfigurationName"));
         assertTrue(childrenNames.contains("UserName"));
         assertTrue(childrenNames.contains("Password"));
-        assertTrue(childrenNames.contains("JndiEnv"));
+        
+        // not supporting compound property yet
+//        assertTrue(childrenNames.contains("JndiEnv"));
     }
 
     /**
      * Test of getChild method, of class JBIComponentConfigurationDescriptor.
      */
-    @Test
-    public void getChild() {
-        System.out.println("getChild");
-        
-        JBIComponentConfigurationDescriptor jndiEnv = appConfig.getChild("JndiEnv");
-        Set<String> childrenNames = jndiEnv.getChildNames();
-        assertTrue(childrenNames.contains("JndiName"));
-        assertTrue(childrenNames.contains("JndiValue"));        
-    }
+    // not supporting compound property yet
+//    @Test
+//    public void getChild() {
+//        System.out.println("getChild");
+//        
+//        JBIComponentConfigurationDescriptor jndiEnv = appConfig.getChild("JndiEnv");
+//        Set<String> childrenNames = jndiEnv.getChildNames();
+//        assertTrue(childrenNames.contains("JndiName"));
+//        assertTrue(childrenNames.contains("JndiValue"));        
+//    }
     
     private static String getContent(File file) {
         String ret = "";

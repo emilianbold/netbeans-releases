@@ -175,16 +175,16 @@ CLASS      URIError                                   Core JS
 CLASS      ViewCSS                                    DOM
 CLASS      Window                                     DOM
 CLASS      XMLHttpRequest                             DOM
-METHOD     decodeURI(encodedURI)                      Core JS
+METHOD     decodeURI(encodedURI) : void               Core JS
 METHOD     decodeURIComponent(encodedURI)             Core JS
-METHOD     encodeURI(URI)                             Core JS
-METHOD     encodeURIComponent(String)                 Core JS
-METHOD     eval(string, object)                       Core JS
-METHOD     isFinite(number)                           Core JS
-METHOD     isNaN(testValue)                           Core JS
-METHOD     parseFloat(string)                         Core JS
-METHOD     parseInt(string, radix)                    Core JS
-METHOD     undefined()                                Core JS
+METHOD     encodeURI(URI) : void                      Core JS
+METHOD     encodeURIComponent(String) : v             Core JS
+METHOD     eval(string, object) : void                Core JS
+METHOD     isFinite(number) : void                    Core JS
+METHOD     isNaN(testValue) : void                    Core JS
+METHOD     parseFloat(string) : void                  Core JS
+METHOD     parseInt(string, radix) : void             Core JS
+METHOD     undefined() : void                         Core JS
 VARIABLE   arguments                                  null
 VARIABLE   bar2                                       
 VARIABLE   element2                                   
@@ -383,16 +383,16 @@ PROPERTY   ViewCSS                                    DOM
 PROPERTY   Window                                     DOM
 PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
-METHOD     eval(string)                               Object
+METHOD     eval(string) : void                        Object
 METHOD     hasOwnProperty(prop) : Boolean             Object
 METHOD     isPrototypeOf(object) : Boolea             Object
 METHOD     propertyIsEnumerable(prop) : B             Object
 METHOD     toLocaleString() : String                  Object
 METHOD     toSource() : void                          Object
 METHOD     toString() : String                        Object
-METHOD     unwatch(prop)                              Object
+METHOD     unwatch(prop) : void                       Object
 METHOD     valueOf() : void                           Object
-METHOD     watch(prop, handler)                       Object
+METHOD     watch(prop, handler) : void                Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null

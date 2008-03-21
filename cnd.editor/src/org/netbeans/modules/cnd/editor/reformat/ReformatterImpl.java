@@ -1681,6 +1681,31 @@ public class ReformatterImpl {
                 spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen());
                 spaceAfter(current, codeStyle.spaceWithinMethodCallParens());
                 return;
+            } else if (p != null && 
+                       (KEYWORD_CATEGORY.equals(p.id().primaryCategory()) ||
+                        KEYWORD_DIRECTIVE_CATEGORY.equals(p.id().primaryCategory()))){
+                switch (p.id()) {
+                    case RETURN:
+                    case SIZEOF:
+                    case TYPEID:
+                    case TYPEOF:
+                    case __TYPEOF:
+                    case __TYPEOF__:
+                    case ALIGNOF:
+                    case __ALIGNOF__:
+                    case THROW:
+                    case __ATTRIBUTE__:
+                    case _DECLSPEC:
+                    case __DECLSPEC:
+                    case _FAR:
+                    case __FAR:
+                    case _NEAR:
+                    case __NEAR:
+                    case _STDCALL:
+                    case __STDCALL:
+                        spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                }
+                return;
             } else if (ts.isTypeCast()){
                 spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
                 return;

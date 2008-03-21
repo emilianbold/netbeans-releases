@@ -152,7 +152,6 @@ public class RestSampleUtils {
     }
 
     public static FileObject getStudioUserDir() {
-        Log.out("StudioUserDir: " + FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))).getPath()); // NOI18N
         return FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); // NOI18N
     }
 

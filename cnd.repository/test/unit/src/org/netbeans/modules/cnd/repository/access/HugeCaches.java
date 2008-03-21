@@ -105,11 +105,4 @@ public class HugeCaches extends RepositoryAccessTestBase {
 	}
     }
     
-    private void sleep(long timeout) {
-	try {
-	    Thread.sleep(timeout);
-	} catch( InterruptedException e ) {
-	}
-    }
-    
 }

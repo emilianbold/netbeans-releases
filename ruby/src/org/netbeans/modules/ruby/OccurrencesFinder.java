@@ -69,7 +69,6 @@ import org.jruby.ast.GlobalVarNode;
 import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
 import org.jruby.ast.ListNode;
-import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
@@ -86,13 +85,11 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
 
@@ -180,7 +177,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
-            ISourcePosition pos = closest.getPosition();
+            //ISourcePosition pos = closest.getPosition();
 
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
@@ -191,20 +188,22 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
                 doc.readLock();
                 try {
                 int length = doc.getLength();
-                int startPos = pos.getStartOffset();
-                int endPos = pos.getEndOffset();
+                OffsetRange astRange = AstUtilities.getRange(closest);
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                int lexStartPos = lexRange.getStart();
+                int lexEndPos = lexRange.getEnd();
 
                 // If the buffer was just modified where a lot of text was deleted,
                 // the parse tree positions could be pointing outside the valid range
-                if (startPos > length) {
-                    startPos = length;
+                if (lexStartPos > length) {
+                    lexStartPos = length;
+                }
+                if (lexEndPos > length) {
+                    lexEndPos = length;
                 }
 
-                if (endPos > length) {
-                    endPos = length;
-                }
-
-                if (Utilities.getRowStart(doc, startPos) != Utilities.getRowStart(doc, endPos)) {
+                if (lexStartPos != -1 && lexEndPos != -1 && 
+                                Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
                     // One special case I care about: highlighting method exit points. In
                     // this case, the full def node is selected, which typically spans
                     // lines. This should trigger if you put the caret on the method definition
@@ -213,7 +212,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
 
                     if (((token != null) && (token.id() != RubyTokenId.LINE_COMMENT)) &&
                             (closest instanceof MethodDefNode) &&
-                            (Utilities.getRowStart(doc, pos.getStartOffset()) == Utilities.getRowStart(
+                            (Utilities.getRowStart(doc, lexStartPos) == Utilities.getRowStart(
                                 doc, caretPosition))) {
                         // Highlight exit points
                         highlightExits((MethodDefNode)closest, highlights, info);

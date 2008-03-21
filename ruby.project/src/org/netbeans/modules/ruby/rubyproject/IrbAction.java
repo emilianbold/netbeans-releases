@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,9 +97,8 @@ public class IrbAction extends AbstractAction {
         additionalArgs.add("--simple-prompt"); // NOI18N
         additionalArgs.add("--noreadline"); // NOI18N
         
-        String displayName = NbBundle.getMessage(IrbAction.class, "CTL_IrbTopComponent");
+        String displayName = NbBundle.getMessage(IrbAction.class, "CTL_IrbTopComponentWithPlatform", platform.getLabel());
         
-        ExecutionDescriptor desc = null;
         boolean debug = false;
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         
@@ -109,7 +108,7 @@ public class IrbAction extends AbstractAction {
         }
         OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
         String target = irbPath;
-        desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+        ExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
 
         // Override args
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
@@ -148,10 +147,8 @@ public class IrbAction extends AbstractAction {
         }
         
         Project project = projects.getMainProject();
-        if (project != null) {
-            if (runIrbConsole(project)) {
-                return;
-            }
+        if (project != null && runIrbConsole(project)) {
+            return;
         }
 
         for (Project p : projects.getOpenProjects()) {

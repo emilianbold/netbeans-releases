@@ -201,7 +201,7 @@ made subject to such option by the copyright holder.
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>mysql</option-name>
-                    <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource</conditional-value>
+                    <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>jdbc-odbc-bridge</option-name>
@@ -304,6 +304,104 @@ made subject to such option by the copyright holder.
                 <option-value-pair>
                     <option-name>mysql</option-name>
                     <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlXaConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>datasource-classname-cp</name>
+            <field-value>
+                <default-field-value></default-field-value>
+                <option-value-pair>
+                    <option-name>oracle-thin</option-name>
+                    <conditional-value>oracle.jdbc.pool.OracleConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>derby_net</option-name>
+                    <conditional-value>org.apache.derby.jdbc.ClientConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>sun_db2</option-name>
+                    <conditional-value>com.sun.sql.jdbcx.db2.DB2DataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>sun_msftsql</option-name>
+                    <conditional-value>com.sun.sql.jdbcx.sqlserver.SQLServerDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>sun_oracle</option-name>
+                    <conditional-value>com.sun.sql.jdbcx.oracle.OracleDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>sun_sybase</option-name>
+                    <conditional-value>com.sun.sql.jdbcx.sybase.SybaseDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>post-gre-sql</option-name>
+                    <conditional-value>org.postgresql.ds.PGConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>microsoft_sql</option-name>
+                    <conditional-value>com.microsoft.sqlserver.jdbc.SQLServerConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sql</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sybase</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>oracle</option-name>
+                    <conditional-value>oracle.jdbc.pool.OracleConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>db2</option-name>
+                    <conditional-value>com.ibm.db2.jcc.DB2ConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sql</option-name>
+                    <conditional-value>com.ddtek.jdbcx.sqlserver.SQLServerDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_oracle</option-name>
+                    <conditional-value>com.ddtek.jdbcx.oracle.OracleDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_db2</option-name>
+                    <conditional-value>com.ddtek.jdbcx.db2.DB2DataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_informix</option-name>
+                    <conditional-value>com.ddtek.jdbcx.informix.InformixDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>datadirect_sybase</option-name>
+                    <conditional-value>com.ddtek.jdbcx.sybase.SybaseDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>sybase2</option-name>
+                    <conditional-value>com.sybase.jdbc2.jdbc.SybConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>pointbase</option-name>
+                    <conditional-value>com.pointbase.jdbc.jdbcDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>cloudscape</option-name>
+                    <conditional-value>COM.cloudscape.core.LocalConnectionPoolDataSource </conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>informix</option-name>
+                    <conditional-value>com.informix.jdbcx.IfxConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>mysql</option-name>
+                    <conditional-value>com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>jdbc-odbc-bridge</option-name>
+                    <conditional-value>sun.jdbc.odbc.JdbcOdbcDriver</conditional-value>
                 </option-value-pair>
             </field-value>
         </field>
