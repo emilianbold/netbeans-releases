@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Collection;
+import java.util.Map;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.Language;
@@ -88,4 +89,39 @@ public interface GsfLanguage {
      * to the indexing and querying paths.
      */
     Collection<FileObject> getCoreLibraries();
+
+    /**
+     * Display name for this language. This name should be localized since it can be shown to
+     * the user (currently, it shows up in the Tasklist filter for example).
+     */
+    @NonNull
+    String getDisplayName();
+    
+    /**
+     * Return a preferred file extension for this language (if any -- may be null).
+     * The extension should NOT include the separating dot. For example, for Java the preferred
+     * file extension is "java", not ".java". 
+     * 
+     * Note also that registering a preferred extension will NOT automatically cause GSF to
+     * identify files of that extension as belonging to GSF (or this language's mime type).
+     * You still need a MIME resolver for that. This method is primarily used with some
+     * older mechanisms in NetBeans (such as template creation) which is still file extension
+     * oriented.
+     */
+    @CheckForNull
+    String getPreferredExtension();
+    
+    /**
+     * Get source types for files corresponding to this language. This is used by for example
+     * the tasklist to locate source files in a project by using the 
+     *   ProjectUtils.getSources(p).getSourceGroups(x)
+     * mechanism.
+     * <p>
+     * The map corresponds to the project name mapped to the source group. If no mapping exists
+     * for a target project type the infrastructure will use the generic source type.
+     * <p>
+     * As with #acceptQueryPath, this is just a temporary measure (i.e. NetBeans 6.1) to deal with shortcomings
+     * in the path and project integration for GSF.
+     */
+    Map<String,String> getSourceGroupNames();
 }

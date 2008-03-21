@@ -54,8 +54,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.RandomAccess;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
@@ -85,9 +85,7 @@ import org.openide.util.Lookup;
 public class LanguageRegistry implements Iterable<Language> {
 
     private static LanguageRegistry instance;
-    private static final String DISPLAY_NAME = "displayName";
     private static final String ICON_BASE = "iconBase";
-    private static final String EXTENSIONS = "extensions";
     private static final String LANGUAGE = "language.instance";
     private static final String PARSER = "parser.instance";
     private static final String COMPLETION = "completion.instance";
@@ -130,27 +128,6 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         return instance;
-    }
-
-    /**
-     * Return a language implementation that corresponds to the given file extension,
-     * or null if no such language is supported
-     */
-    public Language getLanguageByExtension(@NonNull String extension) {
-        extension = extension.toLowerCase();
-
-        // TODO - create a map if this is slow
-        for (Language language : this) {
-            String[] extensions = language.getExtensions();
-
-            for (int i = 0; i < extensions.length; i++) {
-                if (extension.equals(extensions[i])) {
-                    return language;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -509,29 +486,6 @@ public class LanguageRegistry implements Iterable<Language> {
                 DefaultLanguage language = new DefaultLanguage(mime);
                 languages.add(language);
 
-                String displayName = (String)mimeFile.getAttribute(DISPLAY_NAME);
-
-                /*
-                public String getLanguageName (String mimeType) {
-                if (!mimeTypeToName.containsKey (mimeType)) {
-                FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-                FileObject fo = fs.findResource ("Editors/" + mimeType);
-                if (fo == null) return "???";
-                String bundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle");
-                String name = mimeType;
-                if (bundleName != null)
-                try {
-                name = NbBundle.getBundle (bundleName).getString (mimeType);
-                } catch (MissingResourceException ex) {}
-                mimeTypeToName.put (mimeType, name);
-                }
-                return (String) mimeTypeToName.get (mimeType);
-                }
-                 */
-                if ((displayName != null) && (displayName.length() > 0)) {
-                    language.setDisplayName(displayName);
-                }
-
                 Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
                 if (useCustomEditorKit != null && useCustomEditorKit.booleanValue()) {
                     language.setUseCustomEditorKit(true);
@@ -548,28 +502,13 @@ public class LanguageRegistry implements Iterable<Language> {
                     }
                 }
 
-                //Local icon registration in the Languages/ folder
-                //String iconBase = (String)mimeFile.getAttribute(ICON_BASE);
-                //
-                //if ((iconBase != null) && (iconBase.length() > 0)) {
-                //    language.setIconBase(iconBase);
-                //}
-                // Look for extensions, scanners, parsers, etc.
-                FileObject extensionsDir = mimeFile.getFileObject(EXTENSIONS, null);
-
-                if ((extensionsDir != null) && extensionsDir.isFolder()) {
-                    FileObject[] extensionFiles = extensionsDir.getChildren();
-
-                    for (int k = 0; k < extensionFiles.length; k++) {
-                        String extension = extensionFiles[k].getName();
-                        language.addExtension(extension);
-                    }
-                }
-
                 FileObject languageFile = mimeFile.getFileObject(LANGUAGE, null);
 
                 if (languageFile != null) {
                     language.setGsfLanguageFile(languageFile);
+                } else {
+                    // Emit warning
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "No GSF language registered for mime type " + mime);
                 }
 
                 FileObject parserFile = mimeFile.getFileObject(PARSER, null);

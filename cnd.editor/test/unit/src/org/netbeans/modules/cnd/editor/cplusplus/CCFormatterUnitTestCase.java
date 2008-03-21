@@ -47,6 +47,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
@@ -64,54 +65,31 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testReformatMultiLineSystemOutPrintln2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "void m() {\n"
-                    + "    printf(\n"
-                    + "    \"haf\");\n"
-                    + "}\n"
-                    );
-            reformat();
-            assertDocumentText("Incorrect new-line indent",
-                    "void m() {\n"
-                    + "    printf(\n"
-                    + "            \"haf\");\n"
-                    + "}\n"
-                    );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+                "void m() {\n"
+                + "    printf(\n"
+                + "    \"haf\");\n"
+                + "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                "void m() {\n"
+                + "    printf(\n"
+                + "            \"haf\");\n"
+                + "}\n"
+                );
     }
-    
-//    public void testReformatMultiLineClassDeclaration() {
-//        setLoadDocumentText(
-//                "public class C\n"
-//                + ": public Runnable {\n"
-//                + "int printf(int);\n"
-//                + "};\n"
-//                );
-//        reformat();
-//        assertDocumentText("Incorrect new-line indent",
-//                "public class C\n"
-//                + "        : public Runnable {\n"
-//                + "    int printf(int);\n"
-//                + "};\n"
-//                );
-//        
-//    }
-    
-    // tests for regressions
     
     /**
      * Tests reformatting of new on two lines
      * @see http://www.netbeans.org/issues/show_bug.cgi?id6065
      */
     public void testReformatNewOnTwoLines() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "javax::swing::JPanel* panel =\n" +
                 "new java::swing::JPanel();");
@@ -126,6 +104,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=23508
      */
     public void testReformatTernaryConditionalOperator() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "something = (someComplicatedExpression != null) ?\n" +
                 "(aComplexCalculation) :\n" +
@@ -143,6 +122,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
      */
     public void testReformatArrayInitializerWithNewline() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "int[] foo = new int[] {1, 2, 3};");
         reformat();
@@ -155,6 +135,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=48926
      */
     public void testReformatNewlineBracesToNormalOnes() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "try\n" +
                 "{\n" +
@@ -179,34 +160,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "class Test {\n" +
-                    "Test(int one,\n" +
-                    "int two,\n" +
-                    "int three,\n" +
-                    "int four) {\n" +
-                    "this.one = one;\n" +
-                    "}\n" +
-                    "};");
-            reformat();
-            assertDocumentText("Incorrect multiline constructor reformatting",
-                    "class Test {\n" +
-                    "    Test(int one,\n" +
-                    "            int two,\n" +
-                    "            int three,\n" +
-                    "            int four) {\n" +
-                    "        this.one = one;\n" +
-                    "    }\n" +
-                    "};");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+                "class Test {\n" +
+                "Test(int one,\n" +
+                "int two,\n" +
+                "int three,\n" +
+                "int four) {\n" +
+                "this.one = one;\n" +
+                "}\n" +
+                "};");
+        reformat();
+        assertDocumentText("Incorrect multiline constructor reformatting",
+                "class Test {\n" +
+                "    Test(int one,\n" +
+                "            int two,\n" +
+                "            int three,\n" +
+                "            int four) {\n" +
+                "        this.one = one;\n" +
+                "    }\n" +
+                "};");
     }
 
     /**
@@ -214,6 +190,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor2() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -242,6 +219,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=50523
      */
     public void testReformatIfElseWithoutBrackets() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (count == 0)\n" +
                 "return 0.0f;\n" +
@@ -260,36 +238,31 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "class C {\n" +
-                "protected:\n" +
-                "int i;\n" +
-                "int foo();\n" +
-                "private:\n" +
-                "int j;\n" +
-                "public:\n" +
-                "int k;\n" +
-                "};\n");
-            reformat();
-            assertDocumentText("Incorrect reformatting of simple class",
-                "class C {\n" +
-                "protected:\n" +
-                "    int i;\n" +
-                "    int foo();\n" +
-                "private:\n" +
-                "    int j;\n" +
-                "public:\n" +
-                "    int k;\n" +
-                "};\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+            "class C {\n" +
+            "protected:\n" +
+            "int i;\n" +
+            "int foo();\n" +
+            "private:\n" +
+            "int j;\n" +
+            "public:\n" +
+            "int k;\n" +
+            "};\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of simple class",
+            "class C {\n" +
+            "protected:\n" +
+            "    int i;\n" +
+            "    int foo();\n" +
+            "private:\n" +
+            "    int j;\n" +
+            "public:\n" +
+            "    int k;\n" +
+            "};\n");
     }
     
     /**
@@ -297,6 +270,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -326,6 +300,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=98475
      */
     public void testReformatForWithoutBraces() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "for (i = 0; i < MAXBUCKET; i++) {\n" +
 	    "for (j = 0; j < MAXBUCKET; j++)\n" +
@@ -354,34 +329,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "main() {\n" +
-                "#define AAA 1\n" +
-                "int aaa;\n" +
-                "#define BBB 2\n" +
-                "long bbb;\n" +
-                "int ccc;\n" +
-                "int ddd;\n" +
-                "}\n");
-            reformat();
-            assertDocumentText("Incorrect reformatting for preprocessors directives",
-                "main() {\n" +
-                "#define AAA 1\n" +
-                "    int aaa;\n" +
-                "#define BBB 2\n" +
-                "    long bbb;\n" +
-                "    int ccc;\n" +
-                "    int ddd;\n" +
-                "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+            "main() {\n" +
+            "#define AAA 1\n" +
+            "int aaa;\n" +
+            "#define BBB 2\n" +
+            "long bbb;\n" +
+            "int ccc;\n" +
+            "int ddd;\n" +
+            "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting for preprocessors directives",
+            "main() {\n" +
+            "#define AAA 1\n" +
+            "    int aaa;\n" +
+            "#define BBB 2\n" +
+            "    long bbb;\n" +
+            "    int ccc;\n" +
+            "    int ddd;\n" +
+            "}\n");
     }
 
     /**
@@ -389,6 +359,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "main() {\n" +
             "#define AAA 1\n" +
@@ -411,47 +382,26 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n");
     }
 
-    //    /**
-//     * Test reformatting of function arguments list
-//     * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
-//     */
-//    public void testReformatFunctionArguments() {
-//        setLoadDocumentText(
-//            "z = myfoo(a,\n" +
-//            "b,\n" +
-//            "c);\n");
-//        reformat();
-//        assertDocumentText("Incorrect reformatting of function arguments list",
-//            "z = myfoo(a,\n" +
-//            "          b,\n" +
-//            "          c);\n");
-//    }
-    
     /**
      * Test reformatting of constructor initializer
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "Cpu::Cpu(int type, int architecture, int units) :\n" +
-                "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
-                "ComputeSupportMetric();\n" +
-                "}\n");
-            reformat();
-            assertDocumentText("Incorrect reformatting of constructor initializer",
-                "Cpu::Cpu(int type, int architecture, int units) :\n" +
-                "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
-                "    ComputeSupportMetric();\n" +
-                "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+            "Cpu::Cpu(int type, int architecture, int units) :\n" +
+            "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
+            "ComputeSupportMetric();\n" +
+            "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of constructor initializer",
+            "Cpu::Cpu(int type, int architecture, int units) :\n" +
+            "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
+            "    ComputeSupportMetric();\n" +
+            "}\n");
     }
     
     /**
@@ -459,6 +409,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
             "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
@@ -478,26 +429,21 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "int\n" +
-                "main(int argc, char** argv) {\n" +
-                "return (EXIT_SUCCESS);\n" +
-                "};\n");
-            reformat();
-            assertDocumentText("Incorrect reformatting of multi line main definition",
-                "int\n" +
-                "main(int argc, char** argv) {\n" +
-                "    return (EXIT_SUCCESS);\n" +
-                "};\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+            "int\n" +
+            "main(int argc, char** argv) {\n" +
+            "return (EXIT_SUCCESS);\n" +
+            "};\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of multi line main definition",
+            "int\n" +
+            "main(int argc, char** argv) {\n" +
+            "    return (EXIT_SUCCESS);\n" +
+            "};\n");
     }
 
     /**
@@ -505,6 +451,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "int\n" +
             "main(int argc, char** argv) {\n" +
@@ -519,80 +466,50 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "};\n");
     }
 
-//    /**
-//     * Test reformatting of unbalanced braces
-//     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
-//     */
-//    public void testReformatUnbalancedBraces() {
-//        setLoadDocumentText(
-//            "void foo() {\n" +
-//            "#if A\n" +
-//            "if (0) {\n" +
-//            "#else\n" +
-//            "if (1) {\n" +
-//            "#endif\n" +
-//            "}\n" +
-//            "}\n");
-//        reformat();
-//        assertDocumentText("Incorrect reformatting of unbalanced braces",
-//            "void foo() {\n" +
-//            "#if A\n" +
-//            "    if (0) {\n" +
-//            "#else\n" +
-//            "    if (1) {\n" +
-//            "#endif\n" +
-//            "    }\n" +
-//            "}\n");
-//    }
-
     public void testIdentInnerEnum() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "class NdbTransaction {\n" +
-                "#ifndef D\n" +
-                "friend class Ndb;\n" +
-                "#endif\n" +
-                "\n" +
-                "public:\n" +
-                "\n" +
-                "enum AbortOption {\n" +
-                "#ifndef D\n" +
-                "AbortOnError=::AbortOnError,\n" +
-                "#endif\n" +
-                "AO_IgnoreError=::AO_IgnoreError,\n" +
-                "AO_SkipError\n" +
-                "};\n" +
-                "};\n"
-                );
-            reformat();
-            assertDocumentText("Incorrect identing of inner enum",
-                "class NdbTransaction {\n" +
-                "#ifndef D\n" +
-                "    friend class Ndb;\n" +
-                "#endif\n" +
-                "    \n" +
-                "public:\n" +
-                "    \n" +
-                "    enum AbortOption {\n" +
-                "#ifndef D\n" +
-                "        AbortOnError=::AbortOnError,\n" +
-                "#endif\n" +
-                "        AO_IgnoreError=::AO_IgnoreError,\n" +
-                "        AO_SkipError\n" +
-                "    };\n" +
-                "};\n"
+        setLoadDocumentText(
+            "class NdbTransaction {\n" +
+            "#ifndef D\n" +
+            "friend class Ndb;\n" +
+            "#endif\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "enum AbortOption {\n" +
+            "#ifndef D\n" +
+            "AbortOnError=::AbortOnError,\n" +
+            "#endif\n" +
+            "AO_IgnoreError=::AO_IgnoreError,\n" +
+            "AO_SkipError\n" +
+            "};\n" +
+            "};\n"
             );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        reformat();
+        assertDocumentText("Incorrect identing of inner enum",
+            "class NdbTransaction {\n" +
+            "#ifndef D\n" +
+            "    friend class Ndb;\n" +
+            "#endif\n" +
+            "    \n" +
+            "public:\n" +
+            "    \n" +
+            "    enum AbortOption {\n" +
+            "#ifndef D\n" +
+            "        AbortOnError=::AbortOnError,\n" +
+            "#endif\n" +
+            "        AO_IgnoreError=::AO_IgnoreError,\n" +
+            "        AO_SkipError\n" +
+            "    };\n" +
+            "};\n"
+        );
     }
 
     public void testIdentInnerEnum2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -633,45 +550,41 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testTemplate() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "template <class T, class U>\n" +
-                "class KeyTable2 : public DLHashTable2<T, U> {\n" +
-                "public:\n" +
-                "KeyTable2(ArrayPool<U>& pool) :\n" +
-                "DLHashTable2<T, U>(pool) {\n" +
-                "}\n" +
-                "\n" +
-                "bool find(Ptr<T>& ptr, const T& rec) const {\n" +
-                "return DLHashTable2<T, U>::find(ptr, rec);\n" +
-                "}\n" +
-                "};\n"
-                );
-            reformat();
-            assertDocumentText("Incorrect identing of template class",
-                "template <class T, class U>\n" +
-                "class KeyTable2 : public DLHashTable2<T, U> {\n" +
-                "public:\n" +
-                "    KeyTable2(ArrayPool<U>& pool) :\n" +
-                "    DLHashTable2<T, U>(pool) {\n" +
-                "    }\n" +
-                "    \n" +
-                "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
-                "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
-                "    }\n" +
-                "};\n"
-                );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+            "template <class T, class U>\n" +
+            "class KeyTable2 : public DLHashTable2<T, U> {\n" +
+            "public:\n" +
+            "KeyTable2(ArrayPool<U>& pool) :\n" +
+            "DLHashTable2<T, U>(pool) {\n" +
+            "}\n" +
+            "\n" +
+            "bool find(Ptr<T>& ptr, const T& rec) const {\n" +
+            "return DLHashTable2<T, U>::find(ptr, rec);\n" +
+            "}\n" +
+            "};\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing of template class",
+            "template <class T, class U>\n" +
+            "class KeyTable2 : public DLHashTable2<T, U> {\n" +
+            "public:\n" +
+            "    KeyTable2(ArrayPool<U>& pool) :\n" +
+            "    DLHashTable2<T, U>(pool) {\n" +
+            "    }\n" +
+            "    \n" +
+            "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
+            "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
+            "    }\n" +
+            "};\n"
+            );
     }
 
     public void testTemplate2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -705,6 +618,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testIdentPreprocessorElase() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#if defined(USE_MB)\n" +
             "if (use_mb(cs)) {\n" +
@@ -727,6 +641,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentDefine() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "int\n" +
             "main() {\n" +
@@ -754,33 +669,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentMultyLineMain() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "long z;\n" +
-                "int\n" +
-                "main() {\n" +
-                "short a;\n" +
-                "}\n"
-                );
-            reformat();
-            assertDocumentText("Incorrect identing multyline main",
-                "long z;\n" +
-                "int\n" +
-                "main() {\n" +
-                "    short a;\n" +
-                "}\n"
+        setLoadDocumentText(
+            "long z;\n" +
+            "int\n" +
+            "main() {\n" +
+            "short a;\n" +
+            "}\n"
             );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        reformat();
+        assertDocumentText("Incorrect identing multyline main",
+            "long z;\n" +
+            "int\n" +
+            "main() {\n" +
+            "    short a;\n" +
+            "}\n"
+        );
     };
 
     public void testIdentMultyLineMain2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -800,32 +711,28 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentMultyConstructor() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
-                "        :log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg)\n" +
-                "        {\n" +
-                "                server_id=thd->server_id;\n" +
-                "        }\n"
-                );
-            reformat();
-            assertDocumentText("Incorrect identing multyline constructor",
-                "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
-                ":log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
-                "    server_id=thd->server_id;\n" +
-                "}\n"
+        setLoadDocumentText(
+            "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
+            "        :log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg)\n" +
+            "        {\n" +
+            "                server_id=thd->server_id;\n" +
+            "        }\n"
             );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
+            ":log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
+            "    server_id=thd->server_id;\n" +
+            "}\n"
+        );
     };
 
     public void testIdentMultyConstructor2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "Log_event::Log_event(const char* buf,\n" +
             "        const Format_description_log_event* description_event)\n" +
@@ -846,6 +753,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentDefineBrace() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define BRACE {\n" +
             "int main() {\n" +
@@ -865,6 +773,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testIdentDefineBrace2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define BRACE }\n" +
             "int main() {\n" +
@@ -883,58 +792,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         );
     };
 
-//    public void testIdentMultyConstructor3() {
-//        setLoadDocumentText(
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
-//            ":Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
-//            "                using_trans),\n" +
-//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "                                thread_id(thd_arg->thread_id),\n" +
-//            "                                /* save the original thread id; we already know the server id */\n" +
-//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
-//            "                        {\n" +
-//            "                            time_t end_time;\n" +
-//            "                        }\n"
-//            );
-//        reformat();
-//        assertDocumentText("Incorrect identing multyline constructor",
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
-//            ":Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "& (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
-//            "        using_trans),\n" +
-//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "        thread_id(thd_arg->thread_id),\n" +
-//            "        /* save the original thread id; we already know the server id */\n" +
-//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
-//            "    time_t end_time;\n" +
-//            "}\n"
-//        );
-//    };
-    
     public void testMacroDefineWithBrace() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
             );
@@ -945,6 +804,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testMacroDefineWithBrace1() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "\n"+
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
@@ -957,69 +817,55 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
     
     public void testMacroDefineWithBrace2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
-            reformat();
-            assertDocumentText("Incorrect formatting for macro define with brace",
-                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBrace, 
-                    CodeStyle.BracePlacement.SAME_LINE.name());
-        }
+        setLoadDocumentText(
+                "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with brace",
+                "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
     }
 
     public void testMacroDefineWithBrace3() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "\n"+
-                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
-            reformat();
-            assertDocumentText("Incorrect formatting for macro define with brace",
-                    "\n"+
-                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBrace, 
-                    CodeStyle.BracePlacement.SAME_LINE.name());
-        }
+        setLoadDocumentText(
+                "\n"+
+                "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with brace",
+                "\n"+
+                "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
     }
 
     public void testMacroDefineWithParen() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main() {\n" +
-                    "M(\"test\");\n" +
-                    "return 0;\n" +
-                    "}\n");
-            reformat();
-            assertDocumentText("Incorrect formatting for macro define with paren",
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main() {\n" +
-                    "    M(\"test\");\n" +
-                    "    return 0;\n" +
-                    "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "M(\"test\");\n" +
+                "return 0;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "    M(\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
     }
 
     public void testMacroDefineWithParen11() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -1039,63 +885,53 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.SAME_LINE.name());
-        try {
-            setLoadDocumentText(
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main() {\n" +
-                    "    M(\"test\");\n" +
-                    "    return 0;\n" +
-                    "}\n");
-            reformat();
-            assertDocumentText("Incorrect formatting for macro define with paren",
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main () {\n" +
-                    "    M (\"test\");\n" +
-                    "    return 0;\n" +
-                    "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBraceDeclaration, 
-                    CodeStyle.BracePlacement.NEW_LINE.name());
-        }
+        setLoadDocumentText(
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "    M(\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main () {\n" +
+                "    M (\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
     }
 
     public void testMacroDefineWithParen21() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        try {
-            setLoadDocumentText(
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main() {\n" +
-                    "    M(\"test\");\n" +
-                    "    return 0;\n" +
-                    "}\n");
-            reformat();
-            assertDocumentText("Incorrect formatting for macro define with paren",
-                    "#include <stdio.h>\n" +
-                    "#define M(x) puts(#x)\n" +
-                    "int main ()\n" +
-                    "{\n" +
-                    "    M (\"test\");\n" +
-                    "    return 0;\n" +
-                    "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    putBoolean(EditorOptions.spaceBeforeMethodCallParen, false);
-        }
+        setLoadDocumentText(
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "    M(\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main ()\n" +
+                "{\n" +
+                "    M (\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
     }
 
     public void testSwitchFormatting() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "switch (GetTypeID()){\n" +
                 "case FAST:\n" +
@@ -1124,9 +960,9 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testSwitchFormatting2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.indentCasesFromSwitch, false);
-        try {
         setLoadDocumentText(
                 "switch (GetTypeID()){\n" +
                 "case FAST:\n" +
@@ -1152,9 +988,5 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "default:\n" +
                 "    break;\n" +
                 "}\n");
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    putBoolean(EditorOptions.indentCasesFromSwitch, true);
-        }
     }
 }

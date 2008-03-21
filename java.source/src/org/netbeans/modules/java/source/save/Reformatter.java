@@ -240,7 +240,7 @@ public class Reformatter implements ReformatTask {
                 start = startOffset;
             }
             if (endOffset < end) {
-                if (text != null && text.length() > 0) {
+                if (text != null && text.length() > 0 && !templateEdit) {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts != null) {
                         ts.move(endOffset);

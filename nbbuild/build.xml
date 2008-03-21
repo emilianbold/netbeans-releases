@@ -1319,7 +1319,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
     <mkdir dir="build"/>
-    <property name="l10n.kit" file="build/l10n.zip"/>
+    <property name="l10n.kit" location="build/l10n.zip"/>
+    <property name="nbms.location" location="nbms"/>
     <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
   </target>
 

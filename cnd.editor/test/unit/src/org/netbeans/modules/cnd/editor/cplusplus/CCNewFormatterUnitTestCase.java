@@ -2750,6 +2750,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
             "    for (i = 0; i<n; i++) return;\n" +
             "    match[1].end = match[0].end+s_length;\n" +
+            "    return(0);\n" +
             "}\n"
             );
         reformat();
@@ -2757,12 +2758,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "int foo()\n" +
             "{\n" +
             "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
-            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return 0;\n" +
             "    lmask = (1U << state->lenbits) - 1;\n" +
             "    len = BITS(4) + 8;\n" +
             "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
             "    for (i = 0; i < n; i++) return;\n" +
             "    match[1].end = match[0].end + s_length;\n" +
+            "    return (0);\n" +
             "}\n"
         );
     }

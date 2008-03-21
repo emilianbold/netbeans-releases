@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  * @author Tor Norbye
@@ -242,7 +243,7 @@ public class JsIndexerTest extends JsTestBase {
 
         JsIndexer indexer = new JsIndexer();
         JsIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         List<IndexDocument> result = indexer.index(rpr, factory);
         
         return result;
@@ -441,4 +442,17 @@ public class JsIndexerTest extends JsTestBase {
     public void testReturnTypes() throws Exception {
         checkIndexer("testfiles/returntypes.js");
     }
+
+    public void testScriptDoc() throws Exception {
+        checkIndexer("testfiles/jquery.sdoc");
+    }
+
+    public void testScriptDoc2() throws Exception {
+        checkIndexer("testfiles/yui.sdoc");
+    }
+
+    public void testTwoNames() throws Exception {
+        checkIndexer("testfiles/two-names.js");
+    }
+
 }
