@@ -64,10 +64,6 @@ import org.openide.filesystems.FileObject;
  */
 public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
 
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
     
     public JaxRsJspCodeGenerator(JTextComponent targetComponent,

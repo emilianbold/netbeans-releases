@@ -250,6 +250,8 @@ public class WadlSaasBean extends SaasBean {
         List<JAXBElement<RepresentationType>> repOrFaults = response.getRepresentationOrFault();
         for (JAXBElement<RepresentationType> repElement : repOrFaults) {
             String mediaType = repElement.getValue().getMediaType();
+            if(mediaType == null)
+                continue;
             String[] mTypes = mediaType.split(",");
             for(String m:mTypes) {
                 MimeType mType = MimeType.find(m);

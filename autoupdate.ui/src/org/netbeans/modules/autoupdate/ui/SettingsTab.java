@@ -321,7 +321,7 @@ public class SettingsTab extends javax.swing.JPanel {
             return ;
         } else {
             for (File f : dirs) {
-                if (f.exists () && f.isDirectory () && ! f.canWrite ()) {
+                if (f.exists () && f.isDirectory () && ! Utilities.canWriteInCluster (f)) {
                     NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyMessage", f),
                             NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyTitle"),
                             NotifyDescriptor.ERROR_MESSAGE,

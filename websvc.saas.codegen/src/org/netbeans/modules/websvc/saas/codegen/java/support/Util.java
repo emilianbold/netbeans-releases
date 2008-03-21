@@ -146,7 +146,7 @@ public class Util {
      */ 
     public static boolean isRestJavaFile(DataObject d) {
         try {
-            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            if(!isJava(d))
             {
                 return false;
             }
@@ -171,7 +171,7 @@ public class Util {
 
     public static boolean isServlet(DataObject d) {
         try {
-            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            if(!isJava(d))
             {
                 return false;
             }
@@ -192,6 +192,14 @@ public class Util {
     
     public static boolean isJsp(DataObject d) {
         if (d != null && "jsp".equals(d.getPrimaryFile().getExt())) //NOI18N
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isJava(DataObject d) {
+        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
             return true;
         }
@@ -556,7 +564,9 @@ public class Util {
     
     public static void showMethod(FileObject source, String methodName) throws IOException {
         try {
-            DataObject dataObj = DataObject.find(source);          
+            DataObject dataObj = DataObject.find(source);      
+            if(!isJava(dataObj))
+                return;
             JavaSource javaSource = JavaSource.forFileObject(source);
             
             // Force a save to make sure to make sure the line position in

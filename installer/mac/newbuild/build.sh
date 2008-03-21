@@ -17,7 +17,7 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
-set -e 
+set -x -e 
 
 if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
     echo "usage: $0 zipdir prefix buildnumber ml_build"
@@ -36,7 +36,8 @@ ml_build=$4
 ml_postfix=""
 
 instrumentation_options=""
-if [ -n "$5" ] && [ -n "$6"] && [ -n "$7"] ; then
+if [ -n "$5" ] && [ -n "$6" ] && [ -n "$7" ] ; then
+   echo "INFO : INSTRUMENTED BUILD"
    instrumentation_options="-Dinstrument.jars=true -Demma.sh.file=\"$5\" -Demma.txt.file=\"$6\" -Demma.jar.file=\"$7\""
 
    if [ -n "$8" ] ; then
@@ -45,6 +46,8 @@ if [ -n "$5" ] && [ -n "$6"] && [ -n "$7"] ; then
 	bash_exec=/bin/bash
    fi
    instrumentation_options="$instrumentation_options  -Dbash.executable=\"$bash_exec\""
+else 
+   echo "INFO : STANDARD BUILD"
 fi
 
 if [ 1 -eq $ml_build ] ; then

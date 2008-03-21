@@ -23,6 +23,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.dlight</friend>
+                <friend>com.sun.dlight.model</friend>
+                <friend>com.sun.dlight.target</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
@@ -32,7 +35,6 @@
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>
-                <friend>com.sun.dlight</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
             </friend-packages>
         </data>

@@ -252,10 +252,11 @@ public class Saas {
     
     public FileObject getSaasFolder() {
         if (saasFolder == null) {
-            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(getDisplayName());
+            String folderName = SaasUtil.toValidJavaName(getDisplayName()); 
+            saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(folderName);
             if (saasFolder == null) {
                 try {
-                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(getDisplayName());
+                    saasFolder = SaasServicesModel.getWebServiceHome().createFolder(folderName);
                 } catch(Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }

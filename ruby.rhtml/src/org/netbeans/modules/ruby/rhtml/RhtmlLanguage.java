@@ -53,4 +53,14 @@ public class RhtmlLanguage extends RubyLanguage {
     public Language getLexerLanguage() {
         return RhtmlTokenId.language();
     }
+    
+    @Override
+    public String getDisplayName() {
+        return "RHTML";
+    }
+    
+    @Override
+    public String getPreferredExtension() {
+        return "erb"; // NOI18N
+    }
 }
