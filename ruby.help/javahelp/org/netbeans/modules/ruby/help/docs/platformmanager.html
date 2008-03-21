@@ -16,23 +16,18 @@
 <p> Use the Ruby Platform Manager to register Ruby platforms with the IDE. When you create a new Ruby project, you must associate the project with one of the registered platforms. You can use the project's Properties manager to change the project's platform to a different one on the list.  To open the Ruby Platform Manager, choose   Tools &gt; Ruby Platforms from the main menu. 
 <p> When you select a Ruby interpreter from the list, the dialog box displays the following information about the interpreter:</p>
 <ul>
-  <li><b>Platform  Name.</b> Indicates the name and version of the platform you are using.</li>
+  <li><b>Platform  Name.</b> Indicates the name and version of the platform you are using. To use a Ruby platform that is not on the list, click Add Platform. Click  Autodetect Platforms to have the IDE  automatically detect the platforms that you have installed.</li>
   <li><b>Interpreter.</b> Indicates the full path of the selected interpreter. </li>
   <li><b>Gem Home.</b> Indicates the path and folder where the main gem repository is located. </li>
-  <li><b>Gem Path.</b> Specifies the location of the gem, which is required as you may have multiple gem repositories. To change the path, click the Browse button. Click the Add button to add a new gem path. Click the Remove button to delete the gem path that is currently displayed. </li>
+  <li><b>Gem Path.</b> Specifies the location of the gem, which is required as you may have multiple gem repositories. To change the path, click  Browse. Click  Add  to add a new path to a gem repository. Click Remove to remove the selected path in the Gem Path list.. </li>
   <li><b>Gem Tool. 
 
 
- </b>Indicates the path to the autodetected gem tool.  </li>
-  <li><b>Ruby Debugger. </b>Indicates the default debugger.</li>
-  <li><strong>Add Platform and Autodetect Platforms.</strong> To use a Ruby interpreter that is not on the list, click Add Platform. Click  Autodetect Platforms to have NetBeans automatically detect the platforms that you have installed. </li>
+ </b>Indicates the path to the gem tool.  </li>
+  <li><strong>Debugger Engine.</strong> Indicates which debugger the IDE will use. If the fast debugger gems are installed, the IDE uses the fast debugger. If not, the IDE uses the classic debugger, and the dialog box displays the Install Fast Debugger button. </li>
 </ul>
 <dl><dt><a name="seealso">See Also</a></dt>
-</dl>
-
-<dl>
   <dd><a href="ruby_quickref.html">Working With NetBeans Ruby</a></dd>
-  <dd>&nbsp;</dd>
   <dd><a href="about_ruby.html">About Ruby Development in NetBeans</a></dd>
 </dl>
 <hr>
