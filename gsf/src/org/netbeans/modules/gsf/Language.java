@@ -103,20 +103,9 @@ public interface Language {
     @NonNull
     String getMimeType();
 
-    /** Return the set of common file extensions used for source files in this
-     * type of language. It should not include the dot.
-     * For example, for Java it would be { "java" }. For C++ it might
-     * be { "cpp", "cc", "c++", "cxx" }. The first item in the array will be
-     * considered the "primary" extension that will be used when creating new
-     * files etc.
+    /** Return a language configuration object for this language.
      */
-    String[] getExtensions();
-
-    /** Return a scanner (lexical analyzer, tokenizer) for use with this language.
-     * @todo Clarify whether clients should cache instances of this or if it will
-     *  be called only once and management done by the IDE
-     */
-    @CheckForNull
+    @NonNull
     GsfLanguage getGsfLanguage();
 
     /** Return a parser for use with this language. A parser is optional (in which

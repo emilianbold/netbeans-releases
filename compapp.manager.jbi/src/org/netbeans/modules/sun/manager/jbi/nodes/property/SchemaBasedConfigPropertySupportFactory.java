@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author jqian
  */
-public class NewSchemaBasedConfigPropertySupportFactory {
+public class SchemaBasedConfigPropertySupportFactory {
 
     public static PropertySupport getPropertySupport(
             final PropertySheetOwner propertySheetOwner,

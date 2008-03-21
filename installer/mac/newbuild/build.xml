@@ -248,7 +248,7 @@ Microsystems, Inc. All Rights Reserved.
        <ant target="build-dmg"> 
            <property name="bundle.type" value=""/>
            <property name="welcome.message" value="${welcome.full}"/>
-           <property name="packages" value="./build/*pkg"/>          
+           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/cpp.pkg ./build/soa.pkg ./build/glassfish.pkg ./build/tomcat.pkg ./build/openesb.pkg"/>
        </ant>   
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-javase"/>      

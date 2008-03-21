@@ -46,7 +46,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  *
@@ -68,7 +68,7 @@ public class JsEmbeddingModel implements EmbeddingModel {
     }
     
     public String getTargetMimeType() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 
     public Set<String> getSourceMimeTypes() {

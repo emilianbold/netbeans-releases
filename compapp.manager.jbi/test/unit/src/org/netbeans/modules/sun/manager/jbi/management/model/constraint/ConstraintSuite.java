@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.netbeans.modules.sun.manager.jbi.management.model.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -49,18 +48,19 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.CompositeConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.FractionDigitsConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.LengthConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxExclusiveConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxInclusiveConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxLengthConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinExclusiveConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinInclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.PatternConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.LengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxLengthConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinLengthConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.PatternConstraintTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.constraint.TotalDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.FractionDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.CompositeConstraintTest.class
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.JBIComponentConfigurationConstraintFactoryTest.class
 })
-public class ModelSuite {
+public class ConstraintSuite {
 }

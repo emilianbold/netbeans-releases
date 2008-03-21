@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -52,63 +53,63 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  *
  * @author Nickolay Dalmatov
  */
-public class UnitDiskRepository extends AbstractDiskRepository {
-    private AbstractDiskRepository    defBehRepository;
-    private AbstractDiskRepository    nonDefBehRepository;
-    private String                    unitName;
+public class UnitImpl implements Unit {
     
-    /** Creates a new instance of UnitDiskRepository */
-    public UnitDiskRepository(final String unitName) throws IOException {
+    private Storage    singleFileStorage;
+    private Storage    multyFileStorage;
+    private String  unitName;
+    
+    public UnitImpl(final String unitName) throws IOException {
        assert unitName != null;
        
        this.unitName = unitName;
-       defBehRepository = FileStorage.create(unitName); 
-       nonDefBehRepository = new BaseDiskRepositoryImpl();
+       singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
+       multyFileStorage = new MultyFileStorage();
     }
     
-    protected AbstractDiskRepository getRepository(Key key) {
+    protected Storage getStorage(Key key) {
         assert key != null;
         
         if (key.getBehavior() == Key.Behavior.Default) {
-            return defBehRepository;
+            return singleFileStorage;
         } else {
-            return nonDefBehRepository;
+            return multyFileStorage;
         }
     }
 
     public Persistent get(Key key) throws IOException {
         assert key != null;
-        return getRepository(key).get(key);
+        return getStorage(key).get(key);
     }
 
     public void remove(Key key) throws IOException {
         assert key != null;
-        getRepository(key).remove(key);
+        getStorage(key).remove(key);
     }
 
     public void close() throws IOException {
         assert unitName != null;
         assert unitName.equals(this.unitName);
         
-        defBehRepository.close();
-        nonDefBehRepository.close();
+        singleFileStorage.close();
+        multyFileStorage.close();
     }
 
     public void write(Key key, Persistent object) {
         assert key != null;
         assert object != null;
         try {
-            getRepository(key).write(key, object);
+            getStorage(key).write(key, object);
         } catch (Exception ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     unitName, new RepositoryExceptionImpl(ex));
         }
     }
 
-    public boolean maintenance(long timeout) {
+    public boolean defragment(long timeout) {
         boolean needMoreTime = false;
         try {
-            needMoreTime |= defBehRepository.maintenance(timeout);
+            needMoreTime |= singleFileStorage.defragment(timeout);
         } catch (Exception ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     unitName, new RepositoryExceptionImpl(ex));
@@ -116,13 +117,12 @@ public class UnitDiskRepository extends AbstractDiskRepository {
         return needMoreTime;
     }
 
-    public int getFragmentationPercentage() {
-        try {
-            return defBehRepository.getFragmentationPercentage();
-        } catch (IOException ex) {
-            RepositoryListenersManager.getInstance().fireAnException(
-                    unitName, new RepositoryExceptionImpl(ex));
-        }
-        return 0;
+    public int getFragmentationPercentage() throws IOException {
+        return singleFileStorage.getFragmentationPercentage();
     }
+
+    public String getName() {
+        return unitName;
+    }
+    
 }
