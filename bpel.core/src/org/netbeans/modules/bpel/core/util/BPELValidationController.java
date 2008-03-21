@@ -191,28 +191,28 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       
       // First we need to group the results by line. We need this to add only 
       // one annotation per line
-      Map<Line, List<ResultItem>> map = new HashMap<Line, List<ResultItem>>();
+      Map<Line.Part, List<ResultItem>> map = new HashMap<Line.Part, List<ResultItem>>();
   
-      for (ResultItem item: result) {
+      for (ResultItem item : result) {
           if (item.getType() != ResultType.ERROR) {
             continue;
           }
-          Line line = ValidationUtil.getLine(item);
+          Line.Part part = ValidationUtil.getLinePart(item);
 
-          if (line == null) {
+          if (part == null) {
             continue;
           }
-          List<ResultItem> list = map.get(line);
+          List<ResultItem> list = map.get(part);
 
           if (list == null) {
             list = new LinkedList<ResultItem>();
-            map.put(line, list);
+            map.put(part, list);
           }
           list.add(item);
       }
-      for (Line line: map.keySet()) {
+      for (Line.Part part : map.keySet()) {
           StringBuilder description = new StringBuilder();
-          List<ResultItem> list = map.get(line);
+          List<ResultItem> list = map.get(part);
 
           for (int i = 0; i < list.size(); i++) {
               description.append(list.get(i).getDescription());
@@ -223,7 +223,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
           }
           BPELValidationAnnotation annotation = new BPELValidationAnnotation();
           myAnnotations.add(annotation);
-          annotation.show(line, description.toString());
+          annotation.show(part, description.toString());
       }
     }
   }

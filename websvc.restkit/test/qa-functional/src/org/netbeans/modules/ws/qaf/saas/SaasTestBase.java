@@ -50,13 +50,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.ws.qaf.WebServicesTestBase;
+import org.netbeans.modules.ws.qaf.rest.RestTestBase;
 
 /**
  *
  * @author lukas
  */
-public abstract class SaasTestBase extends WebServicesTestBase {
+public abstract class SaasTestBase extends RestTestBase {
 
     public SaasTestBase(String name) {
         super(name);

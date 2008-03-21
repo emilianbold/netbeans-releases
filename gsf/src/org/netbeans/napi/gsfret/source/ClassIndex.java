@@ -45,14 +45,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.Index;
+import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsfret.source.GlobalSourcePath;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexFactory;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexImpl;
@@ -154,12 +155,19 @@ public final class ClassIndex extends Index {
                     // too late/risky for now; so work around this instead. When we have an
                     // empty classpath, use the boot indices instead.
                     Set<ClassIndexImpl> bootIndices = ClassIndexManager.get(language).getBootIndices();
-                    indeces.addAll(bootIndices);
+                    Indexer indexer = language.getIndexer();
+                    if (indexer != null) {
+                        for (ClassIndexImpl ci : bootIndices) {
+                            if (indexer.acceptQueryPath(ci.getRoot().toExternalForm())) {
+                                indeces.add(ci);
+                            }
+                        }
+                    }
                 } else {
-                    createQueriesForRoots (language, this.bootPath, false, indeces);     
+                    createQueriesForRoots(language, this.bootPath, false, indeces);     
                 }
                 // END TOR MODIFICATIONS
-                createQueriesForRoots (language, this.classPath, false, indeces);	    
+                createQueriesForRoots(language, this.classPath, false, indeces);	    
                 this.depsIndeces = indeces;
             }
             result.addAll(this.depsIndeces);
@@ -176,8 +184,16 @@ public final class ClassIndex extends Index {
     /*private*/ void createQueriesForRoots (final Language language, final ClassPath cp, final boolean sources, final Set<? super ClassIndexImpl> queries) {
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
         List<ClassPath.Entry> entries = cp.entries();
+        Indexer indexer = language.getIndexer();
+        if (indexer == null) {
+            return;
+        }
+        
 	for (ClassPath.Entry entry : entries) {
 	    try {
+                if (!indexer.acceptQueryPath(entry.getURL().toExternalForm())) {
+                    continue;
+                }
                 URL[] srcRoots;
                 if (!sources) {
                     URL srcRoot = org.netbeans.modules.gsfret.source.usages.Index.getSourceRootForClassFolder (language, entry.getURL());

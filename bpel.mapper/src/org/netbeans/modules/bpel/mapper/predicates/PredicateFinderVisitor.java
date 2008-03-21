@@ -16,10 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.predicates;
-
-
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -52,26 +49,24 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
  * @author nk160297
  */
 public class PredicateFinderVisitor extends XPathVisitorAdapter {
-    
+
     private PredicateManager mPredManager;
     private SpecialStepManager mSStepManager;
     private XPathBpelVariable mXPathVariable;
 
-            
-    public PredicateFinderVisitor(PredicateManager predManager, 
+    public PredicateFinderVisitor(PredicateManager predManager,
             SpecialStepManager sStepManager) {
         mPredManager = predManager;
         mSStepManager = sStepManager;
     }
-    
+
     //---------------------------------------------------
-    
     @Override
     public void visit(XPathLocationPath expr) {
         LocationPathProcessor converter = new LocationPathProcessor();
         converter.processLocationPath(expr);
     }
-    
+
     @Override
     public void visit(XPathExpressionPath expressionPath) {
         XPathExpression rootExpr = expressionPath.getRootExpression();
@@ -82,43 +77,42 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
         //
         mXPathVariable = null; // discard the variable
     }
-    
+
     @Override
     public void visit(XPathVariableReference vReference) {
         XPathVariable xPathVar = vReference.getVariable();
         if (xPathVar != null && xPathVar instanceof XPathBpelVariable) {
-            mXPathVariable = (XPathBpelVariable)xPathVar;
+            mXPathVariable = (XPathBpelVariable) xPathVar;
         }
     }
-    
+
     //---------------------------------------------------
-    
     @Override
     public void visit(XPathCoreOperation expr) {
         visitChildren(expr);
     }
-    
+
     @Override
     public void visit(XPathCoreFunction expr) {
         visitChildren(expr);
     }
-    
+
     @Override
     public void visit(XPathExtensionFunction expr) {
         visitChildren(expr);
     }
-    
-    //---------------------------------------------------
-    
+
+
+
     /**
      * See the description of the method "processLocationPath"
-     */ 
+     */
     private class LocationPathProcessor {
         // The list can contain objects of either SchemaComponent
         // or PredicatedScehmaComp type.
         private transient LinkedList objLocationPath = new LinkedList();
         private boolean processingAborted = false;
-        
+
         public List getObjLocationPath() {
             if (processingAborted) {
                 return null;
@@ -126,14 +120,18 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 return objLocationPath;
             }
         }
-        
+
         /**
          * Resolves each LocationStep to object form and registers new 
          * predicates in the PredicateManager. 
-         */ 
+         */
         public void processLocationPath(AbstractLocationPath path) {
             processingAborted = false;
-            //
+
+            //speed optimisation, see coments below
+            if (!needProcessing(path))
+                return;
+            
             // Put the variable or part to the locaton path first
             if (mXPathVariable != null) {
                 VariableDeclaration varDecl = mXPathVariable.getVarDecl();
@@ -144,12 +142,32 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                     objLocationPath.addFirst(part);
                 }
             }
+            
             //
             for (LocationStep step : path.getSteps()) {
                 if (!processingAborted) {
                     processStep(step);
                 }
             }
+        }
+        
+        /**
+        * AlexeyY: 
+        * speed optimisation: check if path contains predicates 
+        * before processing this path
+        **/
+        private boolean needProcessing(AbstractLocationPath path){
+            for (LocationStep step : path.getSteps()) {
+                XPathPredicateExpression[] predicates = step.getPredicates();
+                if (predicates != null && predicates.length > 0) {
+                    return true;
+                }
+                StepNodeTest stepNodeTest = step.getNodeTest();
+                if (stepNodeTest instanceof StepNodeTypeTest) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         private void processStep(LocationStep step) {
@@ -166,7 +184,7 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 return;
             }
             //
-            SchemaComponent sComp = 
+            SchemaComponent sComp =
                     XPathSchemaContext.Utilities.getSchemaComp(xPathContext);
             if (sComp == null) {
                 // Error. The location path contains a step with unknown schema type
@@ -190,7 +208,5 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
                 objLocationPath.addFirst(newPredSComp);
             }
         }
-        
     }
-    
 }
