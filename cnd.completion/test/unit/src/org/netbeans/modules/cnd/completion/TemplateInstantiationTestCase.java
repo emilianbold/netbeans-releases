@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,20 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,64 +50,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.uid;
+package org.netbeans.modules.cnd.completion;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
- * help class for CsmUID based on CsmObject
+ *
  * @author Vladimir Voskresensky
  */
-public abstract class ObjectBasedUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {
-    private final T ref;
+public class TemplateInstantiationTestCase extends CompletionBaseTestCase {
     
-    protected ObjectBasedUID(T ref) {
-        this.ref = ref;
+    public TemplateInstantiationTestCase(String testName) {
+        super(testName, false);
     }
     
-    public T getObject() {
-        return this.ref;
+    public void test1() throws Exception {
+        super.performTest("instantiation.cc", 8, 12);
+    }
+
+    public void test2() throws Exception {
+        super.performTest("instantiation.cc", 9, 11);
+    }
+
+    public void test3() throws Exception {
+        super.performTest("instantiation.cc", 10, 15);
+    }
+
+    public void test4() throws Exception {
+        super.performTest("instantiation.cc", 11, 16);
+    }
+
+    public void testFoo1() throws Exception {
+        super.performTest("instantiation.cc", 8, 21);
+        super.performTest("instantiation.cc", 10, 24);
+    }
+
+    public void testFoo2() throws Exception {
+        // when fixed, move to boo1 test for speed up
+        super.performTest("instantiation.cc", 11, 34);
+    }
+
+    public void testBoo1() throws Exception {
+        super.performTest("instantiation.cc", 9, 20);
     }
     
-    @Override
-    public String toString() {
-        String retValue = "UID for " + ref.toString(); // NOI18N
-        return retValue;
-    }
-    
-    @Override
-    public int hashCode() {
-        return ref.hashCode();
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
-        ObjectBasedUID other = (ObjectBasedUID)obj;
-        return this.ref.equals(other.ref);
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // impl for Persistent 
-    
-    public void write(DataOutput output) throws IOException {
-        assert ref == null || ref instanceof Persistent;
-        CsmObjectFactory.instance().write(output, (Persistent)ref);
-    }
-    
-    public ObjectBasedUID(DataInput input) throws IOException {
-        ref = (T)CsmObjectFactory.instance().read(input);
-    }
+    public void testBoo2() throws Exception {
+        // when fixed, move to boo1 test for speed up
+        super.performTest("instantiation.cc", 12, 36);
+    }    
 }
