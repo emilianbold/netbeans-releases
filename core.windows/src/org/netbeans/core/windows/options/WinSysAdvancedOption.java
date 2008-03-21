@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +41,25 @@
 
 package org.netbeans.core.windows.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
-/**
- * Keys and access to window system related preferences. 
- * 
- * @author Dafe Simonek
- */
-public interface WinSysPrefs {
+public final class WinSysAdvancedOption extends AdvancedOption {
+
+    public static final String IS_APLHA_DRAG = "isAlphaDrag";
+    public static final String IS_SNAPPING = "isSnapping";
+    public static final String IS_APLHA_FLOATING = "isAlphaFloating";
     
-    public static final Preferences HANDLER = NbPreferences.forModule(WinSysPrefs.class);
-    
-    public final String DND_SMALLWINDOWS = "dnd.smallwindows";
-     
-    public final String DND_SMALLWINDOWS_WIDTH = "dnd.smallwindows.width";
-    
-    public final String DND_SMALLWINDOWS_HEIGHT = "dnd.smallwindows.height";
-    
-    public final String DND_DRAGIMAGE = "dnd.dragimage";
-     
-    public final String TRANSPARENCY_DRAGIMAGE = "transparency.dragimage";
-    
-    public final String TRANSPARENCY_DRAGIMAGE_ALPHA = "transparency.dragimage.alpha";
-    
-    public final String TRANSPARENCY_FLOATING = "transparency.floating";
-    
-    public final String TRANSPARENCY_FLOATING_TIMEOUT = "transparency.floating.timeout";
-    
-    public final String TRANSPARENCY_FLOATING_ALPHA = "transparency.floating.alpha";
-    
-    public final String SNAPPING = "snapping";
-    
-    public final String SNAPPING_SCREENEDGES = "snapping.screenedges";
-    
-    public final String SNAPPING_ACTIVE_SIZE = "snapping.active.size";
-    
+    public String getDisplayName() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_DisplayName_WinSys");
+    }
+
+    public String getTooltip() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_Tooltip_WinSys");
+    }
+
+    public OptionsPanelController create() {
+        return new WinSysOptionsPanelController();
+    }
 }

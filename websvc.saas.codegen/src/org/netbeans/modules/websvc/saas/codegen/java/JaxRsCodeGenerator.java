@@ -405,7 +405,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 }
             }
             //Also copy profile.properties
-            String profileName = getBean().getSaasServiceName().toLowerCase();
+            String profileName = getBean().getAuthenticatorClassName().toLowerCase();
             DataObject prof = null;
             String authProfile = getBean().getAuthenticationProfile();
             if (authProfile != null && !authProfile.trim().equals("")) {
@@ -439,25 +439,26 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             }
             
             //Modify profile file with user defined values
-            if(prof != null) {
-                EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
-                StyledDocument doc = ec.openDocument();
-                String profileText = null;
-                if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY) {
-                    ParameterInfo p = findParameter(((ApiKeyAuthentication)getBean().getAuthentication()).getApiKeyName());
-                    if(p != null && p.getDefaultValue() != null)
-                        profileText = "api_key="+p.getDefaultValue()+"\n";
-                }
-                if(profileText != null) {
-                    try {
-                        doc.insertString(doc.getLength(), profileText, null);
-                    } catch (BadLocationException ex) {
-                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
-                                NbBundle.getMessage(AbstractGenerator.class, 
-                                    "MSG_PropertyReplaceFailed"), ex); // NOI18N
-                    }
-                }
-            }
+            // Commenting this code out since we are getting the api key values from the input param diaglog.
+//            if(prof != null) {
+//                EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
+//                StyledDocument doc = ec.openDocument();
+//                String profileText = null;
+//                if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY) {
+//                    ParameterInfo p = findParameter(((ApiKeyAuthentication)getBean().getAuthentication()).getApiKeyName());
+//                    if(p != null && p.getDefaultValue() != null)
+//                        profileText = "api_key="+p.getDefaultValue()+"\n";
+//                }
+//                if(profileText != null) {
+//                    try {
+//                        doc.insertString(doc.getLength(), profileText, null);
+//                    } catch (BadLocationException ex) {
+//                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
+//                                NbBundle.getMessage(AbstractGenerator.class, 
+//                                    "MSG_PropertyReplaceFailed"), ex); // NOI18N
+//                    }
+//                }
+//            }
         }
     }
     

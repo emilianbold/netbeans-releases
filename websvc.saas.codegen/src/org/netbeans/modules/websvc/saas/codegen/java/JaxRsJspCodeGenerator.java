@@ -105,7 +105,8 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         String methodBody = "";
         methodBody += "             try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "             "+REST_CONNECTION_PACKAGE+"."+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+        methodBody += "             "+REST_CONNECTION_PACKAGE+"."+REST_RESPONSE+" result = " + 
+                getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         if(getBean().getHttpMethod() == HttpMethodType.GET) {
             if(getBean().canGenerateJAXBUnmarshaller()) {
