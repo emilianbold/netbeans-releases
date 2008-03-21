@@ -164,30 +164,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testIZ130538() {
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
         setLoadDocumentText(
-                "int foooooooo(char* a,\n" +
-                " class B* b)\n" +
-                "{\n" +
-                "    foo(a,\n" +
-                "   b);\n" +
-                "}\n");
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect formating IZ#130538",
-                "int foooooooo (char* a,\n" +
-                "               class B* b)\n" +
-                "{\n" +
-                "    foo (a,\n" +
-                "         b);\n" +
-                "}\n");
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
 }

@@ -53,13 +53,13 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 /**
  * Test of java completion in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
+public class JavaCompletionInJspEditor extends PerformanceTestCase {
     private String text;
     private EditorOperator editorOperator;    
     protected LoggingRepaintManager.RegionFilter COMPLETION_DIALOG_FILTER =
@@ -89,7 +89,7 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
     }
     
     protected void init() {
-        super.init();
+//        super.init();
         WAIT_AFTER_OPEN = 6000;
     }
         
@@ -154,7 +154,7 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
     }
     
     protected void initialize() {
-        jspOptions().setCaretBlinkRate(0);
+/*        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
         jspOptions().setStatusBarCaretDelay(0);
 //        jspOptions().setCodeFoldingEnable(false);
@@ -170,7 +170,7 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().
             getProjectRootNode("TestWebProject"),"Web Pages|index.jsp"));
         editorOperator = EditorWindowOperator.getEditor("index.jsp");
-        eventTool().waitNoEvent(1000);
+        waitNoEvent(1000);
         waitNoEvent(2000);
     }
     
@@ -182,7 +182,7 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
         // insert the initial text
         editorOperator.insert(text);
         // wait
-        eventTool().waitNoEvent(500);
+        waitNoEvent(500);
     }
     
     public ComponentOperator open(){

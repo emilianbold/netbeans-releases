@@ -125,12 +125,12 @@ public class InstallManager extends InstalledFileLocator{
                 
                 // if no writable => getUserDir()
                 if (ERR.isLoggable (Level.INFO)) {
-                    if (res == null || ! res.canWrite ()) {
+                    if (res == null || ! Utilities.canWriteInCluster (res)) {
                         ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
                                 " in " + update.getUpdateElement () + " is not writable. Will be used " + res);
                     }
                 }
-                res = res == null || ! res.canWrite () ? getUserDir () : res;
+                res = res == null || ! Utilities.canWriteInCluster (res) ? getUserDir () : res;
 
                 
             } else {
@@ -152,7 +152,7 @@ public class InstallManager extends InstalledFileLocator{
                     cluster.mkdirs();
                     extendSystemFileSystem(cluster);
                 }
-                if (cluster.canWrite()) {
+                if (Utilities.canWriteInCluster (cluster)) {
                     res = cluster;
                     break;
                 } else {
@@ -270,7 +270,7 @@ public class InstallManager extends InstalledFileLocator{
             }
         }
 
-        if (res == null || ! res.canWrite ()) {
+        if (res == null || ! Utilities.canWriteInCluster (res)) {
             // go to userdir if no writable cluster is known
             ERR.log (Level.WARNING, "It's forbidden to write in target cluster " + res + 
                     " for " + update.getUpdateElement ());
