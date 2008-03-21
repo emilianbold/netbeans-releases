@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
@@ -74,7 +79,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, type);
         }
-        assert true : "Unknown class for template instantiation:" + template; // NOI18N
+        assert false : "Unknown class for template instantiation:" + template; // NOI18N
         return template;
     }
     
@@ -123,13 +128,12 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
     }
 
     public CsmUID<T> getUID() {
-        assert true : "Getting UID of instantiated class is not supported yet"; // NOI18N
-        return getTemplateDeclaration().getUID();
+        return new InstantiationUID(this);
     }
     
     //////////////////////////////
     ////////////// STATIC MEMBERS
-    private static class Class extends Instantiation<CsmClass> implements CsmClass {
+    private static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass> {
         protected final CsmType instantiationType;
         
         public Class(CsmClass clazz, CsmType type) {
@@ -161,8 +165,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 return new Method((CsmMethod)member, this);
             } else if (member instanceof ClassImpl.MemberTypedef) {
                 return new Typedef((ClassImpl.MemberTypedef)member, this);
+            } else if (member instanceof CsmClass) {
+                return new Class((CsmClass)member, getInstantiationType());
             }
-            assert true : "Unknown class for member instantiation:" + member; // NOI18N
+            assert false : "Unknown class for member instantiation:" + member + " of class:" + member.getClass(); // NOI18N
             return member;
         }
 
@@ -194,15 +200,29 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         public String toString() {
             return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with type " + getInstantiationType(); // NOI18N
         }
+
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }
     }
     
     private static class Function extends Instantiation implements CsmFunction {
         protected final CsmType instantiationType;
+        private final CsmType retType;
         
         public Function(CsmFunction function, CsmType instantiation) {
             super(function);
             assert instantiation.isInstantiation() : "Instantiation without parameters"; // NOI18N
             this.instantiationType = instantiation;
+            this.retType = new Type(function.getReturnType(), this);
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
@@ -230,7 +250,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public CsmType getReturnType() {
-            return ((CsmFunction)declaration).getReturnType();
+            return retType;
         }
 
         public Collection getParameters() {
@@ -509,7 +529,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
     }
     
-    private static class Type implements CsmType {
+    private static class Type implements CsmType, Resolver.SafeClassifierProvider {
         private final CsmType originalType;
         private final CsmInstantiation instantiation;
         private final CsmType instantiatedType;
@@ -602,8 +622,14 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             }
         }
 
-        public CsmClassifier getClassifier() {
-            CsmClassifier res = instantiatedType.getClassifier();
+        public CsmClassifier getClassifier(Resolver resolver) {
+            CsmClassifier res;
+            if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
+                res = ((Resolver.SafeClassifierProvider)instantiatedType).getClassifier(resolver);
+            } else {
+                res = instantiatedType.getClassifier();
+            }
+            
             if (CsmKindUtilities.isTypedef(res) && CsmKindUtilities.isClassMember(res)) {
                 CsmMember tdMember = (CsmMember)res;
                 if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
@@ -611,6 +637,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 }
             }
             return res;
+        }
+        
+        public CsmClassifier getClassifier() {
+            return getClassifier(null);
         }
 
         public CharSequence getCanonicalText() {
@@ -628,6 +658,27 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         @Override
         public String toString() {
             return "INSTANTIATION OF TYPE: " + originalType + " with type " + instantiatedType; // NOI18N
+        }
+    }
+    
+    public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {
+        private final T ref;
+        private InstantiationUID(T ref) {
+            this.ref = ref;
+        }
+
+        public T getObject() {
+            return this.ref;
+        }
+        ////////////////////////////////////////////////////////////////////////////
+        // impl for Persistent 
+
+        public void write(DataOutput output) throws IOException {
+            // write nothing
+        }
+
+        public InstantiationUID(DataInput input) throws IOException {
+            this.ref = null;
         }
     }
 }
