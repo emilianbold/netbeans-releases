@@ -93,7 +93,9 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if(!repTypesFromWadl.isEmpty()) {
             getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
-            getBean().setOutputWrapperPackageName(getBean().getGroupName()+"."+getBean().getDisplayName());
+            getBean().setOutputWrapperPackageName(
+                    (getBean().getGroupName()+"."+
+                        getBean().getDisplayName()).toLowerCase());
         }
         
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
@@ -142,23 +144,18 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         methodBody += paramDecl + "\n";
         methodBody += "             "+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET &&
-                    !getBean().findRepresentationTypes(getBean().getMethod()).isEmpty()) {
-            String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-            methodBody += "        "+resultClass+" resultObj = null;\n";
-            methodBody += "             javax.xml.bind.JAXBContext jc = \n";
-            methodBody += "                 javax.xml.bind.JAXBContext.newInstance(\n"+resultClass+".class.getPackage().getName());\n";
-            methodBody += "             javax.xml.bind.Unmarshaller u = jc.createUnmarshaller();\n";
-            methodBody += "             resultObj = ("+resultClass+") u.unmarshal(\n";
-            methodBody += "                 new javax.xml.transform.stream.StreamSource(\n";
-            methodBody += "                     new java.io.StringReader(result.getDataAsString()))\n";
-            methodBody += "                 );\n";
-            methodBody += "             System.out.println(\"The SaasService returned: \"+resultObj.toString());\n";
+        if(getBean().getHttpMethod() == HttpMethodType.GET) {
+            if(getBean().canGenerateJAXBUnmarshaller()) {
+                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
+                methodBody += "             "+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
+                methodBody += "             System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
+            } else {
+                methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+            }
         } else {
-            methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+            methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
         }
         methodBody += "        } catch (Exception ex) {\n";
-        methodBody += "             //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
         methodBody += "             ex.printStackTrace();\n";
         methodBody += "        }\n";
        

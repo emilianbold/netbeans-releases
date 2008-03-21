@@ -46,6 +46,7 @@ import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.IOException;
+import java.io.StringReader;
 import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
@@ -59,6 +60,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.saas.codegen.java.JaxRsCodeGenerator;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -72,12 +74,19 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -977,7 +986,8 @@ public class Util {
         String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
         if(httpMethod == HttpMethodType.PUT ||
                 httpMethod == HttpMethodType.POST) {
-            part += ", {\"Content-Type\", contentType}";
+            if(!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class)))
+                part += ", {\""+Constants.CONTENT_TYPE+"\", "+getVariableName(Constants.CONTENT_TYPE)+"}";
         }
         String paramCode = "";
         paramCode += "             String[][] "+varName+" = new String[][]{\n";
@@ -1442,13 +1452,67 @@ public class Util {
     }
     
     public static void addClientJars(SaasBean bean, Project p,
-            FileObject target) {
+            FileObject target) throws IOException {
         if(bean instanceof WadlSaasBean) {
             if(p == null || bean == null ||
                     ((WadlSaasBean)bean).getMethod() == null)
                 throw new IllegalArgumentException(
                         "Cannot create JAXB classes, since project|bean is null.");
             LibrariesHelper.addClientJars(p, target, ((WadlSaasBean)bean).getMethod().getSaas());
+            if (!isJDK5()) {
+                //Add JAXB libs if not available (if using JDK1.5)
+                Library library = LibraryManager.getDefault().getLibrary("jaxb21");
+                SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (sgs == null || sgs.length < 1) {
+                    throw new IOException("Project has no Java sources"); //NOI18N
+                }
+                FileObject sourceRoot = sgs[0].getRootFolder();
+                ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.COMPILE);
+                ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.EXECUTE);
+            }
         }
+    }
+    
+    public static void addImportsToSource(JavaSource source, List<String> imports) throws IOException {
+        for (final String imp : imports) {
+            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+                public void run(WorkingCopy copy) throws IOException {
+                    copy.toPhase(JavaSource.Phase.RESOLVED);
+                    JavaSourceHelper.addImports(copy, new String[]{imp});
+                }
+            });
+            result.commit();
+        }
+    }
+
+    public static List<String> getJaxBClassImports() {
+        List<String> imports = new ArrayList<String>();
+        imports.add(JAXBContext.class.getName());
+        imports.add(Unmarshaller.class.getName());
+        imports.add(StreamSource.class.getName());
+        imports.add(StringReader.class.getName());
+        return imports;
+    }
+    
+    public static boolean isJDK5() {
+        boolean isJDK5 = true;
+        try {
+            isJDK5 = Class.forName("javax.xml.bind.JAXBContext") == null;
+        } catch (ClassNotFoundException ex) {
+        }
+        return isJDK5;
+    }
+    
+    public static boolean isContains(List<ParameterInfo> params, ParameterInfo pInfo) {
+        boolean found = false;
+        String name = getVariableName(pInfo.getName());
+        for (ParameterInfo p : params) {
+            if (getVariableName(p.getName()).equals(name)) {
+                found = true;
+                break;
+            }
+        }
+        return found;
     }
 }
