@@ -41,22 +41,12 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-
 /**
- *
+ * Represents a repository unit
  * @author Sergey Grinev
  */
-public interface AbstractDiskRepository extends RepositoryWriter {
+public interface Unit extends Storage {
     
-    public Persistent get(Key key) throws IOException;
-    
-    public void remove(Key id) throws IOException;
-    
-    public void close() throws IOException;
-    
-    public int getFragmentationPercentage() throws IOException;    
+    /** Gets this unit unique name */
+    public String getName();
 }
