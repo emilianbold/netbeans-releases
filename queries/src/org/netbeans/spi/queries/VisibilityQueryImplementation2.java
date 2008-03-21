@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.project.ui;
+package org.netbeans.spi.queries;
+
+import java.io.File;
 
 /**
- * List of templates which should be in the initial "privileged" list
- * when making a new file.
- * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
- * to affect the privileged list for that project.
- * 
+ * Determine whether files should be hidden in views presented to the user.
  * <p>
- * Since 1.28, the PrivilegedTemplates instance can also reside in active node's lookup
- * and such instance will be used instead of the default one.
- * 
+ * Global lookup is used to find all instances of VisibilityQueryImplementation.
+ * </p>
  * <p>
- * For more information about registering templates see overview of
- * {@link org.netbeans.spi.project.ui.templates.support} package.
- * @see org.netbeans.spi.project.ui.support.CommonProjectActions
- * @author Petr Hrebejk
+ * Threading note: implementors should avoid acquiring locks that might be held
+ * by other threads. Generally treat this interface similarly to SPIs in
+ * {@link org.openide.filesystems} with respect to threading semantics.
+ * </p>
+ * @see org.netbeans.api.queries.VisibilityQuery
+ * @since org.netbeans.modules.queries/1 1.12
+ * @author mkleint
  */
-public interface PrivilegedTemplates {
-    
+public interface VisibilityQueryImplementation2 extends VisibilityQueryImplementation {
     /**
-     * Lists privileged templates.
-     * @return full paths to privileged templates, e.g. <samp>Templates/Other/XmlFile.xml</samp>
-     */
-    public String[] getPrivilegedTemplates();
-    
+     * Check whether a file is recommended to be visible.
+     * @param file a file to considered
+     * @return true if it is recommended to display this file
+     */ 
+    boolean isVisible(File file);
+
 }
