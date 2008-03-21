@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
@@ -108,6 +107,11 @@ public class CopyFilesVisual extends JPanel {
 
     public void selectLocalServer(LocalServer localServer) {
         localServerController.selectLocalServer(localServer);
+    }
+
+    // to enable/disable components
+    public void setState(boolean enabled) {
+        copyFilesCheckBox.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
