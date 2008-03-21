@@ -63,7 +63,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         theCache = RepositoryHelperCache.getInstance(openFilesLimit);
     }
     
-    public ConcurrentFileRWAccess getFileForObj(Key id, final boolean read) throws IOException {
+    public ConcurrentFileRWAccess getFile(Key id, final boolean read) throws IOException {
         assert id != null;
         
         String fileName = resolveFileName(id);
@@ -72,10 +72,11 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         boolean keepLocked = false;
         
         do {
-            aFile = getFileByName(fileName, read?false:true);
+            aFile = getFileByName(fileName, ! read);
             
-            if (aFile == null)
+            if (aFile == null) {
                 break;
+            }
             
             try {
                 if (read) {
@@ -102,12 +103,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return aFile;
     }
     
-    public void removeObjForKey(Key id) throws IOException{
+    public void removeFile(Key id) throws IOException{
         
         String fileName = resolveFileName( id);
         assert fileName != null;
         
-        theCache.cacheNameRemove(fileName);
+        theCache.removeFile(fileName);
         
         File toDelete = new File(fileName);
         toDelete.delete();
@@ -119,62 +120,57 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private final static char START_CHAR = 'z';
     private final static char SEPARATOR_CHAR = '-';
     
-    protected String resolveFileName(Key id) throws IOException {
+    private static String resolveFileName(Key id) throws IOException {
+        
         assert id != null;
         int size = id.getDepth();
         
-        String fileName = theCache.lookupInCacheName(id);
-        
-        if (fileName == null) {
-            StringBuffer    nameBuffer = new StringBuffer(""); //NOI18N
+        StringBuffer    nameBuffer = new StringBuffer(""); //NOI18N
 
-	    if( size == 0 ) {
-		nameBuffer.append(id.getUnit());
-	    }
-	    else {
-		for (int i = 0 ; i < size; ++i) {
-		    nameBuffer.append(id.getAt(i));
-		    nameBuffer.append(SEPARATOR_CHAR);
-		}
-	    }
-            
-            for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
-                nameBuffer.append(id.getSecondaryAt(j)  + SEPARATOR_CHAR);
-            }
-            
-            fileName = nameBuffer.toString();
-            
-            fileName = URLEncoder.encode(fileName, Stats.ENCODING);
-            
-            fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit().toString()) + 
-                    StorageAllocator.getInstance().reduceString(fileName);
-
-            theCache.putCacheName(id, fileName);
+        if( size == 0 ) {
+            nameBuffer.append(id.getUnit());
         }
-        
+        else {
+            for (int i = 0 ; i < size; ++i) {
+                nameBuffer.append(id.getAt(i));
+                nameBuffer.append(SEPARATOR_CHAR);
+            }
+        }
+
+        for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
+            nameBuffer.append(id.getSecondaryAt(j)  + SEPARATOR_CHAR);
+        }
+
+        String fileName = nameBuffer.toString();
+
+        fileName = URLEncoder.encode(fileName, Stats.ENCODING);
+
+        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit().toString()) + 
+                StorageAllocator.getInstance().reduceString(fileName);
+
         return fileName;
     }
     
-    protected ConcurrentFileRWAccess getFileByName(String fileName, boolean create) throws IOException {
+    private ConcurrentFileRWAccess getFileByName(String fileName, boolean create) throws IOException {
         assert fileName != null;
         
-        ConcurrentFileRWAccess aFile = theCache.lookupInCacheFile(fileName);
+        ConcurrentFileRWAccess aFile = theCache.getFile(fileName);
         
         if (aFile == null) {
 	    synchronized( cacheLock ) {
-		aFile = theCache.lookupInCacheFile(fileName);
+		aFile = theCache.getFile(fileName);
 		if (aFile == null) {
 		    File fileToCreate = new File(fileName);
 		    if (fileToCreate.exists()) {
 			aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			theCache.putCacheFile(fileName, aFile);
+			theCache.putFile(fileName, aFile);
 		    } else if (create) {
 			String aDirName = fileToCreate.getParent();
 			File  aDir = new File(aDirName);
 
 			if (aDir.exists() || aDir.mkdirs()) {
 			    aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			    theCache.putCacheFile(fileName, aFile);
+			    theCache.putFile(fileName, aFile);
 			}
 		    }
 		}
