@@ -803,7 +803,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         assert SwingUtilities.isEventDispatchThread();
         initialize();
         DoInitialize d = doInitialize;
-        if (d != null) {
+        if (d != null && !Thread.holdsLock(support.getLock())) {
             d.initVisual();
         }
         return pane;
