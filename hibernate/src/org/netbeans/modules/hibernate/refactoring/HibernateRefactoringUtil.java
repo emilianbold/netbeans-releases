@@ -41,9 +41,7 @@
 package org.netbeans.modules.hibernate.refactoring;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -73,9 +71,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
 import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
-import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.hibernate.mapping.model.Property;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
