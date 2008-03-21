@@ -111,9 +111,8 @@ public abstract class JsTestBase extends NbTestCase {
 
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(JsMimeResolver.JAVASCRIPT_MIME_TYPE)) {
-            List<String> extensions = Collections.singletonList("js");
-            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("JavaScript", "org/netbeans/modules/javascript/editing/javascript.png", JsMimeResolver.JAVASCRIPT_MIME_TYPE, extensions, actions, new JsLanguage(), new JsParser(), new JsCodeCompletion(), null, new JsDeclarationFinder(), new JsFormatter(), new JsBracketCompleter(), new JsIndexer(), new JsAnalyzer(), null, false);
+        if (!LanguageRegistry.getInstance().isSupported(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
+            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("org/netbeans/modules/javascript/editing/javascript.png", JsTokenId.JAVASCRIPT_MIME_TYPE, actions, new JsLanguage(), new JsParser(), new JsCodeCompletion(), null, new JsDeclarationFinder(), new JsFormatter(), new JsBracketCompleter(), new JsIndexer(), new JsAnalyzer(), null, false);
             List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
             languages.add(dl);
             registry.addLanguages(languages);
@@ -233,7 +232,7 @@ public abstract class JsTestBase extends NbTestCase {
         try {
             BaseDocument doc = new BaseDocument(null, false);
             doc.putProperty(org.netbeans.api.lexer.Language.class, JsTokenId.language());
-            doc.putProperty("mimeType", JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+            doc.putProperty("mimeType", JsTokenId.JAVASCRIPT_MIME_TYPE);
 
             doc.insertString(0, s, null);
 
