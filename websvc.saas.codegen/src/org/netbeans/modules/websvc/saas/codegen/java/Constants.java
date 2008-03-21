@@ -49,6 +49,10 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
+    public static final String CONTENT_TYPE = "Content-Type";
+    
+    public static final String PUT_POST_CONTENT = "content";
+    
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     
     public static final String QUERY_PARAMS = "queryParams"; // NOI18n
