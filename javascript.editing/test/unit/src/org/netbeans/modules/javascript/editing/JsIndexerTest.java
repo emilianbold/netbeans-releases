@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  * @author Tor Norbye
@@ -91,16 +92,21 @@ public class JsIndexerTest extends JsTestBase {
         if (value == null) {
             return value;
         }
-        if (JsIndexer.FIELD_BASE.equals(key) ||
-                JsIndexer.FIELD_FQN.equals(key)) {
+        int index = -1;
+        if (JsIndexer.FIELD_BASE.equals(key) ||JsIndexer.FIELD_FQN.equals(key)) {
+            index = IndexedElement.FLAG_INDEX;
+        } else if (JsIndexer.FIELD_CLASS.equals(key)) {
+            index = 1;
+        }
+        if (index != -1) {
             // Decode the attributes
             int attributeIndex = 0;
-            for (int i = 0; i < IndexedElement.FLAG_INDEX; i++) {
+            for (int i = 0; i < index; i++) {
                 attributeIndex = value.indexOf(';', attributeIndex+1);
             }
             int flags = IndexedElement.decode(value, attributeIndex+1,0);
             String desc = IndexedElement.decodeFlags(flags);
-            value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+            value = value.substring(0, attributeIndex) + ";" + desc + value.substring(value.indexOf(';', attributeIndex+1));
         }
 
         return value;
@@ -237,7 +243,7 @@ public class JsIndexerTest extends JsTestBase {
 
         JsIndexer indexer = new JsIndexer();
         JsIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         List<IndexDocument> result = indexer.index(rpr, factory);
         
         return result;
@@ -424,4 +430,29 @@ public class JsIndexerTest extends JsTestBase {
     public void testYahoo() throws Exception {
         checkIndexer("testfiles/yui.js");
     }
+    
+    public void testYahooAnim() throws Exception {
+        checkIndexer("testfiles/yui-anim.js");
+    }
+    
+    public void testTypes2() throws Exception {
+        checkIndexer("testfiles/types2.js");
+    }
+
+    public void testReturnTypes() throws Exception {
+        checkIndexer("testfiles/returntypes.js");
+    }
+
+    public void testScriptDoc() throws Exception {
+        checkIndexer("testfiles/jquery.sdoc");
+    }
+
+    public void testScriptDoc2() throws Exception {
+        checkIndexer("testfiles/yui.sdoc");
+    }
+
+    public void testTwoNames() throws Exception {
+        checkIndexer("testfiles/two-names.js");
+    }
+
 }

@@ -454,6 +454,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             final URL root = getOwningSourceRoot(fo);
             if ( root != null && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Folder created: "+FileUtil.getFileDisplayName(fo)+" Owner: " + root);
+                }
                 scheduleCompilation(fo,root);
             }
         } catch (IOException ioe) {
@@ -466,8 +469,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final boolean isFolder = fo.isFolder();
         try {
             if ((isJava(fo) || isFolder) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);
                 if (root != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     submit(Work.delete(fo,root,isFolder));
                     if (TasklistSettings.isTasklistEnabled()) {
@@ -497,8 +506,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();        
         try {
             if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file created: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);        
                 if (root != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     File f = FileUtil.toFile(fo);
                     
@@ -529,9 +544,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();
         try {
             if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file changed: " + FileUtil.getFileDisplayName(fo));
+                }
                 final URL root = getOwningSourceRoot (fo);
                 File file = FileUtil.toFile(fo);
                 if (root != null && file != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Owner: " + root);
+                    }
                     markRootTasklistDirty(root);
                     assureCompiledWithDeps(root, file);
                 }
@@ -655,6 +676,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return null;
     }
     
+    public void rebuildRoot(URL toRebuild, boolean forceClean) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Rebuild Root Called", new Exception());
+        }
+
+        submit(Work.filterChange(Collections.singletonList(toRebuild), forceClean));
+    }
+    
     public void rebuildAll(boolean forceClean) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Rebuild All Called", new Exception());
@@ -670,6 +699,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         submit(Work.filterChange(toRebuild, forceClean));
+    }
+    
+    /**For IncorrectErrorBadges
+     */
+    public static int getDelay() {
+        return DELAY;
     }
     
     private void registerClassPath(URL root, ClassPath cp, ClasspathInfo.PathKind kind) {
@@ -730,7 +765,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 storedFiles = url2CompileWithDeps.get(root);
                 
                 if (storedFiles == null) {
-                    url2CompileWithDeps.put(root, storedFiles = new  LinkedList<File>());
+                    url2CompileWithDeps.put(root, storedFiles = new  LinkedHashSet<File>());
                 }
             }
             
@@ -798,6 +833,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         depGraph.put(rootURL, deps);
         cycleDetector.pop();
+    }
+    
+    public synchronized boolean isRULocked() {
+        return lockRU > 0;
     }
     
     public synchronized void lockRU() {

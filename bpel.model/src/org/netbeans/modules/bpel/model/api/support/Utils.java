@@ -113,9 +113,10 @@ public final class Utils {
     public static final String BAD_VARIABLE_FOR_FOR_EACH = "BAD_VARIABLE_FOR_FOR_EACH"; // NOI18N
     public static final String BAD_VARIABLE_FOR_ON_EVENT = "BAD_VARIABLE_FOR_ON_EVENT"; // NOI18N
     public static final String  BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT = "BAD_VARIABLE_FOR_SCOPE_IN_ON_EVENT"; // NOI18N
-    static final String BUNDLE = "org/netbeans/modules/bpel/model/impl/Bundle";     // NOI18N
-    static final String XML_COMMENT_START = "<!--";                                 // NOI18N
-    static final String XML_COMMENT_END = "-->";                                    // NOI18N
+    public static final String SOURCES_TYPE_BPELPRO = "BIZPRO"; // NOI18N
+    private static final String BUNDLE = "org/netbeans/modules/bpel/model/impl/Bundle"; // NOI18N
+    private static final String XML_COMMENT_START = "<!--";                             // NOI18N
+    private static final String XML_COMMENT_END = "-->";                                // NOI18N
     
     public static final DefaultParentAccess DEFAULT_PARENT_ACCESS = new DefaultParentAccess();
 

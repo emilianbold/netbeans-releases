@@ -208,6 +208,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
      */
     protected InputSource findInputSource( URL u ) throws IOException {
         HttpURLConnection httpCon = (HttpURLConnection) u.openConnection();
+        httpCon.setUseCaches( true );
         httpCon.setRequestProperty( "Accept-Encoding", "gzip, deflate" );     // NOI18N
 
         Preferences prefs = NbPreferences.forModule( RSSFeed.class );

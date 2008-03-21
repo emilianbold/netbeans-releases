@@ -44,12 +44,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -77,6 +73,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,6 +118,13 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
             folderTextField.setText(Constants.REST_JMAKI_DIR);
+            
+            if (isJmakiEnabled(project)) {
+                if (!createJmakiCheckBox.isEnabled()) {
+                    createJmakiCheckBox.setEnabled(true);
+                    createJmakiCheckBox.setSelected(true);
+                }
+            }
         }
     }
 
@@ -239,10 +243,12 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     continue;
                 }
                 ProjectInformation pInfo = ProjectUtils.getInformation(p);
-                listModel.addElement(pInfo);
-                changed = true;
+                if(!listModel.contains(pInfo)) {
+                    listModel.addElement(pInfo);
+                    changed = true;
+                }
             } catch(IOException ioe) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         if (rejecteds.size() > 0) {
@@ -333,8 +339,8 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         overwriteCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(overwriteCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_OverwriteExisting")); // NOI18N
 
-        createJmakiCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createJmakiCheckBox, org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "LBL_CreateJmakiRestComponents")); // NOI18N
+        createJmakiCheckBox.setEnabled(false);
         createJmakiCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 createJmakiCheckBoxStateChanged(evt);
@@ -381,7 +387,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(projectRadioButton)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -392,9 +398,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                                             .add(folderLabel))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(locationCB, 0, 530, Short.MAX_VALUE)
-                                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                                            .add(locationCB, 0, 583, Short.MAX_VALUE)
+                                            .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
+                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                                     .add(projectLabel))
                                 .add(7, 7, 7))
@@ -413,10 +419,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                                 .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(browseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 778, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(wadlRadioButton)
-                        .addContainerGap(487, Short.MAX_VALUE))))
+                        .addContainerGap(507, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -594,10 +600,7 @@ private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
 }//GEN-LAST:event_wadlTextFieldKeyTyped
     
     private boolean validateWadlFile(final String fileName) {
-        String name = fileName.replaceAll(File.separator, "/");
-        if(!name.startsWith("/"))
-            name = "/"+name;
-        File f = new File(name);
+        File f = new File(fileName);
         boolean isValid = false;
         try {
             if(f.isFile()) {

@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.compapp.projects.jbi.ui;
 
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
@@ -76,7 +74,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginIn
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectActionPerformer;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 
-
 /**
  * DOCUMENT ME!
  *
@@ -84,11 +81,14 @@ import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
  * @version 
  */
 public class JbiModuleViewNode extends AbstractNode {
+
     private static Image JBI_MODULES_BADGE = Utilities.loadImage(
-            "org/netbeans/modules/compapp/projects/jbi/ui/resources/compositeApplicationBadge.png", true ); // NOI18N
+            "org/netbeans/modules/compapp/projects/jbi/ui/resources/compositeApplicationBadge.png", true); // NOI18N
+
     private final DataFolder aFolder;
     private final JbiProject project;
     private JbiModuleViewChildren children;
+    private FileChangeAdapter projectXmlChangeAdapter;
 
     /**
      * Creates a new JbiModuleViewNode object.
@@ -111,38 +111,32 @@ public class JbiModuleViewNode extends AbstractNode {
 
         // Set FeatureDescriptor stuff:
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // NOI18N or, super.setName if needed
+
         setDisplayName(NbBundle.getMessage(JbiModuleViewNode.class, "LBL_ModuleViewNode")); // NOI18N
 
         //setShortDescription(NbBundle.getMessage(JbiModuleViewNode.class, "HINT_LogicalViewNode"));
         getCookieSet().add(new JbiProjectCookie(project));
 
         // set the model listener
-        FileChangeAdapter fca = new FileChangeAdapter() {
-                public void fileChanged(FileEvent ev) {
-                    //log("ModView: Contents changed.");
-                    RequestProcessor.getDefault().post(
+        projectXmlChangeAdapter = new FileChangeAdapter() {
+
+            @Override
+            public void fileChanged(FileEvent ev) {
+                RequestProcessor.getDefault().post(
                         new Runnable() {
+
                             public void run() {
                                 updateChildren();
                             }
-                        }
-                    );
-                }
+                        });
+            }
+        };
 
-                /**
-                 * DOCUMENT ME!
-                 *
-                 * @param ev DOCUMENT ME!
-                 */
-                public void fileAttributeChanged(FileAttributeEvent ev) {
-                    //log("ModView: "+ev.getName() + ": " + ev.getOldValue() + " -> " + ev.getNewValue());
-                }
-            };
+        FileObject projectXmlFO = project.getProjectDirectory().
+                getFileObject("nbproject/project.xml"); // NOI18N
 
-        File pf = FileUtil.toFile(project.getProjectDirectory());
-        File file = new File(pf.getPath() + "/nbproject/project.xml"); // NOI18N
-        FileObject modelFile = FileUtil.toFileObject(file);
-        modelFile.addFileChangeListener(fca);
+        projectXmlFO.addFileChangeListener(
+                FileUtil.weakFileChangeListener(projectXmlChangeAdapter, projectXmlFO));
 
         children = (JbiModuleViewChildren) this.getChildren();
     }
@@ -152,9 +146,9 @@ public class JbiModuleViewNode extends AbstractNode {
             children.addNotify();
         }
 
-        //JbiModuleViewChildren ch = new JbiModuleViewChildren(project.getProjectProperties());
-        //this.setChildren(ch);
-        // ch.addNotify();
+    //JbiModuleViewChildren ch = new JbiModuleViewChildren(project.getProjectProperties());
+    //this.setChildren(ch);
+    // ch.addNotify();
     }
 
     /**
@@ -164,6 +158,7 @@ public class JbiModuleViewNode extends AbstractNode {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
@@ -175,6 +170,7 @@ public class JbiModuleViewNode extends AbstractNode {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
@@ -191,11 +187,13 @@ public class JbiModuleViewNode extends AbstractNode {
     }
 
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         ResourceBundle bundle = NbBundle.getBundle(JbiModuleViewNode.class);
         int actCnt = 0;
         Action[] actions = null;
         Action addJBIModule = new AbstractAction(bundle.getString("LBL_AddProjectAction_Name"), null) {
+
             public void actionPerformed(ActionEvent e) {
                 new AddProjectAction().perform(project);
             }
@@ -204,7 +202,7 @@ public class JbiModuleViewNode extends AbstractNode {
         // Add Actions added by other modules.        
         JbiInstalledProjectPluginInfo plugins = JbiInstalledProjectPluginInfo.getProjectPluginInfo();
         List<JbiProjectActionPerformer> pluginActions = new ArrayList<JbiProjectActionPerformer>();
-        
+
         if (plugins != null) {
             List<InternalProjectTypePlugin> plist = plugins.getUncategorizedProjectPluginList();
             for (InternalProjectTypePlugin plugin : plist) {
@@ -214,26 +212,36 @@ public class JbiModuleViewNode extends AbstractNode {
                         pluginActions.add(act);
                     }
                 }
-            }            
-            
-            if (pluginActions.size() > 0){
+            }
+
+            if (pluginActions.size() > 0) {
                 actions = new Action[pluginActions.size() + 1];
                 actions[actCnt++] = addJBIModule;
-                for (final JbiProjectActionPerformer act : pluginActions){
-                    actions[actCnt++] = new AbstractAction(act.getLabel(), act.getIcon()) {
-                            public void actionPerformed(ActionEvent e) {
-                                act.perform(project);
-                            }
+                for (final JbiProjectActionPerformer act : pluginActions) {
+                    actions[actCnt++] = new AbstractAction( act.getLabel() 
+
+                           , 
+                            act.getIcon()
+                        
+                    
+                
+            
+        
+           ) {
+
+                        public void actionPerformed(ActionEvent e) {
+                            act.perform(project);
+                        }
                     };
                 }
             }
         }
-                
+
         if (actions == null) {
             actions = new Action[1];
             actions[0] = addJBIModule;
         }
-        
+
         return actions;
     }
 
@@ -242,11 +250,12 @@ public class JbiModuleViewNode extends AbstractNode {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
 
-        // When you have help, change to:
-        // return new HelpCtx(LogicalViewNode.class);
+    // When you have help, change to:
+    // return new HelpCtx(LogicalViewNode.class);
     }
 
     private void log(String str) {

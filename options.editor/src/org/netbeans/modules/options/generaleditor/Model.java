@@ -51,7 +51,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -142,6 +141,10 @@ public class Model {
         return getParameter ("getCompletionAutoPopup", true);
     }
     
+    boolean isDocumentationAutoPopup () {
+        return getParameter ("getJavaDocAutoPopup", true);
+    }
+    
     boolean isShowDeprecatedMembers () {
         return getParameter ("getShowDeprecatedMembers", true);
     }
@@ -153,13 +156,19 @@ public class Model {
     boolean isCompletionCaseSensitive () {
         return getParameter ("getCompletionCaseSensitive", true);
     }
+
+    boolean isGuessMethodArguments () {
+        return getParameter ("getGuessMethodArguments", true);
+    }
     
     void setCompletionOptions (
         boolean pairCharacterCompletion,
         boolean completionAutoPopup,
+        boolean documentationAutoPopup,
         boolean showDeprecatedMembers,
         boolean completionInstantSubstitution,
-        boolean completionCaseSensitive
+        boolean completionCaseSensitive,
+        boolean guessMethodArguments
     ) {
         Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
@@ -194,6 +203,17 @@ public class Model {
             }
             try {
                 Method method = baseOptions.getClass ().getMethod (
+                    "setJavaDocAutoPopup",
+                    new Class [] {Boolean.TYPE}
+                );
+                method.invoke (
+                    baseOptions, 
+                    new Object [] {Boolean.valueOf (documentationAutoPopup)}
+                );
+            } catch (Exception ex) {
+            }
+            try {
+                Method method = baseOptions.getClass ().getMethod (
                     "setShowDeprecatedMembers",
                     new Class [] {Boolean.TYPE}
                 );
@@ -222,6 +242,17 @@ public class Model {
                 method.invoke (
                     baseOptions, 
                     new Object [] {Boolean.valueOf (completionCaseSensitive)}
+                );
+            } catch (Exception ex) {
+            }
+            try {
+                Method method = baseOptions.getClass ().getMethod (
+                    "setGuessMethodArguments",
+                    new Class [] {Boolean.TYPE}
+                );
+                method.invoke (
+                    baseOptions, 
+                    new Object [] {Boolean.valueOf (guessMethodArguments)}
                 );
             } catch (Exception ex) {
             }

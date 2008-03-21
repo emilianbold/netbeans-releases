@@ -47,14 +47,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.netbeans.spi.java.queries.support.SourceForBinaryQueryimplementation2Base;
+import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base;
 
 /**
  * Finds sources corresponding to binaries.
  * Assumes an instance of SourceForBinaryQueryImplementation is in project's lookup.
  * @author Jesse Glick, Tomas Zezula
  */
-public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryimplementation2Base {
+public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryImpl2Base {
     
     /** Default constructor for lookup. */
     public ProjectSourceForBinaryQuery() {}
@@ -82,7 +82,7 @@ public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryimplementat
                 else {
                     final SourceForBinaryQuery.Result result = sfbqi.findSourceRoots(binaryRoot);
                     if (result != null) {
-                        asResult (result);
+                        return asResult (result);
                     }
                 }
             }

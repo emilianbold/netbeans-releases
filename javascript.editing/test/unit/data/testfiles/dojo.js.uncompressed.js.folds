@@ -7097,15 +7097,15 @@
 | 		return 0.5 + ((Math.sin((n + 1.5) * Math.PI))/2);
 - 	}
   
-  	var PropLine = function(properties){
-  		this._properties = properties;
-  		for(var p in properties){
-  			var prop = properties[p];
-  			if(prop.start instanceof d.Color){
-  				// create a reusable temp color object to keep intermediate results
-  				prop.tempColor = new d.Color();
-  			}
-  		}
++ 	var PropLine = function(properties){
+| 		this._properties = properties;
+| 		for(var p in properties){
+| 			var prop = properties[p];
+| 			if(prop.start instanceof d.Color){
+| 				// create a reusable temp color object to keep intermediate results
+| 				prop.tempColor = new d.Color();
+| 			}
+| 		}
 + 		this.getValue = function(r){
 | 			var ret = {};
 | 			for(var p in this._properties){
@@ -7119,7 +7119,7 @@
 | 			}
 | 			return ret;
 - 		}
-  	}
+- 	}
   
 + 	dojo.animateProperty = function(/*Object*/ args){
 | 		//	summary: 

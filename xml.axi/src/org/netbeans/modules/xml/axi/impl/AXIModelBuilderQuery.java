@@ -106,12 +106,12 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
     
     public void visit(AnyElement schemaComponent) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(schemaComponent);
     }
     
     public void visit(AnyAttribute schemaComponent) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(schemaComponent);
     }
     
     public void visit(GlobalElement schemaComponent) {
@@ -121,12 +121,12 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
     
     public void visit(LocalElement component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(ElementReference component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(GlobalAttribute schemaComponent) {
@@ -136,27 +136,27 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
     
     public void visit(LocalAttribute component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(AttributeReference component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(Sequence component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(Choice component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(All component) {
         affectsModel = true;
-        canView = true;
+        canView = checkComponent(component);
     }
     
     public void visit(GlobalGroup schemaComponent) {
@@ -208,6 +208,25 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
         affectsModel = true;
         canView = false;
     }
+    
+    /**
+     * If the component's top level parent is a complex type or an element
+     * it'll be visible in design view, else no.
+     * 
+     * @param component
+     * @return
+     */
+    private boolean checkComponent(SchemaComponent component) {
+        SchemaComponent parent = component;
+        while(!(parent.getParent() instanceof Schema)) {
+            parent = parent.getParent();
+        }
+        if((parent instanceof GlobalComplexType) || (parent instanceof GlobalElement))
+            return true;
+        
+        return false;
+    }
+    
 
     ////////////////////////////////////////////////////////////////////
     ////////////////////////// member variables ////////////////////////

@@ -122,7 +122,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 if (ide.getStatus() == Status.INSTALLED) {
                     LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
                     final File ideLocation = ide.getInstallationLocation();
-                    if (ideLocation != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                    if (ideLocation != null && FileUtils.exists(ideLocation) && !FileUtils.isEmpty(ideLocation)) {
                         final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
                         if (bundledProduct != null) {
                             //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
@@ -167,7 +167,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 // appserver, we should add its "product id" to the IDE
                 if (productToIntegrate.hasStatusChanged()) {
                     NetBeansUtils.addPackId(
-                            location,
+                            ideLocation,
                             PRODUCT_ID);
                 }
             }

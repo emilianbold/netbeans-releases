@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -78,7 +77,6 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -176,7 +174,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             // find last separator position
             int lastSepOffset = sup.getLastCommandSeparator(offset);
             CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
-            tp.setJava15(false);
+            tp.setJava15(true);
 
             boolean cont = true;
             while (cont) {
@@ -983,7 +981,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
                                     lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
                                     if (lastNamespace == null) { // not package, let's try class name
-                                        CsmClass cls = sup.getClassFromName(var, true);
+                                        CsmClassifier cls = sup.getClassFromName(var, true);
                                         if (cls == null) { // class not found
                                             // try now resolver
                                             if (kind == ExprKind.SCOPE) {
@@ -1125,6 +1123,15 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 lastType = CsmCompletion.BOOLEAN_TYPE;
                 break;
 
+            case CsmCompletionExpression.GENERIC_TYPE:
+            {
+                CsmType typ = resolveType(item.getParameter(0));
+                if (typ != null) {
+                    lastType = typ;
+                    break;
+                }
+            }
+            case CsmCompletionExpression.GENERIC_TYPE_OPEN:
             case CsmCompletionExpression.OPERATOR:
                 CompletionResolver.Result res = null;
                 CsmClass curCls = sup.getClass(item.getTokenOffset(0)); // 
@@ -1339,7 +1346,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                }
                 
                 if (isConstructor) { // Help for the constructor
-                    CsmClass cls = null;
+                    CsmClassifier cls = null;
                     if (first) {
                         cls = sup.getClassFromName(mtdName, true);
                     } else { // not first
@@ -1466,12 +1473,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            cont = false;
 //                        }
                     }
-                }
-                break;
-            case CsmCompletionExpression.GENERIC_TYPE: // Closed method
-                CsmType typ = resolveType(item.getParameter(0));
-                if (typ != null) {
-                    lastType = typ;
                 }
                 break;
             }

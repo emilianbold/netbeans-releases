@@ -49,7 +49,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
-import org.netbeans.modules.gsf.api.BracketCompletion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -92,7 +91,6 @@ import org.openide.util.Exceptions;
  */
 
 public class RhtmlKit extends HTMLKit {
-    
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(RhtmlKit.class);
@@ -110,11 +108,22 @@ public class RhtmlKit extends HTMLKit {
     }
     
     @Override
+    protected DeleteCharAction createDeletePrevAction() {
+        return new RhtmlDeleteCharAction(deletePrevCharAction, false, super.createDeletePrevAction());
+    }
+    
+    @Override
+    protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
+        return new RhtmlDefaultKeyTypedAction(super.createDefaultKeyTypedAction());
+    }
+
+    @Override
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
         
         return TextAction.augmentList(superActions, new Action[] {
             // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
+            // (Shift Enter inserts a line below the current - perhaps that's good enough)
             new RhtmlToggleCommentAction(),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
@@ -158,6 +167,24 @@ public class RhtmlKit extends HTMLKit {
     private boolean handleInsertion(BaseDocument doc, Caret caret, char c) {
         int dotPos = caret.getDot();
         // Bracket matching on <% %>
+        if (c == ' ' && dotPos >= 2) {
+            try {
+                String s = doc.getText(dotPos-2, 2);
+                if ("%=".equals(s) && dotPos >= 3) { // NOI18N
+                    s = doc.getText(dotPos-3, 3);
+                }
+                if ("<%".equals(s) || "<%=".equals(s)) { // NOI18N
+                    doc.insertString(dotPos, "  ", null);
+                    caret.setDot(dotPos+1);
+                    return true;
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+            
+            return false;
+        }
+        
         if ((dotPos > 0) && (c == '%' || c == '>')) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             TokenSequence<?> ts = th.tokenSequence();
@@ -169,18 +196,17 @@ public class RhtmlKit extends HTMLKit {
                         // See if there's anything ahead
                         int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                         if (first == -1) {
-                            doc.insertString(dotPos, "%%>", null);
+                            doc.insertString(dotPos, "%%>", null); // NOI18N
                             caret.setDot(dotPos+1);
                             return true;
                         }
-                    }
-                    if (token.id() == RhtmlTokenId.DELIMITER) {
+                    } else if (token.id() == RhtmlTokenId.DELIMITER) {
                         String tokenText = token.text().toString();
-                        if (tokenText.endsWith("%>")) {
+                        if (tokenText.endsWith("%>")) { // NOI18N
                             // TODO - check that this offset is right
                             int tokenPos = (c == '%') ? dotPos : dotPos-1;
                             CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
-                            if (CharSequenceUtilities.textEquals(suffix, "%>")) {
+                            if (CharSequenceUtilities.textEquals(suffix, "%>")) { // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }
@@ -188,10 +214,25 @@ public class RhtmlKit extends HTMLKit {
                             // See if there's anything ahead
                             int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                             if (first == -1) {
-                                doc.insertString(dotPos, "%%>", null);
+                                doc.insertString(dotPos, "%%>", null); // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }
+                        }
+                    } else if (token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR && dotPos >= 1 && dotPos <= doc.getLength()-3) {
+                        // If you type ">" one space away from %> it's likely that you typed
+                        // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
+                        // and because I also auto insert a space without typing through it, you've now
+                        // ended up with "<% foo %> %>". Let's prevent this by interpreting typing a ""
+                        // right before %> as a duplicate for %>.   I can't just do this on % since it's
+                        // quite plausible you'd have
+                        //   <% x = %q(foo) %>  -- if I simply moved the caret to %> when you typed the
+                        // % in %q we'd be in trouble.
+                        String s = doc.getText(dotPos-1, 4);
+                        if ("% %>".equals(s)) { // NOI18N
+                            doc.remove(dotPos-1, 2);
+                            caret.setDot(dotPos+1);
+                            return true;
                         }
                     }
                 }
@@ -202,67 +243,99 @@ public class RhtmlKit extends HTMLKit {
         
         return false;
     }
-    
-    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
-        int dotPos = caret.getDot();
 
-        // First see if we're -right- before a %>, if so, just enter out
-        // of it
-        if (dotPos <= doc.getLength()-3) {
-            String text = doc.getText(dotPos, 3);
-            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
-                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                TokenSequence<?> ts = th.tokenSequence();
-                ts.move(dotPos);
-                if (ts.moveNext()) {
-                    // Go backwards and make sure we have nothing before the previous
-                    // delimiter
-                    TokenId id = ts.token().id();
-                    boolean notJustSpace = false;
-                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
-                        do {
-                            id = ts.token().id();
-                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
-                                if (notJustSpace ) {
-                                    caret.setDot(dotPos + text.indexOf('>')+1);
-                                    return true;
-                                }
-                                return false;
-                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
-                                if (!notJustSpace) {
-                                    TokenSequence<?> ets = ts.embedded();
-                                    if (ets != null) {
-                                        ets.moveStart();
-                                        while (ets.moveNext()) {
-                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
-                                                notJustSpace = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } while (ts.movePrevious());
-                    }
+    // This code used to customize the break behavior and insert a newline AFTER the closing %> tag which isn't
+    // always what people want
+    //    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
+    //        int dotPos = caret.getDot();
+    //
+    //        // First see if we're -right- before a %>, if so, just enter out
+    //        // of it
+    //        if (dotPos <= doc.getLength()-3) {
+    //            String text = doc.getText(dotPos, 3);
+    //            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
+    //                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+    //                TokenSequence<?> ts = th.tokenSequence();
+    //                ts.move(dotPos);
+    //                if (ts.moveNext()) {
+    //                    // Go backwards and make sure we have nothing before the previous
+    //                    // delimiter
+    //                    TokenId id = ts.token().id();
+    //                    boolean notJustSpace = false;
+    //                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
+    //                        do {
+    //                            id = ts.token().id();
+    //                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
+    //                                if (notJustSpace ) {
+    //                                    caret.setDot(dotPos + text.indexOf('>')+1);
+    //                                    return true;
+    //                                }
+    //                                return false;
+    //                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+    //                                if (!notJustSpace) {
+    //                                    TokenSequence<?> ets = ts.embedded();
+    //                                    if (ets != null) {
+    //                                        ets.moveStart();
+    //                                        while (ets.moveNext()) {
+    //                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
+    //                                                notJustSpace = true;
+    //                                            }
+    //                                        }
+    //                                    }
+    //                                }
+    //                            }
+    //                        } while (ts.movePrevious());
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        
+    //        return false;
+    //    }
+
+    private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+        private ExtDefaultKeyTypedAction htmlAction;
+
+        RhtmlDefaultKeyTypedAction(ExtDefaultKeyTypedAction htmlAction) {
+            this.htmlAction = htmlAction;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            Caret caret = target.getCaret();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            String cmd = evt.getActionCommand();
+            if (cmd.length() > 0) {
+                char c = cmd.charAt(0);
+                if (handleInsertion(doc, caret, c)) {
+                    return;
                 }
             }
+
+            htmlAction.actionPerformed(evt, target);
         }
-        
-        return false;
     }
     
-    private BracketCompletion getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument)doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
+    private class RhtmlDeleteCharAction extends ExtDeleteCharAction {
+        private DeleteCharAction htmlAction;
+
+        public RhtmlDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
+            super(nm, nextChar);
+            this.htmlAction = htmlAction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            Caret caret = target.getCaret();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            int dotPos = caret.getDot();
+            if (handleDeletion(doc, dotPos)) {
+                return;
             }
+
+            htmlAction.actionPerformed(evt, target);
         }
-        
-        return null;
     }
-    
-    
     
     @Override
     public Object clone() {
@@ -311,23 +384,6 @@ public class RhtmlKit extends HTMLKit {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            
-            BaseDocument baseDoc = (BaseDocument)target.getDocument();
-            List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, target.getCaretPosition());
-            for (Language l : list) {
-                if (l.getMimeType().equals(RhtmlTokenId.MIME_TYPE)) {
-                    commentUncomment(evt, target, null);
-                    return;
-                }
-                if (l.getGsfLanguage() != null) {
-                    String lineCommentPrefix = l.getGsfLanguage().getLineCommentPrefix();
-                    if (lineCommentPrefix != null) {
-                        new ToggleCommentAction(lineCommentPrefix).actionPerformed(evt, target);
-                        return;
-                    }
-                }
-            }
-            
             commentUncomment(evt, target, null);
         }
 
@@ -395,7 +451,7 @@ public class RhtmlKit extends HTMLKit {
                         if (caret.isSelectionVisible()) {
                             startPos = Utilities.getRowStart(doc, target.getSelectionStart());
                             endPos = target.getSelectionEnd();
-                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos && endPos > startPos) {
                                 endPos--;
                             }
                             endPos = Utilities.getRowEnd(doc, endPos);

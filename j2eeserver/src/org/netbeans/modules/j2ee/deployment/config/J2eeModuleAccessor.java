@@ -62,7 +62,6 @@ public abstract class J2eeModuleAccessor {
         J2eeModuleAccessor.accessor = accessor;
     }
 
-    // force loading of J2eeModule class. That will set DEFAULT variable.
     public static J2eeModuleAccessor getDefault() {
         if (accessor != null) {
             return accessor;
@@ -70,7 +69,7 @@ public abstract class J2eeModuleAccessor {
 
         Class c = J2eeModule.class;
         try {
-            Class.forName(c.getName(), true, J2eeModuleAccessor.class.getClassLoader()); // NOI18N
+            Class.forName(c.getName(), true, J2eeModuleAccessor.class.getClassLoader());
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }

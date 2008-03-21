@@ -53,6 +53,7 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
@@ -76,6 +77,9 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         setName("TAB_CndOtherOptionsTab"); // NOI18N (used as a pattern...)
         initComponents();
         initGeneratedComponents();
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
+        }
     }
 
     void applyChanges() {
@@ -224,6 +228,8 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
 
+        jPanel1.setOpaque(false);
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -234,6 +240,8 @@ public class CndOtherOptionsPanel extends javax.swing.JPanel implements ActionLi
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 0, Short.MAX_VALUE)
         );
+
+        jPanel2.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);

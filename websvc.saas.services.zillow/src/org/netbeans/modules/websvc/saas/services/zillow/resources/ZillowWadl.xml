@@ -12,7 +12,18 @@
              xmlns:Demographics="http://www.zillow.com/static/xsd/Demographics.xsd"
              xmlns:RegionChildren="http://www.zillow.com/static/xsd/RegionChildren.xsd"
              xmlns:SearchResults="http://www.zillow.com/static/xsd/SearchResults.xsd">
-    <grammars/>
+                 
+    <grammars>
+        <include href="Chart.xsd"/>
+        <include href="Zestimate.xsd"/>
+        <include href="ZillowTypes.xsd"/>
+        <include href="RegionChart.xsd"/>
+        <include href="Comps.xsd"/>
+        <include href="Demographics.xsd"/>
+        <include href="RegionChildren.xsd"/>
+        <include href="SearchResults.xsd"/>
+    </grammars>
+
     <resources base="http://www.zillow.com/webservice">	
         <resource path="GetChart.htm">
             <method name="GET" id="getChart">

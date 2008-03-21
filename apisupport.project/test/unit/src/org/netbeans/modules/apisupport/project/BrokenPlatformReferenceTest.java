@@ -110,7 +110,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertEquals(install2, pl.getDestDir());
         // Same for suites.
         File sd = new File(getWorkDir(), "suite");
-        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         d = new File(getWorkDir(), "suitecomp");
         NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
@@ -122,7 +122,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertEquals(pl, p.getPlatform(false));
         // And again w/ a non-default platform.
         sd = new File(getWorkDir(), "suite2");
-        SuiteProjectGenerator.createSuiteProject(sd, "install2");
+        SuiteProjectGenerator.createSuiteProject(sd, "install2", false);
         d = new File(getWorkDir(), "suitecomp2");
         NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
         s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
@@ -144,7 +144,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
                 Util.loadProperties(p.getProjectDirectory().getFileObject("nbproject/private/platform-private.properties")));
         // Same for suite.
         File sd = new File(getWorkDir(), "suite");
-        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
         s.open();
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
@@ -169,7 +169,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertEquals(pl, p.getPlatform(false)); // now should be corrected even w/o fallback
         // Same for suite. Check a component module too.
         File sd = new File(getWorkDir(), "suite");
-        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         props = FileUtil.createData(FileUtil.toFileObject(sd), "nbproject/private/platform-private.properties");
         Util.storeProperties(props, new EditableProperties(Collections.singletonMap("user.properties.file", "bogus")));
         d = new File(getWorkDir(), "suitecomp");
@@ -192,7 +192,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     
     public void testUsableModuleListForBrokenPlatform() throws Exception {
         File sd = new File(getWorkDir(), "suite");
-        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT, false);
         File d = new File(getWorkDir(), "suitecomp");
         NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
         TestBase.delete(sd);

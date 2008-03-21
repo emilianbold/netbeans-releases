@@ -88,7 +88,6 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.PropertyAction;
-import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
@@ -113,8 +112,8 @@ public class MenuEditLayer extends JPanel {
     private static final boolean USE_NEW_ITEM_COLOR_SWITCHING = false;
     
     /* === public and package level fields. these should probably become getters and setters  ===*/
-    public VisualDesignerPopupFactory hackedPopupFactory = null;
-    public FormDesigner formDesigner;
+    VisualDesignerPopupFactory hackedPopupFactory = null;
+    FormDesigner formDesigner;
     JLayeredPane layers;
     JComponent glassLayer;
     DropTargetLayer dropTargetLayer;

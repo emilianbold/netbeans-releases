@@ -60,10 +60,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-    
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
@@ -2754,6 +2750,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
             "    for (i = 0; i<n; i++) return;\n" +
             "    match[1].end = match[0].end+s_length;\n" +
+            "    return(0);\n" +
             "}\n"
             );
         reformat();
@@ -2761,12 +2758,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "int foo()\n" +
             "{\n" +
             "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
-            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return 0;\n" +
             "    lmask = (1U << state->lenbits) - 1;\n" +
             "    len = BITS(4) + 8;\n" +
             "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
             "    for (i = 0; i < n; i++) return;\n" +
             "    match[1].end = match[0].end + s_length;\n" +
+            "    return (0);\n" +
             "}\n"
         );
     }
@@ -3525,6 +3523,139 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "            foo();\n" +
                 "        }\n" +
                 "    }\n" +
+                "}\n");
+    }
+
+    public void testOperatorEQformatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class real_c_float\n" +
+                "{\n" +
+                "  const real_c_float & operator=(long l){ from_long(l);\n" +
+                "    return *this;\n" +
+                "  }\n" +
+                "};\n");
+        reformat();
+        assertDocumentText("Incorrect operator = formatting",
+                "class real_c_float\n" +
+                "{\n" +
+                "\n" +
+                "    const real_c_float & operator=(long l)\n" +
+                "    {\n" +
+                "        from_long(l);\n" +
+                "        return *this;\n" +
+                "    }\n" +
+                "};\n");
+    }
+
+    public void testDereferenceFormatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "TCHAR* tmp = list->field->toString();\n" +
+                "}\n" +
+                "CL_NS_STD(ostream)* infoStream;\n" +
+                "directory->deleteFile( *itr );\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect * spacing",
+                "int foo()\n" +
+                "{\n" +
+                "    for (DocumentFieldList* list = fieldList; list != NULL; list = list->next) {\n" +
+                "        TCHAR* tmp = list->field->toString();\n" +
+                "    }\n" +
+                "    CL_NS_STD(ostream)* infoStream;\n" +
+                "    directory->deleteFile(*itr);\n" +
+                "}\n");
+    }
+
+    public void testNewStyleCastFormatting() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "const char* j = const_cast < const char*>(a);\n" +
+                "A* c = dynamic_cast <A* > (b);\n" +
+                "int i = reinterpret_cast< int > (a);\n" +
+                "i = static_cast < int > (*a);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    const char* j = const_cast<const char*> (a);\n" +
+                "    A* c = dynamic_cast<A*> (b);\n" +
+                "    int i = reinterpret_cast<int> (a);\n" +
+                "    i = static_cast<int> (*a);\n" +
+                "}\n");
+    }
+
+    public void testNewStyleCastFormatting2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAfterTypeCast, false);
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "const char* j = const_cast < const char*>(a);\n" +
+                "A* c = dynamic_cast <A* > (b);\n" +
+                "int i = reinterpret_cast< int > (a);\n" +
+                "i = static_cast < int > (*a);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect new style cast formating",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    const char* j = const_cast < const char* >(a);\n" +
+                "    A* c = dynamic_cast < A* >(b);\n" +
+                "    int i = reinterpret_cast < int >(a);\n" +
+                "    i = static_cast < int >(*a);\n" +
+                "}\n");
+    }
+
+    public void testConcurrentSpacing() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "              for (cnt = 0; domain->successor[cnt] != NULL;++cnt);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect cpace after ; and befor ++",
+                "int foo(char* a, class B* b)\n" +
+                "{\n" +
+                "    for (cnt = 0; domain->successor[cnt] != NULL; ++cnt);\n" +
+                "}\n");
+    }
+
+    public void testIZ130538() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+        setLoadDocumentText(
+                "int foooooooo(char* a,\n" +
+                " class B* b)\n" +
+                "{\n" +
+                "    foo(a,\n" +
+                "   b);\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formating IZ#130538",
+                "int foooooooo (char* a,\n" +
+                "               class B* b)\n" +
+                "{\n" +
+                "    foo (a,\n" +
+                "         b);\n" +
                 "}\n");
     }
 }

@@ -43,10 +43,11 @@
 package gui.actions;
 
 
+import java.awt.event.InputEvent;
 import java.io.File;
 
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.EventTool;
@@ -54,6 +55,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
@@ -63,25 +65,29 @@ import org.netbeans.junit.ide.ProjectSupport;
 public class SelectingMultipleNodes extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static String testProjectName = "jEdit-Model";
-    private static String testDiagramName = "ClassDiagram";    
-    private Node diag;
+    private TreePath path1, path2;
+    private Node pNode;
    
     /** Creates a new instance of SelectingMultipleNodes */
     public SelectingMultipleNodes(String testName) {
         super(testName);
         //TODO: Adjust expectedTime value        
         expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN=4000;  
+        HEURISTIC_FACTOR = -1;
     }
     public SelectingMultipleNodes(String testName, String  performanceDataName) {
         super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;                
+        HEURISTIC_FACTOR = -1;
     }
     
     public void initialize(){
         log(":: initialize");
+        
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;        
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
 //        new CloseAllDocumentsAction().performAPI();
@@ -90,9 +96,13 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
    
     public void prepare() {
         log(":: prepare");
-        Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        diag = new Node(pNode,"Model"+"|"+testDiagramName);
-        diag.select();
+        pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
+        Node diag1 = new Node(pNode,"Model|ClassDiagram");        
+        Node diag2 = new Node(pNode,"Imported Elements");        
+
+        path1 = diag1.getTreePath();
+        path2 = diag2.getTreePath();
+        
         new EventTool().waitNoEvent(1000);
     }
 
@@ -101,9 +111,11 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
 
         JTreeOperator projectTree = new ProjectsTabOperator().tree();
   
-        projectTree.addSelectionInterval(2,120);
+        projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
+        new EventTool().waitNoEvent(500);
+        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
            
-         return null;
+        return null;
     }
     
     protected void shutdown() {
@@ -115,7 +127,7 @@ public class SelectingMultipleNodes extends org.netbeans.performance.test.utilit
 
     public void close(){
         log("::close");
-        diag.select();
+        pNode.select();
  //     new CloseAllDocumentsAction().performAPI();
  
     } 

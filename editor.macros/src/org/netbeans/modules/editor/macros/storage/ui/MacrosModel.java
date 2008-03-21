@@ -224,7 +224,10 @@ public final class MacrosModel {
     }
     
     public void deleteMacro(int tableRow) {
-        Macro macro = allMacrosList.remove(tableRow);
+        Macro macro = allMacrosList.get(tableRow);
+        Set<String> set = Collections.emptySet();
+        macro.setShortcuts(set);
+        allMacrosList.remove(tableRow);
         Map<String, Macro> map = mimeType2Macros.get(macro.getMimeType());
         map.remove(macro.getName());
         

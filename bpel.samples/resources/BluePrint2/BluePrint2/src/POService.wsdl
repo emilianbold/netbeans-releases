@@ -61,10 +61,8 @@
         </operation>
     </portType>
     
-    <binding name="purchaseOrderBinding"
-             type="tns:purchaseOrderPT">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    <binding name="purchaseOrderBinding" type="tns:purchaseOrderPT">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="sendPurchaseOrder">
             <soap:operation style="rpc"/>
             <input name="sendPurchaseOrderRequest">
@@ -80,8 +78,7 @@
     </binding>
 
     <service name="purchaseOrderService">
-        <port name="purchaseOrderPort"
-              binding="tns:purchaseOrderBinding">
+        <port name="purchaseOrderPort" binding="tns:purchaseOrderBinding">
             <soap:address location="http://localhost:18181/wsdl/purchase/PurchaseOrder/Servicelocation/bp2"/>
         </port>
     </service>

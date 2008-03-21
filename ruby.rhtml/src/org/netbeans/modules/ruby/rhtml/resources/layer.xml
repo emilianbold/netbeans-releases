@@ -92,11 +92,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
-                <attr name="createDataObject" boolvalue="false"/>
-                <file name="language.nbs" url="RHTML.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
-                </file>
-                
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
@@ -226,6 +221,11 @@
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
+                </file>
+                
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
                 </file>
             </folder>
         </folder>

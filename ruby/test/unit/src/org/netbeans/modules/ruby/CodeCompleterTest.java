@@ -220,10 +220,10 @@ public class CodeCompleterTest extends RubyTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                sb.append(text);
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                sb.append(text, fromInclusive, toExclusive);
             }
-
+            
             @Override
             public void emphasis(boolean start) {
             }

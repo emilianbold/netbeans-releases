@@ -479,7 +479,8 @@ public class ExtendedTokenSequence {
                 if (ts.token().id() == LPAREN){
                     parenDepth--;
                     if (parenDepth == 0){
-                        return getTokenPosition()+1;
+                        ts.moveNext();
+                        return getTokenPosition();
                     }
                 } else if (ts.token().id() == RPAREN){
                     parenDepth++;
@@ -632,7 +633,8 @@ public class ExtendedTokenSequence {
                     buf.insert(start, text);
                 }
             }
-            return buf.toString();
+            return buf.toString().replaceAll("\n", "\\\\n\n"); //NOI18N
+            //return buf.toString();
         } finally {
             ts.moveIndex(index);
             ts.moveNext();

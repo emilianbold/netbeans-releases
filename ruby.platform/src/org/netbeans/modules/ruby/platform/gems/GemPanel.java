@@ -110,10 +110,26 @@ public final class GemPanel extends JPanel implements Runnable {
     private boolean gemsModified;
     private boolean fetchingLocal;
     private boolean fetchingRemote;
-    
+
     public GemPanel(String availableFilter) {
+        this(availableFilter, null);
+    }
+
+    /**
+     * Creates a new GemPanel.
+     * 
+     * @param availableFilter the filter to use for displaying gems, e.g. 
+     * <code>"generators$"</code> for displaying only generator gems.
+     * @param preselected the platform that should be preselected in the panel; 
+     * may be <code>null</code> in which case the last selected platform is preselected.
+     */
+    public GemPanel(String availableFilter, RubyPlatform preselected) {
         initComponents();
-        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        if (preselected == null) {
+            Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        } else {
+            platforms.setSelectedItem(preselected);
+        }
         
         RubyPlatform selPlatform = getSelectedPlatform();
         if (selPlatform != null) {
@@ -141,8 +157,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
         });
         updateAsynchronously();
+        
     }
-
+    
     private void updateAsynchronously() {
         RequestProcessor.getDefault().post(this, 300);
     }
@@ -353,7 +370,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 // Don't treat the filter as a regexp
             }
         } else if (filter != null) {
-            lcFilter = filter.toLowerCase();
+            lcFilter = filter.toLowerCase(Locale.ENGLISH);
         }
         List<Gem> gems;
         JList list;
@@ -408,7 +425,7 @@ public final class GemPanel extends JPanel implements Runnable {
         list.invalidate();
         list.repaint();
         // This sometimes gives NPEs within setSelectedIndex...
-        //        if (gems.size() > 0) {
+        //        if (!gems.isEmpty()()) {
         //            list.setSelectedIndex(0);
         //        }
 
@@ -539,6 +556,7 @@ public final class GemPanel extends JPanel implements Runnable {
         org.openide.awt.Mnemonics.setLocalizedText(updateAllButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updateAllButton.text")); // NOI18N
         updateAllButton.addActionListener(formListener);
 
+        updatedDesc.setEditable(false);
         jScrollPane6.setViewportView(updatedDesc);
         updatedDesc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedDesc.AccessibleContext.accessibleName")); // NOI18N
         updatedDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedDesc.AccessibleContext.accessibleDescription")); // NOI18N
@@ -625,6 +643,7 @@ public final class GemPanel extends JPanel implements Runnable {
         installedList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedList.AccessibleContext.accessibleName")); // NOI18N
         installedList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        installedDesc.setEditable(false);
         jScrollPane5.setViewportView(installedDesc);
         installedDesc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedDesc.AccessibleContext.accessibleName")); // NOI18N
         installedDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedDesc.AccessibleContext.accessibleDescription")); // NOI18N
@@ -706,6 +725,7 @@ public final class GemPanel extends JPanel implements Runnable {
         newList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newList.AccessibleContext.accessibleName")); // NOI18N
         newList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        newDesc.setEditable(false);
         jScrollPane4.setViewportView(newDesc);
         newDesc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newDesc.AccessibleContext.accessibleName")); // NOI18N
         newDesc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newDesc.AccessibleContext.accessibleDescription")); // NOI18N
@@ -960,7 +980,7 @@ public final class GemPanel extends JPanel implements Runnable {
             }
         }
 
-        if (gems.size() > 0) {
+        if (!gems.isEmpty()) {
             for (Gem chosen : gems) {
                 // Get some information about the chosen gem
                 InstallationSettingsPanel panel = new InstallationSettingsPanel(chosen);
@@ -1008,7 +1028,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 }
             }
         }
-        if (gems.size() > 0) {
+        if (!gems.isEmpty()) {
             Runnable completionTask = new GemListRefresher(updatedList, TabIndex.INSTALLED);
             gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, true, completionTask);
         }
@@ -1029,7 +1049,7 @@ public final class GemPanel extends JPanel implements Runnable {
                 }
             }
         }
-        if (gems.size() > 0) {
+        if (!gems.isEmpty()) {
             Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
             gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);
         }
@@ -1133,7 +1153,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     // Update UI
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            if (errors.size() > 0) {
+                            if (!errors.isEmpty()) {
                                 showGemErrors(errors);
                             }
                             boolean done = notifyGemsUpdated();
@@ -1181,7 +1201,7 @@ public final class GemPanel extends JPanel implements Runnable {
                     // Update UI
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            if (errors.size() > 0) {
+                            if (!errors.isEmpty()) {
                                 showGemErrors(errors);
                             }
                             notifyGemsUpdated();
@@ -1220,16 +1240,18 @@ public final class GemPanel extends JPanel implements Runnable {
         return PlatformComponentFactory.getPlatform(platforms);
     }
 
-    private class MyListSelectionListener implements ListSelectionListener {
-        private JButton button;
-        private JTextPane pane;
-        private JList list;
+    private static class MyListSelectionListener implements ListSelectionListener {
+        
+        private final JButton button;
+        private final JTextPane pane;
+        private final JList list;
 
         private MyListSelectionListener(JList list, JTextPane pane, JButton button) {
             this.list = list;
             this.pane = pane;
             this.button = button;
         }
+        
         public void valueChanged(ListSelectionEvent ev) {
             if (ev.getValueIsAdjusting()) {
                 return;
@@ -1252,8 +1274,8 @@ public final class GemPanel extends JPanel implements Runnable {
     }
 
     private class GemListRefresher implements Runnable {
-        private JList list;
-        private TabIndex tab;
+        private final JList list;
+        private final TabIndex tab;
 
         public GemListRefresher(JList list, TabIndex tab) {
             this.list = list;

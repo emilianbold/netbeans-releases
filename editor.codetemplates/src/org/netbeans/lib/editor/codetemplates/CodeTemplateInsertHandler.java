@@ -74,6 +74,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -629,6 +630,7 @@ implements DocumentListener, KeyListener {
     }
     
     private void tabUpdate() {
+        ((BaseTextUI)component.getUI()).getEditorUI().getWordMatch().clear();
         updateLastRegionBounds();
         CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
         if (activeMasterImpl != null) {

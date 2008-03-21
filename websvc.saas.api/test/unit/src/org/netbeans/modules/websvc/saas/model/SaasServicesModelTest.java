@@ -83,7 +83,7 @@ public class SaasServicesModelTest extends NbTestCase {
         //assertNotNull(group);
         SaasGroup group = instance.getGroups().get(1);
         WadlSaas service = (WadlSaas) group.getServices().get(0);
-        assertEquals("YouTubeVideos", service.getDisplayName());
+        assertEquals("Video Service", service.getDisplayName());
         assertNotNull(service.getWadlModel());
 
         SetupUtil.commonTearDown();
@@ -141,7 +141,7 @@ public class SaasServicesModelTest extends NbTestCase {
         }
         OutputStream out = wadl.getOutputStream();
         try {
-            FileUtil.copy(getClass().getResourceAsStream("application.wadl.xml"), out);
+            FileUtil.copy(getClass().getResourceAsStream("application.wadl"), out);
         } finally {
             out.close();
         }

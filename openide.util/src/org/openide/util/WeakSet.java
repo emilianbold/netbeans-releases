@@ -52,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Set which holds its members by using of WeakReferences.
 * MT level: unsafe.
@@ -122,7 +124,28 @@ public class WeakSet<E> extends AbstractSet<E> implements Cloneable, Serializabl
         entries = Entry.createArray(initialCapacity);
         iterChain = null;
     }
-
+    
+    /**
+     * logs iterator chain (for debugging)
+     * @param msg
+     */
+    void logIterChain(String msg) {
+        Logger log = Logger.getLogger(WeakSet.class.getName());
+        log.log(Level.FINE, msg);
+        if (iterChain == null) {
+            log.log(Level.FINE, "Empty");
+            return;
+        }
+        StringBuilder str = new StringBuilder();
+        Entry<E> it = iterChain;
+        str.append(size + ": ");
+        while (it != null) {
+            str.append(it.get() + "(" + it.hashcode + ")" + "->");
+            it = it.iterChainNext;
+        }
+        log.log(Level.FINE, str.toString());
+    }
+    
     /** Adds the specified element to this set if it is not already present.
     *
     * @param o an Object to add
@@ -502,12 +525,6 @@ public class WeakSet<E> extends AbstractSet<E> implements Cloneable, Serializabl
 
             if (nextInIter != null) {
                 nextInIter.iterChainPrev = this;
-
-                Object ref = nextInIter.get();
-
-                if (ref == null) {
-                    nextInIter.remove();
-                }
             }
         }
 

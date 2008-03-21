@@ -16,28 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ProjectConstants.java
- *
- * Created on January 17, 2006, 12:42 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package org.netbeans.modules.bpel.project;
 
 /**
- *
  * @author radval
  */
-public class ProjectConstants {
+public interface ProjectConstants {
 
-    public static final String SOURCES_TYPE_BPELPRO = "BIZPRO";
-    public static final String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
-    public static final String WS_CONTENT_ADDITIONAL="ws.content.additional";
-
-    /** Creates a new instance of ProjectConstants */
-    public ProjectConstants() {
-    }
-
+    String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
+    String WS_CONTENT_ADDITIONAL="ws.content.additional";
 }

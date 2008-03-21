@@ -132,6 +132,6 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     }
     
     public void goToSource( Field variable ) {
-        debugger.showCurrentSource();
+        debugger.showCurrentSource(false);
     }
 }

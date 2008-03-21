@@ -5,6 +5,7 @@ import java.util.List;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.ModelConstants;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
@@ -80,5 +81,10 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 		}
 		return null;
 	}
+
+    public List<Import> getImports() {
+        List<Import> children = getChildren(Import.class);
+        return children;
+    }
 
 }

@@ -68,10 +68,6 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
-    private void setDefaultsOptions(){
-        EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-    }
-
 //    public void testIdentMultyConstructor5() {
 //        setDefaultsOptions();
 //        setLoadDocumentText(
@@ -168,46 +164,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testLabelIndentHalf() {
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBrace, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                put(EditorOptions.newLineBeforeBraceDeclaration, 
-                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         setLoadDocumentText(
-                "int foo()\n" +
-                "{\n" +
-                "  start: while(true){\n" +
-                "int i = 0;\n" +
-                "goto start;\n" +
-                "end:\n" +
-                "if(true){\n" +
-                "foo();\n" +
-                "second:\n" +
-                "foo();\n" +
-                "}\n" +
-                "}\n" +
-                "}\n");
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect label half indent",
-                "int foo()\n" +
-                "{\n" +
-                "start:\n" +
-                "  while (true)\n" +
-                "    {\n" +
-                "      int i = 0;\n" +
-                "      goto start;\n" +
-                "end:\n" +
-                "      if (true)\n" +
-                "        {\n" +
-                "          foo();\n" +
-                "second:\n" +
-                "          foo();\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n");
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
-
 }

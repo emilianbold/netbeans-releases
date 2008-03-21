@@ -36,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
 public class ProductsResource {
     @Context
     private UriInfo context;
-    
+  
     /** Creates a new instance of ProductsResource */
     public ProductsResource() {
     }
@@ -96,7 +96,7 @@ public class ProductsResource {
      * @return an instance of ProductResource
      */
     @Path("{productId}/")
-    public o.n.m.ws.qaf.rest.crud.service.ProductResource getProductResource(@PathParam("productId")
+    public ProductResource getProductResource(@PathParam("productId")
     Integer id) {
         return new ProductResource(id, context);
     }

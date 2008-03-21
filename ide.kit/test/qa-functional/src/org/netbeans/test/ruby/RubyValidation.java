@@ -225,8 +225,8 @@ public class RubyValidation extends JellyTestCase {
         viewsOper.setText("myview");
         generatorOper.ok();
         
-        // wait 60 second
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 60000);
+        // wait 180 second
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 180000);
         
         String filename = "myapp_controller.rb"; // NOI18N
         new EditorOperator(filename);

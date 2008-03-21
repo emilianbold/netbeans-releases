@@ -129,8 +129,71 @@ public
 
     protected Decompiler createDecompiler(CompilerEnvirons compilerEnv)
     {
-        return new Decompiler();
+        // <netbeans>
+        // We don't need the decompiler - wen're not going to run the code
+        //return new Decompiler();
+        return new NoOpDecompiler();
+        // </netbeans>
     }
+    
+    // <netbeans>
+    private class NoOpDecompiler extends Decompiler {
+        @Override
+        String getEncodedSource()
+        {
+            return null;
+        }
+        
+        
+        @Override
+        int getCurrentOffset()
+        {
+            return 0;
+        }
+
+        @Override
+        int markFunctionStart(int functionType)
+        {
+            return 0;
+        }
+
+        @Override
+        int markFunctionEnd(int functionStart)
+        {
+            return 0;
+        }
+
+        @Override
+        void addToken(int token)
+        {
+        }
+
+        @Override
+        void addEOL(int token)
+        {
+        }
+
+        @Override
+        void addName(String str)
+        {
+        }
+
+        @Override
+        void addString(String str)
+        {
+        }
+
+        @Override
+        void addRegexp(String regexp, String flags)
+        {
+        }
+
+        @Override
+        void addNumber(double n)
+        {
+        }
+    }
+    // </netbeans>
 
     void addStrictWarning(String messageId, String messageArg
             // <netbeans>
@@ -2348,7 +2411,21 @@ return null;
                         break;
 
                       default:
-                        reportError("msg.no.name.after.dot");
+                          // <netbeans>
+                        //reportError("msg.no.name.after.dot");
+                        //addWarning("msg.no.name.after.dot");
+                        String message = ScriptRuntime.getMessage0("msg.no.name.after.dot");
+                        errorReporter.error(message, sourceURI, ts.getLineno(),
+                                              ts.getLine(), getStartOffset()/*ts.getOffset()*/
+                                            // <netbeans>
+                                            , "msg.no.name.after.dot", null
+                                            // </netbeans>
+                                              );
+                        pn = propertyName(pn, "@", memberTypeFlags); // NOI18N
+                        pn.getFirstChild().getNext().setType(Token.MISSING_DOT);
+                        setSourceOffsets(pn.getLastChild(), getStartOffset());
+                        break;
+                          // </netbeans>
                     }
                 }
                 break;

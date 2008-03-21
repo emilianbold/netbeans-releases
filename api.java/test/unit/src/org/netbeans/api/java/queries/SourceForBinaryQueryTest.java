@@ -57,7 +57,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.netbeans.spi.java.queries.support.SourceForBinaryQueryimplementation2Base;
+import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -230,7 +230,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         
     }
     
-    public static class DelegatingSFBImpl extends SourceForBinaryQueryimplementation2Base {
+    public static class DelegatingSFBImpl extends SourceForBinaryQueryImpl2Base {
         
         private static SourceForBinaryQueryImplementation impl; 
         

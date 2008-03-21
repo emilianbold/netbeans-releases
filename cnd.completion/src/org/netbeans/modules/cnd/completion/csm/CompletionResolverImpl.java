@@ -157,7 +157,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         context  = CsmOffsetResolver.findContext(file, offset);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
-        initResolveMask(context, offset, strPrefix);
+        initResolveMask(context, offset, strPrefix, match);
         this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
@@ -649,7 +649,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
     
-    private void updateResolveTypesInFunction(final int offset, final CsmContext context) {
+    private void updateResolveTypesInFunction(final int offset, final CsmContext context, boolean match) {
         
         boolean isInType = CsmContextUtilities.isInType(context, offset);
         if (!isInType) {
@@ -670,6 +670,16 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_LIB_FUNCTIONS;
                 resolveTypes |= RESOLVE_CLASS_METHODS;
             }
+            if(!match)
+            {
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_GLOB_VARIABLES;
+                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
+                resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_CLASS_FIELDS;
+                resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
+            }            
             resolveTypes |= RESOLVE_GLOB_NAMESPACES;
             resolveTypes |= RESOLVE_LIB_CLASSES;
             resolveTypes |= RESOLVE_LIB_NAMESPACES;
@@ -1267,7 +1277,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return dest;
     }    
 
-    private void initResolveMask(final CsmContext context, int offset, final String strPrefix) {
+    private void initResolveMask(final CsmContext context, int offset, final String strPrefix, boolean match) {
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT) {
             if (strPrefix.length() == 0) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS;
@@ -1282,7 +1292,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
-                updateResolveTypesInFunction(offset, context);
+                updateResolveTypesInFunction(offset, context, match);
             } else if (CsmContextUtilities.getClass(context, false) != null) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASS_FIELDS;

@@ -79,7 +79,6 @@ import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.javascript.editing.AstUtilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -103,7 +102,7 @@ import org.openide.xml.XMLUtil;
  */
 public class RetoucheUtils {
     public static boolean isJsFile(FileObject fo) {
-        return LanguageRegistry.getInstance().isRelevantFor(fo, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        return LanguageRegistry.getInstance().isRelevantFor(fo, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
     
     // XXX Should this be unused now?
@@ -220,7 +219,7 @@ public class RetoucheUtils {
         StringBuffer buf = new StringBuffer();
         // TODO - check whether we need Js highlighting or rhtml highlighting
         TokenHierarchy tokenH = TokenHierarchy.create(text, JsTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         @SuppressWarnings("unchecked")
         TokenSequence<? extends TokenId> tok = tokenH.tokenSequence();

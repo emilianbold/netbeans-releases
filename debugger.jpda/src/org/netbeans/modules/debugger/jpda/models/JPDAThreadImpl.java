@@ -53,6 +53,7 @@ import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 
+import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -73,7 +74,7 @@ import org.openide.util.NbBundle;
 /**
  * The implementation of JPDAThread.
  */
-public final class JPDAThreadImpl implements JPDAThread {
+public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     /**
      * Suspended property of the thread. Fired when isSuspended() changes.
@@ -785,6 +786,10 @@ public final class JPDAThreadImpl implements JPDAThread {
     private void fireSuspended(boolean suspended) {
         pch.firePropertyChange(PROP_SUSPENDED,
                 Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
+    }
+
+    public void setObject(Object bean) {
+        throw new UnsupportedOperationException("Not supported, do not call. Implementing Customizer interface just because of add/remove PropertyChangeListener.");
     }
 
 }
