@@ -41,10 +41,27 @@ package org.netbeans.modules.hibernate.refactoring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
-import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
+import org.netbeans.modules.hibernate.mapping.model.Array;
+import org.netbeans.modules.hibernate.mapping.model.Bag;
+import org.netbeans.modules.hibernate.mapping.model.Component;
+import org.netbeans.modules.hibernate.mapping.model.CompositeElement;
+import org.netbeans.modules.hibernate.mapping.model.DynamicComponent;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
+import org.netbeans.modules.hibernate.mapping.model.Idbag;
+import org.netbeans.modules.hibernate.mapping.model.Join;
+import org.netbeans.modules.hibernate.mapping.model.JoinedSubclass;
+import org.netbeans.modules.hibernate.mapping.model.KeyManyToOne;
+import org.netbeans.modules.hibernate.mapping.model.List;
+import org.netbeans.modules.hibernate.mapping.model.ManyToOne;
+import org.netbeans.modules.hibernate.mapping.model.Map;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.hibernate.mapping.model.NaturalId;
+import org.netbeans.modules.hibernate.mapping.model.NestedCompositeElement;
+import org.netbeans.modules.hibernate.mapping.model.OneToOne;
+import org.netbeans.modules.hibernate.mapping.model.Properties;
+import org.netbeans.modules.hibernate.mapping.model.Set;
+import org.netbeans.modules.hibernate.mapping.model.Subclass;
+import org.netbeans.modules.hibernate.mapping.model.UnionSubclass;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
@@ -55,7 +72,7 @@ import org.openide.filesystems.FileObject;
  */
 public class JavaClassRenameTransaction extends RenameTransaction {
 
-    public JavaClassRenameTransaction(Set<FileObject> files, String oldName, String newName) {
+    public JavaClassRenameTransaction(java.util.Set<FileObject> files, String oldName, String newName) {
         super(files, oldName, newName);
     }
 
@@ -65,41 +82,32 @@ public class JavaClassRenameTransaction extends RenameTransaction {
      */
     public void doChanges() {
 
-        String oldName = getOldName();
-        String newName = getNewName();
-
         for (FileObject mappingFileObject : getToBeModifiedFiles()) {
 
             OutputStream outs = null;
             try {
                 InputStream is = mappingFileObject.getInputStream();
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-                MyClass[] myClazz = hbMapping.getMyClass();
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue(HibernateMappingXmlConstants.NAME_ATTRIB); 
-                    if (clsName.equals(oldName)) {
-                        myClazz[ci].setAttributeValue(HibernateMappingXmlConstants.NAME_ATTRIB, newName); // NOI18N
+                
+                // The class attribute of <import>s
+                for (int i = 0; i < hbMapping.sizeImport(); i++) {
+                    String importClsName = hbMapping.getAttributeValue(HibernateMapping.IMPORT, i, "Class");
+                    if (importClsName != null && importClsName.equals(origName)) {
+                        hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, "Class", newName);
                     }
                 }
                 
-                // TODO: need to search on 
-                /*HibernateMappingXmlConstants.ONE_TO_MANY_TAG HibernateMappingXmlConstants.CLASS_ATTRIB); 
-                HibernateMappingXmlConstants.COMPOSITE_ID_TAG HibernateMappingXmlConstants.CLASS_ATTRIB); 
-                HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAGHibernateMappingXmlConstants.CLASS_ATTRIB);
-                HibernateMappingXmlConstants.MANY_TO_ONE_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
-                HibernateMappingXmlConstants.ONE_TO_ONE_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
-                HibernateMappingXmlConstants.COMPONENT_TAG HibernateMappingXmlConstants.CLASS_ATTRIB);
-                HibernateMappingXmlConstants.SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
-                                                          HibernateMappingXmlConstants.EXTENDS_ATTRIB);
-                HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
-                                                                 HibernateMappingXmlConstants.EXTENDS_ATTRIB);
-                                                                 HibernateMappingXmlConstants.PERSISTER_ATTRIB);
-                HibernateMappingXmlConstants.UNION_SUBCLASS_TAG HibernateMappingXmlConstants.NAME_ATTRIB);
-                                                                HibernateMappingXmlConstants.EXTENDS_ATTRIB);
-                                                                HibernateMappingXmlConstants.PERSISTER_ATTRIB);
-                HibernateMappingXmlConstants.IMPORT_TAG  HibernateMappingXmlConstants.CLASS_ATTRIB);
-                HibernateMappingXmlConstants.MANY_TO_MANY_TAG  HibernateMappingXmlConstants.CLASS_ATTRIB);
-                */
+                // Change all the occurrences in <class> elements
+                refactoringMyClasses(hbMapping.getMyClass());
+                
+                // Change all the occurrences in <subclass> elements
+                refactoringSublasses(hbMapping.getSubclass());
+                
+                // Change all the occurrences in <joined-subclass> elements
+                refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+                
+                // Change all the occurrences in <union-subclass> elements
+                refactoringUnionSubclasses(hbMapping.getUnionSubclass());
                 
                 outs = mappingFileObject.getOutputStream();
                 hbMapping.write(outs);
@@ -117,4 +125,501 @@ public class JavaClassRenameTransaction extends RenameTransaction {
             }
         }
     }
+    
+    private void refactoringMyClasses(MyClass[] myClazz) {
+        for (int ci = 0; ci < myClazz.length; ci++) {
+
+            MyClass thisClazz = myClazz[ci];
+
+            // The name attribute of <class> element
+            String clsName = thisClazz.getAttributeValue("Name");
+            if (clsName != null && clsName.equals(origName)) {
+                myClazz[ci].setAttributeValue("Name", newName);
+            }
+            
+            // The class attribute of <composite-id> element
+            if( thisClazz.getCompositeId() != null ) {
+                String compositeIdClsName = thisClazz.getCompositeId().getAttributeValue("Class");
+                if (compositeIdClsName != null && compositeIdClsName.equals(origName)){
+                    thisClazz.getCompositeId().setAttributeValue("Class", newName);
+                }
+            }
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisClazz.getOneToOne());
+            
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisClazz.getManyToOne());
+            
+            // The class attribute of <many-to-one> in <join>
+            refactoringJoins(thisClazz.getJoin());
+            
+            // The class attribute of <many-to-one> in <natural-id>
+            refactoringNaturalId(thisClazz.getNaturalId());
+            
+            // The class attribute of <many-to-one> in <properties>
+            refactoringPropertiez(thisClazz.getProperties());
+            
+            // The class attribute of <many-to-one> in <idbag><composite-element>
+            refactoringIdBags(thisClazz.getIdbag());
+
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisClazz.getMap());
+
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisClazz.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisClazz.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisClazz.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisClazz.getArray());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(thisClazz.getComponent());
+            
+            // <dynamic-component><one-to-many class="">
+            refactoringDynamicComponents(thisClazz.getDynamicComponent());
+        }
+    }
+    
+    private void refactoringOneToOnes(OneToOne[] hbModelOneToOnes) {
+        for( int i = 0; i < hbModelOneToOnes.length; i ++) {
+            String clsName = hbModelOneToOnes[i].getAttributeValue("Class");
+            if(clsName != null && clsName.equals(origName)) {
+                hbModelOneToOnes[i].setAttributeValue("Class", newName);
+            }
+        }
+    }
+    
+    private void refactoringNaturalId(NaturalId nId) {
+        if( nId == null )
+            return;
+        
+        // The class attribute of <many-to-one> in <natural-id>
+        refactoringManyToOnes(nId.getManyToOne());
+        
+        // <component><one-to-many class="">
+        refactoringComponents(nId.getComponent());
+    }
+    
+    private void refactoringPropertiez(Properties[] hbModelPropertiez) {
+        for( int i = 0; i < hbModelPropertiez.length; i ++ ) {
+            
+             // The class attribute of <many-to-one>
+            refactoringManyToOnes(hbModelPropertiez[i].getManyToOne());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(hbModelPropertiez[i].getComponent());
+        }
+    }
+    
+    private void refactoringJoins(Join[] hbModelJoins) {
+        for( int i = 0; i < hbModelJoins.length; i ++ ) {
+            
+            // The class attribute of <many-to-one>
+            Join theJoin = hbModelJoins[i];
+            refactoringManyToOnes(theJoin.getManyToOne());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(theJoin.getComponent());
+        }
+    }
+    
+    private void refactoringComponents(Component[] hbModelComponents){
+        for( int i = 0; i < hbModelComponents.length; i ++ ) {
+            
+            Component thisComp = hbModelComponents[i];
+            
+            // The class attribute of itself
+            String clsName = thisComp.getAttributeValue("Class");
+            if( clsName != null && clsName.equals(origName)) {
+                thisComp.setAttributeValue("Class", newName);
+            }
+            
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisComp.getManyToOne());
+            
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisComp.getMap());
+            
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisComp.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisComp.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisComp.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisComp.getArray());
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisComp.getOneToOne());
+        }
+        
+    }
+    
+    private void refactoringDynamicComponents(DynamicComponent[] hbModelDynComps) {
+        for( int i = 0; i < hbModelDynComps.length; i ++ ) {
+            
+            DynamicComponent thisComp = hbModelDynComps[i];
+            
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisComp.getManyToOne());
+            
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisComp.getMap());
+            
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisComp.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisComp.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisComp.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisComp.getArray());
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisComp.getOneToOne());
+        }
+    }
+    
+    private void refactoringManyToOnes(ManyToOne[] hbModelManyToOnes) {
+        for( int i = 0; i < hbModelManyToOnes.length; i ++ ) {
+            String clsName = hbModelManyToOnes[i].getAttributeValue("Class");
+            if( clsName != null && clsName.equals(origName)) {
+                hbModelManyToOnes[i].setAttributeValue("Class", newName);
+            }
+        }
+    }
+    
+    private void refactoringMaps(Map[] hbModelMaps) {
+        for (int mi = 0; mi < hbModelMaps.length; mi++) {
+            
+            Map theMap = hbModelMaps[mi];
+            
+            // The class attribute of <key-many-to-one> in <composite-map-key>
+            if( theMap.getCompositeMapKey() != null ) {
+                refactoringKeyManyToOnes(theMap.getCompositeMapKey().getKeyManyToOne());
+            }
+            
+            // The class attribute of <key-many-to-one> in <composite-index>
+            if( theMap.getCompositeIndex() != null ) {
+                refactoringKeyManyToOnes(theMap.getCompositeIndex().getKeyManyToOne());
+            }
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(theMap.getCompositeElement());
+            
+            // The class attribute in <one-to-many>
+            String oneToManyClsName = theMap.getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            if (oneToManyClsName != null && oneToManyClsName.equals(origName)) {
+                theMap.setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-many>
+            String manyToManyClsName = theMap.getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                theMap.setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+        }
+    }
+    
+    private void refactoringCompositeElement(CompositeElement compositeElement) {
+        if( compositeElement == null )
+            return;
+        
+        String clsName = compositeElement.getAttributeValue("Class");
+        if( clsName != null && clsName.equals(origName)) {
+            compositeElement.setAttributeValue("Class", newName);
+        }
+        
+        // The class attribute of <many-to-one> in <nested-composite-element>
+        refactoringNestedCompositeElements(compositeElement.getNestedCompositeElement());
+    }
+    
+    private void refactoringNestedCompositeElements(NestedCompositeElement[] nestedCompElems) {
+        for( int i = 0; i < nestedCompElems.length; i ++ ) {
+            refactoringManyToOnes(nestedCompElems[i].getManyToOne());
+        }
+    }
+    
+    private void refactoringKeyManyToOnes(KeyManyToOne[] keyManyToOnes) {
+        for (int i = 0; i < keyManyToOnes.length; i ++) {
+            KeyManyToOne theOne = keyManyToOnes[i];
+            String clsName = theOne.getAttributeValue("Class");
+            if(clsName != null && clsName.equals(origName)) {
+                theOne.setAttributeValue("Class", newName);
+            }
+        }
+    }
+    
+    private void refactoringSets(Set[] hbModelSets) {
+        for (int si = 0; si < hbModelSets.length; si++) {
+            
+            String oneToManyClsName = hbModelSets[si].getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            if (oneToManyClsName != null && oneToManyClsName.equals(origName)) {
+                hbModelSets[si].setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-many>
+            String manyToManyClsName = hbModelSets[si].getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                hbModelSets[si].setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(hbModelSets[si].getCompositeElement());
+        }
+    }
+    
+    private void refactoringLists(List[] hbModelLists) {
+        for (int li = 0; li < hbModelLists.length; li++) {
+            
+            String oneToManyClsName = hbModelLists[li].getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            if (oneToManyClsName != null && oneToManyClsName.equals(origName)) {
+                hbModelLists[li].setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-many>
+            String manyToManyClsName = hbModelLists[li].getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                hbModelLists[li].setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(hbModelLists[li].getCompositeElement());
+        }
+    }
+
+    private void refactoringBags(Bag[] hbModelBags) {
+        for (int bi = 0; bi < hbModelBags.length; bi++) {
+            
+            String oneToManyClsName = hbModelBags[bi].getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            if (oneToManyClsName != null && oneToManyClsName.equals(origName)) {
+                hbModelBags[bi].setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+            }
+            
+           // The class attribute of <many-to-many>
+            String manyToManyClsName = hbModelBags[bi].getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                hbModelBags[bi].setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(hbModelBags[bi].getCompositeElement());
+        }
+    }
+    
+    private void refactoringIdBags(Idbag[] hbModelIdbags) {
+        for (int i = 0; i < hbModelIdbags.length; i++) {
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(hbModelIdbags[i].getCompositeElement());
+            
+            // The class attribute of <many-to-many>
+            String manyToManyClsName = hbModelIdbags[i].getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                hbModelIdbags[i].setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+        }
+    }
+
+    private void refactoringArrays(Array[] hbModelArrays) {
+        for (int ai = 0; ai < hbModelArrays.length; ai++) {
+            
+            String oneToManyClsName = hbModelArrays[ai].getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            if (oneToManyClsName != null && oneToManyClsName.equals(origName)) {
+                hbModelArrays[ai].setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-many>
+            String manyToManyClsName = hbModelArrays[ai].getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            if (manyToManyClsName != null && manyToManyClsName.equals(origName)) {
+                hbModelArrays[ai].setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+            }
+            
+            // The class attribute of <many-to-one> in <composite-element>
+            refactoringCompositeElement(hbModelArrays[ai].getCompositeElement());
+        }
+    }
+
+
+    private void refactoringSublasses(Subclass[] subclazz) {
+        for (int ci = 0; ci < subclazz.length; ci++) {
+
+            Subclass thisClazz = subclazz[ci];
+            
+            // The name attribute of <subclass> element
+            String clsName = thisClazz.getAttributeValue("Name");
+            if (clsName.equals(origName)) {
+                thisClazz.setAttributeValue("Name", newName);
+            }
+            
+            // The extends attribute of <subclass> element
+            String extendsClsName = thisClazz.getAttributeValue("Extends");
+            if( extendsClsName != null && extendsClsName.equals(origName)) {
+                thisClazz.setAttributeValue("Extends", newName);
+            }
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisClazz.getOneToOne());
+            
+            // The class attribute of <many-to-one> in <join>
+            refactoringJoins(thisClazz.getJoin());
+            
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisClazz.getManyToOne());
+            
+            // The class attribute of <many-to-one> in <idbag><composite-element>
+            refactoringIdBags(thisClazz.getIdbag());
+
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisClazz.getMap());
+
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisClazz.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisClazz.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisClazz.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisClazz.getArray());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(thisClazz.getComponent());
+            
+            // <dynamic-component><one-to-many class="">
+            refactoringDynamicComponents(thisClazz.getDynamicComponent());
+        }
+    }
+    
+    private void refactoringJoinedSubclasses(JoinedSubclass[] joinedSubclazz) {
+        for (int ci = 0; ci < joinedSubclazz.length; ci++) {
+
+            JoinedSubclass thisClazz = joinedSubclazz[ci];
+
+            // The name attribute of <joined-subclass> element
+            String clsName = thisClazz.getAttributeValue("Name");
+            if (clsName.equals(origName)) {
+                joinedSubclazz[ci].setAttributeValue("Name", newName);
+            }
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisClazz.getOneToOne());
+            
+            // The extends attribute of <joined-subclass> element
+            String extendsClsName = thisClazz.getAttributeValue("Extends");
+            if( extendsClsName != null && extendsClsName.equals(origName)) {
+                thisClazz.setAttributeValue("Extends", newName);
+            }
+            
+            // The persister attribute of <joined-subclass> element
+            String persisterClsName = thisClazz.getAttributeValue("Persister");
+            if( persisterClsName != null && persisterClsName.equals(origName)) {
+                thisClazz.setAttributeValue("Persister", newName);
+            }
+
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisClazz.getManyToOne());
+            
+            // The class attribute of <many-to-one> in <properties>
+            refactoringPropertiez(thisClazz.getProperties());
+            
+            // The class attribute of <many-to-one> in <idbag><composite-element>
+            refactoringIdBags(thisClazz.getIdbag());
+            
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisClazz.getMap());
+
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisClazz.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisClazz.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisClazz.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisClazz.getArray());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(thisClazz.getComponent());
+            
+            // <dynamic-component><one-to-many class="">
+            refactoringDynamicComponents(thisClazz.getDynamicComponent());
+            
+        }
+    }
+    
+    private void refactoringUnionSubclasses(UnionSubclass[] unionSubclazz) {
+        for (int ci = 0; ci < unionSubclazz.length; ci++) {
+
+            UnionSubclass thisClazz = unionSubclazz[ci];
+
+            // The name attribute of <sub-class> element
+            String clsName = thisClazz.getAttributeValue("Name");
+            if (clsName.equals(origName)) {
+                unionSubclazz[ci].setAttributeValue("Name", newName);
+            }
+            
+            // The extends attribute of <union-subclass> element
+            String extendsClsName = thisClazz.getAttributeValue("Extends");
+            if( extendsClsName != null && extendsClsName.equals(origName)) {
+                thisClazz.setAttributeValue("Extends", newName);
+            }
+            
+            // The class attribute of <one-to-one>
+            refactoringOneToOnes(thisClazz.getOneToOne());
+            
+            // The persister attribute of <joined-subclass> element
+            String persisterClsName = thisClazz.getAttributeValue("Persister");
+            if( persisterClsName != null && persisterClsName.equals(origName)) {
+                thisClazz.setAttributeValue("Persister", newName);
+            }
+
+            // The class attribute of <many-to-one>
+            refactoringManyToOnes(thisClazz.getManyToOne());
+            
+            // The class attribute of <many-to-one> in <properties>
+            refactoringPropertiez(thisClazz.getProperties());
+            
+            // The class attribute of <many-to-one> in <idbag><composite-element>
+            refactoringIdBags(thisClazz.getIdbag());
+            
+            // The class attribute of <one-to-many> element in <map>
+            refactoringMaps(thisClazz.getMap());
+
+            // The class attribute of <one-to-many> element in <set>
+            refactoringSets(thisClazz.getSet());
+
+            // The class attribute of <one-to-many> element in <list>
+            refactoringLists(thisClazz.getList());
+
+            // The class attribute of <one-to-many> element in <bag>
+            refactoringBags(thisClazz.getBag());
+            
+            // The class attribute of <one-to-many> element in <array>
+            refactoringArrays(thisClazz.getArray());
+            
+            // <component><one-to-many class="">
+            refactoringComponents(thisClazz.getComponent());
+            
+            // <dynamic-component><one-to-many class="">
+            refactoringDynamicComponents(thisClazz.getDynamicComponent());
+        }
+    }
+    
 }
