@@ -948,6 +948,31 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testImports130479.pass");
     }
     
+    public void testAddImportThroughMethod130479() throws IOException {
+        testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest130479.java");
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                BlockTree block = method.getBody();
+                int offset = (int) (workingCopy.getTrees().getSourcePositions().getStartPosition(workingCopy.getCompilationUnit(), block) + 1);
+                TreePath context = workingCopy.getTreeUtilities().pathFor(offset);
+                try {
+                    assertEquals("Foo", SourceUtils.resolveImport(workingCopy, context, "org.netbeans.test.codegen.ImportsTest130479.Foo"));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertFiles("testAddImportThroughMethod1.pass");
+    }
+    
     String getSourcePckg() {
         if ("testDefaultPackage1".equals(getName())) {
             return "";
