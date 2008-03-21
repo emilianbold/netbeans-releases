@@ -162,16 +162,18 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
         String className = binaryClassName[0];
         if (className != null) {
-            Map<FileObject, OccurrenceItem> occurrences =
+            Map<FileObject, List<OccurrenceItem>> occurrences =
                     HibernateRefactoringUtil.getJavaClassOccurrences(mappingFileObjs, className);
 
             for (FileObject mFileObj : occurrences.keySet()) {
-                OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
-                        className,
-                        foundPlace.getLocation(),
-                        foundPlace.getText());
-                refactoringElements.add(query, elem);
+                List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+                for( OccurrenceItem foundPlace : foundPlaces ) {
+                    HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
+                            className,
+                            foundPlace.getLocation(),
+                            foundPlace.getText());
+                    refactoringElements.add(query, elem);
+                }
             }
         }
     }
@@ -204,16 +206,18 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
         
         if (className != null && fieldName != null) {
 
-            Map<FileObject, OccurrenceItem> occurrences =
+            Map<FileObject, List<OccurrenceItem>> occurrences =
                     HibernateRefactoringUtil.getJavaFieldOccurrences(mappingFileObjs, className, fieldName);
 
             for (FileObject mFileObj : occurrences.keySet()) {
-                OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
-                        fieldName,
-                        foundPlace.getLocation(),
-                        foundPlace.getText());
-                refactoringElements.add(query, elem);
+                List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+                for (OccurrenceItem foundPlace : foundPlaces) {
+                    HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
+                            fieldName,
+                            foundPlace.getLocation(),
+                            foundPlace.getText());
+                    refactoringElements.add(query, elem);
+                }
             }
         }
     }

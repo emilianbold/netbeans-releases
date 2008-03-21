@@ -65,7 +65,7 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
      */
     public void doChanges() {
         
-        String oldName = getOldName();
+        String oldName = getOriginalName();
         String newName = getNewName();
         
         for (FileObject mappingFileObject : getToBeModifiedFiles()) {
