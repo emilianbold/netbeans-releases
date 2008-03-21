@@ -96,10 +96,10 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         public WsNodeList(Project proj) {
             project = proj;
             changeSupport = new ChangeSupport(this);
-            view = ProjectWebServiceView.getProjectWebServiceView(project);
         }
 
         public List<ProjectWebServiceView.ViewType> keys() {
+            initView();
             List<ProjectWebServiceView.ViewType> result = new ArrayList<ProjectWebServiceView.ViewType>();
                 if (!view.isViewEmpty(ProjectWebServiceView.ViewType.SERVICE)) {
                     result.add(ProjectWebServiceView.ViewType.SERVICE);
@@ -175,11 +175,12 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         private void initView() {
-            view = ProjectWebServiceView.getProjectWebServiceView(project);
+            if(view==null)
+                view = ProjectWebServiceView.getProjectWebServiceView(project);
         }
 
         private static Lookup createLookup(Project project) {
-            return Lookups.fixed(new Object[]{project, project.getProjectDirectory()});
+            return Lookups.fixed(new Object[]{project});
         }
 
         private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceViewImpl> {
@@ -212,17 +213,6 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                 setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
             }
 
-            private void updateKeys() {
-                if (!isInitialized()) {
-                    return;
-                }
-                if (view != null && !view.isViewEmpty(viewType) ) {
-                    setKeys(view.getWebServiceViews());
-                } else {
-                    setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
-                }
-            }
-            
             private void updateKey (ProjectWebServiceViewImpl view) {
                 if (!isInitialized()) {
                     return;

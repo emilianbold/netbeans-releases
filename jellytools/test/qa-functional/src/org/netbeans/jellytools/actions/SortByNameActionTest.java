@@ -84,6 +84,12 @@ public class SortByNameActionTest extends JellyTestCase {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new PropertiesAction().perform(node);
         PropertySheetOperator pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
+        if(pso.tblSheet().getRowCount() == 0) {
+            // property sheet not initialized properly => try it once more
+            pso.close();
+            new PropertiesAction().perform(node);
+            pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
+        }
         // set default sorting
         pso.sortByCategory();
         int oldCount = pso.tblSheet().getRowCount();
