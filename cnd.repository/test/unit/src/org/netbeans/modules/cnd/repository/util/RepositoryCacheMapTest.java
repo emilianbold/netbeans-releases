@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.repository.util;
 
+import org.netbeans.modules.cnd.repository.disk.RepositoryCacheMap;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**

@@ -651,7 +651,7 @@ public class Utilities {
             final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
             final Collection<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
-            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
+            Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
             
             // go up and find affected modules
@@ -665,7 +665,15 @@ public class Utilities {
             }
             Collection<Dependency> byToken = takeRecommendsRequiresNeeds (primaryAndRequiredElementDeps);
             if (! byToken.isEmpty ()) {
-                retval.addAll (checkUpdateTokenProvider (byToken));
+                Collection<UpdateElement> newModules = checkUpdateTokenProvider (byToken);
+                retval.addAll (newModules);
+                Set<Dependency> newDeps = new HashSet<Dependency> ();
+                for (UpdateElement newEl : newModules) {
+                    UpdateElementImpl newElImpl = Trampoline.API.impl (newEl);
+                    newDeps.addAll (((ModuleUpdateElementImpl) newElImpl).getModuleInfo ().getDependencies ());
+                }
+                brokenDeps = DependencyChecker.findBrokenDependencies (newDeps, extendedModules);
+                retval.addAll (findRequiredModules (brokenDeps, extendedModules));
             }
             // go up and find affected modules again
             retval = findAffectedModules (retval);

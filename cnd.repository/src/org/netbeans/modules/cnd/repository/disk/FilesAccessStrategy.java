@@ -39,20 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.disk.api;
+package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 
 
-public interface RepositoryFilesHelperCacheStrategy {
+/**
+ *
+ * @author Nickolay Dalmatov
+ */
+public interface FilesAccessStrategy {
     
-    void                        adjustCapacity (int newCapacity) throws IOException ;
-    String                      lookupInCacheName(Key id);
-    ConcurrentFileRWAccess      lookupInCacheFile(String fileName);
-    void                        cacheNameRemove(String fileName) throws IOException;
-    void                        cacheFileRemove(ConcurrentFileRWAccess aFile);
-    void                        putCacheFile(String fileName, ConcurrentFileRWAccess aFile)  throws IOException ;
-    void                        putCacheName(Key id, String fileName);
+    /** Returns the file access for the object identified by the id */
+    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws IOException;
+    
+    /** Remove the record */
+    void removeObjForKey (Key id) throws IOException;
+
+    void setOpenFilesLimit(int limit) throws IOException;
+    
+    void closeUnit(String unitName) throws IOException;
 }
