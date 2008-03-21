@@ -49,36 +49,17 @@ deployment descriptor. </p>
     folder is created. The project folder contains project metadata like the project's 
     Ant build script. You can place the project folder in the same location as 
     your sources or in a separate location.</li>
-  <li><b>Add to Enterprise Application.</b> Lets you add the EJB module to any 
-    open enterprise application project.</li>
-  <li><b>Server.</b> Specifies the server to which the application client's enterprise application is deployed. 
-    To register servers, choose Tools &gt; Servers.</li>
-  <li><b>Java EE Version.</b> Specifies the level of the Java EE specification that is
-  used for the application client. You can choose J2EE 1.4 or Java EE 5 versions. 
-  If you set the version to 1.4, you should also set the source level to 1.4 in
-  the drop-down list that appears.</li>
- <li><b>Source Level Recommendations.</b> One of the following checkboxes will appear
-  if the Java EE Version version is set to J2EE 1.4 and JDK 1.5 is set as the default platform in the 
-  <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_platform_manager.html">Java Platform Manager</a>.
-  The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want
-  to create a portable application, select the appropriate checkbox:
-    <ul>
-      <li><b>Use JDK 1.4 and Set Source Level to 1.4.</b> This checkbox appears 
-        if JDK 1.4 is available in the Java Platform Manager. Select this checkbox 
-        to set both your JDK level and your source level to 1.4.</li>
-      <li><b>Set Source Level to 1.4.</b> This checkbox appears if JDK 1.4 is 
-        not available in the Java Platform Manager. Select this checkbox so that 
-        at least your source level is set to 1.4.</li>
-    </ul>
-  </li>
+  <li><b>Use Dedicated Folder for Storing Libraries.</b> When selected, you can specify a Libraries Folder where required compilation libraries are stored.</li>
+  <li><b>Libraries Folder.</b> Specifies the location of the folder containing shared libraries. 
+   Click Browse to specify a location other than the default.</li>
   <li><b>Set as Main Project.</b> Specifies the project as your main entry point 
     and place of work.</li>
 </ul>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../appclient_create.html">Creating an Enterprise Application Client</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About 
-    Standard Projects</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">Sharing Libraries in a Java Project</a></dd>
 </dl>
 
 <hr>

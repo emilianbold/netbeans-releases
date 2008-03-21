@@ -176,7 +176,7 @@ public class Call {
         Token<?extends JsTokenId> token = ts.token();
 
         if (token != null) {
-            TokenId id = token.id();
+            JsTokenId id = token.id();
 
             if (id == JsTokenId.WHITESPACE) {
                 return Call.LOCAL;
@@ -260,10 +260,11 @@ public class Call {
             
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
+    searchBackwards:
             while (ts.movePrevious()) {
                 // If we get to the previous line we're done
                 if (ts.offset() < lineStart) {
-                    break;
+                    break searchBackwards;
                 }
 
                 token = ts.token();
@@ -273,59 +274,88 @@ public class Call {
                 if (id == JsTokenId.ANY_KEYWORD) {
                     tokenText = token.text().toString();
                 }
+                
 
-                if (id == JsTokenId.WHITESPACE) {
-                    break;
-                } else if (id == JsTokenId.RBRACKET) {
-                    // Looks like we're operating on an array, e.g.
-                    //  [1,2,3].each|
-                    return new Call("Array", null, false, methodExpected);
-//                } else if (id == JsTokenId.RBRACE) { // XXX uh oh, what about blocks?  {|x|printx}.| ? type="Proc"
-//                                                       // Looks like we're operating on a hash, e.g.
-//                                                       //  {1=>foo,2=>bar}.each|
-//
-//                    return new Call("Hash", null, false, methodExpected);
-                } else if ((id == JsTokenId.STRING_LITERAL) || (id == JsTokenId.STRING_END)) {
-                    return new Call("String", null, false, methodExpected);
-                } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
-                    return new Call("RegExp", null, false, methodExpected);
-                } else if (id == JsTokenId.INT_LITERAL || id == JsTokenId.FLOAT_LITERAL) {
-                    return new Call("Number", null, false, methodExpected); // Or Bignum?
-                } else if ((id == JsTokenId.ANY_KEYWORD) && "true".equals(tokenText)) { // NOI18N
-                    return new Call("Boolean", null, false, methodExpected);
-                } else if ((id == JsTokenId.ANY_KEYWORD) && "false".equals(tokenText)) { // NOI18N
-                    return new Call("Boolean", null, false, methodExpected);
-                } else if (((id == JsTokenId.GLOBAL_VAR) ||
-                        (id == JsTokenId.IDENTIFIER)) ||
-                        id.primaryCategory().equals("keyword") || (id == JsTokenId.DOT) ||
-                        (id == JsTokenId.CONSTANT) || (id == JsTokenId.THIS)) {
-                    
-                    // We're building up a potential expression such as "Test::Unit" so continue looking
-                    beginOffset = ts.offset();
+                switch (id) {
+                    case WHITESPACE:
+                        break searchBackwards;
+                    //    case RBRACKET:
+                    //    // Looks like we're operating on an array, e.g.
+                    //    //  [1,2,3].each|
+                    //
+                    //    // No, it's more likely that we have something like this:  foo[0] -- which is not an array, it's an element of an array of unknown type
+                    //    return new Call("Array", null, false, methodExpected);
+                    case STRING_LITERAL:
+                    case STRING_END:
+                        return new Call("String", null, false, methodExpected);
+                    case REGEXP_LITERAL:
+                    case REGEXP_END:
+                        return new Call("RegExp", null, false, methodExpected);
+                    case INT_LITERAL:
+                    case FLOAT_LITERAL:
+                        return new Call("Number", null, false, methodExpected); // Or Bignum?
+                    case LPAREN:
+                    case LBRACE:
+                    case LBRACKET:
+                        // It's an expression for example within a parenthesis, e.g.
+                        // yield(^File.join())
+                        // in this case we can do top level completion
+                        // TODO: There are probably more valid contexts here
+                        break searchBackwards;
+                    case RPAREN: {
+                        Call call = new Call(null, null, false, false);
+                        call.prevCallParenPos = ts.offset();
+                        // The starting offset is more accurate for finding the AST node
+                        // corresponding to the call
+                        OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
+                        if (matching != OffsetRange.NONE){
+                            call.prevCallParenPos = matching.getStart();
+                        }
 
-                    continue;
-                } else if ((id == JsTokenId.LPAREN) || (id == JsTokenId.LBRACE) ||
-                        (id == JsTokenId.LBRACKET)) {
-                    // It's an expression for example within a parenthesis, e.g.
-                    // yield(^File.join())
-                    // in this case we can do top level completion
-                    // TODO: There are probably more valid contexts here
-                    break;
-                } else if (id == JsTokenId.RPAREN) {
-                    Call call = new Call(null, null, false, false);
-                    call.prevCallParenPos = ts.offset();
-                    // The starting offset is more accurate for finding the AST node
-                    // corresponding to the call
-                    OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LPAREN, JsTokenId.RPAREN);
-                    if (matching != OffsetRange.NONE){
-                        call.prevCallParenPos = matching.getStart();
+                        return call;
                     }
-                    
-                    return call;
-                } else {
-                    // Something else - such as "getFoo().x|" - at this point we don't know the type
-                    // so we'll just return unknown
-                    return Call.UNKNOWN;
+                    case RBRACKET: { // Parenthesis
+                        Call call = new Call(null, null, false, false);
+                        call.prevCallParenPos = ts.offset();
+                        // The starting offset is more accurate for finding the AST node
+                        // corresponding to the call
+                        OffsetRange matching = LexUtilities.findBwd(doc, ts, JsTokenId.LBRACKET, JsTokenId.LBRACKET);
+                        if (matching != OffsetRange.NONE){
+                            call.prevCallParenPos = matching.getStart();
+                        }
+
+                        return call;
+                    }
+                    case GLOBAL_VAR:
+                    case IDENTIFIER:
+                    case DOT:
+                    case CONSTANT:
+                    case THIS:
+                        // We're building up a potential expression such as "Test::Unit" so continue looking
+                        beginOffset = ts.offset();
+
+                        continue searchBackwards;
+                    case ANY_KEYWORD: {
+                        if ("true".equals(tokenText)) { // NOI18N
+                            return new Call("Boolean", null, false, methodExpected);
+                        } else if ("false".equals(tokenText)) { // NOI18N
+                            return new Call("Boolean", null, false, methodExpected);
+                        }
+                        // fallthrough
+                    }
+                    default: {
+                        if (id.primaryCategory().equals("keyword")) { // NOI18N
+                            // We're building up a potential expression such as "Test::Unit" so continue looking
+                            beginOffset = ts.offset();
+
+                            continue searchBackwards;
+                        }
+                        
+                        
+                        // Something else - such as "getFoo().x|" - at this point we don't know the type
+                        // so we'll just return unknown
+                        return Call.UNKNOWN;
+                    }
                 }
             }
 

@@ -134,7 +134,17 @@
                                             <xsd:sequence>
                                                 <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
                                                 <xsd:element name="method" type="saas:Method" minOccurs="1" maxOccurs="1"/>
-                                                <xsd:element name="frame" minOccurs="0" maxOccurs="1">
+                                                <xsd:element name="prompt" minOccurs="0" maxOccurs="1">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="desktop" type="saas:Prompt" minOccurs="1" maxOccurs="1"/>
+                                                            <xsd:element name="web" type="saas:Prompt" minOccurs="1" maxOccurs="1"/>
+                                                            <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
+                                                            <xsd:element name="fault" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                                <xsd:element name="web" minOccurs="0" maxOccurs="1">
                                                     <xsd:complexType>
                                                         <xsd:sequence>
                                                             <xsd:element name="sign" type="saas:Sign" minOccurs="0" maxOccurs="1"/>
@@ -144,6 +154,7 @@
                                                     </xsd:complexType>
                                                 </xsd:element>
                                             </xsd:sequence>
+                                            <xsd:attribute name="id" type="xsd:string" use="required"/>
                                         </xsd:complexType>
                                     </xsd:element>
                                     <xsd:element name="logout" minOccurs="0" maxOccurs="1">
@@ -154,9 +165,9 @@
                                         </xsd:complexType>
                                     </xsd:element>
                                 </xsd:sequence>
-                                <xsd:attribute name="session-id" type="xsd:string" use="optional"/>
+                                <xsd:attribute name="session-id" type="xsd:string" use="required"/>
                                 <xsd:attribute name="api-id" type="xsd:string" use="required"/>
-                                <xsd:attribute name="sig-id" type="xsd:string" use="optional"/>
+                                <xsd:attribute name="sig-id" type="xsd:string" use="required"/>
                             </xsd:complexType>
                             </xsd:element>
                         <xsd:element name="custom"/>
@@ -287,6 +298,11 @@
         <xsd:sequence>
             <xsd:element name="params" type="saas:Params" minOccurs="0" maxOccurs="1"/>  
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:string" use="required"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="Prompt">
+        <xsd:attribute name="url" type="xsd:string"/>
     </xsd:complexType>
     
 </xsd:schema>

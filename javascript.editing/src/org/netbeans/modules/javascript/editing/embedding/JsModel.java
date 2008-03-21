@@ -119,11 +119,11 @@ public class JsModel {
             documentDirty = false;
 
             // Debugging
-            //try {
-            //    rhtmlCode = doc.getText(0, doc.getLength());
-            //} catch (Exception e) {
-            //    e.printStackTrace();
-            //}
+//            try {
+//                rhtmlCode = doc.getText(0, doc.getLength());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             codeBlocks.clear();
             StringBuilder buffer = new StringBuilder();
 
@@ -262,8 +262,10 @@ public class JsModel {
                             // Insert a file link
                             //int sourceStart = ts.offset(); 
                             int sourceStart = 0;
-                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + sb.toString() + "');\n"; // NOI18N
-                            int sourceEnd = sourceStart + insertText.length();
+                            String path = sb.toString();
+                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
+                            // This corresponds to a 0-size block in the source
+                            int sourceEnd = sourceStart;
                             int generatedStart = buffer.length();
                             buffer.append(insertText);
                             int generatedEnd = buffer.length();
@@ -415,11 +417,15 @@ public class JsModel {
                             if (src.length() > 2 && src.startsWith("\"") && src.endsWith("\"")) {
                                 src = src.substring(1, src.length() - 1);
                             }
+                            if (src.length() > 2 && src.startsWith("'") && src.endsWith("'")) {
+                                src = src.substring(1, src.length() - 1);
+                            }
 
                             // Insert a file link
                             int sourceStart = ts.offset();
                             String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "('" + src + "');\n"; // NOI18N
-                            int sourceEnd = sourceStart + insertText.length();
+                            // This corresponds to a 0-size block in the source
+                            int sourceEnd = sourceStart;
                             int generatedStart = buffer.length();
 //                            if (buffer.length() > 0 && !Character.isWhitespace(buffer.charAt(buffer.length()-1))) {
 //                                buffer.append("\n");

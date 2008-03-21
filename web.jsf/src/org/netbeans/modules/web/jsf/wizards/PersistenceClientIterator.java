@@ -103,15 +103,16 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
         }
         
+        JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+        
         for (int i = 0; i < controllerFileObjects.length; i++) {
-            //String entityClass = entity.getClass2();
             String entityClass = entities.get(i);
             String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
             String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
             String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
             folder = folder + firstLower;
-            String controller = controllerPkg + "." + simpleClassName + "Controller";
-            JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i]);
+            String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + simpleClassName + "Controller";
+            JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport);
         }
         
         return Collections.singleton(DataFolder.findFolder(targetFolder));
@@ -132,7 +133,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                        new HelpCtx(PersistenceClientIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard)); // NOI18N
+                        new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
         WizardDescriptor.Panel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
 //        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
 //        panels = new WizardDescriptor.Panel[] { javaPanel };

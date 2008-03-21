@@ -66,13 +66,15 @@ public class AddPropertyPanel extends javax.swing.JPanel {
     
     private DocumentListener propNameTextFieldDocumentListener;
     private FileObject file;
+    private String className;
     private List<String> existingFields;
     private String[] pcsName;
     private String[] vcsName;
     private JButton okButton;
     
-    public AddPropertyPanel(FileObject file, List<String> existingFields, String[] pcsName, String[] vcsName, JButton okButton) {
+    public AddPropertyPanel(FileObject file, String className, List<String> existingFields, String[] pcsName, String[] vcsName, JButton okButton) {
         this.file = file;
+        this.className = className;
         this.existingFields = existingFields;
         this.pcsName = pcsName;
         this.vcsName = vcsName;
@@ -241,7 +243,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
 
         int i = staticCheckBox.isSelected() ? 1 : 0;
         AddPropertyConfig addPropertyConfig = new AddPropertyConfig(
-                name, initializer, type, access, staticCheckBox.isSelected(), finalCheckBox.isSelected(), generate, generateJavadocCheckBox.isSelected(), boundCheckBox.isSelected(), propNameTextField.getText().trim(), vetoableCheckBox.isSelected(), indexedCheckBox.isSelected(), pcsName[i], vcsName[i], generatePropertyChangeSupportCheckBox.isSelected(), generateVetoablePropertyChangeSupportCheckBox.isSelected());
+                name, initializer, type, className, access, staticCheckBox.isSelected(), finalCheckBox.isSelected(), generate, generateJavadocCheckBox.isSelected(), boundCheckBox.isSelected(), propNameTextField.getText().trim(), vetoableCheckBox.isSelected(), indexedCheckBox.isSelected(), pcsName[i], vcsName[i], generatePropertyChangeSupportCheckBox.isSelected(), generateVetoablePropertyChangeSupportCheckBox.isSelected());
         return addPropertyConfig;
     }
 

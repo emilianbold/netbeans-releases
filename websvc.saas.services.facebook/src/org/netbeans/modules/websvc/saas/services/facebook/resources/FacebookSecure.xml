@@ -56,6 +56,9 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.facebook.Bundle</localizing-bundle>
         <group name="Facebook"/>
+        <authentication profile="SaaSServices/Facebook/profile.properties">
+            <api-key id="api_key"/>
+        </authentication>
     </saas-metadata>
     
     <!-- Process all methods in the wadl !-->

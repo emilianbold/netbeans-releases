@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -58,6 +59,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -78,6 +80,7 @@ public class PHPIndex {
     static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     private static final Set<String> TERMS_FQN = Collections.singleton(PHPIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
+    private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
     private static final Set<String> TERMS_EXTEND = Collections.singleton(PHPIndexer.FIELD_EXTEND);
     private final Index index;
 
@@ -335,11 +338,39 @@ public class PHPIndex {
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
-        search(name, name, kind, result, ALL_SCOPE, TERMS_FQN);
+        search(PHPIndexer.FIELD_BASE, name, kind, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
-                String[] signatures = map.getValues(PHPIndexer.FIELD_FQN);
+                String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+                    int firstSemicolon = signature.indexOf(";");
+                    
+                    String funcName = signature.substring(0, firstSemicolon);
+
+                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
+                            map.getPersistentUrl(), funcName, null, 0, this, false);
+
+                    functions.add(func);
+                }
+            }
+        }
+        return functions;
+    }
+    
+    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
 
                 if (signatures == null) {
                     continue;
@@ -347,14 +378,15 @@ public class PHPIndex {
 
                 for (String signature : signatures) {
 
-                    IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            map.getPersistentUrl(), signature, "", 0, this, false);
+                    IndexedConstant constant = new IndexedConstant(signature, null,
+                            this, map.getPersistentUrl(), null, 0, ElementKind.GLOBAL);
 
-                    functions.add(func);
+                    constants.add(constant);
                 }
             }
         }
-        return functions;
+        
+        return constants;
     }
 
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
@@ -547,109 +579,109 @@ public class PHPIndex {
 //        return elements;
 //    }
     /** Try to find the type of a symbol and return it */
-    public String getType(String symbol) {
-        //assert in != null && in.length() > 0;
-
-        final Set<SearchResult> result = new HashSet<SearchResult>();
-
-        String field = PHPIndexer.FIELD_FQN;
-        Set<String> terms = TERMS_BASE;
-        String lcsymbol = symbol.toLowerCase();
-        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
-
-//        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-//        String searchUrl = null;
-//        if (context != null) {
-//            try {
-//                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-//            } catch (FileStateInvalidException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-
-        for (SearchResult map : result) {
-            String[] signatures = map.getValues(field);
-
-            if (signatures != null) {
-//                // Check if this file even applies
-//                if (context != null) {
-//                    String fileUrl = map.getPersistentUrl();
-//                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-//                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-//                        if (!isLibrary && !isReachable(context, fileUrl)) {
-//                            continue;
-//                        }
+//    public String getType(String symbol) {
+//        //assert in != null && in.length() > 0;
+//
+//        final Set<SearchResult> result = new HashSet<SearchResult>();
+//
+//        String field = PHPIndexer.FIELD_FQN;
+//        Set<String> terms = TERMS_BASE;
+//        String lcsymbol = symbol.toLowerCase();
+//        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
+//
+////        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
+////        String searchUrl = null;
+////        if (context != null) {
+////            try {
+////                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+////            } catch (FileStateInvalidException ex) {
+////                Exceptions.printStackTrace(ex);
+////            }
+////        }
+//
+//        for (SearchResult map : result) {
+//            String[] signatures = map.getValues(field);
+//
+//            if (signatures != null) {
+////                // Check if this file even applies
+////                if (context != null) {
+////                    String fileUrl = map.getPersistentUrl();
+////                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
+////                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
+////                        if (!isLibrary && !isReachable(context, fileUrl)) {
+////                            continue;
+////                        }
+////                    }
+////                }
+//
+//                for (String signature : signatures) {
+//                    // Lucene returns some inexact matches, TODO investigate why this is necessary
+//                    // Make sure the name matches exactly
+//                    // We know that the prefix is correct from the first part of
+//                    // this if clause, by the signature may have more
+//                    if (((signature.length() > lcsymbol.length()) &&
+//                            (signature.charAt(lcsymbol.length()) != ';'))) {
+//                        continue;
+//                    }
+//
+//                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
+//                    assert map != null;
+//
+//                    String elementName = null;
+//                    int nameEndIdx = signature.indexOf(';');
+//                    assert nameEndIdx != -1;
+//                    elementName = signature.substring(0, nameEndIdx);
+//                    if (!elementName.startsWith(symbol)) {
+//                        continue;
+//                    }
+//                    nameEndIdx++;
+//
+//                    String funcIn = null;
+//                    int inEndIdx = signature.indexOf(';', nameEndIdx);
+//                    assert inEndIdx != -1;
+//                    if (inEndIdx > nameEndIdx + 1) {
+//                        funcIn = signature.substring(nameEndIdx, inEndIdx);
+//                    }
+//                    inEndIdx++;
+//
+//                    int startCs = inEndIdx;
+//                    inEndIdx = signature.indexOf(';', startCs);
+//                    assert inEndIdx != -1;
+////                    if (inEndIdx > startCs) {
+////                        // Compute the case sensitive name
+////                        elementName = signature.substring(startCs, inEndIdx);
+////                    }
+//                    inEndIdx++;
+//
+//                    // Filter out methods on other classes
+////                    if (!includeMethods && (funcIn != null)) {
+////                        continue;
+////                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
+////                        continue;
+////                    }
+//
+//                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+////                    boolean isFunction = element instanceof IndexedFunction;
+////                    if (isFunction && !includeMethods) {
+////                        continue;
+////                    } else if (!isFunction && !includeProperties) {
+////                        continue;
+////                    }
+////                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
+////                        continue;
+////                    }
+////                    elements.add(element);
+//
+//                    String type = element.getType();
+//                    if (type != null) {
+//                        return type;
 //                    }
 //                }
-
-                for (String signature : signatures) {
-                    // Lucene returns some inexact matches, TODO investigate why this is necessary
-                    // Make sure the name matches exactly
-                    // We know that the prefix is correct from the first part of
-                    // this if clause, by the signature may have more
-                    if (((signature.length() > lcsymbol.length()) &&
-                            (signature.charAt(lcsymbol.length()) != ';'))) {
-                        continue;
-                    }
-
-                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                    assert map != null;
-
-                    String elementName = null;
-                    int nameEndIdx = signature.indexOf(';');
-                    assert nameEndIdx != -1;
-                    elementName = signature.substring(0, nameEndIdx);
-                    if (!elementName.startsWith(symbol)) {
-                        continue;
-                    }
-                    nameEndIdx++;
-
-                    String funcIn = null;
-                    int inEndIdx = signature.indexOf(';', nameEndIdx);
-                    assert inEndIdx != -1;
-                    if (inEndIdx > nameEndIdx + 1) {
-                        funcIn = signature.substring(nameEndIdx, inEndIdx);
-                    }
-                    inEndIdx++;
-
-                    int startCs = inEndIdx;
-                    inEndIdx = signature.indexOf(';', startCs);
-                    assert inEndIdx != -1;
-//                    if (inEndIdx > startCs) {
-//                        // Compute the case sensitive name
-//                        elementName = signature.substring(startCs, inEndIdx);
-//                    }
-                    inEndIdx++;
-
-                    // Filter out methods on other classes
-//                    if (!includeMethods && (funcIn != null)) {
-//                        continue;
-//                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
-//                        continue;
-//                    }
-
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-//                    boolean isFunction = element instanceof IndexedFunction;
-//                    if (isFunction && !includeMethods) {
-//                        continue;
-//                    } else if (!isFunction && !includeProperties) {
-//                        continue;
-//                    }
-//                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
-//                        continue;
-//                    }
-//                    elements.add(element);
-
-                    String type = element.getType();
-                    if (type != null) {
-                        return type;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /** 
      * Decide whether the given url is included from the current compilation
@@ -659,6 +691,14 @@ public class PHPIndex {
      * from the current file.
      */
     public boolean isReachable(PHPParseResult result, String url) {
+        try {
+            if (url.equals(result.getFile().getFileObject().getURL().toExternalForm())){
+                return true;
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         Collection<String> includes = new ArrayList<String>();
         
         for (Statement statement : result.getProgram().getStatements()) {
@@ -678,7 +718,7 @@ public class PHPIndex {
             // start of provisional code
             //TODO: a more sophisticated check here,
             // currently only basic, same dir includes are support
-            String incl = includeInQuotes.substring(1, includeInQuotes.length() - 1);
+            String incl = dequote(includeInQuotes);
             
             if (url.endsWith(incl)){
                 return true;
@@ -688,5 +728,12 @@ public class PHPIndex {
         }
 
         return false;
+    }
+    
+    static String dequote(String string){
+        assert string.length() >= 2;
+        assert string.startsWith("\"") || string.startsWith("'");
+        assert string.endsWith("\"") || string.endsWith("'");
+        return string.substring(1, string.length() - 1);
     }
 }

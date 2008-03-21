@@ -353,7 +353,19 @@ public class JsAnalyzer implements StructureScanner {
                         if (child.getType() == Token.OBJLITNAME) {
                             Node f = AstUtilities.getLabelledNode(child);
                             if (f != null) {
-                                AstElement js = AstElement.createElement(info, f, child.getString(), className, this);
+                                if (f.getType() == Token.FUNCTION && ((FunctionNode)f).getFunctionName().length() > 0) {
+                                    // This is a function whose name we already know
+                                    // Unusual syntax but yuiloader.html for example has it:
+                                    //    var YAHOO_config = {
+                                    //        listener: function g_mycallback(info) {
+                                    //            g_modules.push(info.name);
+                                    //        }
+                                    //    };
+                                    // Here the function is named both listener: and g_mycallback.
+                                    break;
+                                }
+                                String funcName = child.getString();
+                                AstElement js = AstElement.createElement(info, f, funcName, className, this);
                                 if (js != null) {
                                     checkDocumentation(js);
                                     if (f.getType() != Token.FUNCTION) {
@@ -555,7 +567,7 @@ public class JsAnalyzer implements StructureScanner {
                         currentFunction.nodeType = Node.UNKNOWN_TYPE;
                     } else if (currentFunction.nodeType == null) {
                         currentFunction.nodeType = type;
-                    } else {
+                    } else if (type != null) {
                         if (currentFunction.nodeType.indexOf(type) == -1) {
                             currentFunction.nodeType = currentFunction.nodeType + "|" + type; // NOI18N
                         }

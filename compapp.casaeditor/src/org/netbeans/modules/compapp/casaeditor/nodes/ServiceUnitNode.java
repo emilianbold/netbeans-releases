@@ -106,14 +106,12 @@ public class ServiceUnitNode extends CasaNode {
 
     @Override
     public String getName() {
-        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        /*
+        CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData(); 
         if (su != null) {
-            return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
+            //return NbBundle.getMessage(getClass(), "LBL_ServiceUnit");      // NOI18N
+            return su.getUnitName();
         }
         return super.getName();
-        */
-        return su.getUnitName();
     }
 
     /*

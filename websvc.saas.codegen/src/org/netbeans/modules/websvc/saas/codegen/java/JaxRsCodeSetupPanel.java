@@ -180,9 +180,9 @@ public class JaxRsCodeSetupPanel extends javax.swing.JPanel {
 
         public ParamTableModel() {
         }
-        String[] columnNames = new String[]{NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_DefaultValue"), NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_MapToQueryParam")};
-        Class[] types = new Class[]{String.class, Class.class, Object.class, Boolean.class};
-        boolean[] canEdit = new boolean[]{false, false, true, true};
+        String[] columnNames = new String[]{NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(JaxRsCodeSetupPanel.class, "LBL_DefaultValue")};
+        Class[] types = new Class[]{String.class, Class.class, Object.class};
+        boolean[] canEdit = new boolean[]{false, false, true};
 
         public String getColumnName(int index) {
             return columnNames[index];

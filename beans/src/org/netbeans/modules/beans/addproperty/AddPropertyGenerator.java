@@ -88,6 +88,7 @@ public class AddPropertyGenerator {
                 scriptContext.setAttribute(ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE);
                 scriptContext.setAttribute("access", access, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("type", type, ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("className", addPropertyConfig.getClassName(), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("name", name, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("initializer", initializer, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("capitalizedName", capitalize(name), ScriptContext.ENGINE_SCOPE); // NOI18N

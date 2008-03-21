@@ -264,7 +264,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         Node[] oldNodes = (Node[])evt.getOldValue();
                         Node[] nodes = (Node[])evt.getNewValue();
                         Lookup lastLookup = lookups[lookups.length-1];
-                        Node delegate = formEditor.getFormDataObject().getNodeDelegate();
+                        FormDataObject fdo = formEditor.getFormDataObject();
+                        if (!fdo.isValid()) {
+                            return; // Issue 130637
+                        }
+                        Node delegate = fdo.getNodeDelegate();
                         if (!(lastLookup instanceof NoNodeLookup)
                             && (oldNodes.length >= 1)
                             && (!oldNodes[0].equals(delegate))) {

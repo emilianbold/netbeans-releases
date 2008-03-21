@@ -1291,6 +1291,9 @@ public class EditorContextImpl extends EditorContext {
                             ExpressionScanner scanner = new ExpressionScanner(treeStartLine, cu, ci.getTrees().getSourcePositions());
                             ExpressionScanner.ExpressionsInfo newInfo = new ExpressionScanner.ExpressionsInfo();
                             List<Tree> newExpTrees = methodTree.accept(scanner, newInfo);
+                            if (newExpTrees == null) {
+                                continue;
+                            }
                             treeStartLine = 
                                     (int) cu.getLineMap().getLineNumber(
                                         sp.getStartPosition(cu, newExpTrees.get(0)));

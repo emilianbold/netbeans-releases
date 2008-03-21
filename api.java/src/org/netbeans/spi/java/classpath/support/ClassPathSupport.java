@@ -40,6 +40,7 @@
  */
 package org.netbeans.spi.java.classpath.support;
 
+import java.io.File;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -161,6 +162,27 @@ public class ClassPathSupport {
         return createClassPath(l);
     }
 
+    /**
+     * Convenience method to create a classpath object from a conventional string representation.
+     * @param jvmPath a JVM-style classpath (folder or archive paths separated by {@link File#pathSeparator})
+     * @return a corresponding classpath object
+     * @throws IllegalArgumentException in case a path entry looks to be invalid
+     * @since org.netbeans.api.java/1 1.15
+     * @see FileUtil#urlForArchiveOrDir
+     * @see ClassPath#toJVMPath
+     */
+    public static ClassPath createClassPath(String jvmPath) throws IllegalArgumentException {
+        List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation>();
+        for (String piece : jvmPath.split(File.pathSeparator)) {
+            File f = FileUtil.normalizeFile(new File(piece));
+            URL u = FileUtil.urlForArchiveOrDir(f);
+            if (u == null) {
+                throw new IllegalArgumentException("Path entry looks to be invalid: " + piece); // NOI18N
+            }
+            l.add(createResource(u));
+        }
+        return createClassPath(l);
+    }
 
     /**
      * Creates read only proxy ClassPathImplementation for given delegates.

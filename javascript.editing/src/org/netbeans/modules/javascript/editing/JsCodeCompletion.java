@@ -293,7 +293,7 @@ public class JsCodeCompletion implements Completable {
             request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            request.index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+            request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
@@ -322,7 +322,14 @@ public class JsCodeCompletion implements Completable {
             }
             
             if (root != null) {
-                final AstPath path = new AstPath(root, astOffset);
+                int offset = astOffset;
+                
+                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
+                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
+                    offset = sanitizedRange.getStart();
+                }
+
+                final AstPath path = new AstPath(root, offset);
                 request.path = path;
                 request.fqn = AstUtilities.getFqn(path, null, null);
 
@@ -857,7 +864,13 @@ public class JsCodeCompletion implements Completable {
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
         } else {
-            matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            if (prefix.length() == 0) {
+//                proposals.clear();
+//                proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                return true;
+//            } else {
+                matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            }
         }
         // Also add in non-fqn-prefixed elements
         Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
@@ -930,7 +943,20 @@ public class JsCodeCompletion implements Completable {
             String type = call.getType();
             String lhs = call.getLhs();
 
-            if (call.getPrevCallParenPos() != -1) {
+            if (type == null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+                if (method != null) {
+                    List<Node> nodes = new ArrayList<Node>();
+                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.javascript.Token.MISSING_DOT }, nodes);
+                    if (nodes.size() > 0) {
+                        Node exprNode = nodes.get(0);
+                        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                        type = analyzer.getType(exprNode.getParentNode());
+                    }
+                }
+            }
+            
+            if (type == null && call.getPrevCallParenPos() != -1) {
                 // It's some sort of call
                 assert call.getType() == null;
                 assert call.getLhs() == null;
@@ -952,8 +978,23 @@ public class JsCodeCompletion implements Completable {
                                 type = analyzer.getType(callNode);
                             }
                             break;
+                        } else if (callNode.getType() == org.mozilla.javascript.Token.GETELEM) {
+                            Node method = AstUtilities.findLocalScope(node, path);
+
+                            if (method != null) {
+                                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                                type = analyzer.getType(callNode);
+                            }
+                            break;
                         }
                     }
+                }
+            } else if (type == null && lhs != null && node != null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+
+                if (method != null) {
+                    JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                    type = analyzer.getType(node);
                 }
             }
 
@@ -1030,7 +1071,13 @@ public class JsCodeCompletion implements Completable {
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
             if ((elements.size() == 0) && (prefix.length() > 0 || type == null)) {
-                elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                if (prefix.length() == 0) {
+//                    proposals.clear();
+//                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                    return true;
+//                } else {
+                    elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                }
             }
 
             for (IndexedElement element : elements) {
@@ -1335,6 +1382,14 @@ public class JsCodeCompletion implements Completable {
             }
             String html = sb.toString();
             return html;
+        } else if (element instanceof IndexedElement) {
+            IndexedElement ie = (IndexedElement)element;
+            if (!ie.isDocumented()) {
+                IndexedElement e = ie.findDocumentedSibling();
+                if (e != null) {
+                    element = e;
+                }
+            }
         }
 
         List<String> comments = ElementUtilities.getComments(info, element);
@@ -1345,12 +1400,6 @@ public class JsCodeCompletion implements Completable {
         }
 
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
-        if (element instanceof IndexedElement) {
-            String url = ((IndexedElement)element).getFilenameUrl();
-            if (url.indexOf("jsstubs/") != -1) { // NOI18N
-                formatter.setFormattedComment(true);
-            }
-        }
         String name = element.getName();
         if (name != null && name.length() > 0) {
             formatter.setSeqName(name);
@@ -1824,6 +1873,18 @@ public class JsCodeCompletion implements Completable {
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
+
+            if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
+                if (element instanceof IndexedElement) {
+                    String origin = ((IndexedElement)element).getOrigin();
+                    if (origin != null) {
+                        formatter.appendText(origin);
+                        return formatter.getText();
+                    }
+                }
+                
+                return null;
+            }
             
             String in = element.getIn();
 
@@ -1841,12 +1902,12 @@ public class JsCodeCompletion implements Completable {
                         }
                         formatter.appendText(filename);
                         return formatter.getText();
-                    } else if (filename.indexOf("/stub_core_") != -1) { // NOI18N
-                        formatter.appendText("Core JS");
-                        return formatter.getText();
-                    } else if (filename.indexOf("/stub_") != -1) { // NOI18N
-                        formatter.appendText("DOM");
-                        return formatter.getText();
+                    } else {
+                        String origin = ie.getOrigin();
+                        if (origin != null) {
+                            formatter.appendText(origin);
+                            return formatter.getText();
+                        }
                     }
                 }
                 

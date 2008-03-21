@@ -509,6 +509,13 @@ public class PropertySheet extends JPanel {
                 pclistener.detach();
             }
 
+            // try to cancel previous pending node setting which is now
+            // obsoleted by following clear
+            RequestProcessor.Task curTask = getScheduleTask();
+            if (!curTask.equals(initTask)) {
+                curTask.cancel();
+            }
+            
             if (SwingUtilities.isEventDispatchThread()) {
                 if (loggable) {
                     PropUtils.log(PropertySheet.class, "  Nodes cleared on event queue.  Emptying model.");
@@ -574,7 +581,6 @@ public class PropertySheet extends JPanel {
             scheduleTask = RequestProcessor.getDefault().post(
                     new Runnable() {
                         public void run() {
-                            final Node[] nodes = helperNodes;
                             SwingUtilities.invokeLater(
                                 new Runnable() {
                                     public void run() {
@@ -583,11 +589,12 @@ public class PropertySheet extends JPanel {
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
-                                                "Delayed " + "updater setting nodes to " + Arrays.asList(nodes)
+                                                "Delayed " + "updater setting nodes to " + //NOI18N
+                                                    (null == helperNodes ? "null" : Arrays.asList(helperNodes)) //NOI18N
                                             );
                                         }
 
-                                        doSetNodes(nodes);
+                                        doSetNodes(helperNodes);
                                     }
                                 }
                             );

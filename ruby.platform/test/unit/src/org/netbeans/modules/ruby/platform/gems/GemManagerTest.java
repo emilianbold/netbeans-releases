@@ -243,8 +243,9 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     private File getRakeGem() throws IOException {
-        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.7.3.gem");
+        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
+        assertTrue("rake gem found", rakeGem.isFile());
         return rakeGem;
     }
 

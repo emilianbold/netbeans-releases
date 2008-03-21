@@ -71,7 +71,7 @@ public class RemoveStoppedAction extends AbstractAction {
   
   /** Creates a new instance of RemoveStoppedAction */
   public RemoveStoppedAction(final Engine engine) {
-    super("Remove All Stopped", new ImageIcon(Utilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Remove_All_Stopped"), new ImageIcon(Utilities.loadImage(ICON)));
     this.engine = engine;
     this.engine.addPropertyChangeListener(ProcessInstance.STATE, WeakListeners.propertyChange(listener, engine));
   }

@@ -225,7 +225,9 @@ final class Target implements SearchTarget {
     return myClazz;
   }
 
-  public String toString() {
+  @Override
+  public String toString()
+  {
     return i18n(Target.class, name());
   }
 

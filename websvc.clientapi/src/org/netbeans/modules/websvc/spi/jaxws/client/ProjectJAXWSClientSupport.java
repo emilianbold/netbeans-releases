@@ -42,13 +42,14 @@
 package org.netbeans.modules.websvc.spi.jaxws.client;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
@@ -70,7 +71,6 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
@@ -285,32 +285,11 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         }
     }
     
-    private void writeJaxWsModel(final JaxWsModel jaxWsModel) {
+    private void writeJaxWsModel(JaxWsModel jaxWsModel) {
         try {
-            final FileObject jaxWsFo = project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml"); //NOI18N
-            jaxWsFo.getFileSystem().runAtomicAction(new AtomicAction() {
-                public void run() {
-                    FileLock lock=null;
-                    OutputStream os=null;
-                    try {
-                        lock = jaxWsFo.lock();
-                        os = jaxWsFo.getOutputStream(lock);
-                        jaxWsModel.write(os);
-                        os.close();
-                    } catch (java.io.IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    } finally {
-                        if (os!=null) {
-                            try {
-                                os.close();
-                            } catch (IOException ex) {}
-                        }
-                        if (lock!=null) lock.releaseLock();
-                    }
-                }
-            });
+            jaxWsModel.write();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, "failed to save jax-ws.xml", ex); //NOI18N
         }
     }
     

@@ -44,7 +44,6 @@ if [ "$action" = "build" ]; then
     testmodule openide.util  || exit 4
     testmodule openide.modules || exit 4
     testmodule openide.filesystems || exit 4
-    testmodule masterfs  # || exit 4
     testmodule openide.nodes|| exit 4
     testmodule openide.options || exit 4
     testmodule openide.dialogs || exit 4

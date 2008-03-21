@@ -838,7 +838,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             for (RegistryNode node: groups) {
                 list.add(node);
-                populateList(list, node);
+                if(!node.getUid().equals("nb-ide-group")) {
+                    populateList(list, node);
+                }
             }
         }
     }

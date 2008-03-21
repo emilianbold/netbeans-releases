@@ -164,25 +164,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testOperatorEQformatting() {
+    public void testSpaceBinaryOperator() {
         setDefaultsOptions();
         setLoadDocumentText(
-                "class real_c_float\n" +
-                "{\n" +
-                "  const real_c_float & operator=(long l){ from_long(l);\n" +
-                "    return *this;\n" +
-                "  }\n" +
-                "};\n");
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
+            "    return(0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect operator = formatting",
-                "class real_c_float\n" +
-                "{\n" +
-                "\n" +
-                "    const real_c_float & operator=(long l)\n" +
-                "    {\n" +
-                "        from_long(l);\n" +
-                "        return *this;\n" +
-                "    }\n" +
-                "};\n");
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    return (0);\n" +
+            "}\n"
+        );
     }
 }

@@ -161,8 +161,8 @@ public class PartnerlinkPattern extends CompositePattern implements Synchronisat
 
             height = ypos - LayoutManager.VSPACING;
 
-            width = Math.max(width, 72);
-            height = Math.max(height, 24);
+            width = Math.max(width, 40);
+            height = Math.max(height, 28);
 
             x = -width / 2;
             getBorder().setClientRectangle(x, y, width, height);

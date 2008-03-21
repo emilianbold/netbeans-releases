@@ -216,7 +216,7 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
 
         public IcanLogicalViewRootNode() {
             super( new IcanproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
-            setIconBase("org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon"); // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon.gif"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;

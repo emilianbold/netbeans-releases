@@ -278,7 +278,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             for (UpdateElement el : plugins) {
                 String updatename;
                 updatename = "<b>"  + el.getDisplayName () + "</b> "; // NOI18N
-                if (OperationWizardModel.OperationType.UPDATE == type) {
+                if (OperationWizardModel.OperationType.UPDATE == type && el.getUpdateUnit ().getInstalled () != null) {
                     String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
                     String newVersion = el.getSpecificationVersion ();
                     updatename += getBundle ("OperationDescriptionStep_UpdatePluginVersionFormat", oldVersion, newVersion);
