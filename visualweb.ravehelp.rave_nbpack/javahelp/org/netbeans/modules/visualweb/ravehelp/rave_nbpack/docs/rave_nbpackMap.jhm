@@ -242,7 +242,7 @@
 	<mapID target="projrave_ui_elements_dialogs_number_converter_db" url="ui_elements/dialogs/number_converter_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_options_customizer_db" url="ui_elements/dialogs/options_customizer_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_property_binding_db" url="ui_elements/dialogs/property_binding_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_resolve_data_source_db" url="ui_elements/dialogs/resolve_data_source_db.html"/>
+	<mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="ui_elements/dialogs/resolve_data_source_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_theme_switch_info_db" url="ui_elements/dialogs/theme_switch_info_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_virtual_forms_db" url="ui_elements/dialogs/virtual_forms_db.html"/>
 	<mapID target="projrave_ui_elements_editors_about_css_editor" url="ui_elements/editors/about_css_editor.html"/>
