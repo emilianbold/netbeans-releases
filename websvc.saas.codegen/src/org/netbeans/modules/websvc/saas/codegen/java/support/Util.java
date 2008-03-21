@@ -664,7 +664,12 @@ public class Util {
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-
+        FileObject targetFO = targetFolder.getFileObject(targetName, templateFO.getExt());
+   
+        if (targetFO != null) {
+            return DataFolder.find(targetFO);
+        }
+        
         return templateDO.createFromTemplate(dataFolder, targetName);
     }
  

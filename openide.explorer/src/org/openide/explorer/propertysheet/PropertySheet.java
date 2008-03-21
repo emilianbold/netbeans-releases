@@ -513,9 +513,7 @@ public class PropertySheet extends JPanel {
             // obsoleted by following clear
             RequestProcessor.Task curTask = getScheduleTask();
             if (!curTask.equals(initTask)) {
-                PropUtils.log( PropertySheet.class, "cancelling in progress...");
-                boolean res = curTask.cancel();
-                PropUtils.log( PropertySheet.class, "cancel succesful? " + res);
+                curTask.cancel();
             }
             
             if (SwingUtilities.isEventDispatchThread()) {
