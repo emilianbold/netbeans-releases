@@ -102,18 +102,19 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   @Override
   public void visit(Copy copy) {
 //out();
-    Component fromType = getTypeOfElement(getType(copy.getFrom()));
 //out("Assign: " + ((Named) copy.getParent()).getName());
+    Component fromType = getTypeOfElement(getType(copy.getFrom()));
 //out("FROM: " + fromType);
     Component toType = getTypeOfElement(getType(copy.getTo()));
-//out();
 //out("  TO: " + toType);
 
     if (fromType == null || toType == null) {
       return;
     }
     String fromName = ((Named) fromType).getName();
+//out("  form name: " + fromName);
     String toName = ((Named) toType).getName();
+//out("    to name: " + fromName);
 
     if (fromName != null && fromName.equals(toName)) {
       return;
@@ -179,14 +180,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       Message message = wsdlRef.get();
 
       if (message != null) {
-        Collection<Part> parts = message.getParts();
-
-        if (parts == null || parts.size() == 0) {
-          return null;
-        }
-        if (parts.size() == 1) {
-          return getPartType(parts.iterator().next());
-        }
         return message;
       }
     }

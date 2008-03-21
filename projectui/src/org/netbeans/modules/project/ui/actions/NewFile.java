@@ -61,6 +61,8 @@ import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
@@ -141,7 +143,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
 
         NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
-
+        
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
             wd.setTargetFolder( preselectedFolder );
@@ -274,8 +276,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         menuItem.removeAll();
 
         ActionListener menuListener = new PopupListener();
-
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
+        
+        // check the action context for recommmended/privileged templates..
+        PrivilegedTemplates privs = getLookup().lookup(PrivilegedTemplates.class);
+        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project, privs );
         boolean itemAdded = false;
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();

@@ -314,7 +314,7 @@ public class DesignerMultiViewElement extends TopComponent
         // component is activated, but calling method addUndoManager() more
         // than once is not a problem.
 //        addUndoManager();
-        myDesignView.getView().requestFocusInWindow();
+        myDesignView.requestFocusInWindow();
         myDesignView.getModel().setActivated();
         
         // push NodeAction.Listener update context state

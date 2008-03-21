@@ -158,7 +158,7 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
-    public boolean maintenance(final long timeout) throws IOException {
+    public boolean defragment(final long timeout) throws IOException {
         
         boolean needMoreTime = false;
         

@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.repository.sfs;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import org.netbeans.modules.cnd.repository.disk.AbstractDiskRepository;
+import org.netbeans.modules.cnd.repository.disk.Storage;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class FileStorage implements AbstractDiskRepository {
+public abstract class FileStorage implements Storage {
     
     public static FileStorage create(File basePath) throws IOException {
         return  new DoubleFileStorage(basePath);

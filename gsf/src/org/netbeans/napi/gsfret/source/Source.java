@@ -113,6 +113,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
