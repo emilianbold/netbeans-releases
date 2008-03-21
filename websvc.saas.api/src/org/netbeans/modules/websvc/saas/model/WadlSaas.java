@@ -271,16 +271,17 @@ public class WadlSaas extends Saas {
         return schemaFiles;
     }
 
+    @Override
     public List<FileObject> getLibraryJars() {
         List<FileObject> result = new ArrayList(super.getLibraryJars());
         if (jaxbJars == null) {
             try {
                 compileSchemas();
-                result.addAll(jaxbJars);
             } catch(IOException ex) {
                 ex.printStackTrace();
             }
         }
+        result.addAll(jaxbJars);
         return result;
     }
     

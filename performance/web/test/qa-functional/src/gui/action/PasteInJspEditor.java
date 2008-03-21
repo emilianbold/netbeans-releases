@@ -54,14 +54,14 @@ import org.netbeans.jellytools.actions.Action.Shortcut;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 
 /**
  * Test of Paste text to opened source editor.
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
-public class PasteInJspEditor extends WebPerformanceTestCase {
+public class PasteInJspEditor extends PerformanceTestCase {
     private String file;
     private EditorOperator editorOperator1, editorOperator2;
     
@@ -79,7 +79,7 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
     }
     
     protected void init() {
-        super.init();
+//        super.init();
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_PREPARE = 2000;
         // in case this time is longer than 1000ms we will catch events generated
@@ -90,10 +90,10 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
     protected void initialize() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         EditorOperator.closeDiscardAll();
-        jspOptions().setCaretBlinkRate(0);
+//        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
-        jspOptions().setStatusBarCaretDelay(0);
-        jspOptions().setFontSize(20);
+//        jspOptions().setStatusBarCaretDelay(0);
+//        jspOptions().setFontSize(20);
 //        jspOptions().setCodeFoldingEnable(false);
         // open two java files in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|Test.jsp"));

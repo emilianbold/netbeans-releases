@@ -19,7 +19,8 @@ public class ETLBLPkgConstants {
     // File System Constants
     public static final String USER_DIR = System.getProperty("user.dir");
     public static final String fs = File.separator;
-    //eTL Bulk Loader Source Constants
+    //eTL Bulk Loader Source Constants 
+    //Change the cluster names 
     public static final String sourcePath1 = getCWD() + fs + "netbeans" + fs +"extra"+fs + "modules"+fs+"ext";    
     public static final String sourcePath = getCWD() +fs+".."+ fs+"extra"+fs + "modules"+fs+"ext";  
     public static final String srclibs1 = sourcePath1+fs+"bulkloader";    

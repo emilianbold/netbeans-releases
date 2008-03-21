@@ -40,6 +40,7 @@
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
 				<file title="Projects.html"/>
+				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="RuntimeSearchDirectories.html"/>
 				<file title="SettingCorC++Breakpoint.html"/>
@@ -186,12 +187,11 @@
 				<file title="NewMakeWizardP5.html"/>
 				<file title="NewStaticLibWizard.html"/>
 				<file title="ProjectPropsArchiverGeneral.html"/>
-				<file title="ProjectPropsCommandLine.html"/>
+				<file title="ProjectPropsBuild.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>
 				<file title="ProjectPropsGeneral.html"/>
 				<file title="ProjectPropsLinkerGeneral.html"/>
-				<file title="ProjectPropsLinkerLibraries.html"/>
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsParser.html"/>
 				<file title="ProjectPropsRequired.html"/>

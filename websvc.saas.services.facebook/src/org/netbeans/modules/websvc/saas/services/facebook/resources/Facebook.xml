@@ -63,6 +63,7 @@
                     <params>
                         <param name="method" type="string" required="true"/>
                         <param name="v" type="string" required="true" default="1.0"/>
+                        <param name="call_id" type="string" required="true" default="String.valueOf(System.currentTimeMillis())"/>
                         <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
                         <param id="session_key={session_key}" name="session_key" type="string" required="true"/>
                     </params>
