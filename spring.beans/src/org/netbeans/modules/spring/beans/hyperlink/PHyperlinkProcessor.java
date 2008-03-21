@@ -82,7 +82,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
             }
 
             final String className = new BeanClassFinder(env.getCurrentTag(), 
-                    env.getDocument()).findImplementationClass();
+                    env.getFile()).findImplementationClass();
             if(className == null) {
                 return;
             }

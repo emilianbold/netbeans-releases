@@ -116,26 +116,10 @@ final class TextDetail {
      * @see #DH_SHOW 
      * @see #DH_HIDE */
     void showDetail(int how) {
-        if ((dobj == null) || !dobj.isValid()) {
+        prepareLine();
+        if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
             return;
-        }
-        if (lineObj == null) { // try to get Line from DataObject
-            LineCookie lineCookie = dobj.getCookie(LineCookie.class);
-            if (lineCookie != null) {
-                Line.Set lineSet = lineCookie.getLineSet();
-                try {
-                    lineObj = lineSet.getOriginal(line - 1);
-                } catch (IndexOutOfBoundsException ioobex) {
-                    // The line doesn't exist - go to the last line
-                    lineObj = lineSet.getOriginal(findMaxLine(lineSet));
-                    column = markLength = 0;
-                }
-            }
-            if (lineObj == null) {
-                Toolkit.getDefaultToolkit().beep();
-                return;
-            }
         }
 
         if (how == DH_HIDE) {
@@ -214,7 +198,25 @@ final class TextDetail {
     int getMarkLength() {
         return markLength;
     }
-    
+
+    private void prepareLine() {
+        if (dobj == null || !dobj.isValid()) {
+            lineObj = null;
+        } else if (lineObj == null) { // try to get Line from DataObject
+            LineCookie lineCookie = dobj.getCookie(LineCookie.class);
+            if (lineCookie != null) {
+                Line.Set lineSet = lineCookie.getLineSet();
+                try {
+                    lineObj = lineSet.getOriginal(line - 1);
+                } catch (IndexOutOfBoundsException ioobex) {
+                    // The line doesn't exist - go to the last line
+                    lineObj = lineSet.getOriginal(findMaxLine(lineSet));
+                    column = markLength = 0;
+                }
+            }
+        }
+    }
+
     /**
      * Returns the maximum line in the <code>set</code>.
      * Used to display the end of file when the corresponding
@@ -283,6 +285,11 @@ final class TextDetail {
             setShortDescription(DetailNode.getShortDesc(txtDetail));
             setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
                      DetailNode.getFullDesc(txtDetail));
+            // A workaround for #124559 - when the detail becomes visible,
+            // get the Line object. Later - if the user jumps to the document,
+            // changes it and saves - the Line objects are not created for the
+            // original set of lines.
+            txtDetail.prepareLine();
         }
         
         @Override

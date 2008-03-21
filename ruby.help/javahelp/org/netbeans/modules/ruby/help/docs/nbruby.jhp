@@ -7,13 +7,8 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/!MySunProjects/Rave/cvstree/ruby/help/javahelp/org/netbeans/modules/ruby/help/docs">
+		<directory title="C:/NBProjects/main/ruby.help/javahelp/org/netbeans/modules/ruby/help/docs">
 			<directory title="images">
-				<directory title="CVS">
-					<file title="Entries"/>
-					<file title="Repository"/>
-					<file title="Root"/>
-				</directory>
 				<file title="circle1.gif"/>
 				<file title="circle2.gif"/>
 				<file title="circle3.gif"/>
@@ -23,7 +18,9 @@
 				<file title="circle7.gif"/>
 				<file title="circle8.gif"/>
 				<file title="circle9.gif"/>
+				<file title="railsprojicon.gif"/>
 				<file title="redx.gif"/>
+				<file title="rubyprojicon.gif"/>
 				<file title="runprojicon.gif"/>
 			</directory>
 			<file title="about_ruby.html"/>
@@ -34,15 +31,18 @@
 			<file title="geminstallationdialog.html"/>
 			<file title="geminstallsettingsdialog.html"/>
 			<file title="gemmanager.html"/>
+			<file title="newdbconfig.html"/>
 			<file title="newrailsappwiz-installrails.html"/>
 			<file title="newrailsappwiz-nameandloc.html"/>
 			<file title="newrailsappwsourcewiz-nameandloc.html"/>
 			<file title="newrubyappwiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-srcfiles.html"/>
+			<file title="platformmanager.html"/>
 			<file title="plugininstallsettingsdialog.html"/>
 			<file title="railsplugininstallationdialog.html"/>
 			<file title="railspluginmanager.html"/>
+			<file title="railsprojicon.gif"/>
 			<file title="railsprojprops-railsoptions.html"/>
 			<file title="ruby_quickref.html"/>
 			<file title="rubyhelp.hs"/>
@@ -50,10 +50,12 @@
 			<file title="rubymap.xml"/>
 			<file title="rubyoptions.html"/>
 			<file title="rubyprojectnode.html"/>
+			<file title="rubyprojicon.gif"/>
 			<file title="rubyprojprops-javaoptions.html"/>
 			<file title="rubyprojprops-runoptions.html"/>
 			<file title="rubyprojprops-sourcesoptions.html"/>
 			<file title="rubytoc.xml"/>
+			<file title="runprojicon.gif"/>
 			<file title="settingrubyinterpreter.html"/>
 			<file title="stopwords.swd"/>
 			<file title="usedatabase.html"/>
