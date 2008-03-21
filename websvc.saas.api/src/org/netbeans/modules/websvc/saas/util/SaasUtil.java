@@ -653,6 +653,6 @@ public class SaasUtil {
     public static String deriveDefaultPackageName(Saas saas) {
         String pack1 = toValidJavaName(saas.getTopLevelGroup().getName());
         String pack2 = toValidJavaName(saas.getDisplayName());
-        return pack1 + "." + pack2;
+        return (pack1 + "." + pack2).toLowerCase();
     }
 }
