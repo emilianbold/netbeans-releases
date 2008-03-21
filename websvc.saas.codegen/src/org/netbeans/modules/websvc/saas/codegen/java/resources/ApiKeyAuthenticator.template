@@ -36,7 +36,7 @@ public class __NAME__ {
 
     public static String getApiKey() throws IOException {
         if (apiKey == null || apiKey.length() == 0) {
-            throw new IOException("Please specify your API key in the "  + PROP_FILE + " file.");
+            throw new IOException("Please specify your api key in the "  + PROP_FILE + " file.");
         }
 
         return apiKey;
