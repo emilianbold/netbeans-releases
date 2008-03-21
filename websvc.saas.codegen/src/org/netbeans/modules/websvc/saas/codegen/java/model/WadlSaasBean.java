@@ -105,7 +105,7 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public String getSaasServiceName() {
-        return getDisplayName()/*+"Service"*/;
+        return getGroupName()+getDisplayName()/*+"Service"*/;
     }
     
     public String getSaasServicePackageName() {
@@ -122,11 +122,11 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getDisplayName());
+        return Util.getAuthenticatorClassName(getSaasName());
     }
     
     public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getDisplayName());
+        return Util.getAuthorizationFrameClassName(getSaasName());
     }
     
     private void init() throws IOException { 
@@ -313,5 +313,10 @@ public class WadlSaasBean extends SaasBean {
             }
         }
         return null;
+    }
+    
+    public boolean canGenerateJAXBUnmarshaller() {
+        return !Util.isJDK5() && getHttpMethod() == HttpMethodType.GET &&
+                    !findRepresentationTypes(getMethod()).isEmpty();
     }
 }

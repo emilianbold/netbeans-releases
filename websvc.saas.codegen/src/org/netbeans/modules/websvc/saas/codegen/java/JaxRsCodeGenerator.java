@@ -128,7 +128,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
-        createRestConnectionFile(getProject());
+        createRestConnectionFile(getProject(), !getBean().canGenerateJAXBUnmarshaller());
                 
         //add JAXB Classes, etc, if available
         if(getBean().getMethod().getSaas().getLibraryJars().size() > 0)
@@ -187,12 +187,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         if(httpMethod == HttpMethodType.GET) {
             methodBody += "             "+returnStatement+".get("+headerUsage+");\n";
         } else if(httpMethod == HttpMethodType.PUT) {
-            methodBody += "             "+returnStatement+".put("+headerUsage+", content);\n";
+            methodBody += "             "+returnStatement+".put("+headerUsage+", "+Constants.PUT_POST_CONTENT+");\n";
         } else if(httpMethod == HttpMethodType.POST) {
             if(!queryParamsCode.trim().equals("")) {
                 methodBody += "             "+returnStatement+".post("+headerUsage+", "+Constants.QUERY_PARAMS+");\n";
             } else {
-                methodBody += "             "+returnStatement+".post("+headerUsage+", content);\n";
+                methodBody += "             "+returnStatement+".post("+headerUsage+", "+Constants.PUT_POST_CONTENT+");\n";
             }
         } else if(httpMethod == HttpMethodType.DELETE) {
             methodBody += "             "+returnStatement+".delete("+headerUsage+");\n";
@@ -206,8 +206,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 new ParamFilter[]{ParamFilter.FIXED}));
         HttpMethodType httpMethod = getBean().getHttpMethod();
         if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
-            params.add(new ParameterInfo("contentType", String.class));
-            params.add(new ParameterInfo("content", InputStream.class));
+            if(!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class)))
+                params.add(new ParameterInfo(Constants.CONTENT_TYPE, String.class));
+            params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, InputStream.class));
         }
         return params;
     }
@@ -315,7 +316,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         SaasAuthenticationType authType = getBean().getAuthenticationType();
         if(authType == SaasAuthenticationType.HTTP_BASIC) {
             methodBody += "        conn.setAuthenticator(new "+
-                    getBean().getDisplayName()+Constants.SERVICE_AUTHENTICATOR+"());\n";
+                    getBean().getSaasName()+Constants.SERVICE_AUTHENTICATOR+"());\n";
         } else if(authType == SaasAuthenticationType.SIGNED_URL) {
             SignedUrlAuthentication signedUrl = (SignedUrlAuthentication)getBean().getAuthentication();
             List<ParameterInfo> signParams = signedUrl.getParameters();
@@ -337,31 +338,23 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
     
     protected void addImportsToTargetFile() throws IOException {
-        String[] imports = new String[] {
-            getBean().getSaasServicePackageName()+"."+getBean().getSaasServiceName(), 
-            REST_CONNECTION_PACKAGE+"."+REST_RESPONSE};
-        for(final String imp:imports) {
-            ModificationResult result = getTargetSource().runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    JavaSourceHelper.addImports(copy, new String[] {imp});
-                }
-            });
-            result.commit();
-        }
+        List<String> imports = new ArrayList<String>();
+        imports.add(getBean().getSaasServicePackageName()+"."+getBean().getSaasServiceName());
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_RESPONSE);
+//        if(getBean().canGenerateJAXBUnmarshaller()) {
+//            imports.addAll(Util.getJaxBClassImports());
+//        }
+        Util.addImportsToSource(getTargetSource(), imports);
     }
     
     protected void addImportsToSaasService() throws IOException {
-        String[] imports = new String[] {REST_CONNECTION_PACKAGE+"."+REST_CONNECTION, REST_CONNECTION_PACKAGE+"."+REST_RESPONSE};
-        for(final String imp:imports) {
-            ModificationResult result = saasServiceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    JavaSourceHelper.addImports(copy, new String[] {imp});
-                }
-            });
-            result.commit();
-        }
+        List<String> imports = new ArrayList<String>();
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_CONNECTION);
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_RESPONSE);
+//        if(getBean().canGenerateJAXBUnmarshaller()) {
+//            imports.add(InputStream.class.getName());
+//        }
+        Util.addImportsToSource(saasServiceJS, imports);
     }
 
     /**
@@ -412,26 +405,33 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 }
             }
             //Also copy profile.properties
+            String profileName = getBean().getAuthenticatorClassName().toLowerCase();
             DataObject prof = null;
             String authProfile = getBean().getAuthenticationProfile();
             if (authProfile != null && !authProfile.trim().equals("")) {
                 try {
-                    prof = Util.createDataObjectFromTemplate(authProfile, targetFolder, null);
+                    prof = Util.createDataObjectFromTemplate(authProfile, 
+                            targetFolder, profileName);
                 } catch (Exception ex) {
-                    throw new IOException("Profile file specified in saas-services/service-metadata/authentication/@profile, not found: "+authProfile);// NOI18n
+                    throw new IOException("Profile file specified in " +
+                            "saas-services/service-metadata/authentication/@profile, " +
+                            "not found: "+authProfile);// NOI18n
                 } 
             } else {
                 try {
                     prof = Util.createDataObjectFromTemplate(SAAS_SERVICES+"/" + 
                             getBean().getGroupName() + "/" + getBean().getDisplayName() 
-                            + "/profile.properties", targetFolder, null);// NOI18n
+                            + "/profile.properties", targetFolder, profileName);// NOI18n
                 } catch (Exception ex1) {
                     try {
                         prof = Util.createDataObjectFromTemplate(SAAS_SERVICES+"/" + 
-                                getBean().getGroupName() + "/profile.properties", targetFolder, null);// NOI18n
+                                getBean().getGroupName() + "/profile.properties", 
+                                targetFolder, profileName);// NOI18n
                     } catch (Exception ex2) {
                         try {
-                            prof = Util.createDataObjectFromTemplate(TEMPLATES_SAAS+getBean().getAuthenticationType().value()+".properties", targetFolder, null);// NOI18n
+                            prof = Util.createDataObjectFromTemplate(TEMPLATES_SAAS+
+                                    getBean().getAuthenticationType().value()+
+                                    ".properties", targetFolder, profileName);// NOI18n
                         } catch (Exception ex3) {//ignore
                         }
                     } 
@@ -439,25 +439,26 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             }
             
             //Modify profile file with user defined values
-            if(prof != null) {
-                EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
-                StyledDocument doc = ec.openDocument();
-                String profileText = null;
-                if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY) {
-                    ParameterInfo p = findParameter(((ApiKeyAuthentication)getBean().getAuthentication()).getApiKeyName());
-                    if(p != null && p.getDefaultValue() != null)
-                        profileText = "api_key="+p.getDefaultValue()+"\n";
-                }
-                if(profileText != null) {
-                    try {
-                        doc.insertString(doc.getLength(), profileText, null);
-                    } catch (BadLocationException ex) {
-                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
-                                NbBundle.getMessage(AbstractGenerator.class, 
-                                    "MSG_PropertyReplaceFailed"), ex); // NOI18N
-                    }
-                }
-            }
+            // Commenting this code out since we are getting the api key values from the input param diaglog.
+//            if(prof != null) {
+//                EditorCookie ec = (EditorCookie) prof.getCookie(EditorCookie.class);
+//                StyledDocument doc = ec.openDocument();
+//                String profileText = null;
+//                if(getBean().getAuthenticationType() == SaasAuthenticationType.API_KEY) {
+//                    ParameterInfo p = findParameter(((ApiKeyAuthentication)getBean().getAuthentication()).getApiKeyName());
+//                    if(p != null && p.getDefaultValue() != null)
+//                        profileText = "api_key="+p.getDefaultValue()+"\n";
+//                }
+//                if(profileText != null) {
+//                    try {
+//                        doc.insertString(doc.getLength(), profileText, null);
+//                    } catch (BadLocationException ex) {
+//                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, 
+//                                NbBundle.getMessage(AbstractGenerator.class, 
+//                                    "MSG_PropertyReplaceFailed"), ex); // NOI18N
+//                    }
+//                }
+//            }
         }
     }
     

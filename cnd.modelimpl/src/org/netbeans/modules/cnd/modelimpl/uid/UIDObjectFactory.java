@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes.BuiltInUID;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.InstantiationUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
@@ -290,6 +292,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_DECLARATION_UID;
         } else if (object instanceof BuiltInUID) {
             aHandler = UID_BUILT_IN_UID;
+        } else if (object instanceof InstantiationUID) {
+            aHandler = UID_INSTANTIATION_UID;
         } else if (object instanceof UnresolvedClassUID) {
             aHandler = UID_UNRESOLVED_CLASS;
         } else if (object instanceof UnresolvedFileUID) {
@@ -353,6 +357,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 share = false;
                 break;
 
+            case UID_INSTANTIATION_UID:
+                anUID = new Instantiation.InstantiationUID(aStream);
+                share = false;
+                break;
+                
             case UID_UNRESOLVED_CLASS:
 		anUID = new UIDUtilities.UnresolvedClassUID(aStream);
                 break;
@@ -394,8 +403,9 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INCLUDE_UID + 1;
     private static final int UID_DECLARATION_UID        = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID           = UID_DECLARATION_UID + 1;
+    private static final int UID_INSTANTIATION_UID      = UID_BUILT_IN_UID + 1;
     
-    private static final int UID_UNRESOLVED_CLASS       = UID_BUILT_IN_UID + 1;
+    private static final int UID_UNRESOLVED_CLASS       = UID_INSTANTIATION_UID + 1;
     private static final int UID_UNRESOLVED_FILE        = UID_UNRESOLVED_CLASS + 1;
     private static final int UID_UNRESOLVED_NAMESPACE   = UID_UNRESOLVED_FILE + 1;
     

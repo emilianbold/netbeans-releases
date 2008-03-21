@@ -39,29 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.editor;
+package org.netbeans.core.windows.options;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-import javax.swing.text.Document;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Rohan Ranade
- */
-public final class EditorContextFactory {
-    private static Map<Document, DocumentContext> contextCache = 
-            new WeakHashMap<Document, DocumentContext>();
+public final class WinSysAdvancedOption extends AdvancedOption {
 
-    public static DocumentContext getDocumentContext(Document document, int caretOffset) {
-        DocumentContext context = contextCache.get(document);
-        if(context == null) {
-            context = new DocumentContext(document);
-            contextCache.put(document, context);
-        }
-        
-        context.reset(caretOffset);
-        
-        return context;
+    public static final String IS_APLHA_DRAG = "isAlphaDrag";
+    public static final String IS_SNAPPING = "isSnapping";
+    public static final String IS_APLHA_FLOATING = "isAlphaFloating";
+    
+    public String getDisplayName() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_DisplayName_WinSys");
+    }
+
+    public String getTooltip() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_Tooltip_WinSys");
+    }
+
+    public OptionsPanelController create() {
+        return new WinSysOptionsPanelController();
     }
 }

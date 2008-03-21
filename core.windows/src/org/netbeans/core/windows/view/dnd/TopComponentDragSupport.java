@@ -65,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.*;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.*;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -387,8 +388,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         
         int tabIndex = -1;
         Image img = createDragImage();
-        if (tabbed != null 
-                && Utilities.getOperatingSystem() != Utilities.OS_SOLARIS ) {
+        if (tabbed != null &&
+                WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.DND_DRAGIMAGE, 
+                Utilities.getOperatingSystem() != Utilities.OS_SOLARIS)) {
             tabIndex = tabbed.indexOf(firstTC);
 
             visualizer = new DragAndDropFeedbackVisualizer( tabbed, tabIndex );

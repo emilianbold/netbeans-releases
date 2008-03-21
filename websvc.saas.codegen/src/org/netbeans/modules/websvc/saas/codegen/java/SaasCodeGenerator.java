@@ -277,13 +277,9 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
     
     protected void addImportsToWrapperResource() throws IOException {
-        ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] {REST_CONNECTION_PACKAGE+"."+REST_CONNECTION});
-            }
-        });
-        result.commit();
+        List<String> imports = new ArrayList<String>();
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_CONNECTION);
+        Util.addImportsToSource(wrapperResourceJS, imports);
     }
 
     protected void addSubresourceLocator() throws IOException {
@@ -722,13 +718,19 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
     
     public static void createRestConnectionFile(Project project) throws IOException {
+        createRestConnectionFile(project, false);
+    }
+    
+    public static void createRestConnectionFile(Project project, boolean isJDK5) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
         String pkg = REST_CONNECTION_PACKAGE;
         FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
-        JavaSourceHelper.createJavaSource(REST_RESPONSE_TEMPLATE, targetFolder, pkg, REST_RESPONSE);
+        String restResponseTemplate = REST_RESPONSE_TEMPLATE;
+        if(Util.isJDK5())
+            restResponseTemplate += "jdk5";
+        JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
     }
-    
     
     protected String[] getUriParamTypes() {
         String defaultType = String.class.getName();
@@ -741,14 +743,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
-        params.addAll(Arrays.asList(getBean().getUriParams()));
         params.addAll(Arrays.asList(getParamNames(queryParams)));
         return params.toArray(new String[params.size()]);
     }
     
     protected String[] getGetParamTypes(List<ParameterInfo> queryParams) {
         ArrayList<String> types = new ArrayList<String>();
-        types.addAll(Arrays.asList(getUriParamTypes()));
         types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
