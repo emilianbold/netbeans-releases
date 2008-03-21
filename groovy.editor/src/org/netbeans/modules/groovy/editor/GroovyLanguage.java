@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
@@ -81,4 +82,15 @@ public class GroovyLanguage implements GsfLanguage {
         return Collections.<FileObject>emptyList();
     }
     
+    public String getDisplayName() {
+        return "Groovy";
+    }
+
+    public String getPreferredExtension() {
+        return "groovy"; // NOI18N
+    }
+
+    public Map<String,String> getSourceGroupNames() {
+        return Collections.emptyMap();
+    }
 }

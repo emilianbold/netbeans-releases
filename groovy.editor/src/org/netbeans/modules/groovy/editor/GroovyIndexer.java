@@ -84,4 +84,7 @@ public class GroovyIndexer implements Indexer {
         return null;
     }
     
+    public boolean acceptQueryPath(String url) {
+        return true;
+    }
 }

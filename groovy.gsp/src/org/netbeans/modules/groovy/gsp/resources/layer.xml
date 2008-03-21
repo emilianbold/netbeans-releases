@@ -190,8 +190,6 @@
     <folder name="GsfPlugins">
         <folder name="application">
             <folder name="x-gsp">
-                <attr name="displayName" stringvalue="GSP"/>
-                
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspLanguage"/>
@@ -235,9 +233,6 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
                 </file>
                 -->
-                <folder name="extensions">
-                    <file name="gsp"/>
-                </folder>
             </folder>
         </folder>
     </folder>

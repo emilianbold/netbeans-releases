@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.gsp;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
@@ -68,5 +69,17 @@ public class GspLanguage implements GsfLanguage {
 
     public Collection<FileObject> getCoreLibraries() {
         return Collections.<FileObject>emptyList();
+    }
+
+    public String getDisplayName() {
+        return "GSP";
+    }
+
+    public String getPreferredExtension() {
+        return "gsp"; // NOI18N
+    }
+
+    public Map<String,String> getSourceGroupNames() {
+        return Collections.emptyMap();
     }
 }
