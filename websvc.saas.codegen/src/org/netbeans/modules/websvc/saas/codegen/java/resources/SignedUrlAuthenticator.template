@@ -28,12 +28,13 @@ public class __NAME__ {
     private static String accessKey;
     
     private static String secret;
-    
-     static {
+
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
+    static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(
-                    "profile.properties"));
+            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
             accessKey = props.getProperty("access_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
@@ -41,7 +42,12 @@ public class __NAME__ {
         }
     }
 
-    public static String sign(String[][] headers) {
+    public static String sign(String[][] headers) throws IOException {
+        if (accessKey == null || accessKey.length() == 0 || 
+            secret == null || secret.length() == 0) {
+            throw new IOException("Please specify your access key and secret in the "  + PROP_FILE + " file.");
+        }
+
         if (headers == null) return "";
         
         HashMap<String, String> headerMap = new HashMap<String, String>();

@@ -10,11 +10,9 @@
 package Templates.Classes;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  *
@@ -25,20 +23,22 @@ public class __NAME__ extends Authenticator {
     
     private String password;
     
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
     public __NAME__(String username, String password) {
         this.username = username;
         this.password = password;
     }
     
-    public __NAME__() {
-        try {
-            Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(
-                    "profile.properties"));
-            username = props.getProperty("username");
-            password = props.getProperty("password");
-        } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+    public __NAME__() throws IOException {
+        Properties props = new Properties();
+        props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+        username = props.getProperty("username");
+        password = props.getProperty("password");
+
+        if (username == null || username.length() == 0 || 
+            password == null || password.length() == 0) {
+            throw new IOException("Please specify your username and password in the "  + PROP_FILE + " file.");
         }
     }
     
