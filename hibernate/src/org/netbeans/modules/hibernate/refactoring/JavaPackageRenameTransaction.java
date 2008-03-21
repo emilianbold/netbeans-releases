@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
