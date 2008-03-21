@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -86,6 +87,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @see NbDocument.CustomEditor#createEditor */
     private Component customComponent;
     private JToolBar customToolbar;
+    private DoInitialize doInitialize;
 
     /** For externalization of subclasses only  */
     public CloneableEditor() {
@@ -177,7 +179,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         this.pane = tmp;
         this.initialized = true;
         
-        new DoInitialize(tmp);
+        this.doInitialize = new DoInitialize(tmp);
     }
 
     
@@ -284,13 +286,21 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
-            kit = support.cesKit();
+            
             EditorKit k; 
             synchronized (this) {
                 k = support.cesKit();
                 doc = support.getDocument();
                 kit = k;
                 notifyAll();
+            }
+            
+            if (k instanceof Callable) {
+                try {
+                    ((Callable) k).call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
             }
         }
         
@@ -325,6 +335,22 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
         
         private boolean initDocument() {
+            EditorKit k;
+            Document d;
+            synchronized (this) {
+                for (;;) {
+                    d = doc;
+                    k = kit;
+                    if (d != null && k != null) {
+                        break;
+                    }
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             if (tmp.getDocument() == doc) {
                 return false;
             }
@@ -333,7 +359,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             return true;
         }
         
-        private void initVisual() {
+        final void initVisual() {
+            // wait for document and init it
             if (!initDocument()) {
                 return;
             }
@@ -773,8 +800,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     }
 
     public JEditorPane getEditorPane() {
+        assert SwingUtilities.isEventDispatchThread();
         initialize();
-
+        DoInitialize d = doInitialize;
+        if (d != null) {
+            d.initVisual();
+        }
         return pane;
     }
 
