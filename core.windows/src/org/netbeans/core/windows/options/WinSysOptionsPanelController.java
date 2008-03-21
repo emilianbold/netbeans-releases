@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +41,69 @@
 
 package org.netbeans.core.windows.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
-/**
- * Keys and access to window system related preferences. 
- * 
- * @author Dafe Simonek
- */
-public interface WinSysPrefs {
-    
-    public static final Preferences HANDLER = NbPreferences.forModule(WinSysPrefs.class);
-    
-    public final String DND_SMALLWINDOWS = "dnd.smallwindows";
-     
-    public final String DND_SMALLWINDOWS_WIDTH = "dnd.smallwindows.width";
-    
-    public final String DND_SMALLWINDOWS_HEIGHT = "dnd.smallwindows.height";
-    
-    public final String DND_DRAGIMAGE = "dnd.dragimage";
-     
-    public final String TRANSPARENCY_DRAGIMAGE = "transparency.dragimage";
-    
-    public final String TRANSPARENCY_DRAGIMAGE_ALPHA = "transparency.dragimage.alpha";
-    
-    public final String TRANSPARENCY_FLOATING = "transparency.floating";
-    
-    public final String TRANSPARENCY_FLOATING_TIMEOUT = "transparency.floating.timeout";
-    
-    public final String TRANSPARENCY_FLOATING_ALPHA = "transparency.floating.alpha";
-    
-    public final String SNAPPING = "snapping";
-    
-    public final String SNAPPING_SCREENEDGES = "snapping.screenedges";
-    
-    public final String SNAPPING_ACTIVE_SIZE = "snapping.active.size";
-    
+final class WinSysOptionsPanelController extends OptionsPanelController {
+
+    private WinSysPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+
+    public void update() {
+        getPanel().load();
+        changed = false;
+    }
+
+    public void applyChanges() {
+        getPanel().store();
+        changed = false;
+    }
+
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
+    }
+
+    public boolean isValid() {
+        return getPanel().valid();
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private WinSysPanel getPanel() {
+        if (panel == null) {
+            panel = new WinSysPanel(this);
+        }
+        return panel;
+    }
+
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
 }
