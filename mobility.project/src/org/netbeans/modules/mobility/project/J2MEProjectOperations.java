@@ -86,6 +86,7 @@ public class J2MEProjectOperations implements DeleteOperationImplementation, Cop
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, "manifest.mf", files); // NOI18N
         
         return files;
     }

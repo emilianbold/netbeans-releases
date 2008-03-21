@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import com.sun.source.tree.ClassTree;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -293,9 +294,6 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ //TODO\n return Response.created(context.getAbsolutePath()).build(); }"; //NOI18N
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
-        if (type != null) {
-            paramTypes[paramTypes.length-1] = type;
-        }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
@@ -329,9 +327,6 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
-        if (type != null) {
-            paramTypes[paramTypes.length-1] = type;
-        }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
@@ -515,14 +510,14 @@ public class GenericResourceGenerator extends AbstractGenerator {
         return params.toArray(new String[params.size()]);
     }
     
-    private String[] getPostPutParamTypes(String representatinType) {
+    private String[] getPostPutParamTypes(String representationType) {
         String defaultType = String.class.getName();
         String[] types = new String[bean.getUriParams().length + 2];
         for (int i=0; i < types.length; i++) {
             types[i] = defaultType;
         }
         types[types.length-2] = defaultType;
-        types[types.length-1] = representatinType;
+        types[types.length-1] = InputStream.class.getSimpleName();
         return types;
     }
     
