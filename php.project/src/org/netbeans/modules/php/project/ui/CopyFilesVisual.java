@@ -55,23 +55,22 @@ import org.openide.util.NbBundle;
 public class CopyFilesVisual extends JPanel {
     private static final long serialVersionUID = 16907251064819776L;
 
-    final LocalServerVisual localServerVisual;
+    final LocalServerController localServerController;
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public CopyFilesVisual(WebFolderNameProvider webFolderNameProvider, LocalServer... defaultLocalServers) {
         initComponents();
 
-        localServerVisual = new LocalServerVisual(webFolderNameProvider,
+        localServerController = new LocalServerController(copyFilesComboBox, copyFilesButton, webFolderNameProvider,
                 NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
-        localServerPanel.add(BorderLayout.NORTH, localServerVisual);
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                localServerVisual.setState(copyFilesCheckBox.isSelected());
+                localServerController.setState(copyFilesCheckBox.isSelected());
                 changeSupport.fireChange();
             }
         });
-        localServerVisual.addChangeListener(new ChangeListener() {
+        localServerController.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 changeSupport.fireChange();
             }
@@ -92,23 +91,23 @@ public class CopyFilesVisual extends JPanel {
 
     public void setCopyFiles(boolean copyFiles) {
         copyFilesCheckBox.setSelected(copyFiles);
-        localServerVisual.setState(copyFiles);
+        localServerController.setState(copyFiles);
     }
 
     public LocalServer getLocalServer() {
-        return localServerVisual.getLocalServer();
+        return localServerController.getLocalServer();
     }
 
     public MutableComboBoxModel getLocalServerModel() {
-        return localServerVisual.getLocalServerModel();
+        return localServerController.getLocalServerModel();
     }
 
     public void setLocalServerModel(MutableComboBoxModel localServers) {
-        localServerVisual.setLocalServerModel(localServers);
+        localServerController.setLocalServerModel(localServers);
     }
 
     public void selectLocalServer(LocalServer localServer) {
-        localServerVisual.selectLocalServer(localServer);
+        localServerController.selectLocalServer(localServer);
     }
 
     /** This method is called from within the constructor to
@@ -122,48 +121,47 @@ public class CopyFilesVisual extends JPanel {
 
         copyFilesCheckBox = new javax.swing.JCheckBox();
         localServerLabel = new javax.swing.JLabel();
-        localServerPanel = new javax.swing.JPanel();
+        copyFilesComboBox = new javax.swing.JComboBox();
+        copyFilesButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
 
-        localServerLabel.setLabelFor(localServerPanel);
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
 
-        localServerPanel.setLayout(new java.awt.BorderLayout());
+        copyFilesComboBox.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(copyFilesButton, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(copyFilesCheckBox)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(copyFilesCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(localServerLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)))
-                .add(0, 0, 0))
+                .add(localServerLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(copyFilesComboBox, 0, 180, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(copyFilesButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(copyFilesCheckBox)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(9, 9, 9)
-                        .add(localServerLabel))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)))
-                .add(0, 0, 0))
+                .add(9, 9, 9)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(localServerLabel)
+                    .add(copyFilesButton)
+                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton copyFilesButton;
     private javax.swing.JCheckBox copyFilesCheckBox;
+    private javax.swing.JComboBox copyFilesComboBox;
     private javax.swing.JLabel localServerLabel;
-    private javax.swing.JPanel localServerPanel;
     // End of variables declaration//GEN-END:variables
 
 }

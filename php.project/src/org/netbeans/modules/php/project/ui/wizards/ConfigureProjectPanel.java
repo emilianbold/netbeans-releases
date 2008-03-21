@@ -78,7 +78,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ConfigureProjectPanelVisual configureProjectPanelVisual;
     private LocationPanelVisual locationPanelVisual;
-    private SourcesPanelVisual sourcesPanelVisual;
     private OptionsPanelVisual optionsPanelVisual;
     private WizardDescriptor descriptor;
     private final String[] steps;
@@ -97,7 +96,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         if (configureProjectPanelVisual == null) {
             configureProjectPanelVisual = new ConfigureProjectPanelVisual(this);
             locationPanelVisual = configureProjectPanelVisual.getLocationPanelVisual();
-            sourcesPanelVisual = configureProjectPanelVisual.getSourcesPanelVisual();
             optionsPanelVisual = configureProjectPanelVisual.getOptionsPanelVisual();
         }
         return configureProjectPanelVisual;
@@ -113,20 +111,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
         unregisterListeners();
 
-        // location
+        // project
         locationPanelVisual.setProjectLocation(getProjectLocation().getAbsolutePath());
         locationPanelVisual.setProjectName(getProjectName());
 
         // sources
         MutableComboBoxModel localServers = getLocalServers();
         if (localServers != null) {
-            sourcesPanelVisual.setLocalServerModel(localServers);
+            locationPanelVisual.setLocalServerModel(localServers);
         }
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
-            sourcesPanelVisual.selectSourcesLocation(wwwFolder);
+            locationPanelVisual.selectSourcesLocation(wwwFolder);
         }
-        sourcesPanelVisual.setUrl(getUrl());
+        locationPanelVisual.setUrl(getUrl());
 
         // options
         Boolean createIndex = isCreateIndex();
@@ -149,14 +147,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
 
-        // location
+        // project
         d.putProperty(PROJECT_DIR, FileUtil.normalizeFile(new File(locationPanelVisual.getProjectLocation())));
         d.putProperty(PROJECT_NAME, locationPanelVisual.getProjectName());
 
         // sources
-        d.putProperty(WWW_FOLDER, sourcesPanelVisual.getSourcesLocation());
-        d.putProperty(LOCAL_SERVERS, sourcesPanelVisual.getLocalServerModel());
-        d.putProperty(URL, sourcesPanelVisual.getUrl());
+        d.putProperty(WWW_FOLDER, locationPanelVisual.getSourcesLocation());
+        d.putProperty(LOCAL_SERVERS, locationPanelVisual.getLocalServerModel());
+        d.putProperty(URL, locationPanelVisual.getUrl());
 
         // options
         d.putProperty(CREATE_INDEX_FILE, optionsPanelVisual.isCreateIndex());
@@ -167,7 +165,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
 
     public boolean isValid() {
         getComponent();
-        String error = validateLocation();
+        String error = validateProject();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             return false;
@@ -276,9 +274,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         // location
         locationPanelVisual.addLocationListener(this);
 
-        // sources
-        sourcesPanelVisual.addSourcesListener(this);
-
         // options
         optionsPanelVisual.addOptionsListener(this);
     }
@@ -286,9 +281,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     private void unregisterListeners() {
         // location
         locationPanelVisual.removeLocationListener(this);
-
-        // sources
-        sourcesPanelVisual.removeSourcesListener(this);
 
         // options
         optionsPanelVisual.removeOptionsListener(this);
@@ -304,7 +296,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
         return name;
     }
 
-    private String validateLocation() {
+    private String validateProject() {
         String projectLocation = locationPanelVisual.getProjectLocation();
         String projectName = locationPanelVisual.getProjectName();
         String projectPath = locationPanelVisual.getFullProjectPath();
@@ -321,7 +313,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
     }
 
     private String validateSources() {
-        LocalServer localServer = sourcesPanelVisual.getSourcesLocation();
+        LocalServer localServer = locationPanelVisual.getSourcesLocation();
         if (!isProjectFolder(localServer)) {
             String sourcesLocation = localServer.getSrcRoot();
 
@@ -337,7 +329,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
             }
         }
 
-        String url = sourcesPanelVisual.getUrl();
+        String url = locationPanelVisual.getUrl();
         if (!Utils.isValidUrl(url)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidUrl");
         }

@@ -42,6 +42,8 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
