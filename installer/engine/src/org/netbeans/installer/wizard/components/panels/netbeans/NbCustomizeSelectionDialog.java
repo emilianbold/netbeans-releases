@@ -76,6 +76,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.components.StatusInterface;
 import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
@@ -491,8 +492,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 if (!satisfied) {
                     return StringUtils.format(
                             panel.getProperty(panel.ERROR_REQUIREMENT_INSTALL_PROPERTY),
-                            product.getDisplayName(),
-                            requirees.get(0).getDisplayName());
+                            getProductNameByGroup(product),
+                            getProductNameByGroup(requirees.get(0)));
                 }
             }
             
@@ -514,8 +515,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 if (!satisfied) {
                     return StringUtils.format(
                             panel.getProperty(panel.ERROR_CONFLICT_INSTALL_PROPERTY),
-                            product.getDisplayName(),
-                            unsatisfiedConflict.getDisplayName());
+                            getProductNameByGroup(product),
+                            getProductNameByGroup(unsatisfiedConflict));
                 }
             }
         }
@@ -552,7 +553,11 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         return null;
     }
-    
+    private String getProductNameByGroup(Product product) {
+        return (product.getParent().getUid().equals(NB_IDE_GROUP_UID))?
+                product.getParent().getDisplayName() : product.getDisplayName();
+    }
+
     private void updateErrorMessage() {
         final String errorMessage = validateInput();
         
@@ -666,10 +671,10 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 // just return - do not generate an error as this situation can
                 // easily arise under valid circumstances
                 return;
-            }
-            
-            if (registryNodes.get(index) instanceof Product) {
-                Product product = (Product) registryNodes.get(index);
+            }            
+            RegistryNode node = registryNodes.get(index);
+            if (node instanceof StatusInterface) {
+                StatusInterface product = (StatusInterface) node;
                 switch (product.getStatus()) {
                     case INSTALLED:
                         break;
@@ -751,46 +756,43 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 titleLabel.setBackground(list.getBackground());
             }
             
-            if (value instanceof Product) {
-                final Product product = (Product) value;
+            if (value instanceof RegistryNode) {
+                final RegistryNode node = (RegistryNode) value;
                 
                 final String title =
-                        " " + product.getDisplayName() + " ";
-                final String tooltip = title;
-                
-                titleLabel.setText(title);
-                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.PLAIN));
+                        " " + node.getDisplayName() + " ";
+                final String tooltip = title;                
+                titleLabel.setText(title);                
                 titleLabel.setToolTipText(tooltip);
-                
-                checkBox.setVisible(true);
-                checkBox.setToolTipText(tooltip);
-                
-                if (product.getStatus() == Status.INSTALLED) {
-                    titleLabel.setText(StringUtils.format(
-                            LIST_INSTALLED_PRODUCT_TEXT, titleLabel.getText()));
-                    
-                    checkBox.setSelected(true);
-                    checkBox.setEnabled(false);
-                } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                    checkBox.setSelected(true);
-                    checkBox.setEnabled(true);
-                } else {
-                    checkBox.setSelected(false);
-                    checkBox.setEnabled(true);
+                              
+                if((node instanceof Product) || 
+                        (node.getUid().equals(NB_IDE_GROUP_UID))) {
+                    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.PLAIN));
+                    checkBox.setVisible(true);
+                    checkBox.setToolTipText(tooltip);                    
+                    switch (((StatusInterface)value).getStatus()) {
+                        case INSTALLED:                         
+                            titleLabel.setText(StringUtils.format(
+                                    LIST_INSTALLED_PRODUCT_TEXT, titleLabel.getText()));
+                            checkBox.setSelected(true);
+                            checkBox.setEnabled(false);
+                            break;
+                        case TO_BE_INSTALLED:
+                            checkBox.setSelected(true);
+                            checkBox.setEnabled(true);
+                            break;
+                        default:
+                            checkBox.setSelected(false);
+                            checkBox.setEnabled(true);
+                    }                
+                } else if (node instanceof Group) {                   
+                    titleLabel.setText(title);                
+                    titleLabel.setToolTipText(tooltip);                    
+                    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));                                
+                    checkBox.setVisible(false);
                 }
-            } else if (value instanceof Group) {
-                final Group group = (Group) value;
-                
-                final String title =
-                        " " + group.getDisplayName() + " ";
-                final String tooltip = title;
-                
-                titleLabel.setText(title);
-                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-                titleLabel.setToolTipText(tooltip);
-                
-                checkBox.setVisible(false);
-            }
+            } 
+
             titleLabel.setPreferredSize(titleLabel.getMinimumSize());
 
             // l&f-specific tweaks
@@ -873,4 +875,6 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "NCSD.list.product.installed");//NOI8N
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
+    private static final String NB_IDE_GROUP_UID = 
+            "nb-ide-group";//NOI18N
 }
