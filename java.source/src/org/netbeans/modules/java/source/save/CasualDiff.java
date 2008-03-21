@@ -2058,6 +2058,14 @@ public class CasualDiff {
                     copyTo(start, pos = end, printer);
                     break;
                 }
+                case DELETE: {
+                    oldIndex++;
+                    int[] bounds = getBounds(item.element);
+                    tokenSequence.move(bounds[1] - 1);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    pos = tokenSequence.offset();
+                    break;
+                }
                 default: 
                     break;
             }
