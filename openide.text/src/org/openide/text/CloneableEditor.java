@@ -196,6 +196,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         public DoInitialize(QuietEditorPane tmp) {
             this.tmp = tmp;
+            this.tmpComp = initLoading();
+            new Timer(1000, this).start();
             if (NEW_INITIALIZE) {
                 task = CloneableEditorSupport.RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY + 2);
@@ -214,8 +216,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             loadingLbl.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
             loadingLbl.setVisible(false);
             add(loadingLbl, BorderLayout.CENTER);
-
-            new Timer(1000, this).start();
             
             return loadingLbl;
         }
@@ -233,7 +233,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             int phaseNow = phase;
             switch (phase++) {
             case 0: 
-                this.tmpComp = initLoading();
                 initNonVisual();
                 if (NEW_INITIALIZE) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
@@ -272,8 +271,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             // load the doc synchronously
             prepareTask.waitFinished();
 
-            doc = support.getDocument();
-    
             // Init action map: cut,copy,delete,paste actions.
             javax.swing.ActionMap am = getActionMap();
 
@@ -290,7 +287,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             
-            EditorKit k = support.cesKit();
+            EditorKit k; 
+            synchronized (this) {
+                k = support.cesKit();
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
+            }
             
             if (k instanceof Callable) {
                 try {
@@ -298,10 +301,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
-            }
-            synchronized (this) {
-                kit = k;
-                notifyAll();
             }
         }
         
@@ -335,7 +334,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             }            
         }
         
-        private void initDocument() {
+        private boolean initDocument() {
             EditorKit k;
             Document d;
             synchronized (this) {
@@ -352,13 +351,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     }
                 }
             }
+            if (tmp.getDocument() == doc) {
+                return false;
+            }
             tmp.setEditorKit(kit);
             tmp.setDocument(doc);
+            return true;
         }
         
         final void initVisual() {
             // wait for document and init it
-            initDocument();
+            if (!initDocument()) {
+                return;
+            }
             
             // the following two shall be done out of AWT:
             initCustomEditor();

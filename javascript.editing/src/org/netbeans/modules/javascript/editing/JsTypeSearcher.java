@@ -61,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -377,6 +378,6 @@ public class JsTypeSearcher implements TypeSearcher {
     }
 
     public String getMimetype() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 }

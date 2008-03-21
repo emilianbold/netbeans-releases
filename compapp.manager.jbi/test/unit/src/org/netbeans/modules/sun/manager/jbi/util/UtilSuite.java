@@ -37,53 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
+package org.netbeans.modules.sun.manager.jbi.util;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
  *
  * @author jqian
  */
-public class JBIComponentConfigurationConstraintTest {
-
-    public JBIComponentConfigurationConstraintTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of validate method, of class ComponentConfigurationConstraint.
-     */
-    @Test
-    public void validate() {
-//        System.out.println("validate");
-//        Object value = null;
-//        ComponentConfigurationConstraint instance = new ComponentConfigurationConstraint();
-//        String expResult = "";
-//        String result = instance.validate(value);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReaderTest.class,
+        org.netbeans.modules.sun.manager.jbi.util.ServerInstanceTest.class,
+        org.netbeans.modules.sun.manager.jbi.util.UtilsTest.class
+})
+public class UtilSuite {
 }

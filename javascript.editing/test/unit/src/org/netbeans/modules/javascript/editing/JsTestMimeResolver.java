@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,28 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javascript.editing;
 
-package org.netbeans.modules.cnd.repository.disk.api;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
-import org.netbeans.modules.cnd.repository.spi.Key;
-
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 
 /**
- *
- * @author Nickolay Dalmatov
+ * Recognize JavaScript file types
+ * 
+ * For some reason my declarative mime resolver (in my layer) doesn't kick in. Grrr.
  */
-public interface RepFilesAccessStrategy {
+public class JsTestMimeResolver extends MIMEResolver {
+    /**
+     * Extensions recognized as being JavaScript.
+     */
+    private final static String[] JAVASCRIPT_EXTENSIONS = new String[] {
+        "js", "json" // NOI18N
+    };
     
-    /** Returns the file access for the object identified by the id */
-    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws IOException;
+    /**
+     * MIME type for JavaScript. Don't change this without also consulting the various XML files
+     * that cannot reference this value directly.
+     */
+    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
     
-    /** Remove the record */
-    void removeObjForKey (Key id) throws IOException;
-
-    void setOpenFilesLimit(int limit) throws IOException;
+    public JsTestMimeResolver() {
+    }
     
-    void closeUnit(String unitName) throws IOException;
+    public static boolean isJavaScriptExt(String ext) {
+        for (int i = 0; i < JAVASCRIPT_EXTENSIONS.length; i++) {
+            if (ext.equalsIgnoreCase(JAVASCRIPT_EXTENSIONS[i])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public String findMIMEType(FileObject fo) {
+        return isJavaScriptExt(fo.getExt()) ? JAVASCRIPT_MIME_TYPE : null;
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,30 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
+package org.netbeans.spi.queries;
 
-import org.netbeans.modules.sun.manager.jbi.management.model.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.File;
 
 /**
- *
- * @author jqian
+ * Determine whether files should be hidden in views presented to the user.
+ * <p>
+ * Global lookup is used to find all instances of VisibilityQueryImplementation.
+ * </p>
+ * <p>
+ * Threading note: implementors should avoid acquiring locks that might be held
+ * by other threads. Generally treat this interface similarly to SPIs in
+ * {@link org.openide.filesystems} with respect to threading semantics.
+ * </p>
+ * @see org.netbeans.api.queries.VisibilityQuery
+ * @since org.netbeans.modules.queries/1 1.12
+ * @author mkleint
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxExclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxInclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinExclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinInclusiveConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.PatternConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.LengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxLengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinLengthConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.TotalDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.FractionDigitsConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraintTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.constraint.CompositeConstraintTest.class
-})
-public class ModelSuite {
+public interface VisibilityQueryImplementation2 extends VisibilityQueryImplementation {
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file to considered
+     * @return true if it is recommended to display this file
+     */ 
+    boolean isVisible(File file);
+
 }

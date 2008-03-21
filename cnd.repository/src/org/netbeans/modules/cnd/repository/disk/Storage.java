@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,22 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.disk.api;
+package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
 
+/**
+ *
+ * @author Vladimir Kvashin
+ */
+public interface Storage {
 
-public interface RepositoryFilesHelperCacheStrategy {
+    public Persistent get(Key key) throws IOException;
     
-    void                        adjustCapacity (int newCapacity) throws IOException ;
-    String                      lookupInCacheName(Key id);
-    ConcurrentFileRWAccess      lookupInCacheFile(String fileName);
-    void                        cacheNameRemove(String fileName) throws IOException;
-    void                        cacheFileRemove(ConcurrentFileRWAccess aFile);
-    void                        putCacheFile(String fileName, ConcurrentFileRWAccess aFile)  throws IOException ;
-    void                        putCacheName(Key id, String fileName);
+    public void remove(Key id) throws IOException;
+    
+    public void close() throws IOException;
+    
+    public int getFragmentationPercentage() throws IOException;
+    
+    /** 
+     * Writes object to storage
+     * @param key object key
+     * @param object object to write
+     */
+    public void write(Key key, Persistent object)  throws IOException ;
+
+    /**
+     * Performes necessary maintenance (such as defragmentation) during the goven timeout
+     * @return true if maintenance was finished by timeout and needs more time to be completed
+     */
+    public boolean defragment(long timeout)  throws IOException;
+    
 }

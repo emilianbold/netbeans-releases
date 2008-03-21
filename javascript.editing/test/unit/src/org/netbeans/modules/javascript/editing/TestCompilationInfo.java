@@ -47,6 +47,7 @@ import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -114,7 +115,7 @@ class TestCompilationInfo extends CompilationInfo {
     
     @Override
     public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
-        assert embeddedMimeType.equals(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        assert embeddedMimeType.equals(JsTokenId.JAVASCRIPT_MIME_TYPE);
         
         if (embeddedResults.size() == 0) {
             final List<Error> errors = new ArrayList<Error>();
@@ -149,7 +150,7 @@ TranslatedSource translatedSource = null; // TODO
             for (Error error : errors) {
                 parserResult.addError(error);
             }
-            embeddedResults.put(JsMimeResolver.JAVASCRIPT_MIME_TYPE, parserResult);
+            embeddedResults.put(JsTokenId.JAVASCRIPT_MIME_TYPE, parserResult);
             parserResult.setInfo(this);
         }
         
@@ -159,7 +160,7 @@ TranslatedSource translatedSource = null; // TODO
     @Override
     public List<Error> getErrors() {
         // Force initialization
-        getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
 
         List<Error> errors = new ArrayList<Error>();
         for (ParserResult result : embeddedResults.values()) {

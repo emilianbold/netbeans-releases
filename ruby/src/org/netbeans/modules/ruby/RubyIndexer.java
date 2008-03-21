@@ -211,6 +211,14 @@ public class RubyIndexer implements Indexer {
     public RubyIndexer() {
     }
 
+    public String getIndexVersion() {
+        return "6.102"; // NOI18N
+    }
+
+    public String getIndexerName() {
+        return "ruby"; // NOI18N
+    }
+    
     public String getPersistentUrl(File file) {
         String url;
         try {
@@ -253,14 +261,10 @@ public class RubyIndexer implements Indexer {
         return file.getNameExt().endsWith(".rb");
     }
     
-    public String getIndexVersion() {
-        return "6.102"; // NOI18N
+    public boolean acceptQueryPath(String url) {
+        return url.indexOf("jsstubs") == -1; // NOI18N
     }
 
-    public String getIndexerName() {
-        return "ruby"; // NOI18N
-    }
-    
     private static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {

@@ -56,6 +56,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
+import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -67,8 +68,9 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  *
  * @author Sergey Grinev
  */
-public final class DiskRepositoryManager extends AbstractDiskRepository implements Repository {
-    private final Map<String, UnitDiskRepository> repositories;
+public final class DiskRepositoryManager implements Repository, RepositoryWriter {
+
+    private final Map<String, Unit> units;
     
     private static DiskRepositoryManager    instance = new DiskRepositoryManager();
     private final RepositoryQueue           queue;
@@ -85,31 +87,31 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
         rwLock          = new ReentrantReadWriteLock(true);
         threadManager   = new RepositoryThreadManager(this, rwLock);
 	queue           = threadManager.startup();
-        repositories    = new ConcurrentHashMap<String, UnitDiskRepository>();
+        units    = new ConcurrentHashMap<String, Unit>();
     }
     
-    private AbstractDiskRepository getCreateRepository(Key key) throws IOException {
+    private Unit getCreateUnit(Key key) throws IOException {
         assert key != null;
 
         final String unitName = key.getUnit().toString();
         assert unitName != null;
         
-        UnitDiskRepository repository = repositories.get(unitName);
+        Unit unit = units.get(unitName);
             
-        if (repository == null) {
-            synchronized (repositories) {
-                repository = repositories.get(unitName);
-                if (repository == null) {
+        if (unit == null) {
+            synchronized (units) {
+                unit = units.get(unitName);
+                if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
                         RepositoryTranslatorImpl.loadUnitIndex(unitName);
-                        repository = new UnitDiskRepository(unitName);
-                        repositories.put(unitName, repository);
+                        unit = new UnitImpl(unitName);
+                        units.put(unitName, unit);
                     }
                 }
             }
         }
         
-        return repository;
+        return unit;
     }
     
     public void put(Key id, Persistent obj) {
@@ -118,7 +120,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     
     public void write(Key key, Persistent object) {
         try {
-            AbstractDiskRepository diskRep = getCreateRepository(key);
+            Unit diskRep = getCreateUnit(key);
 
             if (diskRep == null)
                 return;
@@ -138,7 +140,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
        assert key != null;
 
        try {
-            AbstractDiskRepository diskRep = getCreateRepository(key);
+            Unit diskRep = getCreateUnit(key);
             if (diskRep != null) {
                 return diskRep.get(key);
             }
@@ -173,7 +175,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     }
     
     private void iterateWith(Visitor visitor){
-        for (Entry<String, UnitDiskRepository> entry: repositories.entrySet()) {
+        for (Entry<String, Unit> entry: units.entrySet()) {
             try {
                 visitor.visit(entry.getValue());
             } catch (Throwable exc) {
@@ -186,23 +188,28 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
 
 
     public boolean maintenance(long timeout) {
-            if( repositories.size() == 0 ) {
+            if( units.size() == 0 ) {
                 return false;
             }
 
-            Collection<UnitDiskRepository> values = repositories.values();
-            UnitDiskRepository[] sfs = (UnitDiskRepository[]) values.toArray(new UnitDiskRepository[values.size()]);
-            Arrays.sort(sfs, new FragmentationComparator());
+            Collection<Unit> values = units.values();
+            Unit[] unitList = (Unit[]) values.toArray(new Unit[values.size()]);
+            Arrays.sort(unitList, new FragmentationComparator());
             boolean needMoreTime = false;
             long start = System.currentTimeMillis();
-            for (int i = 0; i < sfs.length; i++) {
+            for (int i = 0; i < unitList.length; i++) {
                 if( timeout <= 0 ) {
                     needMoreTime = true;
                     break;
                 }
                 
-                if( sfs[i].maintenance(timeout) ) {
-                    needMoreTime = true;
+                try {
+                    if( unitList[i].defragment(timeout) ) {
+                        needMoreTime = true;
+                    }
+                } catch (IOException ex) {
+                    RepositoryListenersManager.getInstance().fireAnException(
+                            unitList[i].getName(), new RepositoryExceptionImpl(ex));
                 }
                 timeout -= (System.currentTimeMillis() - start);
             }
@@ -225,7 +232,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
 		}
             }
             
-            AbstractDiskRepository repository = repositories.remove(unitName);
+            Unit repository = units.remove(unitName);
             
             if (repository != null) {
                 try {
@@ -259,7 +266,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
             rwLock.writeLock().lock();
             cleanAndWriteQueue();
             iterateWith(new CloseVisitor());
-            repositories.clear();
+            units.clear();
         } finally {
             rwLock.writeLock().unlock();
         }
@@ -307,7 +314,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     }
 
     private interface Visitor {
-        void visit(AbstractDiskRepository repository) throws IOException ;
+        void visit(Unit repository) throws IOException ;
     }
 
     private static class UnitFilter implements RepositoryQueue.Filter {
@@ -335,16 +342,30 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
             super();
         }
 
-        public void visit(AbstractDiskRepository repository) throws IOException {
+        public void visit(Unit repository) throws IOException {
             repository.close();
         }
     }
     
-   private static class FragmentationComparator implements Comparator<UnitDiskRepository>, Serializable {
+   private static class FragmentationComparator implements Comparator<Unit>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
 
-        public int compare(UnitDiskRepository o1, UnitDiskRepository o2) {
-            return o2.getFragmentationPercentage() - o1.getFragmentationPercentage();
+        public int compare(Unit o1, Unit o2) {
+            return getFragmentationPercentage(o2) - getFragmentationPercentage(o1);
         }
-    }    
+    }
+   
+    private static int getFragmentationPercentage(Unit unit) {
+        try {
+            return unit.getFragmentationPercentage();
+        } catch (IOException ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    unit.getName(), new RepositoryExceptionImpl(ex));
+        }
+        return 0;
+    }
+   
+    public Persistent tryGet(Key key) {
+        return null;
+    }   
 }

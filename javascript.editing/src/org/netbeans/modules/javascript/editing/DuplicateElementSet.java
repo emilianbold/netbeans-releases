@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,81 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.repository.disk;
+package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
- * @author Sergey Grinev
+ * A "set" which deliberately violates the Set contract - it's used to include duplicates that
+ * match on object equality
+ * 
+ * @author Tor Norbye
  */
-public abstract class AbstractDiskRepository implements RepositoryWriter {
-    
-    public abstract Persistent get(Key key) throws IOException;
-    
-    public abstract void remove(Key id) throws IOException;
-    
-    public abstract void close() throws IOException;
-    
-    abstract public int getFragmentationPercentage() throws IOException;    
-    
-    public Persistent tryGet(Key key) {
-	return null;
+public class DuplicateElementSet implements Set<IndexedElement> {
+    private List<IndexedElement> elements = new ArrayList<IndexedElement>();
+
+    public DuplicateElementSet() {
+    }
+
+    public int size() {
+        return elements.size();
+    }
+
+    public boolean isEmpty() {
+        return elements.isEmpty();
+    }
+
+    public boolean contains(Object o) {
+        return elements.contains(o);
+    }
+
+    public Iterator<IndexedElement> iterator() {
+        return elements.iterator();
+    }
+
+    public Object[] toArray() {
+        return elements.toArray();
+    }
+
+    public <T> T[] toArray(T[] a) {
+        return elements.toArray(a);
+    }
+
+    public boolean add(IndexedElement o) {
+        return elements.add(o);
+    }
+
+    public boolean remove(Object o) {
+        return elements.remove(o);
+    }
+
+    public boolean containsAll(Collection<?> c) {
+        return elements.containsAll(c);
+    }
+
+    public boolean addAll(Collection<? extends IndexedElement> c) {
+        return elements.addAll(c);
+    }
+
+    public boolean retainAll(Collection<?> c) {
+        return elements.retainAll(c);
+    }
+
+    public boolean removeAll(Collection<?> c) {
+        return elements.removeAll(c);
+    }
+
+    public void clear() {
+        elements.clear();
     }
 }
