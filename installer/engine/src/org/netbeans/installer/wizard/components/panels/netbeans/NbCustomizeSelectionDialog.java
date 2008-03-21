@@ -376,7 +376,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         } else if (!isThereAnythingVisibleToUninstall()) {
             messageLabel.setText(panel.getProperty(panel.MESSAGE_INSTALL_PROPERTY));
         } else {
-            messageLabel.setText(panel.getProperty(panel.MESSAGE_PROPERTY));
+            messageLabel.setText(panel.getProperty(panel.MESSAGE_INSTALL_PROPERTY));
         }
         
         componentsList.setModel(
@@ -471,7 +471,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                     Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
             }
-            return panel.getProperty(panel.ERROR_NO_CHANGES_PROPERTY);
+            return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
         }
         
         for (Product product: toInstall) {
