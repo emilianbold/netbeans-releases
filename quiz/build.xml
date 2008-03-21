@@ -25,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- Microsystems, Inc. All Rights Reserved.
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -40,25 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
-    <name>spring-framework</name>
-    <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.spring.beans.resources.Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/commons-logging-1.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-2.5.jar!/</resource>
-    </volume>
-    <volume>
-        <type>src</type>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-    </volume>
-    <volume>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/springframework/spring/2.5/spring-2.5.pom</resource>
-    </volume>
-</library>
+<project name="org.netbeans.modules.quiz" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.quiz.</description>
+    <import file="nbproject/build-impl.xml"/>
+</project>

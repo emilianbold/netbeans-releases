@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <!--
-
+        jMaki plugin setup section
     -->
     <target name="-init-jmaki">
         <property name="plugins.jmaki.nbm.dir" value="${java.io.tmpdir}"/>
