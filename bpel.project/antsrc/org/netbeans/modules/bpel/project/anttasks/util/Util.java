@@ -59,14 +59,10 @@ import org.w3c.dom.NodeList;
 
 public final class Util {
 
-    public static final String WSDL_FILE_EXTENSION = 
-            "wsdl"; // NOI18N
-    public static final String XSD_FILE_EXTENSION = 
-            "xsd"; // NOI18N
-    public static final String BPEL_FILE_EXTENSION = 
-            "bpel"; // NOI18N
-    public static final String FOUND_VALIDATION_ERRORS = 
-            "Found validation error(s)."; // NOI18N
+    public static final String WSDL_FILE_EXTENSION = "wsdl"; // NOI18N
+    public static final String XSD_FILE_EXTENSION = "xsd"; // NOI18N
+    public static final String BPEL_FILE_EXTENSION = "bpel"; // NOI18N
+    public static final String FOUND_VALIDATION_ERRORS = "Found validation error(s)."; // NOI18N
             
     public static String getError(File file, int column, int line, String description, String type) {
         StringBuffer buffer = new StringBuffer();
@@ -150,37 +146,28 @@ public final class Util {
         
     }
     
-    // Private /////////////////////////////////////////////////////////////////
     private static javax.swing.text.Element findLineRootElement(AbstractDocument doc) {
-        javax.swing.text.Element e = doc.getParagraphElement(0).getParentElement();
+        javax.swing.text.Element element = doc.getParagraphElement(0).getParentElement();
 
-        if (e == null) {
-            e = doc.getDefaultRootElement();
+        if (element == null) {
+            element = doc.getDefaultRootElement();
         }
-        return e;
+        return element;
     }
 
     private static int findLineNumber(AbstractDocument doc, int argInt) {
         javax.swing.text.Element paragraphsParent = findLineRootElement(doc);
-        int retInt = paragraphsParent.getElementIndex(argInt); // argInt is offset
-        return retInt;
+        return paragraphsParent.getElementIndex(argInt);
     }
 
     private static int findColumnNumber(AbstractDocument doc, int argInt) {
         javax.swing.text.Element paragraphsParent = findLineRootElement(doc);
-        int indx = paragraphsParent.getElementIndex(argInt); // argInt is offset
-        int retInt = argInt - paragraphsParent.getElement(indx).getStartOffset();
-        return retInt;
+        int indx = paragraphsParent.getElementIndex(argInt);
+        return argInt - paragraphsParent.getElement(indx).getStartOffset();
     }
 
     private static AbstractDocument getAbstractDocument(Component component) {
-        int position = 0;
-        AbstractDocument doc;
-
-        doc = (AbstractDocument) component.getModel().
-                getModelSource().getLookup().lookup(AbstractDocument.class);
-
-        return doc;
+        return (AbstractDocument) component.getModel().getModelSource().getLookup().lookup(AbstractDocument.class);
     }
 
     private static int findPosition(AbstractDocumentModel model, Node node) {
