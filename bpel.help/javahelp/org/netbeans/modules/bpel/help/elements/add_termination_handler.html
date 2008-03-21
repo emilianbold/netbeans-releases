@@ -11,8 +11,8 @@
 <body>
 <h2>BPEL Designer: Adding Termination Handlers </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The termination handler is used to control the termination of a scope. </p>
-<p>When a fault occurs during the process execution, a fault handler associated with the scope or process should be run, but  before that all the running activities inside the scope or process should be terminated. If a faulted scope contains any nested scopes, they also will be terminated. Terminating a scope means terminating activities inside it and  executing the termination handler associated with the scope. </p>
+<p>The termination handler is used to control the termination of a scope. The termination of a scope happens if a scope or process enclosing it has faulted. </p>
+<p>When a fault is thrown inside a scope or process, a fault handler associated with the scope or process should be run, but before that all the running activities inside the faulted  scope or process should be terminated. If a faulted scope or process contains any nested scopes, they also should be terminated. Terminating a scope means terminating activities inside it and executing the termination handler associated with the scope.</p>
 <p>The termination handler is a container for the activities that will be performed in case a scope is terminated. You can add one termination handler for a  scope.</p>
 <p><b>To add a Termination Handler  to Scope or Process elements:</b></p>
 <ol>
