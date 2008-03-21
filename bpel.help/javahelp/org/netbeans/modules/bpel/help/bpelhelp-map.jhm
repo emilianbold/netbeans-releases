@@ -27,7 +27,6 @@
 	<mapID target="orch_elements_scope_add_catch" url="elements/scope_add_catch.html"/>
 	<mapID target="orch_elements_scope_add_catchall" url="elements/scope_add_catch_all.html"/>
 	<mapID target="orch_elements_scope_add_fault_handler" url="elements/scope_add_fault_handler.html"/>
-	<mapID target="orch_intro" url="intro.html"/>
 	<mapID target="orch_mapper_functions" url="mapper/mapper_functions.html"/>
 	<mapID target="orch_mapper_mappings" url="mapper/mapper_mappings.html"/>
 	<mapID target="orch_mapper_predicates" url="mapper/mapper_predicates.html"/>
@@ -74,7 +73,7 @@
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" url="windows_editors/project_node.html"/>
 	<mapID target="org.netbeans.modules.bpel.xpath.view.output.ExpressionTopComponent" url="mapper/about_mapper.html"/>
-	<mapID target="org.netbeans.modules.print.impl.ui.Attribute" url="windows_editors/design_print.html"/>
+	<mapID target="orch_windows_editors_print" url="windows_editors/design_print.html"/>
 	<mapID target="orch_elements_event_handler" url="elements/add_event_handler.html"/>
 	<mapID target="orch_elements_event_handler_onalarm" url="elements/add_event_handler_onalarm.html"/>
 	<mapID target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" url="elements/add_event_handler_onevent.html"/>
@@ -109,4 +108,5 @@
 	<mapID target="orch_elements_compensate" url="elements/compensate.html"/>
 	<mapID target="orch_elements_compensatescope" url="elements/compensatescope.html"/>
 	<mapID target="orch_elements_rethrow" url="elements/rethrow.html"/>
+	<mapID target="design_print" url="windows_editors/design_print.html"/>
 </map>

@@ -515,23 +515,25 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         }
         imageUrlDialog.initialize();
         imageUrlDialog.showDialog();
-        String imgResource = (String)imageUrlDialog.getPropertyValue();
-        if(imgResource.startsWith("/")){
-            imgResource = "." + imgResource;
-        }
-        StringBuffer sb = new StringBuffer();
-        int len = imgResource.length();
-        for (int i = 0; i < len; i++) {
-            char chr =  imgResource.charAt(i);
-            if (chr == ' '){
-                sb.append("%20");
-            }else{
-               sb.append(chr); 
+        if (!imageUrlDialog.isCancelled()) {
+            String imgResource = (String) imageUrlDialog.getPropertyValue();
+            if (imgResource.startsWith("/")) {
+                imgResource = "." + imgResource;
             }
+            StringBuffer sb = new StringBuffer();
+            int len = imgResource.length();
+            for (int i = 0; i < len; i++) {
+                char chr = imgResource.charAt(i);
+                if (chr == ' ') {
+                    sb.append("%20");
+                } else {
+                    sb.append(chr);
+                }
+            }
+            imgResource = sb.toString();
+            imageFileField.setText(imgResource);
+            setBackgroundImage();
         }
-        imgResource = sb.toString();
-        imageFileField.setText(imgResource);
-        setBackgroundImage();
     }//GEN-LAST:event_browseButtonActionPerformed
     
     class ImageFileFilter extends FileFilter {

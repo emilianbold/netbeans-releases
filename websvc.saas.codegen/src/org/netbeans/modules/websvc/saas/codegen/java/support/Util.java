@@ -117,9 +117,12 @@ import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.Token;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -143,7 +146,7 @@ public class Util {
      */ 
     public static boolean isRestJavaFile(DataObject d) {
         try {
-            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            if(!isJava(d))
             {
                 return false;
             }
@@ -168,7 +171,7 @@ public class Util {
 
     public static boolean isServlet(DataObject d) {
         try {
-            if (d == null || !"java".equals(d.getPrimaryFile().getExt())) //NOI18N
+            if(!isJava(d))
             {
                 return false;
             }
@@ -189,6 +192,14 @@ public class Util {
     
     public static boolean isJsp(DataObject d) {
         if (d != null && "jsp".equals(d.getPrimaryFile().getExt())) //NOI18N
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    public static boolean isJava(DataObject d) {
+        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
             return true;
         }
@@ -553,7 +564,9 @@ public class Util {
     
     public static void showMethod(FileObject source, String methodName) throws IOException {
         try {
-            DataObject dataObj = DataObject.find(source);          
+            DataObject dataObj = DataObject.find(source);      
+            if(!isJava(dataObj))
+                return;
             JavaSource javaSource = JavaSource.forFileObject(source);
             
             // Force a save to make sure to make sure the line position in
@@ -668,10 +681,11 @@ public class Util {
     }
     
     public static String normailizeName(final String name) {
-        String normalized = name;
-        normalized = normalized.replaceAll("\\p{Punct}", "_");
-        normalized = normalized.replaceAll("\\p{Space}", "_");
-        return normalized;
+        //String normalized = name;
+        //normalized = normalized.replaceAll("\\p{Punct}", "_");
+        //normalized = normalized.replaceAll("\\p{Space}", "_");
+        //return normalized;
+        return SaasUtil.toValidJavaName(name);
     }
 
     public static boolean isScanningInProgress(boolean showMessage) {
@@ -959,7 +973,28 @@ public class Util {
         return paramUsage;
     }
     
+    public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
+        String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
+        if(httpMethod == HttpMethodType.PUT ||
+                httpMethod == HttpMethodType.POST) {
+            part += ", {\"Content-Type\", contentType}";
+        }
+        String paramCode = "";
+        paramCode += "             String[][] "+varName+" = new String[][]{\n";
+        paramCode += "                 " +part+ "\n";
+        paramCode += "             };\n";
+        return paramCode;
+    }
+    
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
+        String paramCode = "";
+        paramCode += "             String[][] "+varName+" = new String[][]{\n";
+        paramCode += "                 " + getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+        paramCode += "             };\n";
+        return paramCode;
+    }
+    
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
@@ -968,7 +1003,7 @@ public class Util {
             if(evaluate || param.isApiKey()) {
                 paramVal = findParamValue(param);
                 if (param.getType() != String.class) {
-                    sb.append("{\"" + paramName + "\", \"" + paramVal + "\".toString()},\n");
+                    sb.append("{\"" + paramName + "\", " + paramVal + ".toString()},\n");
                 } else {
                     if(paramVal != null)
                         sb.append("{\"" + paramName + "\", \"" + paramVal + "\"},\n");
@@ -976,19 +1011,18 @@ public class Util {
                         sb.append("{\"" + paramName + "\", null},\n");
                 }
             } else {
-                sb.append("{\"" + paramName + "\", " + getParameterName(param, true, true, true) + "},\n");
+                if (param.getType() != String.class) {
+                    sb.append("{\"" + paramName + "\", " + getVariableName(param.getName()) + ".toString()},\n");
+                } else {
+                    sb.append("{\"" + paramName + "\", " + getVariableName(param.getName()) + "},\n");
+                }
             }
         }
         paramsStr = sb.toString();
         if (params.size() > 0) {
-            paramsStr = paramsStr.substring(0, paramsStr.length() - 1);
+            paramsStr = paramsStr.substring(0, paramsStr.length() - 2);
         }
-        
-        String paramCode = "";
-        paramCode += "             String[][] "+varName+" = new String[][]{\n";
-        paramCode += "                 " + paramsStr + "\n";
-        paramCode += "             };\n";
-        return paramCode;
+        return paramsStr;
     }
     
     public static String getParameterName(ParameterInfo param) {
@@ -1405,5 +1439,16 @@ public class Util {
                 return true;
         }
         return false;
+    }
+    
+    public static void addClientJars(SaasBean bean, Project p,
+            FileObject target) {
+        if(bean instanceof WadlSaasBean) {
+            if(p == null || bean == null ||
+                    ((WadlSaasBean)bean).getMethod() == null)
+                throw new IllegalArgumentException(
+                        "Cannot create JAXB classes, since project|bean is null.");
+            LibrariesHelper.addClientJars(p, target, ((WadlSaasBean)bean).getMethod().getSaas());
+        }
     }
 }
