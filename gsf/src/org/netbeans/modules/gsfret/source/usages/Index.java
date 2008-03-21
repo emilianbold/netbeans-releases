@@ -393,11 +393,14 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
     // Only done at build time / ahead of time.
     static void preindex(Language language, URL root) {
         try {
+            Indexer indexer = language.getIndexer();
+            if (!indexer.acceptQueryPath(root.toExternalForm())) {
+                return;
+            }
             FileObject rootFo = URLMapper.findFileObject(root);
             File dataFile = getDataFolder(language, root);
             // Create "preindexed" file
             // Zip contents of data folder up and store it as a preindexed file in the rootFo
-            Indexer indexer = language.getIndexer();
             String indexedFileName = PREINDEXED + indexer.getIndexerName() + "-" + indexer.getIndexVersion();
             File output = new File(FileUtil.toFile(rootFo), indexedFileName + ".zip"); // NOI18N
             OutputStream os = new BufferedOutputStream(new FileOutputStream(output));

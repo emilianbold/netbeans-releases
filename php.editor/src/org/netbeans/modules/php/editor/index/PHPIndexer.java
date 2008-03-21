@@ -471,4 +471,8 @@ public class PHPIndexer implements Indexer {
     public FileObject getPreindexedDb() {
         return null;
     }
+
+    public boolean acceptQueryPath(String url) {
+        return true;
+    }
 }

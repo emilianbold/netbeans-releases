@@ -71,11 +71,9 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class DefaultLanguage implements Language {
     private ColoringManager coloringManager;
-    private String displayName;
     private String iconBase;
     private String mime;
     private boolean useCustomEditorKit;
-    private List<String> extensions;
     private List<Action> actions;
     private GsfLanguage language;
     private Parser parser;
@@ -111,14 +109,12 @@ public class DefaultLanguage implements Language {
     }
 
     /** For testing purposes only!*/
-    public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
+    public DefaultLanguage(String iconBase, String mime, List<Action> actions,
             GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
             DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketCompletion, Indexer indexer,
             StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
-        this.displayName = displayName;
         this.iconBase = iconBase;
         this.mime = mime;
-        this.extensions = extensions;
         this.actions = actions;
         this.language = gsfLanguage;
         this.parser = parser;
@@ -143,11 +139,7 @@ public class DefaultLanguage implements Language {
     }
     
     public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        return getGsfLanguage().getDisplayName();
     }
 
     public String getIconBase() {
@@ -164,14 +156,6 @@ public class DefaultLanguage implements Language {
 
     public void setMimeType(String mime) {
         this.mime = mime;
-    }
-
-    public String[] getExtensions() {
-        if (extensions != null) {
-            return extensions.toArray(new String[extensions.size()]);
-        } else {
-            return new String[0];
-        }
     }
 
     public Action[] getEditorActions() {
@@ -229,20 +213,6 @@ public class DefaultLanguage implements Language {
         actions.add(action);
     }
     
-    public void addExtension(String extension) {
-        if (extension == null || extension.length() == 0 || extension.startsWith(".")) {
-            throw new IllegalArgumentException("Extension should be a nonzero string not starting with a dot");
-        }
-        
-        if (extensions == null) {
-            extensions = new ArrayList<String>();
-        }
-        
-        assert extension.equals(extension.toLowerCase());
-
-        extensions.add(extension);
-    }
-
     // XXX This is crying out for generics!
     private Object createInstance(FileObject file) {
         assert file.getExt().equals("instance"); // NOI18N
@@ -263,7 +233,7 @@ public class DefaultLanguage implements Language {
     
     @Override
     public String toString() {
-        return mime + ":" + displayName;
+        return mime + ":" + getDisplayName();
     }
 
     public Completable getCompletionProvider() {
