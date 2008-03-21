@@ -70,6 +70,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private WizardDescriptor wizard;
     private HibernateConfigurationWizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
+    private final String sessionName = "name";
     private final String dialect = "hibernate.dialect";
     private final String driver = "hibernate.connection.driver_class";
     private final String url = "hibernate.connection.url";
@@ -202,6 +203,10 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
 
         SessionFactory sFactory = new SessionFactory();
+        if (descriptor.getSessionName() != null && !"".equals(descriptor.getSessionName())) {
+            sFactory.setAttributeValue(sessionName, descriptor.getSessionName());
+        }
+        
         if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {
             int row = sFactory.addProperty2(descriptor.getDialectName());
             sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);

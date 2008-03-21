@@ -57,6 +57,7 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardPanel;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -76,7 +77,7 @@ import org.openide.util.HelpCtx;
  */
 public class HibernateWebModuleExtender extends WebModuleExtender {
 
-    private HibernateConfigurationPanel configPanel = null;
+    private HibernateConfigurationWizardPanel configPanel = null;
     private final static String DEFAULT_CONFIG_FILENAME = "hibernate.cfg";
     private final String sessionName = "name";
     private final String dialect = "hibernate.dialect";
@@ -87,7 +88,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     
     public HibernateWebModuleExtender(boolean forNewProjectWizard, 
             WebModule webModule, ExtenderController controller) {
-        configPanel = new HibernateConfigurationPanel(this, controller, forNewProjectWizard);
+        configPanel = new HibernateConfigurationWizardPanel(this, controller, forNewProjectWizard);
         if(!forNewProjectWizard) {
             // Show the config panel for Proj. Customizer
             // Fill the panel with existing data.
@@ -107,7 +108,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    public final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();
