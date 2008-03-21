@@ -180,7 +180,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         private static Lookup createLookup(Project project) {
-            return Lookups.fixed(new Object[]{project, project.getProjectDirectory()});
+            return Lookups.fixed(new Object[]{project});
         }
 
         private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceViewImpl> {

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.util;
+package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.HashSet;
 import java.util.NoSuchElementException;

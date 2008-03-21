@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,28 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-package org.netbeans.modules.cnd.repository.disk.api;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
-import org.netbeans.modules.cnd.repository.spi.Key;
-
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Code generator for Accessing Saas services.
  *
- * @author Nickolay Dalmatov
+ * @author ayubskhan
  */
-public interface RepFilesAccessStrategy {
-    
-    /** Returns the file access for the object identified by the id */
-    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws IOException;
-    
-    /** Remove the record */
-    void removeObjForKey (Key id) throws IOException;
+public class JaxWsJspCodeGenerator extends JaxWsServletCodeGenerator {
 
-    void setOpenFilesLimit(int limit) throws IOException;
+    public JaxWsJspCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, WsdlSaasMethod m) throws IOException {
+        super(targetComponent, targetFile, m);
+    }
+
+    /**
+     *  Insert the Saas client call
+     */
+    @Override
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        Util.checkScanning();
+        try {
+            String code = "";
+            code = "\n<%\n"; // NOI18n
+            code += getCustomMethodBody()+"\n";
+            code += "%>\n";// NOI18n
+            insert(code, getTargetComponent(), true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
     
-    void closeUnit(String unitName) throws IOException;
 }
