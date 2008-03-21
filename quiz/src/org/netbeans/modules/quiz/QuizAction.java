@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,38 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.quiz;
 
-package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author  Jindrich Sedek
  */
-public class UnnamedEnumTestCase extends HyperlinkBaseTestCase {
+public final class QuizAction extends CallableSystemAction{
+
+    public void performAction() {
+        TopComponent win = QuizComponentTopComponent.findInstance();
+        win.open();
+        win.requestActive();
+    }
     
-    public UnnamedEnumTestCase(String testName) {
-        super(testName);
-        //System.setProperty("cnd.modelimpl.trace.registration", "true");
+    public String getName() {
+        return NbBundle.getMessage(QuizAction.class, "CTL_QuizAction");
     }
 
-    public void testFOUR() throws Exception {
-        performTest("newfile.cc", 3, 15, "newfile.cc", 3, 14);
-        performTest("newfile.cc", 7, 14, "newfile.cc", 3, 14);
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/quiz/quiz.png";
     }
-    
-//    public void testONE() throws Exception {
-//        // still failed see IZ#113287: Hyperlink and Code Completion works wrong with unnamed enums
-//        performTest("newfile.cc", 6, 14, "newfile.h", 1, 7);
-//    }
 
-    public void testExecutionContextT() throws Exception {
-        performTest("unnamedTypedefEnum.cc", 6, 20, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask
-        performTest("unnamedTypedefEnum.cc", 7, 20, "unnamedTypedefEnum.cc", 7, 17); // k_eExecutionContextMPTask
-        performTest("unnamedTypedefEnum.cc", 13, 60, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask
-        performTest("unnamedTypedefEnum.cc", 16, 60, "unnamedTypedefEnum.cc", 7, 17); // k_eExecutionContextMPTask
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
-    
-    public void testA() throws Exception {
-        performTest("unnamedTypedefEnum.cc", 25, 6, "unnamedTypedefEnum.cc", 25, 5); // A1
-    }    
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }
