@@ -106,6 +106,17 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
+    @Override 
+    public void preGenerate() throws IOException {
+        addJaxbLib();
+        
+        super.preGenerate();
+    }
+    
+    protected void addJaxbLib() throws IOException {
+        Util.addJaxbLib(getProject());
+    }
+    
     /**
      *  Create Authorization Frame
      */

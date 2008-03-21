@@ -128,9 +128,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
-        createRestConnectionFile(getProject(), !getBean().canGenerateJAXBUnmarshaller());
-                
-        //add JAXB Classes, etc, if available
+        createRestConnectionFile(getProject());
+   
         if(getBean().getMethod().getSaas().getLibraryJars().size() > 0)
             Util.addClientJars(getBean(), getProject(), null);
     }
