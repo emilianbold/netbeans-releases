@@ -78,30 +78,30 @@ public class CompletionContext {
     };
     
     private CompletionType completionType = CompletionType.NONE;
-    private BaseDocument bDoc;
     private int caretOffset;
     private DocumentContext documentContext;
-    private String typedChars = ""; // NOI18N
+    private String typedChars = ""; 
     private char lastTypedChar;
     private XMLSyntaxSupport support;
     private FileObject fileObject;
     private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
 
     public CompletionContext(Document doc, int caretOffset) {
-        this.bDoc = (BaseDocument) doc;
         this.caretOffset = caretOffset;
         this.fileObject = NbEditorUtilities.getFileObject(doc);
-        initContext();
+        initContext((BaseDocument) doc);
     }
     
-    private void initContext() {
+    private void initContext(BaseDocument bDoc) {
         boolean copyResult = copyDocument(bDoc, internalDoc);
         if(!copyResult) {
             return;
         }
         
+        Object sdp = bDoc.getProperty(Document.StreamDescriptionProperty);
+        internalDoc.putProperty(Document.StreamDescriptionProperty, sdp);
         this.support = (XMLSyntaxSupport) internalDoc.getSyntaxSupport();
-        this.documentContext = DocumentContext.createContext(internalDoc, caretOffset);
+        this.documentContext = DocumentContext.create(internalDoc, caretOffset);
         
         // get last inserted character from the actual document
         this.lastTypedChar = ((XMLSyntaxSupport) bDoc.getSyntaxSupport()).lastTypedChar(); 
@@ -251,23 +251,6 @@ public class CompletionContext {
                 completionType = CompletionType.NONE;
                 break;
         }
-        
-        computeExistingAttributes();
-    }
-    
-    private void computeExistingAttributes() {
-        existingAttributes = new ArrayList<String>();
-        TokenItem item = documentContext.getCurrentToken().getPrevious();
-        while(item != null) {
-            int tokenId = item.getTokenID().getNumericID();
-            if(tokenId == XMLDefaultTokenContext.TAG_ID) {
-                break;
-            }
-            if(tokenId == XMLDefaultTokenContext.ARGUMENT_ID) {
-                existingAttributes.add(item.getImage());
-            }
-            item = item.getPrevious();
-        }
     }
     
     private boolean copyDocument(BaseDocument src, BaseDocument dest) {
@@ -282,8 +265,8 @@ public class CompletionContext {
             Exceptions.printStackTrace(ble);
             retVal = false;
         } finally {
-            src.readUnlock();
             dest.atomicUnlock();
+            src.readUnlock();
         }
         
         return retVal;
@@ -319,6 +302,21 @@ public class CompletionContext {
     }
     
     public List<String> getExistingAttributes() {
+        if (existingAttributes == null) {
+            existingAttributes = new ArrayList<String>();
+            TokenItem item = documentContext.getCurrentToken().getPrevious();
+            while (item != null) {
+                int tokenId = item.getTokenID().getNumericID();
+                if (tokenId == XMLDefaultTokenContext.TAG_ID) {
+                    break;
+                }
+                if (tokenId == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    existingAttributes.add(item.getImage());
+                }
+                item = item.getPrevious();
+            }
+        }
+        
         return existingAttributes;
     }
 }

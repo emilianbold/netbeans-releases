@@ -503,9 +503,6 @@ public final class CompletionManager {
         @Override
         public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
             final FileObject fo = context.getFileObject();
-            if (fo == null) {
-                return Collections.emptyList();
-            }
             SpringConfigModel model = SpringConfigModel.forFileObject(fo);
             if (model == null) {
                 return Collections.emptyList();
@@ -884,9 +881,6 @@ public final class CompletionManager {
             if (mergedBean.getFactoryBean() != null) {
                 final String factoryBeanName = mergedBean.getFactoryBean();
                 FileObject fo = context.getFileObject();
-                if (fo == null) {
-                    return null;
-                }
                 SpringConfigModel model = SpringConfigModel.forFileObject(fo);
                 try {
                     model.runReadAction(new Action<SpringBeans>() {

@@ -43,7 +43,6 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -70,69 +69,40 @@ public class DocumentContext {
     private int caretOffset = -1;
     private SyntaxElement element;
     private TokenItem token;
-    private boolean valid = false;
     private HashMap<String, String> declaredNamespaces =
             new HashMap<String, String>();
 
-    public static DocumentContext createContext(Document document, int caretOffset) {
-        DocumentContext ctx = new DocumentContext(document, caretOffset);
-        if(!ctx.isValid()) {
+    public static DocumentContext create(Document document, int caretOffset) {
+        try {
+            return new DocumentContext(document, caretOffset);
+        } catch (BadLocationException ble) {
             return null;
         }
-        
-        return ctx;
     }
     
-    private DocumentContext(Document document, int caretOffset) {
+    private DocumentContext(Document document, int caretOffset) throws BadLocationException {
         this.document = document;
         this.syntaxSupport = (XMLSyntaxSupport) ((BaseDocument) document).getSyntaxSupport();
         this.caretOffset = caretOffset;
         initialize();
     }
 
-    public Map<String, String> getDeclaredNamespaceMap() {
-        return declaredNamespaces;
-    }
-
-    private void initialize() {
-        valid = true;
-        declaredNamespaces.clear();
-        try {
-            element = syntaxSupport.getElementChain(caretOffset);
-            token = syntaxSupport.getTokenChain(caretOffset, Math.min(document.getLength(), caretOffset+1));
-            populateNamespaces();
-        } catch (BadLocationException ex) {
-            // No context support available in this case
-            valid = false;
-        }
-    }
-
-    private boolean isValid() {
-        return this.valid;
+    private void initialize() throws BadLocationException {
+        element = syntaxSupport.getElementChain(caretOffset);
+        token = syntaxSupport.getTokenChain(caretOffset, Math.min(document.getLength(), caretOffset + 1));
+        populateNamespaces();
     }
 
     public int getCurrentTokenId() {
-        if (isValid()) {
-            return token.getTokenID().getNumericID();
-        } else {
-            return -1;
-        }
+        return token.getTokenID().getNumericID();
     }
 
     public TokenItem getCurrentToken() {
-        if (isValid()) {
-            return token;
-        } else {
-            return null;
-        }
+        return token;
     }
 
     public String getCurrentTokenImage() {
-        if (isValid()) {
-            return token.getImage();
-        } else {
-            return null;
-        }
+        return token.getImage();
     }
 
     public SyntaxElement getCurrentElement() {

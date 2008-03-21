@@ -84,7 +84,7 @@ public final class HyperlinkEnv {
     public HyperlinkEnv(Document document, int offset) {
         this.document = document;
         this.offset = offset;
-        this.documentContext = DocumentContext.createContext(document, offset);
+        this.documentContext = DocumentContext.create(document, offset);
         if(documentContext != null) {
             currentTag = documentContext.getCurrentElement();
             attribName = ContextUtilities.getAttributeTokenImage(documentContext);
