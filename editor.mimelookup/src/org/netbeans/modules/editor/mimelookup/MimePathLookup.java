@@ -52,10 +52,12 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
+
 
 /**
  *
@@ -70,6 +72,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     private final boolean mimePathBanned;
     private final Lookup.Result<MimeDataProvider> dataProviders;
     private final Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
+    private volatile transient boolean initialized;
     
     /** Creates a new instance of MimePathLookup */
     public MimePathLookup(MimePath mimePath) {
@@ -87,10 +90,17 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
 
         mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
         mimeInitializers.addLookupListener(WeakListeners.create(LookupListener.class, this, mimeInitializers));
-        
-        rebuild();
     }
 
+    @Override
+    protected void beforeLookup(Template<?> template) {
+        if (!initialized) {
+            initialized = true;
+            rebuild();
+        }
+    }
+    
+    
     public MimePath getMimePath() {
         return mimePath;
     }
