@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,58 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.mimelookup.impl;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+package org.netbeans.modules.cnd.repository.disk;
 
 /**
- *
- * @author vita
+ * Represents a repository unit
+ * @author Sergey Grinev
  */
-public final class InstanceProviderLookup extends AbstractLookup {
-
-    private InstanceContent content;
-    private InstanceProvider<?> instanceProvider;
+public interface Unit extends Storage {
     
-    private CompoundFolderChildren children;
-    private PCL listener = new PCL();
-
-    /** Creates a new instance of InstanceProviderLookup */
-    public InstanceProviderLookup(String [] paths, InstanceProvider instanceProvider) {
-        this(paths, instanceProvider, new InstanceContent());
-    }
-    
-    private InstanceProviderLookup(String [] paths, InstanceProvider instanceProvider, InstanceContent content) {
-        super(content);
-        
-        this.content = content;
-        this.instanceProvider = instanceProvider;
-        
-        this.children = new CompoundFolderChildren(paths, true);
-        this.children.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    protected void initialize() {
-        rebuild();
-    }
-    
-    private void rebuild() {
-        List<FileObject> files = children.getChildren();
-        Object instance = instanceProvider.createInstance(files);
-        content.set(Collections.singleton(instance), null);
-    }
-    
-    private class PCL implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            rebuild();
-        }
-    } // End of PCL class
+    /** Gets this unit unique name */
+    public String getName();
 }

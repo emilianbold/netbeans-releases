@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  * The implementation of the repository, which uses HDD
  * @author Nickolay Dalmatov 
  */
-public class BaseDiskRepositoryImpl implements AbstractDiskRepository {
+public class MultyFileStorage implements Storage {
     
     final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
     
@@ -61,7 +61,7 @@ public class BaseDiskRepositoryImpl implements AbstractDiskRepository {
     private int openFilesLimit = DEFAULT_REPOSITORY_OPEN_FILES_LIMIT;
     
     /** Creates a new instance of BaseDiskRepository */
-    public BaseDiskRepositoryImpl() {
+    public MultyFileStorage() {
         super();
         // use the simple helper implementation
         theFilesHelper = new FilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
@@ -73,7 +73,7 @@ public class BaseDiskRepositoryImpl implements AbstractDiskRepository {
     }
     
     /** Creates a new instance of SimpleDiskRepository */
-    public BaseDiskRepositoryImpl(FilesAccessStrategy aFilesHelper) {
+    public MultyFileStorage(FilesAccessStrategy aFilesHelper) {
         theFilesHelper = aFilesHelper;
     }
     
@@ -105,7 +105,7 @@ public class BaseDiskRepositoryImpl implements AbstractDiskRepository {
         }
     }
     
-    public boolean maintenance(long timeout) {
+    public boolean defragment(long timeout) {
 	return false;
     }
     
