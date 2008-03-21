@@ -1,0 +1,583 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.test.xml.jaxb;
+
+import java.awt.Point;
+import java.util.zip.CRC32;
+import javax.swing.tree.TreePath;
+import junit.framework.TestSuite;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+//import org.netbeans.test.xml.schema.lib.util.Helpers;
+
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import java.io.File;
+import org.netbeans.jellytools.MainWindowOperator;
+import java.awt.event.KeyEvent;
+//import java.awt.Robot;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.*;
+import java.awt.event.InputEvent;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+
+/**
+ *
+ * @author michaelnazarov@netbeans.org
+ */
+
+public class AcceptanceTestCaseXSD extends JellyTestCase {
+    
+    static final String [] m_aTestMethods = {
+        "CreateJavaApplication",
+        "CreateJAXBBinding",
+        "ExploreJAXBBinding",
+        "ChangeJAXBOptions",
+        "DeleteJAXBBinding",
+        "OpenSchemaFile", // <--
+        "RefreshSchemaFile", // <--
+        "RegenerateJavaCode", // <--
+        "CodeCompletion1", // <--
+        "CodeCompletion2", // <--
+        "RunTheProject"
+    };
+
+    static final String TEST_JAVA_APP_NAME = "jaxbonxsd";
+    static final String JAXB_BINDING_NAME = "CheckCredit";
+    static final String JAXB_PACKAGE_NAME = "CreditReport";
+
+    static final String JAVA_CATEGORY_NAME = "Java";
+    static final String JAVA_PROJECT_NAME = "Java Application";
+
+    static final String JAXB_CATEGORY_NAME = "XML";
+    static final String JAXB_COMPONENT_NAME = "JAXB Binding";
+
+    static final String BUTTON_NAME_VERBOSE = "verbose";
+    static final String BUTTON_NAME_READONLY = "readOnly";
+    static final String BUTTON_NAME_FINISH = "Finish";
+    static final String BUTTON_NAME_YES = "Yes";
+
+    static final String POPUP_CHANGE_JAXB_OPTIONS = "Change JAXB Options";
+    static final String POPUP_DELETE = "Delete";
+
+    class CFulltextStringComparator implements Operator.StringComparator
+    {
+      public boolean equals( java.lang.String caption, java.lang.String match )
+      {
+        return caption.equals( match );
+      }
+    }
+
+    public AcceptanceTestCaseXSD(String arg0) {
+        super(arg0);
+    }
+    
+    public static TestSuite suite() {
+        TestSuite testSuite = new TestSuite(AcceptanceTestCaseXSD.class.getName());
+        
+        for (String strMethodName : m_aTestMethods) {
+            testSuite.addTest(new AcceptanceTestCaseXSD(strMethodName));
+        }
+        
+        return testSuite;
+    }
+    
+    public void Dummy( )
+    {
+        startTest( );
+        
+        endTest( );
+    }
+    
+    public void CreateJavaApplication( )
+    {
+        startTest( );
+
+        // Create Java application
+        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
+        opNewProjectWizard.selectCategory( JAVA_CATEGORY_NAME );
+        opNewProjectWizard.selectProject( JAVA_PROJECT_NAME );
+        opNewProjectWizard.next( );
+
+        NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
+        opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "xtest.workdir" ) );
+        opNewProjectNameLocationStep.txtProjectName( ).setText( TEST_JAVA_APP_NAME );
+        opNewProjectWizard.finish( );
+
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
+
+        endTest( );
+    }
+
+    // We need to create one from different points, so moved
+    // code out of startTest/endTest field.
+    public void CreateJAXBBindingInternal( )
+    {
+        // Create JAXB Binding
+        NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
+        opNewFileWizard.selectCategory( JAXB_CATEGORY_NAME );
+        opNewFileWizard.selectFileType( JAXB_COMPONENT_NAME );
+        opNewFileWizard.next();
+
+        JDialogOperator opCustomizer = new JDialogOperator( );
+        new JTextFieldOperator( opCustomizer, 0 ).setText( JAXB_BINDING_NAME );
+
+        new JButtonOperator( opCustomizer, 0 ).pushNoBlock( );
+        JFileChooserOperator opFileChooser = new JFileChooserOperator( );
+        opFileChooser.chooseFile( System.getProperty( "xtest.data" ) + File.separator + "CreditReport.xsd" );
+        new JTextFieldOperator( opCustomizer, 4 ).setText( JAXB_PACKAGE_NAME );
+
+        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_VERBOSE ).setSelected( true );
+
+        opNewFileWizard.finish( );
+
+        // Wait till JAXB really created
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
+        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-code-generation)." );
+        stt.stop( );
+
+        return;
+    }
+
+    public void CreateJAXBBinding() {
+        startTest();
+
+        CreateJAXBBindingInternal( );
+
+        endTest();
+    }
+    
+    public void ExploreJAXBBinding( )
+    {
+        startTest( );
+
+        CFulltextStringComparator cmp = new CFulltextStringComparator( );
+
+        // Access to projects page
+        ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+        //JTreeOperator treeProject = pto.tree( );
+        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+        prn.select( );
+
+        String[] asProjectsToCheck =
+        {
+          "JAXB Bindings|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + ".xsd"
+        };
+
+        prn.setComparator( cmp );
+        for( int i = 0; i < asProjectsToCheck.length; i++ )
+        {
+          Node node = new Node(
+              prn,
+              asProjectsToCheck[ i ]
+            );
+          if( null == node )
+          {
+            fail( "Unable to explore project node named: " + asProjectsToCheck[ i ] );
+          }
+        }
+
+        // Access to files page
+        FilesTabOperator fto = FilesTabOperator.invoke( );
+
+        //JTreeOperator tree = fto.tree( );
+
+        Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
+        projectNode.select( );
+
+        String[] asFilesToCheck =
+        {
+          "build|classes|" + JAXB_PACKAGE_NAME,
+          "build|classes|" + JAXB_PACKAGE_NAME + "|CreditQuery.class",
+          "build|classes|" + JAXB_PACKAGE_NAME + "|CreditReport.class",
+          "build|classes|" + JAXB_PACKAGE_NAME + "|ObjectFactory.class",
+          "build|classes|" + JAXB_PACKAGE_NAME + "|package-info.class",
+
+          "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME,
+          "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|CreditQuery.java",
+          "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|CreditReport.java",
+          "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|ObjectFactory.java",
+          "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|package-info.java",
+
+          "nbproject",
+          "nbproject|xml_binding_build.xml",
+          "nbproject|xml_binding_cfg.xml",
+
+          "nbproject|private|private.properties|default language",
+          //"nbproject|private|private.properties|default language|jaxws.endorsed.dir",
+
+          "xml-resources|jaxb|" + JAXB_BINDING_NAME,
+          "xml-resources|jaxb|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + ".xsd"
+        };
+
+        // TODO : correct checking for jaxws.endorsed.dir item
+        // JDK 5 -- should not check
+        // JDK 6 -- should check
+
+        projectNode.setComparator( cmp );
+        for( int i = 0; i < asFilesToCheck.length; i++ )
+        {
+          Node node = new Node(
+              projectNode,
+              asFilesToCheck[ i ]
+            );
+          if( null == node )
+          {
+            fail( "Unable to explore files node named: " + asFilesToCheck[ i ] );
+          }
+        }
+
+        Node nodeWalk = new Node( projectNode, "nbproject|xml_binding_build.xml" );
+        nodeWalk.performPopupAction( "Open" );
+        EditorOperator eoXMLCode = new EditorOperator( "xml_binding_build.xml" );
+        String sText = eoXMLCode.getText( );
+
+        String[] asIdealCode1 =
+        {
+          "<xjc package=\"" + JAXB_PACKAGE_NAME + "\"",
+          "<arg value=\"-xmlschema\"/>",
+          "<arg value=\"-verbose\"/>"
+        };
+
+        for( String sIdealCode : asIdealCode1 )
+        {
+          if( -1 == sText.indexOf( sIdealCode ) )
+          {
+            fail( "Unable to find required code inside xml_binding_build.xml : " + sIdealCode );
+          }
+        }
+        eoXMLCode.close( false );
+
+        nodeWalk = new Node( projectNode, "nbproject|xml_binding_cfg.xml" );
+        nodeWalk.performPopupAction( "Edit" );
+        eoXMLCode = new EditorOperator( "xml_binding_cfg.xml" );
+        sText = eoXMLCode.getText( );
+
+        String[] asIdealCode2 =
+        {
+          "<xjc-options>",
+          "<xjc-option name='-verbose' value='true'/>"
+        };
+
+        for( String sIdealCode : asIdealCode2 )
+        {
+          if( -1 == sText.indexOf( sIdealCode ) )
+          {
+            fail( "Unable to find required code inside xml_binding_cfg.xml : " + sIdealCode );
+          }
+        }
+        eoXMLCode.close( false );
+        
+
+        endTest( );
+    }
+    
+    public void ChangeJAXBOptions( )
+    {
+        startTest( );
+
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+        prn.select( );
+
+        Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME );
+        bindingNode.select( );
+        bindingNode.performPopupActionNoBlock( POPUP_CHANGE_JAXB_OPTIONS );
+
+        NbDialogOperator opCustomizer = new NbDialogOperator( "Change JAXB options" );
+        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_READONLY ).setSelected( true );
+        new JButtonOperator( opCustomizer, BUTTON_NAME_FINISH ).pushNoBlock( );
+        
+        // Wait till JAXB really deleted
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
+        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
+        stt.stop( );
+
+        // Check options
+        FilesTabOperator fto = FilesTabOperator.invoke( );
+
+        Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
+        projectNode.select( );
+
+        Node nodeWalk = new Node( projectNode, "nbproject|xml_binding_cfg.xml" );
+        nodeWalk.performPopupAction( "Edit" );
+        EditorOperator eoXMLCode = new EditorOperator( "xml_binding_cfg.xml" );
+        String sText = eoXMLCode.getText( );
+
+        String[] asIdealCode =
+        {
+          "<xjc-options>",
+          "<xjc-option name='-verbose' value='true'/>",
+          "<xjc-option name='-readOnly' value='true'/>"
+        };
+
+        for( String sIdealCode : asIdealCode )
+        {
+          if( -1 == sText.indexOf( sIdealCode ) )
+          {
+            fail( "Unable to find required code inside xml_binding_cfg.xml : " + sIdealCode );
+          }
+        }
+        eoXMLCode.close( false );
+
+        endTest( );
+    }
+
+    public void DeleteJAXBBinding( )
+    {
+        startTest( );
+
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+        prn.select( );
+
+        Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME );
+        bindingNode.select( );
+        bindingNode.performPopupAction( POPUP_DELETE );
+
+        JDialogOperator dlg = new JDialogOperator( "Confirm Object Deletion" );
+        JButtonOperator btn = new JButtonOperator( dlg, BUTTON_NAME_YES );
+        btn.pushNoBlock( );
+
+        // Wait till JAXB really deleted
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
+        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
+        stt.stop( );
+
+        endTest( );
+    }
+
+    public void OpenSchemaFile( )
+    {
+        startTest( );
+
+        CreateJAXBBindingInternal( );
+
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+        prn.select( );
+
+        Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + ".xsd" );
+        bindingNode.select( );
+        bindingNode.performPopupActionNoBlock( "Open" );
+        
+        EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
+        // TODO : check schema view is in use
+
+        endTest( );
+    }
+
+    public void RefreshSchemaFile( )
+    {
+        startTest( );
+
+        // TODO
+
+        endTest( );
+    }
+
+    public void RegenerateJavaCode( )
+    {
+        startTest( );
+
+        // TODO
+
+        endTest( );
+    }
+
+    public void CodeCompletion1( )
+    {
+        startTest( );
+
+        // Access java code with editor
+        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
+
+        eoJavaCode.setCaretPosition(
+            "// TODO code application logic here",
+            0,
+            false
+          );
+        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
+
+        eoJavaCode.insert( "Cred" );
+        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
+        editor.typeKey( ' ', InputEvent.CTRL_MASK );
+
+        CompletionJListOperator jCompl = new CompletionJListOperator( );
+        //jCompl.
+        System.out.println( "**** 1 ****" );
+        try{Thread.sleep( 30000 );}catch(InterruptedException ex){}
+        jCompl.clickOnItem( "CreditReport" );
+        System.out.println( "**** 2 ****" );
+        jCompl.hideAll( );
+
+        System.out.println( "**** 3 ****" );
+
+        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+        if( !sCompletedText.matches( "^[ \\t]*CreditReport$" ) )
+        {
+          fail( "Wrong completion of Cred: \"" + sCompletedText + "\"" );
+        }
+        eoJavaCode.insert( " cr = new CreditReport( );\ncr" );
+
+        // TODO : Wait till suggestions will come.
+        // How to access them?
+
+        editor.typeKey( '.' );
+
+        jCompl = new CompletionJListOperator( );
+        jCompl.clickOnItem( "setLastName" );
+
+        // TODO : Check result
+
+        endTest( );
+    }
+
+    public void CodeCompletion2( ) {
+        startTest();
+
+        // Access java code with editor
+        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
+        eoJavaCode.setCaretPosition(
+            "// TODO code application logic here",
+            0,
+            false
+          );
+        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
+        // Use jaxbm template
+        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
+        String sCode = "jaxbm\t";
+        for( int i = 0; i < sCode.length( ); i++ )
+          editor.typeKey( sCode.charAt( i ) );
+
+        // Check result
+        eoJavaCode.pushUpArrowKey( );
+        String[] asIdealCodeLines =
+        {
+          "try {",
+          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());",
+          "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
+          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
+          "",
+          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
+          "marshaller.marshal(args, System.out);",
+          "} catch (javax.xml.bind.JAXBException ex) {",
+          "// XXXTODO Handle exception",
+          "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
+          "",
+          "}",
+          "}"
+        };
+
+        for( String sIdealCodeLine : asIdealCodeLines )
+        {
+          String sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+          if( -1 == sCodeLine.indexOf( sIdealCodeLine ) )
+          {
+            // Test <suite> failed
+            fail(
+                "Ideal code was not found at line #" + eoJavaCode.getLineNumber( ) +
+                " : " + sIdealCodeLine
+              );
+          }
+          eoJavaCode.pushDownArrowKey( );
+        }
+
+        endTest();
+    }
+
+    public void RunTheProject( ) {
+        startTest();
+
+        // Run
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
+
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
+        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (run)." );
+        stt.stop( );
+
+        // Check output
+          // TODO : is there XML?
+        
+        endTest();
+    }
+    
+    public void tearDown() {
+        new SaveAllAction().performAPI();
+    }
+
+    protected void startTest(){
+        super.startTest();
+        //Helpers.closeUMLWarningIfOpened();
+    }
+
+}
