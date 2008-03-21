@@ -64,6 +64,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
 
 /**
@@ -74,7 +75,7 @@ public class AstUtilities {
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -86,7 +87,7 @@ public class AstUtilities {
     }
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -154,11 +155,11 @@ public class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        return getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
 
         if (result == null) {
             return null;

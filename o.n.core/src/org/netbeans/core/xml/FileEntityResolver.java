@@ -440,7 +440,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     // #25082: do not notify an exception if the file comes
                     // from other filesystem than the system filesystem
                     if (src.getFileSystem() == Repository.getDefault().getDefaultFileSystem()) {
-                        ERR.log(Level.WARNING, "Parsing " + src, ex); // NOI18N
+                        ERR.log(Level.WARNING, null, new IOException("Parsing " + src + ": " + ex.getMessage()).initCause(ex)); // NOI18N
                     }
                 } catch (org.openide.filesystems.FileStateInvalidException fie) {
                     // ignore
