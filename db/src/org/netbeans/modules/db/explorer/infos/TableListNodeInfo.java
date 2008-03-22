@@ -62,6 +62,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     public static final Logger LOGGER = 
             Logger.getLogger(TableListNodeInfo.class.getName());
 
+    @Override
     protected void initChildren(Vector children) throws DatabaseException {
         try {
             String[] types = new String[] {"TABLE"}; // NOI18N
@@ -169,19 +170,19 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
         return result;
     }
     
-/*
-    public void dropIndex(DatabaseNodeInfo tinfo) throws DatabaseException {
-        DatabaseNode node = (DatabaseNode)tinfo.getNode();
-        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-        try {
-            String tname = tinfo.getName();
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropIndex(tname);
-            cmd.execute();
-            getNode().getChildren().remove(new Node[]{node});
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
-        }
-    }           
-*/
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_Tables"); //NOI18N
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_TableList"); //NOI18N
+    }
+    
+    @Override
+    protected void notifyChange() {
+        super.notifyChange();
+        fireRefresh();        
+    }
 }

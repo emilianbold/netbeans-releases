@@ -1,12 +1,13 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
-
-</#if>
+package Templates.Classes;
 
 import java.io.*;
 import java.net.*;
@@ -15,9 +16,9 @@ import javax.servlet.http.*;
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class FacebookLogin extends HttpServlet {
+public class __NAME__  extends HttpServlet {
    
     /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -43,9 +44,8 @@ public class FacebookLogin extends HttpServlet {
             if (sessionKey != null) {
                 out.println("<p>Already logged in.</b>");
             } else {
-                String apiKey = FacebookAuthenticator.getApiKey();
-                out.println("<a href=\"http://www.facebook.com/login.php?api_key=" +
-                        apiKey + "&v=1.0\">Facebook Login</a>");
+                String apiKey = __NAME__.getApiKey();
+                out.println("<a href=\"http://www.facebook.com/login.php?api_key="+apiKey+"&v=1.0\">Facebook Login</a>");
             }
             out.println("</body>");
             out.println("</html>");

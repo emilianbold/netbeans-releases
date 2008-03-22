@@ -90,7 +90,7 @@ public class MultyFileStorage implements Storage {
         assert theFactory != null;
         ConcurrentFileRWAccess fos = null;
         try {
-            fos = theFilesHelper.getFileForObj(id, false);
+            fos = theFilesHelper.getFile(id, false);
             if (fos != null) {
                 int size = fos.write(theFactory, obj,0);
                 fos.truncate(size);
@@ -118,7 +118,7 @@ public class MultyFileStorage implements Storage {
         assert theFactory != null;
         ConcurrentFileRWAccess fis = null;
         try {
-            fis = theFilesHelper.getFileForObj(id, true);
+            fis = theFilesHelper.getFile(id, true);
 
             if (fis != null) {
                 // read
@@ -140,7 +140,7 @@ public class MultyFileStorage implements Storage {
     public void remove(Key id) {
         assert id != null;
         try {
-        theFilesHelper.removeObjForKey(id);
+        theFilesHelper.removeFile(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));

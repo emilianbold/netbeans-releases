@@ -46,7 +46,6 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
-import org.netbeans.modules.cnd.repository.spi.Key;
 
 
 class RepositoryHelperCache { 
@@ -90,19 +89,15 @@ class RepositoryHelperCache {
         }
     }
     
-    protected RepositoryHelperCache (int openFilesLimit) {
+    private RepositoryHelperCache (int openFilesLimit) {
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(openFilesLimit);
     }
     
-    public String lookupInCacheName(Key id) {
-        return null;
-    }
-    
-    public ConcurrentFileRWAccess lookupInCacheFile(String fileName) {
+    public ConcurrentFileRWAccess getFile(String fileName) {
         return nameToFileCache.get(fileName);
     }
     
-    public void cacheNameRemove(String fileName) throws IOException {
+    public void removeFile(String fileName) throws IOException {
         ConcurrentFileRWAccess removedFile = nameToFileCache.remove(fileName);
         if (removedFile != null) {
             try {
@@ -117,7 +112,7 @@ class RepositoryHelperCache {
         }
     }
     
-    public void putCacheFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
+    public void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
         ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
         if (removedFile != null) {
             try {
@@ -130,11 +125,5 @@ class RepositoryHelperCache {
                 removedFile.getLock().writeLock().unlock();
             }
         }
-    }
-
-    public void putCacheName(Key id, String fileName) {
-    }
-
-    public void cacheFileRemove(ConcurrentFileRWAccess aFile) {
     }
 }
