@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -86,7 +85,6 @@ public class MultyFileStorage implements Storage {
         assert obj != null;
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
-        ConcurrentFileRWAccess fos = null;
         try {
             theFilesHelper.write(id, theFactory, obj);
         } catch (Throwable ex) {

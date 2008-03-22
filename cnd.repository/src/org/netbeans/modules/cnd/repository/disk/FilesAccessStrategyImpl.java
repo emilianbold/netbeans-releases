@@ -44,8 +44,11 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentBufferedRWAccess;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
+import org.netbeans.modules.cnd.repository.sfs.FileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -57,12 +60,16 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
-    private RepositoryHelperCache theCache;
+    private interface ConcurrentFileRWAccess extends FileRWAccess {
+        ReadWriteLock getLock();
+    }
+    
     private Object cacheLock = new String("Repository file cache lock"); //NOI18N
+    private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
     /** Creates a new instance of SimpleRepositoryFilesHelper */
     public FilesAccessStrategyImpl(int openFilesLimit) {
-        theCache = RepositoryHelperCache.getInstance(openFilesLimit);
+        nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(openFilesLimit);
     }
 
     public Persistent read(Key key, PersistentFactory factory) throws IOException {
@@ -143,7 +150,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         String fileName = resolveFileName( id);
         assert fileName != null;
         
-        theCache.removeFile(fileName);
+        this.removeFile(fileName);
         
         File toDelete = new File(fileName);
         toDelete.delete();
@@ -189,23 +196,23 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private ConcurrentFileRWAccess getFileByName(String fileName, boolean create) throws IOException {
         assert fileName != null;
         
-        ConcurrentFileRWAccess aFile = theCache.getFile(fileName);
+        ConcurrentFileRWAccess aFile = nameToFileCache.get(fileName);
         
         if (aFile == null) {
 	    synchronized( cacheLock ) {
-		aFile = theCache.getFile(fileName);
+		aFile = nameToFileCache.get(fileName);
 		if (aFile == null) {
 		    File fileToCreate = new File(fileName);
 		    if (fileToCreate.exists()) {
 			aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			theCache.putFile(fileName, aFile);
+			this.putFile(fileName, aFile);
 		    } else if (create) {
 			String aDirName = fileToCreate.getParent();
 			File  aDir = new File(aDirName);
 
 			if (aDir.exists() || aDir.mkdirs()) {
 			    aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			    theCache.putFile(fileName, aFile);
+			    this.putFile(fileName, aFile);
 			}
 		    }
 		}
@@ -217,9 +224,75 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     
     public void setOpenFilesLimit(int limit) throws IOException {
-        theCache.adjustCapacity(limit);
+        this.adjustCapacity(limit);
     }
     
     public void closeUnit(String unitName) {
     }
+    
+    private void adjustCapacity(int newCapacity) throws IOException {
+        Set<ConcurrentFileRWAccess> removedFiles = nameToFileCache.adjustCapacity(newCapacity);
+        
+        if (removedFiles == null)
+            return ;
+        
+        for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
+            try {
+                fileToRemove.getLock().writeLock().lock();
+                
+                if (fileToRemove.getFD().valid()) {
+                    fileToRemove.close();
+                }
+                
+            } finally {
+                fileToRemove.getLock().writeLock().unlock();
+            }
+        }
+    }
+    
+    private void removeFile(String fileName) throws IOException {
+        ConcurrentFileRWAccess removedFile = nameToFileCache.remove(fileName);
+        if (removedFile != null) {
+            try {
+                removedFile.getLock().writeLock().lock();
+                
+                if (removedFile.getFD().valid() )
+                    removedFile.close();
+                
+            }  finally {
+                removedFile.getLock().writeLock().unlock();
+            }
+        }
+    }
+    
+    private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
+        ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
+        if (removedFile != null) {
+            try {
+                removedFile.getLock().writeLock().lock();
+                if (removedFile.getFD().valid()) {
+                    removedFile.close();
+                }
+                
+            } finally {
+                removedFile.getLock().writeLock().unlock();
+            }
+        }
+    }
+    
+    private static class ConcurrentBufferedRWAccess extends BufferedRWAccess implements ConcurrentFileRWAccess {
+        
+        private ReentrantReadWriteLock fileLock ;
+
+        /** Creates a new instance of ConcurrentBufferedRWAccess */
+        public ConcurrentBufferedRWAccess(File file) throws IOException {
+            super(file);
+            fileLock = new ReentrantReadWriteLock(true);
+        }
+
+        public ReentrantReadWriteLock getLock() {
+            return fileLock;
+        }
+    }
+    
 }
