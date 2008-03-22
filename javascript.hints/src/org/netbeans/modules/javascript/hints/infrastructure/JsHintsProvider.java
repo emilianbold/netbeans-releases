@@ -414,7 +414,7 @@ public class JsHintsProvider implements HintsProvider {
                     }
                 }
                 
-                return disabled || countBefore < result.size();
+                return disabled || countBefore < result.size() || context.remove;
             }
         }
         

@@ -129,4 +129,34 @@ public class JsCommentLexerTest extends NbTestCase {
         assertEquals("Function", types.get("@return"));
     }
     
+    public void testArrays() {
+        String text = "@type String[]\n";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@type");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "String[]");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, "\n");
+    }
+    
+
+    public void testArrayTypes() {
+        String text =
+                "/**\n" +
+                "* Returns a function that will return a number ...\n" +
+                "* @param {String[]|Element[]} fooBar\n" +
+                "* @type Object[]\n" +
+                "*/";
+
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JsCommentTokenId.language());
+        @SuppressWarnings("unchecked")
+        TokenSequence<JsCommentTokenId> ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
+        
+        Map<String, String> types = JsCommentLexer.findFunctionTypes(ts);
+        
+        assertEquals(types.size(), 2);
+        assertEquals("Object[]", types.get("@return"));
+        assertEquals("String[]|Element[]", types.get("fooBar"));
+    }
 }

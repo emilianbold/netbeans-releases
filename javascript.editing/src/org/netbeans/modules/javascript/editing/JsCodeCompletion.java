@@ -1400,12 +1400,6 @@ public class JsCodeCompletion implements Completable {
         }
 
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
-        if (element instanceof IndexedElement) {
-            String url = ((IndexedElement)element).getFilenameUrl();
-            if (url.indexOf("jsstubs/") != -1) { // NOI18N
-                formatter.setFormattedComment(true);
-            }
-        }
         String name = element.getName();
         if (name != null && name.length() > 0) {
             formatter.setSeqName(name);

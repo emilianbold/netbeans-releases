@@ -66,37 +66,41 @@
                         <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
                     </params>
                 </sign>
-                <login>
-                    <sign id="apiSig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="api_key" type="string" required="true"/>
-                            <param id="frob={frob}" name="frob" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="auth_token={token}" name="login" href="#flickr.auth_getToken"/>
-                </login>
-                <token id="frob">
-                    <sign id="apiSig">
-                        <params>
-                            <param name="method" type="string" required="true"/>
-                            <param name="api_key" type="string" required="true"/>
-                        </params>
-                    </sign>
-                    <method id="frob={frob}" name="getFrob" href="#flickr.auth_getFrob"/>
-                    <prompt>
-                        <desktop url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}&amp;frob={frob}&amp;api_sig={apiSig}"/>
-                        <web url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}"/>
-                        <sign id="apiSig">
-                            <params>
-                                <param name="frob" type="string" required="true"/>
-                                <param name="api_key" type="string" required="true"/>
-                                <param name="perms" type="string" required="true" default="write"/>
-                            </params>
-                        </sign>
-                    </prompt>
-                </token>
-                <logout/>
+                <authenticator>
+                    <use-generator>
+                        <login>
+                            <sign id="apiSig">
+                                <params>
+                                    <param name="method" type="string" required="true"/>
+                                    <param name="api_key" type="string" required="true"/>
+                                    <param id="frob={frob}" name="frob" type="string" required="true"/>
+                                </params>
+                            </sign>
+                            <method id="auth_token={token}" name="login" href="#flickr.auth_getToken"/>
+                        </login>
+                        <token id="frob">
+                            <sign id="apiSig">
+                                <params>
+                                    <param name="method" type="string" required="true"/>
+                                    <param name="api_key" type="string" required="true"/>
+                                </params>
+                            </sign>
+                            <method id="frob={frob}" name="getFrob" href="#flickr.auth_getFrob"/>
+                            <prompt>
+                                <desktop url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}&amp;frob={frob}&amp;api_sig={apiSig}"/>
+                                <web url="http://www.flickr.com/services/auth/?api_key={apiKey}&amp;perms={perms:write}"/>
+                                <sign id="apiSig">
+                                    <params>
+                                        <param name="frob" type="string" required="true"/>
+                                        <param name="api_key" type="string" required="true"/>
+                                        <param name="perms" type="string" required="true" default="write"/>
+                                    </params>
+                                </sign>
+                            </prompt>
+                        </token>
+                        <logout/>
+                    </use-generator>
+                </authenticator>
             </session-key>
         </authentication>
         
