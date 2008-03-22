@@ -153,8 +153,16 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
             AbstractCommand cmd = spec.createCommandDropProcedure((String) get(DatabaseNode.PROCEDURE));
             cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
+            
+            getParent().removeChild(this);
         } catch (Exception e) {
             org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Procedure"); //NOI18N
+    }
+
 }

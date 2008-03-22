@@ -109,9 +109,10 @@ public class CRUDTSuite extends RestTestBase {
         createNewWSFile(getProject(), restLabel);
         WizardOperator wo = new WizardOperator(restLabel);
         //have to wait until "retrieving message dissapers (see also issue 122802)
-        new EventTool().waitNoEvent(1500);
-        //Add All
-        new JButtonOperator(wo, 4).pushNoBlock();
+        new EventTool().waitNoEvent(2500);
+        //Add All >>
+        String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
+        new JButtonOperator(wo, addAllLabel).pushNoBlock();
         wo.next();
         wo = new WizardOperator(restLabel);
         //Resource Package
