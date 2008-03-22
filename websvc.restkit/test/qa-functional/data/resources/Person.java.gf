@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,33 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.hints.spi;
+package entity;
 
-import org.mozilla.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.javascript.editing.AstPath;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
- * Information about the current context a rule is being asked to evaluate.
- * 
- * @author Tor Norbye
+ *
+ * @author lukas
  */
-public class RuleContext {
-    public AstPath path;
-    public Node node;
-    public int caretOffset;
-    public int lexOffset;
-    public int astOffset;
-    public int selectionStart;
-    public int selectionEnd;
-    public CompilationInfo compilationInfo;
-    public BaseDocument doc;
-    public boolean remove;
+@Entity
+@Table(name = "PERSON")
+public class Person implements java.io.Serializable {
+
+    private String id;
+
+    private String lastName;
+
+    private String firstName;
+
+    /**
+     * Creates a new instance of Person
+     */
+    public Person() {
+    }
+
+    public Person(String id, String firstName, String lastName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName  = lastName;
+    }
+
+    @Column(name = "ID")
+    @Id
+    public String getId() {
+        return this.id;
+    }
+
+    @Column(name = "LASTNAME")
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    @Column(name = "FIRSTNAME")
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
 }

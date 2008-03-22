@@ -57,7 +57,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *    - skipping this suite and related preparation steps (un/installing of the jMaki plugin)
  * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
  *    - where to find jmaki.nbm (default is to download nbm from:
- *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
+ *      https://ajax.dev.java.net/files/documents/3115/90944/org-netbeans-modules-sun-jmaki.nbm)
  * 
  * @author lukas
  */
