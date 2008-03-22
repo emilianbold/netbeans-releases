@@ -47,6 +47,8 @@ import java.net.URLEncoder;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentBufferedRWAccess;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
@@ -62,8 +64,41 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     public FilesAccessStrategyImpl(int openFilesLimit) {
         theCache = RepositoryHelperCache.getInstance(openFilesLimit);
     }
+
+    public Persistent read(Key key, PersistentFactory factory) throws IOException {
+        ConcurrentFileRWAccess fis = null;
+        try {
+            fis = getFile(key, true);
+            if( fis == null ) {
+                return null;
+            }
+            long size = fis.size();
+            Persistent obj = fis.read(factory, 0, (int)size);
+            return obj;
+        } finally {
+            if (fis != null) {
+                fis.getLock().readLock().unlock();
+            }
+        }
+    }
+
+    public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
+        ConcurrentFileRWAccess fos = null;
+        try {
+            fos = getFile(key, false);
+            if (fos != null) {
+                int size = fos.write(factory, object, 0);
+                fos.truncate(size);
+            } 
+        } finally {
+            if (fos != null) {
+                fos.getLock().writeLock().unlock();
+            }
+        }
+        
+    }
     
-    public ConcurrentFileRWAccess getFile(Key id, final boolean read) throws IOException {
+    private ConcurrentFileRWAccess getFile(Key id, final boolean readOnly) throws IOException {
         assert id != null;
         
         String fileName = resolveFileName(id);
@@ -72,14 +107,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         boolean keepLocked = false;
         
         do {
-            aFile = getFileByName(fileName, ! read);
+            aFile = getFileByName(fileName, ! readOnly);
             
             if (aFile == null) {
                 break;
             }
             
             try {
-                if (read) {
+                if (readOnly) {
                     aFile.getLock().readLock().lock();
                 } else {
                     aFile.getLock().writeLock().lock();
@@ -90,7 +125,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 }
             }  finally {
                 if (!keepLocked) {
-                    if (read) {
+                    if (readOnly) {
                         aFile.getLock().readLock().unlock();
                     } else {
                         aFile.getLock().writeLock().unlock();

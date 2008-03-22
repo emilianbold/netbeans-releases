@@ -84,24 +84,14 @@ public class MultyFileStorage implements Storage {
     public void write(Key id, final Persistent obj) {
         assert id != null;
         assert obj != null;
-        
-        // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
         ConcurrentFileRWAccess fos = null;
         try {
-            fos = theFilesHelper.getFile(id, false);
-            if (fos != null) {
-                int size = fos.write(theFactory, obj,0);
-                fos.truncate(size);
-            } 
+            theFilesHelper.write(id, theFactory, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
-        } finally {
-            if (fos != null) {
-                fos.getLock().writeLock().unlock();
-            }
         }
     }
     
@@ -112,28 +102,15 @@ public class MultyFileStorage implements Storage {
     public Persistent get(Key id) {
         assert id != null;
         Persistent obj = null;
-        
         // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
-        ConcurrentFileRWAccess fis = null;
         try {
-            fis = theFilesHelper.getFile(id, true);
-
-            if (fis != null) {
-                // read
-                long size = fis.size();
-                obj = fis.read(theFactory, 0, (int)size);
-            }
+            obj = theFilesHelper.read(id, theFactory);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
-        } finally {
-            if (fis != null) {
-                fis.getLock().readLock().unlock();
-            }
         }
-        
         return obj;
     }
     

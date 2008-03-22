@@ -42,18 +42,31 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 
 /**
- *
+ * An interface for open file cache.
+ * We assume it's used for caching open files for objects
+ * that are stored on per-file basis (one object is stored to one file)
+ * 
  * @author Nickolay Dalmatov
  */
 public interface FilesAccessStrategy {
+   
+    /** 
+     * Gets an input stream that corresponds to the given key,
+     * calls the factory to create an object from this stream
+     */
+    Persistent read(Key key, PersistentFactory factory) throws IOException;
     
-    /** Returns the file access for the object identified by the id */
-    ConcurrentFileRWAccess getFile(Key id,  boolean read)  throws IOException;
+    /*
+     * Gets an input stream that corresponds to the given key,
+     * calls the factory to write the object to this stream
+     */
+    void write(Key key, PersistentFactory factory, Persistent object) throws IOException;
     
     /** Remove the record */
     void removeFile (Key id) throws IOException;
