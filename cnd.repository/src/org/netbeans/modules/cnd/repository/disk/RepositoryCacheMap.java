@@ -47,29 +47,29 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- *
+ * The cache that maps K to V
+ * and stores the most frequently used pairs
  * @author Nickolay Dalmatov
  */
 
 public class RepositoryCacheMap<K,V>  {
 
-    private final TreeMap<K, RepositoryCacheValue<V>>   keyToValueStorage;
-    private final TreeMap<RepositoryCacheValue<V>, K>   valueToKeyStorage;
+    private final TreeMap<K, RepositoryCacheValue<V>>   keyToValue;
+    private final TreeMap<RepositoryCacheValue<V>, K>   valueToKey;
     
-    private AtomicInteger                         capacity;
-    private final ReentrantReadWriteLock          readWriteLock;
-    private static final int                      DEFAULT_CACHE_CAPACITY  = 20;
+    private AtomicInteger capacity;
+    private final Object lock;
+    private static final int DEFAULT_CAPACITY  = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
     
     private static final boolean ASSERTIONS = Boolean.getBoolean("cnd.repository.cache.map.assert");
     
-    static private final class RepositoryCacheValue<V>  implements Comparable{
+    static private final class RepositoryCacheValue<V>  implements Comparable {
         
-        public AtomicInteger       frequency;
         public V                   value;
+        public AtomicInteger       frequency;
         public AtomicBoolean       newBorn;
         public final int           bornStamp;
         
@@ -83,7 +83,7 @@ public class RepositoryCacheMap<K,V>  {
         private int compareAdults(final RepositoryCacheValue<V> elemToCompare) {
             int ownValue = frequency.intValue();
             int objValue = elemToCompare.frequency.intValue();
-            
+
             if (ownValue < objValue) {
                 return -1;
             } else if (ownValue == objValue){
@@ -135,130 +135,95 @@ public class RepositoryCacheMap<K,V>  {
      * Creates a new instance of RepositoryCacheMap
      */
     public RepositoryCacheMap(final int capacity) {
-        readWriteLock   = new ReentrantReadWriteLock(true);
-        keyToValueStorage         = new TreeMap<K, RepositoryCacheValue<V>>();
-        valueToKeyStorage         = new TreeMap<RepositoryCacheValue<V>, K>();
-        this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CACHE_CAPACITY);
+        lock   = new Object();
+        keyToValue      = new TreeMap<K, RepositoryCacheValue<V>>();
+        valueToKey      = new TreeMap<RepositoryCacheValue<V>, K>();
+        this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CAPACITY);
     }
 
-    public int size() {
-        try {
-            readWriteLock.readLock().lock();
-            return keyToValueStorage.size();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-    
-    public V get(final Object key) {
+    public V get(final K key) {
         V retValue = null;
-        
-        try {
-            readWriteLock.writeLock().lock();
-            
-            RepositoryCacheValue<V> value = (RepositoryCacheValue<V>)keyToValueStorage.get(key);
-            
+        synchronized( lock ) {
+            RepositoryCacheValue<V> value = (RepositoryCacheValue<V>)keyToValue.get(key);
             if (value != null) {
-                valueToKeyStorage.remove(value);
+                valueToKey.remove(value);
                 value.frequency.incrementAndGet();
                 value.newBorn.set(false);
-                valueToKeyStorage.put(value, (K)key);
+                valueToKey.put(value, key);
                 retValue= value.value;
             }
-        } finally {
-            readWriteLock.writeLock().unlock();
         }
-        
         return retValue;
     }
     
     public V put(K key, V value) {
         V retValue = null;
-        
-        try {
-            readWriteLock.writeLock().lock();
-            RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
+        RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
+        synchronized( lock ) {
+            try {
+                softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
+                softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
 
+                // FIXUP: zero check is a workaround for #119805 NoSuchElementException on start IDE with opened projects
+                // take this inot acct when rewriting this class according to #120673(Rewrite repository files cache synchronization)
+                if (capacity.intValue() == 0 || keyToValue.size() < capacity.intValue()) {
+                    RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
+                    softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                    valueToKey.put(entry, key);
+                } else {
+                    RepositoryCacheValue<V>   minValue = valueToKey.firstKey();
+                    K minKey   = valueToKey.get(minValue);
 
-	    softAssert(!(keyToValueStorage.size() < valueToKeyStorage.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
-	    softAssert(!(keyToValueStorage.size() > valueToKeyStorage.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
-	    
-	    // FIXUP: zero check is a workaround for #119805 NoSuchElementException on start IDE with opened projects
-	    // take this inot acct when rewriting this class according to #120673(Rewrite repository files cache synchronization)
-            if (capacity.intValue() == 0 || keyToValueStorage.size() < capacity.intValue()) {
-                RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
-		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
-                valueToKeyStorage.put(entry, key);
-            } else {
-                RepositoryCacheValue<V>   minValue = valueToKeyStorage.firstKey();
-                K minKey   = valueToKeyStorage.get(minValue);
-                
-                keyToValueStorage.remove(minKey);
-                valueToKeyStorage.remove(minValue);
-                
-                RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
-		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
-                valueToKeyStorage.put(entry, key);
-                
-                retValue =  minValue.value;
-            }
-	} catch( NoSuchElementException e ) {
-	    e.printStackTrace();
-        } finally {
-            readWriteLock.writeLock().unlock();
+                    keyToValue.remove(minKey);
+                    valueToKey.remove(minValue);
+
+                    RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
+                    softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                    valueToKey.put(entry, key);
+
+                    retValue =  minValue.value;
+                }
+            } catch( NoSuchElementException e ) {
+                e.printStackTrace();
+            } 
         }
-        
         return retValue;
     }
     
     public V remove(Object key) {
-        
         V retValue = null;
-        try {
-            
-            readWriteLock.writeLock().lock();
-            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )keyToValueStorage.remove(key);
-            
+        synchronized( lock ) {
+            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )keyToValue.remove(key);
             if (entry != null) {
-                valueToKeyStorage.remove(entry);
+                valueToKey.remove(entry);
                 retValue = entry.value;
             }
-            
-        } finally {
-            readWriteLock.writeLock().unlock();
         }
-        
         return retValue;
     }
     
     public Set<V> adjustCapacity(final int newCapacity) {
-
         Set<V>  retSet = new HashSet<V>();
-        
-        try {
-            readWriteLock.writeLock().lock();
-            
+        synchronized( lock ) {
             if (newCapacity >= capacity.intValue()) {
                 capacity.set(newCapacity);
                 
-            } else if (newCapacity >= keyToValueStorage.size()) {
+            } else if (newCapacity >= keyToValue.size()) {
                 capacity.set(newCapacity);
                 
             } else {
-                final int numToRemove = keyToValueStorage.size() - newCapacity;
+                final int numToRemove = keyToValue.size() - newCapacity;
                 capacity.set(newCapacity);                
 
                 for (int i = 0; i < numToRemove; i++) {
-                    final RepositoryCacheValue<V> elem = valueToKeyStorage.firstKey();
-                    final K removedKey = valueToKeyStorage.get(elem);
+                    final RepositoryCacheValue<V> elem = valueToKey.firstKey();
+                    final K removedKey = valueToKey.get(elem);
                     
                     retSet.add(elem.value);
-                    valueToKeyStorage.remove(elem);
-                    keyToValueStorage.remove(removedKey);
+                    valueToKey.remove(elem);
+                    keyToValue.remove(removedKey);
                 }
             }
-        } finally {
-            readWriteLock.writeLock().unlock();
         }
         return retSet;
     }    

@@ -718,17 +718,11 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
     
     public static void createRestConnectionFile(Project project) throws IOException {
-        createRestConnectionFile(project, false);
-    }
-    
-    public static void createRestConnectionFile(Project project, boolean isJDK5) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
         String pkg = REST_CONNECTION_PACKAGE;
         FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
         String restResponseTemplate = REST_RESPONSE_TEMPLATE;
-        if(Util.isJDK5())
-            restResponseTemplate += "jdk5";
         JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
     }
     

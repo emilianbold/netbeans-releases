@@ -161,4 +161,7 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     protected String getSessionKeyLoginArguments() {
         return Util.getSessionKeyLoginArgumentsForWeb();
     }
+    
+    @Override
+    protected void addJaxbLib() throws IOException {}
 }

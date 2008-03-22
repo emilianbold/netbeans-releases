@@ -85,5 +85,15 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
             throw dbe;
         }
     }
+    
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_Procedures"); //NOI18N
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ProcedureList"); //NOI18N
+    }
 
 }

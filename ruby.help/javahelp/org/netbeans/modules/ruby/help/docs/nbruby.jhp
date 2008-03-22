@@ -24,7 +24,6 @@
 				<file title="runprojicon.gif"/>
 			</directory>
 			<file title="about_ruby.html"/>
-			<file title="chooserubyinterpdialog.html"/>
 			<file title="create_customize_codetemplates.html"/>
 			<file title="credits.html"/>
 			<file title="editor_shortcuts_codetemplates.html"/>
@@ -42,7 +41,6 @@
 			<file title="plugininstallsettingsdialog.html"/>
 			<file title="railsplugininstallationdialog.html"/>
 			<file title="railspluginmanager.html"/>
-			<file title="railsprojicon.gif"/>
 			<file title="railsprojprops-railsoptions.html"/>
 			<file title="ruby_quickref.html"/>
 			<file title="rubyhelp.hs"/>
@@ -50,13 +48,10 @@
 			<file title="rubymap.xml"/>
 			<file title="rubyoptions.html"/>
 			<file title="rubyprojectnode.html"/>
-			<file title="rubyprojicon.gif"/>
 			<file title="rubyprojprops-javaoptions.html"/>
 			<file title="rubyprojprops-runoptions.html"/>
 			<file title="rubyprojprops-sourcesoptions.html"/>
 			<file title="rubytoc.xml"/>
-			<file title="runprojicon.gif"/>
-			<file title="settingrubyinterpreter.html"/>
 			<file title="stopwords.swd"/>
 			<file title="usedatabase.html"/>
 			<file title="usingirb.html"/>

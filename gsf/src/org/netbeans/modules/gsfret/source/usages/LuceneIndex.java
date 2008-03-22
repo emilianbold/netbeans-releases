@@ -437,7 +437,9 @@ class LuceneIndex extends Index {
                     for (IndexDocumentImpl document : documents) {
                         Document newDoc = new Document();
                         newDoc.add(new Field (DocumentUtil.FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
-                        if (filename != null) {
+                        if (document.overrideUrl != null) {
+                            newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, document.overrideUrl, Field.Store.YES, Field.Index.UN_TOKENIZED));
+                        } else if (filename != null) {
                             newDoc.add(new Field (DocumentUtil.FIELD_FILENAME, filename, Field.Store.YES, Field.Index.UN_TOKENIZED));
                         }
 
