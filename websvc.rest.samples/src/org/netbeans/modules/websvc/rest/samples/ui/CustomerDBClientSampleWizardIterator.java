@@ -82,7 +82,6 @@ public class CustomerDBClientSampleWizardIterator extends SampleWizardIterator {
     
     public Set instantiate() throws IOException {
         setProjectConfigNamespace(null);
-        setAddJerseyLibrary(false);
         Set resultSet = super.instantiate();
         
         //replace tokens

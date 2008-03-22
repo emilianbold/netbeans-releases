@@ -39,41 +39,71 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.samples.util;
+package org.netbeans.core.windows.options;
 
-import java.util.ArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Peter Liu
- */
-public class RestSampleProjectProperties {
-    public static final String J2EE_SERVER_INSTANCE_PROPERTY = "j2ee.server.instance"; // NOI18N
-    public static final String NETBEANS_USERDIR = "netbeans.user"; // NOI18N
-    public static final String SERVER_INSTANCE_SUN_APPSERVER = "Sun:AppServer"; // NOI18N
-    
-    public static final String BPEL_SAMPLES = "Bpel_samples"; // NOI18N
-    
-    public static final String WEB_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";   //NOI18N
-    
-    public static final String EAR_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject/2";    //NOI18N
-    
-    public static final String APPSERVER_RT_REF = "file.reference.appserv-rt.jar"; // NOI18N
-    
-    public ArrayList privateProperties;
+final class WinSysOptionsPanelController extends OptionsPanelController {
 
-    private RestSampleProjectProperties() {
-        privateProperties = new ArrayList(); 
-        privateProperties.add(J2EE_SERVER_INSTANCE_PROPERTY);
-        privateProperties.add(NETBEANS_USERDIR);
-        privateProperties.add(APPSERVER_RT_REF);
+    private WinSysPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+
+    public void update() {
+        getPanel().load();
+        changed = false;
     }
-    
-    public static RestSampleProjectProperties getDefault() {
-        return new RestSampleProjectProperties();
+
+    public void applyChanges() {
+        getPanel().store();
+        changed = false;
     }
-    
-    public boolean isPrivateProperty(String name) {
-        return privateProperties.contains(name);
+
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
+    }
+
+    public boolean isValid() {
+        return getPanel().valid();
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private WinSysPanel getPanel() {
+        if (panel == null) {
+            panel = new WinSysPanel(this);
+        }
+        return panel;
+    }
+
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 }

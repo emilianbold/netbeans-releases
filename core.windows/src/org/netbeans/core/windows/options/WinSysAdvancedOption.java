@@ -39,12 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.explorer.nodes;
+package org.netbeans.core.windows.options;
 
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
-public class AdaptorListNode extends DatabaseNode {
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_AdaptorList"); //NOI18N
+public final class WinSysAdvancedOption extends AdvancedOption {
+
+    public static final String IS_APLHA_DRAG = "isAlphaDrag";
+    public static final String IS_SNAPPING = "isSnapping";
+    public static final String IS_APLHA_FLOATING = "isAlphaFloating";
+    
+    public String getDisplayName() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_DisplayName_WinSys");
+    }
+
+    public String getTooltip() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_Tooltip_WinSys");
+    }
+
+    public OptionsPanelController create() {
+        return new WinSysOptionsPanelController();
     }
 }
