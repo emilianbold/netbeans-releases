@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ws.qaf.rest;
@@ -51,7 +51,9 @@ import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
@@ -67,26 +69,6 @@ public class CRUDTSuite extends RestTestBase {
     */
     public CRUDTSuite(String name) {
         super(name);
-    }
-
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CRUDTSuite("testRfE")); //NOI18N
-        suite.addTest(new CRUDTSuite("testDeploy")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testGet")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testPost")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testPut")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
-        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
-        suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
-        return suite;
-    }
-
-    /* Method allowing test execution directly from the IDE. */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
     }
 
     public String getProjectName() {
@@ -114,7 +96,6 @@ public class CRUDTSuite extends RestTestBase {
         String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
         new JButtonOperator(wo, addAllLabel).pushNoBlock();
         wo.next();
-        wo = new WizardOperator(restLabel);
         //Resource Package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 2);
         jcbo.clearText();
@@ -133,6 +114,69 @@ public class CRUDTSuite extends RestTestBase {
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
+    }
+    
+    /**
+     * Test creation of RESTful web service from an entity class which
+     * uses property based access. Also tests functionality of the new RESTful
+     * web service from entity classes wizard (buttons, updating model
+     * in the wizard)
+     */
+    public void testPropAccess() throws IOException {
+        //copy entity class into a project
+        FileObject fo = FileUtil.toFileObject(new File(getRestDataDir(), "Person.java.gf")); //NOI18N
+        FileObject targetDir = getProject().getProjectDirectory().getFileObject("src/java"); //NOI18N
+        fo.copy(targetDir.createFolder("entity"), "Person", "java"); //NOI18N
+        //RESTful Web Services from Entity Classes
+        String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
+        createNewWSFile(getProject(), restLabel);
+        WizardOperator wo = new WizardOperator(restLabel);
+        //have to wait until "retrieving message dissapers (see also issue 122802)
+        new EventTool().waitNoEvent(2500);
+        JListOperator availableEntities = new JListOperator(wo, 1);
+        JListOperator selectedEntities = new JListOperator(wo, 2);
+        
+        //XXX - workaround for: http://www.netbeans.org/issues/show_bug.cgi?id=130835
+        //Add All >>
+        String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
+        new JButtonOperator(wo, addAllLabel).push();
+        //<< Remove All
+        String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
+        new JButtonOperator(wo, removeAllLabel).push();
+        //XXX - end
+        
+        availableEntities.selectItem("Customer"); //NOI18N
+        //Add >
+        String addLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Add");
+        new JButtonOperator(wo, addLabel).push();
+        assertEquals("add failed in selected", 6, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("add failed in available", 2, availableEntities.getModel().getSize()); //NOI18N
+        selectedEntities.selectItem("Product"); //NOI18N
+        //< Remove
+        String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Remove");
+        new JButtonOperator(wo, removeLabel).push();
+        assertEquals("remove failed in selected", 5, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove failed in available", 3, availableEntities.getModel().getSize()); //NOI18N
+//        //<< Remove All
+//        String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
+        new JButtonOperator(wo, removeAllLabel).push();
+        assertEquals("remove all failed in selected", 0, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove all failed in available", 8, availableEntities.getModel().getSize()); //NOI18N
+        availableEntities.selectItem("Person"); //NOI18N
+        new JButtonOperator(wo, addLabel).push();
+        assertEquals("add in selected", 1, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("add in available", 7, availableEntities.getModel().getSize()); //NOI18N
+        wo.next();
+        wo.finish();
+        //Generating RESTful Web Services from Entity Classes
+        String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
+        waitDialogClosed(restGenTitle);
+        Set<File> files = getFiles("service"); //NOI18N
+        files.addAll(getFiles("converter")); //NOI18N
+        assertEquals("Some files were not generated", 7, files.size()); //NOI18N
+        checkFiles(files);
+        //make sure all REST services nodes are visible in project log. view
+        assertEquals("missing nodes?", 16, getRestNode().getChildren().length);
     }
 
     /**
@@ -252,4 +296,30 @@ public class CRUDTSuite extends RestTestBase {
         files.addAll(Arrays.asList(pkgRoot.listFiles()));
         return files;
     }
+    
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CRUDTSuite("testRfE")); //NOI18N
+        suite.addTest(new CRUDTSuite("testPropAccess")); //NOI18N
+        suite.addTest(new CRUDTSuite("testDeploy")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testGet")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testPost")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testPut")); //NOI18N
+//        suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
+        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
+        suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
+        return suite;
+    }
+
+    /**
+     * Method allowing test execution directly from the IDE.
+     */
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        TestRunner.run(suite());
+    }
+
 }
