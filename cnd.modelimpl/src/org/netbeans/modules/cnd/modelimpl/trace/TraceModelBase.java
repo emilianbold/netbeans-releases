@@ -55,8 +55,6 @@ public class TraceModelBase {
     
     private ModelImpl model;
 
-    // only one of project/projectUID must be used 
-    private ProjectBase project;
     private CsmUID<CsmProject> projectUID;
 
     private List<String> quoteIncludePaths = new ArrayList<String>();
@@ -198,7 +196,6 @@ public class TraceModelBase {
 	    closeProject(aProject, cleanRepository);
 	}
 	projectUID = null;
-	project = null;
 	//getProject();
     }
     
