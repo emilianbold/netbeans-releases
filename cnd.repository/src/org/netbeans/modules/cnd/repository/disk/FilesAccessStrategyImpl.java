@@ -76,6 +76,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private static final int OPEN_FILES_LIMIT = 20; 
     private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
     
+    // Statistics
+    private int readCnt = 0;
+    private int readHitCnt = 0;
+    private int writeCnt = 0;
+    private int writeHitCnt = 0;
+    
     private FilesAccessStrategyImpl() {
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
     }
@@ -85,6 +91,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public Persistent read(Key key, PersistentFactory factory) throws IOException {
+        readCnt++;
         ConcurrentFileRWAccess fis = null;
         try {
             fis = getFile(key, true);
@@ -101,6 +108,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
+        writeCnt++;
         ConcurrentFileRWAccess fos = null;
         try {
             fos = getFile(key, false);
@@ -145,6 +153,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                             aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                             putFile(fileName, aFile);
                         }
+                    }
+                } else {
+                    if( readOnly ) {
+                        readHitCnt++;
+                    } else {
+                        writeHitCnt++;
                     }
                 }
             }
@@ -244,6 +258,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                     fileToRemove.lock.writeLock().unlock();
                 }
             }
+        }
+        if( Stats.multyFileStatistics ) {
+            System.err.printf("FileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
+                    readCnt, readHitCnt, (readHitCnt*100/readCnt), writeCnt, writeHitCnt, (writeHitCnt*100/writeCnt));
         }
     }
     
