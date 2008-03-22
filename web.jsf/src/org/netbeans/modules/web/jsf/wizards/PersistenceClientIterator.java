@@ -95,11 +95,16 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
         }
         
+        int[] nameAttemptIndices = new int[entities.size()];
         FileObject[] controllerFileObjects = new FileObject[entities.size()];
         for (int i = 0; i < controllerFileObjects.length; i++) {
             String entityClass = entities.get(i);
             String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
-            String simpleControllerName = simpleClassName + "Controller";
+            String simpleControllerNameBase = simpleClassName + "Controller";
+            String simpleControllerName = simpleControllerNameBase;
+            while (targetFolder.getFileObject(simpleControllerName, "java") != null && nameAttemptIndices[i] < 1000) {
+                simpleControllerName = simpleControllerNameBase + ++nameAttemptIndices[i];
+            }
             controllerFileObjects[i] = GenerationUtils.createClass(targetFolder, simpleControllerName, null);
         }
         
@@ -109,9 +114,12 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             String entityClass = entities.get(i);
             String simpleClassName = JSFClientGenerator.simpleClassName(entityClass);
             String firstLower = simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1);
+            if (nameAttemptIndices[i] > 0) {
+                firstLower += nameAttemptIndices[i];
+            }
             String folder = jsfFolder.endsWith("/") ? jsfFolder : jsfFolder + "/";
-            folder = folder + firstLower;
-            String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + simpleClassName + "Controller";
+            folder += firstLower;
+            String controller = ((controllerPkg == null || controllerPkg.length() == 0) ? "" : controllerPkg + ".") + controllerFileObjects[i].getName();
             JSFClientGenerator.generateJSFPages(project, entityClass, folder, controller, targetFolder, controllerFileObjects[i], embeddedPkSupport);
         }
         
