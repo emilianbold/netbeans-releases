@@ -790,7 +790,7 @@ public final class RubyPlatform {
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
             this.platform = props.getProperty(RUBY_PLATFORM);
-            this.gemHome = props.getProperty(GEM_HOME);
+            setGemHome(props.getProperty(GEM_HOME));
             this.gemPath = props.getProperty(GEM_PATH);
             this.gemVersion = props.getProperty(GEM_VERSION);
         }
@@ -838,7 +838,7 @@ public final class RubyPlatform {
         }
 
         public void setGemHome(String gemHome) {
-            this.gemHome = gemHome;
+            this.gemHome = gemHome == null ? null : new File(gemHome).getAbsolutePath();
         }
         
         public String getGemHome() {

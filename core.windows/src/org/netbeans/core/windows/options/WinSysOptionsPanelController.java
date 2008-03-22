@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,28 +39,71 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.sfs;
+package org.netbeans.core.windows.options;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Nickolay Dalmatov
- */
-public class ConcurrentBufferedRWAccess extends BufferedRWAccess implements ConcurrentFileRWAccess {
-    
-    private ReentrantReadWriteLock fileLock ;
-    
-    /** Creates a new instance of ConcurrentBufferedRWAccess */
-    public ConcurrentBufferedRWAccess(File file) throws IOException {
-        super(file);
-        fileLock = new ReentrantReadWriteLock(true);
+final class WinSysOptionsPanelController extends OptionsPanelController {
+
+    private WinSysPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+
+    public void update() {
+        getPanel().load();
+        changed = false;
     }
 
-    public ReentrantReadWriteLock getLock() {
-	return fileLock;
+    public void applyChanges() {
+        getPanel().store();
+        changed = false;
+    }
+
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
+    }
+
+    public boolean isValid() {
+        return getPanel().valid();
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
+    }
+
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private WinSysPanel getPanel() {
+        if (panel == null) {
+            panel = new WinSysPanel(this);
+        }
+        return panel;
+    }
+
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 }

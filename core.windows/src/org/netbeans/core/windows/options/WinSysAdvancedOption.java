@@ -39,41 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.samples.util;
+package org.netbeans.core.windows.options;
 
-import java.util.ArrayList;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Peter Liu
- */
-public class RestSampleProjectProperties {
-    public static final String J2EE_SERVER_INSTANCE_PROPERTY = "j2ee.server.instance"; // NOI18N
-    public static final String NETBEANS_USERDIR = "netbeans.user"; // NOI18N
-    public static final String SERVER_INSTANCE_SUN_APPSERVER = "Sun:AppServer"; // NOI18N
-    
-    public static final String BPEL_SAMPLES = "Bpel_samples"; // NOI18N
-    
-    public static final String WEB_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";   //NOI18N
-    
-    public static final String EAR_PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-earproject/2";    //NOI18N
-    
-    public static final String APPSERVER_RT_REF = "file.reference.appserv-rt.jar"; // NOI18N
-    
-    public ArrayList privateProperties;
+public final class WinSysAdvancedOption extends AdvancedOption {
 
-    private RestSampleProjectProperties() {
-        privateProperties = new ArrayList(); 
-        privateProperties.add(J2EE_SERVER_INSTANCE_PROPERTY);
-        privateProperties.add(NETBEANS_USERDIR);
-        privateProperties.add(APPSERVER_RT_REF);
+    public static final String IS_APLHA_DRAG = "isAlphaDrag";
+    public static final String IS_SNAPPING = "isSnapping";
+    public static final String IS_APLHA_FLOATING = "isAlphaFloating";
+    
+    public String getDisplayName() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_DisplayName_WinSys");
     }
-    
-    public static RestSampleProjectProperties getDefault() {
-        return new RestSampleProjectProperties();
+
+    public String getTooltip() {
+        return NbBundle.getMessage(WinSysAdvancedOption.class, "AdvancedOption_Tooltip_WinSys");
     }
-    
-    public boolean isPrivateProperty(String name) {
-        return privateProperties.contains(name);
+
+    public OptionsPanelController create() {
+        return new WinSysOptionsPanelController();
     }
 }

@@ -52,30 +52,15 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
 public class IndexNode extends DatabaseNode {
-    /*
-    	public void setName(String newname)
-    	{
-    		try {
-    			DatabaseNodeInfo info = getInfo();
-    			String table = (String)info.get(DatabaseNode.TABLE);
-    			Specification spec = (Specification)info.getSpecification();
-    			RenameColumn cmd = spec.createCommandRenameColumn(table);
-    			cmd.renameColumn(info.getName(), newname);
-    			cmd.execute();
-    			super.setName(newname);
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-    	}
-    */
+    public IndexNode(DatabaseNodeInfo info) {
+        super(info);
+    }
 
+    @Override
     protected void createPasteTypes(Transferable t, List s)
     {
         super.createPasteTypes(t, s);
@@ -167,8 +152,8 @@ public class IndexNode extends DatabaseNode {
                                 String colname = (String) rset.get(new Integer(9));
                                 if (ixname.equals(index) && colname.equals(info.getName())) {
                                     ixinfo = (IndexNodeInfo) DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rset);
-                                    if (ixinfo != null)
-                                        ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
+                                    if (ixinfo != null) 
+                                        destinfo.addChild(ixinfo);
                                     else
                                         throw new Exception(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                                 }
@@ -186,10 +171,5 @@ public class IndexNode extends DatabaseNode {
             
             return null;
         }
-    }
-    
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Index"); //NOI18N
-    }
-
+    }    
 }
