@@ -71,8 +71,9 @@ public class ConnectionNodeTest extends TestBase {
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
         ConnectionManager.getDefault().addConnection(dbconn);
 
-        ConnectionNode connectionNode = new ConnectionNode();
-        ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
+        ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.
+                createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
+        ConnectionNode connectionNode = new ConnectionNode(connNodeInfo);
         connNodeInfo.setDatabaseConnection(ConnectionList.getDefault().getConnections()[0]);
         connectionNode.setInfo(connNodeInfo);
 

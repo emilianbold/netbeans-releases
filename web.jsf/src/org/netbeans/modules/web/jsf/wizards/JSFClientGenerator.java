@@ -165,9 +165,21 @@ public class JSFClientGenerator {
             }
         }
         SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-        final FileObject jsfRoot = FileUtil.createFolder(sgWeb[0].getRootFolder(), jsfFolder);
+        FileObject pagesRootFolder = sgWeb[0].getRootFolder();
+        int jsfFolderNameAttemptIndex = 1;
+        while (pagesRootFolder.getFileObject(jsfFolder) != null && jsfFolderNameAttemptIndex < 1000) {
+            jsfFolder += "_" + jsfFolderNameAttemptIndex++;
+        }
+        final FileObject jsfRoot = FileUtil.createFolder(pagesRootFolder, jsfFolder);
         
-        String simpleConverterName = simpleEntityName + "Converter"; //NOI18N
+        int lastIndexOfController = controllerClass.lastIndexOf("Controller");
+        String controllerSuffix = controllerClass.substring(lastIndexOfController);
+        String converterSuffix = controllerSuffix.replace("Controller", "Converter");
+        String simpleConverterName = simpleEntityName + converterSuffix; //NOI18N
+        int converterNameAttemptIndex = 1;
+        while (pkg.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
+            simpleConverterName += "_" + converterNameAttemptIndex++;
+        }
         String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = fieldFromClassName(simpleEntityName);
 
@@ -563,44 +575,87 @@ public class JSFClientGenerator {
                 model = ConfigurationUtils.getConfigModel(fo, true);
                 model.startTransaction();
                 FacesConfig config = model.getRootComponent();
-                ManagedBean mb = model.getFactory().createManagedBean();
+                
+                ManagedBean mb = null;
+                List<ManagedBean> managedBeans = config.getManagedBeans();
+                for (ManagedBean existingManagedBean : managedBeans) {
+                    if (managedBean.equals(existingManagedBean.getManagedBeanName())) {
+                        mb = existingManagedBean;
+                        break;
+                    }
+                }
+                boolean mbIsNew = false;
+                if (mb == null) {
+                    mb = model.getFactory().createManagedBean();
+                    mbIsNew = true;
+                }
                 mb.setManagedBeanName(managedBean);
                 mb.setManagedBeanClass(controllerClass);
                 mb.setManagedBeanScope(ManagedBean.Scope.SESSION);
-                config.addManagedBean(mb);
+                if (mbIsNew) {
+                    config.addManagedBean(mb);
+                }
 
-                Converter cv = model.getFactory().createConverter();
+                Converter cv = null;
+                List<Converter> converters = config.getConverters();
+                for (Converter existingConverter : converters) {
+                    if (entityClass.equals(existingConverter.getConverterForClass())) {
+                        cv = existingConverter;
+                        break;
+                    }
+                }
+                boolean cvIsNew = false;
+                if (cv == null) {
+                    cv = model.getFactory().createConverter();
+                    cvIsNew = true;
+                }
                 cv.setConverterForClass(entityClass);
                 cv.setConverterClass(converterName);
-                config.addConverter(cv);
-                                
-                NavigationRule nr = model.getFactory().createNavigationRule();
-                NavigationCase nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_create");
-                nc.setToViewId("/" + jsfFolder + "/New.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
+                if (cvIsNew) {
+                    config.addConverter(cv);
+                }
+                
+                String[] fromOutcomes = {
+                    fieldName + "_create", 
+                    fieldName + "_list", 
+                    fieldName + "_edit",
+                    fieldName + "_detail"
+                };
+                String[] toViewIds = {
+                    "/" + jsfFolder + "/New.jsp", 
+                    "/" + jsfFolder + "/List.jsp",  
+                    "/" + jsfFolder + "/Edit.jsp", 
+                    "/" + jsfFolder + "/Detail.jsp", 
+                };
+                
+                for (int i = 0; i < fromOutcomes.length; i++) {
+                    NavigationRule nr = null;
+                    NavigationCase nc = null;
+                    List<NavigationRule> navigationRules = config.getNavigationRules();
+                    for (NavigationRule existingNavigationRule : navigationRules) {
+                        List<NavigationCase> navigationCases = existingNavigationRule.getNavigationCases();
+                        for (NavigationCase existingNavigationCase : navigationCases) {
+                            if ( fromOutcomes[i].equals(existingNavigationCase.getFromOutcome()) ) {
+                                nr = existingNavigationRule;
+                                nc = existingNavigationCase;
+                                break;
+                            }
+                        }
+                    }
+                    boolean nrIsNew = false;
+                    if (nr == null) {
+                        nr = model.getFactory().createNavigationRule();
+                        nc = model.getFactory().createNavigationCase();
+                        nrIsNew = true;
+                    }
 
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_list");
-                nc.setToViewId("/" + jsfFolder + "/List.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
-
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_edit");
-                nc.setToViewId("/" + jsfFolder + "/Edit.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
-
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_detail");
-                nc.setToViewId("/" + jsfFolder + "/Detail.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
+                    nc.setFromOutcome(fromOutcomes[i]);
+                    nc.setToViewId(toViewIds[i]);
+                    if (nrIsNew) {
+                        nr.addNavigationCase(nc);
+                        config.addNavigationRule(nr);
+                    }
+                }
             }
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
@@ -971,8 +1026,8 @@ public class JSFClientGenerator {
                             String relFieldName = getPropNameFromMethod(mName);
                             String otherFieldName = getPropNameFromMethod(otherName);
                             
-                            boolean columnNullable = JsfForm.isColumnNullable(workingCopy, m, isFieldAccess);
-                            boolean relColumnNullable = JsfForm.isColumnNullable(workingCopy, otherSide, isFieldAccess);
+                            boolean columnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
+                            boolean relColumnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
                             
                             String relFieldToAttach = relFieldName + relTypeReference + "ToAttach";
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;

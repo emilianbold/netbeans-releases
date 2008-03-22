@@ -489,8 +489,8 @@ public final class JsfForm implements ActiveEditorDrop {
         }
         String simpleRelType = JSFClientGenerator.simpleClassName(relType); //just "Pavilion"
         String relatedController = JSFClientGenerator.fieldFromClassName(simpleRelType);
-        boolean columnNullable = isColumnNullable(controller, method, fieldAccess);
-        String requiredMessage = columnNullable ? null : "The " + propName + " field is required.";
+        boolean fieldOptionalAndNullable = isFieldOptionalAndNullable(controller, method, fieldAccess);
+        String requiredMessage = fieldOptionalAndNullable ? null : "The " + propName + " field is required.";
 
         if ( (formType == FORM_TYPE_NEW && 
                 ( isId &&  isGenerated) ) || 
@@ -562,41 +562,64 @@ public final class JsfForm implements ActiveEditorDrop {
         }
     }
     
-    public static boolean isColumnNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
+    public static boolean isFieldOptionalAndNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
+        boolean isFieldOptional = true;
+        Boolean isFieldNullable = null;
+        Element fieldElement = fieldAccess ? guessField(controller, method) : method;
+        String[] fieldAnnotationFqns = {"javax.persistence.ManyToOne", "javax.persistence.OneToOne", "javax.persistence.Basic"};
+        Boolean isFieldOptionalBoolean = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "optional");
+        if (isFieldOptionalBoolean != null) {
+            isFieldOptional = isFieldOptionalBoolean.booleanValue();
+        }
+        if (!isFieldOptional) {
+            return false;
+        }
+        //field is optional
+        fieldAnnotationFqns = new String[]{"javax.persistence.Column", "javax.persistence.JoinColumn"};
+        isFieldNullable = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "nullable");
+        if (isFieldNullable != null) {
+            return isFieldNullable.booleanValue();
+        }
+        //new ballgame
         boolean result = true;
-        Element columnElement = fieldAccess ? guessField(controller, method) : method;
-        String[] columnAnnotationFqns = {"javax.persistence.Column", "javax.persistence.JoinColumn", "javax.persistence.JoinColumns"};
-        for (int i = 0; i < columnAnnotationFqns.length; i++) {
-            String columnAnnotationFqn = columnAnnotationFqns[i];
-            AnnotationMirror columnAnnotation = findAnnotation(columnElement, columnAnnotationFqn); //NOI18N
-            if (columnAnnotation != null) {  
-                if (i < columnAnnotationFqns.length - 1) {  //columnAnnotation is a javax.persistence.Column or javax.persistence.JoinColumn
-                    String columnNullableValue = findAnnotationValueAsString(columnAnnotation, "nullable"); //NOI18N
-                    if (columnNullableValue != null) {
-                        result = Boolean.parseBoolean(columnNullableValue);
+        AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, "javax.persistence.JoinColumns"); //NOI18N
+        if (fieldAnnotation != null) {
+            //all joinColumn annotations must indicate nullable = false to return a false result
+            List<AnnotationMirror> joinColumnAnnotations = JsfForm.findNestedAnnotations(fieldAnnotation, "javax.persistence.JoinColumn");
+            for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
+                String columnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
+                if (columnNullableValue != null) {
+                    result = Boolean.parseBoolean(columnNullableValue);
+                    if (result) {
+                        break;  //one of the joinColumn annotations is nullable, so return true
                     }
-                    break;
                 }
-                else {  //columnAnnotation is a javax.persistence.JoinColumns
-                    //all joinColumn annotations must indicate nullable = false to return a false result
-                    List<AnnotationMirror> joinColumnAnnotations = JsfForm.findNestedAnnotations(columnAnnotation, "javax.persistence.JoinColumn"); 
-                    for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
-                        String columnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
-                        if (columnNullableValue != null) {
-                            result = Boolean.parseBoolean(columnNullableValue);
-                            if (result) {
-                                break;  //one of the joinColumn annotations is nullable, so return true
-                            }
-                        }
-                        else {
-                            result = true;
-                            break;  //one of the joinColumn annotations is nullable, so return true
-                        }
-                    }
+                else {
+                    result = true;
+                    break;  //one of the joinColumn annotations is nullable, so return true
                 }
             }
         }
         return result;
+    }
+    
+    private static Boolean findAnnotationValueAsBoolean(Element fieldElement, String[] fieldAnnotationFqns, String annotationKey) {
+        Boolean isFieldXable = null;
+        for (int i = 0; i < fieldAnnotationFqns.length; i++) {
+            String fieldAnnotationFqn = fieldAnnotationFqns[i];
+            AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, fieldAnnotationFqn); //NOI18N
+            if (fieldAnnotation != null) {  
+                String annotationValueString = findAnnotationValueAsString(fieldAnnotation, annotationKey); //NOI18N
+                if (annotationValueString != null) {
+                    isFieldXable = Boolean.valueOf(annotationValueString);
+                }
+                else {
+                    isFieldXable = Boolean.TRUE;
+                }
+                break;
+            }
+        }
+        return isFieldXable;
     }
     
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 

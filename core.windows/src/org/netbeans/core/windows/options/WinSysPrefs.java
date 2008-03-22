@@ -58,6 +58,8 @@ public interface WinSysPrefs {
     public final String DND_SMALLWINDOWS_WIDTH = "dnd.smallwindows.width";
     
     public final String DND_SMALLWINDOWS_HEIGHT = "dnd.smallwindows.height";
+    
+    public final String DND_DRAGIMAGE = "dnd.dragimage";
      
     public final String TRANSPARENCY_DRAGIMAGE = "transparency.dragimage";
     
