@@ -54,30 +54,18 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  */
 public class MultyFileStorage implements Storage {
     
-    final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
-    
     private FilesAccessStrategy theFilesHelper;
-    private int openFilesLimit = DEFAULT_REPOSITORY_OPEN_FILES_LIMIT;
+    private String unitName;
     
-    /** Creates a new instance of BaseDiskRepository */
-    public MultyFileStorage() {
+    public MultyFileStorage(String unitName) {
         super();
-        // use the simple helper implementation
-        theFilesHelper = new FilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
-    }
-    
-    public void setOpenFilesLimit (int limit) throws IOException {
-        openFilesLimit = limit;
-        theFilesHelper.setOpenFilesLimit(openFilesLimit);
+        theFilesHelper = FilesAccessStrategyImpl.getInstance();
+        this.unitName = unitName;
     }
     
     /** Creates a new instance of SimpleDiskRepository */
     public MultyFileStorage(FilesAccessStrategy aFilesHelper) {
         theFilesHelper = aFilesHelper;
-    }
-    
-    public void setFilesHelper(FilesAccessStrategy aNavigator) {
-        theFilesHelper = aNavigator;
     }
     
     public void write(Key id, final Persistent obj) {
@@ -115,7 +103,7 @@ public class MultyFileStorage implements Storage {
     public void remove(Key id) {
         assert id != null;
         try {
-        theFilesHelper.removeFile(id);
+        theFilesHelper.remove(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
@@ -123,8 +111,7 @@ public class MultyFileStorage implements Storage {
     }
 
     public void close() throws IOException {
-        theFilesHelper.setOpenFilesLimit(0);
-        theFilesHelper.setOpenFilesLimit(openFilesLimit);        
+        theFilesHelper.closeUnit(unitName);
     }
 
     public int getFragmentationPercentage() {

@@ -69,9 +69,7 @@ public interface FilesAccessStrategy {
     void write(Key key, PersistentFactory factory, Persistent object) throws IOException;
     
     /** Remove the record */
-    void removeFile (Key id) throws IOException;
+    void remove(Key id) throws IOException;
 
-    void setOpenFilesLimit(int limit) throws IOException;
-    
     void closeUnit(String unitName) throws IOException;
 }
