@@ -53,6 +53,8 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.AstUtilities;
+import org.netbeans.modules.javascript.editing.BrowserVersion;
+import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.spi.Description;
 import org.netbeans.modules.javascript.hints.spi.ErrorRule;
@@ -101,7 +103,17 @@ public class StrictWarning implements ErrorRule {
         int astOffset = error.getStartPosition();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
 
-        if ("msg.reserved.keyword".equals(key)) {
+        if ("msg.trailing.comma".equals(key)) { // NOI18N
+            // See if we're targeting the applicable browsers
+            if (!SupportedBrowsers.getInstance().isSupported(BrowserVersion.IE7)) { // If you want IE5.5 you're also affected
+                // We don't care about this error anyway
+                context.remove = true;
+                return;
+            }
+            
+            int start = (Integer)error.getParameters()[0];
+            range = new OffsetRange(start, start+1);
+        } else if ("msg.reserved.keyword".equals(key)) {
             String keyword = (String) error.getParameters()[1];
             range = new OffsetRange(lexOffset-keyword.length(), lexOffset);
         } else if (error.getParameters() != null) {

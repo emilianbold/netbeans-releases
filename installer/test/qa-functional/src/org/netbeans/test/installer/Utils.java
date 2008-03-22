@@ -363,8 +363,7 @@ public class Utils {
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
 
-        //cuz behaviour of feature list is changed
-        //featureList.pressKey(KeyEvent.VK_SPACE);
+        featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
 

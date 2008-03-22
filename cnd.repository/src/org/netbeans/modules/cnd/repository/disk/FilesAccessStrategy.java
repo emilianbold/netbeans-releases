@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -54,10 +53,10 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 public interface FilesAccessStrategy {
     
     /** Returns the file access for the object identified by the id */
-    ConcurrentFileRWAccess getFileForObj(Key id,  boolean read)  throws IOException;
+    ConcurrentFileRWAccess getFile(Key id,  boolean read)  throws IOException;
     
     /** Remove the record */
-    void removeObjForKey (Key id) throws IOException;
+    void removeFile (Key id) throws IOException;
 
     void setOpenFilesLimit(int limit) throws IOException;
     
