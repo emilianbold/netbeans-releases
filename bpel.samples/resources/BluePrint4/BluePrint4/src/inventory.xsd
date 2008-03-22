@@ -29,17 +29,17 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-        targetNamespace="http://manufacturing.org/xsd/inventory"
-        xmlns:tns ="http://manufacturing.org/xsd/inventory"
-        elementFormDefault="qualified" attributeFormDefault="unqualified">
+    targetNamespace="http://manufacturing.org/xsd/inventory"
+    xmlns:tns ="http://manufacturing.org/xsd/inventory"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified">
 
-        <xs:element name="inventory" type="tns:inventoryType">
-        </xs:element>
+    <xs:element name="inventory" type="tns:inventoryType"></xs:element>
 
-        <xs:complexType  name="inventoryType">
-            <xs:sequence>
-                <xs:element name="inventoryStatus" type="xs:boolean"/>
-                <xs:element name="inventoryStatusMessage" type="xs:string"/>
-            </xs:sequence>
-        </xs:complexType>
+    <xs:complexType name="inventoryType">
+        <xs:sequence>
+            <xs:element name="inventoryStatus" type="xs:boolean"/>
+            <xs:element name="inventoryStatusMessage" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>

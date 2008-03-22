@@ -93,6 +93,10 @@ import org.openide.filesystems.FileObject;
  * @todo Handle type-parameters for arrays (strip out {@code <>}'s from Array when going to compute types
  * @todo Make sure I can handle common document.create() operations
  *    Nope! document.createElement("faen").
+ * @todo If you call  jQuery.html(). and ask for the type of this expression, I sometimes don't get it
+ *   right - because I have both jQuery.html(value) with no known return value, and jQuery.html() with
+ *   a known return value. IF I pick the first html function to look up the type for, this fails.
+ *   I need to consider the function arity and do a better job looking up the type in this case!
  *
  * @author Tor Norbye
  */
@@ -296,6 +300,9 @@ public class JsTypeAnalyzer {
                     String lhs = getType(name);
                     if (lhs == null) {
                         lhs = FunctionCache.INSTANCE.getType(name, index);
+                        if (lhs == null) {
+                            lhs = name;
+                        }
                     }
                     if (lhs != null) {
                         Node methodNode = grandChild.getNext();
@@ -351,6 +358,12 @@ public class JsTypeAnalyzer {
             }
             String firstType = expressionType(first);
             if (firstType == null) {
+                if (!(first instanceof Node.StringNode)) {
+                    // I'm not sure why this happens... 
+                    // but see http://statistics.netbeans.org/analytics/detail.do?id=39154
+                    // Investigate this
+                    return null;
+                }
                 firstType = first.getString();
             }
             String secondStr = second.getString();

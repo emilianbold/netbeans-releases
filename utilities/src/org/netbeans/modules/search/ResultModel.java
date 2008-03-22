@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@
 package org.netbeans.modules.search;
 
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -173,9 +174,11 @@ public final class ResultModel {
      * @param  object  matching object
      * @return  {@code true} if this result model can accept more objects,
      *          {@code false} if number of found objects reached the limit
+     * @param  charset  charset used for full-text search of the object,
+     *                  or {@code null} if the object was not full-text searched
      */
-    synchronized boolean objectFound(Object object) {
-        MatchingObject matchingObject = new MatchingObject(this, object);
+    synchronized boolean objectFound(Object object, Charset charset) {
+        MatchingObject matchingObject = new MatchingObject(this, object, charset);
         if (matchingObjectsSet.add(matchingObject) == false) {
             return true;
         }

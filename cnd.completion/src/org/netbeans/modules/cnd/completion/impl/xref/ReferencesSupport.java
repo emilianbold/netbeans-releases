@@ -53,6 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -61,6 +62,8 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -173,14 +176,39 @@ public final class ReferencesSupport {
         SyntaxSupport sup = doc.getSyntaxSupport();
         int[] idFunBlk = null;
         CsmObject csmItem = null;
-        try { 
-            idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, offset);
-        } catch (BadLocationException ex) {
-            // skip it
+        CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset);
+        // TODO: it would be great to check position in named element, but we don't 
+        // support this information yet, so
+        
+        // fast check for enumerators
+        if (CsmKindUtilities.isEnumerator(objUnderOffset)) {
+            CsmEnumerator enmrtr = (CsmEnumerator)objUnderOffset;
+            if (enmrtr.getExplicitValue() == null) {
+                csmItem = enmrtr;
+            }
+        } else if (false && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
+            // turned off, due to the problems like
+            // Cpu MyCpu(type, 0, amount);
+            // initialization part is part of variable => we need info about name position exactly
+            CsmVariable var = (CsmVariable)objUnderOffset;
+            if (var.getName().length() > 0 && !var.isExtern()) {
+                // not work yet for arrays declarations IZ#130678
+                // not work yet for elements with init value IZ#130684
+                if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
+                    csmItem = var;
+                }
+            }
         }
-        // check but not for function call
-        if (idFunBlk != null && idFunBlk.length != 3) {
-            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY);
+        if (csmItem == null) {
+            try { 
+                idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, offset);
+            } catch (BadLocationException ex) {
+                // skip it
+            }
+            // check but not for function call
+            if (idFunBlk != null && idFunBlk.length != 3) {
+                csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY);
+            }
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.filecreation;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.lang.String;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -262,6 +261,10 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
             
             return NbBundle.getMessage(NewCndFileChooserPanel.class, "MSG_not_valid_filename", newObjectName, new Integer(errorVariant));
         }
+        
+        if (!isValidName(newObjectName)) {
+            return NbBundle.getMessage(org.netbeans.modules.cnd.ui.options.CndOptionsPanel.class, "NAME_INVALID", newObjectName);
+        }
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
@@ -292,4 +295,21 @@ final class NewCndFileChooserPanel implements WizardDescriptor.Panel<WizardDescr
         
         return result;
     }
+    
+    private static boolean isValidName(String name) {
+	int len = name.length();
+        
+	if (len == 0) {
+	    return false;
+	}
+	for (int i = 0; i < len; i++) {
+	    char c = name.charAt(i);
+            // if user would request support of wider array of symbols we can allow it by improving escaping symbols during Makefiles generation 
+	    if (Character.isISOControl(c) || c == '"' | c == '$' || c == '#' || c == '\'') { 
+		return false;
+	    }
+	}
+	return true;
+    }
+
 }

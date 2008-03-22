@@ -90,9 +90,6 @@ public class BindingOperationPanel extends SaveableSectionInnerPanel  {
         this.model = this.bindingOperation.getModel();
         this.primaryModel = this.primaryDefinitions.getModel();
         initComponents();
-        enableMIMEContentCB.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        bindingLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        bindingName.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         bindingName.setText(getParentOfBindingOperation(bindingOperation));
         
         sync();
@@ -263,6 +260,7 @@ public class BindingOperationPanel extends SaveableSectionInnerPanel  {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle"); // NOI18N
         enableMIMEContentCB.setToolTipText(bundle.getString("TOOLTIP_ENABLE_MIME")); // NOI18N
         enableMIMEContentCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        enableMIMEContentCB.setContentAreaFilled(false);
         enableMIMEContentCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         bindingLabel.setText(bundle.getString("LBL_ENCLOSING_BINDING")); // NOI18N

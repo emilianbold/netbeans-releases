@@ -11,18 +11,18 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-FUNCTION foo [5:1/37-5:11/47] FunctionImpl SCOPE: $Global$ 
+FUNCTION foo_incomplete_string [5:1/37-5:29/65] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
-    SIGNATURE foo()
-    UNIQUE NAME F:foo()
+    SIGNATURE foo_incomplete_string()
+    UNIQUE NAME F:foo_incomplete_string()
     PARAMETERS:
     RETURNS int TEXT=int  [5:1/37-5:4/40]
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION foo [5:1/37-5:11/47] FunctionImpl SCOPE: $Global$ 
+FUNCTION foo_incomplete_string [5:1/37-5:29/65] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
-    SIGNATURE foo()
-    UNIQUE NAME F:foo()
+    SIGNATURE foo_incomplete_string()
+    UNIQUE NAME F:foo_incomplete_string()
     PARAMETERS:
     RETURNS int TEXT=int  [5:1/37-5:4/40]
 

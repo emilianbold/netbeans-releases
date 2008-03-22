@@ -57,8 +57,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.websvc.rest.samples.ui.SampleWizardPanel;
-import org.netbeans.modules.websvc.rest.samples.util.RestSampleProjectProperties;
 import org.netbeans.modules.websvc.rest.samples.util.RestSampleUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -81,8 +79,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
-    private boolean addJerseyLibrary = true;
-    private String projectConfigNamespace = RestSampleProjectProperties.WEB_PROJECT_CONFIGURATION_NAMESPACE;
+    private String projectConfigNamespace = "http://www.netbeans.org/ns/web-project/3"; //NOI18N
  
     public SampleWizardIterator() {}
         
@@ -110,11 +107,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         this.projectConfigNamespace = namespace;
     }
     
-    public void setAddJerseyLibrary(boolean flag) {
-        addJerseyLibrary = flag;
-    }
-    
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
         dirF.mkdirs();
@@ -130,6 +123,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         dirF = FileUtil.toFile(dir);
     
         RestSampleUtils.unZipFile(template.getInputStream(), dir);
+        ProjectManager.getDefault().clearNonProjectCache();
         
         if (projectConfigNamespace != null)
             RestSampleUtils.setProjectName(dir, projectConfigNamespace, name);
@@ -137,9 +131,6 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;
     
-        if (addJerseyLibrary)
-            RestSampleUtils.addJerseyLibrary(myProject);
-        
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:

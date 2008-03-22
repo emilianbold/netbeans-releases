@@ -43,6 +43,7 @@ package org.netbeans.modules.loadgenerator.api.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -166,10 +167,10 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   // @throws EngineManagerException
   public void startProcess(final ProcessInstance instance) throws EngineManagerException {
     if (instance.isRunning()) {
-      throw new EngineManagerException("Provider " + instance.getDisplayName() + " is busy");
+      throw new EngineManagerException(MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/api/impl/Bundle").getString("ProviderBusyMessage"),  instance.getDisplayName()));
     }
 
-    ProgressHandle phandle = ProgressHandleFactory.createHandle("Starting load generator", new Cancellable
+    ProgressHandle phandle = ProgressHandleFactory.createHandle(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/api/impl/Bundle").getString("Starting_load_generator"), new Cancellable
 
     () {
 
@@ -225,7 +226,7 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
       }
 
       public String getDescription() {
-        return "Supported scripts";
+        return java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/api/impl/Bundle").getString("Supported_scripts");
       }
     });
     if (lastUsedScript != null) {
@@ -247,10 +248,10 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   // @throws EngineManagerException
   public void stopProcess(final ProcessInstance provider, final boolean force) throws EngineManagerException {
     if (!provider.isRunning()) {
-      throw new EngineManagerException("Stopping a non-running provider " + provider.getDisplayName());
+      throw new EngineManagerException(MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/api/impl/Bundle").getString("Stopping_a_non-running_provider"), provider.getDisplayName()));
     }
 
-    ProgressHandle phandle = ProgressHandleFactory.createHandle("Stopping load generator");
+    ProgressHandle phandle = ProgressHandleFactory.createHandle(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/api/impl/Bundle").getString("Stopping_load_generator"));
     try {
       phandle.setInitialDelay(0);
       phandle.start();

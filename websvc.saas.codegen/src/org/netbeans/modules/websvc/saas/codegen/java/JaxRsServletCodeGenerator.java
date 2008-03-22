@@ -46,7 +46,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
@@ -80,7 +82,8 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
         final Object[] paramTypes = getGetParamTypes(filterParams);
         Util.createSessionKeyAuthorizationClassesForWeb(
             getBean(), getProject(),
-            getGroupName(), getSaasServicePackageName(), getSaasServiceFolder(), 
+            getBean().getSaasName(), getBean().getSaasServicePackageName(), 
+            getSaasServiceFolder(), 
             loginJS, loginFile, 
             callbackJS, callbackFile,
             parameters, paramTypes
@@ -101,10 +104,20 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
         String methodBody = "";
         methodBody += "             try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "                 String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "             } catch (java.io.IOException ex) {\n";
-        methodBody += "                 //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
+        methodBody += "             "+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        if(getBean().getHttpMethod() == HttpMethodType.GET) {
+            if(getBean().canGenerateJAXBUnmarshaller()) {
+                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
+                methodBody += "             "+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
+                methodBody += "             System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
+            } else {
+                methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+            }
+        } else {
+            methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
+        }
+        methodBody += "             } catch (Exception ex) {\n";
         methodBody += "                 ex.printStackTrace();\n";
         methodBody += "             }\n";
        
@@ -148,4 +161,7 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     protected String getSessionKeyLoginArguments() {
         return Util.getSessionKeyLoginArgumentsForWeb();
     }
+    
+    @Override
+    protected void addJaxbLib() throws IOException {}
 }

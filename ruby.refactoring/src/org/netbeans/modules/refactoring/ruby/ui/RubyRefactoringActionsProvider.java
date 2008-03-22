@@ -48,7 +48,7 @@ import org.netbeans.modules.refactoring.ruby.spi.ui.RubyActionsImplementationPro
  * @author Jan Becicka
  */
 public class RubyRefactoringActionsProvider extends RubyActionsImplementationProvider{
-    
+    // THIS LOOKS BOGUS - DELETE ME!
     public RubyRefactoringActionsProvider() {
     }
 //    @Override
