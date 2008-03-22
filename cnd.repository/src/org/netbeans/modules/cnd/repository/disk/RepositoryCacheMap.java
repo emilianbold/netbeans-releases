@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
@@ -205,13 +207,17 @@ public class RepositoryCacheMap<K,V>  {
     
     public Collection<V> remove(Filter<V> filter) {
         Set<V> retSet = new HashSet<V>();
-        for( RepositoryCacheValue<V> elem : valueToKey.keySet() ) {
-            if( filter.accept(elem.value) ) {
-                K removedKey = valueToKey.get(elem);
-                retSet.add(elem.value);
-                valueToKey.remove(elem);
-                keyToValue.remove(removedKey);
+        List<RepositoryCacheValue<V>> entriesToRemove = new ArrayList<RepositoryCacheValue<V>>(DEFAULT_CAPACITY);
+        for( RepositoryCacheValue<V> entry : valueToKey.keySet() ) {
+            if( filter.accept(entry.value) ) {
+                retSet.add(entry.value);
+                entriesToRemove.add(entry);
             }
+        }
+        for( RepositoryCacheValue<V> entry : entriesToRemove ) {
+                K removedKey = valueToKey.get(entry);
+                valueToKey.remove(entry);
+                keyToValue.remove(removedKey);
         }
         return retSet;
     }
