@@ -93,7 +93,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         Process p = null;
         try {
             session = startDebugging(descriptor);
-            p = session.getProxy().getDebugTarged().getProcess();
+            if (session != null) {
+                p = session.getProxy().getDebugTarged().getProcess();
+            }
         } catch (IOException e) {
             problemOccurred(e);
         } catch (RubyDebuggerException e) {
