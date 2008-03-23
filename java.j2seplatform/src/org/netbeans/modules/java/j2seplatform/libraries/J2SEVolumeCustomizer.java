@@ -536,16 +536,15 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 LibraryStorageArea area = model.getArea();
                 FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
                 if (fo == null) {
-                    String path = LibrariesSupport.convertURLToFilePath(url);
-                    if (path.startsWith("${")) { // NOI18N
-                        // if URL starts with an Ant property name assume it is OK.
-                        // url cannot be resolved because customizer does not have necessary context.
-                        // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
-                    } else {
-                        broken = true;
-                    }
+                    broken = true;
                     if ("file".equals(url.getProtocol())) { //NOI18N
                         displayName = LibrariesSupport.convertURLToFilePath(url);
+                        if (displayName.startsWith("${")) { // NOI18N
+                            // if URL starts with an Ant property name assume it is OK.
+                            // url cannot be resolved because customizer does not have necessary context.
+                            // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
+                            broken = false;
+                        }
                     } else {
                         displayName = url.toExternalForm();
                     }
