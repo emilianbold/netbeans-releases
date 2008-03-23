@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [searchingForName of copyright owner]"
  *
  * Contributor(s):
  *
@@ -41,9 +41,7 @@
 package org.netbeans.modules.hibernate.refactoring;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -71,16 +69,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.hibernate.mapping.model.Property;
+import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
+import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -88,6 +84,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -261,278 +259,182 @@ public class HibernateRefactoringUtil {
         }
     }
 
-    public static Map<FileObject, OccurrenceItem> getJavaClassOccurrences(List<FileObject> allMappingFiles, String oldBinaryName) {
-        Map<FileObject, OccurrenceItem> occurrences = new HashMap<FileObject, OccurrenceItem>();
-        for (FileObject mFileObj : allMappingFiles) {
-            try {
-                InputStream is = mFileObj.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-
-                // Check the name attribute of the <class> elment
-                MyClass[] myClazz = hbMapping.getMyClass();
-
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
-                    if (clsName.equals(oldBinaryName)) {
-                        // Find the class. That means this file needs to be refactored
-                        OccurrenceItem foundPlace = getJavaClassPositionBounds(mFileObj, oldBinaryName);
-                        occurrences.put(mFileObj, foundPlace);
-
-                        // It is safe to assume that this is only one <class> element
-                        // with this particular Java class. 
-                        // So, go on to the next file
-                        break;
-                    }
-                }
-
-            // TODO: class name can be in other elements/attributes. 
-            // TODO: need to check all of them
-            // TODO:
-
-            } catch (FileNotFoundException ex) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        return occurrences;
-    }
-
-    private static OccurrenceItem getJavaClassPositionBounds(FileObject mappingFile, String className) {
-        try {
-            // Get the document for this file
-            DataObject dataObject = DataObject.find(mappingFile);
-            EditorCookie result = dataObject.getCookie(EditorCookie.class);
-            if (result == null) {
-                throw new IllegalStateException("File " + mappingFile + " does not have an EditorCookie.");
-            }
-
-            CloneableEditorSupport editor = (CloneableEditorSupport) result;
-            BaseDocument document = (BaseDocument) editor.openDocument();
-            XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
-
-
-            int start = document.getStartPosition().getOffset();
-            TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
-            if (item == null) {
-                return null;
-            }
-
-            boolean inClassElement = false;
-            String text = null;
-            while (item != null) {
-                TokenID tokenId = item.getTokenID();
-
-                if (tokenId == XMLDefaultTokenContext.TAG) {
-                    // Did we find the <class> element
-
-                    SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
-                    if (element instanceof StartTag || element instanceof EmptyTag) {
-                        String tagName = ((Tag) element).getTagName();
-                        if (tagName.equalsIgnoreCase("class")) { // NOI18N
-                            inClassElement = true;
-                            text = document.getText(item.getOffset(), element.getElementLength());
-                        }
-                    }
-
-                } else if (tokenId == XMLDefaultTokenContext.VALUE && inClassElement) {
-
-                    // Look for the class name to be refactored here
-
-                    String image = item.getImage();
-                    if (image.contains(className)) {
-                        // Found it
-                        inClassElement = false;
-
-                        int startOffset = item.getOffset() + 1;
-                        int endOffset = startOffset + className.length();
-
-                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
-                                editor.createPositionRef(endOffset, Bias.Forward));
-
-                        return new OccurrenceItem(loc, text);
-                    }
-                }
-
-                item = item.getNext();
-            }
-            return null;
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return null;
-    }
-
-    public static Map<FileObject, OccurrenceItem> getJavaFieldOccurrences(List<FileObject> allMappingFiles, String className, String fieldName) {
-        Map<FileObject, OccurrenceItem> occurrences = new HashMap<FileObject, OccurrenceItem>();
-        for (FileObject mFileObj : allMappingFiles) {
-            try {
-                InputStream is = mFileObj.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-
-                // Check the name attribute of the <property> element in the <class> elements
-                MyClass[] myClazz = hbMapping.getMyClass();
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
-                    if (clsName.equals(className)) {
-
-                        Property[] clazzProps = myClazz[ci].getProperty2();
-                        for (int pi = 0; pi < clazzProps.length; pi++) {
-                            if (clazzProps[pi].getAttributeValue("name").equals(fieldName)) {
-
-                                // Find the property to be refactored
-                                OccurrenceItem foundPlace = getJavaFieldPositionBounds(mFileObj, className, fieldName);
-                                occurrences.put(mFileObj, foundPlace);
-
-                                // It is safe to assume that this is only one <class> element
-                                // with this particular Java class. 
-                                // So, go on to the next file
-                                break;
-                            }
-                        }
-
-                    // TODO: need to search other elements, such as, <id> etc.
-                    }
-                }
-
-            } catch (FileNotFoundException ex) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        return occurrences;
-    }
-
-    private static OccurrenceItem getJavaFieldPositionBounds(FileObject mappingFile, String className, String fieldName) {
-        try {
-            // Get the document for this file
-            DataObject dataObject = DataObject.find(mappingFile);
-            EditorCookie result = dataObject.getCookie(EditorCookie.class);
-            if (result == null) {
-                throw new IllegalStateException("File " + mappingFile + " does not have an EditorCookie.");
-            }
-
-            CloneableEditorSupport editor = (CloneableEditorSupport) result;
-            BaseDocument document = (BaseDocument) editor.openDocument();
-            XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
-
-
-            int start = document.getStartPosition().getOffset();
-            TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
-            if (item == null) {
-                return null;
-            }
-
-            boolean inClassElement = false;
-            boolean inPropertyElement = false;
-            String text = null;
-            while (item != null) {
-                TokenID tokenId = item.getTokenID();
-
-                if (tokenId == XMLDefaultTokenContext.TAG) {
-                    // Did we find the <class> element
-
-                    SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
-                    if (element instanceof StartTag || element instanceof EmptyTag) {
-                        String tagName = ((Tag) element).getTagName();
-
-                        if (!inClassElement) {
-                            // Search for the <class> element
-                            if (tagName.equalsIgnoreCase("class")) { // NOI18N
-                                inClassElement = true;
-                            }
-                        } else {
-                            // It is in the <class> element.
-                            // Search for the <property> element
-                            if (tagName.equalsIgnoreCase("property")) {
-                                inPropertyElement = true;
-                                text = document.getText(item.getOffset(), element.getElementLength());
-                            }
-                        }
-                    }
-
-                } else if (tokenId == XMLDefaultTokenContext.VALUE && inPropertyElement) {
-
-                    // Look for the property name to be refactored here
-
-                    String image = item.getImage();
-                    if (image.contains(fieldName)) {
-                        // Found it
-                        inPropertyElement = false;
-                        inClassElement = false;
-
-                        int startOffset = item.getOffset() + 1;
-                        int endOffset = startOffset + fieldName.length();
-
-                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
-                                editor.createPositionRef(endOffset, Bias.Forward));
-
-                        return new OccurrenceItem(loc, text);
-                    }
-                }
-
-                item = item.getNext();
-            }
-            return null;
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return null;
-    }
-
-    public static Map<FileObject, List<OccurrenceItem>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String oldPkgName) {
+    public static Map<FileObject, List<OccurrenceItem>> getJavaClassOccurrences(List<FileObject> allMappingFiles, String origBinaryName) {
         Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
-
         for (FileObject mFileObj : allMappingFiles) {
-            List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
-            int startOffset = -1;
-            try {
-                InputStream is = mFileObj.getInputStream();
-                HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-
-                // Check package attribute in the <hibernate-mapping> tag
-                String pkgName = hbMapping.getAttributeValue("package"); //NOI18N
-                if (pkgName.equals(oldPkgName)) {
-                    // Find one
-                    OccurrenceItem foundPlace = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                    foundPlaces.add(foundPlace);
-
-                    startOffset = foundPlace.getLocation().getBegin().getOffset() + 1;
-                }
-
-                // Check the name attribute in the <class> tag
-                MyClass[] myClazz = hbMapping.getMyClass();
-
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NO I18N
-                    if (clsName.startsWith(oldPkgName)) {
-
-                        OccurrenceItem foundPlace = getJavaPackagePositionBounds(mFileObj, oldPkgName, startOffset);
-                        foundPlaces.add(foundPlace);
-
-                        startOffset = foundPlace.getLocation().getBegin().getOffset() + 1;
-                    }
-
-                // TODO: class name can be in other elements/attributes. 
-                // TODO: need to check all of them
-                // TODO: 
-
-                }
-            } catch (FileNotFoundException ex) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            }
-
-            // Find everything in this file
-            occurrences.put(mFileObj, foundPlaces);
+            occurrences.put(mFileObj, getOccurPlaces(mFileObj, origBinaryName, false));
+        }
+        return occurrences;
+    }
+    
+    public static Map<FileObject, List<OccurrenceItem>> getJavaPackageOccurrences(List<FileObject> allMappingFiles, String origPkgName) {
+        Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
+        for (FileObject mFileObj : allMappingFiles) {
+            occurrences.put(mFileObj, getOccurPlaces(mFileObj, origPkgName, true));
         }
 
         return occurrences;
     }
+    
+    public static Map<FileObject, List<OccurrenceItem>> getJavaFieldOccurrences(List<FileObject> allMappingFiles, String className, String fieldName) {
+        Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
+        for (FileObject mFileObj : allMappingFiles) {
+            occurrences.put( mFileObj, getJavaFieldOccurPlaces(mFileObj, className, fieldName));
+        }
+        return occurrences;
+    }
+    
+    private static List<OccurrenceItem> getOccurPlaces(FileObject mappingFile, String searchingForName, boolean searchingPackageName) {
+        List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
+        try {
+            // Get the document for this file
+            DataObject dataObject = DataObject.find(mappingFile);
+            EditorCookie result = dataObject.getCookie(EditorCookie.class);
+            if (result == null) {
+                throw new IllegalStateException("File " + mappingFile + " does not have an EditorCookie.");
+            }
+            
+            CloneableEditorSupport editor = (CloneableEditorSupport) result;
+            BaseDocument document = (BaseDocument) editor.openDocument();
+            XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
 
-    private static OccurrenceItem getJavaPackagePositionBounds(FileObject mappingFile, String pkgName, int start) {
+            int start = document.getStartPosition().getOffset();
+            TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
+            if (item == null) {
+                return null;
+            }
+
+            while (item != null) {
+                TokenID tokenId = item.getTokenID();
+
+                if (tokenId == XMLDefaultTokenContext.TAG) {
+
+                    SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
+                    String[] attributeValues = null; // Multiple attributes can have class name as values
+                    boolean pkgValue = false; // To indicate the attributeValues are Java package, not full class name
+                    if (element instanceof StartTag || element instanceof EmptyTag) {
+
+                        Node theNode = (Node) element;
+                        String nodeName = theNode.getNodeName();
+                        String itemImage = item.getImage();
+                        
+                        if (searchingPackageName && nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAPPING_TAG) &&
+                                    itemImage.contains(HibernateMappingXmlConstants.MAPPING_TAG)) {
+                                // <class> element
+                                attributeValues = new String[1];
+                                attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
+                                pkgValue = true;
+                        }
+                        // Search the element/attrubutes that take class names
+                        else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.CLASS_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.CLASS_TAG)) {
+                            // <class> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ONE_TO_MANY_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.ONE_TO_MANY_TAG)) {
+                            // <one-to-many> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPOSITE_ID_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.COMPOSITE_ID_TAG)) {
+                            // <composite-id> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG)) {
+                            // <key-many-to-one> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MANY_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.MANY_TO_ONE_TAG)) {
+                            // <many-to-one> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ONE_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.ONE_TO_ONE_TAG)) {
+                            // <one-to-one> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPONENT_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.COMPONENT_TAG)) {
+                            // <component> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB); 
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.SUBCLASS_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.SUBCLASS_TAG)) {
+                            // <subclass> element
+                            attributeValues = new String[2];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.JOINED_SUBCLASS_TAG)) {
+                            // <joined-subclass> element
+                            attributeValues = new String[3];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                            attributeValues[2] = getAttributeValue(theNode, HibernateMappingXmlConstants.PERSISTER_ATTRIB);
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.UNION_SUBCLASS_TAG)) {
+                            // <union-subclass> element
+                            attributeValues = new String[3];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB); 
+                            attributeValues[1] = getAttributeValue(theNode, HibernateMappingXmlConstants.EXTENDS_ATTRIB);
+                            attributeValues[2] = getAttributeValue(theNode, HibernateMappingXmlConstants.PERSISTER_ATTRIB);
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.IMPORT_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.IMPORT_TAG)) {
+                            // <import> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
+                        } else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MANY_TO_MANY_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.MANY_TO_MANY_TAG)) {
+                            // <many-to-many> element
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
+                        } 
+                        
+                        if (attributeValues != null ) {
+                            for( int i = 0; i < attributeValues.length; i ++ ) {
+
+                                String text = document.getText(item.getOffset(), element.getElementLength());
+                                
+                                String value = attributeValues[i];
+                                if(searchingPackageName && !pkgValue) {
+                                    value = getPackageName(value);
+                                }
+
+                                if (value != null && value.equals(searchingForName)){
+                                    
+                                    // TODO: can not just do indexof. It does not work correctly if there are multiple
+                                    // attributes have the same class searchingForName. Though, it does not make sense to have such case.
+                            
+                                    if (text.indexOf(searchingForName) != -1) {
+                                        int startOffset = item.getOffset() + text.indexOf(searchingForName);
+                                        int endOffset = startOffset + searchingForName.length();
+
+                                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                                                editor.createPositionRef(endOffset, Bias.Forward));
+
+                                        foundPlaces.add(new OccurrenceItem(loc, text));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                item = item.getNext();
+            }
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        } catch (BadLocationException ex) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
+
+        return foundPlaces;
+    }
+    
+    private static List<OccurrenceItem> getJavaFieldOccurPlaces(FileObject mappingFile, String className, String fieldName) {
+        List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
         try {
             // Get the document for this file
             DataObject dataObject = DataObject.find(mappingFile);
@@ -545,62 +447,99 @@ public class HibernateRefactoringUtil {
             BaseDocument document = (BaseDocument) editor.openDocument();
             XMLSyntaxSupport syntaxSupport = (XMLSyntaxSupport) document.getSyntaxSupport();
 
-            if (start == -1) {
-                start = document.getStartPosition().getOffset();
-            }
-
+            int start = document.getStartPosition().getOffset();
             TokenItem item = syntaxSupport.getTokenChain(start, Math.min(start + 1, document.getLength()));
             if (item == null) {
                 return null;
             }
 
-            boolean inTheElement = false; //<hibernate-mapping> or <class>
             String text = null;
             while (item != null) {
                 TokenID tokenId = item.getTokenID();
 
                 if (tokenId == XMLDefaultTokenContext.TAG) {
+                    // Did we find the <class> element
 
                     SyntaxElement element = syntaxSupport.getElementChain(item.getOffset() + 1);
+                    String nameAttribValue = null;
                     if (element instanceof StartTag || element instanceof EmptyTag) {
-                        String tagName = ((Tag) element).getTagName();
-                        if (tagName.equalsIgnoreCase("hibernate-mapping")) { // NOI18N
-                            inTheElement = true;
-                            text = document.getText(item.getOffset(), element.getElementLength());
-                        } else if (tagName.equalsIgnoreCase("class")) { // NOI18N
-                            text = document.getText(item.getOffset(), element.getElementLength());
-                            inTheElement = true;
+
+                        Node theNode = (Node) element;
+                        String nodeName = theNode.getNodeName();
+                        String itemImage = item.getImage();
+
+                        if ((nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.PROPERTY_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.PROPERTY_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ID_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.ID_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.SET_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.SET_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPOSITE_ID_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.COMPOSITE_ID_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_PROPERTY_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.KEY_PROPERTY_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.KEY_MANY_TO_ONE_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.VERSION_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.VERSION_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.TIMESTAMP_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.TIMESTAMP_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MANY_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.MANY_TO_ONE_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ONE_TO_ONE_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.ONE_TO_ONE_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.COMPONENT_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.COMPONENT_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.ANY_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.ANY_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAP_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.MAP_TAG)) ||
+                                
+                                (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.LIST_TAG) &&
+                                itemImage.contains(HibernateMappingXmlConstants.LIST_TAG))) {
+                            
+                            nameAttribValue = getAttributeValue(theNode, HibernateMappingXmlConstants.NAME_ATTRIB);
+                            
+                            if (nameAttribValue != null && nameAttribValue.equals(fieldName)) {
+                                
+                                // Check class name
+                                if (HibernateEditorUtil.getClassName(theNode).equals(className)) {
+                                    text = document.getText(item.getOffset(), element.getElementLength());
+
+                                    // find the offset for the field name
+                                    int index = text.indexOf(fieldName);
+                                    int startOffset = item.getOffset() + index;
+                                    int endOffset = startOffset + fieldName.length();
+                                    PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                                            editor.createPositionRef(endOffset, Bias.Forward));
+
+                                    foundPlaces.add( new OccurrenceItem(loc, text) );
+                                }
+                            }
                         }
                     }
-
-                } else if (tokenId == XMLDefaultTokenContext.VALUE && inTheElement) {
-
-                    // Look for the class name to be refactored here
-
-                    String image = item.getImage();
-                    if (image.contains(pkgName)) {
-                        // Found it
-                        inTheElement = false;
-
-                        int startOffset = item.getOffset() + 1;
-                        int endOffset = startOffset + pkgName.length();
-                        PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
-                                editor.createPositionRef(endOffset, Bias.Forward));
-
-                        return new OccurrenceItem(loc, text);
-                    }
                 }
-
                 item = item.getNext();
             }
-            return null;
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
 
-        return null;
+        return foundPlaces;
     }
 
     public static final class OccurrenceItem {
@@ -632,5 +571,26 @@ public class HibernateRefactoringUtil {
         } else {
             return true;
         }
+    }
+
+    private static String getAttributeValue(Node node, String attributeName) {
+        if (node == null) {
+            return null;
+        }
+
+        NamedNodeMap attribs = node.getAttributes();
+        if (attribs != null && attribs.getNamedItem(attributeName) != null) { // NOI18N
+            return attribs.getNamedItem(attributeName).getNodeValue(); // NOI18N
+        }
+
+        return null;
+    }
+    
+    public static String getPackageName(String binaryClassName) {
+        if(binaryClassName == null)
+            return null;
+        
+        int lastDot = binaryClassName.lastIndexOf(".");
+        return binaryClassName.substring(0, lastDot);
     }
 }

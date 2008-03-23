@@ -41,9 +41,7 @@ package org.netbeans.modules.hibernate.refactoring;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
@@ -54,7 +52,7 @@ import org.openide.filesystems.FileObject;
  */
 public class JavaClassRenameTransaction extends RenameTransaction {
 
-    public JavaClassRenameTransaction(Set<FileObject> files, String oldName, String newName) {
+    public JavaClassRenameTransaction(java.util.Set<FileObject> files, String oldName, String newName) {
         super(files, oldName, newName);
     }
 
@@ -63,9 +61,9 @@ public class JavaClassRenameTransaction extends RenameTransaction {
      * 
      */
     public void doChanges() {
-
-        String oldName = getOldName();
-        String newName = getNewName();
+        
+        // This is the thing that will do all the replacements
+        JavaRenameChanger renamer = new JavaRenameChanger(false, origName, newName);
 
         for (FileObject mappingFileObject : getToBeModifiedFiles()) {
 
@@ -73,13 +71,22 @@ public class JavaClassRenameTransaction extends RenameTransaction {
             try {
                 InputStream is = mappingFileObject.getInputStream();
                 HibernateMapping hbMapping = HibernateMapping.createGraph(is);
-                MyClass[] myClazz = hbMapping.getMyClass();
-                for (int ci = 0; ci < myClazz.length; ci++) {
-                    String clsName = myClazz[ci].getAttributeValue("name"); // NOI18N
-                    if (clsName.equals(oldName)) {
-                        myClazz[ci].setAttributeValue("name", newName); // NOI18N
-                    }
-                }
+                
+                // The class attribute of <import>s
+                renamer.refactoringImports(hbMapping);
+                
+                // Change all the occurrences in <class> elements
+                renamer.refactoringMyClasses(hbMapping.getMyClass());
+                
+                // Change all the occurrences in <subclass> elements
+                renamer.refactoringSublasses(hbMapping.getSubclass());
+                
+                // Change all the occurrences in <joined-subclass> elements
+                renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());
+                
+                // Change all the occurrences in <union-subclass> elements
+                renamer.refactoringUnionSubclasses(hbMapping.getUnionSubclass());
+                
                 outs = mappingFileObject.getOutputStream();
                 hbMapping.write(outs);
                 
@@ -89,7 +96,8 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                 ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
                 try {
-                    outs.close();
+                    if( outs != null )
+                        outs.close();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }

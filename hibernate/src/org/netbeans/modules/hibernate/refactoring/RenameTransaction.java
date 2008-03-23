@@ -58,14 +58,14 @@ import org.openide.util.Exceptions;
 public abstract class RenameTransaction implements Transaction {
 
     private final Set<FileObject> files;
-    private final String oldName;
-    private final String newName;
+    protected final String origName;
+    protected final String newName;
     private final List<Handle> handles = new ArrayList<Handle>();
     private boolean committed;
 
     public RenameTransaction(Set<FileObject> fileObjects, String oldName, String newName) {
         this.files = fileObjects;
-        this.oldName = oldName;
+        this.origName = oldName;
         this.newName = newName;
     }
     
@@ -73,8 +73,8 @@ public abstract class RenameTransaction implements Transaction {
         return files;
     }
     
-    public String getOldName() {
-        return this.oldName;
+    public String getOriginalName() {
+        return this.origName;
     }
     
     public String getNewName() {

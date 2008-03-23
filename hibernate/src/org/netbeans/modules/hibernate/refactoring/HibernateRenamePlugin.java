@@ -165,17 +165,19 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
             String newBinaryName = clazz.getNewBinaryName();
             if (oldBinaryName != null && newBinaryName != null) {
 
-                Map<FileObject, OccurrenceItem> occurrences =
+                Map<FileObject, List<OccurrenceItem>> occurrences =
                         HibernateRefactoringUtil.getJavaClassOccurrences(mFileObjs, oldBinaryName);
 
                 for (FileObject mFileObj : occurrences.keySet()) {
-                    OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                    HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
-                            oldBinaryName,
-                            newBinaryName,
-                            foundPlace.getLocation(),
-                            foundPlace.getText());
-                    refactoringElements.add(refactoring, elem);
+                    List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+                    for( OccurrenceItem foundPlace : foundPlaces) {
+                        HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                                oldBinaryName,
+                                newBinaryName,
+                                foundPlace.getLocation(),
+                                foundPlace.getText());
+                        refactoringElements.add(refactoring, elem);
+                    }
                 }
 
                 refactoringElements.registerTransaction(new JavaClassRenameTransaction(occurrences.keySet(), oldBinaryName, newBinaryName));
@@ -210,17 +212,19 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         String newVariableName = refactoring.getNewName();
         if(oldVariableName != null && newVariableName != null) {
         
-            Map<FileObject, OccurrenceItem> occurrences =
+            Map<FileObject, List<OccurrenceItem>> occurrences =
                         HibernateRefactoringUtil.getJavaFieldOccurrences(mFileObjs, className, oldVariableName);
 
                 for (FileObject mFileObj : occurrences.keySet()) {
-                    OccurrenceItem foundPlace = occurrences.get(mFileObj);
-                    HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
-                            oldVariableName,
-                            newVariableName,
-                            foundPlace.getLocation(),
-                            foundPlace.getText());
-                    refactoringElements.add(refactoring, elem);
+                    List<OccurrenceItem> foundPlaces = occurrences.get(mFileObj);
+                    for (OccurrenceItem foundPlace : foundPlaces) {
+                        HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
+                                oldVariableName,
+                                newVariableName,
+                                foundPlace.getLocation(),
+                                foundPlace.getText());
+                        refactoringElements.add(refactoring, elem);
+                    }
                 }
 
                 refactoringElements.registerTransaction(new JavaFieldRenameTransaction(occurrences.keySet(), className, oldVariableName, newVariableName));

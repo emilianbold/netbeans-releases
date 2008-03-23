@@ -57,6 +57,7 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardPanel;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -76,7 +77,7 @@ import org.openide.util.HelpCtx;
  */
 public class HibernateWebModuleExtender extends WebModuleExtender {
 
-    private HibernateConfigurationPanel configPanel = null;
+    private HibernateConfigurationWizardPanel configPanel = null;
     private final static String DEFAULT_CONFIG_FILENAME = "hibernate.cfg";
     private final String sessionName = "name";
     private final String dialect = "hibernate.dialect";
@@ -87,7 +88,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     
     public HibernateWebModuleExtender(boolean forNewProjectWizard, 
             WebModule webModule, ExtenderController controller) {
-        configPanel = new HibernateConfigurationPanel(this, controller, forNewProjectWizard);
+        configPanel = new HibernateConfigurationWizardPanel(this, controller, forNewProjectWizard);
         if(!forNewProjectWizard) {
             // Show the config panel for Proj. Customizer
             // Fill the panel with existing data.
@@ -107,7 +108,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             listeners.remove(l);
         }
     }
-    protected final void fireChangeEvent() {
+    public final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();
@@ -174,20 +175,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                         String propName = sessionFactory.getAttributeValue(SessionFactory.PROPERTY2, index++, "name");  //NOI18N
                         if(dialect.contains(propName)) {
                             configPanel.setDialect(propValue);
-                        }
-                        if(driver.contains(propName)) {
-                            configPanel.setDriver(propValue);
-                        }
-                        if(url.contains(propName)) {
-                            configPanel.setConnectionURL(propValue);
-                        }
-                        if(userName.contains(propName)) {
-                            configPanel.setUserName(propValue);
-                        }
-                        if(password.contains(propName)) {
-                            configPanel.setPassword(propValue);
-                        }
-                        
+                        }                 
                     }
                     
                 } catch (DataObjectNotFoundException ex) {
@@ -198,11 +186,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                 // There's no default hibernate configuration file.
                 // Clear the fields and disable the panel.
                 configPanel.setSessionName("");
-                configPanel.setDialect("");
-                configPanel.setDriver("");
-                configPanel.setConnectionURL("");
-                configPanel.setUserName("");
-                configPanel.setPassword("");
+                configPanel.setDialect("");                
             }
             configPanel.disable();
         }

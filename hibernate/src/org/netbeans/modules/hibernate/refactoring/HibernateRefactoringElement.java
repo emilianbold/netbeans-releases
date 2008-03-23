@@ -89,6 +89,8 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
     private String fixDisplayText(String displayText) {
         String finalText = displayText.replaceAll("<", "&lt;");
         finalText.replaceAll(">", "&gt;");
+        // TODO: will not split properly for cases, such as,
+        // <property column="name" name="name"/>. Will fix it later
         String[] subStrings = finalText.split(origName);
         return subStrings[0] + "<b>" + origName + "</b>" + subStrings[1];
     }

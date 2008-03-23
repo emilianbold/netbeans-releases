@@ -35,4 +35,4 @@
 # 
 # Portions Copyrighted 2008 Sun Microsystems, Inc.
 
-#org.netbeans.modules.hibernate.refactoring.HibernateRefactoringPluginFactory
+org.netbeans.modules.hibernate.refactoring.HibernateRefactoringPluginFactory
