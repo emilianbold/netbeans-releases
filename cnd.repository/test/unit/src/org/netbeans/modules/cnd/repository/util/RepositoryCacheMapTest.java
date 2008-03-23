@@ -58,16 +58,21 @@ public class RepositoryCacheMapTest extends BaseTestCase {
 	
 	tryEqualKeys(map);
 	tryEqualValues(map);
-	map.adjustCapacity(0);
-	map.adjustCapacity(capacity);
+        
+        RepositoryCacheMap.Filter<String> filter = new RepositoryCacheMap.Filter<String>() {
+            public boolean accept(String value) {
+                return true;
+            }
+        };
+        
+	map.remove(filter);
 
 	tryEqualKeys(map);
 	tryEqualValues(map);
-	map.adjustCapacity(0);
-	map.adjustCapacity(capacity);
-	
+        
+	map.remove(filter);
     }
-    
+
     private void tryEqualKeys(RepositoryCacheMap map) {
 	String key = "key1";
 	String value1 = "value1";

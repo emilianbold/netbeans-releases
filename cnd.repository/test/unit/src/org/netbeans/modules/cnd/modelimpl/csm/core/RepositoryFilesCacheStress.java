@@ -10,9 +10,6 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
@@ -63,7 +60,9 @@ import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
 public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
 
     static {
-	//System.setProperty("cnd.repository.listener.trace", "true");
+	//System.setProperty("cnd.repository.file.stat", "1");
+	//System.setProperty("cnd.repository.mf.stat", "true");
+        //System.setProperty("caches.stress.laps", "5");
     }
     
     public RepositoryFilesCacheStress(String testName) {
