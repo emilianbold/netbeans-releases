@@ -80,7 +80,11 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
             if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
                 SpringScope scope = SpringScope.getSpringScope(treePathHandle.getFileObject());
                 if (scope != null) {
-                    fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);
+                    try {
+                        fillElementsBag(springBeansWhereUsed, treePathHandle.getFileObject(), scope, refactoringElementsBag);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
             }
         }
@@ -103,23 +107,22 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
         return null;
     }
     
-    private void fillElementsBag(final AbstractRefactoring refactoring, final FileObject fileObject, final SpringScope scope, final RefactoringElementsBag refactoringElementsBag) {
+    private void fillElementsBag(final AbstractRefactoring refactoring, final FileObject fileObject, final SpringScope scope, final RefactoringElementsBag refactoringElementsBag) throws IOException {
         JavaSource source = JavaSource.forFileObject(fileObject);
-        try {
-            source.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController compilationController) throws Exception {
-                    compilationController.toPhase(JavaSource.Phase.RESOLVED);
-                    TypeElement type = (TypeElement) treePathHandle.resolveElement(compilationController);
-                    if (type != null) {
-                        String className = ElementUtilities.getBinaryName(type);
-                        for (Occurrences.Occurrence item : Occurrences.getJavaClassOccurrences(className, scope)) {
-                            refactoringElementsBag.add(refactoring, SpringRefactoringElement.create(item));
-                        }
-                    }                  
-                }
-            }, false);
-        } catch (IOException exception) {
-            Exceptions.printStackTrace(exception);
+        final String[] className = new String[] { null };
+        source.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController compilationController) throws Exception {
+                compilationController.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement type = (TypeElement) treePathHandle.resolveElement(compilationController);
+                if (type != null) {
+                    className[0] = ElementUtilities.getBinaryName(type);
+                }                  
+            }
+        }, false);
+        if (className[0] != null) {
+            for (Occurrences.Occurrence item : Occurrences.getJavaClassOccurrences(className[0], scope)) {
+                refactoringElementsBag.add(refactoring, SpringRefactoringElement.create(item));
+            }
         }
     }
     
