@@ -29,7 +29,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xslt.tmap.TMapDataEditorSupport;
 import org.netbeans.modules.xslt.tmap.TMapDataObject;
-import org.netbeans.modules.xslt.tmap.multiview.designer.DesignerMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.multiview.source.TMapSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.tmap.multiview.tree.TreeMultiViewElementDesc;
 import org.openide.loaders.DataObject;
