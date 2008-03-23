@@ -2,7 +2,7 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ *			
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ *			"Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -66,6 +66,8 @@ interface Ops {
     public void op_soft_reset();
     public void op_full_reset();
 
+    public void op_as();            // map G1 into GL (~ switch to graphic font)
+    public void op_ae();            // map G0 into GL (~ switch to normal font)
     public void op_al(int count); // add new blank line
     public void op_bc(int count); // back cursor/column
     public void op_cm(int row, int col); // cursor motion
@@ -96,8 +98,13 @@ interface Ops {
 							// to current row
     public void op_reverse(boolean reverse);
     public void op_cursor_visible(boolean cursor);
+    
+    public void op_icon_name(String iconName);
+    public void op_win_title(String winTitle);
+    public void op_cwd(String currentWorkingDirectory);
 
 
+    
     // querying operations
     public int op_get_width();
     public int op_get_column();	// ... cursor is currently located on (0-origin)

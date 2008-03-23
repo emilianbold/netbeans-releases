@@ -44,45 +44,145 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentBufferedRWAccess;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
+import java.util.Collection;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
+import org.netbeans.modules.cnd.repository.sfs.statistics.BaseStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
- *
+ * Implements FilesAccessStrategy
  * @author Nickolay Dalmatov
+ * @author Vladimir Kvashin
  */
 public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
-    private RepositoryHelperCache theCache;
-    private Object cacheLock = new String("Repository file cache lock"); //NOI18N
-    
-    /** Creates a new instance of SimpleRepositoryFilesHelper */
-    public FilesAccessStrategyImpl(int openFilesLimit) {
-        theCache = RepositoryHelperCache.getInstance(openFilesLimit);
+    private static class ConcurrentFileRWAccess extends BufferedRWAccess {
+       
+        public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+        public final String unit;
+
+        public ConcurrentFileRWAccess(File file, String unit) throws IOException {
+            super(file);
+            this.unit = unit;
+        }
     }
     
-    public ConcurrentFileRWAccess getFile(Key id, final boolean read) throws IOException {
+    private Object cacheLock = new String("Repository file cache lock"); //NOI18N
+    private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    private static final int OPEN_FILES_LIMIT = 20; 
+    private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
+    
+    // Statistics
+    private int readCnt = 0;
+    private int readHitCnt = 0;
+    private int writeCnt = 0;
+    private int writeHitCnt = 0;
+    BaseStatistics<String> writeStatistics;
+    BaseStatistics<String> readStatistics;
+    
+    private FilesAccessStrategyImpl() {
+        nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
+        if( Stats.multyFileStatistics ) {
+            resetStatistics();
+        }
+    }
+    
+    public static final FilesAccessStrategy getInstance() {
+        return instance;
+    }
+
+    public Persistent read(Key key, PersistentFactory factory) throws IOException {
+        if( Stats.multyFileStatistics ) {
+            readCnt++;
+            readStatistics.consume(getBriefClassName(key), 1);
+        }
+        ConcurrentFileRWAccess fis = null;
+        try {
+            fis = getFile(key, true);
+            if( fis != null ) {
+                long size = fis.size();
+                return fis.read(factory, 0, (int)size);
+            }
+        } finally {
+            if (fis != null) {
+                fis.lock.readLock().unlock();
+            }
+        }
+        return null;
+    }
+
+    public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
+        if( Stats.multyFileStatistics ) {
+            writeCnt++;
+            writeStatistics.consume(getBriefClassName(key), 1);
+        }
+        ConcurrentFileRWAccess fos = null;
+        try {
+            fos = getFile(key, false);
+            if (fos != null) {
+                int size = fos.write(factory, object, 0);
+                fos.truncate(size);
+            } 
+        } finally {
+            if (fos != null) {
+                fos.lock.writeLock().unlock();
+            }
+        }
+        
+    }
+    
+    private ConcurrentFileRWAccess getFile(Key id, final boolean readOnly) throws IOException {
+        
         assert id != null;
         
         String fileName = resolveFileName(id);
         assert fileName != null;
-        ConcurrentFileRWAccess   aFile;
+        
+        ConcurrentFileRWAccess   aFile = null;
         boolean keepLocked = false;
         
         do {
-            aFile = getFileByName(fileName, ! read);
+            boolean create = ! readOnly;
+
+            synchronized (cacheLock) {
+                aFile = nameToFileCache.get(fileName);
+                if (aFile == null) {
+                    File fileToCreate = new File(fileName);
+                    String unit = id.getUnit().toString();
+                    if (fileToCreate.exists()) {
+                        aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
+                        putFile(fileName, aFile);
+                    } else if (create) {
+                        String aDirName = fileToCreate.getParent();
+                        File aDir = new File(aDirName);
+
+                        if (aDir.exists() || aDir.mkdirs()) {
+                            aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
+                            putFile(fileName, aFile);
+                        }
+                    }
+                } else {
+                    if( readOnly ) {
+                        readHitCnt++;
+                    } else {
+                        writeHitCnt++;
+                    }
+                }
+            }
             
             if (aFile == null) {
                 break;
             }
             
             try {
-                if (read) {
-                    aFile.getLock().readLock().lock();
+                if (readOnly) {
+                    aFile.lock.readLock().lock();
                 } else {
-                    aFile.getLock().writeLock().lock();
+                    aFile.lock.writeLock().lock();
                 }
                 if (aFile.getFD().valid()) {
                     keepLocked = true;
@@ -90,10 +190,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 }
             }  finally {
                 if (!keepLocked) {
-                    if (read) {
-                        aFile.getLock().readLock().unlock();
+                    if (readOnly) {
+                        aFile.lock.readLock().unlock();
                     } else {
-                        aFile.getLock().writeLock().unlock();
+                        aFile.lock.writeLock().unlock();
                     }
                 }
             }
@@ -103,21 +203,92 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return aFile;
     }
     
-    public void removeFile(Key id) throws IOException{
+    private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
+        ConcurrentFileRWAccess removedFile = null;
+        synchronized (cacheLock) {
+            removedFile = nameToFileCache.put(fileName, aFile);
+        }
+        if (removedFile != null) {
+            try {
+                removedFile.lock.writeLock().lock();
+                if (removedFile.getFD().valid()) {
+                    removedFile.close();
+                }
+                
+            } finally {
+                removedFile.lock.writeLock().unlock();
+            }
+        }
+    }    
+    
+    public void remove(Key id) throws IOException{
         
-        String fileName = resolveFileName( id);
+        String fileName = resolveFileName(id);
         assert fileName != null;
         
-        theCache.removeFile(fileName);
+        ConcurrentFileRWAccess removedFile = null;
+        synchronized (cacheLock) {
+            removedFile = nameToFileCache.remove(fileName);
+        }
+        if (removedFile != null) {
+            try {
+                removedFile.lock.writeLock().lock();
+                
+                if (removedFile.getFD().valid() )
+                    removedFile.close();
+                
+            }  finally {
+                removedFile.lock.writeLock().unlock();
+            }
+        }
         
         File toDelete = new File(fileName);
         toDelete.delete();
         
     }
     
-    //
+    public void closeUnit(final String unitName) throws IOException {
+        RepositoryCacheMap.Filter<ConcurrentFileRWAccess> filter = new RepositoryCacheMap.Filter<ConcurrentFileRWAccess>() {
+            public boolean accept(ConcurrentFileRWAccess value) {
+                return value.unit.equals(unitName);
+            }
+        };
+        Collection<ConcurrentFileRWAccess> removedFiles;
+        synchronized (cacheLock) {
+            removedFiles = nameToFileCache.remove(filter);
+        }
+        if (removedFiles != null) {
+            for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
+                try {
+                    fileToRemove.lock.writeLock().lock();
+                    if (fileToRemove.getFD().valid()) {
+                        fileToRemove.close();
+                    }
+
+                } finally {
+                    fileToRemove.lock.writeLock().unlock();
+                }
+            }
+        }
+        if( Stats.multyFileStatistics ) {
+            System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
+                    readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
+            readStatistics.print(System.out);
+            writeStatistics.print(System.out);
+            resetStatistics();
+        }
+    }
     
-    private final static char START_CHAR = 'z';
+    private static int percentage(int numerator, int denominator) {
+        return (denominator == 0) ? 0 : numerator*100/denominator;
+    }
+            
+    private void resetStatistics() {
+        writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM);
+        readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM);
+        readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
+    }
+    
     private final static char SEPARATOR_CHAR = '-';
     
     private static String resolveFileName(Key id) throws IOException {
@@ -151,40 +322,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return fileName;
     }
     
-    private ConcurrentFileRWAccess getFileByName(String fileName, boolean create) throws IOException {
-        assert fileName != null;
-        
-        ConcurrentFileRWAccess aFile = theCache.getFile(fileName);
-        
-        if (aFile == null) {
-	    synchronized( cacheLock ) {
-		aFile = theCache.getFile(fileName);
-		if (aFile == null) {
-		    File fileToCreate = new File(fileName);
-		    if (fileToCreate.exists()) {
-			aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			theCache.putFile(fileName, aFile);
-		    } else if (create) {
-			String aDirName = fileToCreate.getParent();
-			File  aDir = new File(aDirName);
-
-			if (aDir.exists() || aDir.mkdirs()) {
-			    aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-			    theCache.putFile(fileName, aFile);
-			}
-		    }
-		}
-	    }
+    private static String getBriefClassName(Object o) {
+        if( o == null ) {
+            return "null";
+        } else {
+            String name = o.getClass().getName();
+            int pos = name.lastIndexOf('.');
+            return (pos < 0) ? name : name.substring(pos + 1);
         }
-        
-        return aFile;
     }
     
-    
-    public void setOpenFilesLimit(int limit) throws IOException {
-        theCache.adjustCapacity(limit);
-    }
-    
-    public void closeUnit(String unitName) {
-    }
 }
