@@ -45,9 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
+import org.netbeans.modules.cnd.repository.sfs.statistics.BaseStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -81,9 +81,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private int readHitCnt = 0;
     private int writeCnt = 0;
     private int writeHitCnt = 0;
+    BaseStatistics<String> writeStatistics;
+    BaseStatistics<String> readStatistics;
     
     private FilesAccessStrategyImpl() {
         nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
+        if( Stats.multyFileStatistics ) {
+            resetStatistics();
+        }
     }
     
     public static final FilesAccessStrategy getInstance() {
@@ -91,7 +96,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public Persistent read(Key key, PersistentFactory factory) throws IOException {
-        readCnt++;
+        if( Stats.multyFileStatistics ) {
+            readCnt++;
+            readStatistics.consume(getBriefClassName(key), 1);
+        }
         ConcurrentFileRWAccess fis = null;
         try {
             fis = getFile(key, true);
@@ -108,7 +116,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
-        writeCnt++;
+        if( Stats.multyFileStatistics ) {
+            writeCnt++;
+            writeStatistics.consume(getBriefClassName(key), 1);
+        }
         ConcurrentFileRWAccess fos = null;
         try {
             fos = getFile(key, false);
@@ -260,10 +271,22 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             }
         }
         if( Stats.multyFileStatistics ) {
-            System.err.printf("FileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
-                    readCnt, readHitCnt, (readHitCnt*100/readCnt), writeCnt, writeHitCnt, (writeHitCnt*100/writeCnt));
-            readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
+            System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
+                    readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
+            readStatistics.print(System.out);
+            writeStatistics.print(System.out);
+            resetStatistics();
         }
+    }
+    
+    private static int percentage(int numerator, int denominator) {
+        return (denominator == 0) ? 0 : numerator*100/denominator;
+    }
+            
+    private void resetStatistics() {
+        writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM);
+        readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM);
+        readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
     }
     
     private final static char SEPARATOR_CHAR = '-';
@@ -299,5 +322,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return fileName;
     }
     
+    private static String getBriefClassName(Object o) {
+        if( o == null ) {
+            return "null";
+        } else {
+            String name = o.getClass().getName();
+            int pos = name.lastIndexOf('.');
+            return (pos < 0) ? name : name.substring(pos + 1);
+        }
+    }
     
 }
