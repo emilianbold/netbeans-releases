@@ -306,7 +306,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.POST, mime), Constants.HTTP_RESPONSE,
+                getMethodName(HttpMethodType.POST, mime), Constants.VOID,
                 parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);
     }
