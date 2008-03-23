@@ -262,6 +262,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         if( Stats.multyFileStatistics ) {
             System.err.printf("FileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
                     readCnt, readHitCnt, (readHitCnt*100/readCnt), writeCnt, writeHitCnt, (writeHitCnt*100/writeCnt));
+            readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
         }
     }
     
