@@ -73,8 +73,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     private Object cacheLock = new String("Repository file cache lock"); //NOI18N
     private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
+    
     private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); 
+    
     private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
+    
+    private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");
     
     // Statistics
     private int readCnt = 0;
@@ -189,6 +193,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 if (aFile.getFD().valid()) {
                     keepLocked = true;
                     break;
+                } else if( TRACE_CONFLICTS ) {
+                    System.out.printf("invalid file descriptir when %s %s\n", readOnly ? "reading" : "writing", fileName);
                 }
             }  finally {
                 if (!keepLocked) {
