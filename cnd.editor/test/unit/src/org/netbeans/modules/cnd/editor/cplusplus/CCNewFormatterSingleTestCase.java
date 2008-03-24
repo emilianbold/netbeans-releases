@@ -163,25 +163,21 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130898:'Spaces around ternary operators' is not working
-    public void testNewLineFunctionDefinitionName() {
+    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
+    public void testMultilineArrayAlignment() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
         setLoadDocumentText(
-            "static char *concat (char *s1, char *s2)\n" +
-            "{\n" +
-            "  int i=0;\n" +
-            "  i=(i==1)?1:2;\n" +
-            "  return (0);\n" +
-            "}\n"
+            "        int array[10] ={1, 2, 3, 4,\n" +
+            "    5, 6, 7, 8, 9\n" +
+            "};\n"
             );
         reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "static char *concat(char *s1, char *s2)\n" +
-            "{\n" +
-            "    int i = 0;\n" +
-            "    i = (i == 1) ? 1 : 2;\n" +
-            "    return (0);\n" +
-            "}\n"
+        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
+            "int array[10] = {1, 2, 3, 4,\n" +
+            "                 5, 6, 7, 8, 9\n" +
+            "};\n"
             );
     }
 }
