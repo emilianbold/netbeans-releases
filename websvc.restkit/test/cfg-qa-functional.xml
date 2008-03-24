@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/InstallPluginsTest.class/testInstallJMaki" expectedFail="jMaki plugin is installed"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CRUDTest.class"/>
-                <include name="org/netbeans/modules/ws/qaf/rest/PatternsTSest.class"/>
+                <include name="org/netbeans/modules/ws/qaf/rest/PatternsTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/RestSamplesTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/CStubsTest.class"/>
                 <include name="org/netbeans/modules/ws/qaf/rest/RestNodeTest.class"/>
