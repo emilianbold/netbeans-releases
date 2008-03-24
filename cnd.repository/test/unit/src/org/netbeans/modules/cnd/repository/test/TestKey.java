@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.sfs;
+package org.netbeans.modules.cnd.repository.test;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -54,20 +54,26 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * for tests
  * @author Vladimir Kvashin
  */
-class TestKey implements Key, SelfPersistent {
+public class TestKey implements Key, SelfPersistent {
     
     private String key;
+    private String unit;
+    private Behavior behavior;
     
     public Behavior getBehavior() {
 	return Behavior.Default;
     }
     
-    public TestKey(String key) {
+    public TestKey(String key, String unit, Behavior behavior) {
 	this.key = key;
+        this.unit = unit;
+        this.behavior = behavior;
     }
+    
 
-    public TestKey(DataInput aStream) throws IOException {
-        this(aStream.readUTF());
+    public TestKey(DataInput stream) throws IOException {
+        this(stream.readUTF(), stream.readUTF(), 
+                stream.readBoolean() ? Behavior.LargeAndMutable : Behavior.Default);
     }
     
     
@@ -90,28 +96,50 @@ class TestKey implements Key, SelfPersistent {
     public int getSecondaryDepth() {
 	return 0;
     }
-    
-    public int hashCode() {
-	return key.hashCode();
-    }
-    
-    public boolean equals(Object obj) {
-	if (obj != null && TestKey.class == obj.getClass()) {
-	    return this.key.equals(((TestKey) obj).key);
-	}
-	return false;
-    }    
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TestKey other = (TestKey) obj;
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+            return false;
+        }
+        if (this.unit != other.unit && (this.unit == null || !this.unit.equals(other.unit))) {
+            return false;
+        }
+        if (this.behavior != other.behavior) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.key != null ? this.key.hashCode() : 0);
+        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
+        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
+        return hash;
+    }
+
+    
+    @Override
     public String toString() {
-	return key;
+	return unit + ':' + key + ' ' + behavior;
     }
 
     public String getUnit() {
-	return "Test"; // NOI18N
+	return unit;
     }
 
     public void write(DataOutput output) throws IOException {
         output.writeUTF(key);
+        output.writeUTF(unit);
+        output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }
-   
 }
