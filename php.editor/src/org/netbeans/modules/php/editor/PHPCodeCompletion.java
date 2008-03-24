@@ -70,6 +70,10 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.util.Exceptions;
 
 /**
@@ -121,9 +125,29 @@ public class PHPCodeCompletion implements Completable {
         // CONSTANTS
         
         for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
-            proposals.add(new ConstantItem(constant.getName(), request));
+            proposals.add(new ConstantItem(constant, request));
         }
+        
+        // LOCAL VARIABLES
+        
+        proposals.addAll(getLocalVariableProposals(result, prefix));
 
+        return proposals;
+    }
+    
+    private Collection<CompletionProposal> getLocalVariableProposals(PHPParseResult result, String prefix){
+        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        for (Statement statement : result.getProgram().getStatements()){
+            if (statement instanceof ExpressionStatement){
+                Expression expr = ((ExpressionStatement)statement).getExpression();
+                
+                if (expr instanceof Assignment){
+                    System.err.println("" + ((Assignment)expr).getLeftHandSide().getClass());
+                }
+            }
+        }
+        
         return proposals;
     }
 
@@ -292,30 +316,16 @@ public class PHPCodeCompletion implements Completable {
     
     private class ConstantItem extends PHPCompletionItem {
         private String description = null;
-        private String constName = null;
+        private IndexedConstant constant = null;
 
-        ConstantItem(String constName, CompletionRequest request) {
-            super(null, request);
-            this.constName = constName;
-        }
-
-        @Override
-        public String getName() {
-            return constName;
+        ConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
-        }
-        
-        @Override
-        public String getRhsHtml() {
-            if (description != null) {
-                return description;
-            } else {
-                return null;
-            }
         }
     }
     
@@ -327,11 +337,6 @@ public class PHPCodeCompletion implements Completable {
         
         public IndexedFunction getFunction(){
             return (IndexedFunction)getElement();
-        }
-
-        @Override
-        public String getName() {
-            return getElement().getName();
         }
 
         @Override
@@ -416,7 +421,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getName() {
-            return null;
+            return element.getName();
         }
 
         public String getInsertPrefix() {
