@@ -41,9 +41,6 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
@@ -57,6 +54,7 @@ import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
 public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
 
     static {
+        //System.setProperty("cnd.repository.queue.ticking", "true");
 	//System.setProperty("cnd.repository.file.stat", "1");
 	//System.setProperty("cnd.repository.mf.stat", "true");
         //System.setProperty("caches.stress.laps", "5");

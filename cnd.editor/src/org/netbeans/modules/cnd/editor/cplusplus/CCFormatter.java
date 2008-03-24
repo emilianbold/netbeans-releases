@@ -464,8 +464,9 @@ public class CCFormatter extends ExtFormatter {
                         case CCTokenContext.IF_ID:
                         case CCTokenContext.FOR_ID:
                         case CCTokenContext.WHILE_ID:
-                        case CCTokenContext.SWITCH_ID:
                             return ccfs.getFormatNewlineBeforeBrace();
+                        case CCTokenContext.SWITCH_ID:
+                            return ccfs.getFormatNewlineBeforeBraceSwitch();
                     }
                 }
             }
