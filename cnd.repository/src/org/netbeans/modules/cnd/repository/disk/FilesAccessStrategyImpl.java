@@ -332,4 +332,14 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         }
     }
     
+    /** 
+     * For test purposes ONLY! 
+     * Gets a collection of all cached files names
+     */
+    // package-local
+    Collection<String> testGetCacheFileNames() {
+        synchronized( cacheLock ) {
+            return nameToFileCache.keys();
+        }
+    }
 }
