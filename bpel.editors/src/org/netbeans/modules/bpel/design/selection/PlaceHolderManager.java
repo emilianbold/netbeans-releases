@@ -206,7 +206,7 @@ public class PlaceHolderManager implements DnDTool {
 
 
 
-        clear();
+
     }
 
     public void paint(Graphics2D g2) {
