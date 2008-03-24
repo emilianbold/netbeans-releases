@@ -100,14 +100,20 @@ public class HibernateEditorUtil {
             return null;
         }
 
-        if (tag.getNodeName().equalsIgnoreCase("class")) { // NOI18N
+        if (tag.getNodeName().equalsIgnoreCase("class") || // NOI18N
+                tag.getNodeName().equalsIgnoreCase("subclass") || // NOI18N
+                tag.getNodeName().equalsIgnoreCase("joined-subclass") || // NOI18N
+                tag.getNodeName().equalsIgnoreCase("union-subclass")) { // NOI18N
             return tag;
         }
 
         Node current = tag;
         while (true) {
             Node parent = current.getParentNode();
-            if (parent.getNodeName().equalsIgnoreCase("class")) {
+            if (parent.getNodeName().equalsIgnoreCase("class") || // NOI18N
+                    parent.getNodeName().equalsIgnoreCase("subclass") || // NOI18N
+                    parent.getNodeName().equalsIgnoreCase("joined-subclass") || // NOI18N
+                    parent.getNodeName().equalsIgnoreCase("union-subclass")) {
                 // Found it
                 return parent;
             } else if (parent.getNodeName().equalsIgnoreCase("hibernate-mapping")) {
