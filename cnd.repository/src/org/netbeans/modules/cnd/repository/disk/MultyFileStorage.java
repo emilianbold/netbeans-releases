@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 

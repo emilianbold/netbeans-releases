@@ -96,8 +96,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public Persistent read(Key key) throws IOException {
+        readCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
-            readCnt++;
             readStatistics.consume(getBriefClassName(key), 1);
         }
         ConcurrentFileRWAccess fis = null;
@@ -118,8 +118,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
 
     public void write(Key key, Persistent object) throws IOException {
+        writeCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
-            writeCnt++;
             writeStatistics.consume(getBriefClassName(key), 1);
         }
         ConcurrentFileRWAccess fos = null;
@@ -273,14 +273,23 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             }
         }
         if( Stats.multyFileStatistics ) {
-            System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
-                    readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
-            readStatistics.print(System.out);
-            writeStatistics.print(System.out);
+            printStatistics();
             resetStatistics();
         }
     }
     
+    // package-local - for test purposes
+    void printStatistics() {
+        System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
+                readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
+        if( writeStatistics != null ) {
+            readStatistics.print(System.out);
+        }
+        if( writeStatistics != null ) {
+            writeStatistics.print(System.out);
+        }
+    }
+            
     private static int percentage(int numerator, int denominator) {
         return (denominator == 0) ? 0 : numerator*100/denominator;
     }
@@ -344,4 +353,35 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             return nameToFileCache.keys();
         }
     }
+
+    /** For test purposes ONLY! - gets read hit count */
+    // package-local
+    int getReadHitCnt() {
+        return readHitCnt;
+    }
+
+    /** For test purposes ONLY! - gets read hit percentage */
+    // package-local
+    int getReadHitPercentage() {
+        return percentage(readHitCnt, readCnt);
+    }
+
+    /** For test purposes ONLY! - gets write hit count */
+    // package-local
+    int getWriteHitCnt() {
+        return writeHitCnt;
+    }
+
+    /** For test purposes ONLY! - gets read hit percentage */
+    // package-local
+    int getWriteHitPercentage() {
+        return percentage(writeHitCnt, writeCnt);
+    }
+
+    /** For test purposes ONLY! - gets cache size */
+    // package-local
+    int getCacheSize() {
+        return nameToFileCache.size();
+    }
+    
 }
