@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
@@ -105,12 +106,14 @@ public class CompletionUtilities {
     }
 
     public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(BaseDocument doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
-        CsmContext context = CsmOffsetResolver.findContext(file, offset);
         CsmOffsetableDeclaration out = null;
-        out = CsmContextUtilities.getFunctionDefinition(context);
-        if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
-            out = CsmContextUtilities.getClass(context, false);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        if (file != null) {
+            CsmContext context = CsmOffsetResolver.findContext(file, offset);
+            out = CsmContextUtilities.getFunctionDefinition(context);
+            if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
+                out = CsmContextUtilities.getClass(context, false);
+            }
         }
         return out;
     }

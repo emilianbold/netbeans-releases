@@ -78,9 +78,8 @@ public class GroupDescriptor extends Task {
      * 
      * @throws org.apache.tools.ant.BuildException if a I/O error occurs.
      */
-    public void execute() throws BuildException {
-        final Project project = getProject();
-        Utils.setProject(project);
+    public void execute() throws BuildException {        
+        Utils.setProject(getProject());
         
         final StringBuilder xml = new StringBuilder();
         
@@ -92,10 +91,10 @@ public class GroupDescriptor extends Task {
         xml.append("    <components>\n"); // NOI18N
         
         // core data ////////////////////////////////////////////////////////////////
-        final String uid = project.getProperty("group.uid"); // NOI18N
-        final String offset = project.getProperty("group.offset"); // NOI18N
-        final String expand = project.getProperty("group.expand"); // NOI18N
-        final String visible = project.getProperty("group.visible"); // NOI18N
+        final String uid = get("group.uid"); // NOI18N
+        final String offset = get("group.offset"); // NOI18N
+        final String expand = get("group.expand"); // NOI18N
+        final String visible = get("group.visible"); // NOI18N
         
         xml.append("        <group uid=\"" + uid + "\" " + // NOI18N
                 "offset=\"" + offset + "\" " + // NOI18N
@@ -105,11 +104,11 @@ public class GroupDescriptor extends Task {
         
         // locales //////////////////////////////////////////////////////////////////
         final String locales = 
-                project.getProperty("group.locales.list").trim(); // NOI18N
+                get("group.locales.list").trim(); // NOI18N
         
         // display name /////////////////////////////////////////////////////////////
         String displayName = 
-                project.getProperty("group.display.name.default"); // NOI18N
+                get("group.display.name.default"); // NOI18N
         
         xml.append("            <display-name>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + displayName + // NOI18N
@@ -117,7 +116,7 @@ public class GroupDescriptor extends Task {
         
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
-                displayName = project.getProperty(
+                displayName = get(
                         "group.display.name." + locale); // NOI18N
                 xml.append("                <localized locale=\"" + // NOI18N
                         locale + "\"><![CDATA[" + // NOI18N
@@ -128,7 +127,7 @@ public class GroupDescriptor extends Task {
         
         // description //////////////////////////////////////////////////////////////
         String description = 
-                project.getProperty("group.description.default"); // NOI18N
+                get("group.description.default"); // NOI18N
         
         xml.append("            <description>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + description + // NOI18N
@@ -136,7 +135,7 @@ public class GroupDescriptor extends Task {
         
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
-                description = project.getProperty(
+                description = get(
                         "group.description." + locale); // NOI18N
                 xml.append("                <localized locale=\"" + // NOI18N
                         locale + "\"><![CDATA[" + // NOI18N
@@ -146,9 +145,9 @@ public class GroupDescriptor extends Task {
         xml.append("            </description>\n"); // NOI18N
         
         // icon /////////////////////////////////////////////////////////////////////
-        final String size = project.getProperty("group.icon.size"); // NOI18N
-        final String md5 = project.getProperty("group.icon.md5"); // NOI18N
-        final String uri = project.getProperty("group.icon.correct.uri"); // NOI18N
+        final String size = get("group.icon.size"); // NOI18N
+        final String md5 = get("group.icon.md5"); // NOI18N
+        final String uri = get("group.icon.correct.uri"); // NOI18N
         
         xml.append("            <icon " + // NOI18N
                 "size=\"" + size + "\" " + // NOI18N
@@ -159,14 +158,14 @@ public class GroupDescriptor extends Task {
         
         // properties ///////////////////////////////////////////////////////////////
         final int length = Integer.parseInt(
-                project.getProperty("group.properties.length")); // NOI18N
+                get("group.properties.length")); // NOI18N
         
         if (length > 0) {
             xml.append("            <properties>\n"); // NOI18N
             for (int i = 1; i <= length; i++) {
-                final String name = project.getProperty(
+                final String name = get(
                         "group.properties." + i + ".name"); // NOI18N
-                final String value = project.getProperty(
+                final String value = get(
                         "group.properties." + i + ".value"); // NOI18N
                 xml.append("                <property name=\"" + // NOI18N
                         name + "\">" + value + "</property>\n"); // NOI18N
@@ -184,5 +183,15 @@ public class GroupDescriptor extends Task {
         } catch (IOException e) {
             throw new BuildException(e);
         }
+    }
+    // private //////////////////////////////////////////////////////////////////////
+    /**
+     * Gets a group's property's string value.
+     *
+     * @param name Name of the property whose value is required.
+     * @return The value of the property as a string.
+     */
+    private String get(String name) {
+        return Utils.resolveProperty(getProject().getProperty(name));
     }
 }

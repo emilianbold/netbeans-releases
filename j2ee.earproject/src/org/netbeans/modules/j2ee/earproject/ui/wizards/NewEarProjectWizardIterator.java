@@ -102,7 +102,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             new ProjectServerWizardPanel(J2eeModule.EAR, 
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "NewEarProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewEarProjectWizardIterator.class, "TXT_NewProject"),
-                    false, false, false, true, true),
+                    false, false, false, true, false, true),
         };
     }
     
