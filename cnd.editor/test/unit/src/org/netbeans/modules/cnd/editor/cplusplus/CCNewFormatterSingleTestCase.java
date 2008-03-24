@@ -163,23 +163,27 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130898:'Spaces around ternary operators' is not working
-    public void testNewLineFunctionDefinitionName() {
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
         setLoadDocumentText(
-            "static char *concat (char *s1, char *s2)\n" +
+            "int main(int argc, char** argv)\n" +
             "{\n" +
-            "  int i=0;\n" +
-            "  i=(i==1)?1:2;\n" +
-            "  return (0);\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
             "}\n"
             );
         reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "static char *concat(char *s1, char *s2)\n" +
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
             "{\n" +
             "    int i = 0;\n" +
-            "    i = (i == 1) ? 1 : 2;\n" +
+            "    i = - i;\n" +
+            "    i = ( - i);\n" +
             "    return (0);\n" +
             "}\n"
             );

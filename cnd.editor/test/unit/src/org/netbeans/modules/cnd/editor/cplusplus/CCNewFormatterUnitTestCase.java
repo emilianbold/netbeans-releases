@@ -3740,4 +3740,30 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
             );
     }
+
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
+        setLoadDocumentText(
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = - i;\n" +
+            "    i = ( - i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
 }
