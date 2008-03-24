@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Iterator;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
@@ -69,6 +70,8 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
@@ -100,25 +103,19 @@ import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
  */
 public class XPathModelImpl implements XPathModel {
     
-    /** The factory class for model elements */
     private XPathModelFactory mFactory;
-    
     private XPathExpression mRootXPathExpression;
     
     private boolean isInExprResolveMode = false;
     private boolean isInResolveMode = false;
     private boolean isResolved = false;
     
+    private XPathCastResolver myXPathCastResolver;
     private VariableResolver mVarResilver;
-    
     private ExternalModelResolver mExternalModelResolver;
-    
     private NamespaceContext mNamespaceContext;
-    
     private XPathSchemaContext mRootSchemaContext;
-    
     private XPathValidationContext mValidationContext;
-    
     private ExtensionFunctionResolver mExtFuncResolver;
 
     // The static instance is used because it is stateless
@@ -140,10 +137,19 @@ public class XPathModelImpl implements XPathModel {
      * @throws XPathException for any parsing errors
      */
     public XPathExpression parseExpression(String expression) throws XPathException {
-//System.out.println();
-//System.out.println();
-//System.out.println("---------------------------");
-//System.out.println("EXPression: " + expression);
+ENABLE = expression.startsWith("$ItineraryIn.iti");
+out();
+out();
+out();
+out();
+out();
+out();
+out();
+out();
+out();
+out();
+out("---------------------------");
+out("EXPression: " + expression);
         myWasFunctionOrOperation = false; // vlv
 
         try {
@@ -335,7 +341,6 @@ public class XPathModelImpl implements XPathModel {
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
         myLastSchemaComponent = null;
-
 //ENABLE = qName.toString().equals("ReservationItems");
 //out();
 //out();
@@ -357,6 +362,23 @@ public class XPathModelImpl implements XPathModel {
                 SchemaComponent parentComponent = parentCompPair.getComp();
 
                 if (parentComponent != null) {
+/*
+                    // todo vlv
+                    // todo start here
+                    if ( "$ItineraryIn.itinerary/AssociatedContent".equals(parentContext.toString())) {
+                      SchemaComponent found = findType("ItineraryInfo", parentComponent);
+
+                      out();
+                      out("         context: " + parentContext);
+                      out("            pair: " + parentCompPair);
+                      out(" parentComponent: " + parentComponent);
+                      out("       COMPONENT: " + found);
+
+                      if (found != null) {
+                        parentComponent = found;
+                      }
+                    }
+*/
                     //
                     FindChildrenSchemaVisitor visitor = new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
                     visitor.lookForSubcomponent(parentComponent);
@@ -372,25 +394,6 @@ public class XPathModelImpl implements XPathModel {
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
                         addPair(foundCompPairSet, newPair);
                     }
-                    //
-                    //
-                    // TODO: Move this code to post processing
-//                    if (found.size() > 1) {
-//                        if (mValidationContext != null) {
-//                            if (isAttribute) {
-//                                mValidationContext.addResultItem(expr, ResultType.ERROR, 
-//                                        XPathProblem.AMBIGUOUS_ATTRIBUTE, qName, nsUri);
-//                            } else {
-//                                mValidationContext.addResultItem(expr, ResultType.ERROR, 
-//                                        XPathProblem.AMBIGUOUS_ELEMENT, qName, nsUri);
-//                            }
-//                        }
-//                        //
-//                        // If more then 1 component is found, then it is Error in the schema. 
-//                        // Specific parent Schema component can't contain more 
-//                        // then one child with the same name!
-//                        return null;
-//                    }
                 }
                 break;
             default:
@@ -445,11 +448,11 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-        //
         // Perform additional validations if a validation context is specified
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
+                
                 if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
@@ -461,23 +464,63 @@ public class XPathModelImpl implements XPathModel {
                                   XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
                                   name, nsUri);
                     }
-                } else {
+                }
+                else {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
                                 XPathProblem.UNKNOWN_ELEMENT, name);
-                    } else {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
-                                name, nsUri);
+                    } 
+                    else {
+                        mValidationContext.addResultItem(getRootExpression(), ResultType.ERROR, XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, name, nsUri);
                     }
                 }
             }
         }
         return foundCompPairSet;
     }
+/*                   
+    private SchemaComponent findType(String typeName, SchemaComponent component) {
+  //out("= findType: " + typeName);
+      if (typeName == null || typeName.equals("")) {
+        return null;
+      }
+      SchemaModel model = component.getModel();
+      Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
+      SchemaComponent type = null;
 
+      for (Schema schema : schemas) {
+        type = findType(typeName, schema);
+
+        if (type != null) {
+          return type;
+        }
+      }
+      return findType(typeName, model.getSchema());
+    }
+
+    private SchemaComponent findType(final String typeName, Schema schema) {
+  //out();
+  //out("= in schema: " + schema.getTargetNamespace());
+      myGlobalType = null;
+
+      schema.accept(new org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor() {
+
+        @Override
+        protected void visitChildren(SchemaComponent sc) {
+          if (sc instanceof org.netbeans.modules.xml.xam.Nameable && typeName.equals(((org.netbeans.modules.xml.xam.Nameable) sc).getName())) {
+  //out("!!!=== FOUND GLOBAL Simple TYPE ==== : " + type.getName());
+            myGlobalType = sc;
+          }
+          super.visitChildren(sc);
+        }
+      });
+
+      return myGlobalType;
+    }
+      
+    private SchemaComponent myGlobalType;
+*/    
     // vlv
     private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
       set.add(pair);
@@ -1569,6 +1612,10 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
+    }
+
+    public void setXPathCastResolver(XPathCastResolver xpathCastResolver) {
+      myXPathCastResolver = xpathCastResolver;
     }
 
     private boolean ENABLE;

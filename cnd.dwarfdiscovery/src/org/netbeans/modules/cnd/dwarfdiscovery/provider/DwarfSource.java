@@ -717,7 +717,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         res = new ArrayList<String>();
         File file = new File(fileName);
-        if (file.exists() && file.canRead()){
+        if (file.exists() && file.canRead() && !file.isDirectory()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 while(true){

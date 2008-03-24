@@ -80,6 +80,9 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         // Create a new predicate and populate it
         mPred = new SyntheticPredicate(mSContext, null);
         recalculatePredicates();
+        if (mPred.getPredicates().length == 0) {
+            return;
+        }
         //
         // Add the new predicate to the PredicateManager
         BpelMapperModel mapperModel = getMapperModel();

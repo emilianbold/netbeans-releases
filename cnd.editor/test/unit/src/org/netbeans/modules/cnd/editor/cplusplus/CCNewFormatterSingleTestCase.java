@@ -163,23 +163,21 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testSpaceBinaryOperator() {
+    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
+    public void testMultilineArrayAlignment() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
         setLoadDocumentText(
-            "int foo()\n" +
-            "{\n" +
-            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
-            "    return(0);\n" +
-            "}\n"
+            "        int array[10] ={1, 2, 3, 4,\n" +
+            "    5, 6, 7, 8, 9\n" +
+            "};\n"
             );
         reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "int foo()\n" +
-            "{\n" +
-            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
-            "    return (0);\n" +
-            "}\n"
-        );
+        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
+            "int array[10] = {1, 2, 3, 4,\n" +
+            "                 5, 6, 7, 8, 9\n" +
+            "};\n"
+            );
     }
 }

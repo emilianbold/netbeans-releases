@@ -1,19 +1,3 @@
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
-import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -53,6 +37,19 @@ import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.cnd.repository.disk;
+
+import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
+import org.netbeans.modules.cnd.repository.access.RepositoryAccessTestBase;
+
+
 /**
  *
  * @author Vladimir Kvashin
@@ -72,7 +69,7 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
     private boolean runOtherThread;
     private int closeCnt;
     
-    public void testRun() throws Exception {
+    public void testClosures() throws Exception {
 	
 	File projectRoot1 = getDataFile("quote_nosyshdr");
 	File projectRoot2 = getDataFile("../org");
@@ -92,7 +89,7 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
         Runnable r = new Runnable() {
             public void run() {
                 while( runOtherThread ) {
-                    createAndCloseAxtraProject(traceModel, tmpSrcFile);
+                    createAndCloseExtraProject(traceModel, tmpSrcFile);
                     closeCnt++;
                     sleep(100);
                 }
@@ -125,23 +122,10 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
 	}
     }
 
-    private void writeFile(File file, String text) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileOutputStream(file));
-        writer.append(text);
-        writer.close();
-    }
-    
-    private void createAndCloseAxtraProject(TraceModelBase traceModel, File tmpSrcFile) {
-        ProjectBase project = createExtraProject(traceModel, Collections.singletonList(tmpSrcFile), "DummyProject2");
+    private void createAndCloseExtraProject(TraceModelBase traceModel, File tmpSrcFile) {
+        ProjectBase project = createExtraProject(traceModel, tmpSrcFile, "DummyProject2");
         project.waitParse();
-        traceModel.getModel().disposeProject(project);
+        traceModel.getModel().closeProjectBase(project);
     }
             
-    private ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) {
-	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
-		Collections.<String>emptyList(), Collections.<String>emptyList(), 
-                Collections.<String>emptyList(), Collections.<String>emptyList(), true);
-	ProjectBase result = traceModel.getModel().addProject(nativeProject, "DummyProject", true); // NOI18N
-	return result;
-    }   
 }

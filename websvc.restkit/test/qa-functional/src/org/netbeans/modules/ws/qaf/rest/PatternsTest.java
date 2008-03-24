@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
 
@@ -60,7 +60,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author lukas
  */
-public class PatternsTSuite extends RestTestBase {
+public class PatternsTest extends RestTestBase {
 
     private enum Pattern {
 
@@ -84,6 +84,12 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the package combo box in the new RESTful
+         * web service from patterns wizard for given type of the resource
+         *
+         * @return index of the package combo box
+         */
         public int getResourcePackageJComboIndex() {
             switch (this) {
                 case Singleton:
@@ -95,6 +101,12 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the resource name txt field in the new RESTful
+         * web service from patterns wizard for given type of the resource
+         *
+         * @return index of the resource name txt field
+         */
         public int getResourceNameTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -106,6 +118,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the resource class name txt field
+         * in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the resource class name txt field
+         */
         public int getResourceClassNameTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -117,6 +136,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the resource URI template txt field
+         * in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the resource URI template txt field
+         */
         public int getResourceURITemplateTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -128,6 +154,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the container resource class name txt field
+         * in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the container resource class name txt field
+         */
         public int getContainerResourceClassNameTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -139,6 +172,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the container resource URI template txt field
+         * in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the container resource URI template txt field
+         */
         public int getContainerResourceURITemplateTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -150,6 +190,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the Mime-Type combo box
+         * in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the Mime-Type combo box
+         */
         public int getResourceMimeTypeJComboIndex() {
             switch (this) {
                 case Singleton:
@@ -161,6 +208,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the resource representation class
+         * name txt field in the new RESTful web service from patterns wizard
+         * for given type of the resource
+         *
+         * @return index of the resource representation class name txt field
+         */
         public int getRepresentationClassTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -172,6 +226,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the container resource class select
+         * button in the new RESTful web service from patterns wizard for given type
+         * of the resource
+         *
+         * @return index of the container resource class select button
+         */
         public int getRepresentationClassSelectIndex() {
             switch (this) {
                 case Singleton:
@@ -183,6 +244,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the container resource
+         * representation class name txt field in the new RESTful web service
+         * from patterns wizard for given type of the resource
+         *
+         * @return index of the container resource representation class name txt field
+         */
         public int getContainerRepresentationClassTxtIndex() {
             switch (this) {
                 case Singleton:
@@ -194,6 +262,13 @@ public class PatternsTSuite extends RestTestBase {
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
 
+        /**
+         * Method for getting correct index of the container resource representation
+         * class select button in the new RESTful web service from patterns wizard
+         * for given type of the resource
+         *
+         * @return index of the container resource representation class select button
+         */
         public int getContainerRepresentationClassSelectIndex() {
             switch (this) {
                 case Singleton:
@@ -206,10 +281,12 @@ public class PatternsTSuite extends RestTestBase {
         }
     }
 
-    /** Def constructor.
+    /**
+     * Def constructor.
+     *
      * @param testName name of particular test case
      */
-    public PatternsTSuite(String name) {
+    public PatternsTest(String name) {
         super(name);
     }
 
@@ -396,7 +473,7 @@ public class PatternsTSuite extends RestTestBase {
                     //"Find Type"
                     String fTypeLbl = Bundle.getStringTrimmed("org.netbeans.modules.java.source.ui.Bundle", "DLG_FindType");
                     NbDialogOperator nbo = new NbDialogOperator(fTypeLbl);
-                    new JTextFieldOperator(nbo, 0).typeText("Properties"); //NOI18N
+                    new JTextFieldOperator(nbo, 0).typeText("Preferences"); //NOI18N
                     nbo.ok();
                 }
             }
@@ -448,21 +525,21 @@ public class PatternsTSuite extends RestTestBase {
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PatternsTSuite("testSingletonDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testNodes")); //NOI18N
-        suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
-        suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
+        suite.addTest(new PatternsTest("testSingletonDef")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton1")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI1")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton2")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI1")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI2")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton3")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI3")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI2")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI3")); //NOI18N
+        suite.addTest(new PatternsTest("testNodes")); //NOI18N
+        suite.addTest(new PatternsTest("testDeploy")); //NOI18N
+        suite.addTest(new PatternsTest("testUndeploy")); //NOI18N
         return suite;
     }
 
