@@ -293,7 +293,9 @@ public class CRUDTest extends RestTestBase {
         Set<File> files = new HashSet<File>();
         File fo = FileUtil.toFile(getProject().getProjectDirectory());
         File pkgRoot = new File (fo, "src/java/" + pkg.replace('.', '/') + "/"); //NOI18N
-        files.addAll(Arrays.asList(pkgRoot.listFiles()));
+        if (pkgRoot.listFiles() != null) {
+            files.addAll(Arrays.asList(pkgRoot.listFiles()));
+        }
         return files;
     }
     
