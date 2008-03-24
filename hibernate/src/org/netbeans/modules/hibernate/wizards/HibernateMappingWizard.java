@@ -46,6 +46,7 @@ import java.util.Collections;
 
 import javax.swing.JComponent;
 import java.awt.Component;
+import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 
@@ -61,8 +62,10 @@ import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.hibernate.service.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.loaders.TemplateWizard;
 
 /**
  *
@@ -76,6 +79,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     private HibernateMappingWizardDescriptor descriptor;
     private transient WizardDescriptor.Panel[] panels;
     private final String resourceAttr = "resource";
+    private static String DEFAULT_MAPPING_FILENAME = "hibernate.hbm";
 
     public static HibernateMappingWizard create() {
         return new HibernateMappingWizard();
@@ -128,7 +132,35 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
         descriptor = new HibernateMappingWizardDescriptor(project);
         FileObject sourceRoot = Util.getSourceRoot(project);
         Templates.setTargetFolder(wizard, sourceRoot);
+        // Set the targetName here. Default name for the new files should be in the form : 'hibernate<i>.hbm.xml
+        // and not like : hibernate.hbm<i>.xml
+        if (wizard instanceof TemplateWizard) {
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            ArrayList<FileObject> mappingFiles = hibernateEnv.getAllHibernateMappingFileObjects();                        
+            String targetName = DEFAULT_MAPPING_FILENAME;
+            if (!mappingFiles.isEmpty() && foundMappingFileInProject(mappingFiles, DEFAULT_MAPPING_FILENAME)) {
+                int mappingFilesCount = mappingFiles.size();
+                targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
+                while (foundMappingFileInProject(mappingFiles, targetName)) {
+                    targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
+                }
+            }
+            ((TemplateWizard) wizard).setTargetName(targetName);
+            
+        
+            
+        }
     }
+    
+    private boolean foundMappingFileInProject(ArrayList<FileObject> mappingFiles, String mappingFileName) {
+        for(FileObject fo : mappingFiles) {
+            if(fo.getName().equals(mappingFileName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void uninitialize(WizardDescriptor wizard) {
         panels = null;
