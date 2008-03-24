@@ -1786,7 +1786,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public String evaluateToolTip(String expression) {
+    public String evaluate(String expression) {
         CommandBuffer cb = new CommandBuffer();
         
         if (expression.indexOf('(') != -1) {
