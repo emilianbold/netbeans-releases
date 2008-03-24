@@ -9,7 +9,7 @@
 
 package o.n.m.ws.qaf.rest.patterns;
 
-import java.util.Properties;
+import java.util.prefs.Preferences;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
@@ -37,7 +37,7 @@ public class CcCI2CClass {
      */
     @GET
     @ProduceMime("text/plain")
-    public Properties getText() {
+    public Preferences getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }

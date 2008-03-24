@@ -396,7 +396,7 @@ public class PatternsTSuite extends RestTestBase {
                     //"Find Type"
                     String fTypeLbl = Bundle.getStringTrimmed("org.netbeans.modules.java.source.ui.Bundle", "DLG_FindType");
                     NbDialogOperator nbo = new NbDialogOperator(fTypeLbl);
-                    new JTextFieldOperator(nbo, 0).typeText("Properties"); //NOI18N
+                    new JTextFieldOperator(nbo, 0).typeText("Preferences"); //NOI18N
                     nbo.ok();
                 }
             }
