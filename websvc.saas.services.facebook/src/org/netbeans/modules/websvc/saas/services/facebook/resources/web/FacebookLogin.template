@@ -32,11 +32,10 @@ public class __NAME__  extends HttpServlet {
         try {
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet FacebookLogin</title>");  
+            out.println("<title>Facebook Authorization Page</title>");  
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet FacebookLogin at " + request.getContextPath () + "</h1>");
-            
+            out.println("<p>Please click on the following link to log into your Facebook account and authorize this application to access your account:</p>");
             HttpSession session = request.getSession(true);
             
             String sessionKey = (String) session.getAttribute("facebook_session_key");
@@ -49,6 +48,8 @@ public class __NAME__  extends HttpServlet {
             }
             out.println("</body>");
             out.println("</html>");
+        } catch(IOException iox) {
+            out.println("Exception occured: "+iox.getMessage());
         } finally { 
             out.close();
         }

@@ -148,7 +148,9 @@ public class EditorOptions {
     public static final boolean alignMultilineIfConditionDefault = false;
     public static final String alignMultilineWhileCondition = "alignMultilineWhileCondition"; //NOI18N
     public static final boolean alignMultilineWhileConditionDefault = false;
-
+    public static final String alignMultilineParen = "alignMultilineParen"; //NOI18N
+    public static final boolean alignMultilineParenDefault = false;
+    
     //NewLine
     public static final String newLineFunctionDefinitionName = "newLineFunctionDefinitionName"; //NOI18N
     public static final boolean newLineFunctionDefinitionNameDefault = false;
@@ -323,6 +325,7 @@ public class EditorOptions {
         defaults.put(alignMultilineFor,alignMultilineForDefault);
         defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
         defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
+        defaults.put(alignMultilineParen,alignMultilineParenDefault);
         //NewLine
         defaults.put(newLineFunctionDefinitionName,newLineFunctionDefinitionNameDefault);
         defaults.put(newLineCatch,newLineCatchDefault);
@@ -431,6 +434,7 @@ public class EditorOptions {
         gnu.put(alignMultilineMethodParams, true);
         gnu.put(alignMultilineIfCondition, true);
         gnu.put(alignMultilineWhileCondition, true);
+        gnu.put(alignMultilineParen, true);
         gnu.put(spaceBeforeMethodCallParen, true);
         gnu.put(spaceBeforeMethodDeclParen, true);
         gnu.put(newLineFunctionDefinitionName, true);

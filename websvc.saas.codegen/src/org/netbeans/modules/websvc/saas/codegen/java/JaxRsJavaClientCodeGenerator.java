@@ -85,6 +85,9 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         
         //Create Authenticator classes
         createAuthenticatorClass();
+        
+        //Create Authorization classes
+        createAuthorizationClasses();
   
         createSaasServiceClass();
         addSaasServiceMethod();
