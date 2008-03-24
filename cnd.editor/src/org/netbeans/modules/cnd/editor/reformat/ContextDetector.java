@@ -331,6 +331,65 @@ public class ContextDetector extends ExtendedTokenSequence {
                         return OperatorKind.SEPARATOR;
                 }
             }
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                switch(previous.id()){
+                    case EQ: //("=", "operator"),
+                    case PLUSEQ: //("+=", "operator"),
+                    case MINUSEQ: //("-=", "operator"),
+                    case STAREQ: //("*=", "operator"),
+                    case SLASHEQ: //("/=", "operator"),
+                    case AMPEQ: //("&=", "operator"),
+                    case BAREQ: //("|=", "operator"),
+                    case CARETEQ: //("^=", "operator"),
+                    case PERCENTEQ: //("%=", "operator"),
+                    case LTLTEQ: //("<<=", "operator"),
+                    case GTGTEQ: //(">>=", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case LT: //("<", "operator"),
+                    case EQEQ: //("==", "operator"),
+                    case LTEQ: //("<=", "operator"),
+                    case GTEQ: //(">=", "operator"),
+                    case NOTEQ: //("!=","operator"),
+                    case AMPAMP: //("&&", "operator"),
+                    case BARBAR: //("||", "operator"),
+                    case SLASH: //("/", "operator"),
+                    case BAR: //("|", "operator"),
+                    case PERCENT: //("%", "operator"),
+                    case LTLT: //("<<", "operator"),
+                    case GTGT: //(">>", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case GT: //(">", "operator"),
+                        switch(current.id()){
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                                return OperatorKind.SEPARATOR;
+                        }
+                        break;
+                }
+            }
             if (NUMBER_CATEGORY.equals(prevCategory) ||
                 LITERAL_CATEGORY.equals(prevCategory) ||
                 CHAR_CATEGORY.equals(prevCategory) ||
