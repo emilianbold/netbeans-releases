@@ -67,6 +67,12 @@ import org.netbeans.modules.hibernate.mapping.model.UnionSubclass;
  */
 public class JavaRenameChanger {
 
+    // String name used by the schema2bean model to retrive the name attribute vaules
+    private final String nameAttrib = "Name"; // NOI18N
+    
+    // String name used by the schema2bean model to retrive the class attribute vaules
+    private final String classAttrib = "Class"; // NOI18N
+    
     private boolean packageOnly;
     private String origName;
     private String newName;
@@ -79,15 +85,15 @@ public class JavaRenameChanger {
 
     public void refactoringImports(HibernateMapping hbMapping) {
         for (int i = 0; i < hbMapping.sizeImport(); i++) {
-            String clsName = hbMapping.getAttributeValue(HibernateMapping.IMPORT, i, "Class");
+            String clsName = hbMapping.getAttributeValue(HibernateMapping.IMPORT, i, classAttrib);
             if (clsName == null)
                 continue;
             
             if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName) ) {
                 String newClsName = clsName.replaceFirst(origName, newName);
-                hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, "Class", newClsName);
+                hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, classAttrib, newClsName);
             } else if (clsName.equals(origName)) {
-                hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, "Class", newName);
+                hbMapping.setAttributeValue(HibernateMapping.IMPORT, i, classAttrib, newName);
             }
         }
     }
@@ -103,25 +109,25 @@ public class JavaRenameChanger {
             refactoringUnionSubclasses(thisClazz.getUnionSubclass());
 
             // The name attribute of <class> element
-            String clsName = thisClazz.getAttributeValue("Name");
+            String clsName = thisClazz.getAttributeValue(nameAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    myClazz[ci].setAttributeValue("Name", newClsName);
+                    myClazz[ci].setAttributeValue(nameAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    myClazz[ci].setAttributeValue("Name", newName);
+                    myClazz[ci].setAttributeValue(nameAttrib, newName);
                 }
             }
 
             // The class attribute of <composite-id> element
             if (thisClazz.getCompositeId() != null) {
-                String compositeIdClsName = thisClazz.getCompositeId().getAttributeValue("Class");
+                String compositeIdClsName = thisClazz.getCompositeId().getAttributeValue(classAttrib);
                 if (compositeIdClsName != null) {
                     if (packageOnly && HibernateRefactoringUtil.getPackageName(compositeIdClsName).equals(origName)) {
                         String newompositeIdClsName = compositeIdClsName.replaceFirst(origName, newName);
-                        thisClazz.getCompositeId().setAttributeValue("Class", newompositeIdClsName);
+                        thisClazz.getCompositeId().setAttributeValue(classAttrib, newompositeIdClsName);
                     } else if (compositeIdClsName.equals(origName)) {
-                        thisClazz.getCompositeId().setAttributeValue("Class", newName);
+                        thisClazz.getCompositeId().setAttributeValue(classAttrib, newName);
                     }
                 }
             }
@@ -176,13 +182,13 @@ public class JavaRenameChanger {
             refactoringSubclasses(thisClazz.getSubclass());
 
             // The name attribute of <subclass> element
-            String clsName = thisClazz.getAttributeValue("Name");
+            String clsName = thisClazz.getAttributeValue(nameAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    thisClazz.setAttributeValue("Name", newClsName);
+                    thisClazz.setAttributeValue(nameAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                   thisClazz.setAttributeValue("Name", newName);
+                   thisClazz.setAttributeValue(nameAttrib, newName);
                 }
             }
 
@@ -241,13 +247,13 @@ public class JavaRenameChanger {
             refactoringJoinedSubclasses(thisClazz.getJoinedSubclass());
 
             // The name attribute of <joined-subclass> element
-            String clsName = thisClazz.getAttributeValue("Name");
+            String clsName = thisClazz.getAttributeValue(nameAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    joinedSubclazz[ci].setAttributeValue("Name", newClsName);
+                    joinedSubclazz[ci].setAttributeValue(nameAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                   joinedSubclazz[ci].setAttributeValue("Name", newName);
+                   joinedSubclazz[ci].setAttributeValue(nameAttrib, newName);
                 }
             }
 
@@ -318,17 +324,17 @@ public class JavaRenameChanger {
             refactoringUnionSubclasses(thisClazz.getUnionSubclass());
 
             // The name attribute of <sub-class> element
-            String clsName = thisClazz.getAttributeValue("Name");
+            String clsName = thisClazz.getAttributeValue(nameAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    unionSubclazz[ci].setAttributeValue("Name", newClsName);
+                    unionSubclazz[ci].setAttributeValue(nameAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    unionSubclazz[ci].setAttributeValue("Name", newName);
+                    unionSubclazz[ci].setAttributeValue(nameAttrib, newName);
                 }
             }
             if (clsName.equals(origName)) {
-                unionSubclazz[ci].setAttributeValue("Name", newName);
+                unionSubclazz[ci].setAttributeValue(nameAttrib, newName);
             }
 
             // The extends attribute of <union-subclass> element
@@ -390,13 +396,13 @@ public class JavaRenameChanger {
 
     private void refactoringOneToOnes(OneToOne[] hbModelOneToOnes) {
         for (int i = 0; i < hbModelOneToOnes.length; i++) {
-            String clsName = hbModelOneToOnes[i].getAttributeValue("Class");
+            String clsName = hbModelOneToOnes[i].getAttributeValue(classAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    hbModelOneToOnes[i].setAttributeValue("Class", newClsName);
+                    hbModelOneToOnes[i].setAttributeValue(classAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    hbModelOneToOnes[i].setAttributeValue("Class", newName);
+                    hbModelOneToOnes[i].setAttributeValue(classAttrib, newName);
                 }
             }
         }
@@ -443,13 +449,13 @@ public class JavaRenameChanger {
             Component thisComp = hbModelComponents[i];
 
             // The class attribute of itself
-            String clsName = thisComp.getAttributeValue("Class");
+            String clsName = thisComp.getAttributeValue(classAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    thisComp.setAttributeValue("Class", newClsName);
+                    thisComp.setAttributeValue(classAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    thisComp.setAttributeValue("Class", newName);
+                    thisComp.setAttributeValue(classAttrib, newName);
                 }
             }
 
@@ -507,13 +513,13 @@ public class JavaRenameChanger {
 
     private void refactoringManyToOnes(ManyToOne[] hbModelManyToOnes) {
         for (int i = 0; i < hbModelManyToOnes.length; i++) {
-            String clsName = hbModelManyToOnes[i].getAttributeValue("Class");
+            String clsName = hbModelManyToOnes[i].getAttributeValue(classAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    hbModelManyToOnes[i].setAttributeValue("Class", newClsName);
+                    hbModelManyToOnes[i].setAttributeValue(classAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    hbModelManyToOnes[i].setAttributeValue("Class", newName);
+                    hbModelManyToOnes[i].setAttributeValue(classAttrib, newName);
                 }
             }
         }
@@ -538,24 +544,24 @@ public class JavaRenameChanger {
             refactoringCompositeElement(theMap.getCompositeElement());
 
             // The class attribute in <one-to-many>
-            String oneToManyClsName = theMap.getAttributeValue(Map.ONE_TO_MANY, "Class"); // NOI18N
+            String oneToManyClsName = theMap.getAttributeValue(Map.ONE_TO_MANY, classAttrib); 
             if (oneToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(oneToManyClsName).equals(origName)) {
                     String newOneToManyClsName = oneToManyClsName.replaceFirst(origName, newName);
-                    theMap.setAttributeValue(Map.ONE_TO_MANY, "Class", newOneToManyClsName);
+                    theMap.setAttributeValue(Map.ONE_TO_MANY, classAttrib, newOneToManyClsName);
                 } else if (oneToManyClsName.equals(origName)) {
-                    theMap.setAttributeValue(Map.ONE_TO_MANY, "Class", newName);
+                    theMap.setAttributeValue(Map.ONE_TO_MANY, classAttrib, newName);
                 }
             }
             
             // The class attribute of <many-to-many>
-            String manyToManyClsName = theMap.getAttributeValue(Map.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = theMap.getAttributeValue(Map.MANY_TO_MANY, classAttrib);
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    theMap.setAttributeValue(Map.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    theMap.setAttributeValue(Map.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    theMap.setAttributeValue(Map.MANY_TO_MANY, "Class", newName);
+                    theMap.setAttributeValue(Map.MANY_TO_MANY, classAttrib, newName);
                 }
             }
         }
@@ -566,13 +572,13 @@ public class JavaRenameChanger {
             return;
         }
 
-        String clsName = compositeElement.getAttributeValue("Class");
+        String clsName = compositeElement.getAttributeValue(classAttrib);
         if (clsName != null) {
             if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                 String newClsName = clsName.replaceFirst(origName, newName);
-                compositeElement.setAttributeValue("Class", newClsName);
+                compositeElement.setAttributeValue(classAttrib, newClsName);
             } else if (clsName.equals(origName)) {
-                compositeElement.setAttributeValue("Class", newName);
+                compositeElement.setAttributeValue(classAttrib, newName);
             }
         }
 
@@ -589,13 +595,13 @@ public class JavaRenameChanger {
     private void refactoringKeyManyToOnes(KeyManyToOne[] keyManyToOnes) {
         for (int i = 0; i < keyManyToOnes.length; i++) {
             KeyManyToOne theOne = keyManyToOnes[i];
-            String clsName = theOne.getAttributeValue("Class");
+            String clsName = theOne.getAttributeValue(classAttrib);
             if (clsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(clsName).equals(origName)) {
                     String newClsName = clsName.replaceFirst(origName, newName);
-                    theOne.setAttributeValue("Class", newClsName);
+                    theOne.setAttributeValue(classAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
-                    theOne.setAttributeValue("Class", newName);
+                    theOne.setAttributeValue(classAttrib, newName);
                 }
             }
         }
@@ -604,24 +610,24 @@ public class JavaRenameChanger {
     private void refactoringSets(Set[] hbModelSets) {
         for (int si = 0; si < hbModelSets.length; si++) {
 
-            String oneToManyClsName = hbModelSets[si].getAttributeValue(Set.ONE_TO_MANY, "Class"); // NOI18N
+            String oneToManyClsName = hbModelSets[si].getAttributeValue(Set.ONE_TO_MANY, classAttrib);
             if (oneToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(oneToManyClsName).equals(origName)) {
                     String newOneToManyClsName = oneToManyClsName.replaceFirst(origName, newName);
-                    hbModelSets[si].setAttributeValue(Set.ONE_TO_MANY, "Class", newOneToManyClsName);
+                    hbModelSets[si].setAttributeValue(Set.ONE_TO_MANY, classAttrib, newOneToManyClsName);
                 } else if (oneToManyClsName.equals(origName)) {
-                    hbModelSets[si].setAttributeValue(Set.ONE_TO_MANY, "Class", newName);
+                    hbModelSets[si].setAttributeValue(Set.ONE_TO_MANY, classAttrib, newName);
                 }
             }
             
             // The class attribute of <many-to-many>
-            String manyToManyClsName = hbModelSets[si].getAttributeValue(Set.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = hbModelSets[si].getAttributeValue(Set.MANY_TO_MANY, classAttrib);
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    hbModelSets[si].setAttributeValue(Set.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    hbModelSets[si].setAttributeValue(Set.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    hbModelSets[si].setAttributeValue(Set.MANY_TO_MANY, "Class", newName);
+                    hbModelSets[si].setAttributeValue(Set.MANY_TO_MANY, classAttrib, newName);
                 }
             }
             
@@ -633,24 +639,24 @@ public class JavaRenameChanger {
     private void refactoringLists(List[] hbModelLists) {
         for (int li = 0; li < hbModelLists.length; li++) {
 
-            String oneToManyClsName = hbModelLists[li].getAttributeValue(List.ONE_TO_MANY, "Class"); // NOI18N
+            String oneToManyClsName = hbModelLists[li].getAttributeValue(List.ONE_TO_MANY, classAttrib);
             if (oneToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(oneToManyClsName).equals(origName)) {
                     String newOneToManyClsName = oneToManyClsName.replaceFirst(origName, newName);
-                    hbModelLists[li].setAttributeValue(List.ONE_TO_MANY, "Class", newOneToManyClsName);
+                    hbModelLists[li].setAttributeValue(List.ONE_TO_MANY, classAttrib, newOneToManyClsName);
                 } else if (oneToManyClsName.equals(origName)) {
-                    hbModelLists[li].setAttributeValue(List.ONE_TO_MANY, "Class", newName);
+                    hbModelLists[li].setAttributeValue(List.ONE_TO_MANY, classAttrib, newName);
                 }
             }
 
             // The class attribute of <many-to-many>
-            String manyToManyClsName = hbModelLists[li].getAttributeValue(List.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = hbModelLists[li].getAttributeValue(List.MANY_TO_MANY, classAttrib); 
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    hbModelLists[li].setAttributeValue(List.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    hbModelLists[li].setAttributeValue(List.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    hbModelLists[li].setAttributeValue(List.MANY_TO_MANY, "Class", newName);
+                    hbModelLists[li].setAttributeValue(List.MANY_TO_MANY, classAttrib, newName);
                 }
             }
             
@@ -662,24 +668,24 @@ public class JavaRenameChanger {
     private void refactoringBags(Bag[] hbModelBags) {
         for (int bi = 0; bi < hbModelBags.length; bi++) {
 
-            String oneToManyClsName = hbModelBags[bi].getAttributeValue(Bag.ONE_TO_MANY, "Class"); // NOI18N
+            String oneToManyClsName = hbModelBags[bi].getAttributeValue(Bag.ONE_TO_MANY, classAttrib); 
             if (oneToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(oneToManyClsName).equals(origName)) {
                     String newOneToManyClsName = oneToManyClsName.replaceFirst(origName, newName);
-                    hbModelBags[bi].setAttributeValue(Bag.ONE_TO_MANY, "Class", newOneToManyClsName);
+                    hbModelBags[bi].setAttributeValue(Bag.ONE_TO_MANY, classAttrib, newOneToManyClsName);
                 } else if (oneToManyClsName.equals(origName)) {
-                    hbModelBags[bi].setAttributeValue(Bag.ONE_TO_MANY, "Class", newName);
+                    hbModelBags[bi].setAttributeValue(Bag.ONE_TO_MANY, classAttrib, newName);
                 }
             }
 
             // The class attribute of <many-to-many>
-            String manyToManyClsName = hbModelBags[bi].getAttributeValue(Bag.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = hbModelBags[bi].getAttributeValue(Bag.MANY_TO_MANY, classAttrib); 
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    hbModelBags[bi].setAttributeValue(Bag.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    hbModelBags[bi].setAttributeValue(Bag.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    hbModelBags[bi].setAttributeValue(Bag.MANY_TO_MANY, "Class", newName);
+                    hbModelBags[bi].setAttributeValue(Bag.MANY_TO_MANY, classAttrib, newName);
                 }
             }
 
@@ -695,13 +701,13 @@ public class JavaRenameChanger {
             refactoringCompositeElement(hbModelIdbags[i].getCompositeElement());
 
             // The class attribute of <many-to-many>
-            String manyToManyClsName = hbModelIdbags[i].getAttributeValue(Idbag.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = hbModelIdbags[i].getAttributeValue(Idbag.MANY_TO_MANY, classAttrib);
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    hbModelIdbags[i].setAttributeValue(Idbag.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    hbModelIdbags[i].setAttributeValue(Idbag.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    hbModelIdbags[i].setAttributeValue(Idbag.MANY_TO_MANY, "Class", newName);
+                    hbModelIdbags[i].setAttributeValue(Idbag.MANY_TO_MANY, classAttrib, newName);
                 }
             }
         }
@@ -710,24 +716,24 @@ public class JavaRenameChanger {
     private void refactoringArrays(Array[] hbModelArrays) {
         for (int ai = 0; ai < hbModelArrays.length; ai++) {
 
-            String oneToManyClsName = hbModelArrays[ai].getAttributeValue(Array.ONE_TO_MANY, "Class"); // NOI18N
+            String oneToManyClsName = hbModelArrays[ai].getAttributeValue(Array.ONE_TO_MANY, classAttrib); 
             if (oneToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(oneToManyClsName).equals(origName)) {
                     String newOneToManyClsName = oneToManyClsName.replaceFirst(origName, newName);
-                    hbModelArrays[ai].setAttributeValue(Array.ONE_TO_MANY, "Class", newOneToManyClsName);
+                    hbModelArrays[ai].setAttributeValue(Array.ONE_TO_MANY, classAttrib, newOneToManyClsName);
                 } else if (oneToManyClsName.equals(origName)) {
-                    hbModelArrays[ai].setAttributeValue(Array.ONE_TO_MANY, "Class", newName);
+                    hbModelArrays[ai].setAttributeValue(Array.ONE_TO_MANY, classAttrib, newName);
                 }
             }
 
             // The class attribute of <many-to-many>
-            String manyToManyClsName = hbModelArrays[ai].getAttributeValue(Array.MANY_TO_MANY, "Class"); // NOI18N
+            String manyToManyClsName = hbModelArrays[ai].getAttributeValue(Array.MANY_TO_MANY, classAttrib);
             if (manyToManyClsName != null) {
                 if (packageOnly && HibernateRefactoringUtil.getPackageName(manyToManyClsName).equals(origName)) {
                     String newManyToManyClsName = manyToManyClsName.replaceFirst(origName, newName);
-                    hbModelArrays[ai].setAttributeValue(Array.MANY_TO_MANY, "Class", newManyToManyClsName);
+                    hbModelArrays[ai].setAttributeValue(Array.MANY_TO_MANY, classAttrib, newManyToManyClsName);
                 } else if (manyToManyClsName.equals(origName)) {
-                    hbModelArrays[ai].setAttributeValue(Array.MANY_TO_MANY, "Class", newName);
+                    hbModelArrays[ai].setAttributeValue(Array.MANY_TO_MANY, classAttrib, newName);
                 }
             }
 

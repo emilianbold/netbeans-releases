@@ -82,6 +82,9 @@ import org.openide.filesystems.FileObject;
  */
 public class JavaFieldRenameTransaction extends RenameTransaction {
 
+    // String name used by the schema2bean model to retrive the name attribute vaules
+    private final String nameAttrib = "Name"; // NOI18N
+    
     private String className;
 
     public JavaFieldRenameTransaction(java.util.Set<FileObject> files, String className, String origFieldName, String newFieldName) {
@@ -132,32 +135,32 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
     private void refactoringMyClasses(MyClass[] myClazz) {
         for (int ci = 0; ci < myClazz.length; ci++) {
             MyClass myClzz = myClazz[ci];
-            String clsName = myClzz.getAttributeValue("name"); // NOI18N
+            String clsName = myClzz.getAttributeValue(nameAttrib);
             if (clsName != null && clsName.equals(className)) {
 
                 // <id name="">
                 Id id = myClzz.getId();
                 if (id != null) {
-                    String idPropName = id.getAttributeValue("Name");
+                    String idPropName = id.getAttributeValue(nameAttrib);
                     if (idPropName != null && idPropName.equals(origName)) {
-                        id.setAttributeValue("Name", newName);
+                        id.setAttributeValue(nameAttrib, newName);
                     }
                 }
 
                 // <class version="">
                 Version ver = myClzz.getVersion();
                 if (ver != null) {
-                    String versionName = ver.getAttributeValue("Name");
+                    String versionName = ver.getAttributeValue(nameAttrib);
                     if (versionName != null && versionName.equals(origName)) {
-                        ver.setAttributeValue("Name", newName);
+                        ver.setAttributeValue(nameAttrib, newName);
                     }
                 }
 
                 Timestamp tstamp = myClzz.getTimestamp();
                 if (tstamp != null) {
-                    String timestamp = tstamp.getAttributeValue("Name");
+                    String timestamp = tstamp.getAttributeValue(nameAttrib);
                     if (timestamp != null && timestamp.equals(origName)) {
-                        tstamp.setAttributeValue("Name", newName);
+                        tstamp.setAttributeValue(nameAttrib, newName);
                     }
                 }
 
@@ -209,7 +212,7 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
         // <property name="">
         for (int i = 0; i < subclazz.length; i++) {
 
-            String clsName = subclazz[i].getAttributeValue("Name");
+            String clsName = subclazz[i].getAttributeValue(nameAttrib);
             if (clsName != null && clsName.equals(className)) {
 
                 refactoringProperty(subclazz[i].getProperty2());
@@ -249,7 +252,7 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
         // <property name="">
         for (int i = 0; i < joinedSubclazz.length; i++) {
 
-            String clsName = joinedSubclazz[i].getAttributeValue("Name");
+            String clsName = joinedSubclazz[i].getAttributeValue(nameAttrib);
             if (clsName != null && clsName.equals(className)) {
                 refactoringProperty(joinedSubclazz[i].getProperty2());
 
@@ -287,7 +290,7 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
         // <property name="">
         for (int i = 0; i < unionSubclazz.length; i++) {
 
-            String clsName = unionSubclazz[i].getAttributeValue("Name");
+            String clsName = unionSubclazz[i].getAttributeValue(nameAttrib);
             if (clsName != null && clsName.equals(className)) {
                 refactoringProperty(unionSubclazz[i].getProperty2());
 
@@ -327,9 +330,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
         }
 
         if (compositeId != null) {
-            String compositeIdPropName = compositeId.getAttributeValue("Name");
+            String compositeIdPropName = compositeId.getAttributeValue(nameAttrib);
             if (compositeIdPropName != null && compositeIdPropName.equals(origName)) {
-                compositeId.setAttributeValue("Name", newName);
+                compositeId.setAttributeValue(nameAttrib, newName);
             }
 
             //<composite-id><key-property name="">
@@ -343,9 +346,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringKeyManyToOne(KeyManyToOne[] keyManyToOnes) {
         for (int i = 0; i < keyManyToOnes.length; i++) {
-            String name = keyManyToOnes[i].getAttributeValue("Name");
+            String name = keyManyToOnes[i].getAttributeValue(nameAttrib);
             if (name != null && name.equals(origName)) {
-                keyManyToOnes[i].setAttributeValue("Name", newName);
+                keyManyToOnes[i].setAttributeValue(nameAttrib, newName);
             }
         }
     }
@@ -353,9 +356,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
     private void refactoringMaps(Map[] maps) {
         for (int i = 0; i < maps.length; i++) {
             // <map name="">
-            String mapName = maps[i].getAttributeValue("Name");
+            String mapName = maps[i].getAttributeValue(nameAttrib);
             if (mapName != null && mapName.equals(origName)) {
-                maps[i].setAttributeValue("Name", newName);
+                maps[i].setAttributeValue(nameAttrib, newName);
             }
 
             CompositeMapKey mKey = maps[i].getCompositeMapKey();
@@ -376,9 +379,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringKeyProperty(KeyProperty[] keyProps) {
         for (int i = 0; i < keyProps.length; i++) {
-            String keyPropName = keyProps[i].getAttributeValue("Name");
+            String keyPropName = keyProps[i].getAttributeValue(nameAttrib);
             if (keyPropName != null && keyPropName.equals(origName)) {
-                keyProps[i].setAttributeValue("Name", newName);
+                keyProps[i].setAttributeValue(nameAttrib, newName);
             }
         }
     }
@@ -411,9 +414,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
     private void refactoringProperty(Property[] clazzProps) {
         // <property name="">
         for (int pi = 0; pi < clazzProps.length; pi++) {
-            String propName = clazzProps[pi].getAttributeValue("name"); // NOI18N
+            String propName = clazzProps[pi].getAttributeValue(nameAttrib);
             if (propName.equals(origName)) {
-                clazzProps[pi].setAttributeValue("name", newName); // NOI18N
+                clazzProps[pi].setAttributeValue(nameAttrib, newName); 
                 break;
             }
         }
@@ -461,9 +464,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringSets(Set[] sets) {
         for (int i = 0; i < sets.length; i++) {
-            String nameValue = sets[i].getAttributeValue("Name");
+            String nameValue = sets[i].getAttributeValue(nameAttrib);
             if (nameValue != null && nameValue.equals(origName)) {
-                sets[i].setAttributeValue("Name", newName);
+                sets[i].setAttributeValue(nameAttrib, newName);
             }
 
             refactoringCompositeElement(sets[i].getCompositeElement());
@@ -472,9 +475,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringLists(List[] lists) {
         for (int i = 0; i < lists.length; i++) {
-            String nameValue = lists[i].getAttributeValue("Name");
+            String nameValue = lists[i].getAttributeValue(nameAttrib);
             if (nameValue != null && nameValue.equals(origName)) {
-                lists[i].setAttributeValue("Name", newName);
+                lists[i].setAttributeValue(nameAttrib, newName);
             }
 
             refactoringCompositeElement(lists[i].getCompositeElement());
@@ -483,18 +486,18 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringAnys(Any[] anys) {
         for (int i = 0; i < anys.length; i++) {
-            String name = anys[i].getAttributeValue("Name");
+            String name = anys[i].getAttributeValue(nameAttrib);
             if (name != null && name.equals(origName)) {
-                anys[i].setAttributeValue("Name", newName);
+                anys[i].setAttributeValue(nameAttrib, newName);
             }
         }
     }
 
     private void refactoringManyToOnes(ManyToOne[] manyToOnes) {
         for (int i = 0; i < manyToOnes.length; i++) {
-            String name = manyToOnes[i].getAttributeValue("Name");
+            String name = manyToOnes[i].getAttributeValue(nameAttrib);
             if (name != null && name.equals(origName)) {
-                manyToOnes[i].setAttributeValue("Name", newName);
+                manyToOnes[i].setAttributeValue(nameAttrib, newName);
             }
         }
     }
@@ -543,9 +546,9 @@ public class JavaFieldRenameTransaction extends RenameTransaction {
 
     private void refactoringOneToOnes(OneToOne[] oneToOnes) {
         for (int i = 0; i < oneToOnes.length; i++) {
-            String name = oneToOnes[i].getAttributeValue("Name");
+            String name = oneToOnes[i].getAttributeValue(nameAttrib);
             if (name != null && name.equals(origName)) {
-                oneToOnes[i].setAttributeValue("Name", newName);
+                oneToOnes[i].setAttributeValue(nameAttrib, newName);
             }
         }
     }
