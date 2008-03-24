@@ -163,39 +163,25 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testAlignOtherParen() {
+    //IZ#130898:'Spaces around ternary operators' is not working
+    public void testNewLineFunctionDefinitionName() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineIfCondition, true);
         setLoadDocumentText(
-            "int foo()\n" +
+            "static char *concat (char *s1, char *s2)\n" +
             "{\n" +
-            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
-            "     + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
-            "    if ((inmode[j] == VOIDmode\n" +
-            "            && (GET_MODE_SIZE (outmode[j]) > GET_MODE_SIZE (inmode[j])))\n" +
-            "            ? outmode[j] : inmode[j]) a++;\n" +
-            "  while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
-            "       options, NULL)) != -1)\n" +
-            "    a++;\n" +
+            "  int i=0;\n" +
+            "  i=(i==1)?1:2;\n" +
+            "  return (0);\n" +
             "}\n"
             );
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
-            "int foo()\n" +
+            "static char *concat(char *s1, char *s2)\n" +
             "{\n" +
-            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
-            "         + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
-            "    if ((inmode[j] == VOIDmode\n" +
-            "         && (GET_MODE_SIZE(outmode[j]) > GET_MODE_SIZE(inmode[j])))\n" +
-            "        ? outmode[j] : inmode[j]) a++;\n" +
-            "    while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
-            "                              options, NULL)) != -1)\n" +
-            "        a++;\n" +
+            "    int i = 0;\n" +
+            "    i = (i == 1) ? 1 : 2;\n" +
+            "    return (0);\n" +
             "}\n"
-        );
+            );
     }
 }
