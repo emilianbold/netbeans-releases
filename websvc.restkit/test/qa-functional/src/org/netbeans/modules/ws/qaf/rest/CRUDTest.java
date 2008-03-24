@@ -115,7 +115,7 @@ public class CRUDTest extends RestTestBase {
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
     }
-    
+
     /**
      * Test creation of RESTful web service from an entity class which
      * uses property based access. Also tests functionality of the new RESTful
@@ -131,11 +131,11 @@ public class CRUDTest extends RestTestBase {
         String restLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromEntities");
         createNewWSFile(getProject(), restLabel);
         WizardOperator wo = new WizardOperator(restLabel);
-        //have to wait until "retrieving message dissapers (see also issue 122802)
+        //have to wait until "retrieving message dissapers (see also issue 130835)
         new EventTool().waitNoEvent(2500);
         JListOperator availableEntities = new JListOperator(wo, 1);
         JListOperator selectedEntities = new JListOperator(wo, 2);
-        
+
         //XXX - workaround for: http://www.netbeans.org/issues/show_bug.cgi?id=130835
         //Add All >>
         String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
@@ -144,7 +144,7 @@ public class CRUDTest extends RestTestBase {
         String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
         new JButtonOperator(wo, removeAllLabel).push();
         //XXX - end
-        
+
         availableEntities.selectItem("Customer"); //NOI18N
         //Add >
         String addLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Add");
@@ -298,7 +298,7 @@ public class CRUDTest extends RestTestBase {
         }
         return files;
     }
-    
+
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
