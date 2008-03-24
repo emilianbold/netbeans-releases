@@ -87,7 +87,7 @@ public class JavaPackageRenameTransaction extends RenameTransaction {
                 renamer.refactoringMyClasses(hbMapping.getMyClass());
                 
                 // Change all the occurrences in <subclass> elements
-                renamer.refactoringSublasses(hbMapping.getSubclass());
+                renamer.refactoringSubclasses(hbMapping.getSubclass());
                 
                 // Change all the occurrences in <joined-subclass> elements
                 renamer.refactoringJoinedSubclasses(hbMapping.getJoinedSubclass());

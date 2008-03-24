@@ -162,7 +162,7 @@ public class JavaRenameChanger {
         }
     }
 
-    public void refactoringSublasses(Subclass[] subclazz) {
+    public void refactoringSubclasses(Subclass[] subclazz) {
         for (int ci = 0; ci < subclazz.length; ci++) {
 
             Subclass thisClazz = subclazz[ci];
