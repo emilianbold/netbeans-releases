@@ -240,6 +240,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.alignMultilineParen,
                          EditorOptions.alignMultilineParenDefault);
     }
+    public boolean alignMultilineArrayInit() {
+        return getOption(EditorOptions.alignMultilineArrayInit,
+                         EditorOptions.alignMultilineArrayInitDefault);
+    }
 
     //SpacesAroundOperators
     public boolean spaceAroundUnaryOps() {

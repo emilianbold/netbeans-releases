@@ -1278,6 +1278,13 @@ public class ReformatterImpl {
                         }
                     }
                 }
+            } else {
+                StackEntry top = braces.peek();
+                if (top != null &&
+                    top.isLikeToArrayInitialization() &&
+                    codeStyle.alignMultilineArrayInit()) {
+                    space = ts.openBraceIndent(1);
+                }
             }
             if (space == -1) {
                 Token<CppTokenId> first = ts.lookNextLineImportant();

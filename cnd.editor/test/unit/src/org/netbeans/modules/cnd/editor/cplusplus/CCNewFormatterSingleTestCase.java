@@ -163,111 +163,21 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
-    public void testNewLinesAterClassHeader() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-    public void testNewLinesAterClassHeader2() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-
-    public void testNewLinesAterClassHeader3() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-
-    public void testNewLinesAterClassHeader4() {
+    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
+    public void testMultilineArrayAlignment() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
         setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
+            "        int array[10] ={1, 2, 3, 4,\n" +
+            "    5, 6, 7, 8, 9\n" +
+            "};\n"
             );
         reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
+        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
+            "int array[10] = {1, 2, 3, 4,\n" +
+            "                 5, 6, 7, 8, 9\n" +
+            "};\n"
             );
     }
 }

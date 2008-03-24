@@ -3874,4 +3874,22 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
             );
     }
+
+    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
+    public void testMultilineArrayAlignment() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineArrayInit, true);
+        setLoadDocumentText(
+            "        int array[10] ={1, 2, 3, 4,\n" +
+            "    5, 6, 7, 8, 9\n" +
+            "};\n"
+            );
+        reformat();
+        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
+            "int array[10] = {1, 2, 3, 4,\n" +
+            "                 5, 6, 7, 8, 9\n" +
+            "};\n"
+            );
+    }
 }
