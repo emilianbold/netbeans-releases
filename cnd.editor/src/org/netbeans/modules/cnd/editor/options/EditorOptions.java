@@ -134,6 +134,8 @@ public class EditorOptions {
      */
     public static final String newLineBeforeBrace = "newLineBeforeBrace"; //NOI18N
     public static final String newLineBeforeBraceDefault = BracePlacement.SAME_LINE.name();
+    public static final String newLineBeforeBraceSwitch = "newLineBeforeBraceSwitch"; //NOI18N
+    public static final String newLineBeforeBraceSwitchDefault = BracePlacement.SAME_LINE.name();
 
     //MultilineAlignment
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
@@ -148,7 +150,9 @@ public class EditorOptions {
     public static final boolean alignMultilineIfConditionDefault = false;
     public static final String alignMultilineWhileCondition = "alignMultilineWhileCondition"; //NOI18N
     public static final boolean alignMultilineWhileConditionDefault = false;
-
+    public static final String alignMultilineParen = "alignMultilineParen"; //NOI18N
+    public static final boolean alignMultilineParenDefault = false;
+    
     //NewLine
     public static final String newLineFunctionDefinitionName = "newLineFunctionDefinitionName"; //NOI18N
     public static final boolean newLineFunctionDefinitionNameDefault = false;
@@ -238,6 +242,8 @@ public class EditorOptions {
     public static final boolean spaceWithinTypeCastParensDefault = false;
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final boolean spaceWithinBracesDefault = false;
+    public static final String spaceBeforeKeywordParen = "spaceBeforeKeywordParen"; //NOI18N
+    public static final boolean spaceBeforeKeywordParenDefault = true;
     
     //SpacesOther
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
@@ -279,9 +285,17 @@ public class EditorOptions {
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
     private static final String GNU_PROFILE = "GNU"; // NOI18N
+    private static final String LUNIX_PROFILE = "Linux"; // NOI18N
+    private static final String ANSI_PROFILE = "ANSI"; // NOI18N
+    private static final String OPEN_SOLARIS_PROFILE = "OpenSolaris"; // NOI18N
+    private static final String K_AND_R_PROFILE = "KandR"; // NOI18N
+    private static final String MYSQL_PROFILE = "MySQL"; // NOI18N
 
-    public static final String[] PREDEFINED_STYLES = new String[]
-                              {DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE};
+    public static final String[] PREDEFINED_STYLES = new String[] {
+                                 DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE,
+                                 LUNIX_PROFILE, ANSI_PROFILE, OPEN_SOLARIS_PROFILE,
+                                 K_AND_R_PROFILE, MYSQL_PROFILE
+    };
 
     private static Map<String,Object> defaults;
     private static Map<String,Map<String,Object>> namedDefaults;
@@ -305,6 +319,7 @@ public class EditorOptions {
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
         defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(newLineBeforeBraceSwitch,newLineBeforeBraceSwitchDefault);
         defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
         //MultilineAlignment
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
@@ -313,6 +328,7 @@ public class EditorOptions {
         defaults.put(alignMultilineFor,alignMultilineForDefault);
         defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
         defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
+        defaults.put(alignMultilineParen,alignMultilineParenDefault);
         //NewLine
         defaults.put(newLineFunctionDefinitionName,newLineFunctionDefinitionNameDefault);
         defaults.put(newLineCatch,newLineCatchDefault);
@@ -358,6 +374,7 @@ public class EditorOptions {
         defaults.put(spaceWithinCatchParens,spaceWithinCatchParensDefault);
         defaults.put(spaceWithinTypeCastParens,spaceWithinTypeCastParensDefault);
         defaults.put(spaceWithinBraces,spaceWithinBracesDefault);
+        defaults.put(spaceBeforeKeywordParen,spaceBeforeKeywordParenDefault);
         //SpacesOther
         defaults.put(spaceBeforeComma,spaceBeforeCommaDefault);
         defaults.put(spaceAfterComma,spaceAfterCommaDefault);
@@ -420,6 +437,7 @@ public class EditorOptions {
         gnu.put(alignMultilineMethodParams, true);
         gnu.put(alignMultilineIfCondition, true);
         gnu.put(alignMultilineWhileCondition, true);
+        gnu.put(alignMultilineParen, true);
         gnu.put(spaceBeforeMethodCallParen, true);
         gnu.put(spaceBeforeMethodDeclParen, true);
         gnu.put(newLineFunctionDefinitionName, true);
@@ -429,8 +447,72 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
 
+        //LUNIX_PROFILE
+        Map<String,Object> lunix = new HashMap<String,Object>();
+        namedDefaults.put(LUNIX_PROFILE, lunix);
+        lunix.put(indentCasesFromSwitch, false);
+        lunix.put(indentSize, 8);
+        lunix.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        lunix.put(spaceBeforeKeywordParen, false);
+        
+        //ANSI_PROFILE
+        Map<String,Object> ansi = new HashMap<String,Object>();
+        namedDefaults.put(ANSI_PROFILE, ansi);
+        ansi.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
+        ansi.put(alignMultilineMethodParams, true);
+        ansi.put(alignMultilineCallArgs, true);
+        ansi.put(newLineCatch, true);
+        ansi.put(newLineElse, true);
+        ansi.put(newLineWhile, true);
+        ansi.put(indentCasesFromSwitch, false);
+        ansi.put(indentNamespace, false);
+        
+        //OPEN_SOLARIS_PROFILE
+        Map<String,Object> solaris = new HashMap<String,Object>();
+        namedDefaults.put(OPEN_SOLARIS_PROFILE, solaris);
+        solaris.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
+        solaris.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
+        solaris.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        solaris.put(newLineFunctionDefinitionName, true);
+        solaris.put(indentSize, 8);
+        solaris.put(alignMultilineCallArgs, true);
+        solaris.put(alignMultilineMethodParams, true);
+        solaris.put(alignMultilineIfCondition, true);
+        solaris.put(alignMultilineWhileCondition, true);
+        solaris.put(alignMultilineFor, true);
+        solaris.put(indentCasesFromSwitch, false);
+
+        //K_AND_R_PROFILE
+        Map<String,Object> KandR = new HashMap<String,Object>();
+        namedDefaults.put(K_AND_R_PROFILE, KandR);
+        KandR.put(absoluteLabelIndent, false);
+        KandR.put(indentCasesFromSwitch, false);
+        KandR.put(indentNamespace, false);
+        KandR.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+
+        //MYSQL_PROFILE
+        Map<String,Object> mysql = new HashMap<String,Object>();
+        namedDefaults.put(MYSQL_PROFILE, mysql);
+        mysql.put(indentCasesFromSwitch, false);
+        mysql.put(indentSize, 2);
+        mysql.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
+        mysql.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
+        mysql.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        mysql.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
+        mysql.put(alignMultilineCallArgs, true);
+        mysql.put(alignMultilineWhileCondition, true);
+        mysql.put(alignMultilineFor, true);
+        mysql.put(alignMultilineMethodParams, true);
+        mysql.put(alignMultilineIfCondition, true);
+        mysql.put(spaceAroundAssignOps, false);
+        mysql.put(addLeadingStarInComment, false);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){

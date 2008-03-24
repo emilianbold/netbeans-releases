@@ -29,6 +29,7 @@ package org.netbeans.modules.javascript.editing;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -42,13 +43,13 @@ public class JsUtils {
     }
 
     public static boolean isJsFile(FileObject f) {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(f.getMIMEType());
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(f.getMIMEType());
     }
 
     public static boolean isJsDocument(Document doc) {
         String mimeType = (String)doc.getProperty("mimeType");
 
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE.equals(mimeType);
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType);
     }
 
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N

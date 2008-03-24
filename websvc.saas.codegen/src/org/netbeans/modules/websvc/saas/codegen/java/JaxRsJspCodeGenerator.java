@@ -50,6 +50,7 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
@@ -64,10 +65,6 @@ import org.openide.filesystems.FileObject;
  */
 public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
 
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
     
     public JaxRsJspCodeGenerator(JTextComponent targetComponent,
@@ -85,7 +82,9 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         Util.checkScanning();
         try {
             String code = "";
-            code = "\n<%\n"; // NOI18n
+            code += "\n<%@ page import=\""+AbstractGenerator.REST_CONNECTION_PACKAGE+
+                    ".*, "+getBean().getSaasServicePackageName()+".*\" %>";
+            code += "\n<%\n"; // NOI18n
             code += getCustomMethodBody()+"\n";
             code += "%>\n";// NOI18n
             insert(code, getTargetComponent(), true);
@@ -102,23 +101,23 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        filterParams = renameJspParameterNames(super.getServiceMethodParameters());
+        filterParams = filterJspParameters(super.getServiceMethodParameters());
+        filterParams = renameJspParameterNames(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        
-        String methodBody = "";
-        methodBody += "             try {\n";
-        methodBody += paramDecl + "\n";
-        methodBody += "                 String result = " + 
-                getBean().getSaasServicePackageName() + "." + 
-                getBean().getSaasServiceName() + "." + 
-                getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "             } catch (java.io.IOException ex) {\n";
-        methodBody += "                 //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
-        methodBody += "                 ex.printStackTrace();\n";
-        methodBody += "             }\n";
-       
-        return methodBody;
+        return getCustomMethodBody(paramDecl, paramUse);
+    }
+    
+    private List<ParameterInfo> filterJspParameters(List<ParameterInfo> params) {
+        List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
+        for(ParameterInfo p:params) {
+            String name = getParameterName(p);
+            if(Constants.HTTP_SERVLET_REQUEST_VARIABLE.equals(name) || 
+                    Constants.HTTP_SERVLET_RESPONSE_VARIABLE.equals(name)) {
+                continue;
+            }
+            returnParams.add(p);
+        }
+        return returnParams;
     }
     
     private List<ParameterInfo> renameJspParameterNames(List<ParameterInfo> params) {

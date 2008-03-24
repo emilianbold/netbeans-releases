@@ -92,7 +92,6 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
         optionsTable.getSelectionModel().addListSelectionListener(listSelectionListener);
         optionsTable.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
         updateButtons();
-        setBackground(SectionVisualTheme.getDocumentBackgroundColor());
     }
 
     private void updateButtons() {

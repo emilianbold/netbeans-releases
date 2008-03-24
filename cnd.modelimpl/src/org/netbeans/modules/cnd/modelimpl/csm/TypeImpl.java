@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Kvashin
  */
-public class TypeImpl extends OffsetableBase implements CsmType {
+public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeClassifierProvider {
 
     private final byte pointerDepth;
     private final boolean reference;

@@ -235,10 +235,10 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
     }
 
     public void close() {
-        super.setCategory(null);
+        //super.setCategory(null);
         visualComponent.removeAll();
         categoryPanel.removeAll();
-        categoryActions.clear();        
+        categoryActions.clear();
         visualComponent = null;
         categoryPanel = null;
         categoryActions = null;

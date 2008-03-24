@@ -137,11 +137,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
 
             
     public void dragDropEnd(DragSourceDropEvent dsde) {
-        getGhostSelection().clear();
-        for(DiagramView view : views){
-            view.getPlaceholderManager().clear();
-        }
-        getFlowLinkTool().clear();
+        clear();
         
 //      System.out.println("DragSource.dragDropEnd");
         if (dsde.getDropAction() == DnDConstants.ACTION_MOVE) {
@@ -150,7 +146,13 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
 //            parent.remove(be);
         }
     }
-    
+    private void clear(){
+            getGhostSelection().clear();
+        for(DiagramView view : views){
+            view.getPlaceholderManager().clear();
+        }
+        getFlowLinkTool().clear();    
+    }
     public void dragGestureRecognized(DragGestureEvent dge) {
 //      System.out.println("DragSource.dragGestureRecognized");
         
@@ -330,12 +332,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     }
     
     public void dragExit(DropTargetEvent dte) {
-//      System.out.println("DropTarget.DragExit");
-        getGhostSelection().clear();
-        for(DiagramView view : views){
-            view.getPlaceholderManager().clear();
-        }
-        getFlowLinkTool().clear();
+        clear();
     }
     
     public void drop(final DropTargetDropEvent dtde) {
@@ -372,6 +369,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                 
                 public Object call() {
                     view.getPlaceholderManager().drop(location);
+                    clear();
                     return null;
                 }
             };

@@ -939,7 +939,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( staticFunctionDeclarationUIDs == null ) {
             return Collections.<CsmFunction>emptyList();
         } else {
-            return new LazyCsmCollection<CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
+            return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
         }
     }
     

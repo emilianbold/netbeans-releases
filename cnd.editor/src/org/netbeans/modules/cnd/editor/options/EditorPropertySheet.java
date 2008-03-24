@@ -183,6 +183,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         styleComboBox.setSelectedIndex(index);
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
+        currentProfile = entry.name;
+        defaultStyles.put(currentLanguage, currentProfile);
         styleComboBox.addActionListener(this);
         repaintPreview();
     }
@@ -217,6 +219,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceNamespace));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceClass));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
+	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceSwitch));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
         
@@ -230,6 +233,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineFor));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineIfCondition));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineWhileCondition));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineParen));
         sheet.put(set);
 
         set = new Sheet.Set();
@@ -262,6 +266,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeKeywordParen));
         sheet.put(set);
         
         set = new Sheet.Set();

@@ -133,7 +133,7 @@ public class JsBracketCompleter implements BracketCompletion {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         //return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
         }
