@@ -203,13 +203,13 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       okButton.pushNoBlock( );
     }
 
-    public void RenameSampleSchemaInternal( String sModule )
+    public void RenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Select schema
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|Process Files|newLoanApplication.xsd"
+          sModule + "|" + sPath + "|newLoanApplication.xsd"
         );
       prn.select( );
 
@@ -237,7 +237,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       pto = new ProjectsTabOperator( );
 
       prn = pto.getProjectRootNode(
-          sModule + "|Process Files|myLoanApplication.xsd"
+          sModule + "|" + sPath + "|myLoanApplication.xsd"
         );
       if( null == prn )
       {
@@ -245,7 +245,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
     }
 
-    public void UndoRenameSampleSchemaInternal( String sModule )
+    public void UndoRenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Undo
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Undo [File Rename]");
@@ -254,7 +254,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|Process Files|newLoanApplication.xsd"
+          sModule + "|" + sPath + "|newLoanApplication.xsd"
         );
       if( null == prn )
       {
@@ -262,15 +262,21 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       }
     }
 
-    public void RedoRenameSampleSchemaInternal( String sModule )
+    public void RedoRenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Redo
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [File Rename]");
-
+      //try{ Thread.sleep( 5000 ); } catch( InterruptedException ex ) {}
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [File Rename]");
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|Process Files|myLoanApplication.xsd"
+          sModule + "|" + sPath + "|newLoanApplication.xsd"
+        );
+
+      prn.performPopupAction( "Refactor|Redo [File Rename]" );
+
+      prn = pto.getProjectRootNode(
+          sModule + "|" + sPath + "|myLoanApplication.xsd"
         );
       if( null == prn )
       {
