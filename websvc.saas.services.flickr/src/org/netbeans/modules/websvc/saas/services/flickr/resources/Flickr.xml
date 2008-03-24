@@ -56,8 +56,32 @@
     <saas-metadata>
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.flickr.Bundle</localizing-bundle>
         <group name="Flickr"/>
-        
-        <authentication profile="SaaSServices/Facebook/profile.properties">
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp">
+                <artifact id="FlickrAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/FlickrAuthenticatorDesktop.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="SaaSServices/Flickr/profile.properties">
+            <session-key api-id="api_key" session-id="auth_token" sig-id="sig">
+                <sign id="sig">
+                    <params>
+                        <param name="method" type="string" required="true"/>
+                        <param name="v" type="string" required="true" default="1.0"/>
+                        <param name="call_id" type="string" required="true" default="String.valueOf(System.currentTimeMillis())"/>
+                        <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
+                        <param id="auth_token={auth_token}" name="auth_token" type="string" required="true"/>
+                    </params>
+                </sign>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="FlickrAuthenticatorDesktop"/>
+                        </desktop>
+                        <web/>
+                    </use-templates>
+                </authenticator>
+        <!--<authentication profile="SaaSServices/Flickr/profile.properties">
             <session-key api-id="api_key" session-id="auth_token" sig-id="api_sig">
                 <sign id="apiSig">
                     <params>
@@ -100,7 +124,7 @@
                         </token>
                         <logout/>
                     </use-generator>
-                </authenticator>
+                </authenticator>-->
             </session-key>
         </authentication>
         

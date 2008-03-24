@@ -100,8 +100,13 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
 
     public JaxRsCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new WadlSaasBean(m));
-        saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(),
+        this(targetComponent, targetFile, new WadlSaasBean(m));
+    }
+    
+    public JaxRsCodeGenerator(JTextComponent targetComponent, 
+            FileObject targetFile, WadlSaasBean bean) throws IOException {
+        super(targetComponent, targetFile, bean);
+        saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(), 
                 getBean().getSaasServiceName());
         if (saasServiceFile != null) {
             saasServiceJS = JavaSource.forFileObject(saasServiceFile);
@@ -237,7 +242,8 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     /*
      */
     private String getSignParamUsage(List<ParameterInfo> signParams, String groupName) {
-        return Util.getSignParamUsage(signParams, groupName);
+        return Util.getSignParamUsage(signParams, groupName, 
+                getBean().isDropTargetWeb());
     }
 
     /*
@@ -250,11 +256,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      */
     private String getSignParamDeclaration(List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
         String paramStr = "";
-        for (ParameterInfo p : signParams) {
-            System.out.println("p = " + p.getName());
-            String[] pIds = Util.getParamIds(p, getBean().getSaasName());
-            if (pIds != null) {//process special case
-                paramStr += "        String " + getVariableName(pIds[0]) + " = " + pIds[1] + ";\n";
+        for(ParameterInfo p:signParams) {
+            String[] pIds = Util.getParamIds(p, getBean().getSaasName(), 
+                    getBean().isDropTargetWeb());
+            if(pIds != null) {//process special case
+                paramStr += "        String "+ getVariableName(pIds[0]) +" = "+ pIds[1] +";\n";
                 continue;
             }
             if (isContains(p, filterParams)) {
@@ -407,19 +413,14 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             throw new IOException(ex.getMessage());
         }
     }
-
-    private boolean isUseTemplates() {
-        return getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY &&
-                ((SessionKeyAuthentication) bean.getAuthentication()).getUseTemplates() != null;
-    }
-
+    
     /**
      *  Create Authenticator
      */
     public void createAuthenticatorClass() throws IOException {
         FileObject targetFolder = getSaasServiceFolder();
-        if (!isUseTemplates()) {
-            if (saasAuthFile == null) {
+        if(!getBean().isUseTemplates()) {
+            if(saasAuthFile == null) {
                 String authFileName = getBean().getAuthenticatorClassName();
                 String authTemplate = null;
                 SaasAuthenticationType authType = getBean().getAuthenticationType();
@@ -453,13 +454,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 String fileName = null;
                 if (type.equals("auth")) {
                     fileName = getBean().getAuthenticatorClassName();
-                } else if (type.equals("login")) {
-                    fileName = getBean().getSaasName() + "Login";
-                } else if (type.equals("callback")) {
-                    fileName = getBean().getSaasName() + "Callback";
-                }
-                if (templateUrl.endsWith(".java")) {
-                    JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
+                } else
+                    continue;
+                
+                if(templateUrl.endsWith(".java")) {
+                    JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
                             getBean().getSaasServicePackageName(), fileName);
                 } else {
                     if (templateUrl.indexOf("/") != -1) {

@@ -110,7 +110,7 @@ public class GlassFishUtils {
                 httpPort,
                 "--domainproperties",
                 "http.ssl.port=" + httpsPort + (domainProperties != null ? ":" + domainProperties : ""),
-                "--savemasterpassword=true",
+                "--savelogin",
                 domainName
                 );
         

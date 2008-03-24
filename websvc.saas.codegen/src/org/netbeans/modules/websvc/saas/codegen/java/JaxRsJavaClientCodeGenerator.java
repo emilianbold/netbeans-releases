@@ -53,6 +53,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
@@ -68,7 +69,12 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     
     public JaxRsJavaClientCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        this(targetComponent, targetFile, new WadlSaasBean(m));
+    }
+    
+    public JaxRsJavaClientCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, WadlSaasBean bean) throws IOException {
+        super(targetComponent, targetFile, bean);
     }
     
     @Override
@@ -119,23 +125,7 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
      */
     @Override
     public void createAuthorizationClasses() throws IOException {
-        if (getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
-            try {
-                String authFileName = getBean().getAuthorizationFrameClassName();
-                FileObject authorizationFile;
-                JavaSource authorizationJS = JavaSourceHelper.createJavaSource(
-                        TEMPLATES_SAAS + Constants.SERVICE_AUTHORIZATION_FRAME+".java",
-                        getSaasServiceFolder(), getBean().getSaasServicePackageName(), authFileName);// NOI18n
-                Set<FileObject> files = new HashSet<FileObject>(authorizationJS.getFileObjects());
-                if (files != null && files.size() > 0) {
-                    authorizationFile = files.iterator().next();
-                }
-            } catch (Exception ex) {
-                throw new IOException(
-                    NbBundle.getMessage(AbstractGenerator.class,
-                    "MSG_CreateAuthFrameFailed", ex)); // NOI18N
-            }
-        }
+        //No need to create auth frame class
     }
     
     @Override

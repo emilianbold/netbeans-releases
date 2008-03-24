@@ -83,9 +83,9 @@
                             <template type="auth" href="FacebookAuthenticatorDesktop"/>
                         </desktop>
                         <web>
-                            <template type="auth" href="FacebookAuthenticatorWeb"/>
-                            <template type="login" href="FacebookLogin"/>
-                            <template type="callback" href="FacebookCallback"/>
+                            <template type="auth" href="FacebookAuthenticator"/>
+                            <template type="login" href="FacebookAuthenticatorLogin"/>
+                            <template type="callback" href="FacebookAuthenticatorCallback"/>
                         </web>
                     </use-templates>
                 </authenticator>
