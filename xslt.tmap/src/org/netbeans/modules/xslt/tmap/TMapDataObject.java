@@ -59,8 +59,6 @@ public class TMapDataObject extends MultiDataObject {
     private transient TMapDataEditorSupport myDataEditorSupport;
     private transient AtomicReference<Lookup> myLookup = 
         new AtomicReference<Lookup>();
-    private transient AtomicReference<InstanceContent> myServices = 
-        new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
     
     public TMapDataObject(FileObject pf, TMapDataLoader loader) throws DataObjectExistsException, IOException {
@@ -112,21 +110,18 @@ public class TMapDataObject extends MultiDataObject {
         return new HelpCtx(TMapDataObject.class);
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+
     @Override
     public void setModified( boolean modified )
     {
         super.setModified(modified);
         if (modified) {
             getCookieSet().add(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().add(getSaveCookie());
-            }
-        }
-        else {
+        } else {
             getCookieSet().remove(getSaveCookie());
-            if ( isLookupInit.get() ) {
-                myServices.get().remove( getSaveCookie());
-            }
         }
     }
     
@@ -168,6 +163,8 @@ public class TMapDataObject extends MultiDataObject {
                     this
                     }));
 
+            list.add(getCookieSet().getLookup());
+
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv =
                     new InstanceContent.Convertor<Class, Object>() {
@@ -208,16 +205,6 @@ public class TMapDataObject extends MultiDataObject {
             // overflow
             // WARNING
             //
-
-
-            /* 
-             * Services are used for push/pop SaveCookie in lookup. This allow to work
-             * "Save" action on diagram.
-             */ 
-            myServices.compareAndSet( null, new InstanceContent() );
-            myServices.get().add( new Empty() );                      // FIX for #IZ78702
-            list.add(new AbstractLookup(myServices.get()));
-
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);
@@ -344,7 +331,4 @@ public class TMapDataObject extends MultiDataObject {
 
     }
     
-    private static class Empty {
-        
-    }
 }

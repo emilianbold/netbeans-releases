@@ -183,6 +183,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         styleComboBox.setSelectedIndex(index);
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
+        currentProfile = entry.name;
+        defaultStyles.put(currentLanguage, currentProfile);
         styleComboBox.addActionListener(this);
         repaintPreview();
     }
