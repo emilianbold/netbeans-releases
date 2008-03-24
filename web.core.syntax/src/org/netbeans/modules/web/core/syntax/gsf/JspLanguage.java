@@ -43,6 +43,7 @@ package org.netbeans.modules.web.core.syntax.gsf;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.GsfLanguage;
@@ -70,5 +71,17 @@ public class JspLanguage implements GsfLanguage {
 
     public Collection<FileObject> getCoreLibraries() {
         return Collections.emptyList();
+    }
+
+    public String getDisplayName() {
+        return "JSP";
+    }
+
+    public String getPreferredExtension() {
+        return "jsp"; // NOI18N
+    }
+
+    public Map<String, String> getSourceGroupNames() {
+        return Collections.emptyMap();
     }
 }

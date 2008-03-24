@@ -17,6 +17,10 @@
                   url="/org/netbeans/modules/websvc/saas/services/facebook/resources/web/FacebookCallback.template">
                 <attr name="position" intvalue="3630"/>
             </file>
+            <file name="FacebookAuthenticatorDesktop.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/facebook/resources/desktop/FacebookAuthenticator.template">
+                <attr name="position" intvalue="3640"/>
+            </file>
         </folder>
     </folder>
     
