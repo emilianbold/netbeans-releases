@@ -142,7 +142,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
     private static void displayCreateFailure(ServerInstance server,
             DatabaseException ex, String dbname, boolean dbCreated) {
-        Utils.displayError("CreateDatabasePanel.MSG_CreateFailed", ex);
+        Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
+                "CreateDatabasePanel.MSG_CreateFailed"), ex);
 
         if ( dbCreated ) {
             NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(

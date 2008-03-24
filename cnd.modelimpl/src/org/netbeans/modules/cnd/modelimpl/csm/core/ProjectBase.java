@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -1309,7 +1310,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private void disposeFiles() {
-        List<FileImpl> list;
+        Collection<FileImpl> list;
 //        synchronized (fileContainer) {
         list = getFileContainer().getFileImpls();
         getFileContainer().clear();
@@ -1411,7 +1412,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * CsmProject implementation
      */
     public Collection<CsmFile> getAllFiles() {
-        return (Collection<CsmFile>) getFileContainer().getFiles();
+        return getFileContainer().getFiles();
     }
     
     /**
@@ -1424,24 +1425,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     public Collection<CsmFile> getSourceFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
             if (file.isSourceFile()) {
-                res.add(file);
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public Collection<CsmFile> getHeaderFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
-            //if (file.isHeaderFile()) {
-            if (!file.isSourceFile()) {
-                res.add(file);
+            if ( ! file.isSourceFile()) {
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public long getMemoryUsageEstimation() {

@@ -74,7 +74,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     
     public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        super(targetComponent, targetFile, new WadlSaasBean(m, true));
         getBean().setOutputWrapperName(
                 getBean().getSaasName()+
                 AbstractGenerator.CONVERTER_SUFFIX);
@@ -147,7 +147,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
             getSaasServiceFolder(), 
             loginJS, loginFile, 
             callbackJS, callbackFile,
-            parameters, paramTypes
+            parameters, paramTypes, getBean().isUseTemplates()
         );
     }
     
