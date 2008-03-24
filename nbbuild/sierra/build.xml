@@ -42,7 +42,7 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.tst"/>
     
-    <target name="all" depends="init,get-netbeans,clean,build-tiny,init-zip,zip-tiny,build-dev,zip-dev,build-xtest"/>
+    <target name="all" depends="init,get-netbeans,clean,build-tiny,zip-tiny,build-dev,zip-dev,build-xtest"/>
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="init">
@@ -57,13 +57,6 @@
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="bootstrap"/>
-    </target>
-
-    <target name="init-zip">
-        <delete dir="${cache}/dist"/>
-        <mkdir dir="${cache}/dist"/>
-        <delete dir="${cache}/latest"/>
-        <mkdir dir="${cache}/latest"/>
     </target>
 
     <target name="build-xtest">
@@ -97,6 +90,9 @@
 
     <!-- zip -->
     <target name="zip-tiny">
+        <delete dir="${cache}/dist"/>
+        <mkdir dir="${cache}/dist"/>
+
         <zip destfile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${short.stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/bin/**"/>
@@ -116,6 +112,9 @@
     </target>
 
     <target name="zip-dev" depends="run-extra">
+        <delete dir="${cache}/latest"/>
+        <mkdir dir="${cache}/latest"/>
+
         <zip destfile="${cache}/latest/sierra_dev.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
