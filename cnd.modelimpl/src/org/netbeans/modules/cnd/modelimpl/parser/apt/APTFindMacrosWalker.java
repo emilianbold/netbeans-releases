@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -69,7 +70,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 
@@ -239,6 +239,10 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                             break;
                         }
                     }
+                    // TODO: IZ#130897
+                    // if not found in file, create own macro impl 
+                    // (i.e. could be dead block of original file)
+                    // ref = new MacroImpl(...)
                 }
             }
             return ref;
@@ -249,8 +253,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             if (mi.includePath != null) {
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
                 if (targetPrj != null) {
-                    return targetPrj.getFile(new File(mi.includePath));
+                    current = targetPrj.getFile(new File(mi.includePath));
+                    // if file belongs to project, it should be not null
+                    // but info could be obsolete
                 }
+                // try full model?
+//                if (current == null) {
+//                    current = CsmModelAccessor.getModel().findFile(mi.includePath);
+//                }
             }
             return current;
         }
