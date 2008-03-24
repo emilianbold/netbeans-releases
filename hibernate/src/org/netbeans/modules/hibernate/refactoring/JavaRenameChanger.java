@@ -96,6 +96,11 @@ public class JavaRenameChanger {
         for (int ci = 0; ci < myClazz.length; ci++) {
 
             MyClass thisClazz = myClazz[ci];
+            
+            // <class> element can have <subclass>, <joined-subclass> and/or <union-sbuclass> elements
+            refactoringSubclasses(thisClazz.getSubclass());
+            refactoringJoinedSubclasses(thisClazz.getJoinedSubclass());
+            refactoringUnionSubclasses(thisClazz.getUnionSubclass());
 
             // The name attribute of <class> element
             String clsName = thisClazz.getAttributeValue("Name");
@@ -166,6 +171,9 @@ public class JavaRenameChanger {
         for (int ci = 0; ci < subclazz.length; ci++) {
 
             Subclass thisClazz = subclazz[ci];
+            
+            // <subclass> elements can be contained inside <subclass> element
+            refactoringSubclasses(thisClazz.getSubclass());
 
             // The name attribute of <subclass> element
             String clsName = thisClazz.getAttributeValue("Name");
@@ -228,6 +236,9 @@ public class JavaRenameChanger {
         for (int ci = 0; ci < joinedSubclazz.length; ci++) {
 
             JoinedSubclass thisClazz = joinedSubclazz[ci];
+            
+            // <joined-subclass> elements can be contained inside <joined-subclass> 
+            refactoringJoinedSubclasses(thisClazz.getJoinedSubclass());
 
             // The name attribute of <joined-subclass> element
             String clsName = thisClazz.getAttributeValue("Name");
@@ -302,6 +313,9 @@ public class JavaRenameChanger {
         for (int ci = 0; ci < unionSubclazz.length; ci++) {
 
             UnionSubclass thisClazz = unionSubclazz[ci];
+            
+            // <union-subclass> elements can be inside <union-subclass> 
+            refactoringUnionSubclasses(thisClazz.getUnionSubclass());
 
             // The name attribute of <sub-class> element
             String clsName = thisClazz.getAttributeValue("Name");
