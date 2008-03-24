@@ -70,7 +70,6 @@
 	<mapID target="org.netbeans.modules.bpel.navigator.BpelNavigatorVisualPanel" url="windows_editors/nav_bpelview.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.CustomizerGeneral" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
-	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" url="windows_editors/project_node.html"/>
 	<mapID target="org.netbeans.modules.bpel.xpath.view.output.ExpressionTopComponent" url="mapper/about_mapper.html"/>
 	<mapID target="orch_windows_editors_print" url="windows_editors/design_print.html"/>
