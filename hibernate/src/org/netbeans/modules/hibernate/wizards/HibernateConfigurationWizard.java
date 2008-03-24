@@ -207,9 +207,9 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             String targetName = DEFAULT_CONFIGURATION_FILENAME;
             if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_CONFIGURATION_FILENAME)) {
                 int configFilesCount = configFiles.size();
-                targetName = "hibernate" + (++configFilesCount) + ".cfg";
+                targetName = "hibernate" + (configFilesCount++) + ".cfg";
                 while (foundConfigFileInProject(configFiles, targetName)) {
-                    targetName = "hibernate" + (++configFilesCount) + ".cfg";
+                    targetName = "hibernate" + (configFilesCount++) + ".cfg";
                 }
             }
             ((TemplateWizard) wizard).setTargetName(targetName);
