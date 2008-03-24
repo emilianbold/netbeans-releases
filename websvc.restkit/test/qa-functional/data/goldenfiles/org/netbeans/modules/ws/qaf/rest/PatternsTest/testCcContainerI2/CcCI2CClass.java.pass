@@ -33,7 +33,7 @@ public class CcCI2CClass {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI2CClass
-     * @return an instance of java.util.Properties
+     * @return an instance of java.util.prefs.Preferences
      */
     @GET
     @ProduceMime("text/plain")

@@ -36,7 +36,7 @@ public class CI2CClass {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI2CClass
-     * @return an instance of java.util.Properties
+     * @return an instance of java.util.prefs.Preferences
      */
     @GET
     @ProduceMime("text/plain")
@@ -53,7 +53,7 @@ public class CI2CClass {
     @POST
     @ConsumeMime("text/plain")
     @ProduceMime("text/plain")
-    public Response postText(Properties content) {
+    public Response postText(Preferences content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();
     }
