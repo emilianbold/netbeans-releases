@@ -53,27 +53,6 @@ import org.openide.util.Utilities;
  */
 public final class MessageUtils {
 
-    private static final Color ERROR_COLOR;
-
-    private static final Color WARNING_COLOR;
-
-    static {
-        // taken from WizardDescriptor
-        Color errorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
-        if (errorForeground == null) {
-            errorForeground = new Color(255, 0, 0);
-        }
-
-        ERROR_COLOR = errorForeground;
-
-        Color warningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
-        if (warningForeground == null) {
-            warningForeground = new Color(51, 51, 51);
-        }
-
-        WARNING_COLOR = warningForeground;
-    }
-
     private MessageUtils() {
         super();
     }
@@ -105,7 +84,11 @@ public final class MessageUtils {
             }
 
             protected Color getColor() {
-                return ERROR_COLOR;
+                Color errorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
+                if (errorForeground == null) {
+                    errorForeground = new Color(255, 0, 0);
+                }
+                return errorForeground;
             }
         },
 
@@ -116,7 +99,11 @@ public final class MessageUtils {
             }
 
             protected Color getColor() {
-                return WARNING_COLOR;
+                Color warningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+                if (warningForeground == null) {
+                    warningForeground = new Color(51, 51, 51);
+                }
+                return warningForeground;
             }
         };
 
