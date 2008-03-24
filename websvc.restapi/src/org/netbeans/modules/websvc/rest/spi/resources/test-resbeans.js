@@ -245,9 +245,9 @@ TestSupport.prototype = {
             var path = paths[i];
             if(path.indexOf('{') > -1) {
                 var pname = path.substring(1, path.length-1);
-                paramRep += '<td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
                 paramRep += '<span>'+pname+': </span></label></span></td>';
-                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td>';
+                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
             }
         }
         if(paramRep != "") {
