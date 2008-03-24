@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
+import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
@@ -69,6 +70,10 @@ public class HybridRepository implements Repository {
     private ReferenceQueue refQueue;
 
     private static final int DEFAULT_CACHE_CAPACITY = 77165;
+    
+    // Cache statistics
+    private int readCnt = 0;
+    private int readHitCnt = 0;
     
     /** Creates a new instance of HybridRepository */
     public HybridRepository() {
@@ -101,6 +106,7 @@ public class HybridRepository implements Repository {
     }
 
     public Persistent get(Key key) {
+        readCnt++;
         Persistent data = tryGet(key);
         if (data == null) {
             data = diskRepository.get(key);
@@ -113,6 +119,8 @@ public class HybridRepository implements Repository {
                 // by processQueue - it will be reread
                 cache.put(key, new SoftValue(data, key, refQueue));
             }
+        } else {
+            readHitCnt++;
         }
 
         return data;
@@ -141,6 +149,16 @@ public class HybridRepository implements Repository {
     public void shutdown() {
         diskRepository.shutdown();
         RepositoryTranslatorImpl.shutdown();
+        if( Stats.memoryCacheHitStatistics ) {
+            printStatistics();
+        }
+    }
+    
+    // package-local - for test purposes
+    void printStatistics() {
+        int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
+        System.out.printf("\n\nHybrid repository cache statistics: %d reads,  %d hits (%d%%)\n\n", 
+                readCnt, readHitCnt, hitPercentage);
     }
 
     private void cleanWriteHungObjects(String unitName, boolean clean) {
