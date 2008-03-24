@@ -121,8 +121,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
         //cancel all current operations:
         cancelAllCurrent();
         
-        this.scope = scope;
-        this.callback = callback;
+        synchronized (TASKS) {
+            this.scope = scope;
+            this.callback = callback;
+        }
         
         if (scope == null || callback == null) {
             return;
@@ -134,6 +136,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
             // TODO - find out which subgroups to use
+            
             for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                 enqueue(new Work(sg.getRootFolder(), callback));
             }
@@ -170,7 +173,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
     
     private static void enqueue(Work w) {
         synchronized (TASKS) {
-            if (INSTANCE != null && TASKS.size() == 0) {
+            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                INSTANCE.callback.started();
             }
             final RequestProcessor.Task task = WORKER.post(w);
@@ -181,7 +184,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
                     synchronized (TASKS) {
                         if (!clearing) {
                             TASKS.remove(task);
-                            if (INSTANCE != null && TASKS.size() == 0) {
+                            if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                                INSTANCE.callback.finished();
                             }
                         }
@@ -190,7 +193,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
             });
             if (task.isFinished()) {
                 TASKS.remove(task);
-                if (INSTANCE != null && TASKS.size() == 0) {
+                if (INSTANCE != null && TASKS.size() == 0 && INSTANCE.callback != null) {
                    INSTANCE.callback.finished();
                 }
             }

@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -62,7 +63,7 @@ public class JsTypeAnalyzerTest extends JsTestBase {
         TestCompilationInfo info = getInfo(fo);
         Node root = AstUtilities.getRoot(info);
         initializeRegistry();
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
 
         int caretOffset = -1;
         if (caretLine != null) {

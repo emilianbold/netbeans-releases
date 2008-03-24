@@ -78,6 +78,24 @@ public class JsCommentFormatter {
             sb.append(line);
             sb.append("\n"); // NOI18N
         }
+        // Determine whether this is preformatted MDC content or should get
+        // normal jsdoc rendering
+        boolean haveJsTag = false;
+        boolean haveMDC = false;
+        for (int i = 0, n = comments.size(); i < n; i++) {
+            String s = comments.get(i);
+            if (s.indexOf("MDC:Copyrights") != -1) { // NOI18N
+                haveMDC = true;
+                break; // We know that it must be preformatted
+            } else if (s.indexOf('@') != -1) {
+                haveJsTag = true;
+            }
+        }
+        if (haveMDC) {
+            formattedComment = true;
+        } else if (!haveJsTag) {
+            formattedComment = true;
+        }
         sb.deleteCharAt(sb.length() - 1);
         TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
         this.ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
@@ -87,10 +105,6 @@ public class JsCommentFormatter {
 
     void setSeqName(String name) {
         
-    }
-
-    public void setFormattedComment(boolean formattedComment) {
-        this.formattedComment = formattedComment;
     }
 
     String toHtml() {

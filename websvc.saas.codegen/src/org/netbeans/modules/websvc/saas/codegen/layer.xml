@@ -53,6 +53,12 @@
             <file name="SessionKeyLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/SessionKeyLogin.template">
                 <attr name="position" intvalue="160"/>
             </file>
+            <file name="RestResponse.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponse.template">
+                <attr name="position" intvalue="170"/>
+            </file>
+            <file name="RestResponsejdk5.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/RestResponsejdk5.template">
+                <attr name="position" intvalue="180"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

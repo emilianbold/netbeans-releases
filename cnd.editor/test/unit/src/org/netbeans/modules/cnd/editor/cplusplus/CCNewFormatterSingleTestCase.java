@@ -163,31 +163,29 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testIZ130538() {
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
         setLoadDocumentText(
-                "int foooooooo(char* a,\n" +
-                " class B* b)\n" +
-                "{\n" +
-                "    foo(a,\n" +
-                "   b);\n" +
-                "}\n");
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
         reformat();
-        assertDocumentText("Incorrect formating IZ#130538",
-                "int foooooooo (char* a,\n" +
-                "               class B* b)\n" +
-                "{\n" +
-                "    foo (a,\n" +
-                "         b);\n" +
-                "}\n");
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = - i;\n" +
+            "    i = ( - i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
     }
 }

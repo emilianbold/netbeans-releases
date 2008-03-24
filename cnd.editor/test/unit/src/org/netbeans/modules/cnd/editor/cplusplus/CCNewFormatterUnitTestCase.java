@@ -2750,6 +2750,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m])+1);\n" +
             "    for (i = 0; i<n; i++) return;\n" +
             "    match[1].end = match[0].end+s_length;\n" +
+            "    return(0);\n" +
             "}\n"
             );
         reformat();
@@ -2757,12 +2758,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "int foo()\n" +
             "{\n" +
             "    bmove_upp(dst + rest + new_length, dst + tot_length, rest);\n" +
-            "    if (len <= 0 || len >= (int) sizeof(buf) || buf[sizeof(buf) - 1] != 0) return 0;\n" +
+            "    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return 0;\n" +
             "    lmask = (1U << state->lenbits) - 1;\n" +
             "    len = BITS(4) + 8;\n" +
             "    s->depth[node] = (uch) ((s->depth[n] >= s->depth[m] ? s->depth[n] : s->depth[m]) + 1);\n" +
             "    for (i = 0; i < n; i++) return;\n" +
             "    match[1].end = match[0].end + s_length;\n" +
+            "    return (0);\n" +
             "}\n"
         );
     }
@@ -3655,5 +3657,113 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    foo (a,\n" +
                 "         b);\n" +
                 "}\n");
+    }
+
+    //IZ#130544:Multiline alignment works wrongly with complex expressions
+    //IZ#130690:IDE cann't align multi-line expression on '('
+    public void testAlignOtherParen() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineIfCondition, true);
+        setLoadDocumentText(
+            "int foo()\n" +
+            "{\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "     + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "            && (GET_MODE_SIZE (outmode[j]) > GET_MODE_SIZE (inmode[j])))\n" +
+            "            ? outmode[j] : inmode[j]) a++;\n" +
+            "  while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "       options, NULL)) != -1)\n" +
+            "    a++;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in binary operators",
+            "int foo()\n" +
+            "{\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "         + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "         && (GET_MODE_SIZE(outmode[j]) > GET_MODE_SIZE(inmode[j])))\n" +
+            "        ? outmode[j] : inmode[j]) a++;\n" +
+            "    while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "                              options, NULL)) != -1)\n" +
+            "        a++;\n" +
+            "}\n"
+        );
+    }
+
+    //IZ#130525:Formatter should move the name of the function in column one
+    public void testNewLineFunctionDefinitionName() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineFunctionDefinitionName, true);
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i;\n" +
+            "   int j;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Formatter should move the name of the function in column one",
+            "static char *\n" +
+            "concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i;\n" +
+            "    int j;\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130898:'Spaces around ternary operators' is not working
+    public void testSpacesAroundTernary() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i=0;\n" +
+            "  i=(i==1)?1:2;\n" +
+            "  return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("\'Spaces around ternary operators\' is not working",
+            "static char *concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = (i == 1) ? 1 : 2;\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
+        setLoadDocumentText(
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = - i;\n" +
+            "    i = ( - i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
     }
 }

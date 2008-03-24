@@ -294,10 +294,11 @@ public class NavigatorNodeFactory implements NodeFactory<NodeType> {
             case SEQUENCE :
             case WHILE :
             case REPEAT_UNTIL :
-                Children activityChildren = new ActivityNodeChildren(
+                ActivityNodeChildren activityChildren = new ActivityNodeChildren(
                         (BpelContainer)reference,lookup);
                 newNode = PropertyNodeFactory.getInstance().createNode(
-                        nodeType, reference, activityChildren, lookup);
+                        nodeType, reference, activityChildren, 
+                        new ExtendedLookup(lookup, activityChildren.getIndex()));
                 break;
                 
             case COPY :

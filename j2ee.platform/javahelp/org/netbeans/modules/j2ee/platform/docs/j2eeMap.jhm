@@ -104,12 +104,12 @@
 <!--Start of web service CSH -->
 	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/AddWebServiceDlg.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
-	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
-        <mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
-	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
+        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
         <mapID target="org.netbeans.modules.websvc.wsdl.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
-	<mapID target="org.netbeans.modules.websvc.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
-        <mapID target="org.netbeans.modules.websvc.dev.wizard.LogicalHandlerWizard" url="webservice/csh/wizards/LogicalHandlerWizard.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
+        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard" url="webservice/csh/wizards/LogicalHandlerWizard.html" />
 
 <!--Start of web service attributes editor CSH -->
 <mapID target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" url="webservice/csh/editor/EditWSAttributesCookieImpl.html"/>
@@ -172,6 +172,7 @@
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EAR" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR_IMPORT" url="enterprise/csh/ImportBlueprintEarWizardIterator_servers.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
      
     <!-- Enterprise Application Project Properties dialog box csh -->
@@ -226,6 +227,7 @@
       
     <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EJB" url="ejb/csh/ejb_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB_IMPORT" url="ejb/csh/ejb_new_wizard_server.html" />
     <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
 
     <!-- EJB Module Project Wizard dialog box csh: -->
@@ -306,6 +308,7 @@
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_APPCLIENT" url="appclient/csh/new_appclient.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT" url="appclient/csh/new_appclient_server.html" />
     <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_APPCLIENT" url="appclient/csh/appclient_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT_IMPORT" url="appclient/csh/new_appclient_server.html" />
     <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelSourceFolders"  url="appclient/csh/appclient_with_source_wizard2.html" />
     
     <!-- App Client Project Properties -->

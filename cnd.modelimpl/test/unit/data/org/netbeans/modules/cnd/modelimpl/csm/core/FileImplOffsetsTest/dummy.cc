@@ -1,4 +1,4 @@
-void foo();
+void foo_dummy();
 
 class A {
     void boo();

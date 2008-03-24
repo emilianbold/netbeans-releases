@@ -87,11 +87,11 @@ public class NbPlatformTest extends TestBase {
         assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());
         assertEquals("right name for custom platform", "custom", custom.getID());
         assertEquals("right sources for default platform", new HashSet<URL>(Arrays.asList(
-            Util.urlForDir(nbRootFile()),
-            Util.urlForDir(resolveEEPFile("suite2"))
+            FileUtil.urlForArchiveOrDir(nbRootFile()),
+            FileUtil.urlForArchiveOrDir(resolveEEPFile("suite2"))
         )), new HashSet<URL>(Arrays.asList(def.getSourceRoots())));
         assertEquals("right Javadoc for default platform", new HashSet<URL>(Arrays.asList(
-            Util.urlForJar(apisZip)
+            FileUtil.urlForArchiveOrDir(apisZip)
         )), new HashSet<URL>(Arrays.asList(def.getJavadocRoots())));
         assertEquals("no sources for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getSourceRoots())));
         assertEquals("no Javadoc for custom platform", Collections.emptySet(), new HashSet<URL>(Arrays.asList(custom.getJavadocRoots())));

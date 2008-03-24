@@ -41,25 +41,16 @@
 
 package org.netbeans.api.project.ant;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import javax.swing.JFileChooser;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.ant.FileChooserAccessory;
-import org.netbeans.modules.project.ant.RelativizeFilePathCustomizer;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 
 /**

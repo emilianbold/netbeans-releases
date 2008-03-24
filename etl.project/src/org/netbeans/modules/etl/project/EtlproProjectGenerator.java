@@ -34,7 +34,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;

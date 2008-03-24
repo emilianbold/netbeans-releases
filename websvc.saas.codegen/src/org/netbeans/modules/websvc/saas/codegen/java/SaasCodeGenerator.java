@@ -50,8 +50,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -86,6 +89,9 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -93,9 +99,7 @@ import org.openide.filesystems.FileObject;
  * @author nam
  */
 abstract public class SaasCodeGenerator extends AbstractGenerator {
-    
-    public static final String RESTCONNECTION_PACKAGE = "org.netbeans.saas";
-    
+
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;
     private FileObject wrapperResourceFile;
@@ -106,7 +110,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     private JavaSource jaxbOutputWrapperJS;
     private String subresourceLocatorName;
     private String subresourceLocatorUriTemplate;
-    private Collection<String> existingUriTemplates;
+    private Collection<String> existingUriTemplates = Collections.emptyList();
     private JTextComponent targetComponent;
 
     public SaasCodeGenerator(JTextComponent targetComponent, 
@@ -268,20 +272,16 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
             addImportsToWrapperResource();
             addSupportingMethods();
-            modifyGetMethod();
+            modifyHttpMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
         }
     }
     
     protected void addImportsToWrapperResource() throws IOException {
-        ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] {RESTCONNECTION_PACKAGE+"."+REST_CONNECTION});
-            }
-        });
-        result.commit();
+        List<String> imports = new ArrayList<String>();
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_CONNECTION);
+        Util.addImportsToSource(wrapperResourceJS, imports);
     }
 
     protected void addSubresourceLocator() throws IOException {
@@ -318,6 +318,14 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
                     body += "finally { PersistenceService.getInstance().close()";
                 }
 
+                Map<String, String> methodsMap = new HashMap<String, String>();
+                JavaSourceHelper.getAvailableMethodSignature(targetResourceJS, methodsMap);
+                String sign = JavaSourceHelper.createMethodSignature(
+                    getSubresourceLocatorName(), null);
+                if(methodsMap.containsKey(sign)) {
+                    return;
+                }
+                
                 ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, 
                         Constants.PUBLIC, annotations, annotationAttrs, 
                         getSubresourceLocatorName(), getBean().getQualifiedClassName(), 
@@ -338,7 +346,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     /**
      *  Return target and generated file objects
      */
-    protected void modifyGetMethod() throws IOException {
+    protected void modifyHttpMethod() throws IOException {
         ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -353,7 +361,8 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
                 methodBody += "}"; //NOI18N
                 for(MimeType mime:getBean().getMimeTypes()) {
-                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, getBean().getGetMethodName(mime));
+                    MethodTree methodTree = JavaSourceHelper.getMethodByName(
+                            copy, getBean().getHttpMethodName(getBean().getHttpMethod(), mime));
                     JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
                 }
             }
@@ -614,7 +623,13 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 
     public Collection<String> getExistingUriTemplates() {
         if (existingUriTemplates == null) {
-            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
+            try {
+                if (targetFile != null && DataObject.find(targetFile) != null
+                        && Util.isJava(DataObject.find(targetFile))) {
+                    existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
+                }
+            } catch (DataObjectNotFoundException ex) {//ignore
+            }
         }
 
         return existingUriTemplates;
@@ -714,11 +729,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     
     public static void createRestConnectionFile(Project project) throws IOException {
         SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
-        String pkg = RESTCONNECTION_PACKAGE;
+        String pkg = REST_CONNECTION_PACKAGE;
         FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
         JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
+        String restResponseTemplate = REST_RESPONSE_TEMPLATE;
+        JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
     }
-    
     
     protected String[] getUriParamTypes() {
         String defaultType = String.class.getName();
@@ -731,14 +747,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
-        params.addAll(Arrays.asList(getBean().getUriParams()));
         params.addAll(Arrays.asList(getParamNames(queryParams)));
         return params.toArray(new String[params.size()]);
     }
     
     protected String[] getGetParamTypes(List<ParameterInfo> queryParams) {
         ArrayList<String> types = new ArrayList<String>();
-        types.addAll(Arrays.asList(getUriParamTypes()));
         types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
