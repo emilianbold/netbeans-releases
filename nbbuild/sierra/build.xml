@@ -42,15 +42,10 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.tst"/>
     
-    <target name="all" depends="init,get-netbeans,clean,build-tiny,zip-tiny,build-dev,zip-dev,build-xtest"/>
+    <target name="all" depends="init,get-netbeans,clean,build-tiny,init-zip,zip-tiny,build-dev,zip-dev,build-xtest"/>
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="init">
-        <delete dir="${cache}/dist"/>
-        <mkdir dir="${cache}/dist"/>
-        <delete dir="${cache}/latest"/>
-        <mkdir dir="${cache}/latest"/>
-
         <property name="env.BUILD_NUMBER" value=""/>
         
         <tstamp>
@@ -62,6 +57,13 @@
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="bootstrap"/>
+    </target>
+
+    <target name="init-zip">
+        <delete dir="${cache}/dist"/>
+        <mkdir dir="${cache}/dist"/>
+        <delete dir="${cache}/latest"/>
+        <mkdir dir="${cache}/latest"/>
     </target>
 
     <target name="build-xtest">
