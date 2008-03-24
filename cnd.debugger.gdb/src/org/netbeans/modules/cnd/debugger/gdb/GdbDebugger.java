@@ -1797,6 +1797,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
         }
         String response = cb.waitForCompletion();
+        if (cb.getState() == CommandBuffer.STATE_ERROR) {
+            return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
+        }
         if (response.startsWith("@0x")) { // NOI18N
             cb = new CommandBuffer();
             gdb.print(cb, expression);
