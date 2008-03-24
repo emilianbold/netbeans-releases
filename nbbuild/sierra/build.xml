@@ -49,11 +49,11 @@
         <property name="env.BUILD_NUMBER" value=""/>
         
         <tstamp>
-            <format property="long_stamp" pattern="yyyyMMdd_HHmm"/>
+            <format property="long.stamp" pattern="yyyyMMdd_HHmm"/>
         </tstamp>
 
         <tstamp>
-            <format property="short_stamp" pattern="yyyyMMdd"/>
+            <format property="short.stamp" pattern="yyyyMMdd"/>
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="bootstrap"/>
@@ -90,14 +90,14 @@
 
         <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
         <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
-        <echo file="${build.number}" message="sierra build: ${long_stamp}${line.separator}" append="true"/>
+        <echo file="${build.number}" message="sierra build: ${long.stamp}${line.separator}" append="true"/>
 
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>
 
     <!-- zip -->
     <target name="zip-tiny">
-        <zip destfile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${short_stamp}.zip">
+        <zip destfile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${short.stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/bin/**"/>
                 <include name="netbeans/enterprise5/**"/>
@@ -123,7 +123,7 @@
             </zipfileset>
         </zip>
 
-        <copy file="${cache}/latest/sierra_dev.zip" tofile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${long_stamp}_dev.zip"/>
+        <copy file="${cache}/latest/sierra_dev.zip" tofile="${cache}/dist/sierra_${env.BUILD_NUMBER}_${long.stamp}_dev.zip"/>
     </target>
 
     <!-- extra -->
