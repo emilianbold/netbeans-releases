@@ -292,6 +292,29 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             return super.visitVariable(varTree, elementToMatch);
         }
 
+        // handles only simple situations like
+        // ArrayList list = (ArrayList) getList();
+        // where ArrayList is being substituted by a supertype
+        @Override
+        public Tree visitTypeCast(TypeCastTree castTree, Element elementToMatch) {
+            TreePath path = getCurrentPath();
+            Types types = workingCopy.getTypes();
+            TypeMirror castTypeErasure = erasureOf(workingCopy.getTrees().getTypeMirror(path));
+            TypeMirror elToMatchErasure = erasureOf(elementToMatch.asType());
+            path = path.getParentPath();
+            Element element = workingCopy.getTrees().getElement(path);
+            if (element instanceof VariableElement && types.isSameType(castTypeErasure, elToMatchErasure)) {
+                VariableElement varElement = (VariableElement)element;
+                TypeMirror varTypeErasure = erasureOf(varElement.asType());
+                if (types.isSameType(varTypeErasure, elToMatchErasure) && isReplaceCandidate(varElement)) {
+                    TypeCastTree newTree = make.TypeCast(
+                        make.Identifier(superTypeElement), castTree.getExpression());
+                    rewrite(castTree, newTree);
+                }
+            }
+            return super.visitTypeCast(castTree, element);
+        }
+        
         private boolean hidesSupTypeMember(Element methElement, TypeElement superTypeElement) {
             Elements elements = workingCopy.getElements();
             List<? extends Element> containedElements = elements.getAllMembers(superTypeElement);

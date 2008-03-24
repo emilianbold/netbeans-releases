@@ -42,7 +42,6 @@ package org.netbeans.modules.javascript.editing;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -249,7 +248,7 @@ public class JsIndexer implements Indexer {
         private final ParserFile file;
         private String url;
         private final JsParseResult result;
-        private final BaseDocument doc;
+        private BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
         
@@ -257,20 +256,6 @@ public class JsIndexer implements Indexer {
             this.result = result;
             this.file = result.getFile();
             this.factory = factory;
-            if (result.getInfo() != null) {
-                this.doc = LexUtilities.getDocument(result.getInfo(), true);
-            } else {
-                this.doc = NbUtilities.getBaseDocument(file.getFileObject(), true);
-            }
-
-            try {
-                url = file.getFileObject().getURL().toExternalForm();
-
-                // Make relative URLs for urls in the libraries
-                url = JsIndex.getPreindexUrl(url);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
         }
 
         List<IndexDocument> getDocuments() {
@@ -278,8 +263,35 @@ public class JsIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
+            FileObject fo = file.getFileObject();
+            if (result.getInfo() != null) {
+                this.doc = LexUtilities.getDocument(result.getInfo(), true);
+            } else {
+                // openide.loaders/src/org/openide/text/DataEditorSupport.java
+                // has an Env#inputStream method which posts a warning to the user
+                // if the file is greater than 1Mb...
+                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
+                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
+                // I don't want to try indexing these files... (you get an interactive
+                // warning during indexing
+                if (fo.getSize () > 1024 * 1024) {
+                    return;
+                }
+                
+                this.doc = NbUtilities.getBaseDocument(fo, true);
+            }
+
+            try {
+                url = fo.getURL().toExternalForm();
+
+                // Make relative URLs for urls in the libraries
+                url = JsIndex.getPreindexUrl(url);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+
             if (file.getExtension().equals("sdoc")) { // NOI18N
-                indexScriptDoc(doc);
+                indexScriptDoc(doc, null);
                 return;
             }
             
@@ -289,14 +301,9 @@ public class JsIndexer implements Indexer {
             if ((children == null) || (children.size() == 0)) {
                 return;
             }
-            String nameExt = file.getNameExt();
-            if ((nameExt.startsWith("jquery-") && !nameExt.endsWith(".sdoc")) || // NOI18N
-               (nameExt.startsWith("yahoo") && !nameExt.endsWith(".sdoc"))) { // NOI18N
-                FileObject fo = findScriptDocFor(url, file.getFileObject()); // NOI18N
-                if (fo != null) {
-                    BaseDocument urlDoc = NbUtilities.getBaseDocument(fo, true);
-                    indexScriptDoc(urlDoc);
-                }
+            
+            if (url.endsWith(".js")) {
+                indexRelatedScriptDocs();
             }
 
             IndexDocument document = factory.createDocument(40); // TODO - measure!
@@ -515,7 +522,7 @@ public class JsIndexer implements Indexer {
             }
         }
         
-        private void indexScriptDoc(BaseDocument doc) {
+        private void indexScriptDoc(BaseDocument doc, String sdocUrl) {
             // I came across the following tags in YUI:
             // @type, @param, @method, @class, @return, @constructor, @namespace, 
             // @static, @private, @event, @property, @extends, @final, @module,
@@ -532,7 +539,7 @@ public class JsIndexer implements Indexer {
             // Finally, there were these typos:
             // @propery, @depreciated, @parem, @parm, 
             
-            IndexDocument document = factory.createDocument(40); // TODO - measure!
+            IndexDocument document = factory.createDocument(40, sdocUrl); // TODO - measure!
             documents.add(document);
 
             // TODO - I need to be able to associate builtin .sdoc files with specific versions found
@@ -558,6 +565,7 @@ public class JsIndexer implements Indexer {
                         String name = null;
                         String superClz = null;
                         String nameSpace = null;
+                        String fullName = null;
                         StringBuilder argList = new StringBuilder();
                         cts.moveStart();
                         while (cts.moveNext()) {
@@ -567,6 +575,8 @@ public class JsIndexer implements Indexer {
                                 CharSequence text = token.text();
                                 if (TokenUtilities.textEquals("@id", text)) { // NOI18N
                                     id = JsCommentLexer.nextIdentGroup(cts);
+                                } else if (TokenUtilities.textEquals("@name", text)) { // NOI18N
+                                    fullName = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@param", text)) { // NOI18N
                                     int index = cts.index();
                                     String paramType = JsCommentLexer.nextType(cts);
@@ -606,9 +616,13 @@ public class JsIndexer implements Indexer {
                                     nameSpace = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@class", text)) { // NOI18N
                                     clz = JsCommentLexer.nextIdentGroup(cts);
+                                } else if (TokenUtilities.textEquals("@memberOf", text)) { // NOI18N
+                                    clz = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@method", text)) { // NOI18N
                                     flags = flags | IndexedElement.FUNCTION;
                                     name = JsCommentLexer.nextIdentGroup(cts);
+                                } else if (TokenUtilities.textEquals("@function", text)) { // NOI18N
+                                    flags = flags | IndexedElement.FUNCTION;
                                 } else if (TokenUtilities.textEquals("@global", text)) { // NOI18N
                                     flags = flags & (~IndexedElement.FUNCTION);
                                     flags = flags | IndexedElement.GLOBAL;
@@ -620,6 +634,12 @@ public class JsIndexer implements Indexer {
                                 }
                                 // TODO - how do I encode constants?
                             }
+                        }
+                        
+                        if (fullName != null && id == null) {
+                            id = fullName;
+                            // When using @name, @class is just used as a description
+                            clz = null;
                         }
                         
                         if (id == null && clz != null && name == null) {
@@ -747,57 +767,122 @@ public class JsIndexer implements Indexer {
                 }
             }
         }
+        
+        private void indexRelatedScriptDocs() {
+            // (1) If it's a simple library like JQuery, use the assocaited file, else
+            // (2) If it's a YUI file, use the associated file in sdoc, else
+            // (3) If it's a YUI "collections" file, use the associated set of files (I must iterate)
+            // Finally, in all cases, see if there's a corresponding sdoc file in the dir and if so,
+            // use it.
+            
+            //            if (fo != null) {
+            //                // Prioritize sdoc files bundled next to the file
+            //                if (fo != null && fo.getParent() != null) {
+            //                    String base = fo.getNameExt();
+            //                    if (base.endsWith(".js")) { // NOI18N
+            //                        base = base.substring(0, base.length()-3);
+            //                    }
+            //                    fo = fo.getParent().getFileObject(base + ".sdoc"); // NOI18N
+            //                    if (fo != null) {
+            //                        return fo;
+            //                    }
+            //                }
+            //            }
+            
+            int begin = url.lastIndexOf('/');
+            if (url.startsWith("jquery-", begin+1)) { // NOI18N
+                indexScriptDoc("jquery.sdoc", false); // NOI18N
+            } else if (url.startsWith("yahoo.js", begin+1) || // NOI18N
+                    url.startsWith("yahoo-debug.js", begin+1) || // NOI18N
+                    url.startsWith("yahoo-min.js", begin+1)) { // NOI18N
+                int subBegin = begin-"yahoo".length();
+                if (url.startsWith("yahoo/yahoo", subBegin)) {
+                    // Part of a build tree - just index the yahoo file itself
+                    indexScriptDoc("yui/" + url.substring(subBegin), false); // NOI18N
+                } else {
+                    // Index all the YUI stuff
+                    indexScriptDoc("yui", true);
+                }
+            } else {
+                // TODO - do something smarter here based on which "collection" files
+                // you're using which pull in many individual files...
+                // See http://developer.yahoo.com/yui/articles/hosting/
+                int yuiIndex = url.indexOf("/yui/build/"); // NOI18N
+                if (yuiIndex != -1) {
+                    indexScriptDoc("yui/" + url.substring(yuiIndex+"/yui/build/".length()), false);
+                }
+            }
+        }
+
+        /**
+         * Method which recursively indexes directory trees, such as the yui/ folder
+         * for example
+         */
+        private void indexScriptDocRecursively(FileObject fo, String url) {
+            if (fo.isFolder()) {
+                for (FileObject c : fo.getChildren()) {
+                    indexScriptDocRecursively(c, url+ "/" + c.getName()); // NOI18N
+                }
+                return;
+            }
+            
+            if (fo.getExt().equals("sdoc")) { // NOI18N
+                BaseDocument urlDoc = NbUtilities.getBaseDocument(fo, true);
+                indexScriptDoc(urlDoc, url);
+            }
+        }
+        
+        private static FileObject sdocsRoot;
+        private static String sdocsRootUrl;
+
+        private void indexScriptDoc(String relative, boolean recurse) {
+            if (relative != null) {
+                if (sdocsRootUrl == null) {
+                    File sdocs = InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip",  // NOI18N
+                            "org-netbeans-modules-javascript-editing.jar", false); // NOI18N
+                    if (sdocs.exists()) {
+                        try {
+                            String s = sdocs.toURI().toURL().toExternalForm() + "!/sdocs"; // NOI18N
+                            URL u = new URL("jar:" + s);// NOI18N
+                            sdocsRoot = URLMapper.findFileObject(u);
+                            sdocsRootUrl = u.toExternalForm();
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if (sdocsRoot == null) {
+                        sdocsRootUrl = ""; // NOI18N
+                        return;
+                    }
+                }
+                if (sdocsRootUrl.length() > 0) {
+                    if (relative.endsWith("-debug.js")) { // NOI18N
+                        relative = relative.substring(0, relative.length()-"-debug.js".length()) + ".sdoc"; // NOI18N
+                    } else if (relative.endsWith("-min.js")) { // NOI18N
+                        relative = relative.substring(0, relative.length()-"-min.js".length()) + ".sdoc"; // NOI18N
+                    } else if (relative.endsWith(".js")) { // NOI18N
+                        relative = relative.substring(0, relative.length()-2) + "sdoc"; // NOI18N
+                    }
+                    assert sdocsRoot != null;
+
+                    FileObject fo = sdocsRoot.getFileObject(relative);
+                    if (fo != null) {
+                        String urlString = sdocsRootUrl+"/"+relative; // NOI18N
+                        if (recurse) {
+                            indexScriptDocRecursively(fo, urlString);
+                        } else {
+                            BaseDocument urlDoc = NbUtilities.getBaseDocument(fo, true);
+                            indexScriptDoc(urlDoc, urlString);
+                        }
+                    }
+                }
+            }
+        }
     }
     
     public File getPreindexedData() {
         return null;
     }
-
-    static FileObject findScriptDocFor(String url, FileObject fo) {
-        if (fo != null) {
-            // Prioritize sdoc files bundled next to the file
-            if (fo != null && fo.getParent() != null) {
-                String base = fo.getNameExt();
-                if (base.endsWith(".js")) { // NOI18N
-                    base = base.substring(0, base.length()-3);
-                }
-                fo = fo.getParent().getFileObject(base + ".sdoc"); // NOI18N
-                if (fo != null) {
-                    return fo;
-                }
-            }
-        }
-        int begin = url.lastIndexOf('/');
-        String sdoc = null;
-        if (url.startsWith("jquery-", begin+1)) { // NOI18N
-            sdoc = "jquery.sdoc"; // NOI18N
-        } else if (url.startsWith("yahoo.js", begin+1) || // NOI18N
-                url.startsWith("yahoo-debug.js", begin+1) || // NOI18N
-                url.startsWith("yahoo-min.js", begin+1)) { // NOI18N
-            // TODO - see if it looks like yui
-            if (url.indexOf("/yui/") != -1) { // NOI18N
-                // XXX How do I prevent doing this if you're indexing the actual YUI sources?
-                sdoc = "yui.sdoc"; // NOI18N
-            }
-        }
-        
-        if (sdoc != null) {
-            File sdocs = InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip",  // NOI18N
-                    "org-netbeans-modules-javascript-editing.jar", false); // NOI18N
-            if (sdocs.exists()) {
-                try {
-                    URL u = new URL("jar:" + sdocs.toURI().toURL().toExternalForm() + // NOI18N
-                            "!/" + sdoc);// NOI18N
-                    return URLMapper.findFileObject(u);
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        
-        return null;
-    }
-    
     
     private static FileObject preindexedDb;
 

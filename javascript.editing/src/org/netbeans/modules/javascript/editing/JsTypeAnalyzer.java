@@ -358,6 +358,12 @@ public class JsTypeAnalyzer {
             }
             String firstType = expressionType(first);
             if (firstType == null) {
+                if (!(first instanceof Node.StringNode)) {
+                    // I'm not sure why this happens... 
+                    // but see http://statistics.netbeans.org/analytics/detail.do?id=39154
+                    // Investigate this
+                    return null;
+                }
                 firstType = first.getString();
             }
             String secondStr = second.getString();

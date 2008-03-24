@@ -122,7 +122,7 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                         allParams.addAll(bean.getInputParameters());
                     }
                     if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
-                        JaxWsCodeSetupPanel panel = new JaxWsCodeSetupPanel(
+                        JaxRsCodeSetupPanel panel = new JaxRsCodeSetupPanel(
                                 codegen.getSubresourceLocatorUriTemplate(),
                                 bean.getQualifiedClassName(), 
                                 allParams,

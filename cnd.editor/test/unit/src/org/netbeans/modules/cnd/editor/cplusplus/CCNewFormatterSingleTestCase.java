@@ -164,21 +164,37 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //
 
     
-    public void testSpaceBinaryOperator() {
+    public void testAlignOtherParen() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineIfCondition, true);
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
-            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
-            "    return(0);\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "     + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "            && (GET_MODE_SIZE (outmode[j]) > GET_MODE_SIZE (inmode[j])))\n" +
+            "            ? outmode[j] : inmode[j]) a++;\n" +
+            "  while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "       options, NULL)) != -1)\n" +
+            "    a++;\n" +
             "}\n"
             );
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
             "int foo()\n" +
             "{\n" +
-            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
-            "    return (0);\n" +
+            "    v = (rup->ru_utime.tv_sec * 1000 + rup->ru_utime.tv_usec / 1000\n" +
+            "         + rup->ru_stime.tv_sec * 1000 + rup->ru_stime.tv_usec / 1000);\n" +
+            "    if ((inmode[j] == VOIDmode\n" +
+            "         && (GET_MODE_SIZE(outmode[j]) > GET_MODE_SIZE(inmode[j])))\n" +
+            "        ? outmode[j] : inmode[j]) a++;\n" +
+            "    while ((opt = getopt_long(argc, argv, OPTION_STRING,\n" +
+            "                              options, NULL)) != -1)\n" +
+            "        a++;\n" +
             "}\n"
         );
     }

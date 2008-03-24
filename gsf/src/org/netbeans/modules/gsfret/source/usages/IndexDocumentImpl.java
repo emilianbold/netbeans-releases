@@ -48,6 +48,7 @@ class IndexDocumentImpl implements IndexDocument {
     final List<String> indexedValues;
     final List<String> unindexedKeys;
     final List<String> unindexedValues;
+    String overrideUrl;
 
     public IndexDocumentImpl(int initialCapacity) {
         indexedKeys = new ArrayList<String>(initialCapacity);
@@ -56,6 +57,11 @@ class IndexDocumentImpl implements IndexDocument {
         unindexedValues = new ArrayList<String>(6);
     }
 
+    public IndexDocumentImpl(int initialCapacity, String overrideUrl) {
+        this(initialCapacity);
+        this.overrideUrl = overrideUrl;
+    }
+    
     public void addPair(String key, String value, boolean indexed) {
         if (indexed) {
             indexedKeys.add(key);
@@ -64,6 +70,10 @@ class IndexDocumentImpl implements IndexDocument {
             unindexedKeys.add(key);
             unindexedValues.add(value);
         }
+    }
+    
+    public String getOverrideUrl() {
+        return overrideUrl;
     }
     
     @Override

@@ -41,6 +41,8 @@
 package org.netbeans.modules.websvc.axis2.nodes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -72,9 +74,11 @@ import org.openide.util.NbPreferences;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
-    private static final String WSDL_URL_PROP = "wsdl_url"; //NOI18N
+    private static final String WSDL_URL_PROP = "wsdl-url"; //NOI18N
     private static final String AXIS_ICON = "org/netbeans/modules/websvc/axis2/resources/axis_node_16.png"; // NOI18N
     
     Service service;
@@ -141,7 +145,7 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
             SystemAction.get(OpenAction.class),
             SystemAction.get(DeployAction.class),
             null,
@@ -152,10 +156,22 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             null,
             SystemAction.get(DeleteAction.class),
             null,
-            SystemAction.get(PropertiesAction.class),
-        };
+            SystemAction.get(PropertiesAction.class)));
+        addFromLayers(actions, "WebServices/Services/Actions");
+        return actions.toArray(new Action[actions.size()]);
     }
     
+    private void addFromLayers(List<Action> actions, String path) {
+        Lookup look = Lookups.forPath(path);
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                actions.add((Action) next);
+            } else if (next instanceof javax.swing.JSeparator) {
+                actions.add(null);
+            }
+        }
+    }
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;

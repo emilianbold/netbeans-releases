@@ -64,7 +64,7 @@ public class UnitImpl implements Unit {
        
        this.unitName = unitName;
        singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
-       multyFileStorage = new MultyFileStorage();
+       multyFileStorage = new MultyFileStorage(this.getName());
     }
     
     protected Storage getStorage(Key key) {

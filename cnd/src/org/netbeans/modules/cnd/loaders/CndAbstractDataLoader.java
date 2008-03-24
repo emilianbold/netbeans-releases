@@ -116,7 +116,13 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
             map.put("PACKAGE_AND_NAME", packageName + name); // NOI18N
             map.put("NAME", name); // NOI18N
             map.put("EXTENSION", ext); // NOI18N
-            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
+//            String guardName = (name + "_" + ext).replace('-', '_').replace('.', '_'); // NOI18N
+            String fullName = name + "_" + ext, guardName = ""; //NOI18N
+            for (int i = 0; i < fullName.length(); i++) {
+                char c = fullName.charAt(i);
+                guardName += Character.isJavaIdentifierPart(c) ? c : '_';
+            }
+
             map.put("GUARD_NAME", guardName.toUpperCase()); // NOI18N
             /*
             This is a ugly hack but I don't have a choice. That's because

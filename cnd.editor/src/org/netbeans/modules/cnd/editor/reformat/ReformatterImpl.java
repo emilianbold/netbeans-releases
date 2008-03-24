@@ -1115,28 +1115,14 @@ public class ReformatterImpl {
                 Token<CppTokenId> prev = ts.findOpenParenToken(parenDepth);
                 if (prev != null) {
                     switch (prev.id()){
-                        case IDENTIFIER:
-                        {
-                            if (braces.isDeclarationLevel()){
-                                if (codeStyle.alignMultilineMethodParams()){
-                                    int i = ts.openParenIndent(parenDepth);
-                                    if (i >=0) {
-                                        space = i;
-                                    }
-                                }
-                            } else {
-                                if (codeStyle.alignMultilineCallArgs()){
-                                    int i = ts.openParenIndent(parenDepth);
-                                    if (i >=0) {
-                                        space = i;
-                                    }
-                                }
-                            }
-                            break;
-                        }
                         case FOR:
                         {
-                            if (codeStyle.alignMultilineFor()){
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineFor()){
                                 int i = ts.openParenIndent(parenDepth);
                                 if (i >=0) {
                                     space = i;
@@ -1146,7 +1132,12 @@ public class ReformatterImpl {
                         }
                         case IF:
                         {
-                            if (codeStyle.alignMultilineIfCondition()){
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineIfCondition()){
                                 int i = ts.openParenIndent(parenDepth);
                                 if (i >=0) {
                                     space = i;
@@ -1156,8 +1147,44 @@ public class ReformatterImpl {
                         }
                         case WHILE:
                         {
-                            if (codeStyle.alignMultilineWhileCondition()){
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineWhileCondition()){
                                 int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case IDENTIFIER:
+                        {
+                            if (braces.isDeclarationLevel()){
+                                if (codeStyle.alignMultilineMethodParams()){
+                                    int i = ts.openParenIndent(parenDepth);
+                                    if (i >=0) {
+                                        space = i;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        // no break
+                        default:
+                        {
+                            Token<CppTokenId> closer = ts.findOpenParenToken(1);
+                            if (closer != null && closer.id() == IDENTIFIER) {
+                                if (codeStyle.alignMultilineCallArgs()) {
+                                    int i = ts.openParenIndent(1);
+                                    if (i >=0) {
+                                        space = i;
+                                    }
+                                }
+                            } else if (codeStyle.alignMultilineParen()){
+                                int i = ts.openParenIndent(1);
                                 if (i >=0) {
                                     space = i;
                                 }

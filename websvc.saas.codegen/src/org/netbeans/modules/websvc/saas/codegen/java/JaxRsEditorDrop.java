@@ -96,6 +96,8 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
         Method m = method.getWadlMethod();
+        if(m == null)
+            Exceptions.printStackTrace(new IOException("Wadl method not found"));
         final String displayName = m.getName();
         
         targetFO = getTargetFile(targetComponent);
