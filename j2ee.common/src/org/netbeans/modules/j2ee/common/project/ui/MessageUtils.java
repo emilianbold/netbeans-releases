@@ -48,6 +48,8 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
+ * Provides methods to set warning or error message to JLabel, properly
+ * decorating it with icon and font color.
  *
  * @author Petr Hejl
  */
@@ -57,6 +59,13 @@ public final class MessageUtils {
         super();
     }
 
+    /**
+     * Sets the message to the given label.
+     *
+     * @param label label where the message will be displayed
+     * @param type type of the message
+     * @param message the message to display
+     */
     public static void setMessage(JLabel label, MessageType type, String message) {
         Parameters.notNull("type", type);
         Parameters.notNull("message", message);
@@ -65,6 +74,11 @@ public final class MessageUtils {
         setMessage(label, type.getIcon(), message);
     }
 
+    /**
+     * Clears the message placed in the JLabel.
+     *
+     * @param label label to clear
+     */
     public static void clear(JLabel label) {
         setMessage(label, (Icon) null, (String) null);
     }
@@ -75,8 +89,14 @@ public final class MessageUtils {
         label.setToolTipText(message);
     }
 
+    /**
+     * The type of the message.
+     */
     public static enum MessageType {
 
+        /**
+         * Error message.
+         */
         ERROR  {
             protected Icon getIcon() {
                 return new ImageIcon(Utilities.loadImage(
@@ -92,6 +112,9 @@ public final class MessageUtils {
             }
         },
 
+        /**
+         * Warning message.
+         */
         WARNING {
             protected Icon getIcon() {
                 return new ImageIcon(Utilities.loadImage(
@@ -107,8 +130,18 @@ public final class MessageUtils {
             }
         };
 
+        /**
+         * Returns the icon representing this message type.
+         *
+         * @return the icon representing this message type
+         */
         protected abstract Icon getIcon();
 
+        /**
+         * Returns the font color for this message type.
+         *
+         * @return the font color for this message type
+         */
         protected abstract Color getColor();
 
     }
