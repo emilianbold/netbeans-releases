@@ -43,6 +43,7 @@ import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
@@ -66,11 +67,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/openesb/wizard.xml"; // NOI18N
-    
-    private static final String GLASSFISH_UID =
-            "glassfish"; // NOI18N
-    private static final String APPSERVER_UID =
-            "sjsas"; // NOI18N
     
     private static final String JBI_INSTALLER =
             "jbi_components_installer.jar"; // NOI18N
@@ -96,7 +92,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencies(Requirement.class);
+        
         final List<Product> sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -170,7 +167,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void uninstall(Progress progress) throws UninstallationException {
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencies(Requirement.class);
         final List<Product> sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         

@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.editor.CppFoldManagerBase;
+
 /** Options for the C editor kit */
 public class COptions extends CCOptions {
 
@@ -55,5 +59,37 @@ public class COptions extends CCOptions {
     /** Return the C Indent Engine class */
     protected @Override Class getDefaultIndentEngineClass() {
         return CIndentEngine.class;
+    }
+
+    @Override
+    public Map<String, Boolean> getCodeFoldingProps() {
+        Map<String, Boolean> map = new HashMap<String, Boolean>(super.getCodeFoldingProps());
+        String name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_METHOD;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INNERCLASS;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_IMPORT;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_JAVADOC;
+        map.put(name, (Boolean)getSettingValue(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
+        map.put(name, (Boolean)getSettingValue(name));
+        return map;
+    }
+
+    @Override
+    public void setCodeFoldingProps(Map props) {
+        String name = CppFoldManagerBase.CODE_FOLDING_ENABLE;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_METHOD;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INNERCLASS;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_IMPORT;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_JAVADOC;
+        setSettingValue(name, props.get(name));
+        name = CppFoldManagerBase.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
+        setSettingValue(name, props.get(name));
     }
 }

@@ -22,6 +22,7 @@
   <li><b>Type.</b> If you select this radio button,  you can set the number to a currency or percent type of number, or leave it as a general number. You can select either a Type or a Pattern for the number. </li>
   <li><b>Integer Digits.</b> The minimum and maximum number of digits allowed for the integer part of the number, which default to a minimum of 1 and a maximum of 40. </li>
   <li><b>Fractional Digits.</b>  The minimum and maximum number of digits allowed for the fractional part of the number, if any. The defaults are a minimum of 0 and a maximum of 3. </li>
+  <li><strong>Use Grouping Separator.</strong> This checkbox allows you to use a comma to separate columns of numbers. This is especially useful with larger numbers.</li>
   <li><b>Locale.</b> A code that determines the locale conventions used to interpret the number, such as using a period to separate the integer and fractional parts of the number. Pick the locale from the drop down list. If you choose the blank value, the default locale is used.</li>
   <li><b>Currency Code:</b> The three-letter ISO 4217 standard code used for the currency, only available if the Type is <code>currency</code>. For a list of currency codes, see 
     <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
@@ -29,8 +30,9 @@
    <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
     <param name="viewerSize" value="500,600">
-    <param name="text" value="Currency Codes"></object> 
+    <param name="text" value="Currency Codes"> </object> 
 </li>
+  <li><strong>Symbol.</strong> The symbol associated with the currency. When you select a currency code, the symbol is entered in this field. </li>
   <li><b>Pattern.</b> If selected, the user is required to enter values that use the specified pattern. Choose a pattern from the drop down list or enter one of your own. You can select either a Type or a Pattern for the number.</li>
   <li><b>Integer Only.</b> The number must be a whole number with no fractional digits.  For example, in 
 the English locale  with Integer Only selected, the string "1234." is parsed as the integer value 1234, and parsing  stops at the "." character. The exact format accepted by the parse operation is dependent on the locale.</li>

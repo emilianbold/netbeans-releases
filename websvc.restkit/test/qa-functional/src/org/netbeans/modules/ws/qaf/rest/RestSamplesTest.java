@@ -55,9 +55,6 @@ import org.xml.sax.SAXException;
  */
 public class RestSamplesTest extends RestTestBase {
 
-    //see: https://glassfish.dev.java.net/issues/show_bug.cgi?id=4417
-    private static final boolean isWindows = System.getProperty("os.name").contains("Windows");
-    
     public RestSamplesTest(String name) {
         super(name);
     }
@@ -87,13 +84,11 @@ public class RestSamplesTest extends RestTestBase {
     public void testHelloWorldSample() throws IOException, MalformedURLException, SAXException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/HelloWorldSampleProject");
         createProject(sampleName, getProjectType(), null);
-        if (!isWindows) {
-            deployProject(getProjectName());
-//          WebResponse wr = doGet(getRestAppURL() + "/resources/helloWorld", MimeType.TEXT_HTML); //NOI18N
-//          String expectedResponse = "<html><body><h1>Hello World!</body></h1></html>"; //NOI18N
-//          assertEquals("invalid response", expectedResponse, wr.getText()); //NOI18N
-            undeployProject(getProjectName());
-        }
+        deployProject(getProjectName());
+//      WebResponse wr = doGet(getRestAppURL() + "/resources/helloWorld", MimeType.TEXT_HTML); //NOI18N
+//      String expectedResponse = "<html><body><h1>Hello World!</body></h1></html>"; //NOI18N
+//      assertEquals("invalid response", expectedResponse, wr.getText()); //NOI18N
+        undeployProject(getProjectName());
     }
 
     /**
@@ -104,9 +99,7 @@ public class RestSamplesTest extends RestTestBase {
     public void testCustomerDBSample() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/CustomerDBSampleProject");
         createProject(sampleName, getProjectType(), null);
-        if (!isWindows) {
-            deployProject(getProjectName());
-        }
+        deployProject(getProjectName());
     }
 
     /**
@@ -117,23 +110,25 @@ public class RestSamplesTest extends RestTestBase {
     public void testCustomerDBClientSample() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/CustomerDBClientSampleProject");
         createProject(sampleName, getProjectType(), null);
-        if (!isWindows) {
-            deployProject(getProjectName());
-            undeployProject(getProjectName());
-            undeployProject("CustomerDBSample"); //NOI18N
-        }
+        deployProject(getProjectName());
+        undeployProject(getProjectName());
+        undeployProject("CustomerDBSample"); //NOI18N
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new RestSamplesTest("testHelloWorldSample"));
-        suite.addTest(new RestSamplesTest("testCustomerDBSample"));
-        suite.addTest(new RestSamplesTest("testCustomerDBClientSample"));
+        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
+        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
+        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
         return suite;
     }
 
-    /* Method allowing test execution directly from the IDE. */
+    /**
+     * Method allowing test execution directly from the IDE.
+     */
     public static void main(java.lang.String[] args) {
         // run whole suite
         TestRunner.run(suite());
