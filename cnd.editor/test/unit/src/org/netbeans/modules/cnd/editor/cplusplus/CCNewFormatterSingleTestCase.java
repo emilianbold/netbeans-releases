@@ -163,111 +163,104 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
-    public void testNewLinesAterClassHeader() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-    public void testNewLinesAterClassHeader2() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-
-    public void testNewLinesAterClassHeader3() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-        reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
-    }
-
-    public void testNewLinesAterClassHeader4() {
+    public void testSwitchFormatting3SQL() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
-            "class A\n" +
-            "{\n" +
-            "\n" +
-            "public:\n" +
-            "\n" +
-            "    A()\n" +
-            "    {\n" +
-            "    }\n" +
-            "}\n"
-            );
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        if (true)return;\n" +
+                "        else\n" +
+                "        {\n" +
+                "            break;\n" +
+                "        }\n" +
+                "        break;\n" +
+                "    case 14:\n" +
+                "    {\n" +
+                "        i++;\n" +
+                "    }\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                if (true)return;\n" +
+                "                else\n" +
+                "                {\n" +
+                "                    break;\n" +
+                "                }\n" +
+                "            case 12:\n" +
+                "            {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
     }
 }
