@@ -70,6 +70,10 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.util.Exceptions;
 
 /**
@@ -123,7 +127,27 @@ public class PHPCodeCompletion implements Completable {
         for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
             proposals.add(new ConstantItem(constant, request));
         }
+        
+        // LOCAL VARIABLES
+        
+        proposals.addAll(getLocalVariableProposals(result, prefix));
 
+        return proposals;
+    }
+    
+    private Collection<CompletionProposal> getLocalVariableProposals(PHPParseResult result, String prefix){
+        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        for (Statement statement : result.getProgram().getStatements()){
+            if (statement instanceof ExpressionStatement){
+                Expression expr = ((ExpressionStatement)statement).getExpression();
+                
+                if (expr instanceof Assignment){
+                    System.err.println("" + ((Assignment)expr).getLeftHandSide().getClass());
+                }
+            }
+        }
+        
         return proposals;
     }
 
