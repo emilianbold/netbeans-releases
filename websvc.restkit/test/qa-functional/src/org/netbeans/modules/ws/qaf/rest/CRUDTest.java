@@ -62,12 +62,12 @@ import org.xml.sax.SAXException;
  *
  * @author lukas
  */
-public class CRUDTSuite extends RestTestBase {
+public class CRUDTest extends RestTestBase {
 
     /** Default constructor.
      * @param testName name of particular test case
     */
-    public CRUDTSuite(String name) {
+    public CRUDTest(String name) {
         super(name);
     }
 
@@ -302,15 +302,15 @@ public class CRUDTSuite extends RestTestBase {
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CRUDTSuite("testRfE")); //NOI18N
-        suite.addTest(new CRUDTSuite("testPropAccess")); //NOI18N
-        suite.addTest(new CRUDTSuite("testDeploy")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testGet")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testPost")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testPut")); //NOI18N
-//        suite.addTest(new CRUDTSuite("testDelete")); //NOI18N
-        suite.addTest(new CRUDTSuite("testCreateRestClient")); //NOI18N
-        suite.addTest(new CRUDTSuite("testUndeploy")); //NOI18N
+        suite.addTest(new CRUDTest("testRfE")); //NOI18N
+        suite.addTest(new CRUDTest("testPropAccess")); //NOI18N
+        suite.addTest(new CRUDTest("testDeploy")); //NOI18N
+//        suite.addTest(new CRUDTest("testGet")); //NOI18N
+//        suite.addTest(new CRUDTest("testPost")); //NOI18N
+//        suite.addTest(new CRUDTest("testPut")); //NOI18N
+//        suite.addTest(new CRUDTest("testDelete")); //NOI18N
+        suite.addTest(new CRUDTest("testCreateRestClient")); //NOI18N
+        suite.addTest(new CRUDTest("testUndeploy")); //NOI18N
         return suite;
     }
 

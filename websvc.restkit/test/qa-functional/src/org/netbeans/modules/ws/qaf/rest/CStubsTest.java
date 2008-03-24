@@ -66,9 +66,9 @@ import org.openide.nodes.Node;
  *
  * @author lukas
  */
-public class CStubsTSuite extends RestTestBase {
+public class CStubsTest extends RestTestBase {
 
-    public CStubsTSuite(String name) {
+    public CStubsTest(String name) {
         super(name);
     }
 
@@ -226,10 +226,10 @@ public class CStubsTSuite extends RestTestBase {
      */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
-        suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
+        suite.addTest(new CStubsTest("testWizard")); //NOI18N
+        suite.addTest(new CStubsTest("testCreateSimpleStubs")); //NOI18N
+        suite.addTest(new CStubsTest("testFromWADL")); //NOI18N
+        suite.addTest(new CStubsTest("testCloseProject")); //NOI18N
         return suite;
     }
 

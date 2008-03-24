@@ -60,7 +60,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author lukas
  */
-public class PatternsTSuite extends RestTestBase {
+public class PatternsTest extends RestTestBase {
 
     private enum Pattern {
 
@@ -209,7 +209,7 @@ public class PatternsTSuite extends RestTestBase {
     /** Def constructor.
      * @param testName name of particular test case
      */
-    public PatternsTSuite(String name) {
+    public PatternsTest(String name) {
         super(name);
     }
 
@@ -448,21 +448,21 @@ public class PatternsTSuite extends RestTestBase {
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PatternsTSuite("testSingletonDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerIDef")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI1")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testSingleton3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI2")); //NOI18N
-        suite.addTest(new PatternsTSuite("testCcContainerI3")); //NOI18N
-        suite.addTest(new PatternsTSuite("testNodes")); //NOI18N
-        suite.addTest(new PatternsTSuite("testDeploy")); //NOI18N
-        suite.addTest(new PatternsTSuite("testUndeploy")); //NOI18N
+        suite.addTest(new PatternsTest("testSingletonDef")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerIDef")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton1")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI1")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton2")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI1")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI2")); //NOI18N
+        suite.addTest(new PatternsTest("testSingleton3")); //NOI18N
+        suite.addTest(new PatternsTest("testContainerI3")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI2")); //NOI18N
+        suite.addTest(new PatternsTest("testCcContainerI3")); //NOI18N
+        suite.addTest(new PatternsTest("testNodes")); //NOI18N
+        suite.addTest(new PatternsTest("testDeploy")); //NOI18N
+        suite.addTest(new PatternsTest("testUndeploy")); //NOI18N
         return suite;
     }
 
