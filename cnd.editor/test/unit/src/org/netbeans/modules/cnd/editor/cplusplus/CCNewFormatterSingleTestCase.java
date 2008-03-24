@@ -163,23 +163,25 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testSpaceBinaryOperator() {
+    //IZ#130898:'Spaces around ternary operators' is not working
+    public void testNewLineFunctionDefinitionName() {
         setDefaultsOptions();
         setLoadDocumentText(
-            "int foo()\n" +
+            "static char *concat (char *s1, char *s2)\n" +
             "{\n" +
-            //"    if (len <= 0 ||| len >= (int)sizeof(buf) || buf[sizeof(buf)-1] != 0) return (1);\n" +
-            "    return(0);\n" +
+            "  int i=0;\n" +
+            "  i=(i==1)?1:2;\n" +
+            "  return (0);\n" +
             "}\n"
             );
         reformat();
         assertDocumentText("Incorrect spaces in binary operators",
-            "int foo()\n" +
+            "static char *concat(char *s1, char *s2)\n" +
             "{\n" +
-            //"    if (len <= 0 || len >= (int) sizeof (buf) || buf[sizeof (buf) - 1] != 0) return (1);\n" +
+            "    int i = 0;\n" +
+            "    i = (i == 1) ? 1 : 2;\n" +
             "    return (0);\n" +
             "}\n"
-        );
+            );
     }
 }

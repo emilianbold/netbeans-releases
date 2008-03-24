@@ -72,6 +72,10 @@ public class GraphExpandProcessor {
     // TODO m add graphEntity support
     public static void expandGraph(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
+        if (mapperTcContext == null || context == null) {
+            return;
+        }
+        
         //
         Mapper mapper = mapperTcContext.getMapper();
         MapperModel mModel = mapper.getModel();

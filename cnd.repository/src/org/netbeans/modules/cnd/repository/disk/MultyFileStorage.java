@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -55,21 +54,13 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  */
 public class MultyFileStorage implements Storage {
     
-    final public static int    DEFAULT_REPOSITORY_OPEN_FILES_LIMIT = 20; 
-    
     private FilesAccessStrategy theFilesHelper;
-    private int openFilesLimit = DEFAULT_REPOSITORY_OPEN_FILES_LIMIT;
+    private String unitName;
     
-    /** Creates a new instance of BaseDiskRepository */
-    public MultyFileStorage() {
+    public MultyFileStorage(String unitName) {
         super();
-        // use the simple helper implementation
-        theFilesHelper = new FilesAccessStrategyImpl(DEFAULT_REPOSITORY_OPEN_FILES_LIMIT);
-    }
-    
-    public void setOpenFilesLimit (int limit) throws IOException {
-        openFilesLimit = limit;
-        theFilesHelper.setOpenFilesLimit(openFilesLimit);
+        theFilesHelper = FilesAccessStrategyImpl.getInstance();
+        this.unitName = unitName;
     }
     
     /** Creates a new instance of SimpleDiskRepository */
@@ -77,31 +68,16 @@ public class MultyFileStorage implements Storage {
         theFilesHelper = aFilesHelper;
     }
     
-    public void setFilesHelper(FilesAccessStrategy aNavigator) {
-        theFilesHelper = aNavigator;
-    }
-    
     public void write(Key id, final Persistent obj) {
         assert id != null;
         assert obj != null;
-        
-        // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
-        ConcurrentFileRWAccess fos = null;
         try {
-            fos = theFilesHelper.getFile(id, false);
-            if (fos != null) {
-                int size = fos.write(theFactory, obj,0);
-                fos.truncate(size);
-            } 
+            theFilesHelper.write(id, theFactory, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
-        } finally {
-            if (fos != null) {
-                fos.getLock().writeLock().unlock();
-            }
         }
     }
     
@@ -112,35 +88,22 @@ public class MultyFileStorage implements Storage {
     public Persistent get(Key id) {
         assert id != null;
         Persistent obj = null;
-        
         // get the factory
         final PersistentFactory theFactory = id.getPersistentFactory();
         assert theFactory != null;
-        ConcurrentFileRWAccess fis = null;
         try {
-            fis = theFilesHelper.getFile(id, true);
-
-            if (fis != null) {
-                // read
-                long size = fis.size();
-                obj = fis.read(theFactory, 0, (int)size);
-            }
+            obj = theFilesHelper.read(id, theFactory);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
-        } finally {
-            if (fis != null) {
-                fis.getLock().readLock().unlock();
-            }
         }
-        
         return obj;
     }
     
     public void remove(Key id) {
         assert id != null;
         try {
-        theFilesHelper.removeFile(id);
+        theFilesHelper.remove(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
@@ -148,8 +111,7 @@ public class MultyFileStorage implements Storage {
     }
 
     public void close() throws IOException {
-        theFilesHelper.setOpenFilesLimit(0);
-        theFilesHelper.setOpenFilesLimit(openFilesLimit);        
+        theFilesHelper.closeUnit(unitName);
     }
 
     public int getFragmentationPercentage() {

@@ -33,8 +33,8 @@ public class __NAME__ extends HttpServlet {
             String authToken = request.getParameter("auth_token");
             session.setAttribute("facebook_auth_token", authToken);
             
-            __NAME__.login(request, response);
-            String sessionKey = __NAME__.getSessionKey(request);
+            FacebookSocialNetworkingServiceAuthenticator.login(request, response);
+            String sessionKey = FacebookSocialNetworkingServiceAuthenticator.getSessionKey(request, response);
          
             out.println("<html>");
             out.println("<head>");

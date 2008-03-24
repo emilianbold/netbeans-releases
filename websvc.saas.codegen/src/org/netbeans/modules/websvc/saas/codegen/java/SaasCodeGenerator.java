@@ -51,8 +51,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -316,6 +318,14 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
                     body += "finally { PersistenceService.getInstance().close()";
                 }
 
+                Map<String, String> methodsMap = new HashMap<String, String>();
+                JavaSourceHelper.getAvailableMethodSignature(targetResourceJS, methodsMap);
+                String sign = JavaSourceHelper.createMethodSignature(
+                    getSubresourceLocatorName(), null);
+                if(methodsMap.containsKey(sign)) {
+                    return;
+                }
+                
                 ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, 
                         Constants.PUBLIC, annotations, annotationAttrs, 
                         getSubresourceLocatorName(), getBean().getQualifiedClassName(), 
