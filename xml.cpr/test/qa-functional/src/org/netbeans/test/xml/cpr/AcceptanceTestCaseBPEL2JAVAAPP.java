@@ -94,6 +94,8 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
         "CreateJAVAAPPModule",
         "AddProjectReference",
         "DeleteProjectReference",
+        "AddSampleSchema",
+        "ImportReferencedSchema",
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -107,6 +109,8 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     static final String MODULE_CATEGORY_NAME = "Java";
     static final String MODULE_PROJECT_NAME = "Java Application";
     static final String MODULE_NAME = "JavaApplication";
+
+    static final String SAMPLE_SCHEMA_PATH = "Source Packages|<default package>";
 
     public AcceptanceTestCaseBPEL2JAVAAPP(String arg0) {
         super(arg0);
@@ -173,11 +177,60 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    public void AddSampleSchema( )
+    {
+      startTest( );
+
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      ProjectRootNode prn = pto.getProjectRootNode( MODULE_NAME );
+      prn.select( );
+
+      NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+      opNewFileWizard.selectCategory( "XML" );
+      opNewFileWizard.selectFileType( "Loan Application Sample Schema" );
+      opNewFileWizard.next( );
+      opNewFileWizard.finish( );
+
+      // Check created schema in project tree
+      if( null == ( new Node( prn, SAMPLE_SCHEMA_PATH + "|newLoanApplication.xsd" ) ) )
+      {
+        fail( "Unable to check created sample schema." );
+      }
+
+      endTest( );
+    }
+
+    public void ImportReferencedSchema( )
+    {
+      startTest( );
+
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
+        );
+      prn.select( );
+
+      JTreeOperator tree = pto.tree( );
+      tree.clickOnPath(
+          tree.findPath( SAMPLE_NAME + "|Process Files|purchaseOrder.xsd" ),
+          2
+        );
+
+      // Check was it opened or no
+      if( null == new EditorOperator( "purchaseOrder.xsd" ) )
+      {
+        fail( "purchaseOrder.xsd was not opened after double click." );
+      }
+
+      endTest( );
+    }
+
     public void RenameSampleSchema( )
     {
       startTest( );
 
-      RenameSampleSchemaInternal( MODULE_NAME );
+      RenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -186,7 +239,7 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      UndoRenameSampleSchemaInternal( MODULE_NAME );
+      UndoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -195,7 +248,7 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      RedoRenameSampleSchemaInternal( MODULE_NAME );
+      RedoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }

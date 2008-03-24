@@ -114,6 +114,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     static final String MODULE_PROJECT_NAME = "BPEL Module";
     static final String MODULE_NAME = "BpelModule";
 
+    static final String SAMPLE_SCHEMA_PATH = "Process Files";
+
     public AcceptanceTestCaseBPEL2BPEL(String arg0) {
         super(arg0);
     }
@@ -232,7 +234,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      RenameSampleSchemaInternal( MODULE_NAME );
+      RenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -241,7 +243,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      UndoRenameSampleSchemaInternal( MODULE_NAME );
+      UndoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -250,7 +252,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      RedoRenameSampleSchemaInternal( MODULE_NAME );
+      RedoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }

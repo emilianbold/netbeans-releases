@@ -163,25 +163,104 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130898:'Spaces around ternary operators' is not working
-    public void testNewLineFunctionDefinitionName() {
+    public void testSwitchFormatting3SQL() {
         setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
-            "static char *concat (char *s1, char *s2)\n" +
-            "{\n" +
-            "  int i=0;\n" +
-            "  i=(i==1)?1:2;\n" +
-            "  return (0);\n" +
-            "}\n"
-            );
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
         reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "static char *concat(char *s1, char *s2)\n" +
-            "{\n" +
-            "    int i = 0;\n" +
-            "    i = (i == 1) ? 1 : 2;\n" +
-            "    return (0);\n" +
-            "}\n"
-            );
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        if (true)return;\n" +
+                "        else\n" +
+                "        {\n" +
+                "            break;\n" +
+                "        }\n" +
+                "        break;\n" +
+                "    case 14:\n" +
+                "    {\n" +
+                "        i++;\n" +
+                "    }\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                if (true)return;\n" +
+                "                else\n" +
+                "                {\n" +
+                "                    break;\n" +
+                "                }\n" +
+                "            case 12:\n" +
+                "            {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
     }
 }
