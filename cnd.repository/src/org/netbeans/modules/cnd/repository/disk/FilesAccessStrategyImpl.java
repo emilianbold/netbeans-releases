@@ -95,7 +95,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return instance;
     }
 
-    public Persistent read(Key key, PersistentFactory factory) throws IOException {
+    public Persistent read(Key key) throws IOException {
         if( Stats.multyFileStatistics ) {
             readCnt++;
             readStatistics.consume(getBriefClassName(key), 1);
@@ -104,6 +104,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         try {
             fis = getFile(key, true);
             if( fis != null ) {
+                final PersistentFactory factory = key.getPersistentFactory();
+                assert factory != null;
                 long size = fis.size();
                 return fis.read(factory, 0, (int)size);
             }
@@ -115,7 +117,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return null;
     }
 
-    public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
+    public void write(Key key, Persistent object) throws IOException {
         if( Stats.multyFileStatistics ) {
             writeCnt++;
             writeStatistics.consume(getBriefClassName(key), 1);
@@ -123,7 +125,10 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         ConcurrentFileRWAccess fos = null;
         try {
             fos = getFile(key, false);
+            assert fos != null;
             if (fos != null) {
+                final PersistentFactory factory = key.getPersistentFactory();
+                assert factory != null;
                 int size = fos.write(factory, object, 0);
                 fos.truncate(size);
             } 
@@ -146,8 +151,6 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         boolean keepLocked = false;
         
         do {
-            boolean create = ! readOnly;
-
             synchronized (cacheLock) {
                 aFile = nameToFileCache.get(fileName);
                 if (aFile == null) {
@@ -156,10 +159,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                     if (fileToCreate.exists()) {
                         aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                         putFile(fileName, aFile);
-                    } else if (create) {
+                    } else if (! readOnly) {
                         String aDirName = fileToCreate.getParent();
                         File aDir = new File(aDirName);
-
                         if (aDir.exists() || aDir.mkdirs()) {
                             aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                             putFile(fileName, aFile);
