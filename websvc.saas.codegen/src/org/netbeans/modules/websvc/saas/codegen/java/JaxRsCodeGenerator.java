@@ -949,9 +949,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     }
 
     private boolean isContains(ParameterInfo pInfo, List<ParameterInfo> params) {
-        String name = pInfo.getName();
+        String name = getVariableName(pInfo.getName());
         for (ParameterInfo p : params) {
-            if (name.equals(p.getName())) {
+            if (name.equals(getVariableName(p.getName()))) {
                 return true;
             }
         }
