@@ -788,8 +788,10 @@ public class ReformatterImpl {
                 case ENUM: //("enum", "keyword"),
                 case UNION: //("union", "keyword"),
                 {
-                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceClass(),
-                            codeStyle.spaceBeforeClassDeclLeftBrace(), codeStyle.blankLinesAfterClassHeader()+1);
+                    Token<CppTokenId> next = ts.lookNextImportant();
+                    if (next != null){
+                        newLinesAfter(previous, current);
+                    }
                     return;
                 }
                 case IF: //("if", "keyword-directive"),
@@ -889,6 +891,37 @@ public class ReformatterImpl {
                 return;
             }
             newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE, true, 1);
+        }
+    }
+    
+    // Method does not preserve token sequence position
+    // Method skips redundant NL
+    private void newLinesAfter(Token<CppTokenId> previous, Token<CppTokenId> current){
+        int start = ts.index();
+        int lastNL = -1;
+        int count = 0;
+    whileLabel:
+        while (ts.moveNext()) {
+            switch (ts.token().id()) {
+                case WHITESPACE:
+                    break;
+                case NEW_LINE:
+                    lastNL = ts.index();
+                    count++;
+                    break;
+                default:
+                    break whileLabel;
+            }
+        }
+        ts.moveIndex(start);
+        ts.moveNext();
+        newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceClass(),
+                codeStyle.spaceBeforeClassDeclLeftBrace(), codeStyle.blankLinesAfterClassHeader()+1);
+        if (count > 1) {
+            ts.moveNext();
+            while (ts.moveNext() && ts.index() <= lastNL) {
+                ts.replaceCurrent(ts.token(), 0, 0);
+            }
         }
     }
 
@@ -1417,7 +1450,7 @@ public class ReformatterImpl {
         if (newLineAfter>0){
             if (ts.isLastLineToken()) {
                 if (newLineAfter>1) {
-                    ts.addAfterCurrent(current, newLineAfter-1, getIndent());
+                    ts.addAfterCurrent(current, newLineAfter-1, 0);
                 }
             } else {
                 ts.addAfterCurrent(current, newLineAfter, getIndent());
@@ -2030,7 +2063,7 @@ public class ReformatterImpl {
             diffToSpace.setText(0, 1);
         }
     }
-    
+
     /*package local*/ boolean doFormat(){
         return ts.offset() >= this.startOffset;
     }
