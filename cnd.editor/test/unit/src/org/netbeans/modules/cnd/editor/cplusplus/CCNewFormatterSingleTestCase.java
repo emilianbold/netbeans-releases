@@ -163,28 +163,110 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
-    public void testSpaceAroundUnaryOperator() {
+    //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
+    public void testNewLinesAterClassHeader() {
         setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
         setLoadDocumentText(
-            "int main(int argc, char** argv)\n" +
+            "class A\n" +
             "{\n" +
-            "    int i = 0;\n" +
-            "    i = -i;\n" +
-            "    i = (-i);\n" +
-            "    return (0);\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
             "}\n"
             );
         reformat();
-        assertDocumentText("Incorrect spaces in unary operators",
-            "int main(int argc, char** argv)\n" +
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
             "{\n" +
-            "    int i = 0;\n" +
-            "    i = - i;\n" +
-            "    i = ( - i);\n" +
-            "    return (0);\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+    public void testNewLinesAterClassHeader2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
             "}\n"
             );
     }

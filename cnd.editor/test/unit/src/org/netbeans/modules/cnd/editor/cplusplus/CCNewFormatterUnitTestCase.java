@@ -3766,4 +3766,112 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
             );
     }
+
+    //IZ#130901:'Blank Lines|After Class Header' text field works wrongly
+    public void testNewLinesAterClassHeader() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+    public void testNewLinesAterClassHeader2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
+
+    public void testNewLinesAterClassHeader4() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.blankLinesAfterClassHeader, 1);
+        setLoadDocumentText(
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Blank Lines \'After Class Header\' text field works wrongly",
+            "class A\n" +
+            "{\n" +
+            "\n" +
+            "public:\n" +
+            "\n" +
+            "    A()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+    }
 }
