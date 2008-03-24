@@ -190,7 +190,7 @@ public final class CodeStyle {
                                       EditorOptions.newLineBeforeBraceDefault));
     }
 
-       //NewLine
+    //NewLine
     public boolean newLineCatch(){
         return getOption(EditorOptions.newLineCatch,
                          EditorOptions.newLineCatchDefault);
@@ -203,7 +203,11 @@ public final class CodeStyle {
         return getOption(EditorOptions.newLineWhile,
                          EditorOptions.newLineWhileDefault);
     }
-         
+    public boolean newLineFunctionDefinitionName(){
+        return getOption(EditorOptions.newLineFunctionDefinitionName,
+                         EditorOptions.newLineFunctionDefinitionNameDefault);
+    }
+    
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);
@@ -232,22 +236,33 @@ public final class CodeStyle {
         return getOption(EditorOptions.alignMultilineWhileCondition,
                          EditorOptions.alignMultilineWhileConditionDefault);
     }
+    public boolean alignMultilineParen() {
+        return getOption(EditorOptions.alignMultilineParen,
+                         EditorOptions.alignMultilineParenDefault);
+    }
+    public boolean alignMultilineArrayInit() {
+        return getOption(EditorOptions.alignMultilineArrayInit,
+                         EditorOptions.alignMultilineArrayInitDefault);
+    }
 
+    //SpacesAroundOperators
     public boolean spaceAroundUnaryOps() {
         return getOption(EditorOptions.spaceAroundUnaryOps,
                          EditorOptions.spaceAroundUnaryOpsDefault);
     }
-
     public boolean spaceAroundBinaryOps() {
         return getOption(EditorOptions.spaceAroundBinaryOps,
                          EditorOptions.spaceAroundBinaryOpsDefault);
     }
-
     public boolean spaceAroundAssignOps() {
         return getOption(EditorOptions.spaceAroundAssignOps,
                          EditorOptions.spaceAroundAssignOpsDefault);
     }
-    
+    public boolean spaceAroundTernaryOps() {
+        return getOption(EditorOptions.spaceAroundTernaryOps,
+                         EditorOptions.spaceAroundTernaryOpsDefault);
+    }
+            
     public boolean spaceBeforeWhile() {
         return getOption(EditorOptions.spaceBeforeWhile,
                          EditorOptions.spaceBeforeWhileDefault);

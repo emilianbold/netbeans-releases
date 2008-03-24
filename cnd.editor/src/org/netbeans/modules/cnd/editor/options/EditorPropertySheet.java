@@ -183,6 +183,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         styleComboBox.setSelectedIndex(index);
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
+        currentProfile = entry.name;
+        defaultStyles.put(currentLanguage, currentProfile);
         styleComboBox.addActionListener(this);
         repaintPreview();
     }
@@ -230,6 +232,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineFor));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineIfCondition));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineWhileCondition));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineParen));
         sheet.put(set);
 
         set = new Sheet.Set();

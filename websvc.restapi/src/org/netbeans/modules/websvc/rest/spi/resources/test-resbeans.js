@@ -156,9 +156,9 @@ TestSupport.prototype = {
                 var mimeType = mimeTypes[k];
                 var dispName = this.wdr.getMethodNameForDisplay(mName, mimeType);
                 if(mName == 'GET')
-                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
                 else
-                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
             }
         }   
         str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table>";
@@ -219,19 +219,19 @@ TestSupport.prototype = {
         var str = '<br/><table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
                             '<span>Choose method to test: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
-        str += "  <option class=MnuJmp_sun4 selected value='GET'>GET</option>";
-        str += "  <option class=MnuJmp_sun4 value='PUT'>PUT</option>";
-        str += "  <option class=MnuJmp_sun4 value='DELETE'>DELETE</option>";
+        str += "  <option class=MnuJmpOpt_sun4 selected value='GET'>GET</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='PUT'>PUT</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='DELETE'>DELETE</option>";
         str += "</select></span></td>";
         str += '<td valign="top"><span id="j_id14"><label for="methodSel" style="padding-left: 6px;" class="LblLev2Txt_sun4">'+
             '<span>MIME: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='mimeSel' class=MnuJmp_sun4 name='mimeSel' onchange='javascript:ts.changeMimeType();'>";
-        str += "  <option class=MnuJmp_sun4 value='application/xml'>application/xml</option>";
-        str += "  <option class=MnuJmp_sun4 value='application/json'>application/json</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/xml'>text/xml</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/plain'>text/plain</option>";
-        str += "  <option class=MnuJmp_sun4 value='text/html'>text/html</option>";
-        str += "  <option class=MnuJmp_sun4 value='image/*'>image/*</option>"; 
+        str += "  <option class=MnuJmpOpt_sun4 value='application/xml'>application/xml</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='application/json'>application/json</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/xml'>text/xml</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/plain'>text/plain</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='text/html'>text/html</option>";
+        str += "  <option class=MnuJmpOpt_sun4 value='image/*'>image/*</option>"; 
         str += "</select></span></td>";
         str += "<td width=30/>"
         str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>Add Parameter</a>";
@@ -245,9 +245,9 @@ TestSupport.prototype = {
             var path = paths[i];
             if(path.indexOf('{') > -1) {
                 var pname = path.substring(1, path.length-1);
-                paramRep += '<td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
                 paramRep += '<span>'+pname+': </span></label></span></td>';
-                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td>';
+                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
             }
         }
         if(paramRep != "") {

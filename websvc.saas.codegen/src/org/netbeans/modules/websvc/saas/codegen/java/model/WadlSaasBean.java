@@ -79,12 +79,17 @@ public class WadlSaasBean extends SaasBean {
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
+        this(m, false);
+    }
+    
+    public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
         super(Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
+        setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
 
@@ -105,7 +110,7 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public String getSaasServiceName() {
-        return getDisplayName()/*+"Service"*/;
+        return getGroupName()+getDisplayName()/*+"Service"*/;
     }
     
     public String getSaasServicePackageName() {
@@ -122,11 +127,11 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getDisplayName());
+        return Util.getAuthenticatorClassName(getSaasName());
     }
     
     public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getDisplayName());
+        return Util.getAuthorizationFrameClassName(getSaasName());
     }
     
     private void init() throws IOException { 
@@ -313,5 +318,10 @@ public class WadlSaasBean extends SaasBean {
             }
         }
         return null;
+    }
+    
+    public boolean canGenerateJAXBUnmarshaller() {
+        return getHttpMethod() == HttpMethodType.GET &&
+                    !findRepresentationTypes(getMethod()).isEmpty();
     }
 }
