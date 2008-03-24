@@ -1377,10 +1377,10 @@ public class Util {
     
     public static List<ParameterInfo> getAuthenticatorMethodParametersForWeb() {
         List<ParameterInfo> params = new ArrayList<ParameterInfo>();
-        params.add(new ParameterInfo("request", Object.class, 
-                "javax.servlet.http.HttpServletRequest"));
-        params.add(new ParameterInfo("response", Object.class, 
-                "javax.servlet.http.HttpServletResponse"));
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_REQUEST_VARIABLE, Object.class, 
+                Constants.HTTP_SERVLET_REQUEST_CLASS));
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_RESPONSE_VARIABLE, Object.class, 
+                Constants.HTTP_SERVLET_RESPONSE_CLASS));
         return params;
     }
 
