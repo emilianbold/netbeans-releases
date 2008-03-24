@@ -170,8 +170,14 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         if( threadManager != null ) {
             threadManager.shutdown();
         }
-        
-        close();
+        try {
+            rwLock.writeLock().lock();
+            cleanAndWriteQueue();
+            iterateWith(new CloseVisitor());
+            units.clear();
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
     
     private void iterateWith(Visitor visitor){
@@ -258,19 +264,6 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     
     public void removeUnit(String unitName) {
 	closeUnit(unitName, true, Collections.<String>emptySet());
-    }
-
-    public void close() {
-        boolean saveAll = true;
-        try {
-            rwLock.writeLock().lock();
-            cleanAndWriteQueue();
-            iterateWith(new CloseVisitor());
-            units.clear();
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-
     }
 
     public int getFragmentationPercentage() throws IOException {
