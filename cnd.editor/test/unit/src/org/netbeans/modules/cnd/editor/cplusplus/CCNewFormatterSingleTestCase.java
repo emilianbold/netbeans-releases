@@ -163,21 +163,104 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
-    public void testMultilineArrayAlignment() {
+    public void testSwitchFormatting3SQL() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineArrayInit, true);
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
-            "        int array[10] ={1, 2, 3, 4,\n" +
-            "    5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
+                "}\n");
         reformat();
-        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
-            "int array[10] = {1, 2, 3, 4,\n" +
-            "                 5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
+                "{\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        if (true)return;\n" +
+                "        else\n" +
+                "        {\n" +
+                "            break;\n" +
+                "        }\n" +
+                "        break;\n" +
+                "    case 14:\n" +
+                "    {\n" +
+                "        i++;\n" +
+                "    }\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                if (true)return;\n" +
+                "                else\n" +
+                "                {\n" +
+                "                    break;\n" +
+                "                }\n" +
+                "            case 12:\n" +
+                "            {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
+                "}\n");
     }
 }
