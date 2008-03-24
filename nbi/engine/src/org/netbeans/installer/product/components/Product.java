@@ -88,7 +88,7 @@ import org.w3c.dom.Element;
  *
  * @author Kirill Sorokin
  */
-public final class Product extends RegistryNode {
+public final class Product extends RegistryNode implements StatusInterface {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Version version;

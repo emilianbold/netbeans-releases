@@ -52,6 +52,8 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.filters.OrFilter;
+import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -101,6 +103,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_NB_ADDONS_LOCATION_TEXT);
         setProperty(GF_ADDONS_LOCATION_TEXT_PROPERTY,
                 DEFAULT_GF_ADDONS_LOCATION_TEXT);
+        setProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY,
+                DEFAULT_AS_ADDONS_LOCATION_TEXT);
         
         setProperty(NEXT_BUTTON_TEXT_PROPERTY,
                 DEFAULT_NEXT_BUTTON_TEXT);
@@ -214,6 +218,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             final List<Product> dependentOnNb = new LinkedList<Product>();
             final List<Product> dependentOnGf = new LinkedList<Product>();
+            final List<Product> dependentOnAs = new LinkedList<Product>();
             boolean nbBasePresent = false;
             
             for (Product product: registry.getProductsToInstall()) {
@@ -227,7 +232,11 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         if (product.getUid().startsWith("nb-")) {
                             dependentOnNb.add(product);
                         } else {
-                            dependentOnGf.add(product);
+                            if(product.getDependencyByUid("glassfish").size()>0) {
+                                dependentOnGf.add(product);
+                            } else if(product.getDependencyByUid("sjsas").size()>0) {
+                                dependentOnAs.add(product);
+                            }
                         }
                     }
                 } catch (InitializationException e) {
@@ -310,7 +319,13 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         StringUtils.asString(dependentOnGf)));
                 text.append(StringUtils.LF);
             }
-            
+            if (dependentOnAs.size() > 0) {
+                text.append(StringUtils.LF);
+                text.append(StringUtils.format(
+                        panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
+                        StringUtils.asString(dependentOnAs)));
+                text.append(StringUtils.LF);
+            }
             locationsPane.setText(text);
             
             uninstallListLabel.setText(
@@ -524,7 +539,15 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         String tomcatLocation = NetBeansUtils.getJvmOption(
                                 installLocation, TOMCAT_JVM_OPTION_NAME_HOME);
                         if(gfLocation!=null) {
-                            for(final Product gfProduct : Registry.getInstance().getProducts("glassfish")) {
+                            List <Product> glassfishesAppservers = Registry.
+                                    getInstance().queryProducts(
+                                    new OrFilter(
+                                    new ProductFilter("glassfish", 
+                                    SystemUtils.getCurrentPlatform()), 
+                                    new ProductFilter("sjsas",
+                                    SystemUtils.getCurrentPlatform())));
+                            
+                            for(final Product gfProduct : glassfishesAppservers) {
                                 if(gfProduct.getStatus() == Status.INSTALLED &&
                                         new File(gfLocation).equals(gfProduct.getInstallationLocation()))    {
                                     glassfishProduct = gfProduct;
@@ -721,6 +744,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "addons.nb.install.location.text"; // NOI18N
     public static final String GF_ADDONS_LOCATION_TEXT_PROPERTY =
             "addons.gf.install.location.text"; // NOI18N
+    public static final String AS_ADDONS_LOCATION_TEXT_PROPERTY =
+            "addons.as.install.location.text"; // NOI18N
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
@@ -763,6 +788,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_GF_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.addons.gf.install.location.text"); // NOI18N
+    public static final String DEFAULT_AS_ADDONS_LOCATION_TEXT =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.addons.as.install.location.text"); // NOI18N    
     public static final String DEFAULT_NB_ADDONS_LOCATION_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.addons.nb.install.location.text"); // NOI18N

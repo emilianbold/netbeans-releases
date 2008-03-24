@@ -143,7 +143,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -186,7 +186,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -213,7 +213,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -240,7 +240,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -267,7 +267,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -297,7 +297,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -351,7 +351,7 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -410,7 +410,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -481,7 +481,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -508,7 +508,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -538,7 +538,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -565,7 +565,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -591,7 +591,7 @@ The values returned from this call are storable. You can store the ID of a frien
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -621,7 +621,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -651,7 +651,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -678,7 +678,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -711,7 +711,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -735,7 +735,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -765,7 +765,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -794,7 +794,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -824,7 +824,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -857,7 +857,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -881,7 +881,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -941,7 +941,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
@@ -971,7 +971,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -998,7 +998,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1025,7 +1025,7 @@ If both parameters are omitted, the method returns all groups of the session use
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1057,7 +1057,7 @@ For regular applications, tags can only be added to pending photos owned by the 
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1100,7 +1100,7 @@ For regular applications, tags can only be added to pending photos owned by the 
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1137,7 +1137,7 @@ For regular applications, tags can only be added to pending photos owned by the 
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1174,7 +1174,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1204,7 +1204,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1228,7 +1228,7 @@ The values returned from this call are '''cannot''' be stored.</doc>
           <param name="api_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The application key associated with the calling application.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1260,7 +1260,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1299,7 +1299,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1329,7 +1329,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1353,7 +1353,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1380,7 +1380,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">
@@ -1404,7 +1404,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
           <param name="session_key" required="true" style="query" type="xsd:string">
             <doc xml:lang="en">The session key of the logged in user.</doc>
           </param>
-          <param name="call_id" required="true" style="query" type="xsd:decimal">
+          <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
             <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
           </param>
           <param name="sig" required="true" style="query" type="xsd:string">

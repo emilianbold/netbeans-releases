@@ -150,8 +150,8 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
             WSDLReference<Message> msgRef = varDecl.getMessageType();
             if (msgRef != null) {
                 Message msg = msgRef.get();
-                Collection<Part> parts = msg.getParts();
-                ArrayList<Part> partList = new ArrayList<Part>(parts);
+                Collection<Part> parts = msg != null ? msg.getParts() : null;
+                ArrayList<Part> partList = parts != null ? new ArrayList<Part>(parts) : new ArrayList<Part>();
                 return partList;
             } else {
                 SchemaReference<GlobalType> gTypeRef = varDecl.getType();

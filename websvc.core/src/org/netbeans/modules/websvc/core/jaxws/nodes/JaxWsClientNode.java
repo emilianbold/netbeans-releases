@@ -346,6 +346,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
                 ((JaxWsClientChildren)getChildren()).refreshKeys(false);
             } else {
+                wsdlFileObject= null;
                 ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
             }
         } else {
