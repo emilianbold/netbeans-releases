@@ -55,6 +55,41 @@ public class ContextDetector extends ExtendedTokenSequence {
         this.braces = braces;
     }
 
+    /*package local*/ boolean isQuestionColumn(){
+        int index = index();
+        try {
+            int depth = 0;
+            while(movePrevious()) {
+                if (braces.lastStatementStart >= index()){
+                    return false;
+                }
+                switch (token().id()) {
+                    case RPAREN:
+                        depth++;
+                        break;
+                    case LPAREN:
+                        depth--;
+                        if (depth < 0) {
+                            return false;
+                        }
+                        break;
+                    case QUESTION:
+                        if (depth == 0) {
+                            return true;
+                        }
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return false;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
     /*package local*/ boolean isLikeTemplate(Token<CppTokenId> current){
         int index = index();
         try {

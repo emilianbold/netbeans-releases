@@ -41,8 +41,6 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.PaletteOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -77,7 +75,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     public void initialize() {
         log("::initialize");
         
-        PaletteOperator.invoke();
+        PaletteComponentOperator.invoke();
         openPageAndAddComponent();
     }
     
@@ -113,6 +111,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
         return null;
     }
     
+    @Override
     protected void shutdown() {
         log(":: shutdown");
         surface.closeDiscard();
