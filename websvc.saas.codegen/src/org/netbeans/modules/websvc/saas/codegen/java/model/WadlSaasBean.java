@@ -79,12 +79,17 @@ public class WadlSaasBean extends SaasBean {
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
+        this(m, false);
+    }
+    
+    public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
         super(Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
+        setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
 

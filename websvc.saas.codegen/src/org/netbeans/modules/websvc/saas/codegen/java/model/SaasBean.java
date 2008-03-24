@@ -91,10 +91,19 @@ public abstract class SaasBean extends GenericResourceBean {
     private SaasAuthenticationType authType;
     private SaasBean.SaasAuthentication auth;
     private String authProfile;
+    private boolean isDropTargetWeb = false;
 
     public SaasBean(String name, String packageName, String uriTemplate, 
             MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
+    }
+    
+    public boolean isDropTargetWeb() {
+        return isDropTargetWeb;
+    }
+    
+    public void setIsDropTargetWeb(boolean isDropTargetWeb) {
+        this.isDropTargetWeb = isDropTargetWeb;
     }
     
     protected void setInputParameters(List<ParameterInfo> inputParams) {
@@ -376,9 +385,10 @@ public abstract class SaasBean extends GenericResourceBean {
                 SaasBean.SessionKeyAuthentication.UseTemplates skUseTemplates = sessionKeyAuth.createUseTemplates();
                 sessionKeyAuth.setUseTemplates(skUseTemplates);
                 List<Template> templates = null;
-                if(useTemplates.getDesktop() != null && useTemplates.getDesktop().getTemplate() != null) {
+                if(!isDropTargetWeb() && useTemplates.getDesktop() != null && 
+                        useTemplates.getDesktop().getTemplate() != null) {
                     templates = useTemplates.getDesktop().getTemplate();
-                } else if(useTemplates.getWeb() != null && useTemplates.getWeb().getTemplate() != null) {
+                } else if(isDropTargetWeb() && useTemplates.getWeb() != null && useTemplates.getWeb().getTemplate() != null) {
                     templates = useTemplates.getWeb().getTemplate();
                 }
                 if(templates == null || templates.isEmpty())
@@ -403,6 +413,11 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         if(auth2.getProfile() != null)
             setAuthenticationProfile(auth2.getProfile());
+    }
+
+    public boolean isUseTemplates() {
+        return getAuthenticationType() == SaasAuthenticationType.SESSION_KEY &&
+                ((SessionKeyAuthentication)this.getAuthentication()).getUseTemplates() != null;
     }
     
     private Map<String, String> getArtifactTemplates(SaasMethod m) throws IOException {

@@ -44,7 +44,7 @@ public class __NAME__  extends HttpServlet {
             if (sessionKey != null) {
                 out.println("<p>Already logged in.</b>");
             } else {
-                String apiKey = __NAME__.getApiKey();
+                String apiKey = FacebookSocialNetworkingServiceAuthenticator.getApiKey(request, response);
                 out.println("<a href=\"http://www.facebook.com/login.php?api_key="+apiKey+"&v=1.0\">Facebook Login</a>");
             }
             out.println("</body>");

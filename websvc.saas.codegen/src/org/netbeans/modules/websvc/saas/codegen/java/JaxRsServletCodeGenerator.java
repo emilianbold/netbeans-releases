@@ -69,7 +69,8 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     public JaxRsServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        super(targetComponent, targetFile, new WadlSaasBean(m, true));
+        getBean().setIsDropTargetWeb(true);
     }
     
     /**
@@ -86,7 +87,7 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
             getSaasServiceFolder(), 
             loginJS, loginFile, 
             callbackJS, callbackFile,
-            parameters, paramTypes
+            parameters, paramTypes, getBean().isUseTemplates()
         );
     }
     
