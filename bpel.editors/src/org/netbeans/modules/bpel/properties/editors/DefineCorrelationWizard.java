@@ -469,8 +469,7 @@ public class DefineCorrelationWizard implements WizardProperties {
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
         protected ChangeSupport changeSupport = new ChangeSupport(this);
-        protected int insetX = CommonUtils.isMacOS() ? 12 : 6, 
-                      insetY = CommonUtils.isMacOS() ? 20 : 6;
+        protected int insetX = 6, insetY = 6;
         
         protected JPanel createWizardPanel() {
             JPanel panel = new JPanel();
@@ -509,7 +508,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     //========================================================================//
     public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel
         implements ItemListener {
-        private final Dimension COMBOBOX_DIMENSION = new Dimension(350, 20);
+        private final Dimension COMBOBOX_DIMENSION = 
+            new Dimension(350, CommonUtils.isMacOS() ? 25 : 20);
         private final int COMBOBOX_MAX_ROW_COUNT = 16;
         private final JComboBox activityComboBox = new JComboBox();
         private BpelEntity previousSelectedActivity, initiatingActivity;
