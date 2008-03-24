@@ -95,15 +95,17 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return instance;
     }
 
-    public Persistent read(Key key, PersistentFactory factory) throws IOException {
+    public Persistent read(Key key) throws IOException {
+        readCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
-            readCnt++;
             readStatistics.consume(getBriefClassName(key), 1);
         }
         ConcurrentFileRWAccess fis = null;
         try {
             fis = getFile(key, true);
             if( fis != null ) {
+                final PersistentFactory factory = key.getPersistentFactory();
+                assert factory != null;
                 long size = fis.size();
                 return fis.read(factory, 0, (int)size);
             }
@@ -115,15 +117,18 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return null;
     }
 
-    public void write(Key key, PersistentFactory factory, Persistent object) throws IOException {
+    public void write(Key key, Persistent object) throws IOException {
+        writeCnt++; // always increment counters
         if( Stats.multyFileStatistics ) {
-            writeCnt++;
             writeStatistics.consume(getBriefClassName(key), 1);
         }
         ConcurrentFileRWAccess fos = null;
         try {
             fos = getFile(key, false);
+            assert fos != null;
             if (fos != null) {
+                final PersistentFactory factory = key.getPersistentFactory();
+                assert factory != null;
                 int size = fos.write(factory, object, 0);
                 fos.truncate(size);
             } 
@@ -146,8 +151,6 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         boolean keepLocked = false;
         
         do {
-            boolean create = ! readOnly;
-
             synchronized (cacheLock) {
                 aFile = nameToFileCache.get(fileName);
                 if (aFile == null) {
@@ -156,10 +159,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                     if (fileToCreate.exists()) {
                         aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                         putFile(fileName, aFile);
-                    } else if (create) {
+                    } else if (! readOnly) {
                         String aDirName = fileToCreate.getParent();
                         File aDir = new File(aDirName);
-
                         if (aDir.exists() || aDir.mkdirs()) {
                             aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                             putFile(fileName, aFile);
@@ -271,14 +273,23 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             }
         }
         if( Stats.multyFileStatistics ) {
-            System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
-                    readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
-            readStatistics.print(System.out);
-            writeStatistics.print(System.out);
+            printStatistics();
             resetStatistics();
         }
     }
     
+    // package-local - for test purposes
+    void printStatistics() {
+        System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
+                readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
+        if( writeStatistics != null ) {
+            readStatistics.print(System.out);
+        }
+        if( writeStatistics != null ) {
+            writeStatistics.print(System.out);
+        }
+    }
+            
     private static int percentage(int numerator, int denominator) {
         return (denominator == 0) ? 0 : numerator*100/denominator;
     }
@@ -342,4 +353,35 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             return nameToFileCache.keys();
         }
     }
+
+    /** For test purposes ONLY! - gets read hit count */
+    // package-local
+    int getReadHitCnt() {
+        return readHitCnt;
+    }
+
+    /** For test purposes ONLY! - gets read hit percentage */
+    // package-local
+    int getReadHitPercentage() {
+        return percentage(readHitCnt, readCnt);
+    }
+
+    /** For test purposes ONLY! - gets write hit count */
+    // package-local
+    int getWriteHitCnt() {
+        return writeHitCnt;
+    }
+
+    /** For test purposes ONLY! - gets read hit percentage */
+    // package-local
+    int getWriteHitPercentage() {
+        return percentage(writeHitCnt, writeCnt);
+    }
+
+    /** For test purposes ONLY! - gets cache size */
+    // package-local
+    int getCacheSize() {
+        return nameToFileCache.size();
+    }
+    
 }
