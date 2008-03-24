@@ -898,12 +898,12 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             String name = getVariableName(param.getName());
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
-                paramDecl += "        " + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
+                paramDecl += "                 " + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
             } else {
                 if (paramVal != null) {
-                    paramDecl += "             String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl += "                 String " + name + " = \"" + paramVal + "\";\n";
                 } else {
-                    paramDecl += "             String " + name + " = null;\n";
+                    paramDecl += "                 String " + name + " = null;\n";
                 }
             }
         }
