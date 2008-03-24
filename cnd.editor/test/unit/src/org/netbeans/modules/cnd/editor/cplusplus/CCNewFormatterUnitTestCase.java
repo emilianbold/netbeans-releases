@@ -3695,4 +3695,75 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
         );
     }
+
+    //IZ#130525:Formatter should move the name of the function in column one
+    public void testNewLineFunctionDefinitionName() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.newLineFunctionDefinitionName, true);
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i;\n" +
+            "   int j;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Formatter should move the name of the function in column one",
+            "static char *\n" +
+            "concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i;\n" +
+            "    int j;\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130898:'Spaces around ternary operators' is not working
+    public void testSpacesAroundTernary() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "static char *concat (char *s1, char *s2)\n" +
+            "{\n" +
+            "  int i=0;\n" +
+            "  i=(i==1)?1:2;\n" +
+            "  return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("\'Spaces around ternary operators\' is not working",
+            "static char *concat(char *s1, char *s2)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = (i == 1) ? 1 : 2;\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
+
+    //IZ#130900:'Spaces around Operators|Unary Operators' doesn't work in some cases
+    public void testSpaceAroundUnaryOperator() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceAroundUnaryOps, true);
+        setLoadDocumentText(
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = -i;\n" +
+            "    i = (-i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect spaces in unary operators",
+            "int main(int argc, char** argv)\n" +
+            "{\n" +
+            "    int i = 0;\n" +
+            "    i = - i;\n" +
+            "    i = ( - i);\n" +
+            "    return (0);\n" +
+            "}\n"
+            );
+    }
 }
