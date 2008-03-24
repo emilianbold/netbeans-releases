@@ -355,14 +355,28 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        String rt = getTypeInfo().getResolvedType(this);
-        int pos1 = rt.indexOf('{');
-        int pos2 = rt.indexOf('}');
+        int pos1, pos2;
+        
+        String info = getTypeInfo().getResolvedType(this);
+        pos1 = info.indexOf('{');
+        pos2 = info.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
-            String enum_values = rt.substring(pos1 + 1, pos2);
+            String enum_values = info.substring(pos1 + 1, pos2);
             for (String frag : enum_values.split(", ")) { // NOI18N
                 if (value.equals(frag)) {
                     return value;
+                }
+            }
+        } else {
+            info = getTypeInfo().getDetailedType(this);
+            pos1 = info.indexOf('{');
+            pos2 = info.indexOf('}');
+            if (pos1 > 0 && pos2 > 0) {
+                String enum_values = info.substring(pos1 + 1, pos2);
+                for (String frag : enum_values.split(", ")) { // NOI18N
+                    if (value.equals(frag)) {
+                        return value;
+                    }
                 }
             }
         }

@@ -210,21 +210,18 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                         }
                     }
                     //
-                    if (unconnectedGraphs > 0) {
-                        if (notEmptyGraphs.size() == unconnectedGraphs) {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
-                        } else {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
-                        }
+                    if (notEmptyGraphs.size() == unconnectedGraphs) {
+                        addReasonKey(Severity.ERROR,
+                                "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
+                    } else if (unconnectedGraphs > 0) {
+                        addReasonKey(Severity.WARNING,
+                                "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
                     }
                     if (incompleteGraphs > 0) {
                         addReasonKey(Severity.WARNING, 
                                 "WARN_THERE_ARE_INCOMPLETE_GRAPHS"); //NOI18N
                     }
                 }
-                
             };
         }
         return mValidator;

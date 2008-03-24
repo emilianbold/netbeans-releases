@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -214,26 +216,23 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	put();
     }
     
-    public List<CsmFile> getFiles() {
-	List<CsmFile> res = new ArrayList<CsmFile>(myFiles.values().size());
-	getFiles2(res);
-	return res;
+    public Collection<CsmFile> getFiles() {
+	List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+	getFiles2(uids);
+	return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
-    public List<FileImpl> getFileImpls() {
-	List<FileImpl> res = new ArrayList<FileImpl>(myFiles.values().size());
-	getFiles2(res);
-	return res;
+    public Collection<FileImpl> getFileImpls() {
+	List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+	getFiles2(uids);
+	return new LazyCsmCollection<CsmFile, FileImpl>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
-    public void getFiles2(List res) {
+    private void getFiles2(List<CsmUID<CsmFile>> res) {
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
         for(MyFile f : files){
-            FileImpl file = null;
-            file = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
-            assert (file != null) : "Failed to get FileImpl by UID " + f.fileNew;
-            res.add(file);
+            res.add(f.fileNew);
         }
     }
     

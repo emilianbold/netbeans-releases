@@ -59,4 +59,5 @@ public class RuleContext {
     public int selectionEnd;
     public CompilationInfo compilationInfo;
     public BaseDocument doc;
+    public boolean remove;
 }
