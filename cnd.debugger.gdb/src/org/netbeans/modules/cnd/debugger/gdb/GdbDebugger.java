@@ -941,8 +941,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /** Handle gdb responses starting with '*' */
     public void execAsyncOutput(int token, String msg) {
+        Map<String, String> map;
+        
         if (msg.startsWith("*stopped")) { // NOI18N
-            Map<String, String> map = GdbUtils.createMapFromString(msg.substring(9));
+            if (msg.length() > 9) {
+                map = GdbUtils.createMapFromString(msg.substring(9));
+            } else {
+                map = new HashMap<String, String>();
+            }
             stopped(token, map);
         }
     }
