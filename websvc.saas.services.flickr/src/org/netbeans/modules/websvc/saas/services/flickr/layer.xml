@@ -44,6 +44,16 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>
+            <file name="FlickrAuthenticatorDesktop.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/desktop/FlickrAuthenticator.template">
+                <attr name="position" intvalue="8690"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="SaaSServices">
         <folder name="Flickr">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>

@@ -61,7 +61,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         Node tag = env.getCurrentTag();
-        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, env.getDocument());
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, env.getFile());
         if(mergedBean == null) {
             return;
         }

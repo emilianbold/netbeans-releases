@@ -123,5 +123,6 @@ public interface GsfLanguage {
      * As with #acceptQueryPath, this is just a temporary measure (i.e. NetBeans 6.1) to deal with shortcomings
      * in the path and project integration for GSF.
      */
+    @NonNull
     Map<String,String> getSourceGroupNames();
 }

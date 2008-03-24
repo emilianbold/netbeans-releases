@@ -513,8 +513,7 @@ public class PropertySheet extends JPanel {
             // obsoleted by following clear
             RequestProcessor.Task curTask = getScheduleTask();
             if (!curTask.equals(initTask)) {
-                System.out.println("cancelling in progress...");
-                System.out.println("cancel succesful? " + curTask.cancel());
+                curTask.cancel();
             }
             
             if (SwingUtilities.isEventDispatchThread()) {
@@ -590,7 +589,8 @@ public class PropertySheet extends JPanel {
                                         if (loggable) {
                                             PropUtils.log(
                                                 PropertySheet.class,
-                                                "Delayed " + "updater setting nodes to " + Arrays.asList(helperNodes)
+                                                "Delayed " + "updater setting nodes to " + //NOI18N
+                                                    (null == helperNodes ? "null" : Arrays.asList(helperNodes)) //NOI18N
                                             );
                                         }
 
