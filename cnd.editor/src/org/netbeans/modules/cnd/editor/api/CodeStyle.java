@@ -232,6 +232,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.alignMultilineWhileCondition,
                          EditorOptions.alignMultilineWhileConditionDefault);
     }
+    public boolean alignMultilineParen() {
+        return getOption(EditorOptions.alignMultilineParen,
+                         EditorOptions.alignMultilineParenDefault);
+    }
 
     public boolean spaceAroundUnaryOps() {
         return getOption(EditorOptions.spaceAroundUnaryOps,
