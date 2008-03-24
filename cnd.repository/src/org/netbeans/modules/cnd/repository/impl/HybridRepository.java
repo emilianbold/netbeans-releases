@@ -41,21 +41,18 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
+import org.netbeans.modules.cnd.repository.disk.MemoryCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
+import org.netbeans.modules.cnd.repository.util.Filter;
+import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
 /**
@@ -64,65 +61,41 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  */
 public class HybridRepository implements Repository {
 
-    private final Map<Key, Object> cache;
+    MemoryCache cache;
     private final Repository diskRepository;
-    private Lock refQueueLock;
-    private ReferenceQueue refQueue;
-
-    private static final int DEFAULT_CACHE_CAPACITY = 77165;
-    
-    // Cache statistics
-    private int readCnt = 0;
-    private int readHitCnt = 0;
     
     /** Creates a new instance of HybridRepository */
     public HybridRepository() {
-        cache = new ConcurrentHashMap<Key, Object>(DEFAULT_CACHE_CAPACITY);
+        cache = new MemoryCache();
         diskRepository = DiskRepositoryManager.getInstance();
-        refQueueLock = new ReentrantLock();
-        refQueue = new ReferenceQueue();
     }
 
     public void hang(Key key, Persistent obj) {
-        cache.put(key, obj);
+        cache.hang(key, obj);
     }
 
     public void put(Key key, Persistent obj) {
-        cache.put(key, new SoftValue(obj, key, refQueue));
-
+        cache.put(key, obj, true);
         if (key.getPersistentFactory().canWrite(obj)) {
             diskRepository.put(key, obj);
         }
     }
 
     public final Persistent tryGet(Key key) {
-        Object value = cache.get(key);
-        if (value instanceof Persistent) {
-            return (Persistent) value;
-        } else if (value instanceof SoftReference) {
-            return ((SoftReference<Persistent>) value).get();
-        }
-        return null;
+        return cache.get(key);
     }
 
     public Persistent get(Key key) {
-        readCnt++;
-        Persistent data = tryGet(key);
+        Persistent data = cache.get(key);
         if (data == null) {
             data = diskRepository.get(key);
-
             if (data != null) {
-                processQueue();
-
                 // no syncronization here!!!
                 // the only possible collision here is lost of element, which is currently being deleted
                 // by processQueue - it will be reread
-                cache.put(key, new SoftValue(data, key, refQueue));
+                cache.put(key, data, false);
             }
-        } else {
-            readHitCnt++;
         }
-
         return data;
     }
 
@@ -132,17 +105,7 @@ public class HybridRepository implements Repository {
     }
 
     public void debugClear() {
-        //cleanWriteHungObjects(null, false);
-        processQueue();
-        Set<Key> keys = new HashSet<Key>(cache.keySet());
-        for (Key key : keys) {
-            Object value = cache.get(key);
-
-            if (value != null && !(value instanceof Persistent)) {
-                cache.remove(key);
-            }
-        }
-
+        cache.clearSoftRefs();
         diskRepository.debugClear();
     }
 
@@ -150,35 +113,23 @@ public class HybridRepository implements Repository {
         diskRepository.shutdown();
         RepositoryTranslatorImpl.shutdown();
         if( Stats.memoryCacheHitStatistics ) {
-            printStatistics();
+            cache.printStatistics();
         }
     }
     
-    // package-local - for test purposes
-    void printStatistics() {
-        int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
-        System.out.printf("\n\nHybrid repository cache statistics: %d reads,  %d hits (%d%%)\n\n", 
-                readCnt, readHitCnt, hitPercentage);
-    }
 
-    private void cleanWriteHungObjects(String unitName, boolean clean) {
-        processQueue();
-        Set<Key> keys = new HashSet<Key>(cache.keySet());
-        for (Key key : keys) {
-
-            boolean fromUnit = ((unitName == null) || ((unitName != null) && unitName.equals(key.getUnit()))) ? true : false;
-
-            if (fromUnit) {
-                Object value = cache.remove(key);
-
-                if (value != null) {
-                    if (value instanceof Persistent && !clean) {
-                        Persistent obj = (Persistent) value;
-                        if (key.getPersistentFactory().canWrite(obj)) {
-                            diskRepository.put(key, obj);
-                        }
-                    }
-                }
+    private void cleanWriteHungObjects(final String unitName) {
+        Collection<Pair<Key, Persistent>> hung = cache.clearHungObjects(new Filter<Key>() {
+            public boolean accept(Key key) {
+                return ((unitName == null) || ((unitName != null) && unitName.equals(key.getUnit())));
+            }
+            
+        });
+        for( Pair<Key, Persistent> pair : hung ) {
+            Key key = pair.first;
+            Persistent obj = pair.second;
+            if (key.getPersistentFactory().canWrite(obj)) {
+                diskRepository.put(key, obj);
             }
         }
     }
@@ -188,7 +139,7 @@ public class HybridRepository implements Repository {
     }
 
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        cleanWriteHungObjects(unitName, cleanRepository);
+        cleanWriteHungObjects(unitName);
         diskRepository.closeUnit(unitName, cleanRepository, null);
         RepositoryTranslatorImpl.closeUnit(unitName, requiredUnits);
         RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitName);
@@ -209,33 +160,6 @@ public class HybridRepository implements Repository {
     public void unregisterRepositoryListener(final RepositoryListener aListener) {
     }
 
-    private static class SoftValue extends SoftReference {
-
-        private final Object key;
-
-        private SoftValue(Object k, Object key, ReferenceQueue q) {
-            super(k, q);
-            this.key = key;
-        }
-    }
-
-    private void processQueue() {
-        if (refQueueLock.tryLock()) {
-            try {
-                SoftValue sv;
-                while ((sv = (SoftValue) refQueue.poll()) != null) {
-                    Object value = cache.get(sv.key);
-                    // check if the object has already been added by another thread
-                    // it is more efficient than blocking puts from the disk
-                    if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
-                        cache.remove(sv.key);
-                    }
-                }
-            } finally {
-                refQueueLock.unlock();
-            }
-        }
-    }
 
     public void startup(int persistMechanismVersion) {
         RepositoryTranslatorImpl.startup(persistMechanismVersion);

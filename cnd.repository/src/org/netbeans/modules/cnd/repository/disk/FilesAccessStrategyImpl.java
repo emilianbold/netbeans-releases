@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.Filter;
 
 /**
  * Implements FilesAccessStrategy
@@ -256,7 +257,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
     
     public void closeUnit(final String unitName) throws IOException {
-        RepositoryCacheMap.Filter<ConcurrentFileRWAccess> filter = new RepositoryCacheMap.Filter<ConcurrentFileRWAccess>() {
+        Filter<ConcurrentFileRWAccess> filter = new Filter<ConcurrentFileRWAccess>() {
             public boolean accept(ConcurrentFileRWAccess value) {
                 return value.unit.equals(unitName);
             }
