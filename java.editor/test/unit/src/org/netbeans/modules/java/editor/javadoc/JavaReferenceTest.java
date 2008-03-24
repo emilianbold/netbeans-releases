@@ -78,7 +78,7 @@ public class JavaReferenceTest extends JavadocTestSupport {
         
         String what = "link1 {@link ";
         int offset = code.indexOf(what) + what.length();
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         String dump = insertPointer(code, offset);
         assertNotNull(dump, jdts);
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);

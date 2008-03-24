@@ -179,8 +179,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     }
                     try {
                         jdctx.javac = javac;
-                        resolveContext(javac, jdctx);
-                        analyzeContext(jdctx);
+                        if (resolveContext(javac, jdctx)) {
+                            analyzeContext(jdctx);
+                        }
                     } finally {
                         jdctx.javac = null;
                     }
@@ -192,18 +193,25 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private void resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
+    private boolean resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
         jdctx.doc = javac.getDocument();
         // find class context: class, method, ...
         Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, jdctx.doc, this.caretOffset);
         if (javadoc == null) {
-            return;
+            return false;
         }
         jdctx.jdoc = javadoc;
         Element elm = javac.getElementUtilities().elementFor(javadoc);
+        if (elm == null) {
+            return false;
+        }
         jdctx.handle = ElementHandle.create(elm);
-        jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(jdctx.doc, this.caretOffset);
+        jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(javac, this.caretOffset);
+        if (jdctx.jdts == null) {
+            return false;
+        }
         jdctx.positions = DocPositions.get(javac, javadoc, jdctx.jdts);
+        return jdctx.positions != null;
     }
     
     private void analyzeContext(JavadocContext jdctx) {

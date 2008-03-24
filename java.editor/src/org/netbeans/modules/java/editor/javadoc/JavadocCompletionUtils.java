@@ -112,8 +112,8 @@ final class JavadocCompletionUtils {
     }
     
     public static Doc findJavadoc(CompilationInfo javac, Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -155,9 +155,9 @@ final class JavadocCompletionUtils {
         return el != null? javac.getElementUtilities().javaDocFor(el): null;
     }
     
-    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -185,7 +185,7 @@ final class JavadocCompletionUtils {
             return null;
         
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
-        TokenSequence<?> s = javac.getTokenHierarchy().tokenSequence();
+        TokenSequence<JavaTokenId> s = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), elementStartOffset);
         if (s == null) {
             return null;
         }

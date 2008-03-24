@@ -237,7 +237,7 @@ public final class JavadocImports {
         if (doc == null) {
             return null;
         }
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, offset);
         if (jdTokenSequence != null) {
             Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, doc, offset);
             if (javadoc == null) {
@@ -293,7 +293,7 @@ public final class JavadocImports {
         if (doc == null) {
             return null;
         }
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, offset);
         if (jdTokenSequence != null) {
             Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, doc, offset);
             if (javadoc == null) {
