@@ -39,40 +39,61 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.sfs;
+package org.netbeans.modules.cnd.repository.test;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import java.io.*;
+import java.util.*;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
- * PersistentFactory implementation
- * for tests
+ * Creates a set of TestObject objects
+ * that correspond to file by the given path
  * @author Vladimir Kvashin
  */
-public class TestFactory implements PersistentFactory {
-
-    private static final TestFactory instance = new TestFactory();
+public class TestObjectCreator {
     
-    public static TestFactory instance() {
-	return instance;
+    private String unit;
+    private Key.Behavior behavior;
+    
+    public TestObjectCreator() {
+        this("Test", Key.Behavior.Default);
     }
     
-    public void write(DataOutput out, Persistent obj) throws IOException {
-	if( obj instanceof TestObject ) {
-	    ((TestObject) obj).write(out);
+    public TestObjectCreator(String unit, Key.Behavior behavior) {
+        this.unit = unit;
+        this.behavior = behavior;
+    }
+    
+    public Collection<TestObject> createTestObjects(String... args) {
+	Collection<TestObject> objects = new ArrayList<TestObject>();
+	for (int i = 0; i < args.length; i++) {
+	    createTestObjects(new File(args[i]), objects);
 	}
+	return objects;
     }
     
-    public Persistent read(DataInput in) throws IOException {
-	TestObject obj = new TestObject(in);
-	return obj;
-    }    
-
-    public boolean canWrite(Persistent obj) {
-	return obj instanceof TestObject;
+    public Collection<TestObject> createTestObjects(List<String> args) {
+	Collection<TestObject> objects = new ArrayList<TestObject>();
+	for( String path : args ) {
+	    createTestObjects(new File(path), objects);
+	}
+	return objects;
     }
     
+    private void createTestObjects(File file, Collection<TestObject> objects) {
+	TestObject  obj = new TestObject(file.getAbsolutePath(), unit, behavior);
+	if( file.exists() ) {
+	    obj.lData = file.length();
+	    objects.add(obj);
+	    if( file.isDirectory() ) {
+		obj.sData = file.list();
+		File[] children = file.listFiles();
+		if( children != null ) {
+		    for (int i = 0; i < children.length; i++) {
+                        createTestObjects(children[i], objects);
+                    }
+		}
+	    }
+        }
+    }
 }
