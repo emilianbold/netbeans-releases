@@ -272,6 +272,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.dlight</friend>
+                <friend>com.sun.dlight.actions</friend>
+                <friend>com.sun.dlight.model</friend>
+                <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
