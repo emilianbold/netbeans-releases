@@ -101,6 +101,16 @@
    
    <!-- End of "WSIT" section -->
 
+<!--Start of Axis2 web service wizard -->
+        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromJavaPanel0" url="webservice/create/create_axis.html" />
+        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromJavaPanel1" url="webservice/create/create_axis.html" />
+        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromWsdlPanel0" url="webservice/create/create_axis.html" />
+        <mapID target="org.netbeans.modules.websvc.axis2.wizards.WsFromWsdlPanel1" url="webservice/create/create_axis.html" />
+        <mapID target="org.netbeans.modules.websvc.axis2.options.Axis2PanelController" url="webservice/expose/as_setup_axis.html" />
+
+
+
+
 <!--Start of web service CSH -->
 	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/AddWebServiceDlg.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
