@@ -79,7 +79,7 @@ public final class JavadocGenerator {
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0) {
             for (TypeParameterElement param : clazz.getTypeParameters()) {
-                builder.append("@param " + param.getSimpleName().toString() + " \n"); // NOI18N
+                builder.append("@param <" + param.getSimpleName().toString() + "> \n"); // NOI18N
             }
         }
         
@@ -98,6 +98,10 @@ public final class JavadocGenerator {
                 "/**\n" + // NOI18N
                 "\n" // NOI18N
                 );
+        
+        for (TypeParameterElement param : method.getTypeParameters()) {
+            builder.append("@param <").append(param.getSimpleName().toString()).append("> \n"); // NOI18N
+        }
         
         for (VariableElement param : method.getParameters()) {
             builder.append("@param ").append(param.getSimpleName().toString()).append(" \n"); // NOI18N

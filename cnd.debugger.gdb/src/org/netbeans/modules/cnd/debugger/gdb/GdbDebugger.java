@@ -701,6 +701,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             gah.executionFinished(0);
             Disassembly.close();
+            GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
     }
@@ -1786,7 +1787,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public String evaluateToolTip(String expression) {
+    public String evaluate(String expression) {
         CommandBuffer cb = new CommandBuffer();
         
         if (expression.indexOf('(') != -1) {
@@ -1797,6 +1798,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
         }
         String response = cb.waitForCompletion();
+        if (cb.getState() == CommandBuffer.STATE_ERROR) {
+            return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
+        }
         if (response.startsWith("@0x")) { // NOI18N
             cb = new CommandBuffer();
             gdb.print(cb, expression);

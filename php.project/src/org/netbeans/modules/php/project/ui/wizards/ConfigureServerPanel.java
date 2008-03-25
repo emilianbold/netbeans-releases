@@ -39,13 +39,15 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -89,7 +91,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         unregisterListeners();
 
         // copying enabled?
-        configureServerPanelVisual.setLocalServerState(isProjectFolder());
+        configureServerPanelVisual.setState(isProjectFolder());
 
         Boolean copyFiles = isCopyFiles();
         if (copyFiles != null) {
@@ -102,7 +104,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         }
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
-            configureServerPanelVisual.selectSourcesLocation(wwwFolder);
+            configureServerPanelVisual.selectLocalServer(wwwFolder);
         }
 
         registerListeners();
@@ -113,7 +115,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         WizardDescriptor d = (WizardDescriptor) settings;
 
         d.putProperty(COPY_FILES, configureServerPanelVisual.isCopyFiles());
-        d.putProperty(COPY_TARGET, configureServerPanelVisual.getSourcesLocation());
+        d.putProperty(COPY_TARGET, configureServerPanelVisual.getLocalServer());
         d.putProperty(COPY_TARGETS, configureServerPanelVisual.getLocalServerModel());
     }
 
@@ -172,13 +174,13 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
             return null;
         }
 
-        String sourcesLocation = configureServerPanelVisual.getSourcesLocation().getSrcRoot();
+        String sourcesLocation = configureServerPanelVisual.getLocalServer().getSrcRoot();
         if (sourcesLocation == null
                 || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
         }
 
-        return Utils.validateProjectDirectory(sourcesLocation, "Folder"); // NOI18N
+        return Utils.validateProjectDirectory(sourcesLocation, "Folder", false); // NOI18N
     }
 
     private void registerListeners() {

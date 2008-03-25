@@ -44,7 +44,6 @@ import org.netbeans.modules.php.editor.PHPVersion;
 
 %public
 %class PHP5ColoringLexer
-%implements PHPScanner
 %type PHPTokenId
 %function nextToken
 %unicode
@@ -228,13 +227,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 %%
 
-<YYINITIAL>(([^<]|"<"[^?%s<])+)|"<s"|"<" {
+<YYINITIAL>(([^<]|"<"[^?%(script)<])+)|"<script"|"<" {
     return PHPTokenId.T_INLINE_HTML;
 }
 
-<YYINITIAL>"<?"|"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
-    if (short_tags_allowed || yylength()>2) { /* yyleng>2 means it's not <? but <script> */
-        yybegin(ST_PHP_IN_SCRIPTING);
+<YYINITIAL>"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
+    pushState(ST_PHP_IN_SCRIPTING);
+    return PHPTokenId.T_INLINE_HTML;
+}
+
+<YYINITIAL>"<?" {
+    if (short_tags_allowed ) {
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -247,7 +252,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
         || (text.charAt(1)=='?' && short_tags_allowed)) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.T_OPEN_TAG_WITH_ECHO;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -258,7 +264,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <YYINITIAL>"<%" {
     if (asp_tags) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -268,7 +275,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <YYINITIAL>"<?php" {
-    yybegin(ST_PHP_IN_SCRIPTING);
+    pushState(ST_PHP_IN_SCRIPTING);
+    //yybegin(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_OPENTAG;
     //return createSymbol(ASTSymbol.T_OPEN_TAG);
 }
@@ -814,8 +822,13 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
-        //popState();
+        popState();
 	return PHPTokenId.PHP_CLOSETAG;
+}
+
+<ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"</script>"{WHITESPACE}? {
+        popState();
+	return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"%>"{WHITESPACE}? {
