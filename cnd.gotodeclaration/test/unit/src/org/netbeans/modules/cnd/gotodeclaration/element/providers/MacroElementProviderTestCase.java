@@ -57,9 +57,9 @@ import org.netbeans.spi.jumpto.type.SearchType;
  *
  * @author Nick Krasilnikov
  */
-public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
+public class MacroElementProviderTestCase extends ProjectBasedTestCase {
 
-    public FuncVarElementProviderTestCase(String testName) {
+    public MacroElementProviderTestCase(String testName) {
         super(testName);
     }
 
@@ -68,36 +68,36 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
         return getQuoteDataDir();
     }
 
-   public void testFuncVarAllRegexp() throws Exception {
+     public void testMacroAllRegexp() throws Exception {
         peformTest(".*", SearchType.REGEXP);
     }
 
-    public void testFuncVarDotRegexp() throws Exception {
-        peformTest("ma.n", SearchType.REGEXP);
+    public void testMacroDotRegexp() throws Exception {
+        peformTest("CPU.H", SearchType.REGEXP);
     }
 
-    public void testFuncVarCaseInsensitiveRegexp() throws Exception {
-        peformTest("MA.*n", SearchType.CASE_INSENSITIVE_REGEXP);
+    public void testMacroCaseInsensitiveRegexp() throws Exception {
+        peformTest("_cUs.*r_h", SearchType.CASE_INSENSITIVE_REGEXP);
     }
     
-    public void testFuncVarCamelCase() throws Exception {
-        peformTest("GCL", SearchType.CAMEL_CASE);
+    public void testMacroCamelCase() throws Exception {
+        peformTest("DH", SearchType.CAMEL_CASE);
     }
 
-    public void testFuncVarPrefix() throws Exception {
-        peformTest("ope", SearchType.PREFIX);
+    public void testMacroPrefix() throws Exception {
+        peformTest("M", SearchType.PREFIX);
     }
 
-    public void testFuncVarCaseInsensitivePrefix() throws Exception {
-        peformTest("OpE", SearchType.CASE_INSENSITIVE_PREFIX);
+    public void testMacroCaseInsensitivePrefix() throws Exception {
+        peformTest("m", SearchType.CASE_INSENSITIVE_PREFIX);
     }
 
-    public void testFuncVarExactName() throws Exception {
-        peformTest("main", SearchType.EXACT_NAME);
+    public void testMacroExactName() throws Exception {
+        peformTest("DISK_H", SearchType.EXACT_NAME);
     }
 
-    public void testFuncVarCaseInsensitiveExactName() throws Exception {
-        peformTest("Main", SearchType.CASE_INSENSITIVE_EXACT_NAME);
+    public void testMacroCaseInsensitiveExactName() throws Exception {
+        peformTest("disk_h", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
     }
 
     protected void peformTest(String text, SearchType type) throws Exception {
-        FuncVarElementProvider fvp = new FuncVarElementProvider();
+        MacroProvider fvp = new MacroProvider();
         ProviderDelegate pd = fvp.createDelegate();
 
         CsmProject project = getProject();
