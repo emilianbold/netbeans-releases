@@ -64,6 +64,9 @@ import org.openide.windows.WindowManager;
 
 
 public class GsfModuleInstaller extends ModuleInstall {
+//static {
+//    System.setProperty("gsf.preindexing", "true");
+//}    
     private static final boolean ENABLE_MBEANS =
         Boolean.getBoolean("org.netbeans.modules.gsf.enableMBeans"); //NOI18N
 
