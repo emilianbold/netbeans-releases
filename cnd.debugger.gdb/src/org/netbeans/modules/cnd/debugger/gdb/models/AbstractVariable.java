@@ -436,7 +436,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 return true;
             }
-        } else if (value != null && value.length() > 0 && value.charAt(0) == '{') {
+        } else if (value != null && value.length() > 0 &&
+                (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
             return true;
         }
         return false;
@@ -601,7 +602,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
                     } else if (v.length() > 0) {
-                        String val = v.substring(1, v.length() - 1);
+                        int pos = v.indexOf('{');
+                        assert pos != -1;
+                        String val = v.substring(pos + 1, v.length() - 1);
                         int start = 0;
                         int end = GdbUtils.findNextComma(val, 0);
                         while (end != -1) {
