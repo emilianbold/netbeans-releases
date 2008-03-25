@@ -701,6 +701,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             gah.executionFinished(0);
             Disassembly.close();
+            GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
     }

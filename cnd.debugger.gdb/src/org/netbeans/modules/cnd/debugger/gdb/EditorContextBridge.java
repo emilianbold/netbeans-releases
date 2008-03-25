@@ -103,7 +103,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
@@ -200,7 +200,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);

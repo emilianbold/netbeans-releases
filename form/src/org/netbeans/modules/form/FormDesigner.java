@@ -1025,17 +1025,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = false;
-        if (selectedIds.size() >= 2) {
-            RADComponent parent = commonParent(selectedIds);
-            if (parent != null) {
-                LayoutModel layoutModel = formModel.getLayoutModel();
-                LayoutComponent parentLC = layoutModel.getLayoutComponent(parent.getId());
-                if ((parentLC != null) && (parentLC.isLayoutContainer())) {
-                    enabled = true;
-                }
-            }
-        }
+        boolean enabled = layoutDesigner.canAlign(selectedIds);;
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
