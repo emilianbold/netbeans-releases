@@ -128,7 +128,7 @@ public class SwitchToAction extends ContextAction {
         }
         rp.post(new Runnable() {
             public void run() {
-                if(!validateInput(root, switchTo.getRepositoryFile().getFileUrl())) {
+                if(!validateInput(root, switchTo.getRepositoryFile())) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             showDialog(switchTo, root, rp, nodes);
@@ -147,12 +147,12 @@ public class SwitchToAction extends ContextAction {
         });
     }
     
-    private boolean validateInput(File root, SVNUrl fileURL) {
+    private boolean validateInput(File root, RepositoryFile toRepositoryFile) {
         boolean ret = false;
         SvnClient client;
         try {                   
-            client = Subversion.getInstance().getClient(fileURL);
-            ISVNInfo info = client.getInfo(fileURL);
+            client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            ISVNInfo info = client.getInfo(toRepositoryFile.getFileUrl());
             if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
                 SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
                 ret = false;
