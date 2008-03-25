@@ -573,6 +573,9 @@ public class ServerInstance implements Node.Cookie {
                         LOGGER.log(Level.INFO, message);
                         progress.finish();
                     }
+                 } catch ( Throwable t ) {
+                     LOGGER.log(Level.INFO, null, t);
+                     progress.finish();
                  }
              };
          });
