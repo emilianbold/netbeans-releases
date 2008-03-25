@@ -151,6 +151,7 @@ final class Tree extends JTree {
 
     createOccurences();
     updateRoot();
+    expose(myRoot);
   }
 
   @Override
