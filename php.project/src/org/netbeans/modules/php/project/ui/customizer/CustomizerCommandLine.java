@@ -37,75 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.wizards;
+package org.netbeans.modules.php.project.ui.customizer;
 
-import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import javax.swing.MutableComboBoxModel;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.CopyFilesVisual;
-import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 
 /**
  * @author Tomas Mysik
  */
-public class ConfigureServerPanelVisual extends JPanel {
-    private static final long serialVersionUID = 186471932981722630L;
+public class CustomizerCommandLine extends JPanel {
+    private static final long serialVersionUID = -2237819665404813189L;
 
-    private final CopyFilesVisual copyFilesVisual;
-
-    /** Creates new form ConfigureServerPanelVisual */
-    public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
-
-        // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_ProjectServer"));
-        putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
-        // Step name (actually the whole list for reference).
-        putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
-
+    public CustomizerCommandLine(Category category, PhpProjectProperties uiProps) {
         initComponents();
-
-        copyFilesVisual = new CopyFilesVisual(webFolderNameProvider);
-        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
-    }
-
-    public void addServerListener(ChangeListener listener) {
-        copyFilesVisual.addChangeListener(listener);
-    }
-
-    public void removeServerListener(ChangeListener listener) {
-        copyFilesVisual.removeChangeListener(listener);
-    }
-
-
-    public boolean isCopyFiles() {
-        return copyFilesVisual.isCopyFiles();
-    }
-
-    public void setCopyFiles(boolean copyFiles) {
-        copyFilesVisual.setCopyFiles(copyFiles);
-    }
-
-    public LocalServer getLocalServer() {
-        return copyFilesVisual.getLocalServer();
-    }
-
-    public MutableComboBoxModel getLocalServerModel() {
-        return copyFilesVisual.getLocalServerModel();
-    }
-
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
-        copyFilesVisual.setLocalServerModel(localServers);
-    }
-
-    public void selectLocalServer(LocalServer localServer) {
-        copyFilesVisual.selectLocalServer(localServer);
-    }
-
-    public void setState(boolean enabled) {
-        copyFilesVisual.setState(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -117,30 +62,20 @@ public class ConfigureServerPanelVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        copyFilesPanel = new javax.swing.JPanel();
-
-        copyFilesPanel.setLayout(new java.awt.BorderLayout());
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(0, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel copyFilesPanel;
     // End of variables declaration//GEN-END:variables
 
 }
