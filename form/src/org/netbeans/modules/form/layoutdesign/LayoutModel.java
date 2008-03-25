@@ -123,25 +123,14 @@ public class LayoutModel implements LayoutConstants {
         if (component == null) {
             return false;
         }
-        // remove subcomponents
         for (int i=component.getSubComponentCount()-1; i>=0; i--) {
             LayoutComponent sub = component.getSubComponent(i);
-            if (sub.isLayoutContainer()) {
-                // subcontainer stays in layout model, but need to remove its
-                // layout interval from parent layout (now invalid)
-                removeComponentAndIntervals(sub, false);
-            } else {
-                // remove from layout model, don't have to remove from layout
-                // (thrown away as a whole)
-                removeComponent(sub, true);
-            }
+            removeComponent(sub, !sub.isLayoutContainer());
         }
-        // cancel container (also disconnects its layout)
-        setLayoutContainer(component, false);
-        // container changed to component can stay in model only if it has some parent
-        if (component.getParent() == null) {
+        if (component.getParent() == null) { // non-container without a parent
             removeComponent(component, true);
         }
+        setLayoutContainer(component, false); // this removes interval roots of the container
         return true;
     }
 

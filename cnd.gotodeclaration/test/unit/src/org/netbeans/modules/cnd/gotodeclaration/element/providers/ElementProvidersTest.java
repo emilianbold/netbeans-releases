@@ -52,7 +52,6 @@ public class ElementProvidersTest  extends BaseTestSuite  {
         super("Model Services Impl");
         
         addTestSuite(FuncVarElementProviderTestCase.class);
-        addTestSuite(MacroElementProviderTestCase.class);
     }
 
     public static Test suite() {

@@ -41,15 +41,10 @@
 
 package org.netbeans.junit;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.logging.Logger;
-import org.netbeans.junit.diff.Diff;
+import java.lang.reflect.*;
+import java.io.*;
+import java.util.*;
+import org.netbeans.junit.diff.*;
 
 /**
  *
@@ -238,7 +233,7 @@ public class Manager extends Object {
             try {
                 file = file.getCanonicalFile();
             } catch (IOException e) {
-                Logger.getLogger(Manager.class.getName()).warning("getCanonicalFile() on file " + file + " failed: " + e);
+                System.out.println("getCanonicalFile() on file "+file+" failed. "+ e.toString()); // NOI18N
                 // OK, so at least try to absolutize the path
                 file = file.getAbsoluteFile();
             }

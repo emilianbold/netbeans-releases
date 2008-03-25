@@ -43,41 +43,28 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.io.File;
 import javax.swing.JPanel;
 
-import javax.swing.MutableComboBoxModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.LocalServerController;
-import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-class LocationPanelVisual extends JPanel implements DocumentListener, ChangeListener {
+class LocationPanelVisual extends JPanel implements DocumentListener {
 
     private static final long serialVersionUID = 9464147466826L;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final LocalServerController localServerComponent;
 
-    public LocationPanelVisual(WebFolderNameProvider webFolderNameProvider) {
+    public LocationPanelVisual() {
         initComponents();
-        localServerComponent = new LocalServerController(localServerComboBox, localServerButton, webFolderNameProvider,
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"),
-                ConfigureProjectPanel.DEFAULT_LOCAL_SERVER);
         init();
     }
 
     private void init() {
         projectLocationTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
-        localServerComponent.addChangeListener(this);
-        urlTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -110,12 +97,6 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
         browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
-        sourcesLabel = new javax.swing.JLabel();
-        localServerComboBox = new javax.swing.JComboBox();
-        localServerButton = new javax.swing.JButton();
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
-        urlInfoLabel = new javax.swing.JLabel();
 
         projectNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
@@ -137,18 +118,6 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
 
         createdFolderTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_Sources")); // NOI18N
-        sourcesLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        localServerComboBox.setEditable(true);
-
-        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_Url")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(urlInfoLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "TXT_Url")); // NOI18N
-        urlInfoLabel.setEnabled(false);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -157,28 +126,17 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(projectLocationLabel)
                     .add(projectNameLabel)
-                    .add(createdFolderLabel)
-                    .add(sourcesLabel)
-                    .add(urlLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(createdFolderLabel))
+                .add(14, 14, 14)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 425, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerButton))
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-                    .add(urlInfoLabel)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {browseButton, localServerButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -195,17 +153,6 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createdFolderLabel)
                     .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sourcesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(localServerButton)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(urlInfoLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -223,8 +170,7 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
-                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
+        String newLocation = Utils.browseLocationAction(this, getProjectLocation());
         setProjectLocation(newLocation);
     }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -232,16 +178,10 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
-    private javax.swing.JButton localServerButton;
-    private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
     protected javax.swing.JTextField projectNameTextField;
-    private javax.swing.JLabel sourcesLabel;
-    private javax.swing.JLabel urlInfoLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
     public String getProjectName() {
@@ -266,30 +206,6 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
         projectLocationTextField.setText(projectLocation);
     }
 
-    public LocalServer getSourcesLocation() {
-        return localServerComponent.getLocalServer();
-    }
-
-    public MutableComboBoxModel getLocalServerModel() {
-        return localServerComponent.getLocalServerModel();
-    }
-
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
-        localServerComponent.setLocalServerModel(localServers);
-    }
-
-    public void selectSourcesLocation(LocalServer localServer) {
-        localServerComponent.selectLocalServer(localServer);
-    }
-
-    public String getUrl() {
-        return urlTextField.getText().trim();
-    }
-
-    public void setUrl(String url) {
-        urlTextField.setText(url);
-    }
-
     // listeners
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
@@ -305,10 +221,6 @@ class LocationPanelVisual extends JPanel implements DocumentListener, ChangeList
 
     private void processUpdate() {
         createdFolderTextField.setText(getFullProjectPath());
-        changeSupport.fireChange();
-    }
-
-    public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 }

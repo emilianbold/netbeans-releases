@@ -385,10 +385,6 @@
 <mapID target="gui.component-inspector" url="gui/csh/gui_inspector_window.html" />
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 
-<!--Customize Code dialog box-->
-<mapID target="gui.codecustomizer" url="gui/csh/gui_customizecode_dialog.html" />
-
-
 <!--CSH for Binding dialog-->
 <mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_dialog.html" />
 <mapID target="gui.binding-customizer.advanced" url="gui/csh/gui_bind_advanced_dialog.html" />

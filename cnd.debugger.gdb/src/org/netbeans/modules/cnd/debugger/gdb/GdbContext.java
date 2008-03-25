@@ -71,24 +71,15 @@ public class GdbContext implements PropertyChangeListener {
                 gdb.data_list_changed_registers(cb);
             }
         });
-        pcs.addPropertyChangeListener(this); // used to notify sync updates
+        pcs.addPropertyChangeListener(this); // used to notify sunc updates
     }
     
-    public void invalidate(boolean fireUpdates) {
+    public void invalidate() {
         cache.clear();
-        
-        // fire updates if requested
-        if (fireUpdates) {
-            for (String propertyName : requests.keySet()) {
-                if (hasListeners(propertyName)) {
-                    pcs.firePropertyChange(propertyName, 0, 1);
-                }
-            }
-        }
     }
     
     public void update() {
-        invalidate(false);
+        invalidate();
         //request update of all properties that have listeners
         for (Map.Entry<String,Request> entry : requests.entrySet()) {
             if (hasListeners(entry.getKey())) {

@@ -184,13 +184,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     
     final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
-    
-    final boolean newInitialize() {
-        if (Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize")) { // NOI18N
-            return false;
-        }
-        return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
-    }
+    final boolean NEW_INITIALIZE = !Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize"); // NOI18N
 
     class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
@@ -204,7 +198,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             this.tmp = tmp;
             this.tmpComp = initLoading();
             new Timer(1000, this).start();
-            if (newInitialize()) {
+            if (NEW_INITIALIZE) {
                 task = CloneableEditorSupport.RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY + 2);
                 task.schedule(0);
@@ -240,13 +234,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             switch (phase++) {
             case 0: 
                 initNonVisual();
-                if (newInitialize()) {
+                if (NEW_INITIALIZE) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
                     break;
                 }
             case 1:
                 initVisual();
-                if (newInitialize()) {
+                if (NEW_INITIALIZE) {
                     task.schedule(1000);
                     break;
                 }

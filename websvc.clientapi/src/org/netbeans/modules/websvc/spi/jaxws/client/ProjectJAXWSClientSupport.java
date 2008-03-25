@@ -214,24 +214,19 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                                     
                                 } else {
                                     Client client = jaxWsModel.findClientByName(clientName2);
-                                    String packName = client.getPackageName();                               
-                                    // this shuldn't normally happen
-                                    // this applies only for case when package name cannot be resolved for namespace
-                                    if(packName == null) {
-                                        if (model.getServices().size() > 0) {
-                                            WsdlService service = model.getServices().get(0);
-                                            String javaName = service.getJavaName();
-                                            int index = javaName.lastIndexOf(".");
-                                            if (index != -1){
-                                                packName = javaName.substring(0,index );
-                                            } else {
-                                                packName = javaName;
-                                            }                                 
-                                            client.setPackageName(packName);
-                                            writeJaxWsModel(jaxWsModel);
-                                        }
+                                    String packName = client.getPackageName();
+                                    if(packName == null){
+                                        WsdlService service = model.getServices().get(0);
+                                        String javaName = service.getJavaName();
+                                        int index = javaName.lastIndexOf(".");
+                                        if (index != -1){
+                                            packName = javaName.substring(0,index );
+                                        } else {
+                                            packName = javaName;
+                                        }                                 
+                                        client.setPackageName(packName);
+                                        writeJaxWsModel(jaxWsModel);
                                     }
-                                    
                                     runWsimport(clientName2);
                                 }
                             }

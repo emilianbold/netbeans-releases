@@ -128,7 +128,7 @@ public class XPathTreeCompiler implements Compiler {
     public Object equal(Object left, Object right) {
         return createOperation(left, right, CoreOperationType.OP_EQ);
 
-        // TO DO sort out if the old code is necessary or not.
+        // TODO sort out if the old code is necessary or not.
 //        if (isNameAttributeTest((XPathExpression) left)) {
 //            return new NameAttributeTest((Expression) left, (Expression) right);
 //        }
@@ -202,6 +202,7 @@ public class XPathTreeCompiler implements Compiler {
     }
 
     public Object expressionPath(Object expression, Object[] predicates, Object[] steps) {
+        // TODO Predicates are ignored here ????
         XPathExpressionPath exprPath = myXPathModel.getFactory().
                 newXPathExpressionPath((XPathExpression)expression, 
                 toLocationStepArray(steps));

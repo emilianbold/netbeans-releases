@@ -55,7 +55,6 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.compapp.casaeditor.nodes.WSDLEndpointNode;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingNode;
 import org.netbeans.modules.xml.wsdl.model.*;
@@ -79,10 +78,8 @@ import java.util.logging.Level;
 import java.awt.*;
 import java.io.IOException;
 import java.io.FileWriter;
-import java.io.File;
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
-import javax.xml.namespace.QName;
 
 /**
  * DOCUMENT ME!
@@ -93,8 +90,6 @@ import javax.xml.namespace.QName;
 public class WsitClientConfigAction extends NodeAction {
 
     private static String helpID = "org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl"; // NOI18N
-    private static String cbNamespace = "http://www.sun.com/jbi/wsit/callbackproject"; // NOI18N
-    private static String cbAttribute = "CallbackProject";                             // NOI18N
 
     /**
      * DOCUMENT ME!
@@ -170,31 +165,12 @@ public class WsitClientConfigAction extends NodeAction {
 
         Collection<FileObject> createdFiles = new LinkedList<FileObject>();
         Project proj = ((CasaWrapperModel) cp.getModel()).getJBIProject();
-        final WSDLModel clientModel = getModelForClient(proj, wsdlModel, true, createdFiles);
+        WSDLModel clientModel = getModelForClient(proj, wsdlModel, true, createdFiles);
         if (clientModel == null) return;
-
-        // todo: add callback project to lookup...
-        // replace the file object in lookup
-        FileObject fo = node.getLookup().lookup(FileObject.class);
-        if (fo != null) {
-            node.removeContent(fo);
-        }
-
-        for (CasaExtensibilityElement ee : cp.getExtensibilityElements()) {
-            QName eeQName = ee.getQName();
-            if (eeQName.getNamespaceURI().equals(cbNamespace)) {
-                String projName = ee.getAttribute(cbAttribute);
-                File f = new File(projName);
-                if (f.exists()) {
-                    fo = FileUtil.toFileObject(f);
-                    node.addContent(fo);
-                }
-            }
-         }
 
         // todo: 08/27/07, add undo manager...
         final UndoManager undoManager = new UndoManager();
-        clientModel.addUndoableEditListener(undoManager);  //maybe use WeakListener instead
+        wsdlModel.addUndoableEditListener(undoManager);  //maybe use WeakListener instead
         final JComponent stc = WSITConfigProvider.getDefault().getWSITClientConfig(s, clientModel, wsdlModel, node);
         stc.setPreferredSize(new Dimension(450, 360)); // set a larger initial default size..
 
@@ -216,7 +192,7 @@ public class WsitClientConfigAction extends NodeAction {
                             while (undoManager.canUndo()) {
                                 undoManager.undo();
                             }
-                            clientModel.sync();
+                            wsdlModel.sync();
                         }
                     } catch (Exception e){
                         // System.out.println("Got Error: "+e);
@@ -252,25 +228,6 @@ public class WsitClientConfigAction extends NodeAction {
                 FileObject mainConfigFO = srcFolder.getFileObject(WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX, WSITModelSupport.MAIN_CONFIG_EXTENSION);
                 if (mainConfigFO == null) {
                     mainConfigFO = createMainConfig(srcFolder, createdFiles);
-                }
-
-                if (!originalwsdlmodel.inSync()) {
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(WsitClientConfigAction.class, "MSG_SaveClientWSDL"), // NOI18N
-                            NbBundle.getMessage(WsitClientConfigAction.class, "TTL_SaveClientWSDL"), // NOI18N
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-                        return null;
-                    }
-                    try {
-                        DataObject dataObject = DataObject.find(originalWsdlFO);
-                        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
-                        if (saveCookie != null) {
-                            saveCookie.save();
-                        }
-                    } catch (Exception ex) {
-                    // failed to load casa...
-                    }
                 }
 
                 copyImports(originalwsdlmodel, srcFolder, createdFiles);
@@ -352,8 +309,6 @@ public class WsitClientConfigAction extends NodeAction {
 
     private void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
 
-        // IZ#129853 can not copy from file, when the project wsdl is not yet saved..
-        // ...needed to force a save of project wsdl!!!
         FileObject modelFO = Utilities.getFileObject(model.getModelSource());
 
         try {
@@ -375,15 +330,13 @@ public class WsitClientConfigAction extends NodeAction {
                 FileObject oldImportFO = Utilities.getFileObject(oldImportedModel.getModelSource());
                 newModel.startTransaction();
                 try {
-                    if (newImportsIt.next() != null) {
-                        newImportsIt.next().setLocation(oldImportFO.getName() + "." + WSITModelSupport.CONFIG_WSDL_EXTENSION);
-                    }
+                    newImportsIt.next().setLocation(oldImportFO.getName() + "." + WSITModelSupport.CONFIG_WSDL_EXTENSION);
                 } finally {
                     newModel.endTransaction();
                 }
                 copyImports(oldImportedModel, srcFolder, createdFiles);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             // ignore - this happens when files are imported recursively
             // logger.log(Level.FINE, null, e);
         }

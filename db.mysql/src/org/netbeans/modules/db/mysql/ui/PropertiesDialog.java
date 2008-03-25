@@ -177,10 +177,7 @@ public class PropertiesDialog  {
         ServerNodeProvider provider = ServerNodeProvider.getDefault();
         if ( ! provider.isRegistered() ) {
             provider.setRegistered(true);
-            
-        }
-        
-        if ( needsReconnect ) {
+        } else if ( needsReconnect ) {
             server.connectAsync();
         }
     }

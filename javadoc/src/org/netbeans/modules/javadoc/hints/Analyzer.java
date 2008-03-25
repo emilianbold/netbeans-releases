@@ -74,6 +74,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
@@ -214,7 +215,6 @@ final class Analyzer {
                 ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
                 ExecutableElement methodEl = (ExecutableElement) elm;
                 MethodTree methodTree = (MethodTree) node;
-                processTypeParameters(methodEl, methodTree, methDoc, errors);
                 processParameters(methodEl, methodTree, methDoc, errors);
                 processReturn(methodEl, methodTree, methDoc, errors);
                 processThrows(methodEl, methodTree, methDoc, errors);
@@ -223,7 +223,6 @@ final class Analyzer {
                 ClassDoc classDoc = (ClassDoc) jDoc;
                 ClassTree classTree = (ClassTree) node;
                 processTypeParameters(classEl, classTree, classDoc, errors);
-                processParameters(classEl, classTree, classDoc, errors);
             } else if (jDoc.isAnnotationType()) {
                 processAnnTypeParameters(elm, node, jDoc, errors);
             } else if (jDoc.isAnnotationTypeElement()) {
@@ -514,11 +513,20 @@ final class Analyzer {
 
     private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
         final List<? extends VariableTree> params = node.getParameters();
-        final ParamTag[] tags = jdoc.paramTags();
+        //            final ParamTag[] tags = doc.paramTags();
+        final Tag[] tags = jdoc.tags("@param"); //NOI18N
 
         Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
         // create param tag names set and reveal duplicates
-        for (ParamTag paramTag : tags) {
+        for (Tag tag : tags) {
+            ParamTag paramTag = (ParamTag) tag;
+            if (paramTag.isTypeParameter()) {
+                // javadoc does not support type parameters of methods yet
+                // and isTypeParameter does not seem to be working. Let's
+                // work around this as leftover params below.
+                continue;
+            }
+
             if (tagNames.containsKey(paramTag.parameterName())) {
                 // duplicate @param error
                 addRemoveTagFix(paramTag,
@@ -551,6 +559,19 @@ final class Analyzer {
 
         // resolve leftovers
         for (ParamTag paramTag : tagNames.values()) {
+            // XXX workaround: check if not type param
+            boolean isTypeParam = false;
+            for (TypeParameterElement typeParameterElement : exec.getTypeParameters()) {
+                if (paramTag.parameterName().equals(typeParameterElement.getSimpleName().toString())) {
+                    isTypeParam = true;
+                    break;
+                }
+            }
+            if (isTypeParam) {
+                continue;
+            }
+            // end of workaround
+
             // redundant @param
             addRemoveTagFix(paramTag,
                     NbBundle.getMessage(Analyzer.class, "UNKNOWN_PARAM_DESC", paramTag.parameterName()), // NOI18N
@@ -559,36 +580,19 @@ final class Analyzer {
 
     }
 
-    private void processParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
-        // other than type parameters are unsupported in class javadoc
-        for (Tag tag : jdoc.tags("@param")) { // NOI18N
-            ParamTag paramTag = (ParamTag) tag;
-            if (!paramTag.isTypeParameter()) {
-                // redundant @param
-                addRemoveTagFix(paramTag,
-                        NbBundle.getMessage(Analyzer.class, "UNKNOWN_PARAM_DESC", paramTag.parameterName()), // NOI18N
-                        elm, errors);
-            }
-        }
-    }
-
     private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), errors);
-    }
+        final List<? extends TypeParameterTree> params = node.getTypeParameters();
+        //            final ParamTag[] tags = doc.typeParamTags();
+        final Tag[] tags = jdoc.tags("@param"); // NOI18N
 
-    private void processTypeParameters(ExecutableElement elm, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), errors);
-    }
-    
-    private void processTypeParameters(Element elm, List<? extends TypeParameterTree> params, ParamTag[] tags, List<ErrorDescription> errors) {
         Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
         // create param tag names set and reveal duplicates
-        for (ParamTag paramTag : tags) {
+        for (Tag tag : tags) {
+            ParamTag paramTag = (ParamTag) tag;
             if (tagNames.containsKey(paramTag.parameterName())) {
                 // duplicate @param error
-                String typeParamName = '<' + paramTag.parameterName() + '>';
                 addRemoveTagFix(paramTag,
-                        NbBundle.getMessage(Analyzer.class, "DUPLICATE_TYPEPARAM_DESC", typeParamName), // NOI18N
+                        NbBundle.getMessage(Analyzer.class, "DUPLICATE_TYPEPARAM_DESC", paramTag.parameterName()), // NOI18N
                         elm, errors);
             } else {
                 tagNames.put(paramTag.parameterName(), paramTag);
@@ -603,11 +607,9 @@ final class Analyzer {
                 // missing @param
                 try {
                     Position[] poss = createPositions(param);
-                    String paramName = param.getName().toString();
-                    String typeParamName = '<' + paramName + '>';
                     ErrorDescription err = createErrorDescription(
-                            NbBundle.getMessage(Analyzer.class, "MISSING_TYPEPARAM_DESC", typeParamName), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, paramName, file, spec)),
+                            NbBundle.getMessage(Analyzer.class, "MISSING_TYPEPARAM_DESC", param.getName()), // NOI18N
+                            Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, param.getName().toString(), file, spec)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -619,9 +621,8 @@ final class Analyzer {
         // resolve leftovers
         for (ParamTag paramTag : tagNames.values()) {
             // redundant @param
-            String typeParamName = '<' + paramTag.parameterName() + '>';
             addRemoveTagFix(paramTag,
-                    NbBundle.getMessage(Analyzer.class, "UNKNOWN_TYPEPARAM_DESC", typeParamName), // NOI18N
+                    NbBundle.getMessage(Analyzer.class, "UNKNOWN_TYPEPARAM_DESC", paramTag.parameterName()), // NOI18N
                     elm, errors);
         }
     }
