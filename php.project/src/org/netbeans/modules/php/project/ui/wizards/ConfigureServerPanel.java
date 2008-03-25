@@ -46,7 +46,6 @@ import java.io.File;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -66,7 +65,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     private final WebFolderNameProvider webFolderNameProvider;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final String[] steps;
-    private CopyFilesVisual copyFilesVisual = null;
+    private ConfigureServerPanelVisual configureServerPanelVisual = null;
     private WizardDescriptor descriptor;
 
     public ConfigureServerPanel(String[] steps, WebFolderNameProvider webFolderNameProvider) {
@@ -75,10 +74,10 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     }
 
     public Component getComponent() {
-        if (copyFilesVisual == null) {
-            copyFilesVisual = new CopyFilesVisual(webFolderNameProvider);
+        if (configureServerPanelVisual == null) {
+            configureServerPanelVisual = new ConfigureServerPanelVisual(this, webFolderNameProvider);
         }
-        return copyFilesVisual;
+        return configureServerPanelVisual;
     }
 
     public HelpCtx getHelp() {
@@ -92,20 +91,20 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         unregisterListeners();
 
         // copying enabled?
-        copyFilesVisual.setState(isProjectFolder());
+        configureServerPanelVisual.setState(isProjectFolder());
 
         Boolean copyFiles = isCopyFiles();
         if (copyFiles != null) {
-            copyFilesVisual.setCopyFiles(copyFiles);
+            configureServerPanelVisual.setCopyFiles(copyFiles);
         }
 
         MutableComboBoxModel localServers = getLocalServers();
         if (localServers != null) {
-            copyFilesVisual.setLocalServerModel(localServers);
+            configureServerPanelVisual.setLocalServerModel(localServers);
         }
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
-            copyFilesVisual.selectLocalServer(wwwFolder);
+            configureServerPanelVisual.selectLocalServer(wwwFolder);
         }
 
         registerListeners();
@@ -115,9 +114,9 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
 
-        d.putProperty(COPY_FILES, copyFilesVisual.isCopyFiles());
-        d.putProperty(COPY_TARGET, copyFilesVisual.getLocalServer());
-        d.putProperty(COPY_TARGETS, copyFilesVisual.getLocalServerModel());
+        d.putProperty(COPY_FILES, configureServerPanelVisual.isCopyFiles());
+        d.putProperty(COPY_TARGET, configureServerPanelVisual.getLocalServer());
+        d.putProperty(COPY_TARGETS, configureServerPanelVisual.getLocalServerModel());
     }
 
     public boolean isValid() {
@@ -171,11 +170,11 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     }
 
     private String validateServerLocation() {
-        if (!copyFilesVisual.isCopyFiles()) {
+        if (!configureServerPanelVisual.isCopyFiles()) {
             return null;
         }
 
-        String sourcesLocation = copyFilesVisual.getLocalServer().getSrcRoot();
+        String sourcesLocation = configureServerPanelVisual.getLocalServer().getSrcRoot();
         if (sourcesLocation == null
                 || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
@@ -185,11 +184,11 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
     }
 
     private void registerListeners() {
-        copyFilesVisual.addChangeListener(this);
+        configureServerPanelVisual.addServerListener(this);
     }
 
     private void unregisterListeners() {
-        copyFilesVisual.removeChangeListener(this);
+        configureServerPanelVisual.removeServerListener(this);
     }
 
     public void stateChanged(ChangeEvent e) {
