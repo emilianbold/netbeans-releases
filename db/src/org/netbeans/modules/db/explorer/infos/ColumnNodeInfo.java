@@ -95,9 +95,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
 
-            // refresh list of columns after column drop
-            //getParent().refreshChildren();
-            fireRefresh();
+            notifyChange();
         } catch (Exception exc) {
             DbUtilities.reportError(bundle().getString("ERR_UnableToDeleteColumn"), exc.getMessage()); // NOI18N
         }
@@ -151,6 +149,10 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         }
 
         return col;
+    }
+    
+    public int getColumnPosition() {
+        return (Integer)getProperty("ordpos");
     }
 
     // catalog,schema,tablename,name,datatype,typename,
@@ -261,13 +263,19 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         }
     }
 
-    /**
-     * Using name of column for hashCode computation.
-     *
-     * @return  computed hashCode based on name of column
-     */
-    public int hashCode() {
-        return getName().hashCode();
+    @Override
+    public int compareTo(Object o2) {
+        // Sort based on column position, not name
+        if ( equals(o2) ) {
+            return 0;
+        }
+        
+        if ( ! (o2 instanceof ColumnNodeInfo) ) {
+            return super.compareTo(o2);
+        }
+        
+        return this.getColumnPosition() - 
+                ((ColumnNodeInfo)o2).getColumnPosition();
     }
     
 }

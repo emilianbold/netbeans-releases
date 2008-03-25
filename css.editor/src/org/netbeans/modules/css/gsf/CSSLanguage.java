@@ -42,6 +42,7 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
@@ -59,13 +60,18 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tor Norbye
  */
+/*
+ * Language/lexing configuration for Ruby
+ *
+ * @author Tor Norbye
+ */
 public class CSSLanguage implements GsfLanguage {
     
     public CSSLanguage() {
     }
 
     public String getLineCommentPrefix() {
-        return "/*";
+        return null;
     }
 
     public boolean isIdentifierChar(char c) {
@@ -82,5 +88,17 @@ public class CSSLanguage implements GsfLanguage {
 
     public Collection<FileObject> getCoreLibraries() {
         return Collections.emptyList();
+    }
+
+    public String getDisplayName() {
+        return "CSS";
+    }
+    
+    public String getPreferredExtension() {
+        return "css"; // NOI18N
+    }
+
+    public Map<String, String> getSourceGroupNames() {
+        return Collections.emptyMap();
     }
 }

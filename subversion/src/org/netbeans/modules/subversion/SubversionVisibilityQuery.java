@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
  * 
  * @author Maros Sandor
  */
-public class SubversionVisibilityQuery implements VisibilityQueryImplementation, VersioningListener {
+public class SubversionVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
 
     private List<ChangeListener>  listeners = new ArrayList<ChangeListener>();
     private FileStatusCache       cache;
@@ -73,7 +73,14 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
     public boolean isVisible(FileObject fileObject) {
         if (fileObject.isData()) return true;
         File file = FileUtil.toFile(fileObject);
-        if(file == null) return true;                     
+        return isVisible(file);
+    }
+    
+    public boolean isVisible(File file) {
+        if(file == null) return true;
+        if (file.isFile()) {
+            return true;
+        }
         if(!(VersioningSupport.getOwner(file) instanceof SubversionVCS)) {
             return true;
         }

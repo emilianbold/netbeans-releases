@@ -155,15 +155,17 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         scrollPane.addMouseListener(this);
         editorPane.addMouseListener(this);
 
-        this.addFocusListener(this);
-        scrollPane.addFocusListener(this);
         editorPane.addFocusListener(this);
 
         if (text != null) {
           editorPane.setText(text);
-          editorPane.setCaretPosition(editorPane.getDocument().getStartPosition().getOffset());
         }
         myActionListener = actionListener;
+    }
+
+    @Override
+    public void requestFocus() {
+      editorPane.requestFocus();
     }
     
     public boolean contains(int x, int y) {

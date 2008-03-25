@@ -187,9 +187,9 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         }
 
         Encapsulator encapsulator = new Encapsulator(descs, problem);
-        createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
+        Problem prob = createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
         problem = encapsulator.getProblem();
-        return problem;
+        return prob != null ? prob : problem;
     }
     
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {

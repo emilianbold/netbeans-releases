@@ -256,12 +256,12 @@ public class CallStackFrameImpl implements CallStackFrame {
                 if (local instanceof Local) {
                     Local localImpl = (Local) local;
                     localImpl.setFrame(this);
-                    localImpl.setInnerValue(v);
+                    //localImpl.setInnerValue(v);
                     localImpl.setClassName(className);
                 } else {
                     ObjectLocalVariable localImpl = (ObjectLocalVariable) local;
                     localImpl.setFrame(this);
-                    localImpl.setInnerValue(v);
+                    //localImpl.setInnerValue(v);
                     localImpl.setClassName(className);
                 }
                 locals[i] = local;

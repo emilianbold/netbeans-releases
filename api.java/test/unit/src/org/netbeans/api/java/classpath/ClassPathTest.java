@@ -62,7 +62,9 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -78,7 +80,7 @@ public class ClassPathTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
     }
@@ -192,6 +194,7 @@ public class ClassPathTest extends NbTestCase {
      * ClassPath.entries () and classpath SPI.
      */
     public void testListening() throws Exception {
+        // XXX unreliable, would be improved by usage of TestFileUtils methods:
 
         File root_1 = new File (getBaseDir(),"root_1");
         root_1.mkdir();
@@ -668,5 +671,31 @@ public class ClassPathTest extends NbTestCase {
         return !fo.getName().contains("$");     //NOI18N
                 
     }
-    
+
+    public void testJVMPathConversion() throws Exception {
+        String root = getWorkDir().toURI().toString();
+        ClassPath cp = ClassPathSupport.createClassPath(
+                new URL(root + "folder/"),
+                new URL("jar:" + root + "file.zip!/"),
+                new URL("jar:" + root + "file.zip!/subdir/"));
+        assertEquals(massagePath("<root>/folder:<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.SKIP));
+        assertEquals(massagePath("<root>/folder:<root>/file.zip:") + "jar:" + root + "file.zip!/subdir/", cp.toString(ClassPath.PathConversionMode.PRINT));
+        try {
+            cp.toString(ClassPath.PathConversionMode.FAIL);
+            fail();
+        } catch (IllegalArgumentException x) {/* OK */}
+        CharSequence warnings = Log.enable(ClassPath.class.getName(), Level.WARNING);
+        assertEquals(massagePath("<root>/folder:<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.WARN));
+        assertTrue(warnings.toString(), warnings.toString().contains("subdir"));
+
+        cp = ClassPathSupport.createClassPath(
+                new URL(root + "folder/"),
+                new URL("jar:" + root + "file.zip!/"));
+        assertEquals(cp.toString(), ClassPathSupport.createClassPath(cp.toString()).toString());
+        // XXX could also test IAE (tricky - need to have a URLMapper in Lookup, etc.)
+    }
+    private String massagePath(String path) throws Exception {
+        return path.replace('/', File.separatorChar).replace(':', File.pathSeparatorChar).replace("<root>", getWorkDir().getAbsolutePath());
+    }
+
 }

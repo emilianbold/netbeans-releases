@@ -178,6 +178,8 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
     }
 
     public static Rectangle getCheckBoxRectangle() {
+        if( null == checkBounds )
+            return new Rectangle(0,0,0,0);
         return (Rectangle) checkBounds.clone();
     }
 }

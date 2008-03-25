@@ -94,7 +94,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigu
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.NewSchemaBasedConfigPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainConfirmation;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
@@ -276,7 +276,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             for (Attribute attr : attrMap.keySet()) {
                 JBIComponentConfigurationMBeanAttributeInfo info = attrMap.get(attr);
 
-                PropertySupport support = NewSchemaBasedConfigPropertySupportFactory.getPropertySupport(this, attr, info);
+                PropertySupport support = SchemaBasedConfigPropertySupportFactory.getPropertySupport(this, attr, info);
 
                 if (support == null) {
 

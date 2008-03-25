@@ -41,14 +41,12 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class ViewListNode extends DatabaseNode {
-    public ViewListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Views")); //NOI18N
-    }
 
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_ViewList"); //NOI18N
+    public ViewListNode(DatabaseNodeInfo info) {
+        super(info);
     }
+    
 }

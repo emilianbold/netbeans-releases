@@ -236,10 +236,24 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public static class HTMLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         private JTextComponent currentTarget;
+        private String insertedText;
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             currentTarget = target;
+            
+            //hack - I need to call the handleTagClosingSymbol() if a character was really typed into the editor
+            //but outside of the insertStringMethod() which is called under document atomicLock().
+            insertedText = null;
+            int dotPos = target.getCaret().getDot();
             super.actionPerformed(evt, target);
+            
+            if(insertedText != null) {
+                try {
+                    handleTagClosingSymbol((BaseDocument)target.getDocument(), dotPos, insertedText.charAt(0));
+                } catch (BadLocationException ble) {
+                    //ignore
+                }
+            }
             currentTarget = null;
         }
 
@@ -268,8 +282,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             }
 
             super.insertString(doc, dotPos, caret, str, overwrite);
+            insertedText = str;
             HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
-            handleTagClosingSymbol(doc, dotPos, str.charAt(0));
         }
 
         @Override

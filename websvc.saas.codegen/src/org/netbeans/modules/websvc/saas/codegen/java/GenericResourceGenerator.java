@@ -42,10 +42,14 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import com.sun.source.tree.ClassTree;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,6 +86,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
     private FileObject destDir;
     private GenericResourceBean bean;
     private String template;
+    private Map<String, String> signMap = new HashMap<String, String>();
     
     public GenericResourceGenerator(FileObject destDir, GenericResourceBean bean) {
         this.destDir = destDir;
@@ -114,6 +119,10 @@ public class GenericResourceGenerator extends AbstractGenerator {
         JavaSource source = JavaSourceHelper.createJavaSource(
                 getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
       
+        JavaSourceHelper.getAvailableMethodSignature(source, signMap);
+        JavaSourceHelper.getAvailableConstructorSignature(source, signMap);
+        JavaSourceHelper.getAvailableFieldSignature(source, signMap);
+        
         List<ParameterInfo> params = bean.filterParametersByAuth(
                     bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
         if (params.size() > 0) {
@@ -129,8 +138,18 @@ public class GenericResourceGenerator extends AbstractGenerator {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addFields(copy, getParamNames(params),
-                        getParamTypeNames(params), getParamValues(params));
+                
+                List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+                for(ParameterInfo p: params) {
+                    String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
+                            getParameterName(p, true, true, true));
+                    if(!signMap.containsKey(sign)) {
+                        filterParams.add(p);
+                    }
+                }
+                
+                JavaSourceHelper.addFields(copy, getParamNames(filterParams),
+                        getParamTypeNames(filterParams), getParamValues(filterParams));
             }
         });
         result.commit();
@@ -150,6 +169,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
                             "}\n";    //NOI18N
                 }
                 
+                String sign = JavaSourceHelper.createMethodSignature("", getParamTypeNames(params));
+                if(signMap.containsKey(sign)) {
+                    return;
+                }
+        
                 ClassTree modifiedTree = JavaSourceHelper.addConstructor(copy, tree,
                         Constants.PUBLIC,
                         getParamNames(params), getParamTypeNames(params),
@@ -161,13 +185,14 @@ public class GenericResourceGenerator extends AbstractGenerator {
         result.commit();
     }
       
-    private void modifyResourceClass(JavaSource source) {
+    private void modifyResourceClass(final JavaSource source) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws IOException {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
                     JavaSourceHelper.addImports(copy, getJsr311AnnotationImports(bean));
-                    if (bean.isGenerateUriTemplate()) {
+                    if (bean.isGenerateUriTemplate() &&
+                            JavaSourceHelper.findUri(source) == null) {
                         JavaSourceHelper.addClassAnnotation(copy,
                                 new String[] { Constants.PATH_ANNOTATION  },
                                 new Object[] { bean.getUriTemplate() });
@@ -218,8 +243,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
         for (int i=0; i<mimes.length; i++) {
             MimeType mime = mimes[i];
             String type = types[i];
-            tree = addGetMethod(mime, type, copy, tree);
             
+            if (bean.getMethodTypes().contains(HttpMethodType.GET)) {
+                tree = addGetMethod(mime, type, copy, tree);
+            }
+
             if (bean.getMethodTypes().contains(HttpMethodType.POST)) {
                 tree = addPostMethod(mime, type, copy, tree);
             }
@@ -254,7 +282,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         bodyText += "throw new UnsupportedOperationException(); }";
         
         List<ParameterInfo> queryParams = bean.filterParametersByAuth(
-                    bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
+                    bean.filterParameters(bean.getQueryParameters(), 
+                    new ParamFilter[]{ParamFilter.FIXED}));//bean.getQueryParameters();
         String[] parameters = getGetParamNames(queryParams);
         Object[] paramTypes = getGetParamTypes(queryParams);
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);
@@ -266,9 +295,15 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         comment += "@return an instance of "+type;
         
+        String methodName = getMethodName(HttpMethodType.GET, mime);
+        String sign = JavaSourceHelper.createMethodSignature(methodName, paramTypes);
+        if(signMap.containsKey(sign)) {
+            return tree;
+        }
+        
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.GET, mime), type, parameters, paramTypes,
+                methodName, type, parameters, paramTypes,
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
@@ -289,9 +324,6 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ //TODO\n return Response.created(context.getAbsolutePath()).build(); }"; //NOI18N
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
-        if (type != null) {
-            paramTypes[paramTypes.length-1] = type;
-        }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
@@ -302,9 +334,15 @@ public class GenericResourceGenerator extends AbstractGenerator {
         comment += "@param $PARAM$ representation for the new resource\n".replace("$PARAM$", parameters[parameters.length-1]);
         comment += "@return an HTTP response with content of the created resource";
         
+        String methodName = getMethodName(HttpMethodType.POST, mime);
+        String sign = JavaSourceHelper.createMethodSignature(methodName, paramTypes);
+        if (signMap.containsKey(sign)) {
+            return tree;
+        }
+        
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.POST, mime), Constants.HTTP_RESPONSE,
+                methodName, Constants.VOID,
                 parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);
     }
@@ -325,9 +363,6 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
-        if (type != null) {
-            paramTypes[paramTypes.length-1] = type;
-        }
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
         
@@ -338,9 +373,15 @@ public class GenericResourceGenerator extends AbstractGenerator {
         comment += "@param $PARAM$ representation for the resource\n".replace("$PARAM$", parameters[parameters.length-1]);
         comment += "@return an HTTP response with content of the updated or created resource.";
         
+        String methodName = getMethodName(HttpMethodType.PUT, mime);
+        String sign = JavaSourceHelper.createMethodSignature(methodName, paramTypes);
+        if (signMap.containsKey(sign)) {
+            return tree;
+        }
+        
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.PUT, mime), returnType,
+                methodName, returnType,
                 parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);
     }
@@ -367,9 +408,16 @@ public class GenericResourceGenerator extends AbstractGenerator {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
         }
         
+        String methodName = HttpMethodType.DELETE.prefix();
+        String sign = JavaSourceHelper.createMethodSignature(
+                methodName, paramTypes);
+        if (signMap.containsKey(sign)) {
+            return tree;
+        }
+        
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                "delete", returnType, parameters, paramTypes, //NOI18N
+                methodName, returnType, parameters, paramTypes, //NOI18N
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
@@ -389,6 +437,12 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ return new " + returnType + "(); }";
         
         String comment = "Sub-resource locator method for  " + subBean.getUriTemplate() + "\n";
+        
+        String sign = JavaSourceHelper.createMethodSignature(
+                methodName, null);
+        if(signMap.containsKey(sign)) {
+            return tree;
+        }
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
@@ -506,17 +560,19 @@ public class GenericResourceGenerator extends AbstractGenerator {
     
     private String[] getPostPutParams() {
         List<String> params = new ArrayList<String>(Arrays.asList(bean.getUriParams()));
+        params.add("contentType");  //NO18N
         params.add("content");  //NO18N
         return params.toArray(new String[params.size()]);
     }
     
-    private String[] getPostPutParamTypes(String representatinType) {
+    private String[] getPostPutParamTypes(String representationType) {
         String defaultType = String.class.getName();
-        String[] types = new String[bean.getUriParams().length + 1];
+        String[] types = new String[bean.getUriParams().length + 2];
         for (int i=0; i < types.length; i++) {
             types[i] = defaultType;
         }
-        types[types.length-1] = representatinType;
+        types[types.length-2] = defaultType;
+        types[types.length-1] = InputStream.class.getSimpleName();
         return types;
     }
     

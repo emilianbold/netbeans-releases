@@ -110,10 +110,26 @@ public final class GemPanel extends JPanel implements Runnable {
     private boolean gemsModified;
     private boolean fetchingLocal;
     private boolean fetchingRemote;
-    
+
     public GemPanel(String availableFilter) {
+        this(availableFilter, null);
+    }
+
+    /**
+     * Creates a new GemPanel.
+     * 
+     * @param availableFilter the filter to use for displaying gems, e.g. 
+     * <code>"generators$"</code> for displaying only generator gems.
+     * @param preselected the platform that should be preselected in the panel; 
+     * may be <code>null</code> in which case the last selected platform is preselected.
+     */
+    public GemPanel(String availableFilter, RubyPlatform preselected) {
         initComponents();
-        Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        if (preselected == null) {
+            Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
+        } else {
+            platforms.setSelectedItem(preselected);
+        }
         
         RubyPlatform selPlatform = getSelectedPlatform();
         if (selPlatform != null) {
@@ -141,8 +157,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
         });
         updateAsynchronously();
+        
     }
-
+    
     private void updateAsynchronously() {
         RequestProcessor.getDefault().post(this, 300);
     }

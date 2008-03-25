@@ -90,7 +90,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
             new ProjectServerWizardPanel(J2eeModule.CLIENT, 
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "NewAppClientProjectWizardIterator.secondStep"),
                     NbBundle.getMessage(NewAppClientProjectWizardIterator.class, "TXT_NewAppClient"),
-                    true, true, false, false, true),
+                    true, true, false, false, false, true),
         };
     }
     

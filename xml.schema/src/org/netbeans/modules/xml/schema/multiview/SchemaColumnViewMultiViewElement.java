@@ -125,6 +125,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     private transient JToolBar toolbar;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private ExplorerManager manager;
+    private ValidateAction validateAction;
 
     /**
      * Nullary constructor for deserialization.
@@ -407,7 +408,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
-    ExplorerUtils.activateActions(manager, false);
+        ExplorerUtils.activateActions(manager, false);
     }
 
     @Override
@@ -418,8 +419,16 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
+        if(categoryPane!= null) categoryPane.close();
+        if(toolbar!= null) toolbar.removeAll();
+        //manager.setRootContext(null);
+        manager = null;
+        toolbar = null;
+        validateAction = null;
+        schemaModel = null;
+        categoryPane = null;
     }
-
+    
     @Override
     public void componentShowing() {
         super.componentShowing();
@@ -467,32 +476,33 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     
     public JComponent getToolbarRepresentation() {
         // This is called every time user switches between elements.
-        if (toolbar == null) {
-            try {
-                SchemaModel model = schemaDataObject
-                        .getSchemaEditorSupport().getModel();
-                if (model != null && model.getState() == SchemaModel.State.VALID) {
-                    toolbar = new JToolBar();
-                    toolbar.setFloatable(false);
-                    if (categoryPane != null) {
-                        toolbar.addSeparator();
-                        categoryPane.populateToolbar(toolbar);
-                    }
-                    // vlv: search
-                    SearchManager sm = SearchManager.getDefault();
-
-                    if (sm != null) {
-                      toolbar.addSeparator();
-                      toolbar.add(sm.getSearchAction());
-                    }
+        if(toolbar != null)
+            return toolbar;
+        try {
+            SchemaModel model = schemaDataObject
+                    .getSchemaEditorSupport().getModel();
+            if (model != null && model.getState() == SchemaModel.State.VALID) {
+                toolbar = new JToolBar();
+                toolbar.setFloatable(false);
+                if (categoryPane != null) {
                     toolbar.addSeparator();
-                    JButton validateButton = toolbar.add(new ValidateAction(model));
-                    validateButton.getAccessibleContext().setAccessibleName(""+
-                            validateButton.getAction().getValue(ValidateAction.NAME));
+                    categoryPane.populateToolbar(toolbar);
                 }
-            } catch (IOException ioe) {
-                // wait until the model is valid
+                // vlv: search
+                SearchManager sm = SearchManager.getDefault();
+
+                if (sm != null) {
+                  toolbar.addSeparator();
+                  toolbar.add(sm.getSearchAction());
+                }
+                toolbar.addSeparator();
+                validateAction = new ValidateAction(model);
+                JButton validateButton = toolbar.add(validateAction);
+                validateButton.getAccessibleContext().setAccessibleName(""+
+                validateButton.getAction().getValue(ValidateAction.NAME));
             }
+        } catch (IOException ioe) {
+            // wait until the model is valid
         }
         return toolbar;
     }

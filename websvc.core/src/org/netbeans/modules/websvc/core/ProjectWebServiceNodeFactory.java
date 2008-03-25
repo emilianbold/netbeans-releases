@@ -86,11 +86,11 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         return new WsNodeList(p);
     }
 
-    private static class WsNodeList implements NodeList<ProjectWebServiceView.ViewType>, ChangeListener, LookupListener {
+    private static class WsNodeList implements NodeList<ProjectWebServiceView.ViewType>, ChangeListener {
 
         private Project project;
         private ChangeSupport changeSupport;
-        private List<ProjectWebServiceView> views;
+        private ProjectWebServiceView view;
         private Node serviceNode,  clientNode;
 
         public WsNodeList(Project proj) {
@@ -99,19 +99,14 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         public List<ProjectWebServiceView.ViewType> keys() {
+            initView();
             List<ProjectWebServiceView.ViewType> result = new ArrayList<ProjectWebServiceView.ViewType>();
-            for (ProjectWebServiceView view : views) {
                 if (!view.isViewEmpty(ProjectWebServiceView.ViewType.SERVICE)) {
                     result.add(ProjectWebServiceView.ViewType.SERVICE);
-                    break;
                 }
-            }
-            for (ProjectWebServiceView view : views) {
                 if (!view.isViewEmpty(ProjectWebServiceView.ViewType.CLIENT)) {
                     result.add(ProjectWebServiceView.ViewType.CLIENT);
-                    break;
                 }
-            }
             return result;
         }
 
@@ -146,61 +141,49 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         public void addNotify() {
-            initViews();
-            if (!views.isEmpty()) {
-                for (ProjectWebServiceView view : views) {
-                    view.addChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-                    view.addChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
-                    view.addNotify();
-                }
-            }
-            ProjectWebServiceView.getProviders().addLookupListener(this);
+            initView();
+            view.addChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
+            view.addChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+            view.addNotify();
         }
 
         public void removeNotify() {
-            if (!views.isEmpty()) {
-                for (ProjectWebServiceView view : views) {
-                    view.removeChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-                    view.removeChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
-                    view.removeNotify();
-                }
+            if (view != null) {
+                view.removeChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
+                view.removeChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+                view.removeNotify();
             }
-            ProjectWebServiceView.getProviders().removeLookupListener(this);
-            views.clear();
-            views = null;
         }
 
-        public void stateChanged(ChangeEvent e) {
+        public void stateChanged(final ChangeEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
                     fireChange();
-                }
-            });
-        }
-
-        public void resultChanged(LookupEvent ev) {
-            initViews();
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    fireChange();
-                    if (serviceNode != null) {
-                        ((Children) serviceNode.getChildren()).updateKeys();
+                    Object source = e.getSource();
+                    if(source instanceof ProjectWebServiceViewImpl) {
+                        ProjectWebServiceViewImpl view = (ProjectWebServiceViewImpl) source;
+                        if (serviceNode != null) {
+                            ((Children) serviceNode.getChildren()).updateKey(view);
+                        }
+                        if (clientNode != null) {
+                            ((Children) clientNode.getChildren()).updateKey(view);
+                        }
                     }
                 }
             });
         }
 
-        private void initViews() {
-            views = ProjectWebServiceView.createWebServiceViews(project);
+        private void initView() {
+            if(view==null)
+                view = ProjectWebServiceView.getProjectWebServiceView(project);
         }
 
         private static Lookup createLookup(Project project) {
-            return Lookups.fixed(new Object[]{project, project.getProjectDirectory()});
+            return Lookups.fixed(new Object[]{project});
         }
 
-        private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceView> implements ChangeListener {
+        private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceViewImpl> {
 
             private ProjectWebServiceView.ViewType viewType;
 
@@ -210,52 +193,31 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             }
 
             @Override
-            protected Node[] createNodes(ProjectWebServiceView view) {
+            protected Node[] createNodes(ProjectWebServiceViewImpl view) {
                 return view.createView(viewType);
             }
 
             @Override
             protected void addNotify() {
                 super.addNotify();
-                if (views != null && !views.isEmpty()) {
-                    setKeys(views);
-                    for (ProjectWebServiceView view : views) {
-                        view.addChangeListener(this, viewType);
-                    }
+                if (view != null && !view.isViewEmpty(viewType) ) {
+                    setKeys(view.getWebServiceViews());
                 } else {
-                    setKeys(Collections.<ProjectWebServiceView>emptyList());
+                    setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
                 }
             }
 
             @Override
             protected void removeNotify() {
                 super.removeNotify();
-                setKeys(Collections.<ProjectWebServiceView>emptyList());
-                for (ProjectWebServiceView view : views) {
-                    view.removeChangeListener(this, viewType);
-                }
+                setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
             }
 
-            public void stateChanged(final ChangeEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        if (views.contains(e.getSource())) {
-                            refreshKey((ProjectWebServiceView) e.getSource());
-                        }
-                    }
-                });
-            }
-
-            private void updateKeys() {
+            private void updateKey (ProjectWebServiceViewImpl view) {
                 if (!isInitialized()) {
                     return;
                 }
-                if (views != null && !views.isEmpty()) {
-                    setKeys(views);
-                } else {
-                    setKeys(Collections.<ProjectWebServiceView>emptyList());
-                }
+                super.refreshKey(view);
             }
         }
     }

@@ -279,6 +279,10 @@ public class DesignView extends JPanel implements
         this.printMode = printMode;
     }
     
+    public TriScrollPane getScrollPane() {
+        return scrollPane;
+    }
+    
     @Override
     public void doLayout() {
         int w = getWidth();
@@ -632,15 +636,27 @@ public class DesignView extends JPanel implements
 
             repaint();
 
-            errorPanel.uninstall();
+            installErrorPanel(false);
 
             rightStripe.repaint();
         } else {
             setToolBarEnabled(false);
-            errorPanel.install();
+            installErrorPanel(true);
         }
     }
 
+    private void installErrorPanel(boolean install){
+        if (install){
+            errorPanel.updateErrorMessage();
+            this.remove(scrollPane);
+            this.add(errorPanel);
+            
+        } else {
+            this.remove(errorPanel);
+            this.add(scrollPane);
+        }
+        
+    }
     private void setToolBarEnabled(final boolean enabled) {
         zoomManager.setEnabled(enabled);
         navigationTools.setEnabled(enabled);
@@ -669,7 +685,7 @@ public class DesignView extends JPanel implements
     }
 
     private JComponent findToolBar() {
-        for (Component c = getView().getParent(); c != null;
+        for (Component c = getParent(); c != null;
                 c = c.getParent())
         {
             if (c instanceof DesignerMultiViewElement) {
@@ -680,10 +696,6 @@ public class DesignView extends JPanel implements
         return null;
     }
 
-
-    public JComponent getView() {
-        return (errorPanel.isInstalled()) ? errorPanel : this;
-    }
 
     public TopComponent getTopComponent() {
         return (TopComponent) SwingUtilities

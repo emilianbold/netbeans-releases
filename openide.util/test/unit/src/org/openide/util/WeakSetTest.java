@@ -41,12 +41,13 @@
 
 package org.openide.util;
 
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
@@ -146,4 +147,87 @@ public class WeakSetTest extends NbTestCase {
             return new I ();
         }
     }
+    
+    private final static class TestObj {
+        static final Set<TestObj> testObjs = new WeakSet<TestObj>();
+        private final String name;
+        TestObj(String name) {
+            this.name = name;
+            synchronized (testObjs) {
+                testObjs.add(this);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+        
+    }
+    
+    private final static class GC implements Runnable {
+
+        public void run() {
+            try {
+                for (int i = 0; i < 5; i++) {
+                    gc();
+                }
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+
+        static void gc() throws InterruptedException {
+            List<byte[]> alloc = new ArrayList<byte[]>();
+            int size = 100000;
+            for (int i = 0; i < 50; i++) {
+                System.gc();
+                System.runFinalization();
+                try {
+                    alloc.add(new byte[size]);
+                    size = (int) (((double) size) * 1.3);
+                } catch (OutOfMemoryError error) {
+                    size = size / 2;
+                }
+                if (i % 3 == 0) {
+                    Thread.sleep(100);
+                }
+            }
+        }
+    }
+
+    /**
+     * test for issue #106218
+     * @throws java.lang.Exception
+     */
+    public void testWeakSetIntegrity() throws Exception {
+        //CharSequence log = Log.enable(WeakSet.class.getName(), Level.FINE);
+        ArrayList<WeakReference<TestObj>> awr = new ArrayList<WeakReference<TestObj>>();
+        ExecutorService exec = Executors.newFixedThreadPool(5);
+        for (int i = 0; i < 1000; i++) {
+            TestObj to = new TestObj("T" + i);
+            awr.add(new WeakReference<TestObj>(to));
+            if (i < 2) {
+                exec.execute(new GC());
+            }
+            for (WeakReference<TestObj> wro : awr) {
+                TestObj wroo = wro.get();
+                if (wroo != null) {
+                    synchronized (TestObj.testObjs) {
+                        boolean found = false;
+                        for (TestObj o : TestObj.testObjs) {
+                            if (o == wroo) {
+                                found = true;
+                            }
+                        }
+                        if (found != TestObj.testObjs.contains(wroo)) {
+                            //System.out.println(log.toString());
+                            fail("Inconsistency of iterator chain and hash map");
+                        }
+                    }
+                }
+            }
+        }
+        exec.shutdownNow();
+    }    
 }

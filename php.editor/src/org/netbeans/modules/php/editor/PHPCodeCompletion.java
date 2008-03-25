@@ -40,6 +40,8 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,11 +63,17 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.util.Exceptions;
 
 /**
@@ -74,7 +82,17 @@ import org.openide.util.Exceptions;
  */
 public class PHPCodeCompletion implements Completable {
 
-    private final static String[] PHP_KEYWORDS = {"do", "for", "function", "if", "while"};
+    private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if",
+        "include()", "include_once()", "isset()", "list()", "new",
+        "print()", "require()", "require_once()", "return()", "static",
+        "switch", "unset()", "use", "var", "while",
+        "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
+        "interface", "implements", "extends", "public", "private",
+        "protected", "abstract", "clone", "try", "catch", "throw"
+    };
+    
     private boolean caseSensitive;
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
@@ -86,6 +104,7 @@ public class PHPCodeCompletion implements Completable {
 
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
+        request.formatter = formatter;
 
         // KEYWORDS
 
@@ -102,7 +121,33 @@ public class PHPCodeCompletion implements Completable {
         for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
             proposals.add(new FunctionItem(function, request));
         }
+        
+        // CONSTANTS
+        
+        for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
+            proposals.add(new ConstantItem(constant, request));
+        }
+        
+        // LOCAL VARIABLES
+        
+        proposals.addAll(getLocalVariableProposals(result, prefix));
 
+        return proposals;
+    }
+    
+    private Collection<CompletionProposal> getLocalVariableProposals(PHPParseResult result, String prefix){
+        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        for (Statement statement : result.getProgram().getStatements()){
+            if (statement instanceof ExpressionStatement){
+                Expression expr = ((ExpressionStatement)statement).getExpression();
+                
+                if (expr instanceof Assignment){
+                    System.err.println("" + ((Assignment)expr).getLeftHandSide().getClass());
+                }
+            }
+        }
+        
         return proposals;
     }
 
@@ -241,11 +286,11 @@ public class PHPCodeCompletion implements Completable {
     }
 
     private class KeywordItem extends PHPCompletionItem {
-
-        private String keyword;
+        private String description = null;
+        private String keyword = null;
 
         KeywordItem(String keyword, CompletionRequest request) {
-            super(request);
+            super(null, request);
             this.keyword = keyword;
         }
 
@@ -258,34 +303,113 @@ public class PHPCodeCompletion implements Completable {
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
+        
+        @Override
+        public String getRhsHtml() {
+            if (description != null) {
+                return description;
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private class ConstantItem extends PHPCompletionItem {
+        private String description = null;
+        private IndexedConstant constant = null;
+
+        ConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.GLOBAL;
+        }
     }
     
     private class FunctionItem extends PHPCompletionItem {
 
-        private IndexedFunction function;
-
         FunctionItem(IndexedFunction function, CompletionRequest request) {
-            super(request);
-            this.function = function;
+            super(function, request);
         }
-
-        @Override
-        public String getName() {
-            return function.getName();
+        
+        public IndexedFunction getFunction(){
+            return (IndexedFunction)getElement();
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.METHOD;
         }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName() + "(" + getParamsStr() + ")";
+        }
+        
+        @Override public String getLhsHtml() {
+            ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+//            boolean emphasize = true; //!function.isInherited();
+//            if (emphasize) {
+//                formatter.emphasis(true);
+//            }
+            formatter.name(kind, true);
+            formatter.appendText(getName());
+            formatter.name(kind, false);
+            
+//            if (strike) {
+//                formatter.deprecated(false);
+//            }
+//            
+            formatter.appendHtml("("); // NOI18N
+            formatter.parameters(true);
+            formatter.appendText(getParamsStr());
+            formatter.parameters(false);
+            formatter.appendHtml(")"); // NOI18N
+
+//            if (getFunction().getType() != null && 
+//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
+//                formatter.appendHtml(" : ");
+//                formatter.appendText(getFunction().getType());
+//            }
+            
+            return formatter.getText();
+        }
+        
+        private String getParamsStr(){
+            StringBuilder builder = new StringBuilder();
+            Collection<String> parameters = getFunction().getParameters();
+            
+            if ((parameters != null) && (parameters.size() > 0)) {
+                Iterator<String> it = parameters.iterator();
+
+                while (it.hasNext()) { // && tIt.hasNext()) {
+                    String param = it.next();
+                    builder.append("$" + param);
+
+                    if (it.hasNext()) {
+                        builder.append(", "); // NOI18N
+                    }
+                }
+            }
+            
+            return builder.toString();
+        }
     }
 
     private static class PHPCompletionItem implements CompletionProposal {
 
         protected final CompletionRequest request;
+        private final ElementHandle element;
 
-        PHPCompletionItem(CompletionRequest request) {
+        PHPCompletionItem(ElementHandle element, CompletionRequest request) {
             this.request = request;
+            this.element = element;
         }
 
         public int getAnchorOffset() {
@@ -293,11 +417,11 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public ElementHandle getElement() {
-            return null;
+            return element;
         }
 
         public String getName() {
-            return null;
+            return element.getName();
         }
 
         public String getInsertPrefix() {
@@ -309,11 +433,10 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getLhsHtml() {
-            return getName();
-        }
-
-        public String getRhsHtml() {
-            return null;
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
         }
 
         public ElementKind getKind() {
@@ -341,12 +464,36 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String[] getParamListDelimiters() {
+            return new String[] { "(", ")" }; // NOI18N
+        }
+        
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+            if (element.getIn() != null) {
+                formatter.appendText(element.getIn());
+                return formatter.getText();
+            } else if (element instanceof IndexedElement) {
+                IndexedElement ie = (IndexedElement)element;
+                String filename = ie.getFilenameUrl();
+                if (filename != null) {
+                    int index = filename.lastIndexOf('/');
+                    if (index != -1) {
+                        filename = filename.substring(index + 1);
+                    }
+
+                    formatter.appendText(filename);
+                    return formatter.getText();
+                }
+            }
+            
             return null;
         }
     }
 
     private static class CompletionRequest {
-
+        private HtmlFormatter formatter;
         private int anchor;
     }
 }
