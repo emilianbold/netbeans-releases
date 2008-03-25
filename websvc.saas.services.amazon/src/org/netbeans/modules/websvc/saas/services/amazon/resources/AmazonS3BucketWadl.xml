@@ -102,6 +102,7 @@
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     <param name="acl" type="xsd:string" style="query" required="true"/>
+                    <param name="Content-Type" type="xsd:string" style="header" required="true"/>
                     <representation mediaType="text/plain"/>
                 </request>
                 <response>
