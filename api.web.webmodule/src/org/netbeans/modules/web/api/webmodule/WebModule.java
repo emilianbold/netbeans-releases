@@ -81,11 +81,11 @@ public final class WebModule {
             Lookup.getDefault().lookupResult(WebModuleProvider.class);
     
     static  {
-        WebModuleAccessor.DEFAULT = new WebModuleAccessor() {
+        WebModuleAccessor.setDefault(new WebModuleAccessor() {
             public WebModule createWebModule(WebModuleImplementation spiWebmodule) {
                 return new WebModule(spiWebmodule);
             }
-        };
+        });
     }
     
     private WebModule (WebModuleImplementation impl) {

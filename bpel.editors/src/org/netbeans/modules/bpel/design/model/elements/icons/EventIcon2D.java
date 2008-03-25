@@ -47,14 +47,14 @@ public class EventIcon2D extends Icon2D {
     public static final Icon2D INSTANCE = new EventIcon2D();
     
     
-    private static final Shape SHAPE_1 = new Ellipse2D.Float(-12, -12, 24, 24);
-    private static final Shape SHAPE_2 = new Ellipse2D.Float(-10, -10, 20, 20);
+    private static final Shape SHAPE_1 = new Ellipse2D.Float(-8, -8, 16, 16);
+    private static final Shape SHAPE_2 = new Ellipse2D.Float(-6, -6, 12, 12);
     
     private static final Shape SHAPE_3;
     
     static {
-        float r1 = 8.5f;
-        float r2 = 3.5f;
+        float r1 = 5.0f;
+        float r2 = 2.5f;
         
         float cos30 = (float) Math.cos(Math.toRadians(30));
         float sin30 = (float) Math.sin(Math.toRadians(30));

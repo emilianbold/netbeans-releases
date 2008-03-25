@@ -65,9 +65,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -234,7 +236,7 @@ public final class NbPlatform {
     private static URL[] defaultPlatformJavadoc() {
         File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
         if (apidocsZip != null) {
-            return new URL[] {Util.urlForJar(apidocsZip)};
+            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
         } else {
             return new URL[0];
         }
@@ -275,7 +277,7 @@ public final class NbPlatform {
             if (parent != null && parent.getName().equals("nbbuild")) { // NOI18N
                 File superparent = parent.getParentFile();
                 if (superparent != null && ModuleList.isNetBeansOrg(superparent)) {
-                    sources = new URL[] {Util.urlForDir(superparent)};
+                    sources = new URL[] {FileUtil.urlForArchiveOrDir(superparent)};
                 }
             }
         }
@@ -443,7 +445,7 @@ public final class NbPlatform {
         URL[] urls = new URL[pieces.length];
         for (int i = 0; i < pieces.length; i++) {
             // XXX perhaps also support http: URLs somehow?
-            urls[i] = Util.urlForDirOrJar(FileUtil.normalizeFile(new File(pieces[i])));
+            urls[i] = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(new File(pieces[i])));
         }
         return urls;
     }
@@ -669,22 +671,7 @@ public final class NbPlatform {
     }
     
     static String urlsToAntPath(final URL[] urls) {
-        StringBuffer path = new StringBuffer();
-        for (int i = 0; i < urls.length; i++) {
-            if (urls[i].getProtocol().equals("jar")) { // NOI18N
-                path.append(urlToAntPath(FileUtil.getArchiveFile(urls[i])));
-            } else {
-                path.append(urlToAntPath(urls[i]));
-            }
-            if (i != urls.length - 1) {
-                path.append(':'); // NOI18N
-            }
-        }
-        return path.toString();
-    }
-    
-    private static String urlToAntPath(final URL url) {
-        return new File(URI.create(url.toExternalForm())).getAbsolutePath();
+        return ClassPathSupport.createClassPath(urls).toString(ClassPath.PathConversionMode.WARN);
     }
     
     private void putGlobalProperty(final String key, final String value) throws IOException {

@@ -87,7 +87,7 @@ public final class ProjectLocationWizardPanel implements WizardDescriptor.Panel,
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(ProjectLocationWizardPanel.class);
+        return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectLocationWizardPanel.class, j2eeModuleType));
     }
     
     public boolean isValid() {

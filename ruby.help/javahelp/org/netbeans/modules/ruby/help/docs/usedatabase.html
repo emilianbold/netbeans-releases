@@ -13,50 +13,44 @@
 <p> <small><a href="#seealso">See Also</a></small> 
 
 
-<p>You choose the database server when you create a Ruby on Rails project in the New Project dialog (choose Files &gt; New Project, then select Ruby in the Category list and  New Ruby on Rails Application in the Projects list). </p>
+<p> You choose the database server when you create a Ruby on Rails project in the  Database Configuration dialog box. To create a Ruby on Rails project, choose File&gt; New Project,  select Ruby in the Category list and   Ruby on Rails Application in the Projects list. </p>
 <h3>Choosing the Database Server for a Project </h3>
-<p>Using JRuby means that you have a number of choices in the NetBeans IDE for the database server. MySQL is the simplest to use because NetBeans Ruby supplies an adapter that you use just as you do in a native Ruby application. In addition, NetBeans supplies a JDBC 3.0 adapter, the ActiveRecord-JDBC gem, that can be used with a number of database drivers.</p>
-<p>For the latest information on database support in NetBeans Ruby, see "Using Database Servers With JRuby" in
-    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="viewerActivator" value="javax.help.LinkButton">
-      <param name="content" value=
+<p>Using JRuby means that you have a number of choices in the NetBeans IDE for the database server. You can access a database with JRuby two ways, with or without JDBC. If you use  JDBC, NetBeans supplies the drivers for MySQL and PostgreSQL. If you do not use  JDBC, you can use adapters as you would in a native Ruby application. <br>
+  <br>
+  For the latest information about database support in NetBeans Ruby, see "Using Database Servers With JRuby" in
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value=
         "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
-      <param name="text" value="<html><u>Installing and Configuring Ruby Support</u></html>.">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
+    <param name="text" value="<html><u>Installing and Configuring Ruby Support</u></html>.">
+       <param name="textFontSize" value="medium">
+      <param name="textColor" value="blue">
+  </object>.
 </p>
-<h3>Registering<a name="regdb"></a> a Database Server</h3>
+<h3>Registering<a name="regdb"></a> a Database </h3>
 <p>You do not need to register your database server with the IDE to use
             it
-            from your Ruby project. However, if you do so, you can
-            create and view tables and exercise SQL commands directly from the IDE. If you are using JavaDB, you do not need to register it. For more information, see &quot;Registering Database Servers With the IDE&quot; in &nbsp;
-            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="viewerActivator" value="javax.help.LinkButton">
-          <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/setting-up.html#register">
-          <param name="text" value="<html><u>Installing and Configuring Ruby Support</u></html>.">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
-&nbsp;</p>
+            from your Ruby project. After a database is registered,  you can
+create and view tables and exercise SQL commands directly from the IDE. </p>
+<p>You can  register a database in NetBeans at any time by using the Database Configuration dialog box. To do so, click on the Services tab, right click on Databases, and click New Connection. You can also quickly register a database in the  Database Configuration dialog box when creating your Rails project by selecting that option in the Development, Test, or Production drop-down boxes. If you are using JavaDB, you do not need to register it.&nbsp;</p>
 <h3>Adding<a name="adddb"></a> a Database</h3>
-<p>If you want to add a database, see &quot;Adding Databases&quot; in &nbsp;
-      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="viewerActivator" value="javax.help.LinkButton">
-        <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/setting-up.html#database">
-        <param name="text" value="<html><u>Installing and Configuring Ruby Support</u></html>">        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
-&nbsp;for instructions on some common databases. </p>
+<p> You add a database in the  Database Configuration dialog when creating your Rails project. </p>
+<ol>
+  <li>Choose File &gt; New Project, select Ruby in the Category list and  Ruby on Rails Application in the Projects list, and click Next twice. </li>
+  <li>Select Configure Using IDE Connections</li>
+  <li>Click the Create DB button. A dialog box will open enabling you to  create a MySQL database. </li>
+  <li>After creating a database, type the connection parameters. </li>
+</ol>
+<p>The newly created connection is then preselected in the associated database drop-down box. See the Registering a Database section above for information about how to register a database prior to or after creating  your Rails project. <br>
+</p>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="ruby_quickref.html">Working With NetBeans Ruby</a></dd>
-<dd><a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application Wizard: Name and Location</a></dd>           
-<dd><a href="about_ruby.html">About Ruby Development in NetBeans</a></dd>
+<dd><a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application Wizard: Name and Location</a>  </dd>
+<dd><a href="newdbconfig.html">Database Configuration </a></dd>
 </dl>
 
+<p>&nbsp;</p>
 <hr>
 <p><font size=-2><a href="credits.html">Legal Notices</a></font>
 </p>

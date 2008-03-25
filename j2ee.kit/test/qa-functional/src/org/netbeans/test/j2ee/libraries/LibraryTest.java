@@ -122,17 +122,12 @@ public class LibraryTest extends JellyTestCase {
         WizardUtils.createNewProject("Enterprise", "Enterprise Application");
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
+        WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
         JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, 1);
         jcbo.setSelected(false);
         jcbo = new JCheckBoxOperator(npnlso, 2);
         jcbo.setSelected(false);
-        WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        npnlso.next();
         npnlso.finish();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ie) {
-        }
         //add modules to j2ee app
         addJ2eeModule(pto, appName, ejbName);
         addJ2eeModule(pto, appName, webName);

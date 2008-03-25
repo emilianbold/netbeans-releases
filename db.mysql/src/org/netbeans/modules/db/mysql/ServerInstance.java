@@ -504,13 +504,13 @@ public class ServerInstance implements Node.Cookie {
     
     public synchronized void disconnect() {
         adminConn.disconnect();
+        setState(State.DISCONNECTED);
         
         try {
             this.refreshDatabaseList();
         } catch ( DatabaseException dbe ) {
             LOGGER.log(Level.FINE, null, dbe);
         }
-        setState(State.DISCONNECTED);
     }
     
     /**
@@ -573,6 +573,9 @@ public class ServerInstance implements Node.Cookie {
                         LOGGER.log(Level.INFO, message);
                         progress.finish();
                     }
+                 } catch ( Throwable t ) {
+                     LOGGER.log(Level.INFO, null, t);
+                     progress.finish();
                  }
              };
          });

@@ -47,15 +47,41 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="nbjcl">
+        <api name="modules"/>
+        <summary>URL protocol for module resources changed</summary>
+        <version major="7" minor="4"/>
+        <date day="9" month="1" year="2008"/>
+        <author login="pnejedly"/>
+        <compatibility semantic="incompatible">
+            <p>
+                Modules simply using <code>URL</code> methods such as <code>openConnection</code>
+                should be fine.
+                Modules expecting to receive a <code>jar</code> URL may be broken.
+                In such a case you may either <code>s/^nbjcl:/jar:/</code>
+                or use <code>clazz.protectionDomain.codeSource.location</code>.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                To support <a href="http://wiki.netbeans.org/StartupCache">performance and functional improvements</a> in module class loading,
+                module resources are now loaded using a custom URL protocol, <code>nbjcl</code>.
+                This can be observed e.g. using <code>ThisClass.class.getResource("file.xml")</code>.
+                As before, the exact nature of the URL produced by a module class loader
+                is formally left unspecified as this is specific to the module system implementation.
+            </p>
+        </description>
+        <issue number="129772"/>
+    </change>
     <change id="OpenIDE-Module-Hide-Classpath-Packages">
         <api name="modules"/>
-        <summary></summary>
+        <summary>Ability to hide JRE packages from the module classpath</summary>
         <version major="7" minor="6"/>
         <date day="23" month="2" year="2008"/>
         <author login="jglick"/>
         <compatibility semantic="incompatible">
             <p>
-                To guaranteed that the new tag will be honored you should also:
+                To guarantee that the new tag will be honored you should also:
             </p>
             <pre>OpenIDE-Module-Requires: org.openide.modules.ModuleFormat2</pre>
             <p>

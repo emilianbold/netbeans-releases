@@ -470,19 +470,28 @@ public class ExtendedTokenSequence {
     }
 
     /*package local*/ int openParenIndent(int parenDepth) {
+        return openBraceIndent(parenDepth, LPAREN, RPAREN);
+    }
+
+    /*package local*/ int openBraceIndent(int braceDepth) {
+        return openBraceIndent(braceDepth, LBRACE, RBRACE);
+    }
+
+    private int openBraceIndent(int braceDepth, CppTokenId open, CppTokenId close) {
         int index = ts.index();
         try {
             while(true) {
                 if (!ts.movePrevious()){
                     return -1;
                 }
-                if (ts.token().id() == LPAREN){
-                    parenDepth--;
-                    if (parenDepth == 0){
-                        return getTokenPosition()+1;
+                if (ts.token().id() == open){
+                    braceDepth--;
+                    if (braceDepth == 0){
+                        ts.moveNext();
+                        return getTokenPosition();
                     }
-                } else if (ts.token().id() == RPAREN){
-                    parenDepth++;
+                } else if (ts.token().id() == close){
+                    braceDepth++;
                 }
             }
         } finally {

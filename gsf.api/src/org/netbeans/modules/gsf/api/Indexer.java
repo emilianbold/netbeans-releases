@@ -44,8 +44,6 @@ package org.netbeans.modules.gsf.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.gsf.api.IndexDocument;
-import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -71,6 +69,17 @@ public abstract interface Indexer {
      * fetch AST information. 
      */
     List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException;
+
+    /**
+     * This method lets a language filter out project and library paths supplied by the project
+     * during an index query. You can filter out for example libraries that don't apply for
+     * the current language, such as ruby gem paths for a Rails project during a JavaScript
+     * query. 
+     * <p>
+     * This is just a temporary measure (ie NetBeans 6.1) to deal with the fact that gsf path management
+     * doesn't properly account for language types. 
+     */
+    boolean acceptQueryPath(String url);
     
     String getPersistentUrl(File file);
     

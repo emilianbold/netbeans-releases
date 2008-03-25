@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -151,9 +150,13 @@ public class EjbJarProjectGenerator {
         //create a default manifest
         FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/MANIFEST.MF"), confRoot, "MANIFEST"); //NOI18N
         
+        final String realServerLibraryName = configureServerLibrary(librariesDefinition,
+                serverInstanceID, projectDir, serverLibraryName != null);
+        
         final AntProjectHelper h = setupProject(projectDir, name,
                 "src", "test", null, null, null, j2eeLevel, serverInstanceID,
-                librariesDefinition, serverLibraryName);
+                librariesDefinition, realServerLibraryName);
+        
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(EjbJarProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
         ep.setProperty(EjbJarProjectProperties.META_INF, "${"+EjbJarProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
@@ -267,16 +270,21 @@ public class EjbJarProjectGenerator {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         // this constructor creates only java application type
         
+        final String realServerLibraryName = configureServerLibrary(librariesDefinition,
+                serverInstanceID, projectDir, serverLibraryName != null);
+        
         final AntProjectHelper h = setupProject(projectDir,
                 name,
                 null,
                 null,
-                configFilesBase, (libFolder == null ? null : libFolder),
+                configFilesBase,
+                (libFolder == null ? null : libFolder),
                 null,
                 j2eeLevel,
                 serverInstanceID,
                 librariesDefinition,
-                serverLibraryName);
+                realServerLibraryName);
+        
         final EjbJarProject p = (EjbJarProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -370,13 +378,26 @@ public class EjbJarProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
+    }
+    
+    private static String configureServerLibrary(final String librariesDefinition,
+            final String serverInstanceId, final FileObject projectDir, final boolean serverLibrary) {
 
-        if (h.isSharableProject() && serverlibraryName != null  && SharabilityUtility.findSharedServerLibrary(
-                h.resolveFile(h.getLibrariesLocation()), serverlibraryName) == null) {
-
-            SharabilityUtility.createLibrary(
-                h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
+        String serverLibraryName = null;
+        if (librariesDefinition != null && serverLibrary) {
+            try {
+                serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
+                    public String run() throws Exception {
+                        return SharabilityUtility.findOrCreateLibrary(
+                                PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
+                                serverInstanceId).getName();
+                    }
+                });
+            } catch (MutexException ex) {
+                Exceptions.printStackTrace(ex.getException());
+            }
         }
+        return serverLibraryName;
     }
     
     private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject referencedFO) {

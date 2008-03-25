@@ -292,10 +292,9 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size());
         MoveTransformer t;
         TransformTask task = new TransformTask(t=new MoveTransformer(this), null);
-        createAndAddElements(a, task, elements, refactoring);
+        Problem prob = createAndAddElements(a, task, elements, refactoring);
         fireProgressListenerStop();
-        p = chainProblems(p, t.getProblem());
-        return p;
+        return prob != null ? prob : chainProblems(p, t.getProblem());
     }
     
     private static Problem chainProblems(Problem p,Problem p1) {

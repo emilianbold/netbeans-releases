@@ -62,6 +62,7 @@ import org.openide.loaders.DataObject;
  */
 public abstract class CompilationInfo {
     private FileObject fo;
+    private Document doc;
 
     public CompilationInfo(final FileObject fo) throws IOException {
         this.fo = fo;
@@ -94,18 +95,22 @@ public abstract class CompilationInfo {
     }
 
     public Document getDocument() throws IOException {
-        if (this.fo == null) {
-            return null;
-        }
+        if (doc == null) {
+            if (this.fo == null) {
+                return null;
+            }
 
-        DataObject od = DataObject.find(fo);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
+            DataObject od = DataObject.find(fo);
+            EditorCookie ec = od.getCookie(EditorCookie.class);
 
-        if (ec != null) {
-            return ec.getDocument();
-        } else {
-            return null;
+            if (ec != null) {
+                doc = ec.getDocument();
+            } else {
+                return null;
+            }
         }
+        
+        return doc;
     }
 
     public abstract List<Error> getErrors();

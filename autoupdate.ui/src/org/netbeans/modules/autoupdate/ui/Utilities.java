@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
@@ -98,6 +99,7 @@ public class Utilities {
     
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String TIME_OF_MODEL_INITIALIZATION = "time_of_model_initialization"; // NOI18N
+    public static final String TIME_OF_REFRESH_UPDATE_CENTERS = "time_of_refresh_update_centers"; // NOI18N
     
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
@@ -173,6 +175,14 @@ public class Utilities {
         getPreferences ().putLong (TIME_OF_MODEL_INITIALIZATION, time);
     }
     
+    public static long getTimeOfRefreshUpdateCenters () {
+        return getPreferences ().getLong (TIME_OF_REFRESH_UPDATE_CENTERS, 0);
+    }
+
+    public static void putTimeOfRefreshUpdateCenters (long time) {
+        getPreferences ().putLong (TIME_OF_REFRESH_UPDATE_CENTERS, time);
+    }
+
     private static List<UnitCategory> makeFirstClassUpdateCategories () {
         Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
@@ -565,6 +575,46 @@ public class Utilities {
         }
         
         return Collections.unmodifiableList (files);
+    }
+    
+    public static boolean canWriteInCluster (File cluster) {
+        assert cluster != null : "dir cannot be null";
+        assert cluster.exists () : cluster + " must exists";
+        assert cluster.isDirectory () : cluster + " is directory";
+        if (cluster == null || ! cluster.exists () || ! cluster.isDirectory ()) {
+            logger.log (Level.INFO, "Invalid cluster " + cluster);
+            return false;
+        }
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (cluster.canWrite () && cluster.canRead () && org.openide.util.Utilities.isWindows ()) {
+            File trackings = new File (cluster, "update_tracking"); // NOI18N
+            if (trackings.exists () && trackings.isDirectory ()) {
+                for (File f : trackings.listFiles ()) {
+                    if (f.exists () && f.isFile ()) {
+                        FileWriter fw = null;
+                        try {
+                            fw = new FileWriter (f);
+                        } catch (IOException ioe) {
+                            // just check of write permission
+                            logger.log (Level.FINE, f + " has no write permission", ioe);
+                            return false;
+                        } finally {
+                            try {
+                                if (fw != null) {
+                                    fw.close ();
+                                }
+                            } catch (IOException ex) {
+                                logger.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                            }
+                        }
+                        logger.log (Level.FINE, f + " has write permission");
+                        return true;
+                    }
+                }
+            }
+        }
+        logger.log (Level.FINE, "Can write into " + cluster + "? " + cluster.canWrite ());
+        return cluster.canWrite ();
     }
     
     private static File getPlatformDir () {

@@ -50,9 +50,9 @@ import org.netbeans.modules.bpel.search.api.SearchElement;
 final class Element extends SearchElement.Adapter {
 
   Element(DiagramElement element) {
-    super(element.getText(), element.getText(), null, null);
+    super(element.getName(), element.getName(), null, null);
     myElement = element;
-    highlight(true);
+    highlight();
   }
 
   @Override
@@ -62,15 +62,21 @@ final class Element extends SearchElement.Adapter {
   }
 
   @Override
-  public void select()
+  public void gotoDesign()
   {
-    myElement.select();
+    myElement.gotoDesign();
   }
 
   @Override
-  public void highlight(boolean highlighted)
+  public void highlight()
   {
-    myElement.highlight(highlighted);
+    myElement.highlight();
+  }
+
+  @Override
+  public void unhighlight()
+  {
+    myElement.unhighlight();
   }
 
   private DiagramElement myElement;
