@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.cache.impl;
 import antlr.TokenStream;
 import antlr.collections.AST;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -317,11 +317,11 @@ final class FileCacheSyncBridge {
                 String path = _getAbsolutePath();
                 // ok, create new apt
                 // build token stream for file       
-                InputStream stream = null;
+                Reader reader = null;
                 try {
-                    stream = _getFile().getBuffer().getInputStream();               
+                    reader = _getFile().getBuffer().getReader();               
 
-                    TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
+                    TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader);
                     // build apt from token stream
                     APTFile aptFull = APTBuilder.buildAPT(path, ts);
                     if (aptFull != null) {
@@ -335,9 +335,9 @@ final class FileCacheSyncBridge {
                     APTUtils.LOG.log(Level.INFO, "create stream: {0}", new Object[] {ex.getMessage()});// NOI18N
 		    DiagnosticExceptoins.register(ex);
                 } finally {
-                    if (stream != null) {
+                    if (reader != null) {
                         try {
-                            stream.close();
+                            reader.close();
                         } catch (IOException ex) {
                             APTUtils.LOG.log(Level.INFO, "closing stream: {0}", new Object[] {ex.getMessage()});// NOI18N
 			    DiagnosticExceptoins.register(ex);

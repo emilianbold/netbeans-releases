@@ -1313,7 +1313,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     private Collection<CsmDeclaration> filterDeclarations(Collection<CsmDeclaration> orig, String prefix, boolean match,  CsmDeclaration.Kind[] kinds) {
         LinkedHashSet<CsmDeclaration> out = new LinkedHashSet<CsmDeclaration>(orig.size());
-        contResolver.filterDeclarations(orig.iterator(), out, kinds, prefix, match);
+        contResolver.filterDeclarations(orig.iterator(), out, kinds, prefix, match, false);
         return out;
     }
         

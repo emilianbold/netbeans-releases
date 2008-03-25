@@ -114,10 +114,8 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                     CustomCodeGenerator codegen = codegen = 
                         CustomCodeGeneratorFactory.create(targetComponent, targetFO, method);
                     if(codegen == null) {//No action for DnD
-                        String message = NbBundle.getMessage(CustomEditorDrop.class, 
-                                "WARN_UnsupportedDropTarget", new Object[] {targetFO.getNameExt(), "REST Resource"}); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
+                        Util.showUnsupportedDropMessage(new Object[] {
+                            targetFO.getNameExt(), "REST Resource"});
                         return;
                     }
                 
