@@ -40,6 +40,14 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -52,12 +60,24 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsComponentFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
@@ -72,6 +92,8 @@ import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPane
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -89,6 +111,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 
 /**
  *
@@ -157,8 +180,6 @@ public class ClientHandlerButtonListener implements ActionListener {
                 bindingsFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
 
                     public void run() throws IOException {
-                        //bindingHandlerFO =
-                        //        FileUtil.createData(bindingsFolder, bindingsHandlerFile);//NOI18N
                         BufferedWriter bw = null;
                         OutputStream os = null;
                         OutputStreamWriter osw = null;
@@ -270,6 +291,7 @@ public class ClientHandlerButtonListener implements ActionListener {
                 if (binding != null) {
                     client.removeBinding(binding);
                 }
+                removeHandlerAnnotation();
             }
             //save the jaxws model
             jaxWsModel.write();
@@ -278,6 +300,93 @@ public class ClientHandlerButtonListener implements ActionListener {
         }
         handle.finish();
         invokeWsImport(srcRoot);
+    }
+
+    private void removeHandlerAnnotation() {
+        JaxWsClientNode clientNode = node.getLookup().lookup(JaxWsClientNode.class);
+        WsdlModel wsdlModel = clientNode.getWsdlModel();
+        WsdlService service = wsdlModel.getServices().get(0);
+        String serviceName = service.getJavaName();
+        FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
+        Project project = FileOwnerQuery.getOwner(srcRoot);
+        
+        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath cp = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.SOURCE);
+        final FileObject serviceFO = cp.findResource(serviceName.replaceAll("\\.", "/")  + ".java");  //NOI18N
+
+        final JavaSource javaSource = JavaSource.forFileObject(serviceFO);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
+
+                TypeElement bindingElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain");  //NOI18N
+                if (bindingElement != null) {
+                    AnnotationTree handlerAnnotation = null;
+                    List<? extends AnnotationTree> annots = javaClass.getModifiers().getAnnotations();
+                    for (AnnotationTree an : annots) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement) workingCopy.getTrees().getElement(anTreePath);
+                        if (anElement != null && anElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
+                            handlerAnnotation = an;
+                            break;
+                        }
+                    }
+                    ModifiersTree modifiers = javaClass.getModifiers();
+                    ModifiersTree newModifiers = make.removeModifiersAnnotation(modifiers, handlerAnnotation);
+                    workingCopy.rewrite(modifiers, newModifiers);
+                    CompilationUnitTree compileUnitTree = workingCopy.getCompilationUnit();
+                    List<? extends ImportTree> imports = compileUnitTree.getImports();
+                    for (ImportTree imp : imports) {
+                        Tree impTree = imp.getQualifiedIdentifier();
+                        TreePath impTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), impTree);
+                        TypeElement impElement = (TypeElement) workingCopy.getTrees().getElement(impTreePath);
+                        if (impElement != null && impElement.getQualifiedName().contentEquals("javax.jws.HandlerChain")) {  //NOI18N
+                            CompilationUnitTree newCompileUnitTree = make.removeCompUnitImport(compileUnitTree, imp);
+                            workingCopy.rewrite(compileUnitTree, newCompileUnitTree);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                public void run() {
+                    try {
+                        javaSource.runModificationTask(modificationTask).commit();
+                        saveFile(serviceFO);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            });
+        } else {
+            try {
+                javaSource.runModificationTask(modificationTask).commit();
+                saveFile(serviceFO);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+    }
+
+    private static void saveFile(FileObject file) throws IOException {
+        DataObject dataObject = DataObject.find(file);
+        if (dataObject != null) {
+            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+            if (cookie != null) {
+                cookie.save();
+            }
+        }
     }
 
     private void invokeWsImport(FileObject srcRoot) {
