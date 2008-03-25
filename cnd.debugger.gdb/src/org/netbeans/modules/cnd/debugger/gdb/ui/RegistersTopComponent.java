@@ -123,6 +123,11 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_REGISTERS, this);
     }
 
+    @Override
+    protected void componentShowing() {
+        model.refresh();
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         model.refresh();
     }
