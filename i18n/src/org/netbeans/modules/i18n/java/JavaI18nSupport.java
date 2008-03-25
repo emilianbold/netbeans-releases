@@ -46,6 +46,7 @@ package org.netbeans.modules.i18n.java;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -72,6 +73,8 @@ import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -98,6 +101,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.MapFormat;
 import org.openide.util.Lookup;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -1073,16 +1077,59 @@ public class JavaI18nSupport extends I18nSupport {
          *   or if if string is non-internationalized and <code>i18nSearch</code> flag is <code>false</code> */
         protected boolean isSearchedString(String partHardLine, String hardString) {
             String lineToMatch = UtilConvert.unicodesToChars(partHardLine);
-            
+
+            Boolean regexpTestResult;
             Exception ex = null;
             try {
                 String regexp = createRegularExpression(hardString);
-                return Pattern.compile(regexp).matcher(lineToMatch).find()
-                       == i18nSearch;
+                regexpTestResult = (Pattern.compile(regexp).matcher(lineToMatch).find()
+                                    == i18nSearch);     //auto-boxing
             } catch (ParseException ex1) {
                 ex = ex1;
+                regexpTestResult = null;
             } catch (PatternSyntaxException ex2) {
                 ex = ex2;
+                regexpTestResult = null;
+            }
+            if (Boolean.FALSE.equals(regexpTestResult)) {
+                /*
+                 * the string is an identifier of a bundle or a key
+                 * of a bundle entry
+                 */
+                return false;
+            }
+
+            final AnnotationDetector annotationDetector
+                    = new AnnotationDetector(currentStringStart);
+            try {
+                boolean firstTry = true;
+                do {
+                    if (!firstTry) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException exInterrupted) {
+                            Exceptions.printStackTrace(exInterrupted);
+                            //but still continue
+                        }
+                    }
+                    annotationDetector.reset();
+                    JavaSource.forDocument(document).runUserActionTask(
+                                                            annotationDetector,
+                                                            true);
+                    firstTry = false;
+                } while (annotationDetector.wasCancelled());
+            } catch (IOException ioEx) {
+                Exceptions.printStackTrace(ioEx);
+            }
+            if (annotationDetector.wasAnnotationDetected()) {
+                /* the string is within an annotation */
+                return false;
+            }
+
+            if (regexpTestResult != null) {
+                /* both tests passed */
+                assert regexpTestResult.equals(Boolean.TRUE);
+                return true;
             }
 
             /*
@@ -1140,6 +1187,83 @@ public class JavaI18nSupport extends I18nSupport {
             return Translator.translateRegexp(regexpForm, map);
         }
 
+        /**
+         * Task that determines whether there is a Java annotation at the given
+         * cursor position. It is made for the situation that it is known that
+         * there is a string literal at the given cursor position and the goal
+         * is to check whether that string literal is a part of an annotation.
+         * It may not work in cases that there is e.g. a numeric constant
+         * at the current cursor position.
+         * 
+         * @author  Marian Petras
+         */
+        static final class AnnotationDetector implements CancellableTask<CompilationController> {
+            
+            private final int caretPosition;
+            private volatile boolean cancelled;
+            private boolean annotationDetected = false;
+            
+            private AnnotationDetector(int caretPosition) {
+                this.caretPosition = caretPosition;
+            }
+
+            void reset() {
+                cancelled = false;
+                annotationDetected = false;
+            }
+        
+            public void run(CompilationController controller) throws IOException {
+                if (cancelled) {
+                    return;
+                }
+
+                controller.toPhase(Phase.RESOLVED); //cursor position needed
+                if (cancelled) {
+                    return;
+                }
+
+                TreePath treePath = controller.getTreeUtilities()
+                                              .pathFor(caretPosition);
+                if (treePath == null) {
+                    return;
+                }
+                Tree.Kind kind = treePath.getLeaf().getKind();
+                if (kind == Tree.Kind.STRING_LITERAL) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+                if (kind == Tree.Kind.NEW_ARRAY) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+                if (kind == Tree.Kind.ASSIGNMENT) {
+                    if ((treePath = treePath.getParentPath()) == null) {
+                        return;
+                    }
+                    kind = treePath.getLeaf().getKind();
+                }
+
+                annotationDetected = (kind == Tree.Kind.ANNOTATION);
+            }
+            
+            public void cancel() {
+                cancelled = true;
+            }
+
+            boolean wasCancelled() {
+                return cancelled;
+            }
+            
+            boolean wasAnnotationDetected() {
+                return annotationDetected;
+            }
+
+        }
+    
     } // End of JavaI18nFinder nested class.
     
     

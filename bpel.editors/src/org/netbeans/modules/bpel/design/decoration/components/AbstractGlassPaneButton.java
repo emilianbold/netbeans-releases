@@ -93,6 +93,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements
         getDesignView().getOverlayView().add(myGlassPane);
         updateGlassPaneBounds();
         myGlassPane.scrollRectToVisible(new Rectangle(0, 0, myGlassPane.getWidth(), myGlassPane.getHeight()));
+        myGlassPane.requestFocus();
     }
     
     protected void addTitle(Icon icon, String text, Color color) {
