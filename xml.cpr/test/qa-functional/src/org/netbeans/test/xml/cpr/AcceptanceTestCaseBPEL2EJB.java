@@ -93,6 +93,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
         "CreateBluePrint1Sample",
         "AddProjectReference",
         "DeleteProjectReference",
+        "ImportReferencedSchema",
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -104,6 +105,8 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     static final String SAMPLE_NAME = "SampleApplication2Ejb";
 
     static final String MODULE_NAME = "EJBModule1";
+
+    static final String SAMPLE_SCHEMA_PATH = "Source Packages|com.sun.test";
 
     public AcceptanceTestCaseBPEL2EJB(String arg0) {
         super(arg0);
@@ -152,11 +155,37 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    public void ImportReferencedSchema( )
+    {
+      startTest( );
+
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
+        );
+      prn.select( );
+
+      JTreeOperator tree = pto.tree( );
+      tree.clickOnPath(
+          tree.findPath( SAMPLE_NAME + "|Process Files|purchaseOrder.xsd" ),
+          2
+        );
+
+      // Check was it opened or no
+      if( null == new EditorOperator( "purchaseOrder.xsd" ) )
+      {
+        fail( "purchaseOrder.xsd was not opened after double click." );
+      }
+
+      endTest( );
+    }
+
     public void RenameSampleSchema( )
     {
       startTest( );
 
-      RenameSampleSchemaInternal( MODULE_NAME );
+      RenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -165,7 +194,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      UndoRenameSampleSchemaInternal( MODULE_NAME );
+      UndoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -174,7 +203,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      RedoRenameSampleSchemaInternal( MODULE_NAME );
+      RedoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }

@@ -151,6 +151,13 @@ public class TypeInfo {
         return resolvedType;
     }
     
+    public String getDetailedType(AbstractVariable var) {
+        if (rawInfo == null) {
+            rawInfo = debugger.requestSymbolType(var.getFullName(false));
+        }
+        return rawInfo;
+    }
+    
     public Map<String, Object> getMap() {
         if (map == null) {
             map = getCachedMap();
