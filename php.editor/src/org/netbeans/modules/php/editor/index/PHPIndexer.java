@@ -58,6 +58,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -119,7 +121,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_CONST = "const"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (file.getExtension().equals("php")) { // NOI18N
+        if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
 
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
@@ -470,5 +472,9 @@ public class PHPIndexer implements Indexer {
     
     public FileObject getPreindexedDb() {
         return null;
+    }
+
+    public boolean acceptQueryPath(String url) {
+        return true;
     }
 }

@@ -48,7 +48,6 @@ import org.openide.util.Utilities;
 
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
@@ -77,6 +76,10 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
         }
     };
     
+    public DriverListNodeInfo() {
+        JDBCDriverManager.getDefault().addDriverListener(listener);
+    }
+    
     protected void initChildren(Vector children) throws DatabaseException {
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers();
         boolean win = Utilities.isWindows();
@@ -104,7 +107,7 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
     * Creates new node info and adds node into node children.
     */
     public void addDriver(DatabaseDriver drv) throws DatabaseException {
-        DatabaseOption option = RootNode.getOption();
+        DatabaseOption option = RootNodeInfo.getOption();
         Vector drvs = option.getAvailableDrivers();
         if (!drvs.contains(drv))
             drvs.add(drv);
@@ -113,14 +116,20 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
             throw new DatabaseException(message);
         }
 
-        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
         DriverNodeInfo ninfo = (DriverNodeInfo)createNodeInfo(this, DatabaseNodeInfo.DRIVER);
         ninfo.setDatabaseDriver(drv);
-        chld.createSubnode(ninfo, true);
+        
+        notifyChange();
+    }  
+    
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_Drivers"); //NOI18N
+
     }
     
-    public void setNode(DatabaseNode node) {
-        super.setNode(node);
-        JDBCDriverManager.getDefault().addDriverListener(listener);
-    }
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_DriverList"); //NOI18N
+    }    
 }

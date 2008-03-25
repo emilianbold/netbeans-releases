@@ -118,10 +118,6 @@ public class AstElement extends JsElement {
         return fqn;
     }
     
-    void setDocProps(Map<String,String> docProps) {
-        this.docProps = docProps;
-    }
-
     public String getName() {
         if (name == null) {
             if (fqn != null) {
@@ -259,7 +255,7 @@ public class AstElement extends JsElement {
     }
     
     public static AstElement createElement(CompilationInfo info, Node node, String name, String in, AnalysisResult result) {
-        assert node.element == null : node; // Don't expect to be called multiple times on the same element
+        assert node.element == null : node + " in " + info.getText(); // Don't expect to be called multiple times on the same element
         AstElement js = AstElement.getElement(info, node);
 
         if ("Element.Methods".equals(in)) { // NOI18N

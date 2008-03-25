@@ -264,7 +264,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         Node[] oldNodes = (Node[])evt.getOldValue();
                         Node[] nodes = (Node[])evt.getNewValue();
                         Lookup lastLookup = lookups[lookups.length-1];
-                        Node delegate = formEditor.getFormDataObject().getNodeDelegate();
+                        FormDataObject fdo = formEditor.getFormDataObject();
+                        if (!fdo.isValid()) {
+                            return; // Issue 130637
+                        }
+                        Node delegate = fdo.getNodeDelegate();
                         if (!(lastLookup instanceof NoNodeLookup)
                             && (oldNodes.length >= 1)
                             && (!oldNodes[0].equals(delegate))) {
@@ -1021,17 +1025,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = false;
-        if (selectedIds.size() >= 2) {
-            RADComponent parent = commonParent(selectedIds);
-            if (parent != null) {
-                LayoutModel layoutModel = formModel.getLayoutModel();
-                LayoutComponent parentLC = layoutModel.getLayoutComponent(parent.getId());
-                if ((parentLC != null) && (parentLC.isLayoutContainer())) {
-                    enabled = true;
-                }
-            }
-        }
+        boolean enabled = layoutDesigner.canAlign(selectedIds);;
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();

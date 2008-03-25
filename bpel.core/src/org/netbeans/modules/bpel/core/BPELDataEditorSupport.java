@@ -78,6 +78,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.UserCancelException;
 
 /**
  * @author ads
@@ -142,7 +144,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         super.initializeCloneableEditor(editor);
         // Force the title to update so the * left over from when the
         // modified data object was discarded is removed from the title.
-        if (!getEnv().getBpelDataObject().isModified()) {
+//        if (!getEnv().getBpelDataObject().isModified()) {
             // Update later to avoid an infinite loop.
             EventQueue.invokeLater(new Runnable() {
 
@@ -150,7 +152,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                     updateTitles();
                 }
             });
-        }
+//        }
 
         /*
          *  I put this code here because it is called each time when
@@ -507,6 +509,31 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         prepareTask = null;
 
         getValidationController().detach();
+    }
+
+    /*
+     * Update presence of SaveCookie on first keystroke.
+     */
+    @Override
+    protected boolean notifyModified() {
+        boolean notify = super.notifyModified();
+        if (!notify) {
+            return false;
+        }
+        
+        BPELDataObject dObj = getEnv().getBpelDataObject();
+        if (dObj.getCookie(SaveCookie.class) == null) {
+            dObj.addSaveCookie(new SaveCookie() {
+                public void save() throws java.io.IOException {
+                    try {
+                        saveDocument();
+                    } catch(UserCancelException e) {
+                        //just ignore
+                    }
+                }
+            });
+        }
+        return true;
     }
 
     /*

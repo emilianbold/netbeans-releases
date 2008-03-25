@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.GsfLanguage;
@@ -70,5 +71,17 @@ public class HtmlLanguage implements GsfLanguage {
 
     public Collection<FileObject> getCoreLibraries() {
         return Collections.emptyList();
+    }
+
+    public String getDisplayName() {
+        return "HTML";
+    }
+    
+    public String getPreferredExtension() {
+        return "html"; // NOI18N
+    }
+
+    public Map<String, String> getSourceGroupNames() {
+        return Collections.emptyMap();
     }
 }

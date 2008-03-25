@@ -39,26 +39,22 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
+import org.netbeans.modules.php.project.ui.Utils.EncodingRenderer;
 import org.openide.util.ChangeSupport;
 
 class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListener {
 
     private static final long serialVersionUID = -38388194985L;
 
-    final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     OptionsPanelVisual(String originalEncoding) {
         initComponents();
@@ -191,54 +187,6 @@ class OptionsPanelVisual extends JPanel implements DocumentListener, ActionListe
 
     void setSetAsMain(boolean setAsMain) {
         setAsMainCheckBox.setSelected(setAsMain);
-    }
-
-    private static class EncodingModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -3139920099217726436L;
-
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-
-    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 3196531352192214602L;
-
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            assert value instanceof Charset;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
     }
 
     // listeners

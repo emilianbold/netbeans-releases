@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -167,8 +168,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
                 JTextComponent textC = ec.getOpenedPanes()[0];
+                Document d = textC.getDocument();
+                if (!(d instanceof BaseDocument)) {
+                    return true;
+                }
                 int caret = textC.getCaretPosition();
-                if (LexUtilities.getToken((BaseDocument) textC.getDocument(), caret) == null) {
+                if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
                     // Not in Ruby code!
                     return true;
                 }

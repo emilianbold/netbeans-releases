@@ -651,7 +651,7 @@ public class Utilities {
             final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
             final Collection<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
-            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
+            Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
             
             // go up and find affected modules
@@ -665,7 +665,15 @@ public class Utilities {
             }
             Collection<Dependency> byToken = takeRecommendsRequiresNeeds (primaryAndRequiredElementDeps);
             if (! byToken.isEmpty ()) {
-                retval.addAll (checkUpdateTokenProvider (byToken));
+                Collection<UpdateElement> newModules = checkUpdateTokenProvider (byToken);
+                retval.addAll (newModules);
+                Set<Dependency> newDeps = new HashSet<Dependency> ();
+                for (UpdateElement newEl : newModules) {
+                    UpdateElementImpl newElImpl = Trampoline.API.impl (newEl);
+                    newDeps.addAll (((ModuleUpdateElementImpl) newElImpl).getModuleInfo ().getDependencies ());
+                }
+                brokenDeps = DependencyChecker.findBrokenDependencies (newDeps, extendedModules);
+                retval.addAll (findRequiredModules (brokenDeps, extendedModules));
             }
             // go up and find affected modules again
             retval = findAffectedModules (retval);
@@ -890,13 +898,17 @@ public class Utilities {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            getLogger ().log (Level.WARNING, null, saxe);
+            getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
         } catch (IOException ioe) {
-            getLogger ().log (Level.WARNING, null, ioe);
+            getLogger ().log (Level.INFO, "IOException when reading " + moduleUpdateTracking, ioe);
+            return null;
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
+        if (document.getDocumentElement () == null) {
+            return null;
+        }
         return getModuleElement (document.getDocumentElement ());
     }
     
@@ -1058,7 +1070,7 @@ public class Utilities {
         if (org.openide.util.Utilities.isWindows ()) {
             FileWriter fw = null;
             try {
-                fw = new FileWriter (f);
+                fw = new FileWriter (f, true);
             } catch (IOException ioe) {
                 // just check of write permission
                 getLogger ().log (Level.FINE, f + " has no write permission", ioe);

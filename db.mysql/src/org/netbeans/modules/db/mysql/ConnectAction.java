@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
+import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.nodes.Node;
@@ -98,12 +99,11 @@ public class ConnectAction extends CookieAction {
         ServerInstance server = model.getServer();
         String dbname = model.getDbName();
         
-        DatabaseConnection conn = 
-                DatabaseUtils.findDatabaseConnection(
-                    server.getURL(dbname), 
-                    server.getUser());
+        List<DatabaseConnection> conns = 
+                DatabaseUtils.findDatabaseConnections(
+                    server.getURL(dbname));
         
-        if ( conn == null ) {
+        if ( conns.size() == 0 ) {
             ConnectionManager.getDefault().
                 showAddConnectionDialogFromEventThread(
                     DatabaseUtils.getJDBCDriver(),
@@ -111,7 +111,7 @@ public class ConnectAction extends CookieAction {
                     server.getUser(),
                     null);
         } else {
-            ConnectionManager.getDefault().showConnectionDialog(conn);            
+            ConnectionManager.getDefault().showConnectionDialog(conns.get(0));            
         }      
     }
 }

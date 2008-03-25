@@ -355,14 +355,28 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        String rt = getTypeInfo().getResolvedType(this);
-        int pos1 = rt.indexOf('{');
-        int pos2 = rt.indexOf('}');
+        int pos1, pos2;
+        
+        String info = getTypeInfo().getResolvedType(this);
+        pos1 = info.indexOf('{');
+        pos2 = info.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
-            String enum_values = rt.substring(pos1 + 1, pos2);
+            String enum_values = info.substring(pos1 + 1, pos2);
             for (String frag : enum_values.split(", ")) { // NOI18N
                 if (value.equals(frag)) {
                     return value;
+                }
+            }
+        } else {
+            info = getTypeInfo().getDetailedType(this);
+            pos1 = info.indexOf('{');
+            pos2 = info.indexOf('}');
+            if (pos1 > 0 && pos2 > 0) {
+                String enum_values = info.substring(pos1 + 1, pos2);
+                for (String frag : enum_values.split(", ")) { // NOI18N
+                    if (value.equals(frag)) {
+                        return value;
+                    }
                 }
             }
         }
@@ -583,7 +597,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
-                    if (map.isEmpty()) {
+                    if (map.isEmpty() && v.charAt(0) != '{') {
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
                     } else if (v.length() > 0) {
@@ -606,7 +620,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
     
     private void createChildrenForPointer(String t, String v) {
-        addField(new AbstractField(this, '*' + getName(), t, v));
+            addField(new AbstractField(this, '*' + getName(), t, v));
     }
     
     private void createChildrenForMultiPointer(String t) {
@@ -676,6 +690,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     n = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
                     t = info.substring(1, pos - 2).trim();
                     v = info.substring(pos + 1).trim();
+                    if (t.length() == 0) {
+                        // I think this is handling a gdb bug. Its hard to say because the exact response
+                        // from gdb isn't well documented. In any case, this is triggered when the value
+                        // of a superclass is an empty string (<> = {...}). Since we've parsed the super
+                        // class already, I'm assuming single inheritance and taking the super from the map.
+                        t = (String) map.get("<super1>"); // NOI18N
+                    }
                     if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
