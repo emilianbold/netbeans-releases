@@ -4,7 +4,7 @@
     xmlns="http://java.sun.com/xml/ns/jbi"
     xmlns:identification="http://www.sun.com/jbi/descriptor/identification"    
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:config='http://www.sun.com/jbi/Configuration'
+    xmlns:config='http://www.sun.com/jbi/Configuration/V1.0'
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xsi:schemaLocation="http://www.sun.com/jbi/Configuration ./componentConfiguration.xsd http://java.sun.com/xml/ns/jbi ./jbi.xsd">
     <!-- identification information about this binding -->

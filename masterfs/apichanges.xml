@@ -46,6 +46,22 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="added-canWrite-friend-contract-for-versioning-systems">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.canWrite</code> was added.</summary>
+            <version major="2" minor="14"/>
+            <date day="20" month="3" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.canWrite</code> which is called when
+                    <code>MasterFileSystem</code> queries the <code>FileObject</code> for writability.
+                </p>                
+            </description>
+            <issue number="130044"/>
+        </change>                        
+        
         <change id="fileobject-instances-are-not-issued-after-external-changes">
             <api name="masterfs"/>
             <summary>Fileobject instances are not issued after external changes</summary>

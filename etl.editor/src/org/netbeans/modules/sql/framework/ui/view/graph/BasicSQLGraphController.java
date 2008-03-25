@@ -751,7 +751,7 @@ public class BasicSQLGraphController implements IGraphController {
                 guiInfo.setY(dropLocation.y);
             }
 
-
+            collabModel.setDirty(true);
             // do special processing for following objects
             switch (sqlObj.getObjectType()) {
                 case SQLConstants.CAST_OPERATOR:
@@ -825,6 +825,7 @@ public class BasicSQLGraphController implements IGraphController {
 
             // now add the object
             collabModel.addObject(sqlObj);
+            collabModel.setDirty(true);
         } catch (BaseException e) {
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);

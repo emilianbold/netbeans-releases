@@ -115,11 +115,27 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized List<JTextComponent> getVisibleEditors() {
-        return Collections.unmodifiableList(visibleEditors);
+        List<JTextComponent> result = new LinkedList<JTextComponent>();
+        
+        for (JTextComponent c : visibleEditors) {
+            if (visibleEditors2Files.get(c) != null) {
+                result.add(c);
+            }
+        }
+        
+        return Collections.unmodifiableList(result);
     }
 
     public synchronized Collection<FileObject> getVisibleEditorsFiles() {
-        return Collections.unmodifiableCollection(visibleEditors2Files.values());
+        List<FileObject> result = new LinkedList<FileObject>();
+        
+        for (FileObject file : visibleEditors2Files.values()) {
+            if (file != null) {
+                result.add(file);
+            }
+        }
+        
+        return Collections.unmodifiableCollection(result);
     }
 
     public synchronized void stateChanged() {

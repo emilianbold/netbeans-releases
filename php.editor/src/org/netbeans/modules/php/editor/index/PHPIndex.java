@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -58,6 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -78,6 +81,7 @@ public class PHPIndex {
     static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     private static final Set<String> TERMS_FQN = Collections.singleton(PHPIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(PHPIndexer.FIELD_BASE);
+    private static final Set<String> TERMS_CONST = Collections.singleton(PHPIndexer.FIELD_CONST);
     private static final Set<String> TERMS_EXTEND = Collections.singleton(PHPIndexer.FIELD_EXTEND);
     private final Index index;
 
@@ -358,6 +362,32 @@ public class PHPIndex {
             }
         }
         return functions;
+    }
+    
+    public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+
+                    IndexedConstant constant = new IndexedConstant(signature, null,
+                            this, map.getPersistentUrl(), null, 0, ElementKind.GLOBAL);
+
+                    constants.add(constant);
+                }
+            }
+        }
+        
+        return constants;
     }
 
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
@@ -662,6 +692,18 @@ public class PHPIndex {
      * from the current file.
      */
     public boolean isReachable(PHPParseResult result, String url) {
+        String processedFileURL = null;
+        
+        try {
+            processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+            
+            if (url.equals(processedFileURL)){
+                return true;
+            }
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         Collection<String> includes = new ArrayList<String>();
         
         for (Statement statement : result.getProgram().getStatements()) {
@@ -680,10 +722,12 @@ public class PHPIndex {
         for (String includeInQuotes : includes){
             // start of provisional code
             //TODO: a more sophisticated check here,
-            // currently only basic, same dir includes are support
-            String incl = includeInQuotes.substring(1, includeInQuotes.length() - 1);
+            String incl = dequote(includeInQuotes);
+            assert processedFileURL.startsWith("file:");
+            String processedFileAbsPath = processedFileURL.substring("file:".length());
+            String includeURL = resolveRelativeURL(processedFileAbsPath, incl);
             
-            if (url.endsWith(incl)){
+            if (url.equals("file:" + includeURL)){
                 return true;
             }
             
@@ -691,5 +735,70 @@ public class PHPIndex {
         }
 
         return false;
+    }
+    
+    static String dequote(String string){
+        assert string.length() >= 2;
+        assert string.startsWith("\"") || string.startsWith("'");
+        assert string.endsWith("\"") || string.endsWith("'");
+        return string.substring(1, string.length() - 1);
+    }
+    
+    // copied from JspUtils
+    /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
+    *  @param relativeTo url to which the relative URL is related. Treated as directory iff
+    *    ends with '/'
+    *  @param url the relative URL by RFC 2396
+    *  @exception IllegalArgumentException if url is not absolute and relativeTo 
+    * can not be related to, or if url is intended to be a directory
+    */
+    static String resolveRelativeURL(String relativeTo, String url) {
+        //System.out.println("- resolving " + url + " relative to " + relativeTo);
+        String result;
+        if (url.startsWith("/")) { // NOI18N
+            result = "/"; // NOI18N
+            url = url.substring(1);
+        }
+        else {
+            // canonize relativeTo
+            if ((relativeTo == null) || (!relativeTo.startsWith("/"))) // NOI18N
+                throw new IllegalArgumentException();
+            relativeTo = resolveRelativeURL(null, relativeTo);
+            int lastSlash = relativeTo.lastIndexOf('/');
+            if (lastSlash == -1)
+                throw new IllegalArgumentException();
+            result = relativeTo.substring(0, lastSlash + 1);
+        }
+
+        // now url does not start with '/' and result starts with '/' and ends with '/'
+        StringTokenizer st = new StringTokenizer(url, "/", true); // NOI18N
+        while(st.hasMoreTokens()) {
+            String tok = st.nextToken();
+            //System.out.println("token : \"" + tok + "\""); // NOI18N
+            if (tok.equals("/")) { // NOI18N
+                if (!result.endsWith("/")) // NOI18N
+                    result = result + "/"; // NOI18N
+            }
+            else
+                if (tok.equals("")) // NOI18N
+                    ;  // do nohing
+                else
+                    if (tok.equals(".")) // NOI18N
+                        ;  // do nohing
+                    else
+                        if (tok.equals("..")) { // NOI18N
+                            String withoutSlash = result.substring(0, result.length() - 1);
+                            int ls = withoutSlash.lastIndexOf("/"); // NOI18N
+                            if (ls != -1)
+                                result = withoutSlash.substring(0, ls + 1);
+                        }
+                        else {
+                            // some file
+                            result = result + tok;
+                        }
+            //System.out.println("result : " + result); // NOI18N
+        }
+        //System.out.println("- resolved to " + result);
+        return result;
     }
 }

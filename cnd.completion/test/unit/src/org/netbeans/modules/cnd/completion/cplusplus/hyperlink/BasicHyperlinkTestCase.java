@@ -51,6 +51,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testVarInFunWithInitalization() throws Exception {
+        performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
+    }
+    
     public void testParamWithoutSpace() throws Exception {
         performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
         performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)

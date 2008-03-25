@@ -101,8 +101,13 @@ if [ "$action" = "sync" ]; then
     ant build || exit 2
     ant commit-validation # || exit 3
 
-    echo hg push https://\"$push_username\":\"$push_password\"@hg.netbeans.org/$repository
-    echo "Only test push for now:"
+    # Just make sure that there are no new changes before push
+    hg fetch http://hg.netbeans.org/$repository
+
+    echo Ready to: hg push https://\"$push_username\":\"$push_password\"@hg.netbeans.org/$repository
+    # Now push to the test repo
+    echo "But for now only push to testpush-repo:"
+    hg fetch ../../testpush-repo
     hg push ../../testpush-repo
     exit 0
 fi

@@ -66,7 +66,7 @@ instrument_build() {
    $INSTRUMENT_SH $DIR $progdir/../../emma/emma_filter $progdir/../../emma/emma.jar
 #   mkdir $DIR/emma-lib
    chmod a+w $DIR/emma-lib
-   cp $progdir/../../emma/emma_filter $DIR/emma-lib/netbeans_coverage.ec
+   #cp $progdir/../../emma/emma_filter $DIR/emma-lib/netbeans_coverage.ec
    cp $progdir/../../emma/emma.jar $DIR/emma-lib/
    sed -i -e "s/^netbeans_default_options=/netbeans_default_options=\"--cp:p $\{NETBEANS_HOME\}\/emma-lib\/emma.jar -J-Demma.coverage.file=\$\{NETBEANS_HOME\}\/emma-lib\/netbeans_coverage.ec -J-Dnetbeans.security.nocheck=true/" $DIR/etc/netbeans.conf
 }

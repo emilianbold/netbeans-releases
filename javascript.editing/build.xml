@@ -26,7 +26,7 @@
         -->
 
         <unzip dest="${cluster}" src="external/preindexed.zip"/>
-        <unzip dest="${cluster}" src="external/preindexed-native.zip"/>
+        <copy file="external/sdocs.zip" todir="${cluster}/jsstubs"/>
     </target>
 
 </project>

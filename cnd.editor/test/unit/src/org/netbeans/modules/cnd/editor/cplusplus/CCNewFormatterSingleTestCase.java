@@ -163,31 +163,104 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
 
-    
-    public void testIZ130538() {
+    public void testSwitchFormatting3SQL() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+                putBoolean(EditorOptions.indentCasesFromSwitch, false);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, true);
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodCallParen, true);
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceBeforeMethodDeclParen, true);
+                put(EditorOptions.newLineBeforeBraceSwitch, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
         setLoadDocumentText(
-                "int foooooooo(char* a,\n" +
-                " class B* b)\n" +
+                "int main(int i)\n" +
                 "{\n" +
-                "    foo(a,\n" +
-                "   b);\n" +
+                "    switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 4 :\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "        break;\n" +
+                "        case 14 :\n" +
+                "        {\n" +
+                "        i++;\n" +
+                "        }\n" +
+                "        case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "        return 1;\n" +
+                "        case 2:\n" +
+                "        break;\n" +
+                "        case 4 :\n" +
+                "                i++;\n" +
+                "           case 6:\n" +
+                "               switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                   if (true)return;\n" +
+                "                   else {break;}\n" +
+                "       case 12:\n" +
+                "                {\n" +
+                "                break;\n" +
+                "                }\n" +
+                "        }\n" +
+                "     default :\n" +
+                "            break;\n" +
+                "     }\n" +
                 "}\n");
         reformat();
-        assertDocumentText("Incorrect formating IZ#130538",
-                "int foooooooo (char* a,\n" +
-                "               class B* b)\n" +
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "int main(int i)\n" +
                 "{\n" +
-                "    foo (a,\n" +
-                "         b);\n" +
+                "    switch (i) {\n" +
+                "    case 1:\n" +
+                "        return 1;\n" +
+                "    case 4:\n" +
+                "        if (true)return;\n" +
+                "        else\n" +
+                "        {\n" +
+                "            break;\n" +
+                "        }\n" +
+                "        break;\n" +
+                "    case 14:\n" +
+                "    {\n" +
+                "        i++;\n" +
+                "    }\n" +
+                "    case 6:\n" +
+                "        return;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "    }\n" +
+                "    if (i != 8)\n" +
+                "        switch (i) {\n" +
+                "        case 1:\n" +
+                "            return 1;\n" +
+                "        case 2:\n" +
+                "            break;\n" +
+                "        case 4:\n" +
+                "            i++;\n" +
+                "        case 6:\n" +
+                "            switch (i * 2) {\n" +
+                "            case 10:\n" +
+                "                if (true)return;\n" +
+                "                else\n" +
+                "                {\n" +
+                "                    break;\n" +
+                "                }\n" +
+                "            case 12:\n" +
+                "            {\n" +
+                "                break;\n" +
+                "            }\n" +
+                "            }\n" +
+                "        default:\n" +
+                "            break;\n" +
+                "        }\n" +
                 "}\n");
     }
 }
