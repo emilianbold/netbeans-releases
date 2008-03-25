@@ -13,13 +13,20 @@
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
 
-<p>The Ruby Gems manager enables you to add and maintain Ruby gems, which are third-party Ruby libraries.</p>
-<p> To open the Ruby Gems manager choose Tools > Ruby Gems from the main menu. The manager has the following tabs.</p>
+<p>The Ruby Gems manager enables you to maintain Ruby gems, which are third-party Ruby libraries.</p>
+<p> To open the Ruby Gems manager, choose Tools > Ruby Gems from the main menu. The Gems Manager has the following options: </p>
 <ul>
-  <li><b>Updated tab.</b> Shows any updates available for gems you have installed.</li>
-  <li><b>Installed tab.</b> Click this tab  to view a list of the gems  that have been installed for the registered Ruby platform. To remove an installed gem, select it and click the Uninstall button. </li>
-  <li><b>New Gems tab.</b> Click this tab to see the gems you can add to your Ruby platform. To add a new gem, select it and click the Install button, and then click OK in the <a href="geminstallsettingsdialog.html">Gem Installation Settings dialog box</a> to install it. Typically you leave the settings unchanged in this dialog box.</li>
-  <li><b>Settings tab.</b> When you open the dialog box, you might see the message, "Nothing found: Network problem? Check NetBeans proxy settings." To set your proxy, click this tab and then click the Configure Proxies button. You might need to set  your proxy server if you are behind a firewall. By default, NetBeans uses your system proxy settings.</li>
+  <li> <b>Ruby Platform.</b> Select the platform for which you want to manage the gems repository. To add additional  platforms to the drop-down list,  click Manage to open the Ruby Platform Manager.</li>
+  <li>    <b>Gem Home.</b> Specify the path of the gems repository.</li>
+  <li><b>Updated tab.</b> Shows any updates available for gems that you have installed.</li>
+  <li><b>Installed tab.</b> Click this tab  to view a list of the gems  that have been installed for the selected Ruby platform. To uninstall a gem, select it and click the Uninstall button. </li>
+  <li><b>New Gems tab.</b> Click this tab to see the gems that you can install to your Ruby platform.
+    <ul>
+      <li><strong>Install</strong>. To install a new gem, select it and click the Install button, and then click OK in the <a href="geminstallsettingsdialog.html">Gem Installation Settings dialog box</a> to install it. Typically you leave the settings unchanged in this dialog box.</li>
+      <li><strong>Install</strong> <strong>Local</strong>. Select this option to install a gem that you have already downloaded. </li>
+    </ul>
+  </li>
+  <li><b>Settings tab.</b> When you open the dialog box, you might see the message, <code>Nothing found: Network problem? Check NetBeans proxy settings.</code> To set your proxy, click this tab and then click the Configure Proxies button. You might need to set  your proxy server if you are behind a firewall. By default, NetBeans uses your system proxy settings.</li>
 </ul>
 <p>The 
         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -35,7 +42,7 @@
 
  
 
-provides information on how to enable the Ruby Gems manager to manage a native Ruby gems repository.</p>
+provides information about how to enable the Ruby Gems manager to manage a native Ruby gems repository.</p>
 <p>For more information about Ruby Gems, see 
   <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="viewerActivator" value="javax.help.LinkButton">
@@ -44,10 +51,10 @@ provides information on how to enable the Ruby Gems manager to manage a native R
         <param name="text" value="<html><u>Ruby Libraries</u></html>.">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-   </object>
+  </object>.
 
 
- </p>
+</p>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="ruby_quickref.html">Working With NetBeans Ruby</a></dd>

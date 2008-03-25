@@ -1,0 +1,98 @@
+/*
+ *  PeopleConverter
+ *
+ * Created on March 22, 2008, 4:30 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package converter;
+
+import entity.Person;
+import java.net.URI;
+import java.util.Collection;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+import java.util.ArrayList;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "people")
+public class PeopleConverter {
+    private Collection<Person> entities;
+    private Collection<PersonRefConverter> references;
+    private URI uri;
+  
+    /** Creates a new instance of PeopleConverter */
+    public PeopleConverter() {
+    }
+
+    /**
+     * Creates a new instance of PeopleConverter.
+     *
+     * @param entities associated entities
+     * @param uri associated uri
+     */
+    public PeopleConverter(Collection<Person> entities, URI uri) {
+        this.entities = entities;
+        this.uri = uri;
+    }
+
+    /**
+     * Returns a collection of PersonRefConverter.
+     *
+     * @return a collection of PersonRefConverter
+     */
+    @XmlElement(name = "personRef")
+    public Collection<PersonRefConverter> getReferences() {
+        references = new ArrayList<PersonRefConverter>();
+        if (entities != null) {
+            for (Person entity : entities) {
+                references.add(new PersonRefConverter(entity, uri, true));
+            }
+        }
+        return references;
+    }
+
+    /**
+     * Sets a collection of PersonRefConverter.
+     *
+     * @param a collection of PersonRefConverter to set
+     */
+    public void setReferences(Collection<PersonRefConverter> references) {
+        this.references = references;
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns a collection Person entities.
+     *
+     * @return a collection of Person entities
+     */
+    @XmlTransient
+    public Collection<Person> getEntities() {
+        entities = new ArrayList<Person>();
+        if (references != null) {
+            for (PersonRefConverter ref : references) {
+                entities.add(ref.getEntity());
+            }
+        }
+        return entities;
+    }
+}

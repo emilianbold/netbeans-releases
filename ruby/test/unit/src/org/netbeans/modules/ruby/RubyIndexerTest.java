@@ -146,6 +146,13 @@ public class RubyIndexerTest extends RubyTestBase {
             IndexDocumentImpl doc = (IndexDocumentImpl)d;
         
             sb = new StringBuilder();
+            
+            if (doc.overrideUrl != null) {
+                sb.append("Override URL: ");
+                sb.append(doc.overrideUrl);
+                sb.append("\n");
+            }
+                            
             sb.append("Indexed:");
             sb.append("\n");
             List<String> strings = new ArrayList<String>();
@@ -223,6 +230,12 @@ public class RubyIndexerTest extends RubyTestBase {
         private List<String> unindexedKeys = new ArrayList<String>();
         private List<String> unindexedValues = new ArrayList<String>();
 
+        private String overrideUrl;
+
+        IndexDocumentImpl(String overrideUrl) {
+            this.overrideUrl = overrideUrl;
+        }
+
         public void addPair(String key, String value, boolean indexed) {
             if (indexed) {
                 indexedKeys.add(key);
@@ -235,9 +248,12 @@ public class RubyIndexerTest extends RubyTestBase {
     }
 
     private class IndexDocumentFactoryImpl implements IndexDocumentFactory {
-
         public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl();
+            return new IndexDocumentImpl(null);
+        }
+
+        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
+            return new IndexDocumentImpl(overrideUrl);
         }
     }
     

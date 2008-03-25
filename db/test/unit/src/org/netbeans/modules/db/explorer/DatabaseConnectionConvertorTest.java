@@ -46,7 +46,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.CharacterCodingException;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
@@ -213,7 +213,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     public void testImportOldConnections() throws Exception {
         DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", 
                 "foo_driver", "jdbc:foo:localhost", "schema", "user", null);
-        RootNode.getOption().getConnections().add(conn);
+        RootNodeInfo.getOption().getConnections().add(conn);
         
         DatabaseConnectionConvertor.importOldConnections();
         

@@ -58,46 +58,47 @@ public final class Util {
     if (elements.length == 0) {
       return appropriate;
     }
-    Set [] elementsSet = new Set [elements.length];
+    Chars [] elementsChars = new Chars [elements.length];
 
     for (int i=0; i < elements.length; i++) {
-      elementsSet [i] = new Set(elements [i]);
+      elementsChars [i] = new Chars(elements [i]);
     }
-    Set typedSet = new Set(typed);
+    Chars typedChars = new Chars(typed);
 
-    for (Set elementSet : elementsSet) {
-      typedSet.calculateDistance(elementSet);
-//out(elementSet);
+    for (Chars elementChars : elementsChars) {
+      typedChars.calculateDistance(elementChars);
+//out(elementChars);
     }
-    int minDistance = elementsSet [0].getDistance();
+    int minDistance = elementsChars [0].getDistance();
 
-    for (int i=1; i < elementsSet.length; i++) {
-      int distance = elementsSet [i].getDistance();
+    for (int i=1; i < elementsChars.length; i++) {
+      int distance = elementsChars [i].getDistance();
 
       if (distance < minDistance) {
         minDistance = distance;
       }
     }
-    for (int i=0; i < elementsSet.length; i++) {
-      if (elementsSet [i].getDistance() == minDistance) {
-        appropriate.add(elementsSet [i].getElement());
+    for (int i=0; i < elementsChars.length; i++) {
+      if (elementsChars [i].getDistance() == minDistance) {
+        appropriate.add(elementsChars [i].getElement());
       }
     }
     return appropriate;
   }
 
-  private static class Set {
+  // -------------------------
+  private static class Chars {
 
-    public Set(NamedElement element) {
+    public Chars(NamedElement element) {
       this(element, null);
     }
 
-    public Set(String value) {
+    public Chars(String value) {
       this(null, value);
     }
 
-    private Set(NamedElement element, String value) {
-      myElement= element;
+    private Chars(NamedElement element, String value) {
+      myElement = element;
 
       if (element == null) {
         myValue = value;
@@ -105,10 +106,11 @@ public final class Util {
       else {
         myValue = element.getName();
       }
-      mySet = new byte [0xFFFF];
+      myValue = myValue.toLowerCase();
+      myChars = new byte [0xFFFF];
 
       for (int i=0; i < myValue.length(); i++) {
-        mySet [myValue.charAt(i)]++;
+        myChars [myValue.charAt(i)]++;
       }
     }
 
@@ -120,21 +122,21 @@ public final class Util {
       myDistance = distance;
     }
 
-    public void calculateDistance(Set set) {
+    public void calculateDistance(Chars chars) {
       int distance = 0;
 
-      for (int i=0; i < mySet.length; i++) {
-        distance += Math.abs(mySet [i] - set.getSet() [i]);
+      for (int i=0; i < myChars.length; i++) {
+        distance += Math.abs(myChars [i] - chars.getChars() [i]);
       }
-      set.setDistance(distance);
+      chars.setDistance(distance);
     }
 
     public int getDistance() {
       return myDistance;
     }
 
-    private byte [] getSet() {
-      return mySet;
+    private byte [] getChars() {
+      return myChars;
     }
 
     @Override
@@ -142,11 +144,11 @@ public final class Util {
       if (myString == null) {
         StringBuffer buffer = new StringBuffer();
 
-        for (int i=0; i < mySet.length; i++) {
-          if (mySet [i] == 0) {
+        for (int i=0; i < myChars.length; i++) {
+          if (myChars [i] == 0) {
             continue;
           }
-          buffer.append(((char) i) + "(" + mySet [i] + ")");
+          buffer.append(((char) i) + "(" + myChars [i] + ")");
         }
         myString = myValue + ": " +  buffer.toString();
       }
@@ -154,9 +156,9 @@ public final class Util {
     }
 
     private int myDistance;
-    private byte [] mySet;
     private String myValue;
     private String myString;
+    private byte [] myChars;
     private NamedElement myElement;
   }
 }

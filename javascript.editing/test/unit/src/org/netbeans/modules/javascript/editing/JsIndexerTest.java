@@ -130,8 +130,15 @@ public class JsIndexerTest extends JsTestBase {
         if (documents != null) {
             for (IndexDocument d : documents) {
                 IndexDocumentImpl doc = (IndexDocumentImpl)d;
-
+                
                 sb = new StringBuilder();
+
+                if (doc.overrideUrl != null) {
+                    sb.append("Override URL: ");
+                    sb.append(doc.overrideUrl);
+                    sb.append("\n");
+                }
+                
                 sb.append("Indexed:");
                 sb.append("\n");
                 List<String> strings = new ArrayList<String>();
@@ -210,9 +217,11 @@ public class JsIndexerTest extends JsTestBase {
         private List<String> indexedValues = new ArrayList<String>();
         private List<String> unindexedKeys = new ArrayList<String>();
         private List<String> unindexedValues = new ArrayList<String>();
+        private String overrideUrl;
 
-        IndexDocumentImpl(Index index) {
+        IndexDocumentImpl(Index index, String overrideUrl) {
             this.index = index;
+            this.overrideUrl = overrideUrl;
         }
         
         public void addPair(String key, String value, boolean indexed) {
@@ -233,7 +242,11 @@ public class JsIndexerTest extends JsTestBase {
         }
 
         public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(index);
+            return new IndexDocumentImpl(index, null);
+        }
+
+        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
+            return new IndexDocumentImpl(index, overrideUrl);
         }
     }
     
@@ -455,4 +468,7 @@ public class JsIndexerTest extends JsTestBase {
         checkIndexer("testfiles/two-names.js");
     }
 
+    public void testWoodStock() throws Exception {
+        checkIndexer("testfiles/woodstock.sdoc");
+    }
 }

@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -17,15 +19,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.saas.AuthorizationFrame;
+import javax.swing.JOptionPane;
 import org.netbeans.saas.RestConnection;
-import org.netbeans.saas.facebook.FacebookAuthenticator;
 
 /**
  *
  * @author ${user}
  */
-public class FlickrAuthenticator {
+public class __NAME__ {
 
     private static String apiKey;
     private static String secret;
@@ -36,12 +37,12 @@ public class FlickrAuthenticator {
     static {
         try {
             Properties props = new Properties();
-            props.load(FacebookAuthenticator.class.getResourceAsStream(
-                    "/org/netbeans/saas/flickr/flickr.properties"));
+            props.load(__NAME__.class.getResourceAsStream(
+                    "flickr.properties"));
             apiKey = props.getProperty("api_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
-            Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -75,7 +76,7 @@ public class FlickrAuthenticator {
                                 {"api_sig", apiSig},
                                 {"frob", frob}
                             });
-                    String result = conn.get();
+                    String result = conn.get().getDataAsString();
 
                     authToken = result.substring(result.indexOf("<token>") + 7,
                             result.indexOf("</token>"));
@@ -83,7 +84,7 @@ public class FlickrAuthenticator {
             }
 
         } catch (Exception ex) {
-            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -108,7 +109,7 @@ public class FlickrAuthenticator {
                         {"api_key", apiKey},
                         {"api_sig", apiSig}
                     });
-            String result = conn.get();
+            String result = conn.get().getDataAsString();
             String frob = result.substring(result.indexOf("<frob>") + 6, result.indexOf("</frob>"));
 
             String perms = (readOnly) ? "read" : "write";
@@ -121,18 +122,19 @@ public class FlickrAuthenticator {
 
             String loginUrl = "http://www.flickr.com/services/auth/?api_key=" + apiKey + "&frob=" + frob + "&perms=" + perms + "&api_sig=" + apiSig;
 
-            AuthorizationFrame frame = new AuthorizationFrame(loginUrl);
-            synchronized (frame) {
-                try {
-                    frame.wait();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            if (JOptionPane.showInputDialog(null,
+                "Please log into your Flickr account using the following URL to authorize this application and click OK after you are done:",
+                "Facebook Authorization Dialog",
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                null,
+                loginUrl) == null) {
+                    throw new IOException("Authorizatoin declined");
             }
 
             return frob;
         } catch (IOException ex) {
-            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
@@ -163,11 +165,9 @@ public class FlickrAuthenticator {
 
             return bigInt.toString(16);
         } catch (Exception ex) {
-            Logger.getLogger(FlickrAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
     }
 }
-
-

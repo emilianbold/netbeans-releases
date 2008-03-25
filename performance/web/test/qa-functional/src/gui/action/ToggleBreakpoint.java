@@ -98,7 +98,7 @@ public class ToggleBreakpoint extends PerformanceTestCase {
         editorOperator1 = new EditorWindowOperator().getEditor(file);
 //        eventTool().waitNoEvent(500);
 //        waitNoEvent(1000);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare() {
@@ -110,6 +110,7 @@ public class ToggleBreakpoint extends PerformanceTestCase {
     
     public ComponentOperator open(){
         // Toggle Breakpoint
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK)).perform(editorOperator1);
         return null;
     }

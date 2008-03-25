@@ -14,7 +14,10 @@
 
 
 <p>If you want to use the Interactive Ruby shell (IRB), you can start it in NetBeans by choosing Window &gt; Other &gt; Ruby Shell (IRB). IRB opens in a tabbed window at the bottom of the IDE in the same location as the Output window. </p>
-<p>NetBeans IRB uses the JRuby interpreter to process Ruby code that you type in the window. It works much like the version of irb that comes with Ruby: At the IRB prompt, you type  Ruby code and press Enter, and you see the results right away. </p>
+<p> 
+When you open the IRB window, the IDE uses the Ruby platform that is specified for the project you are editing. 
+If you do not  have any files open,  then  the Ruby platform that is specified for the main project is used. If the main project is not a Ruby project, the IDE uses the Ruby platform that is specified for the first opened Ruby project that is located.  </p>
+<p>At the IRB prompt, you type  Ruby code and press Enter, and you see the results right away. </p>
 <p>For example, type the following code:</p>
 <p><code>&nbsp;&nbsp;&nbsp;def hello; "hello world"; end; hello</code></p>
 <p>Press Enter, and you see</p>

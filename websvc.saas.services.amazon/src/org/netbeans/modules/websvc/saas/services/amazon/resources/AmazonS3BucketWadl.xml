@@ -72,6 +72,7 @@
             <method name="PUT" id="createBucket">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                    <param name="Content-Type" type="xsd:string" style="header" required="true"/>
                 </request>
                 <response>
                     <representation mediaType="application/xml"/>
@@ -101,6 +102,7 @@
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                     <param name="acl" type="xsd:string" style="query" required="true"/>
+                    <param name="Content-Type" type="xsd:string" style="header" required="true"/>
                     <representation mediaType="text/plain"/>
                 </request>
                 <response>
@@ -121,6 +123,7 @@
                 <method name="PUT" id="putObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                        <param name="Content-Type" type="xsd:string" style="header" required="true"/>
                         <representation mediaType="*/*"/>
                     </request>
                     <response>

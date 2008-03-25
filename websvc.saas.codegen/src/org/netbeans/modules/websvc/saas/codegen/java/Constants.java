@@ -49,6 +49,20 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
+    public static final String HTTP_SERVLET_REQUEST_CLASS = "javax.servlet.http.HttpServletRequest";
+    
+    public static final String HTTP_SERVLET_RESPONSE_CLASS = "javax.servlet.http.HttpServletResponse";
+    
+    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";
+    
+    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";
+    
+    public static final String CONTENT_TYPE = "Content-Type";
+    
+    public static final String PUT_POST_CONTENT = "content";
+    
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";
+    
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     
     public static final String QUERY_PARAMS = "queryParams"; // NOI18n
