@@ -43,6 +43,8 @@ package org.netbeans.modules.xml.text.folding;
 
 import java.io.IOException;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,7 +63,6 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.text.folding.TokenElement.Token;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
-import org.openide.util.RequestProcessor;
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
@@ -74,7 +75,9 @@ public class XmlFoldManager implements FoldManager {
 
     private FoldOperation operation;
     private long dirtyTimeMillis = 0;
-    private RequestProcessor.Task SYNCHRONIZER = null;
+    private Timer timer;
+    private TimerTask timerTask;
+    private boolean initFolds = false;
    
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
@@ -97,28 +100,60 @@ public class XmlFoldManager implements FoldManager {
         if (!(doc instanceof BaseDocument)) {
             return;
         }
-        
-        //do not update folds inside initFolds
-        //updateFolds();
-           
-        SYNCHRONIZER = RequestProcessor.getDefault().post(
-                new Runnable() {
-                    public void run() {
-                        if (dirtyIntervalMillis() > DELAY_DIRTY) {
-                            unsetDirty();
-                            updateFolds();
-                        }
-                        SYNCHRONIZER.schedule(DELAY_SYNCER);
-                    }
-                }, DELAY_SYNCER);
+        initFolds = true;
+        timer = new Timer();
+        scheduleFoldUpdate();
+    }
+    
+    private BaseDocument getDocument() {
+        return (BaseDocument) getOperation().getHierarchy().getComponent().getDocument();
+    }
+
+    public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void removeEmptyNotify(Fold epmtyFold) {
+    }
+
+    public void removeDamagedNotify(Fold damagedFold) {
+    }
+
+    public void expandNotify(Fold expandedFold) {
     }
    
-    public void setDirty() {
+    private void scheduleFoldUpdate() {
         dirtyTimeMillis = System.currentTimeMillis();
+        if (timer == null) {
+            return;
+        }
+        
+        if(timerTask != null) {
+            timerTask.cancel();
+            timerTask = null;
+        }
+        timerTask = new TimerTask() {
+            public void run() {
+                if (initFolds || (dirtyIntervalMillis() > DELAY_DIRTY)) {
+                    updateFolds();
+                    unsetDirty();
+                }
+            }
+        };
+        timer.schedule(timerTask, DELAY_SYNCER);
     }
    
     public void unsetDirty() {
         dirtyTimeMillis = 0;
+        initFolds = false;        
     }
    
     private long dirtyIntervalMillis() {
@@ -334,31 +369,6 @@ public class XmlFoldManager implements FoldManager {
             }
             currentTokensSize += image.length();
         }
-    }
-
-    private BaseDocument getDocument() {
-        return (BaseDocument) getOperation().getHierarchy().getComponent().getDocument();
-    }
-
-    public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void removeEmptyNotify(Fold epmtyFold) {
-    }
-
-    public void removeDamagedNotify(Fold damagedFold) {
-    }
-
-    public void expandNotify(Fold expandedFold) {
     }
    
     public boolean isOneLiner(int start, int end) {

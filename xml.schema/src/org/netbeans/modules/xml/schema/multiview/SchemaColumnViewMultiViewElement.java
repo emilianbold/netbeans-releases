@@ -419,8 +419,8 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
-        categoryPane.close();
-        toolbar.removeAll();
+        if(categoryPane!= null) categoryPane.close();
+        if(toolbar!= null) toolbar.removeAll();
         //manager.setRootContext(null);
         manager = null;
         toolbar = null;

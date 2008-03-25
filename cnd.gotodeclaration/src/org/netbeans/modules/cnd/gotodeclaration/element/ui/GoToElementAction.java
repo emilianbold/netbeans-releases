@@ -251,30 +251,15 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
             return;
         }
         
-        int wildcard = containsWildCard(text);
-        if ( wildcard == 0 ) {
-            // TODO: uncomment after bundle; add the following to the bundle:
-            // #MSG_StartsWithWildcard=Wildcards ("?","*") are not allowed at start of the type name.
-            // panel.setListPanelContent(NbBundle.getMessage(GoToElementAction.class, "MSG_StartsWithWildcard"), false); //NOI18N
-            panel.setModel(EMPTY_LIST_MODEL);
-            return;
-        }
-                
         if ( ! exact && ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) ) {
             nameKind = SearchType.CAMEL_CASE;
         } 
-        else if (wildcard != -1) {
-            if (Character.isJavaIdentifierStart(text.charAt(0))) {
-                nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
-            }
-            else {
-                panel.setModel(EMPTY_LIST_MODEL);
-                return;
-            }
-                
+        else if (containsWildCard(text) != -1) {
+            text = transformWildCardsToJavaStyle(text);
+            nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
         }
         else if (exact) {
-            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType./*CASE_INSENSITIVE_*/EXACT_NAME;
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
         else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
@@ -321,13 +306,30 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
     
     private static int containsWildCard( String text ) {
         for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) {
+            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
                 return i;                
             }
         }        
         return -1;
     }
 
+    private String transformWildCardsToJavaStyle(String text) {
+        StringBuilder regexp = new StringBuilder(""); // NOI18N
+        int lastWildCardPosition = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '?') { // NOI18N
+                regexp.append(text.substring(lastWildCardPosition, i));
+                regexp.append('.'); // NOI18N
+                lastWildCardPosition = i + 1;
+            } else if (text.charAt(i) == '*') { // NOI18N
+                regexp.append(text.substring(lastWildCardPosition, i));
+                regexp.append(".*"); // NOI18N
+                lastWildCardPosition = i + 1;
+            }
+        }
+        regexp.append(text.substring(lastWildCardPosition, text.length()));
+        return regexp.toString();
+    }
     
     private class Worker implements Runnable {
 	

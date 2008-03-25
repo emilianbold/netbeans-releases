@@ -246,7 +246,7 @@ final class LibrariesNode extends AbstractNode {
                 File srcF = dep.getModuleEntry().getSourceLocation();
                 if (srcF == null) {
                     File jarF = dep.getModuleEntry().getJarLocation();
-                    URL jarRootURL = Util.urlForJar(jarF);
+                    URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                     assert jarRootURL != null;
                     FileObject root = URLMapper.findFileObject(jarRootURL);
                     ModuleEntry me = dep.getModuleEntry();

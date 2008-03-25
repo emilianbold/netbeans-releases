@@ -45,8 +45,14 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.tools.ant.module.AntModule;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -54,6 +60,8 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
+import org.openide.util.UserQuestionException;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -75,6 +83,10 @@ public final class Hyperlink implements OutputListener {
     private final int line2;
     private final int col2;
     private Line liveLine;
+    
+    /** error manager for Hyperlink logging and error reporting */
+    private static final Logger ERR = Logger.getLogger(
+            "org.apache.tools.ant.module.run.Hyperlink"); // NOI18N
     
     public Hyperlink(URL url, String message, int line1, int col1, int line2, int col2) {
         this.url = url;
@@ -112,7 +124,15 @@ public final class Hyperlink implements OutputListener {
                     // OK, just open it.
                     ed.open();
                 } else {
-                    ed.openDocument(); // XXX getLineSet does not do it for you!
+                    // Fix for IZ#97727 - warning dialogue for opening large files is meaningless if opened via a hyperlink
+                    try {
+                        ed.openDocument(); // XXX getLineSet does not do it for you!
+                    }
+                    catch (UserQuestionException exc ){
+                        if ( !askUserAndDoOpen( exc , ed) ){
+                            return;
+                        }
+                    }
                     AntModule.err.log("opened document for " + file);
                     try {
                         Line line = updateLines(ed);
@@ -133,7 +153,8 @@ public final class Hyperlink implements OutputListener {
             }
         } catch (DataObjectNotFoundException donfe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, donfe);
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             // XXX see above, should not be necessary to call openDocument at all
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }
@@ -143,6 +164,51 @@ public final class Hyperlink implements OutputListener {
             StatusDisplayer.getDefault().setStatusText(message);
         }
     }
+    
+    // Fix for IZ#97727 - warning dialogue for opening large files is meaningless if opened via a hyperlink
+    private boolean askUserAndDoOpen( UserQuestionException e , 
+            EditorCookie cookie) 
+    {
+        while (e != null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(e
+                    .getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION);
+            nd.setOptions(new Object[] { NotifyDescriptor.YES_OPTION,
+                    NotifyDescriptor.NO_OPTION });
+
+            Object res = DialogDisplayer.getDefault().notify(nd);
+
+            if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                try {
+                    e.confirmed();
+                }
+                catch (IOException ex1) {
+                    Exceptions.printStackTrace(ex1);
+
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
+
+            e = null;
+
+            try {
+                cookie.openDocument();
+            }
+            catch (UserQuestionException ex) {
+                e = ex;
+            }
+            catch (IOException ex) {
+                ERR.log(Level.INFO, null, ex);
+            }
+            catch (Exception ex) {
+                ERR.log(Level.SEVERE, null, ex);
+            }
+        }
+        return false;
+    }
+
 
     /**
      * #62623: record positions in document at time first hyperlink was clicked for this file.
