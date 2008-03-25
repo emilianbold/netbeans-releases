@@ -56,7 +56,8 @@ import org.netbeans.modules.cnd.repository.util.Filter;
 import org.netbeans.modules.cnd.repository.util.Pair;
 
 /**
- * An in-memory cache for storing objects 
+ * An in-memory cache for storing repository objects 
+ * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
 public class MemoryCache {
@@ -162,10 +163,10 @@ public class MemoryCache {
     }
     
     
-    public void printStatistics() {
+    public void printStatistics(String name) {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
-        System.out.printf("\n\nHybrid repository cache statistics: %d reads,  %d hits (%d%%)\n\n", 
-                readCnt, readHitCnt, hitPercentage);
+        System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", 
+                name, readCnt, readHitCnt, hitPercentage);
     }
     
     
