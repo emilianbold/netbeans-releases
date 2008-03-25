@@ -1170,6 +1170,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         try {
             LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
             if (lv == null) {
+                ObjectReference thiz = evaluationContext.getFrame().thisObject();
+                if (thiz != null) {
+                    Field outer = thiz.referenceType().fieldByName("val$"+name);
+                    if (outer != null) {
+                        Value val = thiz.getValue(outer);
+                        evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                        return val;
+                    }
+                }
                 Assert2.error(arg0, "unknownVariable", name);
             }
             evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1270,6 +1279,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
                     if (lv == null) {
+                        ObjectReference thiz = evaluationContext.getFrame().thisObject();
+                        if (thiz != null) {
+                            Field outer = thiz.referenceType().fieldByName("val$"+varName);
+                            if (outer != null) {
+                                Value val = thiz.getValue(outer);
+                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                return val;
+                            }
+                        }
                         Assert2.error(arg0, "unknownVariable", varName);
                     }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1284,6 +1302,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = frame.visibleVariableByName(paramName);
                     if (lv == null) {
+                        ObjectReference thiz = frame.thisObject();
+                        if (thiz != null) {
+                            Field outer = thiz.referenceType().fieldByName("val$"+paramName);
+                            if (outer != null) {
+                                Value val = thiz.getValue(outer);
+                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                return val;
+                            }
+                        }
                         Assert2.error(arg0, "unknownVariable", paramName);
                     }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1343,7 +1370,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (object.referenceType().equals(type)) {
             return object;
         }
-        Field outerRef = object.referenceType().fieldByName("this$0");
+        Field outerRef = null;
+        for (int i = 0; i < 9; i++) {
+            outerRef = object.referenceType().fieldByName("this$"+i);
+            if (outerRef != null) break;
+        }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
         return findEnclosedObject(object, type);
