@@ -61,6 +61,8 @@ public class Constants {
     
     public static final String PUT_POST_CONTENT = "content";
     
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";
+    
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     
     public static final String QUERY_PARAMS = "queryParams"; // NOI18n
