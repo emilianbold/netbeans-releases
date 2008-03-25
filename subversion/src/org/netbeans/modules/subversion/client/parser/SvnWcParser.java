@@ -114,9 +114,11 @@ public class SvnWcParser {
 
         try {
             WorkingCopyDetails wcDetails = getWCDetails(file);
-            if (wcDetails.isHandled()) {
-
-                if (wcDetails.propertiesExist()) {
+            if (wcDetails.isHandled()) {               
+                if (wcDetails.propertiesExist() ||                    // we either have some properties,
+                    (wcDetails.getBasePropertiesFile() != null &&     // or there were some 
+                     wcDetails.getBasePropertiesFile().exists()))    
+                {
                     finalPropStatus = SVNStatusKind.NORMAL.toString();
                     //See if props have been modified
                     if (wcDetails.propertiesModified()) {

@@ -50,4 +50,6 @@ public interface CustomProjectActionHandler {
     public void addExecutionListener(ExecutionListener l);
 
     public void removeExecutionListener(ExecutionListener l);
+    
+    public void cancel();
 }
