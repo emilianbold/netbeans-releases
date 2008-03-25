@@ -63,12 +63,17 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.openide.util.Exceptions;
 
 /**
@@ -77,7 +82,17 @@ import org.openide.util.Exceptions;
  */
 public class PHPCodeCompletion implements Completable {
 
-    private final static String[] PHP_KEYWORDS = {"do", "for", "function", "if", "while"};
+    private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if",
+        "include()", "include_once()", "isset()", "list()", "new",
+        "print()", "require()", "require_once()", "return()", "static",
+        "switch", "unset()", "use", "var", "while",
+        "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
+        "interface", "implements", "extends", "public", "private",
+        "protected", "abstract", "clone", "try", "catch", "throw"
+    };
+    
     private boolean caseSensitive;
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
@@ -106,7 +121,33 @@ public class PHPCodeCompletion implements Completable {
         for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
             proposals.add(new FunctionItem(function, request));
         }
+        
+        // CONSTANTS
+        
+        for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
+            proposals.add(new ConstantItem(constant, request));
+        }
+        
+        // LOCAL VARIABLES
+        
+        proposals.addAll(getLocalVariableProposals(result, prefix));
 
+        return proposals;
+    }
+    
+    private Collection<CompletionProposal> getLocalVariableProposals(PHPParseResult result, String prefix){
+        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        for (Statement statement : result.getProgram().getStatements()){
+            if (statement instanceof ExpressionStatement){
+                Expression expr = ((ExpressionStatement)statement).getExpression();
+                
+                if (expr instanceof Assignment){
+                    System.err.println("" + ((Assignment)expr).getLeftHandSide().getClass());
+                }
+            }
+        }
+        
         return proposals;
     }
 
@@ -273,6 +314,21 @@ public class PHPCodeCompletion implements Completable {
         }
     }
     
+    private class ConstantItem extends PHPCompletionItem {
+        private String description = null;
+        private IndexedConstant constant = null;
+
+        ConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.GLOBAL;
+        }
+    }
+    
     private class FunctionItem extends PHPCompletionItem {
 
         FunctionItem(IndexedFunction function, CompletionRequest request) {
@@ -284,13 +340,13 @@ public class PHPCodeCompletion implements Completable {
         }
 
         @Override
-        public String getName() {
-            return getElement().getName();
-        }
-
-        @Override
         public ElementKind getKind() {
             return ElementKind.METHOD;
+        }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName() + "(" + getParamsStr() + ")";
         }
         
         @Override public String getLhsHtml() {
@@ -310,44 +366,39 @@ public class PHPCodeCompletion implements Completable {
 //                formatter.deprecated(false);
 //            }
 //            
-            Collection<String> parameters = getFunction().getParameters();
-
             formatter.appendHtml("("); // NOI18N
-            if ((parameters != null) && (parameters.size() > 0)) {
+            formatter.parameters(true);
+            formatter.appendText(getParamsStr());
+            formatter.parameters(false);
+            formatter.appendHtml(")"); // NOI18N
 
+//            if (getFunction().getType() != null && 
+//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
+//                formatter.appendHtml(" : ");
+//                formatter.appendText(getFunction().getType());
+//            }
+            
+            return formatter.getText();
+        }
+        
+        private String getParamsStr(){
+            StringBuilder builder = new StringBuilder();
+            Collection<String> parameters = getFunction().getParameters();
+            
+            if ((parameters != null) && (parameters.size() > 0)) {
                 Iterator<String> it = parameters.iterator();
 
                 while (it.hasNext()) { // && tIt.hasNext()) {
-                    formatter.parameters(true);
                     String param = it.next();
-                    int typeIndex = param.indexOf(':');
-                    if (typeIndex != -1) {
-                        formatter.type(true);
-                        formatter.appendText(param, typeIndex+1, param.length());
-                        formatter.type(false);
-                        formatter.appendHtml(" ");
-                        
-                        formatter.appendText(param, 0, typeIndex);
-                    } else {
-                        formatter.appendText(param);
-                    }
-                    formatter.parameters(false);
+                    builder.append("$" + param);
 
                     if (it.hasNext()) {
-                        formatter.appendText(", "); // NOI18N
+                        builder.append(", "); // NOI18N
                     }
                 }
-
-            }
-            formatter.appendHtml(")"); // NOI18N
-
-            if (getFunction().getType() != null && 
-                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
-                formatter.appendHtml(" : ");
-                formatter.appendText(getFunction().getType());
             }
             
-            return formatter.getText();
+            return builder.toString();
         }
     }
 
@@ -370,7 +421,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getName() {
-            return null;
+            return element.getName();
         }
 
         public String getInsertPrefix() {

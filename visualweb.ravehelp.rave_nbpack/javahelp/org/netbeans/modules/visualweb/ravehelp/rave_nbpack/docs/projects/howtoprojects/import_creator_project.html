@@ -22,7 +22,7 @@
     <p>
        A legacy project is a project that was created in Java Studio Creator 2, Java Studio
       Creator 2 Update 1, or NetBeans Visual Web Pack 5.5. You can import a legacy project in
-      NetBeans 6.0. For more information about importing legacy projects, go to
+      NetBeans 6.1. For more information about importing legacy projects, go to
     </p>
     <ul>
       <li>
@@ -41,9 +41,11 @@
                     <param name="textColor" value="blue">
         </object>
       </li></ul>
-      <ul class="note"><li><b>Note:</b>When you migrate the Java Studio Creator 2.1 user directory,
-      third party complibs migrate to the NetBeans 6.0 directory and
-      appear in the Component Library Manager.</li></ul>
+      <ul class="note">
+        <li><b>Note:</b>When you migrate the Java Studio Creator 2.1 user directory,
+      third party complibs migrate to the NetBeans 6.1 directory and
+      appear in the Component Library Manager.</li>
+      </ul>
 	  
 	 
         <p>
@@ -71,7 +73,7 @@
         <li>Expand the project's node. A progress bar appears in the bottom right tray, displaying &quot;Updating Legacy Project&quot;.<br>
 The project is updated. Database drivers and connections from all previous NetBeans and Java Studio Creator<br>
 installations are displayed in the Databases node in the Services window. <ul class="note">
-  <li><b>Note:</b> If the legacy project  requires database connections that are not available in previous releases, then these required connections will not be available in NetBeans 6.0.  The   Resolve Data Sources will open, guiding you through this process.</li>
+  <li><b>Note:</b> If the legacy project  requires database connections that are not available in previous releases, then these required connections will not be available in NetBeans 6.1.  The   Resolve Data Sources will open, guiding you through this process.</li>
 </ul></li>
         </ol>
         <p>
@@ -85,47 +87,42 @@ installations are displayed in the Databases node in the Services window. <ul cl
             "../../images/databasenodeicon.gif" alt="database node icon">, and then right-click the
             node of the database you want to use and choose Connect. 
             <p>
-               The IDE prompts you to enter a password for the database.
-            </p>
+               If a password is required to access the database, the IDE prompts you to enter a password for the database.            </p>
           </li>
         </ol>
         <p>
            <b>Resolving Data Sources</b>
         </p>
         <p>
-           For Visual Web projects that use databases  in NetBeans 6.0, you must resolve all data sources before 
+           For Visual Web projects that use databases  in NetBeans 6.1, you must resolve all data sources before 
            opening pages in the Visual Web Designer and  you attempt to run the application. </p>
         <ol>
           <li> In the Projects window, the project node is red and displays a badge when there is a
             missing data source.
  To resolve a data source, right-click the <em>project-name</em> node and choose
-              Resolve Data Source Problem.
-          </li>
+              Resolve Data Source Problem.          </li>
           <li>
             In the Resolve Data Source(s) dialog box, select the database name from the list and
             click Add Data Connection. 
             <p>
                The Resolve Data Sources dialog box opens, displaying data sources that do not have
               a database connection.
-            </p>
+            For more help, press F1  to open the Help topic for the Resolve Data Sources dialog box.</p>
           </li>
           <li>
             Select the data souce you want to resolve and click Add Connection. 
               <p>
                The <a href="../../ui_elements/dialogs/new_database_connection_db.html">New Database
-              Connection</a> dialog box opens.
-</p>
+              Connection</a> dialog box opens.</p>
           </li>
           <li>The database information should be filled in automatically. Check to make sure all information is correct.</li>
           <li>If the JDBC driver for the database used is not set correctly,  click the Driver drop down list and choose Add driver to<br>
-navigate to the location of the required JDBC driver.  
-          </li>
+navigate to the location of the required JDBC driver.          </li>
           <li>
             Click OK. 
             <p> 
                The driver and database connection are registered in the Services window. The  badge should disappear from the <em>project-name</em> node in the Projects window. and the <em>project-name </em>node should return to black.</p>
           </li>
-         
         </ol>
         <dl>
           <dt>

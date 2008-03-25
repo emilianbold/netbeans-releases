@@ -31,6 +31,7 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -92,6 +93,27 @@ public class RepositoryValidationBase extends TraceModelTestBase {
 //                }
 //            }
 //        }
-        return list;
+        return expandAndSort(list);
+    }
+    
+    protected final List<String> expandAndSort(List<String> files) {
+        List<String> result = new ArrayList<String>();
+        for( String file : files ) {
+            addFile(file, result);
+        }
+        Collections.sort(result);
+        return result;
+    }
+    
+    private void addFile(String fileName, List<String> files) {
+        File file = new File(fileName);
+        if( file.isDirectory() ) {
+            String[] list = file.list();
+            for( int i = 0; i < list.length; i++ ) {
+                addFile(new File(file, list[i]).getAbsolutePath(), files);
+            }
+        } else {
+            files.add(fileName);
+        }
     }
 }

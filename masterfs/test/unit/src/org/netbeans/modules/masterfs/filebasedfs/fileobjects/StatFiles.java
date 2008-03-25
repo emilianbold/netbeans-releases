@@ -173,7 +173,7 @@ public class StatFiles extends SecurityManager {
 
         void assertResult(int cnt, int type) {
             int real = statResult(type);
-            if (cnt != real) {
+            if (cnt < real) {
                 Assert.fail("Expected " + cnt + " but was " + real + "\n  Read: " + forRead + "\n  Write: " + forWrite + "\n  Delete: " + forDelete);
             }
         }

@@ -67,9 +67,9 @@
 
     </saas-metadata>
 
-    <methods>
+    <!--<methods>
         <method name="accountsClientLogin" 
             href="#google.accounts_ClientLogin"/>
-    </methods>
+    </methods>-->
 
 </saas-services>

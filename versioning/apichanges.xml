@@ -108,6 +108,21 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Added isMutable() method to VCSInterceptor</summary>
+            <version major="1" minor="7"/>
+            <date day="30" month="3" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes"/>
+            <description>
+                This new method provides ability to override default File.canWrite() query for versioning systems that
+                keep files read-only on disk and are able to make them read-write on demand in the interceptor (eg. in doDelete()).
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="130044"/>
+        </change>
+
+        <change>
+            <api name="versioning_spi"/>
             <summary>Added getFiles() method to VCSContext</summary>
             <version major="1" minor="6"/>
             <date day="25" month="1" year="2008"/>

@@ -90,8 +90,13 @@ public final class SearchAction extends IconAction {
 
   public void actionPerformed(ActionEvent event) {
     Node node = getLastNode();
-
     Model model = getModel(node);
+
+    SearchTarget [] targets = getTargets(model);
+
+    if (targets == null) {
+      return;
+    }
     ShowCookie cookie = getShowCookie(node);
     Object view = getView();
 //out();
@@ -103,7 +108,7 @@ public final class SearchAction extends IconAction {
     list.add(cookie);
     list.add(view);
 
-    SearchManager.getDefault().createSearch(list, getTargets(model));
+    SearchManager.getDefault().createSearch(list, targets);
   }
 
   private ShowCookie getShowCookie(Node node) {
@@ -178,7 +183,7 @@ public final class SearchAction extends IconAction {
     if (model instanceof SchemaModel) {
       return Target.SCHEMA;
     }
-    return new SearchTarget [] {};
+    return null;
   }
 
   private Model getModel(Node node) {

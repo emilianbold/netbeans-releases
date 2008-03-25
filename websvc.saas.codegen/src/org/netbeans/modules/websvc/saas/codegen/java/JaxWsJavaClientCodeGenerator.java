@@ -114,7 +114,7 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
     /**
      *  Insert the Saas client call
      */
-    public void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         Util.checkScanning();
         try {
             String code = "";

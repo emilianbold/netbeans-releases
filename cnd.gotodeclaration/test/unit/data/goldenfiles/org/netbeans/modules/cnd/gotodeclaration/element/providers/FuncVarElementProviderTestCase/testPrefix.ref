@@ -1,0 +1,3 @@
+DummyProject operator <<(ostream&,const Customer&)
+DummyProject operator <<(ostream&,const Module&)
+DummyProject operator <<(ostream&,const System&)
