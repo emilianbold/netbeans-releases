@@ -370,7 +370,9 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Modes">
             <folder name="debugger">
-                <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml"/>
+                <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml">
+                    <attr name="position" intvalue="1200"/>
+                </file>
             </folder>
         </folder>
     </folder>

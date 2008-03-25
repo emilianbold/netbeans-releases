@@ -118,7 +118,7 @@ public class __NAME__ {
                         result.indexOf("</session_key>"));
                 session.setAttribute("facebook_session_key", sessionKey);
             } catch (Exception ex) {
-                throw new IOException("Failed to get session key and secret.");
+                throw new IOException("Failed to get session key and secret: " + result);
             }
 
             String returnUrl = (String) session.getAttribute("facebook_return_url");

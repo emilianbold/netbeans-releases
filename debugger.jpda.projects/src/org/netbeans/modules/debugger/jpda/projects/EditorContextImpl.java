@@ -137,6 +137,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -150,6 +151,7 @@ public class EditorContextImpl extends EditorContext {
     private PropertyChangeSupport   pcs;
     private Map                     annotationToURL = new HashMap ();
     private PropertyChangeListener  editorObservableListener;
+    private PropertyChangeListener  tcListener;
 
     private RequestProcessor refreshProcessor;
     private Lookup.Result resDataObject;
@@ -176,6 +178,9 @@ public class EditorContextImpl extends EditorContext {
         resNode = Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class));
         resNode.addLookupListener(new EditorLookupListener(Node.class));
 
+        tcListener = new EditorLookupListener(TopComponent.class);
+        TopComponent.getRegistry ().addPropertyChangeListener (WeakListeners.propertyChange(
+                tcListener, TopComponent.getRegistry()));
     }
     
     
@@ -1940,6 +1945,9 @@ public class EditorContextImpl extends EditorContext {
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
+            if (type == TopComponent.class) {
+                refreshProcessor.post(this);
+            } else
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
                 synchronized (currentLock) {
                     if (currentEditorCookie != null && currentEditorCookie.getOpenedPanes() == null) {
