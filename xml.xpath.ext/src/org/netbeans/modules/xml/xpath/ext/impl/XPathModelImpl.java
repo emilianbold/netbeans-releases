@@ -137,19 +137,19 @@ public class XPathModelImpl implements XPathModel {
      * @throws XPathException for any parsing errors
      */
     public XPathExpression parseExpression(String expression) throws XPathException {
-ENABLE = expression.startsWith("$ItineraryIn.iti");
-out();
-out();
-out();
-out();
-out();
-out();
-out();
-out();
-out();
-out();
-out("---------------------------");
-out("EXPression: " + expression);
+//ENABLE = expression.startsWith("$ItineraryIn.iti");
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out("---------------------------");
+//out("EXPression: " + expression);
         myWasFunctionOrOperation = false; // vlv
 
         try {
@@ -362,23 +362,12 @@ out("EXPression: " + expression);
                 SchemaComponent parentComponent = parentCompPair.getComp();
 
                 if (parentComponent != null) {
-/*
-                    // todo vlv
-                    // todo start here
-                    if ( "$ItineraryIn.itinerary/AssociatedContent".equals(parentContext.toString())) {
-                      SchemaComponent found = findType("ItineraryInfo", parentComponent);
+                    // vlv
+                    SchemaComponent castType = getCastType(parentContext);
 
-                      out();
-                      out("         context: " + parentContext);
-                      out("            pair: " + parentCompPair);
-                      out(" parentComponent: " + parentComponent);
-                      out("       COMPONENT: " + found);
-
-                      if (found != null) {
-                        parentComponent = found;
-                      }
+                    if (castType != null) {
+                        parentComponent = castType;
                     }
-*/
                     //
                     FindChildrenSchemaVisitor visitor = new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
                     visitor.lookForSubcomponent(parentComponent);
@@ -479,52 +468,28 @@ out("EXPression: " + expression);
         }
         return foundCompPairSet;
     }
-/*                   
-    private SchemaComponent findType(String typeName, SchemaComponent component) {
-  //out("= findType: " + typeName);
-      if (typeName == null || typeName.equals("")) {
-        return null;
-      }
-      SchemaModel model = component.getModel();
-      Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
-      SchemaComponent type = null;
-
-      for (Schema schema : schemas) {
-        type = findType(typeName, schema);
-
-        if (type != null) {
-          return type;
-        }
-      }
-      return findType(typeName, model.getSchema());
-    }
-
-    private SchemaComponent findType(final String typeName, Schema schema) {
-  //out();
-  //out("= in schema: " + schema.getTargetNamespace());
-      myGlobalType = null;
-
-      schema.accept(new org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor() {
-
-        @Override
-        protected void visitChildren(SchemaComponent sc) {
-          if (sc instanceof org.netbeans.modules.xml.xam.Nameable && typeName.equals(((org.netbeans.modules.xml.xam.Nameable) sc).getName())) {
-  //out("!!!=== FOUND GLOBAL Simple TYPE ==== : " + type.getName());
-            myGlobalType = sc;
-          }
-          super.visitChildren(sc);
-        }
-      });
-
-      return myGlobalType;
-    }
-      
-    private SchemaComponent myGlobalType;
-*/    
+ 
     // vlv
     private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
       set.add(pair);
       myLastSchemaComponent = pair.getComp();
+    }
+
+    private SchemaComponent getCastType(XPathSchemaContext context) {
+      if (myXPathCastResolver == null) {
+        return null;
+      }
+      List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+
+      if (casts == null) {
+        return null;
+      }
+      for (XPathCast cast : casts) {
+        if (context.equals(cast.getContext())) {
+          return cast.getType();
+        }
+      }
+      return null;
     }
 
     public SchemaComponent getLastSchemaComponent() {
@@ -595,7 +560,7 @@ out("EXPression: " + expression);
                     // The usage of any axis except the attribute or child can result in
                     // loss of type context. It doesn't matter to check schema types any more.
                     //
-                    // TODO: The list of supported AXIS can be extended later
+                    // TO DO: The list of supported AXIS can be extended later
                     //
                 }
             }
@@ -936,7 +901,7 @@ out("EXPression: " + expression);
 
             // vlv
             // why stringToBytes, bytesToString, convert are not recognized?
-            // TODO FIX IT.
+            // TO DO FIX IT.
             //
             String name = XPathUtils.qNameObjectToString(funcQName);
             boolean hotFix = 
@@ -957,7 +922,7 @@ out("EXPression: " + expression);
             if (nsPrefix.length() == 0) {
                 // vlv
                 // why current-date, current-dateTime, current-time are not recognized?
-                // TODO FIX IT.
+                // TO DO FIX IT.
                 //
                 boolean hotFix = 
                   funcName.equals("current-date") ||
@@ -1279,8 +1244,6 @@ out("EXPression: " + expression);
                             assert false : "Only the Attribute and Child axis is allowed with wildcard"; // NOI18N
                         }
                     } else {
-                        //
-                        // TODO it's necessary to check if other axis are supported!
                         switch (axis) {
                         case ATTRIBUTE:
                         case CHILD:
@@ -1309,9 +1272,6 @@ out("EXPression: " + expression);
                         default:
                             // The usage of any axis except the attribute or child can result in
                             // loss of type context. It doesn't matter to check schema types any more.
-                            //
-                            // TODO: The list of supported AXIS can be extended later
-                            //
                             if (mValidationContext != null) {
                                 mValidationContext.addResultItem(getRootExpression(), 
                                         ResultType.ERROR, 
@@ -1360,7 +1320,7 @@ out("EXPression: " + expression);
                     case NODETYPE_TEXT:
                         // It doesn't matter to check schema types any more
                         //
-                        // TODO maybe it worth to set context to Schema text type
+                        // TO DO maybe it worth to set context to Schema text type
                         // because of the text and comment has such type.
                         // 
                         throw new StopResolutionException(
