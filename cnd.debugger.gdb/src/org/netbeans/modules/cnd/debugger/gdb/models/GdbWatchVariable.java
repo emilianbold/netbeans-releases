@@ -132,10 +132,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                     }
                     type = getDebugger().requestWhatis(watch.getExpression());
                     if (type != null && type.length() > 0) {
-                        value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+                        value = getDebugger().evaluate(watch.getExpression());
                         String rt = getTypeInfo().getResolvedType(gwv);
                         if (GdbUtils.isPointer(rt)) {
-                            derefValue = getDebugger().requestValue('*' + watch.getExpression());
+                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
                         }
                     } else {
                         type = "";
@@ -172,8 +172,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     @Override
     public String getValue() {
-        if (value == null || value.length() == 0) {
-            value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+        synchronized (this) {
+            if (value == null || value.length() == 0) {
+                value = getDebugger().evaluate(watch.getExpression());
+            }
         }
         return super.getValue();
     }
