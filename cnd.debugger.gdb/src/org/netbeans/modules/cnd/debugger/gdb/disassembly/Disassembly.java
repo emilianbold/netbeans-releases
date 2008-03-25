@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -452,6 +453,22 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
+            final EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable)editorCookie).addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                            if (editorCookie.getOpenedPanes() == null) {
+                                Disassembly dis = getCurrent();
+                                if (dis != null) {
+                                    dis.opened = false;
+                                }
+                                ((EditorCookie.Observable)editorCookie).removePropertyChangeListener(this);
+                            }
+                        }
+                    }
+                });
+            }
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {

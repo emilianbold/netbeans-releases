@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -206,11 +206,21 @@ public final class SearchInfoFactory {
                 final FileObject folder,
                 final boolean recursive,
                 final FileObjectFilter[] filters) {
+        if (folder == null) {
+            throw new IllegalArgumentException("folder is <null>");     //NOI18N
+        }
         if (!folder.isFolder()) {
             throw new IllegalArgumentException("folder expected");      //NOI18N
         }
 
-        return new SimpleSearchInfo(DataFolder.findFolder(folder),
+        DataFolder dataFolder;
+        try {
+            dataFolder = DataFolder.findFolder(folder);
+        } catch (IllegalArgumentException ex) {
+            return SimpleSearchInfo.EMPTY_SEARCH_INFO;
+        }
+
+        return new SimpleSearchInfo(dataFolder,
                                     recursive,
                                     filters);
     }

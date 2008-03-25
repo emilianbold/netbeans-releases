@@ -61,9 +61,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /** Annotations class act as data model containing all annotations attached
  * to one document. Class uses instances of private class LineAnnotations for 
@@ -642,6 +645,14 @@ public class Annotations implements DocumentListener {
         }
     }
     
+    private Action getAction(AnnotationDesc anno, Action action) {
+        if (action instanceof ContextAwareAction && anno instanceof Lookup.Provider) {
+            Lookup lookup = ((Lookup.Provider) anno).getLookup();
+            action = ((ContextAwareAction) action).createContextAwareInstance(lookup);
+        }
+        return action;
+    }
+    
     /** Creates menu item for the given action. It must handle the BaseActions, which
      * have localized name stored not in Action.NAME property. */
     private JMenuItem createMenuItem(Action action, BaseKit kit) {
@@ -684,7 +695,7 @@ public class Annotations implements DocumentListener {
                 if (actions != null) {
                     subMenu = new JMenu(anno.getAnnotationTypeInstance().getDescription());
                     for (int j=0; j<actions.length; j++)
-                        subMenu.add(createMenuItem(actions[j], kit));
+                        subMenu.add(createMenuItem(getAction(anno, actions[j]), kit));
                     
                     if (subMenu.getItemCount() > 0) {
                         orderedSubMenus.add(subMenu);
@@ -703,7 +714,7 @@ public class Annotations implements DocumentListener {
                     if (actions != null) {
                         subMenu = new JMenu(pasiveAnnos[i].getAnnotationTypeInstance().getDescription());
                         for (int j=0; j<actions.length; j++)
-                            subMenu.add(createMenuItem(actions[j], kit));
+                            subMenu.add(createMenuItem(getAction(pasiveAnnos[i], actions[j]), kit));
                         if (separator) {
                             separator = false;
                             //pm.addSeparator();
@@ -1228,7 +1239,7 @@ public class Annotations implements DocumentListener {
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static class AnnotationCombination extends AnnotationDesc {
+    private static class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;
@@ -1284,6 +1295,14 @@ public class Annotations implements DocumentListener {
         /** Get Mark which represent this annotation in document */
         /* package */ @Override Mark getMark() {
             return delegate.getMark();
+        }
+
+        public Lookup getLookup() {
+            if (delegate instanceof Lookup.Provider) {
+                return ((Lookup.Provider) delegate).getLookup();
+            } else {
+                return Lookups.fixed(new Object[0]);
+            }
         }
         
     }

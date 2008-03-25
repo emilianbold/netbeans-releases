@@ -85,7 +85,7 @@ import org.netbeans.jemmy.operators.*;
  * @author michaelnazarov@netbeans.org
  */
 
-public class AcceptanceTestCaseWSDL extends JellyTestCase {
+public class AcceptanceTestCaseWSDL extends AcceptanceTestCase {
     
     static final String [] m_aTestMethods = {
         "CreateJavaApplication",
@@ -98,7 +98,7 @@ public class AcceptanceTestCaseWSDL extends JellyTestCase {
         "RegenerateJavaCode", // <--
         //"CodeCompletion1", // <--
         "CodeCompletion2", // <--
-        //"RunTheProject"
+        "RunTheProject"
     };
 
     static final String TEST_JAVA_APP_NAME = "jaxbonwsdl";
@@ -415,61 +415,15 @@ public class AcceptanceTestCaseWSDL extends JellyTestCase {
     {
         startTest( );
 
+        CodeCompletion1Internal( );
+
         endTest( );
     }
 
     public void CodeCompletion2( ) {
         startTest();
 
-        // Access java code with editor
-        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
-        eoJavaCode.setCaretPosition(
-            "// TODO code application logic here",
-            0,
-            false
-          );
-        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
-        // Use jaxbm template
-        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
-        editor.typeKey( 'j' );
-        editor.typeKey( 'a' );
-        editor.typeKey( 'x' );
-        editor.typeKey( 'b' );
-        editor.typeKey( 'm' );
-        editor.typeKey( '\t' );
-
-        // Check result
-        eoJavaCode.pushUpArrowKey( );
-        String[] asIdealCodeLines =
-        {
-          "try {",
-          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());",
-          "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
-          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
-          "",
-          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
-          "marshaller.marshal(args, System.out);",
-          "} catch (javax.xml.bind.JAXBException ex) {",
-          "// XXXTODO Handle exception",
-          "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
-          "",
-          "}",
-          "}"
-        };
-
-        for( String sIdealCodeLine : asIdealCodeLines )
-        {
-          String sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
-          if( -1 == sCodeLine.indexOf( sIdealCodeLine ) )
-          {
-            // Test <suite> failed
-            fail(
-                "Ideal code was not found at line #" + eoJavaCode.getLineNumber( ) +
-                " : " + sIdealCodeLine
-              );
-          }
-          eoJavaCode.pushDownArrowKey( );
-        }
+        CodeCompletion2Internal( );
 
         endTest();
     }
@@ -477,20 +431,9 @@ public class AcceptanceTestCaseWSDL extends JellyTestCase {
     public void RunTheProject( ) {
         startTest();
 
-        // Run
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
-          // ToDo
-        
-        endTest();
-    }
-    
-    public void tearDown() {
-        new SaveAllAction().performAPI();
-    }
+        RunTheProjectInternal( TEST_JAVA_APP_NAME );
 
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
+        endTest();
     }
 
 }
