@@ -86,7 +86,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
       <li>Navigate to the file you want to edit and double-click it to open it in the editor.
 </li>
       </ol>
-	  <p>You can also use a keyboard shortcut to quickly edit files. WIndows users,  press Alt-Shift-O. For Mac users, press Ctrl-Shift-O. </p>
+	  <p>You can also use a keyboard shortcut to quickly edit files. Windows users,  press Alt-Shift-O. For Mac users, press Ctrl-Shift-O. </p>
 <p>For more information on the editor, see:
 </p>
       
@@ -131,17 +131,16 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
         <param name="text" value="<html><u>Ruby Shortcuts</u></html>.">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-   </object>
+   </object>.
 
 </p></td>
 </tr>
 <tr valign="top">
   <td>Choose a database server for a Ruby on Rails project </td>
   <td><ul>
-      <li>When you create a Ruby on Rails project (see above) and use the JRuby interpreter, you can use the <a href="newdbconfig.html"> New Ruby on Rails Application Wizard: Database Configuration</a> panel to set the database server.
-          <p>For more information, see <a href="usedatabase.html">Using Database Servers with JRuby</a>.</p>
-      </li>
-  </ul></td>
+      <li>When you create a Ruby on Rails project (see above), you can use the <a href="newdbconfig.html"> New Ruby on Rails Application Wizard: Database Configuration</a> panel to set the database server.<em>
+        </em></li>
+  </ul>    </td>
 </tr>
 <tr valign="top">
   <td>Migrate a database </td>
@@ -152,7 +151,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
     <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
       <param name="viewerActivator" value="javax.help.LinkButton">
       <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html#06">
+        "http://www.netbeans.org/kb/61/ruby/rapid-ruby-weblog.html">
       <param name="text" value="<html><u>Migrating the Database</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
@@ -170,15 +169,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
 <tr valign="top">
   <td>Add a database to the IDE </td>
   <td><ul>
-    <li>For instructions on adding some common databases, see&nbsp;
-          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="viewerActivator" value="javax.help.LinkButton">
-            <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/setting-up.html#database">
-            <param name="text" value="<html><u>Adding Databases</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>in the &quot;Installing and Configuring Ruby Support&quot; web article.</li>
+    <li>For instructions on adding some common databases, see <a href="newdbconfig.html"> New Ruby on Rails Application Wizard: Database Configuration</a>.           </li>
   </ul></td>
 </tr>
 <tr valign="top">
@@ -192,7 +183,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
           <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
           <li>A Ruby on Rails project runs in the server configured for Rails  and displays in your default browser.</li>
           <ul class="note">        
-            <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.</li>
+            <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the output window at the bottom of the IDE.</li>
           </ul>
         </ul>
     </ul></td>
@@ -208,8 +199,9 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
 <tr valign="top">
   <td>Run tests on your project </td>
   <td><ul>
-      <li>For quick testing when editing a  view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.
-        <p>For full details on testing Ruby and Rails projects, see
+      <li>For quick testing when editing a  view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.</li>
+  <li>You can run  a unit test by using the Run File or Test File options from the Editor pop-up menu. You  can also right-click on the file's node in the Projects window and choose Run &gt;Run File from the pop-up menu.     
+    <p>For full details on testing Ruby and Rails projects, see
             <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
               <param name="viewerActivator" value="javax.help.LinkButton">
               <param name="content" value=
@@ -218,7 +210,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
               <param name="textFontSize" value="medium">
               <param name="textColor" value="blue">
             </object>
-        </p>
+          </p>
       </li>
   </ul></td>
 </tr>
@@ -255,21 +247,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
     </ul></td>
 </tr>
 <tr valign="top">
-  <td>Deploy a JRuby application </td>
-  <td><ul>
-      <li>See &nbsp;
-          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="viewerActivator" value="javax.help.LinkButton">
-            <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
-            <param name="text" value="<html><u>Deploying a JRuby Application to Glassfish</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
-  &nbsp; in Installing and Configuring Ruby Support. </li>
-  </ul></td>
-</tr>
-<tr valign="top">
+  <tr valign="top">
   <td>Manage your Ruby gems </td>
   <td><ul>
     <li>Choose Tools &gt; Ruby Gems to open the <a href="gemmanager.html">Ruby Gems Manager</a>.</li>
@@ -278,7 +256,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
 <tr valign="top">
   <td>Manage your Rails plugins</td>
   <td><ul>
-      <li>Choose Tools &gt; Rail Plugins to open the <a href="railspluginmanager.html">Rails Plugins Manager</a>.</li>
+      <li>To open the Rails Plugins manager, right-click a Ruby on Rails project node in the Projects window and choose Rails Plugins. </li>
   </ul></td>
 </tr>
 <tr valign="top">

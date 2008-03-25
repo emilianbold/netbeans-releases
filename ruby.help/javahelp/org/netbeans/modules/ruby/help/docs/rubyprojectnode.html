@@ -22,7 +22,7 @@
   </tr>
   <tr valign="top">
     <td><img src="images/railsprojicon.gif" width="13" height="16"></td>
-    <td><span class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can test quickly from the IDE and run in the server configured with Rails. You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</span></td>
+    <td class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can test quickly from the IDE and      run in the server that you specified for the project<em>. </em>You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</td>
   </tr>
 </table>
 <ul class="note">
@@ -110,10 +110,13 @@
           <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
           <li>A Ruby on Rails project runs in the server configured with Rails and displays in your default browser.</li>
     <ul class="note">        
-    <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.
+    <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the output window at the bottom of the IDE.
 
 
- Alternatively, you can stop the server in the services tab by right-clicking the application node and choosing 'Stop "{application name}"'. </li>
+ Alternatively, you can stop the server in the Services window by 
+
+ 
+      expanding Servers and expanding the server's node. Right-click the application node   and choose 'Stop "{application name}"'. </li>
     </ul>
         </ul>
     </ul></td>
@@ -154,6 +157,12 @@
       <li>Select Run Rake Task and choose the type of task you would like to run.</li>
       <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
   </ol></td>
+</tr>
+<td>Change Server </td>
+  <td><ol>
+      <li> In the Projects window, right-click the project node and choose Properties. </li>
+      <li> Select the Rails category and select the Server from the drop-down list.  </li>
+      </ol></td>
 </tr>
 </table>
 
