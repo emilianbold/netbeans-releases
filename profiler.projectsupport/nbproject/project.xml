@@ -184,6 +184,7 @@
                 <friend>org.netbeans.modules.profiler.j2se</friend>
                 <friend>org.netbeans.modules.profiler.nbmodule</friend>
                 <friend>org.netbeans.modules.profiler.selector.spi</friend>
+                <friend>org.netbeans.modules.javafx.profiler</friend>
                 <package>org.netbeans.modules.profiler.projectsupport.utilities</package>
             </friend-packages>
         </data>

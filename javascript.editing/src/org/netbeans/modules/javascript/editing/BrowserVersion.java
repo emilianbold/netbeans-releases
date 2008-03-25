@@ -65,8 +65,8 @@ public enum BrowserVersion {
         this.displayName = displayName;
     } 
     
-    static EnumSet<BrowserVersion> ALL = EnumSet.allOf(BrowserVersion.class);
-    static EnumSet<BrowserVersion> IE_ONLY = EnumSet.of(IE55, IE6, IE7);
+    public static EnumSet<BrowserVersion> ALL = EnumSet.allOf(BrowserVersion.class);
+    public static EnumSet<BrowserVersion> IE_ONLY = EnumSet.of(IE55, IE6, IE7);
         
     public String getDisplayName() {
         return displayName;

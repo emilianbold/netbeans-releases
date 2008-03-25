@@ -241,8 +241,7 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
 
-    public static JavaSource getJavaSource(Document doc) {
-        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
+    public static JavaSource getJavaSource(FileObject fileObject) {
         if (fileObject == null) {
             return null;
         }
@@ -257,6 +256,10 @@ public final class SpringXMLConfigEditorUtils {
             return JavaSource.create(ClasspathInfo.create(sourceGroup.getRootFolder()));
         }
         return null;
+    }
+    
+    public static JavaSource getJavaSource(Document doc) {
+        return getJavaSource(NbEditorUtilities.getFileObject(doc));
     }
 
     public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
@@ -500,7 +503,7 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
     
-    public static SpringBean getMergedBean(SpringBean origBean, Document doc) {
+    public static SpringBean getMergedBean(SpringBean origBean, FileObject fileObject) {
         if(origBean == null) {
             return null;
         }
@@ -509,23 +512,23 @@ public final class SpringXMLConfigEditorUtils {
             return origBean;
         }
         
-        ModelBasedSpringBean logicalBean = new ModelBasedSpringBean(origBean, doc);
-        return getMergedBean(logicalBean, doc);
+        ModelBasedSpringBean logicalBean = new ModelBasedSpringBean(origBean, fileObject);
+        return getMergedBean(logicalBean, fileObject);
     }
     
-    public static SpringBean getMergedBean(Node beanNode, Document doc) {
+    public static SpringBean getMergedBean(Node beanNode, FileObject fileObject) {
 
-        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanNode, doc);
+        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanNode, fileObject);
         if (!StringUtils.hasText(logicalBean.getParent())) {
             return logicalBean;
         }
 
-        return getMergedBean(logicalBean, doc);
+        return getMergedBean(logicalBean, fileObject);
     }
     
-    private static SpringBean getMergedBean(MutableSpringBean startBean, Document doc) {
+    private static SpringBean getMergedBean(MutableSpringBean startBean, FileObject fileObject) {
         final MutableSpringBean[] logicalBean = { startBean };
-        SpringConfigModel model = SpringConfigModel.forFileObject(NbEditorUtilities.getFileObject(doc));
+        SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
         if (model == null) {
             return null;
         }
@@ -583,7 +586,7 @@ public final class SpringXMLConfigEditorUtils {
         private List<String> names;
         private Location location;
 
-        public ModelBasedSpringBean(SpringBean springBean, Document doc) {
+        public ModelBasedSpringBean(SpringBean springBean, FileObject fileObject) {
             this.className = springBean.getClassName();
             this.factoryBean = springBean.getFactoryBean();
             this.factoryMethod = springBean.getFactoryMethod();
@@ -646,14 +649,14 @@ public final class SpringXMLConfigEditorUtils {
         private int offset;
         private File file;
 
-        public NodeBasedSpringBean(Node node, Document doc) {
+        public NodeBasedSpringBean(Node node, FileObject fileObject) {
             this.className = getAttribute(node, "class"); // NOI18N
             this.factoryBean = getAttribute(node, "factory-bean"); // NOI18N
             this.factoryMethod = getAttribute(node, "factory-method"); // NOI18N
             this.parent = getAttribute(node, "parent"); // NOI18N
             this.id = getAttribute(node, "id"); // NOI18N
             this.offset = ((Tag) node).getElementOffset();
-            this.file = FileUtil.toFile(NbEditorUtilities.getFileObject(doc));
+            this.file = FileUtil.toFile(fileObject);
             
             if(!hasAttribute(node, "name")) { // NOI18N
                 this.names = Collections.<String>emptyList();

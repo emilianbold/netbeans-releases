@@ -33,8 +33,6 @@ package org.netbeans.modules.websvc.rest.model.api;
  */
 public interface HttpMethod extends RestMethodDescription {
 
-    public enum Type { GET, PUT, POST, DELETE };
-
     public String getType();
 
     public String getConsumeMime();

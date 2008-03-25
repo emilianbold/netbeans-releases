@@ -104,11 +104,11 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private String urlForJar(String path) {
-        return Util.urlForJar(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
+        return FileUtil.urlForArchiveOrDir(PropertyUtils.resolveFile(nbRootFile(), path)).toExternalForm();
     }
     
     private String urlForDir(String path) {
-        return Util.urlForDir(file(path)).toExternalForm();
+        return FileUtil.urlForArchiveOrDir(file(path)).toExternalForm();
     }
     
     private Set<String> urlsOfCp(ClassPath cp) {
@@ -540,7 +540,7 @@ public class ClassPathProviderImplTest extends TestBase {
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();
-        expectedRoots.add(Util.urlForDir(file(FileUtil.toFile(copyOfMiscDir), "build/classes")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(file(FileUtil.toFile(copyOfMiscDir), "build/classes")).toExternalForm());
         assertEquals("right initial EXECUTE classpath", expectedRoots, urlsOfCp(cp));
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
@@ -557,7 +557,7 @@ public class ClassPathProviderImplTest extends TestBase {
     public void testUnitTestCompileClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("test/unit/src"), ClassPath.COMPILE);
         Set<String> expectedRoots = new TreeSet<String>();
-        expectedRoots.add(Util.urlForJar(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
@@ -640,8 +640,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-windows.jar"));
         File lib = new File(jmfhome, "lib");
-        expectedRoots.add(Util.urlForJar(new File(lib, "jmf.jar")).toExternalForm());
-        expectedRoots.add(Util.urlForJar(new File(lib, "mediaplayer.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(lib, "jmf.jar")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(lib, "mediaplayer.jar")).toExternalForm());
         assertEquals("right COMPILE classpath incl. absolute locations of JARs",
             expectedRoots.toString(), urlsOfCp(cp).toString());
     }
@@ -667,7 +667,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // Dialogs API depends on Progress API
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         // And the usual:
-        expectedRoots.add(Util.urlForDir(new File(p.getProjectDirectoryFile(), "build/classes")).toExternalForm());
+        expectedRoots.add(FileUtil.urlForArchiveOrDir(new File(p.getProjectDirectoryFile(), "build/classes")).toExternalForm());
         assertEquals("right EXECUTE classpath incl. transitive deps",
             expectedRoots.toString(), urlsOfCp(cp).toString());
     }

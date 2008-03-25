@@ -64,10 +64,11 @@
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign>
                     <params>
-                        <param name="HTTP-Verb" type="string" required="true"/>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string"/>
                         <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="contentType" required="true"/>
                     </params>
                 </sign>
             </signed-url>
@@ -78,6 +79,7 @@
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/&quot;"/>
                         <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="contentType" required="true"/>
                     </params>
                 </sign>
             </signed-url>
