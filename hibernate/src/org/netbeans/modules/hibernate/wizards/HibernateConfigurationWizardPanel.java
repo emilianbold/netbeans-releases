@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -106,7 +107,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     }
 
     private void fillComponents() {
-        DatabaseConnection dbConn = getDatabaseConnection();        
+        DatabaseConnection dbConn = getDatabaseConnection();
         if (dbConn != null) {
             txtDialect.setText(Util.getDialectName(dbConn.getDriverClass()));
         }
@@ -251,17 +252,17 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         return null;
     }
 
-    public void setDialect(String dialectName) {        
+    public void setDialect(String dialectName) {
         txtDialect.setText(dialectName);
     }
 
-    public String getSelectedDriver() {         
+    public String getSelectedDriver() {
         if (getDatabaseConnection() != null && getDatabaseConnection().getDriverClass() != null) {
             return getDatabaseConnection().getDriverClass().trim();
         }
         return null;
     }
-    
+
     public String getSelectedURL() {
         if (getDatabaseConnection() != null && getDatabaseConnection().getDatabaseURL() != null) {
             return getDatabaseConnection().getDatabaseURL().trim();
@@ -269,14 +270,12 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         return null;
     }
 
-
     public String getUserName() {
         if (getDatabaseConnection() != null && getDatabaseConnection().getUser() != null) {
             return getDatabaseConnection().getUser().trim();
         }
         return null;
     }
-
 
     public String getPassword() {
         if (getDatabaseConnection() != null && getDatabaseConnection().getPassword() != null) {
@@ -292,5 +291,13 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     public boolean isPanelValid() {
         return true;
+    }
+
+    @Override
+    public void disable() {
+        super.disable();
+        for (Component component : this.getComponents()) {
+            component.setEnabled(false);
+        }
     }
 }
