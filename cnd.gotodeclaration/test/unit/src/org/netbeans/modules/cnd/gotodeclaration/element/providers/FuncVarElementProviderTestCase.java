@@ -36,6 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.io.File;
@@ -45,7 +46,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.junit.Manager;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.gotodeclaration.element.providers.BaseProvider.ProviderDelegate;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
@@ -68,35 +68,35 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
         return getQuoteDataDir();
     }
 
-    public void testAllRegexp() throws Exception {
+   public void testFuncVarAllRegexp() throws Exception {
         peformTest(".*", SearchType.REGEXP);
     }
 
-    public void testDotRegexp() throws Exception {
+    public void testFuncVarDotRegexp() throws Exception {
         peformTest("ma.n", SearchType.REGEXP);
     }
 
-    public void testCaseInsensitiveRegexp() throws Exception {
+    public void testFuncVarCaseInsensitiveRegexp() throws Exception {
         peformTest("MA.*n", SearchType.CASE_INSENSITIVE_REGEXP);
     }
     
-    public void testCamelCase() throws Exception {
+    public void testFuncVarCamelCase() throws Exception {
         peformTest("GCL", SearchType.CAMEL_CASE);
     }
 
-    public void testPrefix() throws Exception {
+    public void testFuncVarPrefix() throws Exception {
         peformTest("ope", SearchType.PREFIX);
     }
 
-    public void testCaseInsensitivePrefix() throws Exception {
+    public void testFuncVarCaseInsensitivePrefix() throws Exception {
         peformTest("OpE", SearchType.CASE_INSENSITIVE_PREFIX);
     }
 
-    public void testExactName() throws Exception {
+    public void testFuncVarExactName() throws Exception {
         peformTest("main", SearchType.EXACT_NAME);
     }
 
-    public void testCaseInsensitiveExactName() throws Exception {
+    public void testFuncVarCaseInsensitiveExactName() throws Exception {
         peformTest("Main", SearchType.CASE_INSENSITIVE_EXACT_NAME);
     }
     
@@ -112,11 +112,10 @@ public class FuncVarElementProviderTestCase extends ProjectBasedTestCase {
         FuncVarElementProvider fvp = new FuncVarElementProvider();
         ProviderDelegate pd = fvp.createDelegate();
 
-        Collection ps = CsmModelAccessor.getModel().projects();
-        assertNotNull(ps);
-        assert (ps.size() == 1);
+        CsmProject project = getProject();
+        assertNotNull(project);
 
-        Collection elems = pd.getElements((CsmProject) ps.iterator().next(), text, type, true);
+        Collection elems = pd.getElements(project, text, type, true);
         assertNotNull(elems);
 
         List<ElementDescriptor> items = new ArrayList<ElementDescriptor>();
