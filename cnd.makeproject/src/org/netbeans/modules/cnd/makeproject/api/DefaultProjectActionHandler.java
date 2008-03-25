@@ -296,6 +296,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
                     getCustomDebugActionHandlerProvider() != null) {
+                // See 130827
+                progressHandle.finish();
+                progressHandle = createPogressHandleNoCancel();
+                progressHandle.start();
                 CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider().factoryCreate();
                 ah.addExecutionListener(this);
                 ah.execute(pae, getTab());
