@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
@@ -392,7 +393,7 @@ public abstract class SaasBean extends GenericResourceBean {
                     templates = useTemplates.getWeb().getTemplate();
                 }
                 if(templates == null || templates.isEmpty())
-                    throw new IOException("Empty tempates specified inside use-templates.");
+                    throw new IOException(Constants.UNSUPPORTED_DROP);
                 List<SaasBean.SessionKeyAuthentication.UseTemplates.Template> templateNames = 
                         new ArrayList<SaasBean.SessionKeyAuthentication.UseTemplates.Template>();
                 Map<String, String> artifactsMap = getArtifactTemplates(m);

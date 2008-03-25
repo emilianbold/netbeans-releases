@@ -1864,6 +1864,9 @@ public class EditorContextImpl extends EditorContext {
                 TopComponent tc = TopComponent.getRegistry().getActivated();
                 if (tc != null) {
                     currentEditorCookie = (EditorCookie) tc.getLookup().lookup(EditorCookie.class);
+                    if (currentEditorCookie != null && currentEditorCookie.getOpenedPanes() == null) {
+                        currentEditorCookie = null;
+                    }
                 }
                 // Listen on open panes if currentEditorCookie implements EditorCookie.Observable
                 if (currentEditorCookie instanceof EditorCookie.Observable) {
@@ -1938,6 +1941,11 @@ public class EditorContextImpl extends EditorContext {
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
+                synchronized (currentLock) {
+                    if (currentEditorCookie != null && currentEditorCookie.getOpenedPanes() == null) {
+                        currentEditorCookie = null;
+                    }
+                }
                 pcs.firePropertyChange (EditorCookie.Observable.PROP_OPENED_PANES, null, null);
             }
         }

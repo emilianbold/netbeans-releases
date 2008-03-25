@@ -65,11 +65,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
-import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBridgeProvider;
 import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
-import org.netbeans.modules.visualweb.outline.api.OutlineSelector;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -683,19 +681,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
 //                jsfForm.fireShowDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
                 jsfForm.showDropMatch(componentRootElement, dropInfo.getRegionElement(), dropInfo.getDropType());
             } else if (FacesDndSupport.PROPERTY_SELECTED_DESIGN_BEAN.equals(evt.getPropertyName())) {
-                DesignBean designBean = (DesignBean)evt.getNewValue();
-                Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(designBean);
+                Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean((DesignBean)evt.getNewValue());
 //                jsfForm.designer.select((DesignBean)evt.getNewValue());
 //                jsfForm.fireSelect((DesignBean)evt.getNewValue());
-                if (componentRootElement == null) {
-                    org.openide.nodes.Node node = DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(designBean);
-                    if (node != null) {
-                        // XXX Might be still a hidden element, select in outline only.
-                        OutlineSelector.getDefault().selectNodes(new org.openide.nodes.Node[] {node});
-                    }
-                } else {
-                    jsfForm.selectComponent(componentRootElement);
-                }
+                jsfForm.selectComponent(componentRootElement);
             } else if (FacesDndSupport.PROPERTY_REFRESH.equals(evt.getPropertyName())) {
 //                jsfForm.designer.refreshForm(((Boolean)evt.getNewValue()).booleanValue());
 //                jsfForm.fireRefreshForm(((Boolean)evt.getNewValue()).booleanValue());

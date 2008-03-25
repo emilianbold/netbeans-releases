@@ -105,7 +105,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Peter Zavadsky
  */
-public class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider, HelpCtx.Provider {
+class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider, HelpCtx.Provider {
 
     /** Debugging flag. */
     private static final boolean DEBUG = ErrorManager.getDefault()
@@ -254,10 +254,6 @@ public class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lo
     
     private void doSelectNodesForDesignBeans(DesignBean[] designBeans) {
         Node[] nodes = getNodesForBeans(designBeans);
-        selectNodes(nodes);
-    }
-    
-    public /*private*/ void selectNodes(Node[] nodes){
         initializeParentNodes(nodes);
         
         if (!areNodesUnderRoot(nodes, manager.getRootContext())) {
