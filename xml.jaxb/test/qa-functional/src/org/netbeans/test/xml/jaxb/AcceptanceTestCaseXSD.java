@@ -432,6 +432,8 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
         // TODO : check schema view is in use
 
+        eoXMLCode.close( );
+
         endTest( );
     }
 
