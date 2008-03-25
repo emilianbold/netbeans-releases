@@ -94,7 +94,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(WsFromJavaPanel0.class);
+        return new HelpCtx(WsFromWsdlPanel1.class);
     }
 
     public void readSettings(WizardDescriptor settings) {
