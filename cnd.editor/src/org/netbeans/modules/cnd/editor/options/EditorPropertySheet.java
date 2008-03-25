@@ -219,6 +219,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceNamespace));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceClass));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
+	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceSwitch));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
         

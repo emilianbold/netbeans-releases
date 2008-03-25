@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.repository.sfs;
+package org.netbeans.modules.cnd.repository.test;
 
 import java.io.*;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
  */
 public class TestObject implements Persistent {
     
-    public Key key;
+    public TestKey key;
     public String[] sData;
     public int iData;
     public long lData;
@@ -60,22 +60,17 @@ public class TestObject implements Persistent {
 	read(in);
     }
     
-    public TestObject(String key, String... data) {
-	this.key = doKey(key);
+    public TestObject(String key, String unit, Key.Behavior behavior, String... data) {
+	this.key = new TestKey(key, unit, behavior);
 	this.sData = data;
     }
     
-    Key getKey() {
+    public Key getKey() {
 	return key;
     }
     
-    private Key doKey(final String key) {
-	return new TestKey(key);
-    }
-    
-
     public void write(DataOutput out) throws IOException {
-	out.writeUTF(key.getAt(0).toString());
+        key.write(out);
 	if( sData == null ) {
 	    out.writeInt(-1);
 	}
@@ -90,7 +85,7 @@ public class TestObject implements Persistent {
     }
     
     private Persistent read(DataInput in) throws IOException {
-	key = doKey( in.readUTF() );
+	key = new TestKey(in);
 	int cnt = in.readInt();
 	if( cnt == -1 ) {
 	    sData = null;

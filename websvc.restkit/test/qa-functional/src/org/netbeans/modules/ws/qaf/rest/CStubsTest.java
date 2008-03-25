@@ -66,9 +66,9 @@ import org.openide.nodes.Node;
  *
  * @author lukas
  */
-public class CStubsTSuite extends RestTestBase {
+public class CStubsTest extends RestTestBase {
 
-    public CStubsTSuite(String name) {
+    public CStubsTest(String name) {
         super(name);
     }
 
@@ -118,7 +118,6 @@ public class CStubsTSuite extends RestTestBase {
         }
         assertEquals(1, lm.getSize());
         //add second project
-        wo = new WizardOperator(cStubsLabel);
         addProject(wo, path2);
         try {
             Thread.sleep(1000);
@@ -128,7 +127,6 @@ public class CStubsTSuite extends RestTestBase {
         //select first project
         jlo.selectItem(0);
         //remove it
-        wo = new WizardOperator(cStubsLabel);
         new JButtonOperator(wo, 4).pushNoBlock();
         try {
             Thread.sleep(1000);
@@ -170,6 +168,7 @@ public class CStubsTSuite extends RestTestBase {
             new JCheckBoxOperator(wo, 0).setSelected(true);
         }
         //click on the radio button again to force the wizard to revalidate itself
+        //WA for: http://www.netbeans.org/issues/show_bug.cgi?id=128445
         jrbo.clickMouse();
         wo.finish();
         //Generating Client Stubs From RESTful Web Services...
@@ -192,7 +191,7 @@ public class CStubsTSuite extends RestTestBase {
         String progressLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ClientStubsProgress");
         waitDialogClosed(progressLabel);
     }
-    
+
     protected boolean useJMaki() {
         return false;
     }
@@ -220,16 +219,16 @@ public class CStubsTSuite extends RestTestBase {
         ProjectRootNode n = ProjectsTabOperator.invoke().getProjectRootNode(name);
         return ((Node)n.getOpenideNode()).getLookup().lookup(Project.class);
     }
-    
+
     /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new CStubsTSuite("testWizard")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCreateSimpleStubs")); //NOI18N
-        suite.addTest(new CStubsTSuite("testFromWADL")); //NOI18N
-        suite.addTest(new CStubsTSuite("testCloseProject")); //NOI18N
+        suite.addTest(new CStubsTest("testWizard")); //NOI18N
+        suite.addTest(new CStubsTest("testCreateSimpleStubs")); //NOI18N
+        suite.addTest(new CStubsTest("testFromWADL")); //NOI18N
+        suite.addTest(new CStubsTest("testCloseProject")); //NOI18N
         return suite;
     }
 
