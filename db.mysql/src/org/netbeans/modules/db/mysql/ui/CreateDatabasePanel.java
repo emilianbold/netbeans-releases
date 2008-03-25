@@ -56,7 +56,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboUsers.setEnabled(this.isGrantAccess());
         
         String item = comboDatabaseName.getEditor().getItem().toString();
-        if ( Utils.isEmpty(item) ) {
+        String selectedItem = comboDatabaseName.getSelectedItem().toString().trim();
+        if ( Utils.isEmpty(item) && Utils.isEmpty(selectedItem)) {
+            // It's a bad if both the selected item *and* the edited 
+            // item are empty
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
