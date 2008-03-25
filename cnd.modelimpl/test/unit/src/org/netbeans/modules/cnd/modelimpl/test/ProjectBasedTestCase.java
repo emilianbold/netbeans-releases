@@ -49,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
@@ -182,6 +183,10 @@ public abstract class ProjectBasedTestCase extends BaseTestCase {
             return super.getDataFile(filename);
         }
     }     
+    
+    protected CsmProject getProject() {
+        return projectHelper.getProject();
+    }
     
     protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
         FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
