@@ -46,8 +46,14 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -73,6 +79,21 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public abstract int getLength();
     public abstract String getText(int start, int end) throws IOException;
     public abstract String getText() throws IOException;
+    
+    public final Reader getReader() throws IOException {
+        File file = getFile();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        Charset encoding;
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(fo);
+        } else {
+            encoding = FileEncodingQuery.getDefaultEncoding();
+        }
+        InputStream is = getInputStream();
+        Reader reader = new InputStreamReader(is, encoding);
+        return reader;
+    }
+    
     public abstract InputStream getInputStream() throws IOException;
     public abstract boolean isFileBased();
     public abstract long lastModified();

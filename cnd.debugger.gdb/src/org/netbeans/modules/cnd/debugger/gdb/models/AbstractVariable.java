@@ -726,7 +726,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return null;
     }
     
-    private void parseCharArray(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
         String frag;
         int idx = 0;
         int pos;
@@ -749,6 +749,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     idx = value.length(); // stop iterating...
                 }
                 parseCharArrayFragment(var, basename, type, frag);
+                if (var.fields.length < size && idx >= value.length()) {
+                    var.addField(new AbstractField(var, basename + "[" + (size - 1) + "]", // NOI18N
+                            type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
+                }
                 if (truncated) {
                     String high;
                     try {
@@ -889,8 +893,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         } catch (Exception ex) {
             size = 0;
         }
-        if (t.equals("char")) { // NOI18N
-            parseCharArray(this, getName(), type, value);
+        if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
+            parseCharArray(this, getName(), type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
             for (int i = 0; i < size && vstart != -1; i++) {
