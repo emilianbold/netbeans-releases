@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.java.hints.analyzer.ui;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -51,12 +53,13 @@ import org.openide.util.Exceptions;
  *
  * @author lahvac
  */
-public class PreviousError extends AbstractAction {
+public class PreviousError extends AbstractAction implements PropertyChangeListener {
 
     private AnalyzerTopComponent comp;
 
     public PreviousError(AnalyzerTopComponent comp) {
         this.comp = comp;
+        this.comp.getExplorerManager().addPropertyChangeListener(this);
     }
         
     @Override
@@ -128,5 +131,9 @@ public class PreviousError extends AbstractAction {
         }
         
         return null;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        fireEnabledChanged();
     }
 }

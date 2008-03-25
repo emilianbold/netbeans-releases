@@ -156,8 +156,18 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
 
         goOverFixed.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(goOverFixed, "Go Over Fixed Problems");
+        goOverFixed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goOverFixedActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(fixOnNext, "Fix on Next");
+        fixOnNext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fixOnNextActionPerformed(evt);
+            }
+        });
 
         nextError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/nextmatch.png"))); // NOI18N
         nextError.addActionListener(new java.awt.event.ActionListener() {
@@ -244,6 +254,16 @@ prevAction.actionPerformed(null);
 private void nextErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextErrorActionPerformed
 nextAction.actionPerformed(null);
 }//GEN-LAST:event_nextErrorActionPerformed
+
+private void goOverFixedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goOverFixedActionPerformed
+    prevAction.fireEnabledChanged();
+    nextAction.fireEnabledChanged();
+}//GEN-LAST:event_goOverFixedActionPerformed
+
+private void fixOnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixOnNextActionPerformed
+    prevAction.fireEnabledChanged();
+    nextAction.fireEnabledChanged();
+}//GEN-LAST:event_fixOnNextActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btvHolder;

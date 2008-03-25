@@ -101,11 +101,17 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Go Over Fixed Problems"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="goOverFixedActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JCheckBox" name="fixOnNext">
       <Properties>
         <Property name="text" type="java.lang.String" value="Fix on Next"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fixOnNextActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="nextError">
       <Properties>
