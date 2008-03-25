@@ -1135,7 +1135,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span>'+ts.wadlURL);
+        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span><a href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
