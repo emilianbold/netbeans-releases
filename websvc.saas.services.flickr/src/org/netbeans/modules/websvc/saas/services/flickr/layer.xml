@@ -47,9 +47,17 @@
     <folder name="Templates">
         <folder name="SaaSServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.flickr.Bundle"/>
+            <file name="FlickrAuthenticator.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrAuthenticator.template">
+            </file>
+            <file name="FlickrLogin.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrLogin.template">
+            </file>
+            <file name="FlickrCallback.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/flickr/resources/web/FlickrCallback.template">
+            </file>
             <file name="FlickrAuthenticatorDesktop.java" 
                   url="/org/netbeans/modules/websvc/saas/services/flickr/resources/desktop/FlickrAuthenticator.template">
-                <attr name="position" intvalue="8690"/>
             </file>
         </folder>
     </folder>
