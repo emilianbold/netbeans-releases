@@ -452,7 +452,7 @@ private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIR
 }//GEN-LAST:event_comboDatabaseNameKeyPressed
 
 private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_comboDatabaseNameInputMethodTextChanged
-    validatePanel();
+
 }//GEN-LAST:event_comboDatabaseNameInputMethodTextChanged
 
 
