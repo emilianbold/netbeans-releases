@@ -41,6 +41,8 @@ public final class ResourcePackageMarker {
     public static final String XSD_SCHEMA            = "xml.xsd";          // NOI18N
 
     public static final String TRACE_SCHEMA            = "trace.xsd";          // NOI18N
+
+    public static final String EDITOR_EXT_SCHEMA            = "editor.xsd";          // NOI18N
     /**
      *
      * fix for IZ94241:
