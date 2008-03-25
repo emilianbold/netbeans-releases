@@ -16,29 +16,24 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.model.ext.editor;
+package org.netbeans.modules.bpel.model.ext.editor.api;
 
-import org.netbeans.modules.bpel.model.api.*;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Casts extends ExtensionEntity, BpelContainer {
+public interface Editor extends ExtensionEntity, BpelContainer {
+    String EDITOR_NAMESPACE_URI =
+            "http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor";
 
-    Cast[] getCasts();
+    Casts getCasts();
 
-    Cast getCast( int i );
+    void removeCasts( );
 
-    void removeCast( int i );
-
-    void setCasts( Cast[] casts );
-
-    void setCast( Cast cast, int i );
-
-    void addCast( Cast cast );
-
-    void insertCast( Cast cast, int i );
+    void setCasts( Casts casts);
 
 }

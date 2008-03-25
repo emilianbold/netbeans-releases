@@ -20,7 +20,7 @@
 /**
  *
  */
-package org.netbeans.modules.bpel.model.ext.editor;
+package org.netbeans.modules.bpel.model.ext.editor.api;
 
 import org.netbeans.modules.bpel.model.api.support.EnumValue;
 
