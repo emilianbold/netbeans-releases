@@ -134,6 +134,8 @@ public class EditorOptions {
      */
     public static final String newLineBeforeBrace = "newLineBeforeBrace"; //NOI18N
     public static final String newLineBeforeBraceDefault = BracePlacement.SAME_LINE.name();
+    public static final String newLineBeforeBraceSwitch = "newLineBeforeBraceSwitch"; //NOI18N
+    public static final String newLineBeforeBraceSwitchDefault = BracePlacement.SAME_LINE.name();
 
     //MultilineAlignment
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
@@ -317,6 +319,7 @@ public class EditorOptions {
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
         defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(newLineBeforeBraceSwitch,newLineBeforeBraceSwitchDefault);
         defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
         //MultilineAlignment
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
@@ -444,6 +447,7 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
 
         //LUNIX_PROFILE
@@ -452,6 +456,7 @@ public class EditorOptions {
         lunix.put(indentCasesFromSwitch, false);
         lunix.put(indentSize, 8);
         lunix.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        lunix.put(spaceBeforeKeywordParen, false);
         
         //ANSI_PROFILE
         Map<String,Object> ansi = new HashMap<String,Object>();
@@ -459,12 +464,15 @@ public class EditorOptions {
         ansi.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
         ansi.put(alignMultilineMethodParams, true);
         ansi.put(alignMultilineCallArgs, true);
         ansi.put(newLineCatch, true);
         ansi.put(newLineElse, true);
         ansi.put(newLineWhile, true);
+        ansi.put(indentCasesFromSwitch, false);
+        ansi.put(indentNamespace, false);
         
         //OPEN_SOLARIS_PROFILE
         Map<String,Object> solaris = new HashMap<String,Object>();
@@ -484,7 +492,10 @@ public class EditorOptions {
         //K_AND_R_PROFILE
         Map<String,Object> KandR = new HashMap<String,Object>();
         namedDefaults.put(K_AND_R_PROFILE, KandR);
-        KandR.put(indentSize, 2);
+        KandR.put(absoluteLabelIndent, false);
+        KandR.put(indentCasesFromSwitch, false);
+        KandR.put(indentNamespace, false);
+        KandR.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
 
         //MYSQL_PROFILE
         Map<String,Object> mysql = new HashMap<String,Object>();
@@ -495,6 +506,13 @@ public class EditorOptions {
         mysql.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
+        mysql.put(alignMultilineCallArgs, true);
+        mysql.put(alignMultilineWhileCondition, true);
+        mysql.put(alignMultilineFor, true);
+        mysql.put(alignMultilineMethodParams, true);
+        mysql.put(alignMultilineIfCondition, true);
+        mysql.put(spaceAroundAssignOps, false);
+        mysql.put(addLeadingStarInComment, false);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){

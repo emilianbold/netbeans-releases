@@ -41,6 +41,17 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import java.io.IOException;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -52,19 +63,30 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
 
     private Object initialJ2eeSpecVersion;
 
+    private final EjbJarProjectProperties uiProperties;
+    
+    private final String oldServerInstanceId;
+
     /** Creates new form CustomizerRun */
     public CustomizerRun( EjbJarProjectProperties uiProperties ) {
         initComponents();
 
+        this.uiProperties = uiProperties;
+        
+        this.oldServerInstanceId = uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null
+                ? J2eePlatformUiSupport.getServerInstanceID(uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem())
+                : null;
+        
+        uiProperties.JAVAC_CLASSPATH_MODEL.addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                setMessages();
+            }
+        });
+        
         jComboBoxJ2eePlatform.setModel (uiProperties.J2EE_SERVER_INSTANCE_MODEL );
         jComboBoxJ2eeSpecVersion.setModel (uiProperties.J2EE_PLATFORM_MODEL );
         
         initialJ2eeSpecVersion = uiProperties.J2EE_PLATFORM_MODEL.getSelectedItem();
-    }
-    
-    private void checkJ2eeSpecVersionChanged() {
-        boolean changed = !jComboBoxJ2eeSpecVersion.getSelectedItem().equals(initialJ2eeSpecVersion);
-        jLabelWarnDdChange.setText(changed ? NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_WardDdChange_JLabel") : "");
     }
     
     public HelpCtx getHelpCtx() {
@@ -85,7 +107,7 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jLabelJ2eeVersion = new javax.swing.JLabel();
         jComboBoxJ2eeSpecVersion = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
-        jLabelWarnDdChange = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -95,6 +117,12 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabelJ2eePlatform, gridBagConstraints);
+
+        jComboBoxJ2eePlatform.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jComboBoxJ2eePlatformItemStateChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -132,26 +160,77 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
-        jLabelWarnDdChange.setForeground(new java.awt.Color(89, 71, 191));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelWarnDdChange, " ");
+        errorLabel.setForeground(new java.awt.Color(89, 71, 191));
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(jLabelWarnDdChange, gridBagConstraints);
+        add(errorLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxJ2eeSpecVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eeSpecVersionItemStateChanged
-        checkJ2eeSpecVersionChanged();
+        setMessages();
     }//GEN-LAST:event_jComboBoxJ2eeSpecVersionItemStateChanged
+
+private void jComboBoxJ2eePlatformItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eePlatformItemStateChanged
+        // TODO add your handling code here:
+        setMessages();
+}//GEN-LAST:event_jComboBoxJ2eePlatformItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JComboBox jComboBoxJ2eePlatform;
     private javax.swing.JComboBox jComboBoxJ2eeSpecVersion;
     private javax.swing.JLabel jLabelJ2eePlatform;
     private javax.swing.JLabel jLabelJ2eeVersion;
-    private javax.swing.JLabel jLabelWarnDdChange;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
-    
+
+    private void setMessages() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>"); // NOI18N
+
+        boolean display = false;
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            if (isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties)) {
+                sb.append(NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY"));
+                display = true;
+            }
+        }
+
+        boolean changed = !jComboBoxJ2eeSpecVersion.getSelectedItem().equals(initialJ2eeSpecVersion);
+        if (changed) {
+            if (display) {
+                sb.append("<p>"); // NOI18N
+            }
+            sb.append(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_WardDdChange_JLabel"));
+            display = true;
+        }
+
+        if (display) {
+            sb.append("</html>"); // NOI18N
+            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING, sb.toString());
+        } else {
+            MessageUtils.clear(errorLabel);
+        }
+    }
+
+    private boolean isServerLibraryMessageNeeded(String serverInstanceId, EjbJarProjectProperties uiProperties) {
+        UpdateHelper helper = uiProperties.getProject().getUpdateHelper();
+
+        try {
+            if (SharabilityUtility.isLibrarySwitchIntended(serverInstanceId,
+                    oldServerInstanceId, ClassPathUiSupport.getList(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()), helper)) {
+
+                    AntProjectHelper antHelper = helper.getAntProjectHelper();
+                    Library[] libs = SharabilityUtility.getLibraries(antHelper.resolveFile(antHelper.getLibrariesLocation()), serverInstanceId);
+                    return libs.length <= 0;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }    
 }
