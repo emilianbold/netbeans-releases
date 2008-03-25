@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Stack;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -860,7 +861,92 @@ public final class Utils {
         
         return handleProcess(process);
     }
+    /**
+     * Resolving the project property
+     *
+     * @param string Property to resolve
+     * @return Results of resolving the property
+     */
+    public static final String resolveProperty(String string) {        
+        return resolveProperty(string,project);
+    }
     
+    /**
+     * Resolving the project property
+     *
+     * @param string Property to resolve
+     * @param prj Project to resolve the property for
+     * @return Results of resolving the property
+     */    
+    public static final String resolveProperty(String string, Project prj) {        
+        final List <String> resolving = new ArrayList <String> ();
+        return resolveProperty(string, prj, resolving);
+    }
+    
+    private static final String resolveProperty(String string, Project prj, List <String> resolving) {
+        if(string==null || string.equals("")) {
+            return string;
+        }        
+        StringBuilder result = new StringBuilder(string.length());
+        StringBuilder buf = null;
+        Stack <StringBuilder> started = new Stack <StringBuilder> ();
+        boolean inside = false;
+        
+        for (int i = 0; i < string.length(); i++) {
+            char c = string.charAt(i);
+            switch (c) {
+                case '$':
+                    if (i + 1 < string.length() && string.charAt(i + 1) == '{') {
+                        if (inside) {
+                            started.push(buf);
+                        }
+                        i++;
+                        inside = true;
+                        buf = new StringBuilder();
+                    } else {
+                        (inside ? buf : result).append("$");
+                    }
+                    break;
+                case '}':
+                    if (inside) {
+                        final String propName = buf.toString();
+                        String propValue;
+                        
+                        if(resolving.contains(propName)) {                            
+                            propValue = null;
+                        } else {
+                            resolving.add(propName);
+                            propValue = resolveProperty(prj.getProperty(propName),prj,resolving);
+                            resolving.remove(propName);
+                        }
+                        final String resolved = propValue != null ? propValue : "${" + propName + "}";
+                        if (!started.empty()) {
+                            buf = started.pop().append(resolved);
+                        } else {
+                            result.append(resolved);
+                            inside = false;
+                        }
+                    } else {
+                        result.append(c);
+                    }
+                    break;
+                default:
+                    (inside ? buf : result).append(c);
+            }
+        }
+        
+        if (inside) {
+            do {
+                if (!started.empty()) {
+                    buf = started.pop().append("${").append(buf);
+                } else {
+                    result.append("${").append(buf);
+                    buf = null;
+                }
+            } while (buf != null);
+        }
+        return result.toString();    
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**

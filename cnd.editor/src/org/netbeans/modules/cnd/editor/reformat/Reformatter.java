@@ -135,37 +135,65 @@ public class Reformatter implements ReformatTask {
     }
     
     private void reformatImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
+        int prevStart = -1;
+        int prevEnd = -1;
+        String prevText = null;
         for (Diff diff : new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat()) {
-            int start = diff.getStartOffset();
-            int end = diff.getEndOffset();
-            String text = diff.getText();
-            if (startOffset > end || endOffset < start) {
+            int curStart = diff.getStartOffset();
+            int curEnd = diff.getEndOffset();
+            if (startOffset > curEnd || endOffset < curStart) {
                 continue;
             }
-            if (endOffset < end) {
-                if (text != null && text.length() > 0) {
-                    text = end - endOffset >= text.length() ? null : 
-                           text.substring(0, text.length() - end + endOffset);
+            String curText = diff.getText();
+            if (endOffset < curEnd) {
+                if (curText != null && curText.length() > 0) {
+                    curText = curEnd - endOffset >= curText.length() ? null : 
+                           curText.substring(0, curText.length() - curEnd + endOffset);
                 }
-                end = endOffset;
+                curEnd = endOffset;
             }
-            if (end - start > 0) {
-                if (!checkRemoved(doc.getText(start, end - start))){
-                    // Reformat failed
-                    Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
-                    String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
-                            doc.getText(start, end - start), diff.toString());
-                    log.severe(error);
-                    break;
+            if (prevStart == curEnd) {
+                prevStart = curStart;
+                prevText = curText+prevText;
+                continue;
+            } else {
+                if (!applyDiff(prevStart, prevEnd, prevText)){
+                    return;
                 }
-                doc.remove(start, end - start);
+                prevStart = curStart;
+                prevEnd = curEnd;
+                prevText = curText;
             }
-            if (text != null && text.length() > 0) {
-                doc.insertString(start, text, null);
-            }
+        }
+        if (prevStart > -1) {
+            applyDiff(prevStart, prevEnd, prevText);
         }
     }
 
+    private boolean applyDiff(int start, int end, String text) throws BadLocationException{
+        if (end - start > 0) {
+            String what = doc.getText(start, end - start);
+            if (text.equals(what)) {
+                // optimization
+                return true;
+            }
+            if (!checkRemoved(what)){
+                // Reformat failed
+                Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
+                String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                        doc.getText(start, end - start), text);
+                log.severe(error);
+                return false;
+            }
+            doc.remove(start, end - start);
+        }
+        if (text != null && text.length() > 0) {
+            doc.insertString(start, text, null);
+        }
+        return true;
+    }
+            
+    
     private boolean checkRemoved(String whatRemoved){
         for(int i = 0; i < whatRemoved.length(); i++){
             char c = whatRemoved.charAt(i);

@@ -93,6 +93,22 @@ public abstract class CppFoldManagerBase implements FoldManager {
     public static final FoldTemplate IFDEF_FOLD_TEMPLATE
         = new FoldTemplate(IFDEF_FOLD_TYPE, IFDEF_FOLD_DESCRIPTION, 0, 0);
 
+    public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
+    /** Collapse methods by default */
+    public static final String CODE_FOLDING_COLLAPSE_METHOD = "code-folding-collapse-method"; //NOI18N
+    
+    /** Collapse inner classes by default */
+    public static final String CODE_FOLDING_COLLAPSE_INNERCLASS = "code-folding-collapse-innerclass"; //NOI18N
+    
+    /** Collapse import section default */
+    public static final String CODE_FOLDING_COLLAPSE_IMPORT = "code-folding-collapse-import"; //NOI18N
+    
+    /** Collapse javadoc comment by default */
+    public static final String CODE_FOLDING_COLLAPSE_JAVADOC = "code-folding-collapse-javadoc"; //NOI18N
+
+    /** Collapse initial comment by default */
+    public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
+    
     /* Copied from JavaFoldManger in java/editor/lib */
     protected static final class FoldTemplate {
         

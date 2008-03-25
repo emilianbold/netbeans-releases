@@ -571,11 +571,11 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         }
         appsNode.expand();
         appsNode.callPopup().pushMenu(refreshLabel);
-        if (appsNode.isChildPresent(projectName)) {
-            Node n = new Node(appsNode, projectName);
-            n.callPopup().pushMenu(undeployLabel);
-            new EventTool().waitNoEvent(2000);
-        }
+        // needed for slower machines
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); //NOI18N
+        Node n = new Node(appsNode, projectName);
+        n.callPopup().pushMenu(undeployLabel);
+        new EventTool().waitNoEvent(2000);
         appsNode.callPopup().pushMenu(refreshLabel);
         new EventTool().waitNoEvent(2000);
         dumpOutput();

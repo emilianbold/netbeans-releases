@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Iterator;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
@@ -69,6 +70,8 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
@@ -100,25 +103,19 @@ import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
  */
 public class XPathModelImpl implements XPathModel {
     
-    /** The factory class for model elements */
     private XPathModelFactory mFactory;
-    
     private XPathExpression mRootXPathExpression;
     
     private boolean isInExprResolveMode = false;
     private boolean isInResolveMode = false;
     private boolean isResolved = false;
     
+    private XPathCastResolver myXPathCastResolver;
     private VariableResolver mVarResilver;
-    
     private ExternalModelResolver mExternalModelResolver;
-    
     private NamespaceContext mNamespaceContext;
-    
     private XPathSchemaContext mRootSchemaContext;
-    
     private XPathValidationContext mValidationContext;
-    
     private ExtensionFunctionResolver mExtFuncResolver;
 
     // The static instance is used because it is stateless
@@ -140,10 +137,19 @@ public class XPathModelImpl implements XPathModel {
      * @throws XPathException for any parsing errors
      */
     public XPathExpression parseExpression(String expression) throws XPathException {
-//System.out.println();
-//System.out.println();
-//System.out.println("---------------------------");
-//System.out.println("EXPression: " + expression);
+//ENABLE = expression.startsWith("$ItineraryIn.iti");
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out();
+//out("---------------------------");
+//out("EXPression: " + expression);
         myWasFunctionOrOperation = false; // vlv
 
         try {
@@ -335,7 +341,6 @@ public class XPathModelImpl implements XPathModel {
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
         myLastSchemaComponent = null;
-
 //ENABLE = qName.toString().equals("ReservationItems");
 //out();
 //out();
@@ -357,6 +362,12 @@ public class XPathModelImpl implements XPathModel {
                 SchemaComponent parentComponent = parentCompPair.getComp();
 
                 if (parentComponent != null) {
+                    // vlv
+                    SchemaComponent castType = getCastType(parentContext);
+
+                    if (castType != null) {
+                        parentComponent = castType;
+                    }
                     //
                     FindChildrenSchemaVisitor visitor = new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
                     visitor.lookForSubcomponent(parentComponent);
@@ -372,25 +383,6 @@ public class XPathModelImpl implements XPathModel {
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
                         addPair(foundCompPairSet, newPair);
                     }
-                    //
-                    //
-                    // TODO: Move this code to post processing
-//                    if (found.size() > 1) {
-//                        if (mValidationContext != null) {
-//                            if (isAttribute) {
-//                                mValidationContext.addResultItem(expr, ResultType.ERROR, 
-//                                        XPathProblem.AMBIGUOUS_ATTRIBUTE, qName, nsUri);
-//                            } else {
-//                                mValidationContext.addResultItem(expr, ResultType.ERROR, 
-//                                        XPathProblem.AMBIGUOUS_ELEMENT, qName, nsUri);
-//                            }
-//                        }
-//                        //
-//                        // If more then 1 component is found, then it is Error in the schema. 
-//                        // Specific parent Schema component can't contain more 
-//                        // then one child with the same name!
-//                        return null;
-//                    }
                 }
                 break;
             default:
@@ -445,11 +437,11 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-        //
         // Perform additional validations if a validation context is specified
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
+                
                 if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
@@ -461,27 +453,43 @@ public class XPathModelImpl implements XPathModel {
                                   XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
                                   name, nsUri);
                     }
-                } else {
+                }
+                else {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
                                 XPathProblem.UNKNOWN_ELEMENT, name);
-                    } else {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
-                                name, nsUri);
+                    } 
+                    else {
+                        mValidationContext.addResultItem(getRootExpression(), ResultType.ERROR, XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, name, nsUri);
                     }
                 }
             }
         }
         return foundCompPairSet;
     }
-
+ 
     // vlv
     private void addPair(HashSet<SchemaCompPair> set, SchemaCompPair pair) {
       set.add(pair);
       myLastSchemaComponent = pair.getComp();
+    }
+
+    private SchemaComponent getCastType(XPathSchemaContext context) {
+      if (myXPathCastResolver == null) {
+        return null;
+      }
+      List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+
+      if (casts == null) {
+        return null;
+      }
+      for (XPathCast cast : casts) {
+        if (context.equals(cast.getContext())) {
+          return cast.getType();
+        }
+      }
+      return null;
     }
 
     public SchemaComponent getLastSchemaComponent() {
@@ -552,7 +560,7 @@ public class XPathModelImpl implements XPathModel {
                     // The usage of any axis except the attribute or child can result in
                     // loss of type context. It doesn't matter to check schema types any more.
                     //
-                    // TODO: The list of supported AXIS can be extended later
+                    // TO DO: The list of supported AXIS can be extended later
                     //
                 }
             }
@@ -893,7 +901,7 @@ public class XPathModelImpl implements XPathModel {
 
             // vlv
             // why stringToBytes, bytesToString, convert are not recognized?
-            // TODO FIX IT.
+            // TO DO FIX IT.
             //
             String name = XPathUtils.qNameObjectToString(funcQName);
             boolean hotFix = 
@@ -914,7 +922,7 @@ public class XPathModelImpl implements XPathModel {
             if (nsPrefix.length() == 0) {
                 // vlv
                 // why current-date, current-dateTime, current-time are not recognized?
-                // TODO FIX IT.
+                // TO DO FIX IT.
                 //
                 boolean hotFix = 
                   funcName.equals("current-date") ||
@@ -1236,8 +1244,6 @@ public class XPathModelImpl implements XPathModel {
                             assert false : "Only the Attribute and Child axis is allowed with wildcard"; // NOI18N
                         }
                     } else {
-                        //
-                        // TODO it's necessary to check if other axis are supported!
                         switch (axis) {
                         case ATTRIBUTE:
                         case CHILD:
@@ -1266,9 +1272,6 @@ public class XPathModelImpl implements XPathModel {
                         default:
                             // The usage of any axis except the attribute or child can result in
                             // loss of type context. It doesn't matter to check schema types any more.
-                            //
-                            // TODO: The list of supported AXIS can be extended later
-                            //
                             if (mValidationContext != null) {
                                 mValidationContext.addResultItem(getRootExpression(), 
                                         ResultType.ERROR, 
@@ -1317,7 +1320,7 @@ public class XPathModelImpl implements XPathModel {
                     case NODETYPE_TEXT:
                         // It doesn't matter to check schema types any more
                         //
-                        // TODO maybe it worth to set context to Schema text type
+                        // TO DO maybe it worth to set context to Schema text type
                         // because of the text and comment has such type.
                         // 
                         throw new StopResolutionException(
@@ -1569,6 +1572,10 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
+    }
+
+    public void setXPathCastResolver(XPathCastResolver xpathCastResolver) {
+      myXPathCastResolver = xpathCastResolver;
     }
 
     private boolean ENABLE;

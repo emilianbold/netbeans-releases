@@ -892,16 +892,8 @@ public class JaxWsUtils {
 
     public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                   
-                   
-                   
-                  > () {
-
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy > () { 
+                 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();

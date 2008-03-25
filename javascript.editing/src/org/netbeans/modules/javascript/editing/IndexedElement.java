@@ -239,15 +239,15 @@ public abstract class IndexedElement extends JsElement {
                 // Don't try again
                 fileUrl = null;
             }
-
-            // Prefer sdoc files for doc-only items
-            if (isDocOnly() && !fileUrl.endsWith(".sdoc")) { // NOI18N
-                // This is probably a builtin library reference; correct the URL
-                FileObject fo = JsIndexer.findScriptDocFor(fileUrl, fileObject);
-                if (fo != null) {
-                    fileObject = fo;
-                }
-            }
+//
+//            // Prefer sdoc files for doc-only items
+//            if (isDocOnly() && !fileUrl.endsWith(".sdoc")) { // NOI18N
+//                // This is probably a builtin library reference; correct the URL
+//                FileObject fo = JsIndexer.findScriptDocFor(fileUrl, fileObject);
+//                if (fo != null) {
+//                    fileObject = fo;
+//                }
+//            }
         }
 
         return fileObject;

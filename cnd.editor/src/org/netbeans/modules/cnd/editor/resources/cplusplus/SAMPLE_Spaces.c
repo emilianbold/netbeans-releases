@@ -23,7 +23,7 @@ for( int i = 20; i < 100; i++) {
 
 switch(number) {
 case 1:
-    do { out( (2+3)*this.number--); } while(this.number > 6);
+    do { out( (2+3)*number--); } while(number > 6);
     return 10;
 case 2:
 {

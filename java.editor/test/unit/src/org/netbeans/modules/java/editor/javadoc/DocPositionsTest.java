@@ -93,7 +93,7 @@ public class DocPositionsTest extends JavadocTestSupport {
         int offset = code.indexOf(what) + what.length();
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertNotNull(insertPointer(code, offset), jdts);
         
@@ -183,7 +183,7 @@ public class DocPositionsTest extends JavadocTestSupport {
         int offset = code.indexOf(what);
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertTrue(jdts.moveNext());
         assertNotNull(insertPointer(code, offset), jdts);
         

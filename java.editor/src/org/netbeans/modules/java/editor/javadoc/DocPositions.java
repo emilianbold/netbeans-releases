@@ -124,6 +124,15 @@ public final class DocPositions {
         resolve();
         return blockSectionStart;
     }
+    
+    List<? extends Tag> getTags() {
+        resolve();
+        List<Tag> tags = new ArrayList<Tag>(sortedTags.size());
+        for (TagEntry entry : sortedTags) {
+            tags.add(entry.tag());
+        }
+        return tags;
+    }
 
     private void resolve() {
         if (this.positions != null) {

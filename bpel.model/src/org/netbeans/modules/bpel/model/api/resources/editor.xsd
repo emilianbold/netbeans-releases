@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
+        xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+        targetNamespace="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
+        elementFormDefault="qualified">
+	<import namespace="http://docs.oasis-open.org/wsbpel/2.0/process/executable" schemaLocation="http://docs.oasis-open.org/wsbpel/2.0/OS/process/executable/ws-bpel_executable.xsd"/>
+	<import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+	<simpleType name="tSource">
+		<restriction base="string">
+			<enumeration value="from"/>
+			<enumeration value="to"/>
+		</restriction>
+	</simpleType>
+	<complexType name="tEditor">
+		<sequence>
+			<element ref="tns:casts" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+
+        <element name="casts" type="tns:tCasts"/>
+        <complexType name="tCasts">
+		<sequence>
+			<element ref="tns:cast" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+
+        <element name="cast" type="tns:tCast"/>
+        <complexType name="tCast">
+                <sequence>
+                        <element ref="bpws:documentation" minOccurs="0" maxOccurs="unbounded"/>
+                </sequence>
+                <attribute name="source" type="tns:tSource" use="optional"/>
+                <attribute name="type" type="xsd:QName" use="required"/>
+                <attribute name="path" type="xsd:string" use="required"/>
+	</complexType>
+</schema>
+
