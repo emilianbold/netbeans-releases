@@ -78,7 +78,7 @@ sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtests
 sigtest_gen=`pwd`/nbbuild/build/sigtests
 sigtest_out=nbbuild/build/sigtestscheck
 
-echo SigTest: Changing All Changes
+echo SigTest: Checking All Changes
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     ant -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
@@ -97,7 +97,7 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     fi
 
 fi
-echo SigTest: Changing All Changes Done
+echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
 if [ -f $sigtest_jar ]; then
@@ -125,6 +125,8 @@ KONEC
 </testsuite>
 KONEC
     fi
+else 
+    echo No $sigtest_jar found!
 fi
 echo SigTest: Generating Golden Files Done
 
