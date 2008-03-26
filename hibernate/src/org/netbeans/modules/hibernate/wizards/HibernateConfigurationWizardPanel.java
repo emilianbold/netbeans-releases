@@ -96,8 +96,10 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     }
 
     public void fillPanel() {
-        if (cmbDbConnection.getItemCount() != 0) {
-            cmbDbConnection.setSelectedIndex(1);
+        if (forNewProjectWizard) {
+            if (cmbDbConnection.getItemCount() != 0) {
+                cmbDbConnection.setSelectedIndex(1);
+            }
         }
     }
 
@@ -287,6 +289,18 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     public DatabaseConnection getDatabaseConnection() {
         return (DatabaseConnection) cmbDbConnection.getSelectedItem();
 
+    }
+
+    public void setDatabaseConnection(String dbConnURL) {
+        for (int i = 0; i < cmbDbConnection.getItemCount(); i++) {
+            if (cmbDbConnection.getItemAt(i) instanceof DatabaseConnection) {
+                DatabaseConnection conn = (DatabaseConnection) cmbDbConnection.getItemAt(i);
+                if (conn.getDatabaseURL().equals(dbConnURL)) {                
+                    cmbDbConnection.setSelectedItem(conn);
+                    break;
+                }
+            }
+        }        
     }
 
     public boolean isPanelValid() {

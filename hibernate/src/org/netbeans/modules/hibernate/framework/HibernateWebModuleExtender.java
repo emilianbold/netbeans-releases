@@ -175,7 +175,10 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                         String propName = sessionFactory.getAttributeValue(SessionFactory.PROPERTY2, index++, "name");  //NOI18N
                         if(dialect.contains(propName)) {
                             configPanel.setDialect(propValue);
-                        }                 
+                        }
+                        if (url.contains(propName)) {
+                            configPanel.setDatabaseConnection(propValue);
+                        }
                     }
                     
                 } catch (DataObjectNotFoundException ex) {
