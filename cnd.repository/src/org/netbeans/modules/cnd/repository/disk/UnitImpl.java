@@ -84,7 +84,7 @@ public class UnitImpl implements Unit {
         assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
         if (data == null) {
-            data = getStorage(key).get(key);
+            data = getStorage(key).read(key);
             if (data != null) {
                 // no syncronization here!!!
                 // the only possible collision here is lost of element, which is currently being deleted
