@@ -160,10 +160,6 @@ public final class HyperlinkEnv {
         return attribName;
     }
 
-    public Document getDocument() {
-        return baseDocument;
-    }
-
     public String getTagName() {
         return tagName;
     }

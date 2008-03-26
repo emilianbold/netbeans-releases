@@ -87,7 +87,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
             
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getFileObject());
             if(js == null) {
                 return;
             }

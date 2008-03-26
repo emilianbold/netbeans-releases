@@ -41,7 +41,6 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
 import java.util.Map;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -72,7 +71,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         // if factory-bean has been defined, resolve it and get it's class name
         if(mergedBean.getFactoryBean() != null) { 
             final String factoryBeanName = mergedBean.getFactoryBean();
-            FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
+            FileObject fo = env.getFileObject();
             if(fo == null) {
                 return;
             }
@@ -98,7 +97,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
         
         if (className[0] != null) {
             String methodName = mergedBean.getFactoryMethod();
-            SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className[0], methodName, -1,
+            SpringXMLConfigEditorUtils.openMethodInEditor(env.getFileObject(), className[0], methodName, -1,
                     Public.DONT_CARE, staticFlag);
         }
     }

@@ -279,8 +279,8 @@ public final class SpringXMLConfigEditorUtils {
         return getJavaSource(NbEditorUtilities.getFileObject(doc));
     }
 
-    public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
-        final JavaSource js = getJavaSource(doc);
+    public static void findAndOpenJavaClass(final String classBinaryName, FileObject fileObject) {
+        final JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
@@ -302,9 +302,9 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
 
-    public static ElementHandle<ExecutableElement> findMethod(Document doc, final String classBinName,
+    public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        JavaSource js = getJavaSource(doc);
+        JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 MethodFinder methodFinder = new MethodFinder(classBinName, methodName, argCount, publicFlag, staticFlag);
@@ -328,18 +328,18 @@ public final class SpringXMLConfigEditorUtils {
      * @param publicFlag YES if the method is public, NO if not, DONT_CARE if caller doesn't care
      * @param staticFlag YES if the method is static, NO if not, DONT_CARE if caller doesn't care
      */
-    public static void openMethodInEditor(Document doc, final String classBinName,
+    public static void openMethodInEditor(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        if (classBinName == null || methodName == null || doc == null) {
+        if (classBinName == null || methodName == null || fileObject == null) {
             return;
         }
 
-        final JavaSource js = getJavaSource(doc);
+        final JavaSource js = getJavaSource(fileObject);
         if (js == null) {
             return;
         }
 
-        final ElementHandle<ExecutableElement> eh = findMethod(doc, classBinName, methodName, argCount, publicFlag, staticFlag);
+        final ElementHandle<ExecutableElement> eh = findMethod(fileObject, classBinName, methodName, argCount, publicFlag, staticFlag);
         if (eh != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {

@@ -67,7 +67,7 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
         if(className == null) {
             return;
         }
-        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className, env.getValueString(), argCount,
+        SpringXMLConfigEditorUtils.openMethodInEditor(env.getFileObject(), className, env.getValueString(), argCount,
                             publicFlag, staticFlag);
     }
 }
