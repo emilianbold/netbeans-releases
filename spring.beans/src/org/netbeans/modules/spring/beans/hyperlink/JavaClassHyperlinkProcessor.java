@@ -52,6 +52,6 @@ public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getDocument());
+        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getFileObject());
     }
 }

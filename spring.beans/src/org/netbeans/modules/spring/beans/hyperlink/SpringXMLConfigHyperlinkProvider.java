@@ -47,7 +47,6 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
-import org.netbeans.modules.spring.beans.editor.DocumentContext;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -159,11 +158,11 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         HyperlinkEnv env = new HyperlinkEnv(document, offset);
         if(env.getType().isValueHyperlink()) {
             currentProcessor = locateHyperlinkProcessor(env.getTagName(), env.getAttribName(), attribValueProcessors);
-            if(currentProcessor == null && isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
+            if(currentProcessor == null && isPNamespaceName(env, env.getAttribName())) {
                 currentProcessor = pHyperlinkProcessor;
             }
         } else if(env.getType().isAttributeHyperlink()) {
-            if (isPNamespaceName(env.getDocumentContext(), env.getAttribName())) {
+            if (isPNamespaceName(env, env.getAttribName())) {
                 currentProcessor = pHyperlinkProcessor;
             } else {
                 currentProcessor = null;
@@ -228,10 +227,10 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         return null;
     }
     
-    private boolean isPNamespaceName(DocumentContext context, String nodeName) {
+    private boolean isPNamespaceName(HyperlinkEnv env, String nodeName) {
         String prefix = ContextUtilities.getPrefixFromNodeName(nodeName);
         if (prefix != null) {
-            String namespaceUri = context.lookupNamespacePrefix(prefix);
+            String namespaceUri = env.lookupNamespacePrefix(prefix);
             if (P_NAMESPACE.equals(namespaceUri)) {
                 return true;
             }
