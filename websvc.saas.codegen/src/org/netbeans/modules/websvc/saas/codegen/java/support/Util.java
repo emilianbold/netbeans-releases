@@ -1615,7 +1615,7 @@ public class Util {
         if(methodType == HttpMethodType.GET) {
             if(canGenerateJaxb) {
                 String resultClass = pkg+ "." + Util.upperFirstChar(serviceName);
-                methodBody += indent+"//"+resultClass+" resultObj = " +
+                methodBody += indent+resultClass+" resultObj = " +
                         "result.getDataAsJaxbObject("+resultClass+".class);\n";
                 methodBody += indent+"//"+dropFileType.getPrintWriterType()+
                         ".println(\"The SaasService returned: \" + resultObj.toString());\n";
