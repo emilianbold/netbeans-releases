@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -264,7 +265,8 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         if (libraryPath != null) {
             File prjRoot = FileUtil.toFile(project.getProjectDirectory());
             libraryFile = PropertyUtils.resolveFile(prjRoot, libraryPath);
-            if (libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
+            if (FileOwnerQuery.getOwner(libraryFile.toURI()) == project && 
+                    libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
                 //do not update the relative path if within the project..
                 libraryWithinProject = true;
                 FileObject fo = FileUtil.toFileObject(libraryFile);
