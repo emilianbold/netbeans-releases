@@ -5,7 +5,7 @@
 -->
 <html>
 <head>
-	<title>Using Database Servers With JRuby</title>
+	<title> New Ruby on Rails Application Wizard: Database Configuratio</title>
 <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css"  rel="stylesheet" type="text/css">
 </head>
 <body>
@@ -17,30 +17,29 @@
  
 
 
- you can specify how the application connects with a database. The IDE uses this information to write the configurations in the database.yml file.
+ you can specify how the application connects with a database. The IDE uses this information to write the configurations in the <code>database.yml </code>file.
 
 If you click Next or Finish without making any changes,  the <code>database.yml</code> file is configured to use the MySQL database and will not use a JDBC connection. The IDE also derives the development, test, and production database names from the project name.</p>
-<p> This is the third panel of the New Project wizard for a Ruby on Rails project. To open the wizard, choose Files &gt; New Project, then select Ruby in the Category list and   Ruby on Rails Application in the Projects list and click next. </p>
+<p> This is the third panel of the New Project wizard for a Ruby on Rails project. To open the wizard, choose Files &gt; New Project, then select Ruby in the Category list and   Ruby on Rails Application in the Projects list and click Next twice. </p>
 <h3>Database Access Information </h3>
-<p>Select Configure Using IDE Connections  to use a database that you have already registered with the IDE or  to register a connection. Otherwise, select Specify Database Information Directly.</p>
+<p>Select Configure Using IDE Connections  to use a database that you have already registered with the IDE or  to register a connection. Otherwise, select Specify Database Information Directly. 
+
+
+ The IDE uses this information to update the configuration in the <code>database.yml</code> file.</p>
 <ul>
   <li><strong>Configure Using Existing IDE Connections  <br>
-    </strong>This option enables you to select specific connections that have already been registered in the IDE. 
-
-
- To create a new  MySQL database connection, click the Create DB button. Type the connection parameters in the  New Database Connection window.  You can also  register a new database  by choosing New Database Connection in the Development, Test, or Production drop-down boxes.</li>
-</ul>
-<ul>
+    </strong> This option enables you to select from database connections that have been registered with the IDE. If you have an existing database, but you have not registered it with the IDE, you can select New Database Connection from the drop-down list to add a connection to it. </li>
+  <p>
+	To create a new MySQL database, click Create DB. Type the User Name and Password in the MySQL Server Properties dialog box and click OK. Type the Database Name and click OK. Then type the connection parameters in the New Database Connection window.</p>
   <li><strong>Specify Database Information Directly<br>
     </strong> 
-The IDE uses this information to update the configuration in the <code>database.yml</code> file. Specify a  database adapter and Database Name,  type the User Name, and type the Password if one is required. This specified information is used for configuring the development database configuration. The database names for the test and production database configurations are derived from the project name. </li><br>
-  <li><strong>Access the Database Using JDBC <br>
-    </strong>Select this option to allow the   IDE to configure Rails to use JDBC drivers when accessing the database. 
-                
-
-             When you use JDBC to access the database, the IDE  automatically creates references to the driver JAR file or files of the selected JDBC connections. <br>
-  </li>
+ Specify a  Database Adapter and Database Name,  type the User Name, and type the Password if one is required. This specified information is used for configuring the development database configuration. The database names for the test and production database configurations are derived from the project name. </li>
 </ul>
+<h3>Access the Database Using JDBC </h3><p>
+  Select this option to allow the   IDE to configure Rails to use JDBC drivers when accessing the database. 
+                  
+
+               When you use JDBC to access the database, the IDE  automatically creates references to the driver JAR file or files of the selected JDBC connections. </p>
 <p><a name="seealso">See Also</a></p>
 <dl><dd><a href="ruby_quickref.html">Working With NetBeans Ruby</a></dd>
 <dd><a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application Wizard: Name and Location</a></dd>           
