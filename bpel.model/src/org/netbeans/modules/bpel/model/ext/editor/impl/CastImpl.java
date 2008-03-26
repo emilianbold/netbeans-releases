@@ -102,7 +102,7 @@ public class CastImpl extends EditorEntityImpl implements Cast {
     public String getPath() {
         readLock();
         try {
-            return getAttribute(EditorAttributes.SOURCE);
+            return getAttribute(EditorAttributes.PATH);
         }
         finally {
             readUnlock();

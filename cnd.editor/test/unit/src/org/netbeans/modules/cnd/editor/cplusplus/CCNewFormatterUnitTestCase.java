@@ -3186,7 +3186,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n"
@@ -3222,7 +3222,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n" +
@@ -4179,6 +4179,42 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 ", env_ (env)\n" +
                 "{\n" +
                 "}\n"
+                );
+    }
+    //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
+    public void testSpaceWithinBraces() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinBraces, true);
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testSpaceWithinBraces2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int c[] = {1, (1 + 2), (2 + 3)\n" +
+                "};\n"
                 );
     }
 }
