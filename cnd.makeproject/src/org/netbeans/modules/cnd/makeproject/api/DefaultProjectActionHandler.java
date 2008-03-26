@@ -189,17 +189,6 @@ public class DefaultProjectActionHandler implements ActionListener {
             return handle;
         }
         
-        private ProgressHandle createPogressHandleNoCancel() {
-            ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
-            new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    getTab().select();
-                }
-            });
-            handle.setInitialDelay(0);
-            return handle;
-        }
-        
         private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
@@ -296,10 +285,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
                     getCustomDebugActionHandlerProvider() != null) {
-                // See 130827
-                progressHandle.finish();
-                progressHandle = createPogressHandleNoCancel();
-                progressHandle.start();
                 CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider().factoryCreate();
                 ah.addExecutionListener(this);
                 ah.execute(pae, getTab());
@@ -353,10 +338,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                             args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();
                         }
-                        // See 130827
-                        progressHandle.finish();
-                        progressHandle = createPogressHandleNoCancel();
-                        progressHandle.start();
                     }
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];

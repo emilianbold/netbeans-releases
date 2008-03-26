@@ -179,9 +179,8 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     }
                     try {
                         jdctx.javac = javac;
-                        if (resolveContext(javac, jdctx)) {
-                            analyzeContext(jdctx);
-                        }
+                        resolveContext(javac, jdctx);
+                        analyzeContext(jdctx);
                     } finally {
                         jdctx.javac = null;
                     }
@@ -193,25 +192,18 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private boolean resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
+    private void resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
         jdctx.doc = javac.getDocument();
         // find class context: class, method, ...
         Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, jdctx.doc, this.caretOffset);
         if (javadoc == null) {
-            return false;
+            return;
         }
         jdctx.jdoc = javadoc;
         Element elm = javac.getElementUtilities().elementFor(javadoc);
-        if (elm == null) {
-            return false;
-        }
         jdctx.handle = ElementHandle.create(elm);
-        jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(javac, this.caretOffset);
-        if (jdctx.jdts == null) {
-            return false;
-        }
+        jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(jdctx.doc, this.caretOffset);
         jdctx.positions = DocPositions.get(javac, javadoc, jdctx.jdts);
-        return jdctx.positions != null;
     }
     
     private void analyzeContext(JavadocContext jdctx) {
@@ -302,6 +294,90 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         items.addAll(JavadocCompletionItem.addInlineTagItems(jdctx.jdoc, jdctx.handle.getKind(), prefix, pos));
     }
     
+    static final class Reference {
+        CharSequence fqn;
+        CharSequence member;
+        CharSequence tag;
+        int begin = -1; // inclusive
+        int end = -1; // exclusive
+        
+        boolean isReference() {
+            return begin > 0;
+        }
+        
+        private static void insideMember(TokenSequence<JavadocTokenId> jdts, Reference ref) {
+            StringBuilder sb = new StringBuilder();
+            STOP: while (jdts.moveNext()) {
+                Token<JavadocTokenId> token = jdts.token();
+                switch(token.id()) {
+                    case IDENT:
+                        sb.append(token.text());
+                        ref.end = jdts.offset() + token.length();
+                        break;
+                    case OTHER_TEXT:
+                        // XXX handle also () part
+                    default:
+                        break STOP;
+                }
+            }
+            
+            ref.member = sb;
+        }
+        
+        private static void insideFQN(TokenSequence<JavadocTokenId> jdts, Reference ref) {
+            StringBuilder sb = new StringBuilder();
+            STOP: while (jdts.moveNext()) {
+                Token<JavadocTokenId> token = jdts.token();
+                switch(token.id()) {
+                    case IDENT:
+                        sb.append(token.text());
+                        if (ref.begin < 0) {
+                            ref.begin = jdts.offset();
+                        }
+                        ref.end = jdts.offset() + token.length();
+                        break;
+                    case HASH:
+//                        sb.append(token.text());
+                        if (ref.begin < 0) {
+                            ref.begin = jdts.offset();
+                        }
+                        ref.end = jdts.offset() + token.length();
+                        insideMember(jdts, ref);
+                        break STOP;
+                    case DOT:
+                        if (sb.length() == 0 || '.' == sb.charAt(sb.length() - 1)) {
+                            break STOP;
+                        }
+                        sb.append('.');
+                        ref.end = jdts.offset() + token.length();
+                        break;
+                    default:
+                        break STOP;
+                }
+            }
+            
+            if (sb.length() > 0) {
+                ref.fqn = sb;
+            }
+        }
+        
+        /**
+         * 
+         * @param jdctx
+         * @param offset offset of the first token to resolve
+         * @return reference
+         */
+        public static Reference resolve(JavadocContext jdctx, int offset) {
+            TokenSequence<JavadocTokenId> jdts = jdctx.jdts;
+            Reference ref = new Reference();
+            jdts.move(offset);
+            insideFQN(jdts, ref);
+            
+
+            return ref;
+        }
+    }
+    
     void resolveIdent(JavadocContext jdctx) {
         TokenSequence<JavadocTokenId> jdts = jdctx.jdts;
         assert jdts.token() != null;
@@ -317,6 +393,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         // @see #meth(int p, int q)
         // @see Clazz.NestedClazz
         
+        // XXX ignore parenthesis content for now
         // Parenthesis content:
         // param types not neccessary to be imported or fqn!!!
         // param types may be fqn
@@ -422,7 +499,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         
         jdts.moveNext(); // reference
-        JavaReference ref = JavaReference.resolve(jdctx.jdts, jdts.offset(), span[1]);
+        Reference ref = Reference.resolve(jdctx, jdts.offset());
         if (ref.isReference() && caretOffset <= ref.end) {
             // complete type
             CharSequence cs = JavadocCompletionUtils.getCharSequence(jdctx.doc, ref.begin, caretOffset);
@@ -652,7 +729,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private void completeClassMember(String fqn, String prefix, int substitutionOffset, JavadocContext jdctx) {
         Element elm;
         if (fqn == null) {
-            // local members
+            // XXX local members
             elm = null;
             
             addLocalMembersAndVars(jdctx, prefix, substitutionOffset);

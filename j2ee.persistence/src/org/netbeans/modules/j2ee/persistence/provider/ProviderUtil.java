@@ -555,8 +555,7 @@ public class ProviderUtil {
      * 
      *@param project the project whose PUDataObject is to be get. Must not be null.
      * 
-     *@return <code>PUDataObject</code> associated with the given project or null 
-     * if there is no such <code>PUDataObject</code>.
+     *@return <code>PUDataObject</code> associated with the given project; never null.
      * 
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
@@ -566,14 +565,7 @@ public class ProviderUtil {
         
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
-            try {
-                puFileObject = createPersistenceDDFile(project);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        if (puFileObject == null) {
-            return null;
+            puFileObject = createPersistenceDDFile(project);
         }
         return getPUDataObject(puFileObject);
     }
@@ -583,19 +575,24 @@ public class ProviderUtil {
      * persistence units (<tt>persistence.xml</tt>). <i>Todo: move somewhere else?</i>
      * @return FileObject representing <tt>persistence.xml</tt>.
      */
-    private static FileObject createPersistenceDDFile(Project project) throws IOException {
-        final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
-        if (persistenceLocation == null) {
-            return null;
-        }
+    private static FileObject createPersistenceDDFile(Project project){
         final FileObject[] dd = new FileObject[1];
-        // must create the file using AtomicAction, see #72058
-        persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
-                        "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
-            }
-        });
+        try {
+            final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
+            // must create the file using AtomicAction, see #72058
+            persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() {
+                    try {
+                        dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
+                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return dd[0];
     }
     

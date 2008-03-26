@@ -142,16 +142,16 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
-                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
-                        switch (paramChild.getType()) {
-                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                                AST typeName = paramChild.getFirstChild();
-                                if (typeName != null) {
-                                    res.add(new TemplateParameterImpl(typeName.getText()));
-                                }
-                                break;
+                    AST type = child.getFirstChild();
+                    if (type != null) {
+                        AST typeName = type.getFirstChild();
+                        if (typeName != null) {
+                            res.add(new TemplateParameterImpl(typeName.getText()));
+                        } else {
+                            System.err.println("not yet supported template parameter"); // NOI18N
                         }
+                    } else {
+                        System.err.println("not yet supported template parameter"); // NOI18N
                     }
                     break;
             }

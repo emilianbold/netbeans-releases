@@ -59,6 +59,8 @@ public class StartActionProvider extends ActionsProvider {
     
     private GdbDebugger debuggerImpl;
     private ContextProvider lookupProvider;
+    private static final boolean startVerbose =
+                System.getProperty("netbeans.debugger.start") != null;
 
     /**
      * Creates a new instance of StartActionProvider
@@ -126,7 +128,6 @@ public class StartActionProvider extends ActionsProvider {
      *        done.
      * @since 1.5
      */
-    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

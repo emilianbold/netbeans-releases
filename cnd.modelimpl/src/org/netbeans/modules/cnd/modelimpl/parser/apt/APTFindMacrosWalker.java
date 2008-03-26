@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -89,7 +90,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
         APTToken name = (APTToken) defineNode.getName();
-        addReference(name, new MacroInfo(csmFile, defineNode.getOffset(), defineNode.getEndOffset(), null));
+        addReference(name, new MacroInfo(csmFile, defineNode.getOffset(), null));
         analyzeList(defineNode.getBody());
         super.onDefine(apt);
     }
@@ -177,6 +178,10 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         references.add(new SysMacroReference(csmFile, token, macro));
     }
 
+    private void addReference(APTToken token) {
+        addReference(token, null);
+    }
+
     private void addReference(APTToken token, MacroInfo mi) {
         if (token != null) {
             MacroReference mf = new MacroReference(csmFile, token, mi);
@@ -229,16 +234,15 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection);
                     for (int i = macros.size() - 1; i >= 0; i--) {
                         CsmMacro macro = macros.get(i);
-                        if (macro!=null && mi.startOffset == macro.getStartOffset()) {
+                        if (macro!=null && mi.offset == macro.getStartOffset()) {
                             ref = macro;
                             break;
                         }
                     }
-                    if (ref == null) {
-                        // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
-                        // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
-                        ref = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, mi.startOffset, mi.endOffset), false);
-                    }
+                    // TODO: IZ#130897
+                    // if not found in file, create own macro impl 
+                    // (i.e. could be dead block of original file)
+                    // ref = new MacroImpl(...)
                 }
             }
             return ref;
