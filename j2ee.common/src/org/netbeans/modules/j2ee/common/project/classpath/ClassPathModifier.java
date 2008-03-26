@@ -143,7 +143,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     
     public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
-        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
+        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), operation);
     }
     
     boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {

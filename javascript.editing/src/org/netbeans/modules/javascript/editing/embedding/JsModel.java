@@ -75,11 +75,10 @@ public class JsModel {
 
     private static final Logger LOGGER = Logger.getLogger(JsModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    
-    
     private final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     private final String HTML_MIME_TYPE = "text/html"; // NOI18N
     private final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    private final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String rubyCode;
@@ -145,8 +144,10 @@ public class JsModel {
                     @SuppressWarnings("unchecked")
                     TokenSequence<? extends HTMLTokenId> hts = (TokenSequence<? extends HTMLTokenId>) tokenSequence;
                     extractJavaScriptFromHtml(hts, buffer, false);
-                } else if(JSP_MIME_TYPE.equals(mimeType)) {
+                } else if (JSP_MIME_TYPE.equals(mimeType)) {
                     extractJavaScriptFromJsp((TokenSequence<? extends TokenId>) tokenSequence, buffer);
+                } else if (PHP_MIME_TYPE.equals(mimeType)) {
+                    extractJavaScriptFromPHP((TokenSequence<? extends TokenId>) tokenSequence, buffer);
                 }
             } finally {
                 d.readUnlock();
@@ -154,12 +155,12 @@ public class JsModel {
             rubyCode = buffer.toString();
         }
 
-          if (LOG) {
+        if (LOG) {
             LOGGER.log(Level.FINE, "===== VIRTUAL JavaScript SOURCE =====");
             LOGGER.log(Level.FINE, rubyCode);
             LOGGER.log(Level.FINE, "=====================================");
-}
-        
+        }
+
         return rubyCode;
     }
 
@@ -185,8 +186,6 @@ public class JsModel {
 //        EVENT_HANDLER_NAMES.add("onselect"); // NOI18N
 //        EVENT_HANDLER_NAMES.add("onchange"); // NOI18N
 //    }
-    
-    
     /** Create a JavaScript model of the given JSP buffer.
      * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
      * @param outputBuffer The buffer to emit the translation to
@@ -195,10 +194,10 @@ public class JsModel {
      */
     void extractJavaScriptFromJsp(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
         StringBuilder buffer = outputBuffer;
-        
+
         //TODO - implement the "classpath" import for other projects
         //how is the javascript classpath done????????/
-        
+
         boolean inJavaScript = false;
 
         while (tokenSequence.moveNext()) {
@@ -210,9 +209,8 @@ public class JsModel {
                     continue;
                 }
                 inJavaScript = extractJavaScriptFromHtml(ts, buffer, inJavaScript);
-            } else if (token.id().primaryCategory().equals("expression-language")
-                    || token.id().primaryCategory().equals("scriptlet")) { // NOI18N
-                
+            } else if (token.id().primaryCategory().equals("expression-language") || token.id().primaryCategory().equals("scriptlet")) { // NOI18N
+
                 if (inJavaScript) {
                     int sourceStart = tokenSequence.offset();
                     String text = " __UNKNOWN__ "; // NOI18N
@@ -228,8 +226,55 @@ public class JsModel {
         }
 
     }
-    
-       /** Create a JavaScript model of the given RHTML buffer.
+
+    void extractJavaScriptFromPHP(TokenSequence<? extends TokenId> tokenSequence, StringBuilder outputBuffer) {
+        StringBuilder buffer = outputBuffer;
+
+        //TODO - implement the "classpath" import for other projects
+        //how is the javascript classpath done????????/
+
+        boolean inJavaScript = false;
+
+        while (tokenSequence.moveNext()) {
+            Token<? extends TokenId> token = tokenSequence.token();
+
+            if (token.id().name().equals("T_INLINE_HTML")) { // NOI18N
+                TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                if (ts == null) {
+                    continue;
+                }
+                inJavaScript = extractJavaScriptFromHtml(ts, buffer, inJavaScript);
+            }
+            if (inJavaScript) {
+                int sourceStart = tokenSequence.offset();
+
+                //find end of the php code
+                while (tokenSequence.moveNext()) {
+
+                    token = tokenSequence.token();
+
+                    if (token.id().name().equals("T_INLINE_HTML")) {
+                        //we are out of php code
+                        tokenSequence.movePrevious();
+                        String text = " __PHP_CODE__ "; // NOI18N
+                        int sourceEnd = sourceStart + token.length();
+                        int generatedStart = buffer.length();
+                        buffer.append(text);
+                        int generatedEnd = buffer.length();
+                        CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                                generatedEnd);
+                        codeBlocks.add(blockData);
+                        break;
+                    }
+
+
+                }
+            }
+
+        }
+    }
+
+    /** Create a JavaScript model of the given RHTML buffer.
      * @todo Make this more general purpose (so it can be used from HTML, JSP etc.)
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the RHTML code
@@ -250,32 +295,32 @@ public class JsModel {
 //        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
 //        buffer.append("_buf='';"); // NOI18N
 //        codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
-            FileObject fo = NbUtilities.findFileObject(doc);
-            if (fo != null) {
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null) {
-                    StringBuilder sb = new StringBuilder();
-                    FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
-                    if (javascriptFolder != null) {
-                        addJavaScriptFiles(javascriptFolder, sb);
-                        if (sb.length() > 0) {
-                            // Insert a file link
-                            //int sourceStart = ts.offset(); 
-                            int sourceStart = 0;
-                            String path = sb.toString();
-                            String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
-                            // This corresponds to a 0-size block in the source
-                            int sourceEnd = sourceStart;
-                            int generatedStart = buffer.length();
-                            buffer.append(insertText);
-                            int generatedEnd = buffer.length();
-                            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                                    generatedEnd);
-                            codeBlocks.add(blockData);
-                        }
+        FileObject fo = NbUtilities.findFileObject(doc);
+        if (fo != null) {
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project != null) {
+                StringBuilder sb = new StringBuilder();
+                FileObject javascriptFolder = project.getProjectDirectory().getFileObject("public/javascripts"); // NOI18N
+                if (javascriptFolder != null) {
+                    addJavaScriptFiles(javascriptFolder, sb);
+                    if (sb.length() > 0) {
+                        // Insert a file link
+                        //int sourceStart = ts.offset(); 
+                        int sourceStart = 0;
+                        String path = sb.toString();
+                        String insertText = JsAnalyzer.NETBEANS_IMPORT_FILE + "(" + path + ");\n"; // NOI18N
+                        // This corresponds to a 0-size block in the source
+                        int sourceEnd = sourceStart;
+                        int generatedStart = buffer.length();
+                        buffer.append(insertText);
+                        int generatedEnd = buffer.length();
+                        CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                                generatedEnd);
+                        codeBlocks.add(blockData);
                     }
                 }
             }
+        }
 
         boolean inJavaScript = false;
 
@@ -295,7 +340,7 @@ public class JsModel {
         //FileObject fo = 
 
 
-        while(tokenSequence.moveNext()) {
+        while (tokenSequence.moveNext()) {
             Token<? extends TokenId> token = tokenSequence.token();
 
             // Conversion algorithm:
@@ -346,7 +391,6 @@ public class JsModel {
 //            codeBlocks.add(new CodeBlockData(doc.getLength(), doc.getLength(), buffer.length()-end.length(), buffer.length()));
 //        }
     }
-
 
     /** @return True iff we're still in the middle of an embedded token */
     boolean extractJavaScriptFromHtml(TokenSequence<? extends HTMLTokenId> ts,

@@ -33,9 +33,7 @@ import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.LoggingNodeFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
@@ -43,6 +41,7 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
+import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
@@ -73,10 +72,9 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
     public MapperModel constructModel(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
-        BpelChangeProcessor changeProcessor = 
-                new BpelChangeProcessor(new LoggingBpelModelUpdater(mapperTcContext));
-        mapperTcContext.getDesignContextController().
-                setBpelModelUpdateSource(changeProcessor);
+        Mapper mapper = mapperTcContext.getMapper();
+        BpelChangeProcessor changeProcessor = new BpelChangeProcessor(
+                mapper, new LoggingBpelModelUpdater(mapperTcContext));
         //
 //        BpelEntity bpelEntity = context.getBpelEntity();
         BpelEntity bpelEntity = context.getContextEntity();
@@ -124,7 +122,8 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
 //        } else {
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
+            VariableTreeModel sourceVariableModel = 
+                    new VariableTreeModel(context, true, mapper);
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
                     new PartnerLinkTreeExtModel(bpelEntity, true);
