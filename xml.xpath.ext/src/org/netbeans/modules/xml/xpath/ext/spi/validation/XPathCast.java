@@ -49,6 +49,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
  */
 public interface XPathCast {
 
+  String getPath();
   GlobalType getType();
-  XPathSchemaContext getContext();
 }
