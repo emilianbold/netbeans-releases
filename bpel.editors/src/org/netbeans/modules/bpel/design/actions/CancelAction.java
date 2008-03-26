@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bpel.design.actions;
 
-package org.netbeans.modules.ruby.debugger;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionEvent;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import org.netbeans.modules.bpel.design.DesignView;
 
 /**
- * Debugger Annotation class.
+ *
+ * @author Alexey
  */
-public final class DebuggerAnnotation extends Annotation {
-    
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
-    
-    private final String type;
-    
-    public DebuggerAnnotation(final String type, final Annotatable annotatable) {
-        this.type = type;
-        attach(annotatable);
+public class CancelAction extends DesignViewAction {
+
+    private static final long serialVersionUID = 1L;
+
+    public CancelAction(DesignView view) {
+        super(view);
     }
-    
-    public String getAnnotationType() {
-        return type;
+
+    public void actionPerformed(ActionEvent e) {
+        getDesignView().getDndHandler().clear();
+        getDesignView().getCopyPasteHandler().exitPasteMode();
+        // 117432
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (ToolTipManager.sharedInstance().isEnabled()) {
+                    ToolTipManager.sharedInstance().setEnabled(false);
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+            }
+        });
+
     }
-    
-    public String getShortDescription() {
-        if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
-        } else if (type.equals(CALL_STACK_FRAME_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N
-        } else {
-            return null;
-        }
-    }
-    
-    private static String getMessage(final String key) {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(key);
-    }
-    
 }
