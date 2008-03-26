@@ -632,7 +632,8 @@ public class Utilities {
             switch (mit.getMethodSelect().getKind()) {
                 case IDENTIFIER:
                     Scope s = info.getTrees().getScope(path);
-                    on = s.getEnclosingClass().asType();
+                    TypeElement enclosingClass = s.getEnclosingClass();
+                    on = enclosingClass != null ? enclosingClass.asType() : null;
                     methodName = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
                     break;
                 case MEMBER_SELECT:
