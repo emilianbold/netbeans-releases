@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.wizards;
+package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
@@ -46,11 +46,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.openide.util.ChangeSupport;
 
 /**
  * @author Tomas Mysik
@@ -169,13 +169,11 @@ public class LocalServer implements Comparable<LocalServer> {
 
         private static final long serialVersionUID = -4527321803090719483L;
         private final JTextField component = new JTextField();
-        private final ChangeListener changeListener;
-        private final ChangeEvent changeEvent = new ChangeEvent(this);
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private LocalServer activeItem;
 
-        public ComboBoxEditor(ChangeListener changeListener) {
+        public ComboBoxEditor() {
             super();
-            this.changeListener = changeListener;
             component.setOpaque(true);
             component.getDocument().addDocumentListener(this);
         }
@@ -210,6 +208,22 @@ public class LocalServer implements Comparable<LocalServer> {
             component.removeActionListener(l);
         }
 
+        /**
+         * Add listener to the combobox changes.
+         * @param l listener to add.
+         */
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
+        }
+
+        /**
+         * Remove listener from the combobox changes.
+         * @param l listener to remove.
+         */
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
+        }
+
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
@@ -229,7 +243,7 @@ public class LocalServer implements Comparable<LocalServer> {
                 activeItem.setSrcRoot(component.getText().trim());
             }
             component.setEnabled(enabled);
-            changeListener.stateChanged(changeEvent);
+            changeSupport.fireChange();
         }
     }
 
@@ -255,10 +269,15 @@ public class LocalServer implements Comparable<LocalServer> {
         }
     }
 
+    // XXX extends AbstractListModel implements MutableComboBoxModel, Serializable and use ArrayList
     public static class ComboBoxModel extends DefaultComboBoxModel {
         private static final long serialVersionUID = 193082264935872743L;
 
         public ComboBoxModel(LocalServer... defaultLocalServers) {
+            if (defaultLocalServers == null || defaultLocalServers.length == 0) {
+                // prevent NPE
+                defaultLocalServers = new LocalServer[] { new LocalServer("") }; // NOI18N
+            }
             for (LocalServer localServer : defaultLocalServers) {
                 addElement(localServer);
             }
