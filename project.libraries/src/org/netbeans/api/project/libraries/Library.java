@@ -43,15 +43,22 @@ package org.netbeans.api.project.libraries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,8 +106,7 @@ public final class Library {
     }
 
     /**
-     * Access typed library data. Any relative URL provided by SPI is made absolute
-     * before being passed to client. See {@link #getRawContent} if you need raw library data.
+     * Access typed raw library data as URLs.
      * <p>
      * The contents are defined by SPI providers and identified
      * by the <a href="package-summary.html#volumeType">volume types</a>. For example the j2se library supports the following
@@ -109,19 +115,14 @@ public final class Library {
      * </p>
      *
      * @param volumeType which resources to return.
-     * @return path of URLs of given type (possibly empty but never <code>null</code>)
+     * @return list of URLs of given volume type (possibly empty but never <code>null</code>)
      */
     public List<URL> getContent(final String volumeType) {
-        List<URL> urls = this.impl.getContent (volumeType);
-        List<URL> resolvedUrls = new ArrayList<URL>(urls.size());
-        for (URL u : urls) {
-            resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURL(manager.getLocation(), u));
-        }
-        return resolvedUrls;
+        return impl.getContent (volumeType);
     } // end getContent
 
     /**
-     * Access typed but raw library data.
+     * Access typed raw library data as possibly relative URIs.
      * <p>
      * The contents are defined by SPI providers and identified
      * by the <a href="package-summary.html#volumeType">volume types</a>. For example the j2se library supports the following
@@ -130,10 +131,15 @@ public final class Library {
      * </p>
      *
      * @param volumeType which resources to return.
-     * @return path of URLs of given type (possibly empty but never <code>null</code>)
+     * @return list of URIs of given volume type (possibly empty but never <code>null</code>)
+     * @since org.netbeans.modules.project.libraries/1 1.18
      */
-    public List<URL> getRawContent(final String volumeType) {
-        return this.impl.getContent (volumeType);
+    public List<URI> getURIContent(final String volumeType) {
+        if (impl instanceof LibraryImplementation2) {
+            return ((LibraryImplementation2)impl).getURIContent(volumeType);
+        } else {
+            return LibrariesModel.convertURLsToURIs(impl.getContent(volumeType));
+        }
     } // end getContent
 
 

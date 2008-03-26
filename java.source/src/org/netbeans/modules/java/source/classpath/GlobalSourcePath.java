@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,7 +77,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -480,7 +478,6 @@ public class GlobalSourcePath {
                                     List<URL> libSrc = lib.getContent("src");      //NOI18N
                                     for (URL url : libSrc) {                        
                                         try {
-                                            url = LibrariesSupport.resolveLibraryEntryURL(lm.getLocation(), url);
                                             Project p = FileOwnerQuery.getOwner(url.toURI());
                                             if (p != null) {
                                                 Sources src = p.getLookup().lookup(Sources.class);

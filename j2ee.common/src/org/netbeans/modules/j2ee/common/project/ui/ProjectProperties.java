@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -198,7 +199,7 @@ public final class ProjectProperties {
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
             List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
             for (URL rootUrl : roots) {
-                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
+                FileObject root = URLMapper.findFileObject(rootUrl);
                 
                 //file inside library is broken
                 if (root == null)
