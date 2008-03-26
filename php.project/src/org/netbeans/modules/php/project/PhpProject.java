@@ -112,6 +112,9 @@ public class PhpProject implements Project, AntProjectListener {
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
     public static final String URL = "url"; // NOI18N
+    public static final String INCLUDE_PATH = "include.path"; // NOI18N
+    // XXX will be replaced with global ide include path
+    public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
 
     private static final Icon PROJECT_ICON = 
         new ImageIcon(Utilities.loadImage( 
@@ -253,7 +256,7 @@ public class PhpProject implements Project, AntProjectListener {
                 getHelper().createCacheDirectoryProvider(),
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider( this , provider ),
-                new CustomizerProviderImpl(this, myHelper),
+                new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery( getEvaluator(), 
                     new String[] { SRC_DIR } , new String[] {} ),
                 new PhpProjectOperations(this) ,
@@ -266,7 +269,7 @@ public class PhpProject implements Project, AntProjectListener {
         });
     }
 
-    private ReferenceHelper getRefHelper() {
+    public ReferenceHelper getRefHelper() {
         return myRefHelper;
     }
     
