@@ -1,76 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:delicious:del"
-            xmlns:del="urn:delicious:del"
             elementFormDefault="qualified">
-
-    <xsd:element name="tags" type="del:TagsType"/>
-    <xsd:element name="posts" type="del:PostsType"/>
-    <xsd:element name="dates" type="del:DatesType"/>
-    <xsd:element name="result" type="del:ResultType"/>
-    <xsd:element name="bundles" type="del:BundlesType"/>
-    <xsd:element name="update" type="del:UpdateType"/>
-    
-    <xsd:complexType name="TagsType">
-        <xsd:sequence>
-            <xsd:element name="tag">
-                <xsd:complexType>
-                    <xsd:attribute name="count" type="xsd:string"/>
-                    <xsd:attribute name="tag" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="PostsType">
-        <xsd:sequence>
-            <xsd:element name="post" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:attribute name="href" type="xsd:string"/>
-                    <xsd:attribute name="description" type="xsd:string"/>
-                    <xsd:attribute name="extended" type="xsd:string"/>
-                    <xsd:attribute name="hash" type="xsd:string"/>
-                    <xsd:attribute name="others" type="xsd:string"/>
-                    <xsd:attribute name="tag" type="xsd:string"/>
-                    <xsd:attribute name="time" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="DatesType">
-        <xsd:sequence>
-            <xsd:element name="date" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:attribute name="count" type="xsd:string"/>
-                    <xsd:attribute name="date" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="BundlesType">
-        <xsd:sequence>
-            <xsd:element name="bundle" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:attribute name="name" type="xsd:string"/>
-                    <xsd:attribute name="tags" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="ResultType">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="code" type="xsd:string"/>
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-    
-    <xsd:complexType name="UpdateType">
-        <xsd:attribute name="time" type="xsd:string"/>
-    </xsd:complexType>
-    
+    <xsd:element name="tags">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="tag">
+                    <xsd:complexType>
+                        <xsd:attribute name="count" type="xsd:int"/>
+                        <xsd:attribute name="tag" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="posts">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="post" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="href" type="xsd:anyURI"/>
+                        <xsd:attribute name="description" type="xsd:string"/>
+                        <xsd:attribute name="extended" type="xsd:string"/>
+                        <xsd:attribute name="hash" type="xsd:string"/>
+                        <xsd:attribute name="others" type="xsd:string"/>
+                        <xsd:attribute name="tag" type="xsd:string"/>
+                        <xsd:attribute name="time" type="xsd:dateTime"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="dates">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="date" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="count" type="xsd:int"/>
+                        <xsd:attribute name="date" type="xsd:date"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="result">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:attribute name="code" type="xsd:string"/>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="bundles">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="bundle" minOccurs="0" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:attribute name="tags" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="update">
+        <xsd:complexType>
+            <xsd:attribute name="time" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
 </xsd:schema>
