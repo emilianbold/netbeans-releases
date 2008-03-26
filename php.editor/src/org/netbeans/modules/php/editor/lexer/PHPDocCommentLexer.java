@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,46 +37,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.lexer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
-
+import org.openide.ErrorManager;
+import org.openide.util.NbPreferences;
 
 
 /**
+ * Lexical analyzer for PHP Documentor.
  *
- * @author Petr Pisl, Marek Fukala
+ * @author Petr Pisl
  */
-public class GSFPHPLexer implements Lexer<PHPTokenId> {
+
+public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
+
+    private final TokenFactory<PHPDocCommentTokenId> tokenFactory;
+    private final DocumentorColoringScanner scanner;
     
-    private final PHP5ColoringLexer scanner;
-    private TokenFactory<PHPTokenId> tokenFactory;    
-    
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = new PHP5ColoringLexer(info, false);
-        tokenFactory = info.tokenFactory();
+    public PHPDocCommentLexer(LexerRestartInfo<PHPDocCommentTokenId> info) {
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // passed argument always null
+        scanner = new DocumentorColoringScanner(info);
+        
+    }
+
+    public Object state() {
+        return null;
+    }
+
+    public Preferences getDocscanPreferences() {
+        return NbPreferences.root().node("org/netbeans/modules/tasklist/docscan");
+    }
+
+    private Token<PHPDocCommentTokenId> createToken(PHPDocCommentTokenId id, int length) {
+        String fixedText = id.fixedText();
+        return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
+                                   : tokenFactory.createToken(id, length);
     }
     
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        return new GSFPHPLexer(info);
-    }
-    
-    public Token<PHPTokenId> nextToken() {
-        try {
-            PHPTokenId tokenId = scanner.nextToken(); 
-            Token<PHPTokenId> token = null;
+    public Token<PHPDocCommentTokenId> nextToken() {
+         try {
+            PHPDocCommentTokenId tokenId = scanner.nextToken(); 
+            Token<PHPDocCommentTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }
@@ -81,11 +103,6 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
         return null;
     }
 
-    public Object state() {
-        return scanner.getState();
-    }
-
     public void release() {
     }
-    
 }

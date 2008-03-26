@@ -39,53 +39,46 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
-
-
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Petr Pisl, Marek Fukala
+ * @author Petr Pisl
  */
-public class GSFPHPLexer implements Lexer<PHPTokenId> {
+public class PHPDocCommentLexerTest extends NbTestCase {
     
-    private final PHP5ColoringLexer scanner;
-    private TokenFactory<PHPTokenId> tokenFactory;    
-    
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = new PHP5ColoringLexer(info, false);
-        tokenFactory = info.tokenFactory();
-    }
-    
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        return new GSFPHPLexer(info);
-    }
-    
-    public Token<PHPTokenId> nextToken() {
-        try {
-            PHPTokenId tokenId = scanner.nextToken(); 
-            Token<PHPTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(GSFPHPLexer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public PHPDocCommentLexerTest(String testName) {
+        super(testName);
+    }            
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
-    public Object state() {
-        return scanner.getState();
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    public void release() {
+    public void testSimpleComment() {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("comment 1", PHPDocCommentTokenId.language());
+        PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1");
     }
+    
+    public void testCommentTags() {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("comment 1\n * @link\n * @name\n * @desc", PHPDocCommentTokenId.language());
+        //PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_LINK, "@link");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_NAME, "@name");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "\n * ");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_DESC, "@desc");
+
+    }
+
     
 }
