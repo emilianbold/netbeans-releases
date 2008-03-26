@@ -118,12 +118,14 @@ if [ -f $sigtest_jar ]; then
 KONEC
         tail -n 50 $sigtest_gen.log >>$sigtest_gen.xml
 cat >>$sigtest_gen.xml <<KONEC
-  <system-out><![CDATA[
+        </failure>
+        <system-out><![CDATA[
 KONEC
         cat $sigtest_gen.log >>$sigtest_gen.xml
         cat >>$sigtest_gen.xml <<KONEC
 ]]></system-out>
-  <system-err></system-err>
+        <system-err></system-err>
+    </testcase>
 </testsuite>
 KONEC
     fi
