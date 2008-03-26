@@ -53,8 +53,6 @@ import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 
 public class IOManager {
     
