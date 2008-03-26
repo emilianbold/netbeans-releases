@@ -760,7 +760,11 @@ public final class ClassPath {
             }
             String path = FileUtil.getRelativePath(r, file);
             if (path == null) {
-                throw new IllegalArgumentException(file + " not in " + r);
+                if (!file.isValid()) {
+                    //#130998:IllegalArgumentException when switching tabs
+                    return false;
+                }
+                throw new IllegalArgumentException(file + " not in " + r + " (valid: "+r.isValid()+")");
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N

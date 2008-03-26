@@ -72,17 +72,12 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
 
     private final Map<String, Unit> units;
     
-    private static DiskRepositoryManager    instance = new DiskRepositoryManager();
     private final RepositoryQueue           queue;
     private final RepositoryThreadManager   threadManager;
     private final Persistent                removedObject; 
     private final ReadWriteLock             rwLock;
 
-    public static DiskRepositoryManager getInstance() {
-        return instance;
-    }
-    
-    private DiskRepositoryManager() {
+    public DiskRepositoryManager() {
         removedObject   = new RemovedPersistent();
         rwLock          = new ReentrantReadWriteLock(true);
         threadManager   = new RepositoryThreadManager(this, rwLock);
@@ -90,6 +85,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         units    = new ConcurrentHashMap<String, Unit>();
     }
     
+    /** Never returns null - throws exceptions */
     private Unit getCreateUnit(Key key) throws IOException {
         assert key != null;
 
@@ -114,57 +110,70 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         return unit;
     }
     
-    public void put(Key id, Persistent obj) {
-	    queue.addLast(id, obj);
+    public void put(Key key, Persistent obj) {
+        try {
+            getCreateUnit(key).putToCache(key, obj);
+            queue.addLast(key, obj);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+        }
     }
+    
+    public void hang(Key key, Persistent obj) {
+        try {
+            getCreateUnit(key).hang(key, obj);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+        }
+    }
+
     
     public void write(Key key, Persistent object) {
         try {
             Unit diskRep = getCreateUnit(key);
-
-            if (diskRep == null)
-                return;
-            
-            if (object instanceof  RemovedPersistent) {
-                diskRep.remove(key);
+            if (object instanceof RemovedPersistent) {
+                diskRep.removePhysically(key);
             } else {
-                diskRep.write(key, object);
+                diskRep.putPhysically(key, object);
             }
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(), new RepositoryExceptionImpl(ex));
         }
     }    
     
    public Persistent get(Key key) {
-       assert key != null;
-
        try {
-            Unit diskRep = getCreateUnit(key);
-            if (diskRep != null) {
-                return diskRep.get(key);
-            }
+            return getCreateUnit(key).get(key);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     key.getUnit().toString(),new RepositoryExceptionImpl(ex));
         }
-       
        return null;
     }
     
+    public Persistent tryGet(Key key) {
+       try {
+            return getCreateUnit(key).tryGet(key);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
+        }
+       return null;
+    }   
+   
     
     public void remove(Key key) {
-        queue.addLast(key, removedObject);
-    }    
-    
-    public void waitForQueue() throws InterruptedException {
-        if (queue != null) {
-            while (!queue.disposable()) {
-                Thread.sleep(50);
-                queue.onIdle();
-            }
+        try {
+            getCreateUnit(key).removeFromCache(key);
+            queue.addLast(key, removedObject);
+        } catch (Throwable ex) {
+            RepositoryListenersManager.getInstance().fireAnException(
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
         }
-    }
+    }    
     
     public void shutdown() {
         if( threadManager != null ) {
@@ -178,6 +187,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         } finally {
             rwLock.writeLock().unlock();
         }
+        RepositoryTranslatorImpl.shutdown();
     }
     
     private void iterateWith(Visitor visitor){
@@ -200,7 +210,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
 
             Collection<Unit> values = units.values();
             Unit[] unitList = (Unit[]) values.toArray(new Unit[values.size()]);
-            Arrays.sort(unitList, new FragmentationComparator());
+            Arrays.sort(unitList, new MaintenanceComparator());
             boolean needMoreTime = false;
             long start = System.currentTimeMillis();
             for (int i = 0; i < unitList.length; i++) {
@@ -210,7 +220,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
                 }
                 
                 try {
-                    if( unitList[i].defragment(timeout) ) {
+                    if( unitList[i].maintenance(timeout) ) {
                         needMoreTime = true;
                     }
                 } catch (IOException ex) {
@@ -238,11 +248,11 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
 		}
             }
             
-            Unit repository = units.remove(unitName);
+            Unit unit = units.remove(unitName);
             
-            if (repository != null) {
+            if (unit != null) {
                 try {
-                    repository.close();
+                    unit.close();
                 } catch (Throwable exc) {
                     RepositoryListenersManager.getInstance().fireAnException(unitName, 
                             new RepositoryExceptionImpl(exc));
@@ -260,20 +270,22 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
             allocator.deleteUnitFiles(unitName, true);
         }
         allocator.closeUnit(unitName);
+        
+        RepositoryTranslatorImpl.closeUnit(unitName, requiredUnits);
+        RepositoryListenersManager.getInstance().fireUnitClosedEvent(unitName);
     }
     
     public void removeUnit(String unitName) {
 	closeUnit(unitName, true, Collections.<String>emptySet());
-    }
-
-    public int getFragmentationPercentage() throws IOException {
-        return 0;
-    }
-
-    public void hang(Key key, Persistent obj) {
+        RepositoryTranslatorImpl.removeUnit(unitName);
     }
 
     public void debugClear() {
+        iterateWith(new Visitor() {
+            public void visit(Unit unit) throws IOException {
+                unit.debugClear();
+            }
+        });
         try {
             rwLock.writeLock().lock();
             cleanAndWriteQueue();
@@ -300,10 +312,10 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
 
     public void startup(int persistMechanismVersion) {
+        RepositoryTranslatorImpl.startup(persistMechanismVersion);
     }
 
     static private class RemovedPersistent implements Persistent {
-        
     }
 
     private interface Visitor {
@@ -340,25 +352,21 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         }
     }
     
-   private static class FragmentationComparator implements Comparator<Unit>, Serializable {
+   private static class MaintenanceComparator implements Comparator<Unit>, Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
 
         public int compare(Unit o1, Unit o2) {
-            return getFragmentationPercentage(o2) - getFragmentationPercentage(o1);
+            return getMaintenanceWeight(o2) - getMaintenanceWeight(o1);
         }
     }
    
-    private static int getFragmentationPercentage(Unit unit) {
+    private static int getMaintenanceWeight(Unit unit) {
         try {
-            return unit.getFragmentationPercentage();
+            return unit.getMaintenanceWeight();
         } catch (IOException ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     unit.getName(), new RepositoryExceptionImpl(ex));
         }
         return 0;
     }
-   
-    public Persistent tryGet(Key key) {
-        return null;
-    }   
 }

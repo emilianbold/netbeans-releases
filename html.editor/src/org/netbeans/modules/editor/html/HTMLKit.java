@@ -101,7 +101,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
-    private static boolean setupReadersInitialized = false;
 
     public HTMLKit() {
         this(HTML_MIME_TYPE);
@@ -109,10 +108,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public HTMLKit(String mimeType) {
         super();
-        if (!setupReadersInitialized) {
-            NbReaderProvider.setupReaders();
-            setupReadersInitialized = true;
-        }
+        NbReaderProvider.setupReaders();
     }
 
     @Override

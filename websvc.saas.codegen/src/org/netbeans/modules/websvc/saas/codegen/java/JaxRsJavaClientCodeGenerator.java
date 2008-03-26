@@ -80,7 +80,10 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle);
-
+        
+        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
+        
         preGenerate();
         
         //Create Authenticator classes
@@ -103,9 +106,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
                     (getBean().getGroupName()+"."+
                         getBean().getDisplayName()).toLowerCase());
         }
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
-        addImportsToTargetFile();
         
         finishProgressReporting();
 
@@ -147,17 +147,12 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         methodBody += paramDecl + "\n";
         methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET) {
-            if(getBean().canGenerateJAXBUnmarshaller()) {
-                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += indent2+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
-            } else {
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result);\n";
-        }
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
         methodBody += indent+"} catch (Exception ex) {\n";
         methodBody += indent2+"ex.printStackTrace();\n";
         methodBody += indent+"}\n";
