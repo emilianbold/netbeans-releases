@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.model.api.support;
 
@@ -90,10 +112,31 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
+import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
+import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
+import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xam.spi.Validator;
+import org.openide.util.NbBundle;
 
-/**
- * @author ads
- */
 public final class Utils {
 
     public static final char SEMICOLON = ';';                                       // NOI18N
@@ -122,10 +165,202 @@ public final class Utils {
 
     private Utils() {}
 
+    public static SchemaComponent checkXPathExpression(ContentElement element) {
+      return checkXPathExpression(element, null);
+    }
 
-    
-    
-    
+    public static SchemaComponent checkXPathExpression(ContentElement element, PathValidationContext context) {
+        String content = element.getContent();
+        
+        if (content == null) {
+            return null;
+        }
+        content = content.trim();
+
+        if (content.length() == 0) {
+            return null;
+        }
+        String expressionLang = null;
+        
+        if (element instanceof ExpressionLanguageSpec) {
+            expressionLang = ((ExpressionLanguageSpec) element).getExpressionLanguage();
+        }
+        return checkExpression(expressionLang, content, element, context);
+    }
+
+    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final PathValidationContext context) {
+        boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
+
+        if ( !isXPathExpr) {
+            return null;
+        }
+        XPathModelHelper helper= XPathModelHelper.getInstance();
+        XPathModel model = helper.newXPathModel();
+        context.setXPathModel(model);
+        model.setValidationContext(context);
+
+        ExNamespaceContext nsContext = ((BpelEntity) element).getNamespaceContext();
+        model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
+
+        model.setVariableResolver(new BpelVariableResolver(context, (BpelEntity) element));
+        model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
+
+        model.setExternalModelResolver(new ExternalModelResolver() {
+            public Collection<SchemaModel> getModels(String modelNsUri) {
+                BpelModel bpelModel = ((BpelEntity) element).getBpelModel();
+                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
+            }
+
+            public Collection<SchemaModel> getVisibleModels() {
+                context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
+                return null;
+            }
+
+            public boolean isSchemaVisible(String schemaNamespaceUri) {
+                return context.isSchemaImported(schemaNamespaceUri);
+            }
+        });
+        model.setXPathCastResolver(createXPathCastResolver(element));
+
+        if (XPathModelFactory.isSplitable(exprText)) {
+            context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
+            String[] partsArr = XPathModelFactory.split(exprText);
+
+            for (String anExprText : partsArr) {
+                checkSingleExpr(model, anExprText);
+            }
+            return null;
+        } 
+        return checkSingleExpr(model, exprText);
+    }
+
+    private static SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
+        try {
+            XPathExpression xpath = model.parseExpression(exprText);
+            model.resolveExtReferences(true);
+            return model.getLastSchemaComponent();
+        } 
+        catch (XPathException e) {
+            return null;
+        }
+    }
+
+    private static void out() {
+      System.out.println();
+    }
+
+    private void out(Object object) {
+      System.out.println("*** " + object); // NOI18N
+    }
+
+    private static XPathCastResolver createXPathCastResolver(ContentElement element) {
+//out();
+//out("CREATE CAST RESOLVER");
+      if ( !(element instanceof BpelEntity)) {
+//out("     1");
+        return null;
+      }
+      BpelEntity entity = (BpelEntity) element;
+      BpelEntity parent = entity.getParent();
+//out("     2");
+
+      if ( !(parent instanceof Copy)) {
+        return null;
+      }
+//out("     3");
+      List<Editor> editors = parent.getChildren(Editor.class);
+
+      if (editors == null) {
+        return null;
+      }
+//out("     4");
+      List<Cast> allCasts = new ArrayList<Cast>();
+
+      boolean isFrom = element instanceof From;
+      boolean isTo = element instanceof To;
+
+//out("     5");
+      for (Editor editor : editors) {
+        Casts editorCasts = editor.getCasts();
+
+        if (editorCasts == null) {
+          continue;
+        }
+        Cast [] casts = editorCasts.getCasts();
+
+        if (casts == null) {
+          continue;
+        }
+        for (Cast cast : casts) {
+          if (cast == null) {
+            continue;
+          }
+          Source source = cast.getSource();
+
+          if (isFrom && source == Source.FROM) {
+            allCasts.add(cast);
+          }
+          else if (isTo && source == Source.TO) {
+            allCasts.add(cast);
+          }
+        }
+      }
+//out("     6");
+      if (allCasts.isEmpty()) {
+        return null;
+      }
+//out("     7");
+      return new MyXPathCastResolver(allCasts);
+    }
+
+    // --------------------------------------------------------------------
+    private static class MyXPathCastResolver implements XPathCastResolver {
+      public MyXPathCastResolver(List<Cast> casts) {
+        myXPathCasts = new ArrayList<XPathCast>();
+
+        for (Cast cast : casts) {
+          myXPathCasts.add(new MyXPathCast(cast));
+        }
+      }
+
+      public List<XPathCast> getXPathCasts() {
+        return myXPathCasts;
+      }
+
+      private List<XPathCast> myXPathCasts;
+    }
+
+    // ----------------------------------------------------
+    private static class MyXPathCast implements XPathCast {
+      
+      public MyXPathCast(Cast cast) {
+        myType = getType(cast);
+        myPath = cast.getPath();
+      }
+
+      public String getPath() {
+        return myPath;
+      }
+
+      public GlobalType getType() {
+        return myType;
+      }
+
+      private GlobalType getType(Cast cast) {
+        SchemaReference<GlobalType> ref = cast.getType();
+    //System.out.println();
+    //System.out.println("---: " + ref);
+
+        if (ref == null) {
+          return null;
+        }
+    //System.out.println("   : " + ref.get());
+        return ref.get();
+      }
+
+      private String myPath;
+      private GlobalType myType;
+    }
     
     public static QName getQName(String value, BpelEntity entity ) {
         if (value == null) {
