@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.Formatter;
@@ -83,6 +84,15 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
             EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
+        }
+    }
+    protected void setDefaultsOptions(String style){
+        if (isCPP) {
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP), style);
+        } else {
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C));
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C), style);
         }
     }
     

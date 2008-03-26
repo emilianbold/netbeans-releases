@@ -148,7 +148,7 @@ public final class TreePathHandle {
             return false;
         }
         
-        return delegate.equals(((TreePathHandle) obj).delegate);
+        return delegate.equalsHandle(((TreePathHandle) obj).delegate);
     }
 
     @Override
