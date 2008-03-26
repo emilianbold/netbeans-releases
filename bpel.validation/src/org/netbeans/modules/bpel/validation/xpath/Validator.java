@@ -74,6 +74,7 @@ import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
@@ -299,7 +300,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   public void visit(StartCounterValue value) {
       checkXPathExpression(value);
   }
-  
+/*  
   @Override
   public void visit(OnAlarmEvent event) {
       myValidatedActivity = event;
@@ -309,7 +310,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   protected void visit(Activity activity) {
       myValidatedActivity = activity;
   }
-  
+*/  
   private SchemaComponent checkXPathExpression(ContentElement element) {
       String content = element.getContent();
       
@@ -338,15 +339,15 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       }
       XPathModelHelper helper= XPathModelHelper.getInstance();
       XPathModel model = helper.newXPathModel();
-      assert myValidatedActivity != null;
+//      assert myValidatedActivity != null;
 
-      final PathValidationContext context = new PathValidationContext(model, this, this, myValidatedActivity, element);
+      final PathValidationContext context = new PathValidationContext(model, this, this, (BpelEntity) element/*myValidatedActivity*/, element);
       model.setValidationContext(context);
 
       ExNamespaceContext nsContext = ((BpelEntity)element).getNamespaceContext();
       model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
 
-      model.setVariableResolver(new BpelVariableResolver(context, myValidatedActivity));
+      model.setVariableResolver(new BpelVariableResolver(context, (BpelEntity) element/*myValidatedActivity*/));
       model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
 
       model.setExternalModelResolver(new ExternalModelResolver() {
@@ -366,8 +367,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       });
       model.setXPathCastResolver(createXPathCastResolver(element));
 
-      // Checks if the expression contains ";". 
-      // If it does, then split it to parts and verifies them separately.
       if (XPathModelFactory.isSplitable(exprText)) {
           context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
           String[] partsArr = XPathModelFactory.split(exprText);
@@ -387,9 +386,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
           return model.getLastSchemaComponent();
       } 
       catch (XPathException e) {
-          // Nothing to do here because of the validation context 
-          // was specified before and it has to be populated 
-          // with a set of problems.
           return null;
       }
   }
@@ -511,5 +507,5 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     private GlobalType myType;
   }
 
-  private BpelEntity myValidatedActivity; 
+//  private BpelEntity myValidatedActivity; 
 }
