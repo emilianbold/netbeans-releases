@@ -282,8 +282,8 @@ public class MercurialInterceptor extends VCSInterceptor {
     public boolean beforeCreate(final File file, boolean isDirectory) {
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation fi = cache.getCachedStatus(file, false);
-            if (fi != null && fi.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+            FileInformation info = cache.getCachedStatus(file, false);
+            if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
                 Mercurial hg = Mercurial.getInstance();
                 final File root = hg.getTopmostManagedParent(file);
