@@ -39,53 +39,39 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
-
-
+import junit.framework.TestCase;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
  *
- * @author Petr Pisl, Marek Fukala
+ * @author Petr Pisl
  */
-public class GSFPHPLexer implements Lexer<PHPTokenId> {
+public class PHPLexerUtils extends TestCase {
     
-    private final PHP5ColoringLexer scanner;
-    private TokenFactory<PHPTokenId> tokenFactory;    
-    
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = new PHP5ColoringLexer(info, false);
-        tokenFactory = info.tokenFactory();
+    public static TokenSequence<?> seqForText(String text, Language<? extends TokenId> language) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
+        return hi.tokenSequence();
+    }
+
+    public static void next(TokenSequence<?> ts, TokenId id, String fixedText) {
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, id, fixedText, -1);
     }
     
-    public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        return new GSFPHPLexer(info);
-    }
-    
-    public Token<PHPTokenId> nextToken() {
-        try {
-            PHPTokenId tokenId = scanner.nextToken(); 
-            Token<PHPTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(GSFPHPLexer.class.getName()).log(Level.SEVERE, null, ex);
+    /** This is used for debugging purposes
+     * 
+     * @param ts
+     * @param name
+     */
+    public static void printTokenSequence (TokenSequence<?> ts, String name) {
+        System.out.println("--- " + name + " ---");
+        while (ts.moveNext()) {
+            System.out.println(ts.token().id()+"\t"+ts.token());
         }
-        return null;
+        System.out.println("-----------------------");
     }
-
-    public Object state() {
-        return scanner.getState();
-    }
-
-    public void release() {
-    }
-    
 }
