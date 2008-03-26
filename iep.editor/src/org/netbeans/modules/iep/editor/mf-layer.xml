@@ -119,5 +119,9 @@
             <file name="GapWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/GapWindow.xml"/>
             <file name="ContiguousOrder.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/ContiguousOrder.xml"/>
         </folder>
+        <folder name="external">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+            <file name="InvokeStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/external/InvokeStream.xml"/>
+        </folder>
     </folder>
 </filesystem>
