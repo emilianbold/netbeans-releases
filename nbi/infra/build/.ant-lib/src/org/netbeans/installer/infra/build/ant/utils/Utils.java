@@ -394,9 +394,12 @@ public final class Utils {
     public static void copy(
             final InputStream in,
             final OutputStream out) throws IOException {
-        
+        int read = 0;
         while (in.available() > 0) {
-            out.write(buffer, 0, in.read(buffer));
+            read = in.read(buffer);
+            if (read > 0) {
+                out.write(buffer, 0, read);
+            }
         }
     }
     
