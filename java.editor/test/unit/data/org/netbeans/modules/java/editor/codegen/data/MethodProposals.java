@@ -7,5 +7,4 @@ public class MethodProposals {
     private Auxiliary a;
     private List l;
     private String s;
-    private List<String> ll;
 }

@@ -103,13 +103,6 @@ public abstract class CompletionResultItem implements CompletionItem {
      */
     public abstract String getReplacementText();
     
-    /**
-     * Returns the relative caret position.
-     * The caller must call this w.r.t. the offset
-     * e.g. component.setCaretPosition(offset + getCaretPosition())
-     */
-    public abstract int getCaretPosition();
-    
     public String toString() {
         return getItemText();
     }
@@ -129,8 +122,10 @@ public abstract class CompletionResultItem implements CompletionItem {
         try {
             doc.remove( offset, len );
             doc.insertString( offset, text, null);
-            //position the caret
-            component.setCaretPosition(offset+getCaretPosition());
+            //for attributes, place the cursor between the double-quotes.
+            if(this instanceof AttributeResultItem) {
+                component.setCaretPosition(offset+text.length()-1);
+            }
             
             StartTag docRoot = context.getDocRoot();
             String prefix = CompletionUtil.getPrefixFromTag(text);

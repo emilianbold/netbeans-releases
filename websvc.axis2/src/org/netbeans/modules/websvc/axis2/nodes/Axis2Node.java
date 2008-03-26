@@ -46,7 +46,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.axis2.actions.AxisConfigurationAction;
 import org.netbeans.modules.websvc.axis2.actions.DeployAction;
 import org.netbeans.modules.websvc.axis2.actions.ShowServicesAction;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -94,16 +93,7 @@ public class Axis2Node extends AbstractNode {
     }
     
     private static Lookup createLookup(Project project) {
-        return (project != null) ? Lookups.fixed(new Object[]{ project, new AxisPrivilegedTemplates()}) : null;
+        return (project != null) ? Lookups.fixed(new Object[]{ project }) : null;
     }
     
-    private static class AxisPrivilegedTemplates implements PrivilegedTemplates {
-
-        public String[] getPrivilegedTemplates() {
-            return new String[] {
-            "Templates/WebServices/AxisFromJava.java", // NOI18N
-            "Templates/WebServices/AxisFromWsdl.java" // NOI18N
-            };
-        }
-    }   
 }

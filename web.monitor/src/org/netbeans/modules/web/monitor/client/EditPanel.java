@@ -79,7 +79,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
-import org.openide.awt.Mnemonics;
 
 
 class EditPanel extends javax.swing.JPanel implements
@@ -332,16 +331,16 @@ class EditPanel extends javax.swing.JPanel implements
     private void createDialogButtons() {
 
 	// Button used by the dialog descriptor
-	sendButton = new JButton();
-        Mnemonics.setLocalizedText(sendButton, NbBundle.getBundle(EditPanel.class).getString("MON_Send"));
+	sendButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_Send"));
+	sendButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_Send_Mnemonic").charAt(0));
 	sendButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_SendA11yDesc"));
 
-	okButton = new JButton();
-        Mnemonics.setLocalizedText(okButton, NbBundle.getBundle(EditPanel.class).getString("MON_OK"));
+	okButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_OK"));
+	okButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_OK_Mnemonic").charAt(0));
 	okButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_OKA11yDesc"));
 
 	cancelButton = new JButton(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel"));
-        Mnemonics.setLocalizedText(cancelButton, NbBundle.getBundle(EditPanel.class).getString("MON_Cancel"));
+	cancelButton.setMnemonic(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel_Mnemonic").charAt(0));
 	cancelButton.setToolTipText(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_CancelA11yDesc"));
     }
 } // EditPanel

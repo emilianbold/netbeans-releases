@@ -70,7 +70,6 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -312,7 +311,8 @@ public abstract class CsmResultItem
                 CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
                 if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                     String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-                    if (include.length() != 0 && !isForwardDeclaration(component)) {
+
+                    if (include.length() != 0) {
                         insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
                     }
                 }
@@ -326,35 +326,6 @@ public abstract class CsmResultItem
 
     }
 
-    // Says is it forward declarartion or not
-    private boolean isForwardDeclaration(JTextComponent component) {
-        TokenSequence<CppTokenId> ts;
-        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
-        ts.moveStart();
-        if (!ts.moveNext()) {
-            return false;
-        }
-        Token lastToken = ts.token();
-        while (ts.offset() < substituteOffset) {
-            if (!ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.NEW_LINE) &&
-                    !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
-                    !ts.token().id().equals(CppTokenId.WHITESPACE)) {
-                lastToken = ts.token();
-            }
-            if (!ts.moveNext()) {
-                return false;
-            }
-        }
-        if (lastToken.id().equals(CppTokenId.CLASS) ||
-                lastToken.id().equals(CppTokenId.STRUCT) ||
-                lastToken.id().equals(CppTokenId.UNION)) {
-            return true;
-        }
-        return false;
-    }
-    
     // Inserts include derctive into document
     private void insertInclude(JTextComponent component, CsmFile currentFile, String include, boolean isSystem) {
         BaseDocument doc = (BaseDocument) component.getDocument();

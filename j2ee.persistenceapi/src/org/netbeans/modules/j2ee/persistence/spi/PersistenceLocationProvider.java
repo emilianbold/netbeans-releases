@@ -66,12 +66,10 @@ public interface PersistenceLocationProvider {
      * Creates (if it does not exist) and returns the default location for
      * persistence.xml and related files.
      *
-     * @return the default location or null if the location could not have been
-     *         created (for example, because the implementor could not determine
-     *         a proper location).
+     * @return the default location; never null.
      *
      * @throws IOException if an error occured while creating the location
-     *         of persistence.xml
+     * of persistence.xml
      */
     FileObject createLocation() throws IOException;
 }

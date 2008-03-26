@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -243,18 +243,18 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private TokenStream getTokenStream(FileImpl file) {
         // build token stream for file
-        Reader reader = null;
+        InputStream stream = null;
         TokenStream ts = null;
         try {
-            reader = file.getBuffer().getReader();
-            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
+            stream = file.getBuffer().getInputStream();
+            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), stream);
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
         } finally {
-            if (reader != null) {
+            if (stream != null) {
                 try {
-                    reader.close();
+                    stream.close();
                 } catch (IOException ex) {
                     DiagnosticExceptoins.register(ex);
                 }

@@ -278,7 +278,7 @@ public abstract class RestSupport {
         initBuildScripts();
         
         if (! testdir.isDirectory()) {
-            FileUtil.createFolder(testdir);
+            testdir.mkdirs();
         }
         String[] replaceKeys1 = {
             "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_Trail", 

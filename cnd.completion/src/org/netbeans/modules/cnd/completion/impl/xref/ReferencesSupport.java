@@ -213,13 +213,15 @@ public final class ReferencesSupport {
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);
-        // if still null try macro info from file (IZ# 130897)
-        if (csmItem == null) {
+        // TODO: if still null try macro info from file
+        // IZ# 130897
+        if (false && csmItem == null) {
             List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
             for (CsmReference macroRef : macroUsages) {
                 if (macroRef.getStartOffset() <= offset && offset <= macroRef.getEndOffset()) {
                     csmItem = macroRef.getReferencedObject();
-                    assert csmItem != null : "must be referenced macro" + macroRef;
+                    // TODO uncomment assert after fixing 130897
+//                    assert csmItem != null : "must be referenced macro" + macroRef;
                 }
             }
         }

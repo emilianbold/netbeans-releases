@@ -1167,8 +1167,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (Utilities.startsWith(THIS_KEYWORD, prefix)) {
                         Element element = enclMethod.getEnclosingElement();
                         addThisOrSuperConstructor(env, element.asType(), element, THIS_KEYWORD, enclMethod);
-                    }
-                    if (Utilities.startsWith(SUPER_KEYWORD, prefix)) {
+                    } else if (Utilities.startsWith(SUPER_KEYWORD, prefix)) {
                         Element element = enclMethod.getEnclosingElement();
                         element = ((DeclaredType)((TypeElement)element).getSuperclass()).asElement();
                         addThisOrSuperConstructor(env, element.asType(), element, SUPER_KEYWORD, enclMethod);

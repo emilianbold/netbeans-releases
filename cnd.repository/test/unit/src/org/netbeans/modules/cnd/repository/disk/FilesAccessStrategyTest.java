@@ -55,9 +55,11 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     static {
-        //System.setProperty("cnd.repository.files.cache", "5");
+        //System.setProperty("cnd.repository.files.cache", "4");
 	//System.setProperty("cnd.repository.mf.stat", "true");
         //System.setProperty("access.strategy.laps", "5");
+        //System.setProperty("access.strategy.threads", "12");
+        //System.setProperty("cnd.repository.trace.conflicts", "true");
     }
     
     private final FilesAccessStrategyImpl strategy = (FilesAccessStrategyImpl) FilesAccessStrategyImpl.getInstance();
@@ -124,8 +126,8 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             
         final TestObject[] objects = objectsCollection.toArray(new TestObject[objectsCollection.size()]);
                 
-        int lapsCount = 20;
-        int readingThreadCount = 4;
+        int lapsCount = Integer.getInteger("access.strategy.laps", 20);
+        int readingThreadCount = Integer.getInteger("access.strategy.threads", 6);
 
         System.out.printf("\n\ntestMultyThread: %d objects, %d laps, %d reading threads\n\n", objects.length, lapsCount, readingThreadCount);
         
@@ -153,6 +155,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         for( int i = 0; i < readingThreadCount; i++ ) {
             Thread thread = new Thread(r);
             thread.setName("Reader thread " + i);
+            thread.setPriority(Thread.MAX_PRIORITY);
             thread.start();
         }
         sleep(1000); // wait threads to start

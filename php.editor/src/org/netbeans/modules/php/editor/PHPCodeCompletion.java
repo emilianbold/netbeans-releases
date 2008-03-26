@@ -39,10 +39,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,20 +70,6 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.Block;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.util.Exceptions;
 
 /**
@@ -117,7 +101,6 @@ public class PHPCodeCompletion implements Completable {
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
-        request.result = result;
 
         // KEYWORDS
 
@@ -138,116 +121,12 @@ public class PHPCodeCompletion implements Completable {
         // CONSTANTS
         
         for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
-            proposals.add(new ConstantItem(constant, request));
+            proposals.add(new ConstantItem(constant.getName(), request));
         }
-        
-        // LOCAL VARIABLES
-        
-        proposals.addAll(getLocalVariableProposals(result.getProgram().getStatements(), request, prefix));
 
         return proposals;
     }
-    
-    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request, String prefix){
-        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        
-        String url = null;
-        try {
-            url = request.result.getFile().getFile().toURL().toExternalForm();
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        for (Statement statement : statementList){
-            if (statement.getStartOffset() > request.anchor){
-                break; // no need to analyze statements after caret offset
-            }
-            
-            if (statement instanceof ExpressionStatement){
-                String varName = extractVariableNameFromExpression(statement);
-                
-                if (varName != null && varName.startsWith(prefix)) {
-                    IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, url, null, 0, ElementKind.VARIABLE);
 
-                    CompletionProposal proposal = new VariableItem(ic, request);
-                    proposals.add(proposal);
-                }
-            } else if (!offsetWithinStatement(request.anchor, statement)){
-                continue;
-            }
-                
-            if (statement instanceof Block) {
-                Block block = (Block) statement;
-                proposals.addAll(getLocalVariableProposals(block.getStatements(), request, prefix));
-            } else if (statement instanceof IfStatement){
-                IfStatement ifStmt = (IfStatement)statement;
-                
-                if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request, prefix));
-                } else if (offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request, prefix));
-                }
-            } else if (statement instanceof WhileStatement) {
-                WhileStatement whileStatement = (WhileStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(whileStatement.getBody()), request, prefix));
-            }  else if (statement instanceof DoStatement) {
-                DoStatement doStatement = (DoStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(doStatement.getBody()), request, prefix));
-            }
-            else if (statement instanceof FunctionDeclaration) {
-                FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
-
-                for (FormalParameter param : functionDeclaration.getFormalParameters()) {
-                    if (param.getParameterName() instanceof Variable) {
-                        String varName = extractVariableName((Variable) param.getParameterName());
-                        IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, url, null, 0, ElementKind.VARIABLE);
-
-                        CompletionProposal proposal = new VariableItem(ic, request);
-                        proposals.add(proposal);
-                    }
-                }
-                
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)functionDeclaration.getBody()), request, prefix));
-            } else if (statement instanceof ClassDeclaration) {
-                ClassDeclaration classDeclaration = (ClassDeclaration) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)classDeclaration.getBody()), request, prefix));
-            }
-            
-        }
-        
-        return proposals;
-    }
-    
-    private static boolean offsetWithinStatement(int offset, Statement statement){
-        return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
-    }
-
-    private static String extractVariableNameFromExpression(Statement statement) {
-        Expression expr = ((ExpressionStatement) statement).getExpression();
-
-        if (expr instanceof Assignment) {
-            VariableBase variableBase = ((Assignment) expr).getLeftHandSide();
-
-            if (variableBase instanceof Variable) {
-                Variable var = (Variable) variableBase;
-                return extractVariableName(var);
-            }
-        }
-        
-        return null;
-    }
-    
-    private static String extractVariableName(Variable var){
-        if (var.getName() instanceof Identifier) {
-            Identifier id = (Identifier) var.getName();
-            return "$" + id.getName();
-        }
-
-        return null;
-    }
-        
     public String document(CompilationInfo info, ElementHandle element) {
         return null;
     }
@@ -412,30 +291,31 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private class ConstantItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
+        private String description = null;
+        private String constName = null;
 
-        ConstantItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            this.constant = constant;
+        ConstantItem(String constName, CompletionRequest request) {
+            super(null, request);
+            this.constName = constName;
+        }
+
+        @Override
+        public String getName() {
+            return constName;
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
         }
-    }
-    
-    private class VariableItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
-
-        VariableItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            this.constant = constant;
-        }
-
+        
         @Override
-        public ElementKind getKind() {
-            return ElementKind.VARIABLE;
+        public String getRhsHtml() {
+            if (description != null) {
+                return description;
+            } else {
+                return null;
+            }
         }
     }
     
@@ -447,6 +327,11 @@ public class PHPCodeCompletion implements Completable {
         
         public IndexedFunction getFunction(){
             return (IndexedFunction)getElement();
+        }
+
+        @Override
+        public String getName() {
+            return getElement().getName();
         }
 
         @Override
@@ -531,7 +416,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getName() {
-            return element.getName();
+            return null;
         }
 
         public String getInsertPrefix() {
@@ -605,6 +490,5 @@ public class PHPCodeCompletion implements Completable {
     private static class CompletionRequest {
         private HtmlFormatter formatter;
         private int anchor;
-        private PHPParseResult result;
     }
 }

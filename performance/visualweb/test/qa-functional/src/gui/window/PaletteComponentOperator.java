@@ -94,7 +94,7 @@ public class PaletteComponentOperator extends PaletteOperator {
         } catch (TimeoutExpiredException tex) {
             MainWindowOperator mv = MainWindowOperator.getDefault();
             JMenuBarOperator menuBar = mv.menuBar();
-            JMenuItemOperator item = menuBar.showMenuItem("Window|Palette");
+            JMenuItemOperator item = menuBar.showMenuItem("Window|Projects");
             item.clickMouse();
             testOp = new PaletteComponentOperator();
         }       

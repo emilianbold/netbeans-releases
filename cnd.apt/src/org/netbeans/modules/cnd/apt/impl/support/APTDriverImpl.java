@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import antlr.TokenStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -142,11 +142,11 @@ public class APTDriverImpl {
                 // ok, create new apt
                 
                 // build token stream for file       
-                Reader reader = null;
+                InputStream stream = null;
                 try {
-                    reader = buffer.getReader();
+                    stream = buffer.getInputStream();
                     if (!withTokens) {
-                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader);
+                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, stream);
                         // build apt from token stream
                         apt = APTBuilder.buildAPT(path, ts);
                         fullAPT = null;
@@ -163,7 +163,7 @@ public class APTDriverImpl {
                             _putAPTFile(path, lightAPT, withTokens);
                         }
                     } else {
-                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader);
+                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
                         // build apt from token stream
                         apt = APTBuilder.buildAPT(path, ts);
                         fullAPT = apt;
@@ -187,9 +187,9 @@ public class APTDriverImpl {
                         }
                     }
                 } finally {
-                    if (reader != null) {
+                    if (stream != null) {
                         try {
-                            reader.close();
+                            stream.close();
                         } catch (IOException ex) {
                             APTUtils.LOG.log(Level.SEVERE, "exception on closing stream", ex); // NOI18N
                         }
