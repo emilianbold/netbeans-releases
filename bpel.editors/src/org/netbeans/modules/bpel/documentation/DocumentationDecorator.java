@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.bpel.documentation;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 
@@ -59,7 +61,9 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public final class DocumentationDecorator extends DecorationProvider
   implements DecorationProviderFactory, DiagramSelectionListener {
 
-  public DocumentationDecorator() {}
+  public DocumentationDecorator() {
+    init();
+  }
 
   public DecorationProvider createInstance(DesignView view) {
     return new DocumentationDecorator(view);
@@ -68,6 +72,11 @@ public final class DocumentationDecorator extends DecorationProvider
   private DocumentationDecorator(DesignView view) {
     super(view);
     getDesignView().getSelectionModel().addSelectionListener(this);
+    init();
+  }
+
+  private void init() {
+    myDecorationKey = DocumentationDecorator.class;
   }
 
   @Override
@@ -78,15 +87,20 @@ public final class DocumentationDecorator extends DecorationProvider
 //out(" docum: " + documentation);
 
     if (entity != mySelectedElement && documentation == null) {
+      entity.removeCookie(myDecorationKey);
       return null;
     }
-    DocumentationButton button =
-      new DocumentationButton((ExtensibleElements) entity, documentation);
+    Decoration decoration = (Decoration) entity.getCookie(myDecorationKey);
 
-    ComponentsDescriptor descriptor = new ComponentsDescriptor();
-    descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
-
-    return new Decoration(new Descriptor[]{descriptor});
+    if (decoration == null) {
+      DocumentationButton button =
+        new DocumentationButton((ExtensibleElements) entity, documentation);
+      ComponentsDescriptor descriptor = new ComponentsDescriptor();
+      descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
+      decoration = new Decoration(new Descriptor [] { descriptor });
+      entity.setCookie(myDecorationKey, decoration);
+    }
+    return decoration;
   }
 
   public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
@@ -102,6 +116,7 @@ public final class DocumentationDecorator extends DecorationProvider
 
   @Override
   public void release() {
+    myDecorationKey = null;
     mySelectedElement = null;
     getDesignView().getSelectionModel().removeSelectionListener(this);
   }
@@ -113,5 +128,6 @@ public final class DocumentationDecorator extends DecorationProvider
     return ((ExtensibleElements) entity).getDocumentation();
   }
 
+  private Object myDecorationKey;
   private ExtensibleElements mySelectedElement;
 }

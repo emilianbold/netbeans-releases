@@ -162,22 +162,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //What about []:
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
-
-    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
-    public void testMultilineArrayAlignment() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineArrayInit, true);
+    public void testGnuStuleNewLineName4() {
+        setDefaultsOptions("GNU");
         setLoadDocumentText(
-            "        int array[10] ={1, 2, 3, 4,\n" +
-            "    5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
         reformat();
-        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
-            "int array[10] = {1, 2, 3, 4,\n" +
-            "                 5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
     }
 }

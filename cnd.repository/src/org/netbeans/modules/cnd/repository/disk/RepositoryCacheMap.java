@@ -43,13 +43,12 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.repository.util.Filter;
 
 /**
  * The cache that maps K to V
@@ -199,10 +198,6 @@ public class RepositoryCacheMap<K,V>  {
             return entry.value;
         }
         return null;
-    }
-    
-    public interface Filter<V> {
-        boolean accept(V value);
     }
     
     public Collection<V> remove(Filter<V> filter) {

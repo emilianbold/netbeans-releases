@@ -122,11 +122,12 @@ public final class Utils {
 
     private Utils() {}
 
-    /**
-     * <code>value</code> could be incorrectly formated and doesn't represent
-     * QName. In this case null will be return.
-     */
-    public static QName getQName( String value, BpelEntity entity ) {
+
+    
+    
+    
+    
+    public static QName getQName(String value, BpelEntity entity ) {
         if (value == null) {
             return null;
         }

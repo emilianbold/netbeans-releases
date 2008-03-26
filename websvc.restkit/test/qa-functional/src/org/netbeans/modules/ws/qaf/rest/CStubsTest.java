@@ -93,21 +93,21 @@ public class CStubsTest extends RestTestBase {
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
         //browse to set target folder
-        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Browse");
-        JButtonOperator jbo = new JButtonOperator(wo, browseLabel, 1);
-        jbo.pushNoBlock();
+        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolder");
+        JButtonOperator jbo = new JButtonOperator(wo, browseLabel);
+        jbo.push();
         String browseFoldersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolders");
         NbDialogOperator  ndo = new NbDialogOperator(browseFoldersLabel);
         JTreeOperator jto = new JTreeOperator(ndo);
         new org.netbeans.jellytools.nodes.Node(jto, jto.findPath("Source Packages")).select(); //NOI18N
         ndo.ok();
-        assertEquals("browse selection not propagated", "", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
-        jbo.pushNoBlock();
+        assertEquals("browse selection not propagated", "", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
+        jbo.push();
         ndo = new NbDialogOperator(browseFoldersLabel);
         jto = new JTreeOperator(ndo);
         new org.netbeans.jellytools.nodes.Node(jto, "Web Pages|WEB-INF").select(); //NOI18N
         ndo.ok();
-        assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
+        assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
         //add project
         addProject(wo, path);
         JListOperator jlo = new JListOperator(wo, 1);
@@ -127,7 +127,8 @@ public class CStubsTest extends RestTestBase {
         //select first project
         jlo.selectItem(0);
         //remove it
-        new JButtonOperator(wo, 4).pushNoBlock();
+        String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveProject");
+        new JButtonOperator(wo, removeLabel).push();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
@@ -152,16 +153,16 @@ public class CStubsTest extends RestTestBase {
         String cStubsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestClientStubs");
         createNewWSFile(getProject(), cStubsLabel);
         WizardOperator wo = new WizardOperator(cStubsLabel);
-        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Browse");
+        String browseLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolder");
         String browseFoldersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolders");
-        JButtonOperator jbo = new JButtonOperator(wo, browseLabel, 1);
-        jbo.pushNoBlock();
+        JButtonOperator jbo = new JButtonOperator(wo, browseLabel);
+        jbo.push();
         new NbDialogOperator(browseFoldersLabel).cancel();
-        assertEquals("browse selection propagated", "resources", new JTextFieldOperator(wo, 1).getText().trim()); //NOI18N
+        assertEquals("browse selection propagated", "resources", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
         //click on the use wadl button
         JRadioButtonOperator jrbo = new JRadioButtonOperator(wo, 1);
         jrbo.clickMouse();
-        JTextFieldOperator jtfo = new JTextFieldOperator(wo, 2);
+        JTextFieldOperator jtfo = new JTextFieldOperator(wo, 1);
         jtfo.clearText();
         jtfo.typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         if (useJMaki()) {
@@ -198,7 +199,8 @@ public class CStubsTest extends RestTestBase {
 
     private void addProject(WizardOperator wo, String path) {
         //Add Project...
-        new JButtonOperator(wo, 5).pushNoBlock();
+        String addProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddProject");
+        new JButtonOperator(wo, addProjectLabel).pushNoBlock();
         //Select Project
         String prjDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ProjectChooserTitle");
         NbDialogOperator ndo = new NbDialogOperator(prjDlgTitle);

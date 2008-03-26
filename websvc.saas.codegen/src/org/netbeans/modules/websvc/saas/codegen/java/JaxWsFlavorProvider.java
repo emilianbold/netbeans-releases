@@ -83,7 +83,8 @@ public class JaxWsFlavorProvider implements ConsumerFlavorProvider {
                         return transferable;
                     }
                     WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
-                    ExTransferable t = ExTransferable.create(new WebServiceTransferable(ref));
+                    ExTransferable t = ExTransferable.create(transferable);
+                    t.put(new WebServiceTransferable(ref));
                     return t;
                 }
             }

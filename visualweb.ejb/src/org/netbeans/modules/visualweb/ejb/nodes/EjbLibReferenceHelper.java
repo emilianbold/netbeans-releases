@@ -491,6 +491,8 @@ public class EjbLibReferenceHelper {
             ConfigurationException {
         Project project = getActiveProject();
 
+        if (project == null) return;
+        
         addEjbGroupJarsToProject(ejbGroup, project);
 
         // Add/update this ejb group to the ejb ref xml in the project

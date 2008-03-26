@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml.xpath.ext.spi.validation;
 
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 
 /**
  * @author Vladimir Yaroslavskiy
