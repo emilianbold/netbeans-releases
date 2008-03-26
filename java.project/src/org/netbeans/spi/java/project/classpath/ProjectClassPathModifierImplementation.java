@@ -203,7 +203,7 @@ public abstract class ProjectClassPathModifierImplementation {
      */
     protected final String performSharabilityHeuristics(URL classpathRoot, AntProjectHelper helper) throws URISyntaxException, IOException {
         assert classpathRoot != null;
-        assert classpathRoot.toExternalForm().endsWith("/") : "Folder URL must end with '/'. Was: "+ classpathRoot;    //NOI18N
+        assert classpathRoot.toExternalForm().endsWith("/");    //NOI18N
         URL toAdd = FileUtil.getArchiveFile(classpathRoot);
         if (toAdd == null) {
             toAdd = classpathRoot;

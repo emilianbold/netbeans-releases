@@ -357,7 +357,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
-        register(scope, false);
+        register(scope);
     }
     
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {

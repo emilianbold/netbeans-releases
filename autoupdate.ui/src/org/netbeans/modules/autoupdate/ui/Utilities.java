@@ -593,7 +593,7 @@ public class Utilities {
                     if (f.exists () && f.isFile ()) {
                         FileWriter fw = null;
                         try {
-                            fw = new FileWriter (f, true);
+                            fw = new FileWriter (f);
                         } catch (IOException ioe) {
                             // just check of write permission
                             logger.log (Level.FINE, f + " has no write permission", ioe);

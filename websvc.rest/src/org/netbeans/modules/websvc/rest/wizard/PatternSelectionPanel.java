@@ -72,7 +72,7 @@ final class PatternSelectionPanel extends AbstractPanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(PatternSelectionPanel.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public boolean isValid() {

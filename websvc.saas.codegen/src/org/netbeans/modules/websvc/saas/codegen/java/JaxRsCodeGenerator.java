@@ -892,30 +892,22 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return types;
     }
 
-    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params,
-            String indent) {
-        if(indent == null)
-            indent = " ";
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
         String paramDecl = "";
         for (ParameterInfo param : params) {
             String name = getVariableName(param.getName());
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
-                paramDecl += indent + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
+                paramDecl += "                 " + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
             } else {
                 if (paramVal != null) {
-                    paramDecl += indent+"String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl += "                 String " + name + " = \"" + paramVal + "\";\n";
                 } else {
-                    paramDecl += indent+"String " + name + " = null;\n";
+                    paramDecl += "                 String " + name + " = null;\n";
                 }
             }
         }
         return paramDecl;
-    }
-    
-    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
-        String indent = "                 ";
-        return getHeaderOrParameterDeclaration(params, indent);
     }
 
     //String pathParams[] = new String[][]  { {"{volumeId}", volumeId},  {"{objectId}", objectId}}; 

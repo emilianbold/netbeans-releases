@@ -72,7 +72,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.web.monitor.data.*;
-import org.openide.awt.Mnemonics;
 
 class EditPanelCookies extends DataDisplay {
 
@@ -126,7 +125,7 @@ class EditPanelCookies extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
+	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, NbBundle.getBundle(EditPanelCookies.class).getString("MON_Cookies_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -142,15 +141,16 @@ class EditPanelCookies extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newCookieB = new JButton();
-        Mnemonics.setLocalizedText(newCookieB, NbBundle.getBundle(EditPanel.class).getString("MON_New_cookie"));
+	newCookieB = new JButton(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie"));
+        newCookieB.setMnemonic(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie_Mnemonic").charAt(0));
         newCookieB.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_New_cookieA11yDesc"));
 	newCookieB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+		    String title = NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     ParamEditor.Editable.BOTH,
 						     ParamEditor.Condition.COOKIE, 
-						     newCookieB.getText());
+						     title);
 
 		    if(debug) log(" Now showing dialog");// NOI18N
 		    
@@ -169,9 +169,9 @@ class EditPanelCookies extends DataDisplay {
 		    }
 		}});
 
-	deleteCookieB = new JButton();
-        Mnemonics.setLocalizedText(deleteCookieB, NbBundle.getBundle(EditPanel.class).getString("MON_Delete_cookie"));
-        deleteCookieB.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("ACS_MON_Delete_cookieA11yDesc"));
+	deleteCookieB = new JButton(NbBundle.getBundle(EditPanelCookies.class).getString("MON_Delete_cookie"));
+        deleteCookieB.setMnemonic(NbBundle.getBundle(EditPanelCookies.class).getString("MON_Delete_cookie_Mnemonic").charAt(0));
+        deleteCookieB.setToolTipText(NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie_Mnemonic"));
 
 	deleteCookieB.addActionListener(new ActionListener() {
 

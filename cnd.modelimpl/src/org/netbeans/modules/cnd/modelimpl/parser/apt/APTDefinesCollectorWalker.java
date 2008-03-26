@@ -83,7 +83,7 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         APTDefine aptMacro = (APTDefine) apt;
-        macroRefMap.put(aptMacro.getName().getText(), new MacroInfo(csmFile, apt.getOffset(), apt.getEndOffset(), includePath));
+        macroRefMap.put(aptMacro.getName().getText(), new MacroInfo(csmFile, apt.getOffset(), includePath));
     }
 
     @Override
@@ -96,14 +96,12 @@ public class APTDefinesCollectorWalker extends APTSelfWalker {
 
 class MacroInfo {
 
-    public MacroInfo(CsmFile file, int startOffest, int endOffset, String includePath) {
+    public MacroInfo(CsmFile file, int offset, String includePath) {
         this.targetFile = UIDCsmConverter.fileToUID(file);
-        this.startOffset = startOffest;
-        this.endOffset = endOffset;
+        this.offset = offset;
         this.includePath = includePath;
     }
     public final CsmUID<CsmFile> targetFile;
-    public final int startOffset;
-    public final int endOffset;
+    public final int offset;
     public final String includePath;
 }

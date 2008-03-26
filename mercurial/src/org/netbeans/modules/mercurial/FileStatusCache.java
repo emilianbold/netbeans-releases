@@ -580,7 +580,7 @@ public class FileStatusCache {
                 for (File file : interestingFiles.keySet()) {
                     FileInformation fi = interestingFiles.get(file);
                     Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi, interestingFiles, true);
+                    refreshFileStatus(file, fi, interestingFiles);
                 }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N

@@ -219,13 +219,15 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
         
-    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {  
+    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {        
         if (ConnectionList.getDefault().contains(dbconn)) {
             return;
         }
         
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
+        addChild(ninfo);
+        
         notifyChange();
     }
     

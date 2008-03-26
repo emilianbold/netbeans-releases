@@ -72,7 +72,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.web.monitor.data.*;
-import org.openide.awt.Mnemonics;
 
 class EditPanelHeaders extends DataDisplay {
 
@@ -120,8 +119,8 @@ class EditPanelHeaders extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-	String msg = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers_2"); 
-	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
+	String msg = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers"); 
+	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers_2_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -137,15 +136,16 @@ class EditPanelHeaders extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newHeaderB = new JButton();
-        Mnemonics.setLocalizedText(newHeaderB, NbBundle.getBundle(EditPanel.class).getString("MON_New_header"));
+	newHeaderB = new JButton(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header"));
+        newHeaderB.setMnemonic(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header_Mnemonic").charAt(0));
         newHeaderB.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_New_headerA11yDesc"));
 	newHeaderB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+		    String title = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     ParamEditor.Editable.BOTH, 
 						     ParamEditor.Condition.HEADER,
-						     newHeaderB.getText()); 
+						     title); 
 
 		    if(debug) log("Now showing dialog");// NOI18N
 		    
@@ -180,9 +180,9 @@ class EditPanelHeaders extends DataDisplay {
 		    }
 		}});
 
-	deleteHeaderB = new JButton();
-        Mnemonics.setLocalizedText(deleteHeaderB, NbBundle.getBundle(EditPanel.class).getString("MON_Delete_header"));
-        deleteHeaderB.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_Delete_headerA11yDesc"));
+	deleteHeaderB = new JButton(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Delete_header"));
+        deleteHeaderB.setMnemonic(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_Delete_header_Mnemonic").charAt(0));
+        deleteHeaderB.setToolTipText(NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header_Mnemonic"));
 
 	deleteHeaderB.addActionListener(new ActionListener() {
 
