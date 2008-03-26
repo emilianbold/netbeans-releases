@@ -7,17 +7,13 @@
 package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Event;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -51,19 +47,38 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             return;
         }
         
-        String error = null;
-        
         comboUsers.setEnabled(this.isGrantAccess());
         
-        String item = comboDatabaseName.getEditor().getItem().toString();
-        String selectedItem = comboDatabaseName.getSelectedItem().toString().trim();
-        if ( Utils.isEmpty(item) && Utils.isEmpty(selectedItem)) {
-            // It's a bad if both the selected item *and* the edited 
-            // item are empty
+        validateDatabasePanel("");
+    }
+    
+    private String validateDatabasePanel(String keyChar) {
+        String error = null;
+        boolean nameIsEmpty;
+        
+        if ( ! Utils.isEmpty(keyChar)) {
+            // The user has typed a non-blank key, so we know the database
+            // name is not empty
+            nameIsEmpty = false;
+        } else {
+            String item = comboDatabaseName.getEditor().getItem().toString().trim();
+            System.out.println("item is '" + item + "'");
+            String selectedItem = comboDatabaseName.getSelectedItem().toString().trim();
+            System.out.println("selected item is '" + selectedItem + "'");
+            if ( Utils.isEmpty(item) && Utils.isEmpty(selectedItem)) {
+                // It's a bad if both the selected item *and* the edited 
+                // item are empty
+                nameIsEmpty = true;
+            } else {
+                nameIsEmpty = false;
+            }
+        }
+        
+        if ( nameIsEmpty ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
-        
+
         if (error != null) {
             messageLabel.setText(error);
             descriptor.setValid(false);
@@ -71,6 +86,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             messageLabel.setText(" "); // NOI18N
             descriptor.setValid(true);
         }
+        
+        return error;
     }
     
     public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
@@ -260,17 +277,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
             new KeyListener() {
 
-            public void keyTyped(KeyEvent arg0) {
-                validatePanel();
+            public void keyTyped(KeyEvent event) {
+                validateDatabasePanel(Character.toString(event.getKeyChar()).trim());
             }
 
-            public void keyPressed(KeyEvent arg0) {
+            public void keyPressed(KeyEvent event) {
             }
 
-            public void keyReleased(KeyEvent arg0) {
+            public void keyReleased(KeyEvent event) {
             }
         });
-        
+                        
         comboUsers.setModel(new UsersComboModel(server));
         
         if ( comboUsers.getItemCount() == 0 ) {
