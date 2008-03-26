@@ -88,8 +88,6 @@ public class AcceptanceTestCase extends JellyTestCase {
     
     public void CodeCompletion1Internal( )
     {
-        startTest( );
-
         // Access java code with editor
         EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
 
@@ -101,7 +99,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         eoJavaCode.pushKey( KeyEvent.VK_ENTER );
 
         // TODO : REMOVE TEMPORARY
-        eoJavaCode.insert( "CreditReport cr = newCreditReport( )\n" );
+        eoJavaCode.insert( "CreditReport cr = new CreditReport( );\n" );
         eoJavaCode.insert( "cr.setFirstName( \"Hello\" );\n" );
         eoJavaCode.insert( "cr.setLastName( \"World\" );\n" );
         eoJavaCode.insert( "cr.setScore( 999 );\n" );
@@ -139,20 +137,22 @@ public class AcceptanceTestCase extends JellyTestCase {
 
         // TODO : Check result
         */
-
-        endTest( );
     }
 
     public void CodeCompletion2Internal( ) {
 
         // Access java code with editor
         EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
+
+        // TODO : REMOVE COMMENT
+        /*
         eoJavaCode.setCaretPosition(
             "// TODO code application logic here",
             0,
             false
           );
         eoJavaCode.pushKey( KeyEvent.VK_ENTER );
+        */
         // Use jaxbm template
         JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
         String sCode = "jaxbm\t";
@@ -193,7 +193,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         }
 
         // Replace args with cr
-        eoJavaCode.setCaretPosition( "marshaller.marshal(", 0, true );
+        eoJavaCode.setCaretPosition( "marshaller.marshal(", 0, false );
         eoJavaCode.pushKey( KeyEvent.VK_DELETE );
         eoJavaCode.pushKey( KeyEvent.VK_DELETE );
         eoJavaCode.insert( "cr" );
@@ -201,6 +201,10 @@ public class AcceptanceTestCase extends JellyTestCase {
     }
 
     public void RunTheProjectInternal( String sAppName ) {
+
+        // Correct imports
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Source|Fix Imports...");
+
         // Run
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
 

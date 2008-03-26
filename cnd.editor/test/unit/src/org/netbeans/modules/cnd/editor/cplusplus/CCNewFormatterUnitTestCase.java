@@ -4106,4 +4106,79 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "};\n"
             );
     }
+
+    //IZ#131038:GNU style: reformat works wrongly with destructors
+    public void testGnuStuleNewLineName() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "locale::~locale() throw()\n" +
+                "{ _M_impl->_M_remove_reference(); }\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "locale::~locale () throw ()\n" +
+                "{\n" +
+                "  _M_impl->_M_remove_reference ();\n" +
+                "}\n"
+                );
+    }
+
+    //IZ#131043:GNU style: reformat works wrongly with function names
+    public void testGnuStuleNewLineName2() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "void\n" +
+                "__num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod)\n" +
+                "{\n" +
+                "return;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "void\n" +
+                "__num_base::_S_format_float (const ios_base& __io, char* __fptr, char __mod)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n"
+                );
+    }
+    
+    //IZ#131059:GNU style: Multiline alignment works wrongly
+    public void testGnuStuleNewLineName3() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "int f(int a1, int a2,\n" +
+                "      int a3) {\n" +
+                "\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int\n" +
+                "f (int a1, int a2,\n" +
+                "   int a3)\n" +
+                "{\n" +
+                "\n" +
+                "}\n"
+                );
+    }
+
+    public void testGnuStuleNewLineName4() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
+    }
 }

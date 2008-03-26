@@ -108,7 +108,6 @@ class EditPanelRequest extends DataDisplay {
 	addGridBagComponent(this, 
 			    createHeaderLabel
 			    (NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_19"),
-			     NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_19_Mnemonic").charAt(0),
 			     NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_Request_19A11yDesc"),
 			     requestTable),
 			    0, ++gridy,

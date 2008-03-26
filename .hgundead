@@ -18,4 +18,3 @@ websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/webse
 websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/wsport-closed.png
 websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/resources/wsport-open.png
 websvc.saas.ui/build/classes/org/netbeans/modules/websvc/saas/ui/wizards/Bundle.properties
-cnd.editor/build/classes/org/netbeans/modules/cnd/editor/Bundle.properties
