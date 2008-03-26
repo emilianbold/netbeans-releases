@@ -407,7 +407,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      *  Insert the Saas client call
      */
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             if (isInBlock) {
