@@ -29,6 +29,7 @@ import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -50,7 +51,7 @@ public class PredicateMapperModelFactory {
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
         VariableTreeModel variableModel = new VariableTreeModel(
-                dContext, null, null, new MyTreeInfoProvider());
+                dContext, null, null, null, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         PredicateExprTreeModel targetModel = new PredicateExprTreeModel(1);
@@ -69,7 +70,7 @@ public class PredicateMapperModelFactory {
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
         VariableTreeModel variableModel = new VariableTreeModel(
-                dContext, null, null, new MyTreeInfoProvider());
+                dContext, null, null, null, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         XPathPredicateExpression[] predicateArr = pred.getPredicates();
@@ -80,8 +81,9 @@ public class PredicateMapperModelFactory {
                 mapperTcContext, null, sourceModel, targetModel);
         //
         MapperSwingTreeModel rightTreeModel = newMapperModel.getRightTreeModel();
+        TreeFinderProcessor findProc = new TreeFinderProcessor(rightTreeModel);
         List<TreePath> targetTreePathList = 
-                rightTreeModel.findChildren(
+                findProc.findChildren(
                 new TreePath(rightTreeModel.getRoot()), 
                 new PredicateFinder());
         assert targetTreePathList.size() == predicateArr.length;
