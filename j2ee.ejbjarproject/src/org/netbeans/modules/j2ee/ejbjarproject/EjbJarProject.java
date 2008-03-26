@@ -954,6 +954,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
+                apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
+            }
+            else if(apiWebServicesClientSupport.isBroken(EjbJarProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
+            }
         }
         
         private void updateProject() {
