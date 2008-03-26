@@ -94,6 +94,8 @@ final class GenerateJavadocFix implements Fix {
     public ChangeInfo implement(final boolean open) {
         final String[] javadocForDocument = new String[1];
         final Document[] docs = new Document[1];
+        final JavadocGenerator gen = new JavadocGenerator(spec);
+        gen.updateSettings(file);
         JavaSource js = JavaSource.forFileObject(file);
         try {
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -108,7 +110,6 @@ final class GenerateJavadocFix implements Fix {
                         t = wc.getTrees().getTree(elm);
                     }
                     if (t != null) {
-                        JavadocGenerator gen = new JavadocGenerator(GenerateJavadocFix.this.spec);
                         String javadocTxt = gen.generateComment(elm, wc);
 //                        Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, 0, javadocTxt);
 //                        wc.getTreeMaker().addComment(t, javadoc, true);
