@@ -137,7 +137,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
     public void initDataSourceCombo() {
         providers = new DefaultComboBoxModel();
-        int longinx = 0, longest = 0;
+        //int longinx = 0, longest = 0;
         final DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
         if(conns.length == 1){
         	providers.addElement("");
@@ -145,10 +145,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         if (conns.length > 0) {
             for (int i = 0; i < conns.length; i++) {
                 providers.addElement(new ConnectionWrapper(conns[i]));
-                if(longest < (new ConnectionWrapper(conns[i])).getDatabaseConnection().getDisplayName().length()){
+             /*   if(longest < (new ConnectionWrapper(conns[i])).getDatabaseConnection().getDisplayName().length()){
                 longinx = i;
                 longest = (new ConnectionWrapper(conns[i])).getDatabaseConnection().getDisplayName().length();
-                }
+                }*/
             }
         } else {
             providers.addElement("<None>");
@@ -156,7 +156,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
        
         this.datasourceComboBox.setModel(providers);
         this.datasourceComboBox.setSelectedIndex(0);
-        this.datasourceComboBox.setPrototypeDisplayValue((new ConnectionWrapper(conns[longinx])).getDatabaseConnection().getDisplayName());
+        //this.datasourceComboBox.setPrototypeDisplayValue((new ConnectionWrapper(conns[longinx])).getDatabaseConnection().getDisplayName());
 
     }
 

@@ -343,7 +343,7 @@ public class TestUtils {
         po.next();
         wait(2000);
         if (projectName != null) {
-            new JTextFieldOperator(po).setText(projectName);
+            new JTextFieldOperator(po).typeText(projectName);
         } else {
             projectName = new JTextFieldOperator(po).getText();
         }
