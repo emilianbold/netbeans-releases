@@ -384,6 +384,18 @@ public class JaxWsUtils {
                             make.QualIdent(WSAn),
                             attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
+                    
+                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {                       
+                        TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+
+                        List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
+                        bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
+                                make.Identifier("javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING"))); //NOI18N
+                        AnnotationTree bindingAnnotation = make.Annotation(
+                                make.QualIdent(BindingAn),
+                                bindingAttrs);
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                    }
 
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project

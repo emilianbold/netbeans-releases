@@ -41,8 +41,8 @@
 
 package gui.window;
 
+import gui.VWPUtilities;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -114,7 +114,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Connect"); // NOI18N
         processDBConnectDialogNoPass();
-        ProjectsTabOperator.invoke();
+        VWPUtilities.invokePTO();
         
         PaletteComponentOperator.invoke();
         openPage();
