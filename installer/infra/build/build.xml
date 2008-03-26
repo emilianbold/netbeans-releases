@@ -2202,7 +2202,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-
     <target name="generate-jdk5-bundles" if="do.build.jdk5">
 	<!-- JavaSE + JDK5 bundles --> 
         <create-bundle root="${output.dir}/registry-temp" 
@@ -2482,11 +2481,12 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
     <target name="tgz-to-dmg">        
 	<echo message="Creating directory structure at MacOS system"/>	
         <echo message=""/>
+	<property name="temp.build.directory" value="~/.nbi-build"/>
 
         <sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="mkdir -p ~/.nbi-build/src ~/.nbi-build/tmp ~/.nbi-build/dmg"
+                 command="mkdir -p ${temp.build.directory}/src ${temp.build.directory}/tmp ${temp.build.directory}/dmg"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2498,7 +2498,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
              passphrase="${makedmg.ssh.keypass}"
              verbose="true"
              trust="true"
-             remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/src/temp.tgz"
+             remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/src/temp.tgz"
 	     file="${tgz.file}"/>
 
 	<echo message=""/>
@@ -2507,7 +2507,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
 	<sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="cd ~/.nbi-build/tmp; tar -xzvf ~/.nbi-build/src/temp.tgz; rm -rf ~/.nbi-build/src"
+                 command="cd ${temp.build.directory}/tmp; tar -xzvf ${temp.build.directory}/src/temp.tgz; rm -rf ${temp.build.directory}/src"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2519,7 +2519,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
         <sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="hdiutil create -fs HFS+ -srcfolder ~/.nbi-build/tmp -volname &quot;${dmg.name}&quot; ~/.nbi-build/dmg/image.dmg"
+                 command="hdiutil create -fs HFS+ -srcfolder ${temp.build.directory}/tmp -volname &quot;${dmg.name}&quot; ${temp.build.directory}/dmg/image.dmg"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2533,7 +2533,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
              verbose="true"
              trust="true"
              localTofile="${dmg.file}"
-	     file="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/dmg/image.dmg"/>
+	     file="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/dmg/image.dmg"/>
 
 	<echo message=""/>
 	<echo message="Clear temporary build directory on MacOS system"/>
@@ -2541,7 +2541,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
 	<sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="rm -rf ~/.nbi-build"
+                 command="rm -rf ${temp.build.directory}"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
