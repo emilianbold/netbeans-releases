@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
@@ -62,10 +65,16 @@ import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
+import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -75,6 +84,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathNamespaceContext;
@@ -319,7 +330,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return checkExpression(expressionLang, content, element);
   }
   
-  public SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
+  private SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
       boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
       if ( !isXPathExpr) {
@@ -353,6 +364,8 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
               return context.isSchemaImported(schemaNamespaceUri);
           }
       });
+      model.setXPathCastResolver(createXPathCastResolver(element));
+
       // Checks if the expression contains ";". 
       // If it does, then split it to parts and verifies them separately.
       if (XPathModelFactory.isSplitable(exprText)) {
@@ -364,9 +377,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
           }
           return null;
       } 
-      else {
-          return checkSingleExpr(model, exprText);
-      }
+      return checkSingleExpr(model, exprText);
   }
 
   private SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
@@ -389,6 +400,115 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 
   private void out(Object object) {
     System.out.println("*** " + object); // NOI18N
+  }
+
+  private XPathCastResolver createXPathCastResolver(ContentElement element) {
+//out();
+//out("CREATE CAST RESOLVER");
+    if ( !(element instanceof BpelEntity)) {
+//out("     1");
+      return null;
+    }
+    BpelEntity entity = (BpelEntity) element;
+    BpelEntity parent = entity.getParent();
+//out("     2");
+
+    if ( !(parent instanceof Copy)) {
+      return null;
+    }
+//out("     3");
+    List<Editor> editors = parent.getChildren(Editor.class);
+
+    if (editors == null) {
+      return null;
+    }
+//out("     4");
+    List<Cast> allCasts = new ArrayList<Cast>();
+
+    boolean isFrom = element instanceof From;
+    boolean isTo = element instanceof To;
+
+//out("     5");
+    for (Editor editor : editors) {
+      Casts editorCasts = editor.getCasts();
+
+      if (editorCasts == null) {
+        continue;
+      }
+      Cast [] casts = editorCasts.getCasts();
+
+      if (casts == null) {
+        continue;
+      }
+      for (Cast cast : casts) {
+        if (cast == null) {
+          continue;
+        }
+        Source source = cast.getSource();
+
+        if (isFrom && source == Source.FROM) {
+          allCasts.add(cast);
+        }
+        else if (isTo && source == Source.TO) {
+          allCasts.add(cast);
+        }
+      }
+    }
+//out("     6");
+    if (allCasts.isEmpty()) {
+      return null;
+    }
+//out("     7");
+    return new MyXPathCastResolver(allCasts);
+  }
+
+  // --------------------------------------------------------------------
+  private static class MyXPathCastResolver implements XPathCastResolver {
+    public MyXPathCastResolver(List<Cast> casts) {
+      myXPathCasts = new ArrayList<XPathCast>();
+
+      for (Cast cast : casts) {
+        myXPathCasts.add(new MyXPathCast(cast));
+      }
+    }
+
+    public List<XPathCast> getXPathCasts() {
+      return myXPathCasts;
+    }
+
+    private List<XPathCast> myXPathCasts;
+  }
+
+  // ----------------------------------------------------
+  private static class MyXPathCast implements XPathCast {
+    
+    public MyXPathCast(Cast cast) {
+      myType = getType(cast);
+      myPath = cast.getPath();
+    }
+
+    public String getPath() {
+      return myPath;
+    }
+
+    public GlobalType getType() {
+      return myType;
+    }
+
+    private GlobalType getType(Cast cast) {
+      SchemaReference<GlobalType> ref = cast.getType();
+//System.out.println();
+//System.out.println("---: " + ref);
+
+      if (ref == null) {
+        return null;
+      }
+//System.out.println("   : " + ref.get());
+      return ref.get();
+    }
+
+    private String myPath;
+    private GlobalType myType;
   }
 
   private BpelEntity myValidatedActivity; 
