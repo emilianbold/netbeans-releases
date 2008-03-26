@@ -190,7 +190,7 @@ public final class MultiViewPeer  {
             model.markAsHidden(el);
             el.componentClosed();
         }
-
+        tabs.peerComponentClosed();
     }
     
     void peerComponentShowing() {

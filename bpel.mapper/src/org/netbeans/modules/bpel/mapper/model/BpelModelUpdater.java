@@ -59,7 +59,7 @@ import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
@@ -159,7 +159,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             TreePath sourceTreePath = sourcePin.getTreePath();
             TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
             //
-            XPathModel xPathModel = XPathModelFactory.create(from);
+            XPathModel xPathModel = BpelXPathModelFactory.create(from);
             populateFrom(from, xPathModel, tpInfo);
         } else {
             boolean processed = false;
@@ -224,7 +224,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         //
         TreePathInfo tpInfo = collectTreeInfo(rightTreePath);
         //
-        XPathModel xPathModel = XPathModelFactory.create(to);
+        XPathModel xPathModel = BpelXPathModelFactory.create(to);
         populateTo(to, xPathModel, tpInfo);
     }
     

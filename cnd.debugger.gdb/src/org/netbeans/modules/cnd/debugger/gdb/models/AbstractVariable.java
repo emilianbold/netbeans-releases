@@ -436,7 +436,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 return true;
             }
-        } else if (value != null && value.length() > 0 && value.charAt(0) == '{') {
+        } else if (value != null && value.length() > 0 &&
+                (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
             return true;
         }
         return false;
@@ -601,7 +602,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
                     } else if (v.length() > 0) {
-                        String val = v.substring(1, v.length() - 1);
+                        int pos = v.indexOf('{');
+                        assert pos != -1;
+                        String val = v.substring(pos + 1, v.length() - 1);
                         int start = 0;
                         int end = GdbUtils.findNextComma(val, 0);
                         while (end != -1) {
@@ -706,18 +709,18 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
-                        Object o = map.get(n);
-                        if (o instanceof String) {
-                            t = o.toString();
-                        } else if (o instanceof Map) {
-                            t = (String) ((Map) o).get("<typename>"); // NOI18N
-                        } else if (isNumber(v)) {
-                            t = "int"; // NOI18N - best guess (std::string drops an "int")
-                        } else {
-                            log.warning("Cannot determine field type for " + n); // NOI18N
-                            return null;
-                        }
-                        }
+                    Object o = map.get(n);
+                    if (o instanceof String) {
+                        t = o.toString();
+                    } else if (o instanceof Map) {
+                        t = (String) ((Map) o).get("<name>"); // NOI18N
+                    } else if (isNumber(v)) {
+                        t = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else {
+                        log.warning("Cannot determine field type for " + n); // NOI18N
+                        return null;
+                    }
+                }
                 return new AbstractField(parent, n, t, v);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim()); // NOI18N
@@ -726,7 +729,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return null;
     }
     
-    private void parseCharArray(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
         String frag;
         int idx = 0;
         int pos;
@@ -749,6 +752,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     idx = value.length(); // stop iterating...
                 }
                 parseCharArrayFragment(var, basename, type, frag);
+                if (var.fields.length < size && idx >= value.length()) {
+                    var.addField(new AbstractField(var, basename + "[" + (size - 1) + "]", // NOI18N
+                            type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
+                }
                 if (truncated) {
                     String high;
                     try {
@@ -889,8 +896,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         } catch (Exception ex) {
             size = 0;
         }
-        if (t.equals("char")) { // NOI18N
-            parseCharArray(this, getName(), type, value);
+        if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
+            parseCharArray(this, getName(), type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
             for (int i = 0; i < size && vstart != -1; i++) {
