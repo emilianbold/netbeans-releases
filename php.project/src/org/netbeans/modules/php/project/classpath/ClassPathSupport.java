@@ -81,7 +81,7 @@ public class ClassPathSupport {
     }
 
     public List<Item> itemsList(String propertyValue) {
-        String[] pe = PropertyUtils.tokenizePath(propertyValue);
+        String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
         List<Item> items = new ArrayList<Item>(pe.length);
         for (String p : pe) {
             Item item = null;
