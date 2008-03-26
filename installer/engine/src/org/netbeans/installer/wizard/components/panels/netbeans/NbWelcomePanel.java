@@ -657,7 +657,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
             if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && 
-                    !type.equals(BundleType.JAVA_TOOLS) || !type.equals(BundleType.MYSQL)) {
+                    !type.equals(BundleType.JAVA_TOOLS) && !type.equals(BundleType.MYSQL)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         4, 1,                              // width, height
