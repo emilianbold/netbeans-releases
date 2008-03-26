@@ -763,6 +763,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesClientSupport.isBroken(AppClientProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(AppClientProject.this);
+            }
         }
         
         private void updateProject() {
