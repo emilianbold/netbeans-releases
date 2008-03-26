@@ -177,7 +177,8 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     
     private void showPopupMenu(MouseEvent event) {
         MapperContext context = getMapper().getContext();
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
+        
         if (context == null || model == null) {
             return;
         }
