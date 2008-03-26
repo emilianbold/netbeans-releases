@@ -125,6 +125,7 @@ import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator;
@@ -1604,5 +1605,29 @@ public class Util {
         NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
                 NotifyDescriptor.Message.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
+    }
+    
+    public static String createPrintStatement(String pkg, String serviceName,
+            DropFileType dropFileType, HttpMethodType methodType, 
+            boolean canGenerateJaxb, String indent) {
+        String methodBody = "";
+        if(dropFileType == DropFileType.SERVLET || dropFileType == DropFileType.JSP)
+            methodBody += indent+"response.setContentType(\"application/xml\");\n";
+        if(methodType == HttpMethodType.GET) {
+            if(canGenerateJaxb) {
+                String resultClass = pkg+ "." +serviceName;
+                methodBody += indent+resultClass+" resultObj = " +
+                        "result.getDataAsJaxbObject("+resultClass+".class);\n";
+                methodBody += indent+dropFileType.getPrintWriterType()+
+                        ".println(\"The SaasService returned: \" + resultObj.toString());\n";
+            } else {
+                methodBody += indent+dropFileType.getPrintWriterType()+
+                        ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+            }
+        } else {
+            methodBody += indent+dropFileType.getPrintWriterType()+
+                    ".println(\"The SaasService returned: \"+result);\n";
+        }
+        return methodBody;
     }
 }

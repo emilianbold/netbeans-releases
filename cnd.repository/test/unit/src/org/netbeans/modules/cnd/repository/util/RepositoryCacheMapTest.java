@@ -59,7 +59,7 @@ public class RepositoryCacheMapTest extends BaseTestCase {
 	tryEqualKeys(map);
 	tryEqualValues(map);
         
-        RepositoryCacheMap.Filter<String> filter = new RepositoryCacheMap.Filter<String>() {
+        Filter<String> filter = new Filter<String>() {
             public boolean accept(String value) {
                 return true;
             }

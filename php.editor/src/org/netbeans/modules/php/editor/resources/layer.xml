@@ -53,6 +53,11 @@
                 <file name="org-netbeans-modules-php-editor-indent-PHPIndentTaskFactory.instance"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -60,6 +65,10 @@
                             </file>
                         </folder>
                     </folder>
+                </folder>
+                
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                 </folder>
                 
             </folder>
