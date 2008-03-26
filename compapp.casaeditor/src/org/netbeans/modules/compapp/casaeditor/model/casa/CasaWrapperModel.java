@@ -1083,6 +1083,11 @@ public class CasaWrapperModel extends CasaModel {
             return NbBundle.getMessage(this.getClass(),
                     "MSG_CANNOT_CONNECT_TWO_UNDEFINED_ENDPOINTS"); // NOI18N
         }
+        
+        if (endpointRef1.getEndpoint().get() == endpointRef2.getEndpoint().get()) {
+            return NbBundle.getMessage(this.getClass(),
+                    "MSG_CANNOT_CONNECT_SAME_ENDPOINT"); // NOI18N            
+        }
 
         return null;
     }
