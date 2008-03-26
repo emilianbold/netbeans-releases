@@ -92,24 +92,24 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
-    // vlv: print\
     if (hasLeftButton) {
-        JButton button = createPrintPreviewButton();
+      // vlv: print
+      JButton button = createPrintPreviewButton();
 
-        if (button != null) {
-            c.weightx = 0.0;
-            c.anchor = GridBagConstraints.EAST;
-            c.fill = GridBagConstraints.NONE;
-            c.insets = new Insets(0, 0, 0, TINY_INSET);
-            panel.add(button, c);
-        }
+      if (button != null) {
         c.weightx = 0.0;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(0, 0, 0, 0);
-        panel.add(createCollapseExpandAllButton(), c);
+        c.insets = new Insets(0, 0, 0, TINY_INSET);
+        panel.add(button, c);
+      }
+      // vlv: expand / collapse
+      c.weightx = 0.0;
+      c.anchor = GridBagConstraints.EAST;
+      c.fill = GridBagConstraints.NONE;
+      c.insets = new Insets(0, 0, 0, 0);
+      panel.add(createCollapseExpandAllButton(), c);
     }
-
     panel.setBorder(new Border());
     panel.setOpaque(true);
     panel.addMouseMotionListener(new MouseMotionAdapter() {});

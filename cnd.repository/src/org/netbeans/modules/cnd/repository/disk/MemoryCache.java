@@ -147,16 +147,16 @@ public class MemoryCache {
         }
     }
     
-    public Collection<Pair<Key, Persistent>> clearHungObjects(Filter<Key> filter) {
+    public Collection<Pair<Key, Persistent>> clearHungObjects(/*Filter<Key> filter*/) {
         processQueue();
         Collection<Pair<Key, Persistent>> result = new ArrayList<Pair<Key, Persistent>>();
         for( Iterator<Map.Entry<Key, Object>> iter = cache.entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry<Key, Object> entry = iter.next();
             if( entry.getValue() instanceof Persistent ) {
-                if( filter.accept(entry.getKey()) ) {
+                //if( filter.accept(entry.getKey()) ) {
                     result.add(new Pair(entry.getKey(), (Persistent) entry.getValue()));
                     iter.remove();
-                }
+                //}
             }
         }
         return result;

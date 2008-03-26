@@ -177,7 +177,7 @@ final class JavadocCompletionUtils {
      * @return javadoc token sequence or null.
      */
     static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
-        if (e == null)
+        if (e == null || javac.getElementUtilities().isSynthetic(e))
             return null;
         
         Tree tree = javac.getTrees().getTree(e);
