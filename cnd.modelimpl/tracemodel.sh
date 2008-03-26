@@ -89,7 +89,7 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/lib/org-openide-modules.jar
     CP=${CP}${path_sep}${platform}/lib/boot.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-api-progress.jar
-    CP=${CP}${path_sep}${platform}/modules/org-netbeans-api-progress.jar
+    CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-queries.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
