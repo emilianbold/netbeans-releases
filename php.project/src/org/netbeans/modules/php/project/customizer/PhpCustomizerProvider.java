@@ -102,7 +102,7 @@ public class PhpCustomizerProvider implements CustomizerProvider, ProjectWithHos
         }
         else {
             PhpProjectProperties uiProperties = new PhpProjectProperties(
-                    getProject());
+                    getProject(), null);
             // load PhpProjectProperties here to do it once inside 
             // 'ProjectManager.mutex().readAccess'
             uiProperties.load();

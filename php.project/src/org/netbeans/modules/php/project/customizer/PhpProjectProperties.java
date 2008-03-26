@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,12 +46,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.classpath.ClassPathSupport;
+import org.netbeans.modules.php.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -59,7 +63,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 
@@ -71,11 +74,25 @@ public class PhpProjectProperties {
 
     public static final String STATUS_USE_NO_HOST = "use_no_host";
     public static final String STATUS_ABSENT_HOST = "absent_host";
-
-    private static Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
     
-    public PhpProjectProperties(PhpProject project) {
+    private final ClassPathSupport classPathSupport;
+    
+    public final DefaultListModel INCLUDE_PATH_MODEL;
+    public final ListCellRenderer INCLUDE_PATH_LIST_RENDERER;
+
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
+    
+    public PhpProjectProperties(PhpProject project, ClassPathSupport classPathSupport) {
+        assert project != null;
+        assert classPathSupport != null;
+
         myProject = project;
+        this.classPathSupport = classPathSupport;
+        // XXX
+        load();
+
+        INCLUDE_PATH_MODEL = ClassPathUiSupport.createListModel(classPathSupport.itemsIterator(myProperties.getProperty(PhpProject.INCLUDE_PATH)));
+        INCLUDE_PATH_LIST_RENDERER = new ClassPathUiSupport.ClassPathListCellRenderer(project.getEvaluator(), project.getProjectDirectory());
     }
 
     public void save() {
@@ -83,6 +100,11 @@ public class PhpProjectProperties {
 
             public Host run() {
                 AntProjectHelper helper = getAntProjectHelper(getProject());
+                
+                // encode include path
+                String[] includePath = classPathSupport.encodeToStrings(
+                        ClassPathUiSupport.getIterator(INCLUDE_PATH_MODEL));
+                
                 EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
                 /*
@@ -106,6 +128,8 @@ public class PhpProjectProperties {
                  * Set version.
                  */
                 //properties.setProperty( PhpProject.VERSION,  myProperties.getProperty( PhpProject.VERSION) );
+                
+                properties.setProperty(PhpProject.INCLUDE_PATH, includePath);
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 

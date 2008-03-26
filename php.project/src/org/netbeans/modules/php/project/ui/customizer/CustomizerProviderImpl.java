@@ -50,8 +50,8 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.classpath.ClassPathSupport;
 import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -67,12 +67,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-php-project/Customizer"; //NO18N
 
     private static final Map<Project, Dialog> project2Dialog = new HashMap<Project, Dialog>();
-    private final Project project;
-    private final AntProjectHelper helper;
+    private final PhpProject project;
 
-    public CustomizerProviderImpl(Project project, AntProjectHelper helper) {
+    public CustomizerProviderImpl(PhpProject project) {
         this.project = project;
-        this.helper = helper;
     }
 
     public void showCustomizer() {
@@ -85,12 +83,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         }
-        PhpProjectProperties uiProperties = new PhpProjectProperties((PhpProject) project);
+        ClassPathSupport classPathSupport = new ClassPathSupport(project.getEvaluator(), project.getRefHelper(),
+                project.getHelper());
+        PhpProjectProperties uiProperties = new PhpProjectProperties(project, classPathSupport);
         uiProperties.load();
-        Lookup context = Lookups.fixed(new Object[] {
-            project,
-            uiProperties,
-        });
+        Lookup context = Lookups.fixed(project, uiProperties);
 
         OptionListener listener = new OptionListener(project, uiProperties);
         dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
