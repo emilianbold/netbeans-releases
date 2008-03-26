@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteBuffer;
@@ -57,12 +56,9 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -247,10 +243,10 @@ public final class Stamps {
     }
     
     public void discardCaches() {
-        discardCachesImpl();
+        discardCachesImpl(moduleJARs);
     }
     
-    private static void discardCachesImpl() {
+    private static void discardCachesImpl(AtomicLong al) {
         String user = System.getProperty ("netbeans.user"); // NOI18N
         long now = System.currentTimeMillis();
         if (user != null) {
@@ -266,7 +262,6 @@ public final class Stamps {
                 }
             }
         }
-        AtomicLong al = moduleJARs;
         if (al != null) {
             al.set(now);
         }
@@ -301,13 +296,13 @@ public final class Stamps {
     
 
     private static AtomicLong stamp(boolean checkStampFile) {
-        AtomicLong result = new AtomicLong();
+        AtomicLong result = new AtomicLong(-1);
         StringBuilder sb = new StringBuilder();
         
         Set<File> processedDirs = new HashSet<File>();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            stampForCluster (new File (home), result, processedDirs, checkStampFile, true, null);
+            stampForCluster (new File (home), result, processedDirs, checkStampFile, true);
             sb.append(home).append('=').append(result.longValue()).append('\n');
         }
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -315,14 +310,24 @@ public final class Stamps {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String t = tok.nextToken();
-                stampForCluster(new File(t), result, processedDirs, checkStampFile, true, null);
+                stampForCluster(new File(t), result, processedDirs, checkStampFile, true);
                 sb.append(t).append('=').append(result.longValue()).append('\n');
             }
         }
         String user = System.getProperty ("netbeans.user"); // NOI18N
         if (user != null) {
-            sb.append(user).append("=-1\n");
-            stampForCluster (new File (user), result, new HashSet<File> (), false, false, sb.toString());
+            stampForCluster (new File (user), result, new HashSet<File> (), false, false);
+            sb.append(user).append('=').append(result.longValue()).append('\n');
+            
+            File userDir = new File(user);
+            File checkSum = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), "all-checksum.txt");
+            if (!compareAndUpdateFile(checkSum, sb.toString(), result)) {
+                discardCachesImpl(result);
+            }
+        }
+        
+        if (result.get() <= 0) {
+            result.set(System.currentTimeMillis());
         }
         
         return result;
@@ -330,7 +335,7 @@ public final class Stamps {
     
     private static void stampForCluster(
         File cluster, AtomicLong result, Set<File> hashSet, 
-        boolean checkStampFile, boolean createStampFile, String allCheckSum
+        boolean checkStampFile, boolean createStampFile
     ) {
         File stamp = new File(cluster, ".lastModified"); // NOI18N
         long time;
@@ -354,14 +359,6 @@ public final class Stamps {
             createStampFile = false;
         }
 
-        if (allCheckSum != null) {
-            File userDir = new File(user);
-            File checkSum = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), "all-checksum.txt");
-            if (!compareAndUpdateFile(checkSum, allCheckSum)) {
-                discardCachesImpl();
-            }
-        }
-        
         File configDir = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File modulesDir = new File(cluster, "modules"); // NOI18N
         
@@ -395,31 +392,42 @@ public final class Stamps {
 
     }
     
-    private static boolean compareAndUpdateFile(File file, String content) {
+    private static boolean compareAndUpdateFile(File file, String content, AtomicLong result) {
         try {
             byte[] expected = content.getBytes("UTF-8"); // NOI18N
             byte[] read = new byte[expected.length];
             FileInputStream is = null;
             boolean areCachesOK;
             boolean writeFile;
+            long lastMod;
             try {
                 is = new FileInputStream(file);
                 int len = is.read(read);
                 areCachesOK = len == read.length && is.available() == 0 && Arrays.equals(expected, read);
                 writeFile = !areCachesOK;
+                lastMod = file.lastModified();
             } catch (FileNotFoundException notFoundEx) {
                 // ok, running for the first time, no need to invalidate the cache
                 areCachesOK = true;
                 writeFile = true;
+                lastMod = result.get();
             } finally {
                 if (is != null) {
                     is.close();
                 }
             }
             if (writeFile) {
+                file.getParentFile().mkdirs();
                 FileOutputStream os = new FileOutputStream(file);
                 os.write(expected);
                 os.close();
+                if (areCachesOK) {
+                    file.setLastModified(lastMod);
+                }
+            } else {
+                if (lastMod > result.get()) {
+                    result.set(lastMod);
+                }
             }
             return areCachesOK;
         } catch (IOException ex) {

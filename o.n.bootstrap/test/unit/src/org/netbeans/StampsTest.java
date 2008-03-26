@@ -66,7 +66,7 @@ public class StampsTest extends NbTestCase {
     
     
     public static Test suite() {
-//        return new StampsTest("testFastWhenShutdown");
+        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
         return new NbTestSuite(StampsTest.class);
     }
     
@@ -136,7 +136,7 @@ public class StampsTest extends NbTestCase {
         CountingSecurityManager.initialize(new File(userdir, "var").getPath());
         long newStamp2 = Stamps.moduleJARs();
         
-        CountingSecurityManager.assertCounts("Just three accesses to cache", 3);
+        CountingSecurityManager.assertCounts("Just four accesses to cache", 4);
         assertEquals("Stamps are the same", stamp, newStamp2);
     }        
     
@@ -192,7 +192,6 @@ public class StampsTest extends NbTestCase {
         
         assertNull(s.asByteBuffer("mycache.dat"));
         assertNull(s.asStream("mycache.dat"));
-
         class Up implements Stamps.Updater {
 
             public void flushCaches(DataOutputStream os) throws IOException {
