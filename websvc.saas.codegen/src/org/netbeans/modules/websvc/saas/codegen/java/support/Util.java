@@ -1614,7 +1614,7 @@ public class Util {
         methodBody += indent+"//TODO - Uncomment the print Statement below to print result.\n";
         if(methodType == HttpMethodType.GET) {
             if(canGenerateJaxb) {
-                String resultClass = pkg+ "." +Util.upperFirstChar(serviceName);
+                String resultClass = pkg+ "." + Util.upperFirstChar(serviceName);
                 methodBody += indent+"//"+resultClass+" resultObj = " +
                         "result.getDataAsJaxbObject("+resultClass+".class);\n";
                 methodBody += indent+"//"+dropFileType.getPrintWriterType()+
