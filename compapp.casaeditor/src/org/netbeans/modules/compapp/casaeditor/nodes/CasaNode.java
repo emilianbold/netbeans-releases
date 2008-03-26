@@ -78,6 +78,8 @@ public abstract class CasaNode extends AbstractNode
     private WeakReference mDataReference;
     private static Map<Object, Image> mImageMap = new HashMap<Object, Image>();
 
+    private InstanceContent content;
+
     public CasaNode() {
         super(Children.LEAF);
     }
@@ -90,6 +92,7 @@ public abstract class CasaNode extends AbstractNode
         super(children, new AbstractLookup(content));
         mDataReference = new WeakReference<Object>(data);
         content.add(new SaveCookieDelegate());
+        this.content = content;
     }
     
     
@@ -203,6 +206,24 @@ public abstract class CasaNode extends AbstractNode
     
     protected void setupPropertySheet(Sheet sheet) {
         // Subclasses can intialize the sheet if desired.
+    }
+
+    /**
+     * Add node lookup content
+     *
+     * @param obj item to add
+     */
+    public void addContent(Object obj) {
+        content.add(obj);
+    }
+
+    /**
+     * Remove node lookup content
+     *
+     * @param obj item to remove
+     */
+    public void removeContent(Object obj) {
+        content.remove(obj);
     }
     
     class SaveCookieDelegate implements SaveCookie {

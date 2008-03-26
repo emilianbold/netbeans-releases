@@ -36,27 +36,12 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.editor.lexer;
-
-import java.io.Reader;
-import org.netbeans.modules.php.editor.PHPVersion;
+package org.netbeans.modules.cnd.repository.util;
 
 /**
- *
- * @author Petr Pisl
+ * A self-explaining Filter interface
+ * @author Vladimir Kvashin
  */
-public interface PHPScanner {
-    
-    public PHPVersion getPHPVersion();
-    
-    public PHPTokenId nextToken() throws java.io.IOException;
-    
-    public PHPScannerState getState();
-    
-    public void setState(PHPScannerState state);
-    
-    public void reset(Reader reader);
-    
-    public int getTokenLength();
+public interface Filter<V> {
+    boolean accept(V value);
 }

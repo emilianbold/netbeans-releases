@@ -4,9 +4,10 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
-    <!--<taskdef name="jflex"
+    <!--
+    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"  
-        classpath="/space/php/parser/jflex-1.4.1/lib/JFlex.jar" />
+        classpath="/space/jflex/lib/JFlex.jar" />
         
     <target name="gen-lexer" >
         <jflex file="tools/Php5ColoringScanner.flex" 
@@ -16,7 +17,8 @@
     <target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex" 
         destdir="src"/>
-    </target>-->
+    </target>
+    -->
     
     <taskdef name="javacup"
         classname="java_cup.anttask.CUPTask"
@@ -31,3 +33,4 @@
        />
     </target>
 </project>
+

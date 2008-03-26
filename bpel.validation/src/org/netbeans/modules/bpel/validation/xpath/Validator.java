@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
@@ -62,10 +65,17 @@ import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
+import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -75,6 +85,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathNamespaceContext;
@@ -140,7 +152,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
-    return checkXPathExpression(from);
+    return checkXPath(from);
   }
 
   private Component getType(To to) {
@@ -159,7 +171,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
-    return checkXPathExpression(to);
+    return checkXPath(to);
   }
 
   private Component getVariableType(VariableReference reference) {
@@ -245,144 +257,54 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
   
   @Override
-  public void visit(BooleanExpr expr) {
-      checkXPathExpression(expr);
+  public void visit(BooleanExpr bool) {
+      checkXPath(bool);
   }
 
   @Override
   public void visit(Branches branches) {
-      checkXPathExpression(branches);
+      checkXPath(branches);
   }
 
   @Override
   public void visit(Condition condition) {
-      checkXPathExpression(condition);
+      checkXPath(condition);
   }
   
   @Override
-  public void visit(DeadlineExpression expression) {
-      checkXPathExpression(expression);
+  public void visit(DeadlineExpression deadline) {
+      checkXPath(deadline);
   }
   
   @Override
-  public void visit(FinalCounterValue value) {
-      checkXPathExpression(value);
+  public void visit(FinalCounterValue counter) {
+      checkXPath(counter);
   }
   
   @Override
   public void visit(For fo) {
-      checkXPathExpression(fo);
+      checkXPath(fo);
   }
   
   @Override
   public void visit(Query query) {
-      checkXPathExpression(query);
+      checkXPath(query);
   }
   
   @Override
   public void visit(RepeatEvery repeatEvery) {
-      checkXPathExpression(repeatEvery);
+      checkXPath(repeatEvery);
   }
   
   @Override
-  public void visit(StartCounterValue value) {
-      checkXPathExpression(value);
+  public void visit(StartCounterValue counter) {
+      checkXPath(counter);
+  }
+
+  private SchemaComponent checkXPath(ContentElement element) {
+    return Utils.checkXPathExpression(element, new PathValidationContext(this, this, element));
   }
   
-  @Override
-  public void visit(OnAlarmEvent event) {
-      myValidatedActivity = event;
-  }
-  
-  @Override
-  protected void visit(Activity activity) {
-      myValidatedActivity = activity;
-  }
-  
-  private SchemaComponent checkXPathExpression(ContentElement element) {
-      String content = element.getContent();
-      
-      if (content == null) {
-          return null;
-      }
-      content = content.trim();
-
-      if (content.length() == 0) {
-          return null;
-      }
-      String expressionLang = null;
-      
-      if (element instanceof ExpressionLanguageSpec) {
-          expressionLang = ((ExpressionLanguageSpec) element).
-                  getExpressionLanguage();
-      }
-      return checkExpression(expressionLang, content, element);
-  }
-  
-  public SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
-      boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
-
-      if ( !isXPathExpr) {
-          return null;
-      }
-      XPathModelHelper helper= XPathModelHelper.getInstance();
-      XPathModel model = helper.newXPathModel();
-      assert myValidatedActivity != null;
-
-      final PathValidationContext context = new PathValidationContext(model, this, this, myValidatedActivity, element);
-      model.setValidationContext(context);
-
-      ExNamespaceContext nsContext = ((BpelEntity)element).getNamespaceContext();
-      model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
-
-      model.setVariableResolver(new BpelVariableResolver(context, myValidatedActivity));
-      model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
-
-      model.setExternalModelResolver(new ExternalModelResolver() {
-          public Collection<SchemaModel> getModels(String modelNsUri) {
-              BpelModel bpelModel = ((BpelEntity)element).getBpelModel();
-              return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
-          }
-
-          public Collection<SchemaModel> getVisibleModels() {
-              context.addResultItem(Validator.ResultType.ERROR, i18n(Validator.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
-              return null;
-          }
-
-          public boolean isSchemaVisible(String schemaNamespaceUri) {
-              return context.isSchemaImported(schemaNamespaceUri);
-          }
-      });
-      // Checks if the expression contains ";". 
-      // If it does, then split it to parts and verifies them separately.
-      if (XPathModelFactory.isSplitable(exprText)) {
-          context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
-          String[] partsArr = XPathModelFactory.split(exprText);
-
-          for (String anExprText : partsArr) {
-              checkSingleExpr(model, anExprText);
-          }
-          return null;
-      } 
-      else {
-          return checkSingleExpr(model, exprText);
-      }
-  }
-
-  private SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
-      try {
-          XPathExpression xpath = model.parseExpression(exprText);
-          model.resolveExtReferences(true);
-          return model.getLastSchemaComponent();
-      } 
-      catch (XPathException e) {
-          // Nothing to do here because of the validation context 
-          // was specified before and it has to be populated 
-          // with a set of problems.
-          return null;
-      }
-  }
-
   private static void out() {
     System.out.println();
   }
@@ -390,6 +312,4 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   private void out(Object object) {
     System.out.println("*** " + object); // NOI18N
   }
-
-  private BpelEntity myValidatedActivity; 
 }

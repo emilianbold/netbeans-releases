@@ -818,11 +818,11 @@ public class ServerInstance implements Node.Cookie {
             String outputLabel) throws DatabaseException {
         
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
-            // TODO - find a way to run .app files.  This feels like a hack
-            String[] pieces = command.split("/"); // NOI18N
-            String base = pieces[pieces.length - 1];
-            base = base.replace(".app", ""); // NOI18N
-            command = command + "/Contents/MacOS/" + base; // NOI18N
+            // The command is actually the first argument, with /usr/bin/open
+            // as the actual command.  Put the .app file path in quotes to 
+            // deal with spaces in the path.
+            args = "\"" + command + "\" " + args; // NOI18N
+            command = "/usr/bin/open"; // NOI18N     
         }
         try {
             NbProcessDescriptor desc = new NbProcessDescriptor(command, args);
