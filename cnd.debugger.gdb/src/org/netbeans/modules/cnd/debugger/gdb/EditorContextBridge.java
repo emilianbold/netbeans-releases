@@ -435,7 +435,7 @@ public class EditorContextBridge {
                              EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
             }
             try {
-                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, null);
+                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, b);
             } catch (DataObjectNotFoundException doe) {
                 doe.printStackTrace();
                 return null;
@@ -450,7 +450,7 @@ public class EditorContextBridge {
             }
         }
 
-        return annotate(url, lineNumber, annotationType, null);
+        return annotate(url, lineNumber, annotationType, b);
     }
 
     public static String getRelativePath(String className) {

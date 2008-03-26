@@ -41,11 +41,13 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.openide.text.Annotation;
+import org.netbeans.api.debugger.Breakpoint;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
+
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 
 
 /**
@@ -53,11 +55,13 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
  *
  * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
-public class DebuggerAnnotation extends Annotation {
+public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
     private String      type;
+    private GdbBreakpoint breakpoint;
     
-    public DebuggerAnnotation(String type, Line line) {
+    public DebuggerBreakpointAnnotation(String type, Line line, GdbBreakpoint b) {
         this.type = type;
+        this.breakpoint = b;
         attach(line);
     }
     
@@ -70,11 +74,23 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription() {
-        if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        } else if (EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_CALLSITE"); // NOI18N
+        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString("TOOLTIP_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
         }
         return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
+    }
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
 }

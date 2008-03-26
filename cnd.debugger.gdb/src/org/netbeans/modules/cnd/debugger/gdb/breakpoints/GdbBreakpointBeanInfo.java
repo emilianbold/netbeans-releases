@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.openide.text.Annotation;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
-
-import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
-
+import java.beans.BeanDescriptor;
+import java.beans.SimpleBeanInfo;
 
 /**
- * Debugger Annotation class.
  *
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * @author Martin Entlicher
  */
-public class DebuggerAnnotation extends Annotation {
-    private String      type;
+class GdbBreakpointBeanInfo extends SimpleBeanInfo {
     
-    public DebuggerAnnotation(String type, Line line) {
-        this.type = type;
-        attach(line);
+    public GdbBreakpointBeanInfo() {}
+
+    @Override
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(
+                GdbBreakpoint.class,
+                GdbBreakpointCustomizer.class);
     }
-    
-    public String getAnnotationType() {
-        return type;
-    }
-    
-    public Line getLine() {
-        return (Line)getAttachedAnnotatable();
-    }
-    
-    public String getShortDescription() {
-        if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getMessage(DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        } else if (EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE.equals(type)) {
-            return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_CALLSITE"); // NOI18N
-        }
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
-    }
+
 }
