@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,43 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
+import org.netbeans.api.debugger.Breakpoint;
+import org.openide.text.Line;
 import org.openide.util.NbBundle;
+
+import org.netbeans.modules.cnd.debugger.gdb.EditorContext;
+
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+
 
 /**
  * Debugger Annotation class.
+ *
+ * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
-public final class DebuggerAnnotation extends Annotation {
+public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
+    private String      type;
+    private GdbBreakpoint breakpoint;
     
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
-    
-    private final String type;
-    
-    public DebuggerAnnotation(final String type, final Annotatable annotatable) {
+    public DebuggerBreakpointAnnotation(String type, Line line, GdbBreakpoint b) {
         this.type = type;
-        attach(annotatable);
+        this.breakpoint = b;
+        attach(line);
     }
     
     public String getAnnotationType() {
         return type;
     }
     
+    public Line getLine() {
+        return (Line)getAttachedAnnotatable();
+    }
+    
     public String getShortDescription() {
-        if (type.equals(CURRENT_LINE_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CURRENT_LINE"); // NOI18N
-        } else if (type.equals(CALL_STACK_FRAME_ANNOTATION_TYPE)) {
-            return getMessage("TOOLTIP_CALL_STACK_FRAME"); // NOI18N
-        } else {
-            return null;
+        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString("TOOLTIP_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
+        } else if (EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE.equals(type)) {
+            return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString 
+                    ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
         }
+        return NbBundle.getBundle(DebuggerAnnotation.class).getString("TOOLTIP_ANNOTATION"); // NOI18N
     }
-    
-    private static String getMessage(final String key) {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(key);
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
-    
 }
