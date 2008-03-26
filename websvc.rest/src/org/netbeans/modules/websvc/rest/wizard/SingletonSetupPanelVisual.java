@@ -356,7 +356,7 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private void mouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseClickHandler
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(Util.getClasspathInfo(project), new TypeElementFinder.Customizer() {
 
                             public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);

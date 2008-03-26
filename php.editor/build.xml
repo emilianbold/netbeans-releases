@@ -4,8 +4,8 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
-    <!--
-    <taskdef name="jflex"
+    
+    <!--<taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"  
         classpath="/space/jflex/lib/JFlex.jar" />
         
@@ -18,7 +18,12 @@
         <jflex file="tools/ASTPHP5Scanner.flex" 
         destdir="src"/>
     </target>
-    -->
+        
+    <target name="gen-docscanner" >
+        <jflex file="tools/DocumentorColoringScanner.flex" 
+        destdir="src"
+        skel="tools/skeleton.netbeans"/>
+    </target>-->
     
     <taskdef name="javacup"
         classname="java_cup.anttask.CUPTask"
@@ -33,3 +38,4 @@
        />
     </target>
 </project>
+

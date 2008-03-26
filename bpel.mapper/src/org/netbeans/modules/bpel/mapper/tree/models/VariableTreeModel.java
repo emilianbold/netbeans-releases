@@ -28,6 +28,8 @@ import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
+import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
@@ -67,24 +69,29 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
     private BpelDesignContext mDesignContext;
     private PredicateManager mPredManager;
     private SpecialStepManager mSStepManager;
+    private CastManager mCastManager;
     private TreeItemInfoProvider mTreeInfoProvider;
     
-    public VariableTreeModel(BpelDesignContext context) {
-        this(context, new PredicateManager(), new SpecialStepManager());
+    public VariableTreeModel(BpelDesignContext context, boolean leftTree, 
+            Object synchSource) {
+        this(context, new PredicateManager(), new SpecialStepManager(), 
+                new CastManager(leftTree, synchSource));
     }
     
     public VariableTreeModel(BpelDesignContext context, 
-            PredicateManager predManager, SpecialStepManager stepManager) {
-        this(context, predManager, stepManager, 
+            PredicateManager predManager, SpecialStepManager stepManager, 
+            CastManager castManager) {
+        this(context, predManager, stepManager, castManager, 
                 VariableTreeInfoProvider.getInstance());
     }
     
     public VariableTreeModel(BpelDesignContext context, 
             PredicateManager predManager, SpecialStepManager stepManager, 
-            TreeItemInfoProvider treeInfoProvider) {
+            CastManager castManager, TreeItemInfoProvider treeInfoProvider) {
         mDesignContext = context;
         mPredManager = predManager;
         mSStepManager = stepManager;
+        mCastManager = castManager;
         mTreeInfoProvider = treeInfoProvider;
         //
         mVisScope = new VisibilityScope(context.getSelectedEntity());
@@ -206,6 +213,11 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
                 }
                 return result;
             }
+        } else if (parent instanceof AbstractTypeCast) {
+            GlobalType gType = ((AbstractTypeCast)parent).getCastTo();
+            if (gType != null) {
+                return loadSchemaComponents(dataObjectPathItr, gType);
+            }
         }
         //
         return null;
@@ -217,6 +229,10 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
     
     public SpecialStepManager getSStepManager() {
         return mSStepManager;
+    }
+    
+    public CastManager getCastManager() {
+        return mCastManager;
     }
     
     private List loadSchemaComponents(

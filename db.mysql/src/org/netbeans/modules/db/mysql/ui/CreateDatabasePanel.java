@@ -7,17 +7,13 @@
 package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Event;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -46,21 +42,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     final ServerInstance server;
     private Color nbErrorForeground;
 
-    private void validatePanel() {
+    private void validatePanel(String databaseName) {
         if (descriptor == null) {
             return;
         }
         
         String error = null;
-        
+
         comboUsers.setEnabled(this.isGrantAccess());
-        
-        String item = comboDatabaseName.getEditor().getItem().toString();
-        if ( Utils.isEmpty(item) ) {
+                
+        if ( Utils.isEmpty(databaseName) ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
-        
+
         if (error != null) {
             messageLabel.setText(error);
             descriptor.setValid(false);
@@ -69,7 +64,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    
+        
     public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -257,17 +252,28 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
             new KeyListener() {
 
-            public void keyTyped(KeyEvent arg0) {
-                validatePanel();
+            public void keyTyped(KeyEvent event) {
+                // Get the actual key.  apparently getItem() doesn't return the current
+                // string typed until *after* this event finishes :(
+                String keyStr = Character.toString(event.getKeyChar()).trim();
+                String dbname;
+                if ( Utils.isEmpty(keyStr)) {
+                    dbname = comboDatabaseName.getEditor().getItem().toString().trim();
+                } else {
+                    // We know the database name has at least this character in it
+                    dbname = keyStr;
+                }
+                
+                validatePanel(dbname);
             }
 
-            public void keyPressed(KeyEvent arg0) {
+            public void keyPressed(KeyEvent event) {
             }
 
-            public void keyReleased(KeyEvent arg0) {
+            public void keyReleased(KeyEvent event) {
             }
         });
-        
+                        
         comboUsers.setModel(new UsersComboModel(server));
         
         if ( comboUsers.getItemCount() == 0 ) {
@@ -298,7 +304,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
-        validatePanel();
+        validatePanel("");
     }
     
     private void setGrantAccess(boolean grant) {
@@ -420,11 +426,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-    validatePanel();
+
 }//GEN-LAST:event_comboDatabaseNameActionPerformed
 
 private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
-    validatePanel();
+    validatePanel(evt.getItem().toString().trim());
 }//GEN-LAST:event_comboDatabaseNameItemStateChanged
 
 private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased

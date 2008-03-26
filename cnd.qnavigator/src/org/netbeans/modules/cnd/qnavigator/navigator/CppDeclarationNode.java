@@ -259,12 +259,16 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isDeclaration(element)){
-            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
-            node.setName(((CsmDeclaration)element).getName().toString());
             if(CsmKindUtilities.isFunction(element)){
+                node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
                 node.setName(CsmUtilities.getSignature((CsmFunction)element, true));
             } else {
-                node.setName(((CsmDeclaration)element).getName().toString());
+                String name = ((CsmDeclaration)element).getName().toString();
+                if (name.length() == 0 && CsmKindUtilities.isVariable(element)){
+                    return node;
+                }
+                node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
+                node.setName(name);
             }
             model.addOffset(node, (CsmOffsetable)element);
             return node;

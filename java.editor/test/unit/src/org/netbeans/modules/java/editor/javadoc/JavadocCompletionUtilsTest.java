@@ -42,6 +42,7 @@ package org.netbeans.modules.java.editor.javadoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestSuite;
@@ -448,6 +449,29 @@ public class JavadocCompletionUtilsTest extends JavadocTestSupport {
         
         doc.insertString(0, "\n", null);
         assertTrue(jdts.moveNext());
+    }
+    
+    public void testFindJavadocTokenSequenceForElement() throws Exception {
+        String code = 
+                "/**\n" +
+                " * line1\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        prepareTest(code);
+
+        TypeElement clazzC = info.getTopLevelElements().iterator().next();
+        assertNotNull(clazzC);
+
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, clazzC);
+        assertNotNull(jdts);
+        assertTrue(jdts.moveNext());
+
+        // test synthetic element #131157
+        Element defConstructor = clazzC.getEnclosedElements().get(0);
+        assertNotNull(defConstructor);
+        assertTrue(info.getElementUtilities().isSynthetic(defConstructor));
+        assertNull(JavadocCompletionUtils.findJavadocTokenSequence(info, defConstructor));
     }
     
 }

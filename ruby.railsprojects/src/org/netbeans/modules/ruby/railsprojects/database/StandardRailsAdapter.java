@@ -65,7 +65,7 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         if (platform.isJRuby()) {
             // JRuby doesn't support socket
-            RailsAdapters.commentOutSocket(project.getProjectDirectory());
+            RailsAdapters.commentOutSocket(project.getProjectDirectory(), "localhost"); //NOI18N
         }
     }
 

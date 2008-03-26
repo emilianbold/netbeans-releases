@@ -109,6 +109,7 @@ public class PhpProject implements Project, AntProjectListener {
     public static final String SOURCES_TYPE_PHP 
             = PhpProjectSharedConstants.SOURCES_TYPE_PHP;
     
+    //keep synchronized with org.netbeans.modules.php.rt.providers.impl.actions.RunCommand    
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
     public static final String URL = "url"; // NOI18N

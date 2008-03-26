@@ -22,17 +22,28 @@ package org.netbeans.modules.bpel.mapper.predicates.editor;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 
 /**
  * The auxiliary class to convert tree path or path iterator to other forms.
@@ -132,14 +143,14 @@ public class PathConverter {
 
     /**
      * Constructs a new list, which contains the schema elements, predicates, 
-     * part and variable from the specified iterator pathItr. 
+     * special steps, cast objects, part and variable from the specified iterator pathItr. 
      * The first object taken from iterator will be at the beginning of the list. 
      * If the iterator has incompatible content then the null is returned. 
      * 
      * @param pathItr
      * @return
      */
-    public static List<Object> constructPredicateLocationtList(
+    public static List<Object> constructObjectLocationtList(
             RestartableIterator<Object> pathItr) {
         //
         pathItr.restart();
@@ -201,6 +212,135 @@ public class PathConverter {
         }
         //
         return treeItemList;
+    }
+
+    public static List<Object> constructObjectLocationtList(
+            XPathExpressionPath exprPath) {
+        //
+        ArrayList<Object> treeItemList = new ArrayList<Object>();
+        //
+        LocationStep[] stepArr = exprPath.getSteps();
+        for (int index = stepArr.length - 1; index >= 0; index--) {
+            LocationStep step = stepArr[index];
+            XPathSchemaContext sContext = step.getSchemaContext();
+            if (sContext != null) {
+                SchemaComponent sComp = XPathSchemaContext.Utilities.
+                        getSchemaComp(sContext);
+                if (sComp != null) {
+                    treeItemList.add(sComp);
+                    continue;
+                }
+            }
+            //
+            // Unresolved step --> the location list can't be built
+            return null;
+        }
+        //
+        XPathExpression expr = exprPath.getRootExpression();
+        assert expr instanceof XPathVariableReference;
+        XPathVariable var = ((XPathVariableReference)expr).getVariable();
+        assert var instanceof XPathBpelVariable;
+        XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+        //
+        Part part = bpelVar.getPart();
+        if (part != null) {
+            treeItemList.add(part);
+        } else {
+            VariableDeclaration varDecl = bpelVar.getVarDecl();
+            if (varDecl != null) {
+                treeItemList.add(varDecl);
+            }
+        }
+        //
+        return treeItemList;
+    }
+    
+    public static XPathExpression constructXPath(BpelEntity base, 
+            RestartableIterator<Object> pathItr) {
+        //
+        XPathModel xPathModel = BpelXPathModelFactory.create(base);
+        XPathModelFactory factory = xPathModel.getFactory();
+        pathItr.restart();
+        //
+        VariableDeclaration varDecl = null;
+        Part part = null;
+        LinkedList<LocationStep> stepList = new LinkedList<LocationStep>();
+        //
+        // Process the path
+        ParsingStage stage = null;
+        while (pathItr.hasNext()) {
+            Object obj = pathItr.next();
+            if (obj instanceof SchemaComponent) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.SCHEMA;
+                StepNodeNameTest nodeTest = 
+                        new StepNodeNameTest(xPathModel, (SchemaComponent)obj);
+                LocationStep ls = factory.newLocationStep(null, nodeTest, null);
+                stepList.add(0, ls);
+            } else if (obj instanceof AbstractPredicate) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.SCHEMA;
+                AbstractPredicate pred = (AbstractPredicate)obj;
+                StepNodeNameTest nodeTest = 
+                        new StepNodeNameTest(xPathModel, pred.getSComponent());
+                LocationStep ls = factory.newLocationStep(
+                        null, nodeTest, pred.getPredicates());
+                stepList.add(0, ls);
+            } else if (obj instanceof LocationStep) {
+                stepList.add(0, (LocationStep)obj);
+            } else if (obj instanceof Part) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
+                    return null;
+                }
+                stage = ParsingStage.PART;
+                part = (Part)obj;
+            } else if (obj instanceof AbstractVariableDeclaration) {
+                if (!(stage == null || 
+                        stage == ParsingStage.SCHEMA || 
+                        stage == ParsingStage.PART)) {
+                    return null;
+                }
+                //
+                AbstractVariableDeclaration var = (AbstractVariableDeclaration)obj;
+                //
+                if (var instanceof VariableDeclaration) {
+                    varDecl = (VariableDeclaration)var;
+                } else if (var instanceof VariableDeclarationWrapper) {
+                    varDecl = ((VariableDeclarationWrapper)var).getDelegate();
+                }
+                //
+                if (varDecl == null) {
+                    return null;
+                }
+                //
+                stage = ParsingStage.VARIABLE;
+                //
+                // Everything found!
+                break;
+            } else {
+                if (stage == null) {
+                    return null;
+                }
+                break;
+            }
+        }
+        //
+        XPathBpelVariable xPathVar = new XPathBpelVariable(varDecl, part);
+        QName varQName = xPathVar.constructXPathName();
+        XPathVariableReference xPathVarRef = 
+                xPathModel.getFactory().newXPathVariableReference(varQName);
+        //
+        if (stepList.isEmpty()) {
+            return xPathVarRef;
+        } else {
+            LocationStep[] steps = stepList.toArray(new LocationStep[stepList.size()]);
+            XPathExpressionPath result = factory.newXPathExpressionPath(xPathVarRef, steps);
+            return result;
+        } 
     }
     
     public static String toString(RestartableIterator<Object> pathItr) {

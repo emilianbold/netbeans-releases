@@ -47,7 +47,7 @@ public class PLinksTopComponent extends TopComponent {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PLinksTopComponent.class);
+        return new HelpCtx("debug_windows_partner_links"); // NOI18N
     }
 
     @Override
