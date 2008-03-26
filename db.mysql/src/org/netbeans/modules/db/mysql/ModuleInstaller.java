@@ -138,9 +138,9 @@ public class ModuleInstaller extends ModuleInstall {
             if ( dbconn != null ) {
                 // The user has a registered connection for MySQL, 
                 // so let's use its settings to register the MySQL node
-                options.setAdminUser(user);
+                options.setAdminUser(dbconn.getUser());
                 if ( MySQLOptions.getDefaultAdminUser().equals(user)) {
-                    options.setAdminPassword(password);
+                    options.setAdminPassword(dbconn.getPassword());
                 }
 
                 URLParser urlParser = new URLParser(dbconn.getDatabaseURL());
