@@ -214,7 +214,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
-                AutoupdateCheckScheduler.runCheckAvailableUpdates ();
+                AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initTask) {
                     units = null;
@@ -536,7 +536,6 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
             UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
             LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
-            AutoupdateCheckScheduler.runCheckAvailableUpdates ();
             
             updateTableModel.setUnits(units);
             installTableModel.setUnits(units);
@@ -559,6 +558,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             }
             setSelectedTab();
         }        
+        AutoupdateCheckScheduler.runCheckAvailableUpdates (100);
     }
         
     static boolean canContinue (String message) {
