@@ -42,8 +42,10 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -61,7 +63,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(EntitySelectionPanel.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public boolean isFinishPanel() {

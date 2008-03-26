@@ -137,30 +137,28 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        String indent = "        ";
-        String indent2 = "             ";
         List<ParameterInfo> filterParams = getServiceMethodParameters();
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);
         
-        String methodBody = indent+"try {\n";
+        String methodBody = "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+        methodBody += "             "+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         if(getBean().getHttpMethod() == HttpMethodType.GET) {
             if(getBean().canGenerateJAXBUnmarshaller()) {
                 String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += indent2+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
+                methodBody += "             "+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
+                methodBody += "             System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
             } else {
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+                methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
             }
         } else {
-            methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result);\n";
+            methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
         }
-        methodBody += indent+"} catch (Exception ex) {\n";
-        methodBody += indent2+"ex.printStackTrace();\n";
-        methodBody += indent+"}\n";
+        methodBody += "        } catch (Exception ex) {\n";
+        methodBody += "             ex.printStackTrace();\n";
+        methodBody += "        }\n";
        
         return methodBody;
     }

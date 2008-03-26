@@ -58,7 +58,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated int leden(int param1, int param2) throws IOException, IllegalArgumentException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n",
@@ -68,16 +68,14 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "class Zima {\n" +
                 "    /**\n" +
                 "     * \n" +
-                "     * @param <T>\n" +
                 "     * @param param1\n" +
                 "     * @param param2\n" +
-                "     * @param param3\n" +
                 "     * @return\n" +
                 "     * @throws java.io.IOException\n" +
                 "     * @throws java.lang.IllegalArgumentException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated int leden(int param1, int param2) throws IOException, IllegalArgumentException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
                 "}\n");        
@@ -88,7 +86,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated Zima(int param1, int param2) throws IOException, IllegalArgumentException {\n" +
                 "    }\n" +
                 "}\n",
                 
@@ -97,15 +95,13 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "class Zima {\n" +
                 "    /**\n" +
                 "     * \n" +
-                "     * @param <T>\n" +
                 "     * @param param1\n" +
                 "     * @param param2\n" +
-                "     * @param param3\n" +
                 "     * @throws java.io.IOException\n" +
                 "     * @throws java.lang.IllegalArgumentException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException {\n" +
+                "    @Deprecated Zima(int param1, int param2) throws IOException, IllegalArgumentException {\n" +
                 "    }\n" +
                 "}\n");        
     }
@@ -121,8 +117,8 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "/**\n" +
                 " * \n" +
                 " * @author Alois\n" +
-                " * @param <P>\n" +
-                " * @param <Q>\n" +
+                " * @param P\n" +
+                " * @param Q\n" +
                 " * @deprecated\n" +
                 " */\n" +
                 "@Deprecated class Zima<P,Q> {\n" +

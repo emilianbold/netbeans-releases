@@ -82,7 +82,7 @@ public class PanelConfigureProjectVisual extends JPanel {
             break;
         case LIB:
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-            jSeparator1.setVisible (true);
+            jSeparator1.setVisible (false);
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
             getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
             getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N

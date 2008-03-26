@@ -295,19 +295,17 @@ public class ClassPathSupport {
         //TODO these should be encapsulated in the Item class 
         // but that means we need to pass evaluator and antProjectHelper there.
         String ref = item.getSourceReference();
-        if (ref != null) {
-            eval = evaluator.evaluate( ref );
-            if (eval != null && !eval.contains(Item.SOURCE_START)) {
-                item.setSourceFilePath(eval);
-            }
+        eval = evaluator.evaluate( ref );
+        if (eval != null && !eval.contains(Item.SOURCE_START)) {
+            item.setSourceFilePath(eval);
         }
         ref = item.getJavadocReference();
-        if (ref != null) {
-            eval = evaluator.evaluate( ref );
-            if (eval != null && !eval.contains(Item.JAVADOC_START)) {
-                item.setJavadocFilePath(eval);
-            }
-        }        
+        eval = evaluator.evaluate( ref );
+        File f2 = null;
+        if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+            item.setJavadocFilePath(eval);
+        }
+        
     }
     
     public String getLibraryReference( Item item ) {

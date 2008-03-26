@@ -43,7 +43,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
     private boolean lookForElements;
     private boolean lookForAttributes; 
     
-    // TO DO replace to weak reference
+    // TODO replace to weak reference
     private Set<SchemaCompPair> mSchemaCompPair = null;
     private Set<SchemaComponent> mUsedSchemaCompSet;
     

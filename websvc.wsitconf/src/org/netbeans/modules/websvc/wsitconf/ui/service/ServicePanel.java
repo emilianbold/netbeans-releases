@@ -464,13 +464,15 @@ public class ServicePanel extends SectionInnerPanel {
                     trustStoreConfigRequired = false;
                 }
 
-                if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
-                    ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
-                    ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
-                        stsAllowed = false;
+                if (stsAllowed) {
+                    if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
+                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
+                        ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
+                            stsAllowed = false;
+                    }
                 }
                 
-                if (gf) {
+                if (trustStoreConfigRequired && gf) {
                     if (ComboConstants.PROF_USERNAME.equals(secProfile) || 
                         ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
                         ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
@@ -482,13 +484,12 @@ public class ServicePanel extends SectionInnerPanel {
                         ) {
                             trustStoreConfigRequired = false;
                     }
+                }
                 
-                    if (!(ComboConstants.PROF_STSISSUED.equals(secProfile) || 
-                          ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
-                          ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLSSL.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLSENDER.equals(secProfile))) {
+                if (validatorsRequired) {
+                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) || 
+                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)) {
                             validatorsRequired = false;
                     }
                 }
@@ -509,7 +510,7 @@ public class ServicePanel extends SectionInnerPanel {
                 validatorsRequired = true;
             }
             
-            validatorsButton.setEnabled(secSelected && !defaults && validatorsRequired);
+            validatorsButton.setEnabled(secSelected && !gf && !defaults && validatorsRequired);
             keyButton.setEnabled(secSelected && keyStoreConfigRequired && !defaults);
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
         } else { // no wsit fun, there's access manager security selected

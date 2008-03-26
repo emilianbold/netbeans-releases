@@ -107,7 +107,6 @@ if [ "$action" = "sync" ]; then
     echo Ready to: hg push https://\"$push_username\":\"$push_password\"@hg.netbeans.org/$repository
     # Now push to the test repo
     echo "But for now only push to testpush-repo:"
-    hg fetch ../../testpush-repo
     hg push ../../testpush-repo
     exit 0
 fi

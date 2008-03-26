@@ -1597,12 +1597,4 @@ public class Util {
         }
         return found;
     }
-    
-    public static void showUnsupportedDropMessage(Object[] args) {
-        String message = NbBundle.getMessage(AbstractGenerator.class, 
-                "WARN_UnsupportedDropTarget", args); // NOI18N
-        NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
-                NotifyDescriptor.Message.WARNING_MESSAGE);
-        DialogDisplayer.getDefault().notify(desc);
-    }
 }

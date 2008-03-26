@@ -898,17 +898,13 @@ public class Utilities {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
+            getLogger ().log (Level.WARNING, null, saxe);
             return null;
         } catch (IOException ioe) {
-            getLogger ().log (Level.INFO, "IOException when reading " + moduleUpdateTracking, ioe);
-            return null;
+            getLogger ().log (Level.WARNING, null, ioe);
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
-        if (document.getDocumentElement () == null) {
-            return null;
-        }
         return getModuleElement (document.getDocumentElement ());
     }
     
@@ -1070,7 +1066,7 @@ public class Utilities {
         if (org.openide.util.Utilities.isWindows ()) {
             FileWriter fw = null;
             try {
-                fw = new FileWriter (f, true);
+                fw = new FileWriter (f);
             } catch (IOException ioe) {
                 // just check of write permission
                 getLogger ().log (Level.FINE, f + " has no write permission", ioe);

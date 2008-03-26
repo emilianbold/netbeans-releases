@@ -102,6 +102,7 @@ public class ClientDisplay extends DataDisplay {
 	addGridBagComponent(this, 
 			    createHeaderLabel
 			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Client_3"), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("MON_Client_3_Mnemonic").charAt(0), 
 			     NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Client_3A11yDesc"), 
 			     clientTable),
                             0, ++gridy,
@@ -124,6 +125,7 @@ public class ClientDisplay extends DataDisplay {
 	addGridBagComponent(this, 
 			    createHeaderLabel
 			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_engine"), 
+			     NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_engine_Mnemonic").charAt(0), 
 			     NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_engineA11yDesc"),
 			     engineTable),
                             0, ++gridy,

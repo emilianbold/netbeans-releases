@@ -293,7 +293,6 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
                 <friend>org.netbeans.modules.languages.php</friend>

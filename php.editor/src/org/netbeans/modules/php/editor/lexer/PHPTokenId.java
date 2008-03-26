@@ -310,17 +310,18 @@ public enum PHPTokenId implements TokenId {
                     return PHPLanguage.PHP_MIME_TYPE;
                 }
                 
-                @Override
+                // unfortunately this doesn't work correctly
+                /*@Override
                 protected LanguageEmbedding<?> embedding(Token<PHPTokenId> token,
                     LanguagePath languagePath, InputAttributes inputAttributes) {
                     PHPTokenId id = token.id();
 
                     if (id == T_INLINE_HTML) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
                     } 
 
                     return null; // No embedding
-                }
+                }*/
                 
             }.language();
 
