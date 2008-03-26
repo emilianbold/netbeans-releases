@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.sql.framework.ui.model.impl;
 
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.event.UndoableEditListener;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
@@ -60,7 +63,11 @@ import org.netbeans.modules.sql.framework.ui.model.ConditionBuilderSQLUiModel;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
+
 
 /**
  * @author radval
@@ -68,7 +75,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
 public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements ConditionBuilderSQLUiModel {
 
     private static final String LOG_CATEGORY = ConditionBuilderSQLUIModelImpl.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderSQLUIModelImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ConditionBuilderSQLUIModelImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition sqlCondition;
 
@@ -218,11 +225,83 @@ public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements 
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                mLogger.errorNoloc(mLoc.t("PRSR144: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
+                mLogger.errorNoloc(mLoc.t("EDIT141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
             }
         }
 
         isDirty = false;
+    }
+
+    public void removeComponentListener(ComponentListener cl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addComponentListener(ComponentListener cl) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableEditListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableEditListener(UndoableEditListener uel) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sync() throws IOException {
+        //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean inSync() {
+        return true;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public State getState() {
+        return null;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isIntransaction() {
+        return true;
+    // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void endTransaction() {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addChildComponent(Component target, Component child, int index) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeChildComponent(Component child) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ModelSource getModelSource() {
+        return null;
+    // throw new UnsupportedOperationException("Not supported yet.");
     }
 }
 

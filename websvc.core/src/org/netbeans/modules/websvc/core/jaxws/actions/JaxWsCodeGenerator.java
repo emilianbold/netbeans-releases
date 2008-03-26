@@ -920,28 +920,13 @@ public class JaxWsCodeGenerator {
                         modifiers,
                         Collections.<AnnotationTree>singletonList(wsRefAnnotation));
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(serviceJavaName);
-
-                // THIS is a workaround for issue 101395
-                // after it is fixed, use the code commented code
-                /*
+           
                 VariableTree serviceRefInjection = make.Variable(
                 methodModifiers,
-                fieldName,
+                serviceFName,
                 make.Type(typeElement.asType()),
                 null);
-                 */
-                //to be removed after 101395
-                VariableTree var = make.Variable(
-                        methodModifiers,
-                        serviceFName,
-                        make.Type(typeElement.asType()),
-                        null);
-                VariableTree serviceRefInjection = make.Variable(
-                        make.Modifiers(var.getModifiers().getFlags(), var.getModifiers().getAnnotations()),
-                        var.getName(),
-                        var.getType(),
-                        var.getInitializer());
-                //end - to be removed after 101395
+                
                 ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
                 workingCopy.rewrite(javaClass, modifiedClass);
             }

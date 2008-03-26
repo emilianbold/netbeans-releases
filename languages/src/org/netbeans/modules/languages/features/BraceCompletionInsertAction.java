@@ -113,24 +113,34 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             String bracketPair = (String) complete.getValue ();
             int i = bracketPair.indexOf (':');
             if (i < 0) continue;
-            String followingText = document.getText (
-                caret.getDot (), 
-                bracketPair.length () - i - 1
-            );
-            if (bracketPair.endsWith (":" + followingText) && insertString.equals (followingText)) {
-                // skip closing bracket / do not write it again
-                caret.setDot (caret.getDot () + 1);
-                return;
+            if (caret.getDot () + bracketPair.length () - i - 1 < document.getLength()) {
+                String followingText = document.getText (
+                    caret.getDot (), 
+                    bracketPair.length () - i - 1
+                );
+                if (bracketPair.endsWith (":" + followingText) && insertString.equals (followingText)) {
+                    // skip closing bracket / do not write it again
+                    caret.setDot (caret.getDot () + 1);
+                    return;
+                }
             }
-            if (bracketPair.startsWith (insertString + ":")) {
-                Token token = tokenSequence.token ();
-                if (token != null) {
-                    char firstCharOfTokenText = token.text ().charAt (0);
-                    boolean startsWithWhiteSpcae = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
+            if (caret.getDot () - i + insertString.length () >= 0) {
+                String previousTest = document.getText (
+                    caret.getDot () - i + insertString.length (), 
+                    i - insertString.length ()
+                ) + insertString;
+                if (bracketPair.startsWith (previousTest + ":")) {
+                    Token token = tokenSequence.token ();
+                    boolean startsWithWhiteSpace = false;
+                    if (token != null) {
+                        char firstCharOfTokenText = token.text ().charAt (0);
+                        startsWithWhiteSpace = firstCharOfTokenText == '\n' || firstCharOfTokenText == ' ';
+                    }
                     if (
+                        token == null ||
                         tokenSequence.offset () == caret.getDot () ||
-                        token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpcae
-                    ) { // between tokens or in whitespace
+                        token.id ().name ().indexOf ("whitespace") >= 0 || startsWithWhiteSpace
+                    ) { // on the end, between tokens or in whitespace
                         insertString += bracketPair.substring (i + 1);
                         super.insertString (document, offset, caret, insertString, overwrite);
                         caret.setDot (offset + 1);

@@ -291,7 +291,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
-            copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             final List<File> newFiles = new ArrayList<File>(2);
             FileObject configFile;
             configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N

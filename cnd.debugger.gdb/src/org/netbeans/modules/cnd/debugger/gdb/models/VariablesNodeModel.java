@@ -70,6 +70,8 @@ public class VariablesNodeModel implements NodeModel {
             "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
     public static final String FIXED_WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/FixedWatch"; // NOI18N
+    public static final String WATCH =
+            "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
     public static final String STATIC_FIELD =
             "org/netbeans/modules/debugger/resources/watchesView/StaticField"; // NOI18N
     public static final String SUPER =
@@ -193,27 +195,26 @@ public class VariablesNodeModel implements NodeModel {
     }
     
     public String getIconBase(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
+        if (o == TreeModel.ROOT) {
             return FIELD;
-        if (o instanceof Field) {
-            if (((Field) o).isStatic())
+        } else if (o instanceof Field) {
+            if (((Field) o).isStatic()) {
                 return STATIC_FIELD;
-            else
+            } else {
                 return FIELD;
+            }
+        } else if (o instanceof GdbWatchVariable) {
+            return WATCH;
+        } else if (o instanceof LocalVariable) {
+            return LOCAL;
         }
-        if (o instanceof LocalVariable)
-            return LOCAL;
-        /*NM TEMPORARY COMMENTED OUT
-        if (o instanceof Super)
-            return SUPER;
-        if (o instanceof This)
-            return FIELD;
-         */
+        
         String str = o.toString();
-        if (str.startsWith(strSubArray))
+        if (str.startsWith(strSubArray)) {
             return LOCAL;
-        if (str.equals(strNoInfo) || str.equals(strNoCurrentThread))
+        } else if (str.equals(strNoInfo) || str.equals(strNoCurrentThread)) {
             return null;
+        }
         throw new UnknownTypeException(o);
     }
     

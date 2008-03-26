@@ -154,16 +154,16 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         private String getTestState() {
             StringBuilder builder = new StringBuilder();
-            builder.append(" creationCaretOffset = " + creationCaretOffset);
-            builder.append(" queryAnchorOffset = " + queryAnchorOffset);
-            builder.append(" queryScope = " + queryScope);
-            builder.append(" filterPrefix = " + filterPrefix);
+            builder.append(" creationCaretOffset = " + creationCaretOffset); // NOI18N
+            builder.append(" queryAnchorOffset = " + queryAnchorOffset); // NOI18N
+            builder.append(" queryScope = " + queryScope); // NOI18N
+            builder.append(" filterPrefix = " + filterPrefix); // NOI18N
             if (queryResult == null) {
-                builder.append(" no queryResult");
+                builder.append(" no queryResult"); // NOI18N
             } else if (queryResult.isSimpleVariableExpression()) {
-                builder.append(" queryResult is simple");
+                builder.append(" queryResult is simple"); // NOI18N
             } else {
-                builder.append(" queryResult is not simple");
+                builder.append(" queryResult is not simple"); // NOI18N
             }
             return builder.toString();
         }

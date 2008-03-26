@@ -457,6 +457,17 @@ public class RightTree extends MapperPanel implements
         Graph graph = node.getGraph();
 
         boolean hasEdge = (graph != null && graph.hasOutgoingLinks());
+        Link link = null;
+        for (int i = graph.getLinkCount() - 1; i >= 0; i--) {
+          if (graph.getLink(i).getTarget() instanceof Graph) {
+              link = graph.getLink(i);
+          }  
+        }
+        
+        if (link != null) {
+            hasEdge = getCanvas().getRendererContext().paintLink(node.getTreePath(), link);
+        }
+        
         boolean hasChildEdges = false;
 
         if (leaf) {

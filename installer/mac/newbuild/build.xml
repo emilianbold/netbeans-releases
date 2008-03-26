@@ -25,27 +25,18 @@ Microsystems, Inc. All Rights Reserved.
             
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
-        <ant dir="glassfish"/>
-        <ant target="cut-size">                             
-            <property name="pkg.name" value="glassfish"/>
-        </ant>
+        <ant dir="glassfish"/>      
     </target>
     
     <target name="build-tomcat-pkg">
         <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
-        <ant dir="tomcat" target="build-pkg"/>
-        <ant target="cut-size">                        
-            <property name="pkg.name" value="tomcat"/>
-        </ant>        
+        <ant dir="tomcat" target="build-pkg"/>              
     </target>
     
     
     <target name="build-openesb-pkg">
         <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
-        <ant dir="openesb" target="build-pkg"/>
-        <ant target="cut-size">                
-            <property name="pkg.name" value="openesb"/>
-        </ant>               
+        <ant dir="openesb" target="build-pkg"/>                     
     </target>
     
     <target name="clean">
@@ -56,18 +47,17 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/cpp/build"/>
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>
-        <delete dir="${basedir}/netBeans/baseide/build"/>   
-        <delete file="${basedir}/sizes.pro"/>
+        <delete dir="${basedir}/netBeans/baseide/build"/>    
+        <delete dir="${basedir}/netBeans/php/build"/>          
     </target>
 
 
-    <target name="unzip-nb" description="Unzip, pack200 and divide full nb to modules" >
+    <target name="unzip-nb" description="Unzip clusters to modules" >
         <mkdir dir="build"/> 
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="cnd"/>
             <property name="module.name" value="cpp"/>          
-        </ant> 
-        
+        </ant>         
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="apisupport"/>
             <property name="module.name" value="javase"/>          
@@ -83,8 +73,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="harness"/>
             <property name="module.name" value="javase"/>          
-        </ant>
-        
+        </ant>        
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="soa"/>
             <property name="module.name" value="soa"/>          
@@ -93,6 +82,10 @@ Microsystems, Inc. All Rights Reserved.
             <property name="cluster.name" value="ruby"/>
             <property name="module.name" value="ruby"/>          
         </ant>
+        <ant target="unzip-cluster">            
+            <property name="cluster.name" value="php"/>
+            <property name="module.name" value="php"/>          
+        </ant>            
         
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="enterprise"/>
@@ -126,7 +119,8 @@ Microsystems, Inc. All Rights Reserved.
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="gsf"/>
             <property name="module.name" value="baseide"/>          
-        </ant>        
+        </ant>    
+
     </target>
     
     <target name="unzip-cluster">
@@ -134,19 +128,58 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml_postfix}.zip"/>
-        </exec>
+        </exec>      
+    </target>
+    
+    <target name="size-pack-module" depends="instrument-module" description="Count up size of the module, pack200">           
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
+        </exec>        
+        <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                    
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
-        </exec>         
+        </exec>           
+    </target>    
+
+    <target name="init-instrumentation">
+	<condition property="do.instrumentation">
+	    <and>
+	        <isset property="instrument.jars"/>
+	        <equals arg1="${instrument.jars}" arg2="true"/> 
+	    </and>
+        </condition>
     </target>
-        
-    
-    <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >
-        <ant dir="netBeans/baseide"/>
-        <ant target="cut-size">                    
-            <property name="pkg.name" value="baseide"/>
+
+    <target name="add-instrumentation-option" if="do.instrumentation">
+        <echo message="Adding instrumentation option to etc/netbeans.conf"/>
+	<property name="baseide.dir" value="${basedir}/netBeans/baseide/build/netbeans"/>
+	<mkdir dir="${baseide.dir}/emma-lib"/>
+        <copy file="${emma.jar.file}" todir="${baseide.dir}/emma-lib"/>
+        <chmod dir="${baseide.dir}/emma-lib" perm="a+w"/>
+
+        <replace 
+              file="${baseide.dir}/etc/netbeans.conf" 
+              token="netbeans_default_options=&quot;"
+              value="netbeans_default_options=&quot;--cp:p &quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/emma.jar&quot;\&quot;&quot; -J-Demma.coverage.file=&quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/netbeans_coverage.ec&quot;\&quot;&quot; -J-Dnetbeans.security.nocheck=true "/>
+    </target>
+
+    <target name="instrument-module" if="do.instrumentation">
+	<echo message="Instrumenting module ${module.name}..."/>
+	<exec executable="${bash.executable}" failonerror="true" dir="${basedir}/netBeans/${module.name}/build/netbeans">
+                <arg value="${emma.sh.file}"/>
+                <arg value="."/>
+                <arg value="${emma.txt.file}"/>
+                <arg value="${emma.jar.file}"/>
+        </exec>
+    </target>
+
+    <target name="build-pkg" depends="unzip-nb,init-instrumentation,add-instrumentation-option" description="Builds NB and packs packages" >                  
+        <ant target="size-pack-module">
+            <property name="module.name" value="baseide"/>            
         </ant>            
+        <ant dir="${basedir}/netBeans/baseide"/>          
         <ant target="build-modules"/>       
     </target>
     
@@ -176,6 +209,11 @@ Microsystems, Inc. All Rights Reserved.
             <property name="module.title" value="${soa.appname}"/>          
         </ant>      
         
+        <ant target="build-module">
+            <property name="module.name" value="php"/>
+            <property name="module.title" value="${php.appname}"/>          
+        </ant>          
+        
     </target>
     
     <target name="build-module">
@@ -185,6 +223,8 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
             </filterset>
         </copy>
+        
+        <ant target="size-pack-module"/>
         
         <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist">
             <filterset>
@@ -196,31 +236,19 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
-        </exec>
-                         
-        <ant target="cut-size">                       
-            <property name="pkg.name" value="${module.name}"/>
-        </ant>         
-    </target>      
-    
-    <target name="cut-size">       
-        <exec executable="sh" failonerror="yes" outputproperty="size">
-            <arg value="-c"/>
-            <arg value="cat ${basedir}/build/${pkg.name}.pkg/Contents/Info.plist | sed -n '/IFPkgFlagInstalledSize/{n;p;}' | sed 's/\&lt;integer\&gt;//;s/\&lt;\/integer\&gt;//'"/>
-        </exec>        
-        <echo message="sizeof.${pkg.name}=${size}${line.separator}" file="${basedir}/sizes.pro" append="true"/>            
-    </target>
+        </exec>                                         
+    </target>          
     
     <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
         
-       <property file="${basedir}/sizes.pro"/>  
+       <property file="${basedir}/build/sizes.pro"/>  
        
        <mkdir dir="dist"/>  
        
        <ant target="build-dmg"> 
            <property name="bundle.type" value=""/>
            <property name="welcome.message" value="${welcome.full}"/>
-           <property name="packages" value="./build/*pkg"/>          
+           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/cpp.pkg ./build/soa.pkg ./build/glassfish.pkg ./build/tomcat.pkg ./build/openesb.pkg"/>
        </ant>   
        <ant target="build-dmg"> 
            <property name="bundle.type" value="-javase"/>      
@@ -242,8 +270,13 @@ Microsystems, Inc. All Rights Reserved.
            <property name="welcome.message" value="${welcome.ruby}"/>           
            <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
        </ant>
+       <ant target="build-dmg"> 
+           <property name="bundle.type" value="-php"/>
+           <property name="welcome.message" value="${welcome.php}"/>           
+           <property name="packages" value="./build/baseide.pkg ./build/php.pkg"/>          
+       </ant>       
        
-       <delete file="${basedir}/sizes.pro"/>
+       <delete file="${basedir}/build/sizes.pro"/>
     </target>      
     
     <target name="build-dmg">                   
@@ -274,6 +307,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>   
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
+                <filter token="SIZE_PHP" value="${sizeof.php}"/>                 
             </filterset>
         </copy>            
         
@@ -289,4 +323,4 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="dist_dmg"/>
     </target>         
     
-</project>
+</project>          

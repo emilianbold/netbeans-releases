@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -126,6 +127,65 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         return wizardUi;
     }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        final Product product = (Product) getWizard().
+                getContext().
+                get(Product.class);
+        
+        //installation location can be set using <uid>.installation.location system property
+        // Such a simplified approach is useful for silent installation - 
+        // we can almost get rid of state file.
+        // Limitation is that if we have to install two products with the same uid 
+        // but different versions then such a thing does now work correctly.        
+        final String ilSysProp = product.getUid() + StringUtils.DOT +
+                Product.INSTALLATION_LOCATION_PROPERTY;
+        final String il = System.getProperty(ilSysProp);
+        final String ilSysPropDisabled = ilSysProp + ".initialization.disabled";
+
+        if (il != null && !Boolean.getBoolean(ilSysPropDisabled)) {
+            LogManager.log("... try to use installation location for " + product.getDisplayName() +
+                    " from system property " + ilSysProp + " : " + il);
+            product.setInstallationLocation(new File(il));
+            System.setProperty(ilSysPropDisabled, Boolean.toString(true));
+        }
+        
+        String destination = product.getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
+
+        if (destination == null) {
+            destination = DEFAULT_DESTINATION;
+        }
+        
+        destination = resolvePath(destination).getAbsolutePath();
+
+        try {
+            if (SystemUtils.isMacOS() && (product.getLogic().wrapForMacOs() ||
+                    product.getLogic().requireDotAppForMacOs())) {
+                if (!destination.endsWith(APP_SUFFIX)) {
+                    final File parent = new File(destination).getParentFile();
+                    final String suffix = product.getDisplayName() + APP_SUFFIX;
+
+                    if (parent != null) {
+                        destination = new File(
+                                parent,
+                                suffix).getAbsolutePath();
+                    } else {
+                        destination = new File(
+                                destination,
+                                suffix).getAbsolutePath();
+                    }
+                }
+            }
+        } catch (InitializationException e) {
+            ErrorManager.notifyError(
+                    getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
+                    e);
+        }
+        getWizard().setProperty(Product.INSTALLATION_LOCATION_PROPERTY,
+                destination);
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -181,46 +241,8 @@ public class DestinationPanel extends ErrorMessagePanel {
             destinationButton.setText(
                     component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
             
-            final Product product = (Product) component.
-                    getWizard().
-                    getContext().
-                    get(Product.class);
-            
-            String destination = null;
-            
-            destination = product.
-                    getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
-            
-            if (destination == null) {
-                destination = DEFAULT_DESTINATION;
-            }
-            
-            destination = component.resolvePath(destination).getAbsolutePath();
-            
-            try {
-                if (SystemUtils.isMacOS() && (
-                        product.getLogic().wrapForMacOs() ||
-                        product.getLogic().requireDotAppForMacOs())) {
-                    if (!destination.endsWith(APP_SUFFIX)) {
-                        final File parent = new File(destination).getParentFile();
-                        final String suffix = product.getDisplayName() + APP_SUFFIX;
-                        
-                        if (parent != null) {
-                            destination = new File(
-                                    parent,
-                                    suffix).getAbsolutePath();
-                        } else {
-                            destination = new File(
-                                    destination,
-                                    suffix).getAbsolutePath();
-                        }
-                    }
-                }
-            } catch (InitializationException e) {
-                ErrorManager.notifyError(
-                        component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
-                        e);
-            }
+            final String destination =  component.getWizard().getProperty(
+                    Product.INSTALLATION_LOCATION_PROPERTY);
             
             destinationField.setText(destination);
             

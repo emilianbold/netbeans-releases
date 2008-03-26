@@ -91,5 +91,12 @@ public class JsCommentFormatterTest extends JsTestBase {
         FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(info, caretLine);
         return ElementUtilities.getComments(info, element);
     }
-    
+
+    /* TODO: Test formatting this - it currently ends up with @return on the same line!
+ * Create a new table caption object or return an
+ * existing one.
+ * @return HTMLElement A CAPTION element.
+ * @type HTMLElement
+createCaption: function() {
+        */
 }

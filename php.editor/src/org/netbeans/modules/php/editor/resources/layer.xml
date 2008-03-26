@@ -20,6 +20,7 @@
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-php5">
+                <attr name="displayName" stringvalue="PHP"/>
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>

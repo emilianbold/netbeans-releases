@@ -170,8 +170,8 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                     wsdlChangeListener = new WsdlChangeListener() {
                         public void wsdlModelChanged(WsdlModel oldWsdlModel, WsdlModel newWsdlModel) {
                             wsdlModel=newWsdlModel;
-                            ((JaxWsNode)getNode()).changeIcon();
                             updateKeys();
+                            ((JaxWsNode)getNode()).changeIcon();
                         }
                     };
                     wsdlModeler.addWsdlChangeListener(wsdlChangeListener);

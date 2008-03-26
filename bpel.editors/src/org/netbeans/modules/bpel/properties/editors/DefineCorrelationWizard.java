@@ -48,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,6 +61,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -75,7 +78,6 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -84,7 +86,6 @@ import javax.swing.tree.TreePath;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
 import org.netbeans.modules.bpel.model.api.BaseScope;
@@ -96,8 +97,10 @@ import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
+import org.netbeans.modules.bpel.model.api.EventHandlers;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Invoke;
+import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
@@ -111,7 +114,6 @@ import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Requester;
 import org.netbeans.modules.bpel.model.api.Responder;
 import org.netbeans.modules.bpel.model.api.Scope;
-import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -215,14 +217,14 @@ public class DefineCorrelationWizard implements WizardProperties {
     private Map<Class, Icon> mapTreeNodeIcons;
     
     private WizardDescriptor wizardDescriptor;
-    private BpelEntity mainBpelEntity;
+    private BpelEntity correlatedActivity;
     private Panel[] wizardPanels;
     private JButton buttonNext, buttonFinish;
     
-    public DefineCorrelationWizard(BpelNode mainBpelNode) {
-        Object mainBpelNodeRef = mainBpelNode.getReference();
-        if (mainBpelNodeRef instanceof BpelEntity) {
-            this.mainBpelEntity = (BpelEntity) mainBpelNodeRef;
+    public DefineCorrelationWizard(BpelNode selectedBpelNode) {
+        Object selectedBpelNodeRef = selectedBpelNode.getReference();
+        if (selectedBpelNodeRef instanceof BpelEntity) {
+            correlatedActivity = (BpelEntity) selectedBpelNodeRef;
         }
         mapTreeNodeIcons = createTreeNodeIconsMap();
             
@@ -244,6 +246,11 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     
     public void showWizardDialog() {
+        String errMsg = WizardUtils.validateActivity(correlatedActivity);
+        if (errMsg != null) {
+            UserNotification.showMessage(errMsg);
+            return;
+        }
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
             DefineCorrelationWizard.class, "A11_DESCRIPTOR_DefineCorrelationWizardDialog"));
@@ -271,8 +278,8 @@ public class DefineCorrelationWizard implements WizardProperties {
         return panelList;
     }
         
-    protected BpelEntity getTopParentEntity(BpelEntity mainBpelEntity) {
-        BpelEntity parentEntity = mainBpelEntity.getParent();
+    protected BpelEntity getTopParentEntity(BpelEntity bpelEntity) {
+        BpelEntity parentEntity = bpelEntity.getParent();
         while ((parentEntity != null) && 
                (!(parentEntity instanceof Scope)) && 
                (!(parentEntity instanceof Process))) {
@@ -345,22 +352,24 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     private interface ActivityChooser {
-        List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity);
+        List<BpelEntity> getInitiatingActivityList(BpelEntity mainBpelEntity);
     }
     
     private abstract class AbstractActivityChooser implements ActivityChooser {
-        protected Set<Class> permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(
-            new Class[] {Requester.class, Responder.class}));
+        protected Set<Class> permittedActivityTypeSet = new HashSet<Class>(
+            Arrays.asList(new Class[] {
+            Requester.class, Responder.class, OnMessage.class, OnEvent.class}));
         protected Set<Class> forbiddenActivityTypeSet = new HashSet<Class>();
         
-        public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
+        public List<BpelEntity> getInitiatingActivityList(BpelEntity mainBpelEntity) {
             List<BpelEntity> bpelEntityList = new ArrayList<BpelEntity>();
-            BpelEntity parentEntity = getTopParentEntity(mainBpelEntity);
-            if (parentEntity == null) return bpelEntityList;
+            //BpelEntity parentEntity = getTopParentEntity(mainBpelEntity);
+            
+            BpelEntity processEntity = mainBpelEntity.getBpelModel().getProcess();
+            if (processEntity == null) return bpelEntityList;
         
-            boolean isScopeEntityIgnored = ! (parentEntity instanceof Scope);
-            List<BpelEntity> activities = chooseActivities(parentEntity, 
-                new ArrayList<BpelEntity>(), isScopeEntityIgnored);
+            List<BpelEntity> activities = chooseActivities(processEntity, 
+                new ArrayList<BpelEntity>());
             for (BpelEntity bpelEntity : activities) {
                 if (mainBpelEntity.equals(bpelEntity)) {
                     bpelEntityList.add(bpelEntity);
@@ -392,148 +401,75 @@ public class DefineCorrelationWizard implements WizardProperties {
             return false;
         }
         
-        private List<BpelEntity> chooseActivities(BpelEntity bpelEntity, 
-            List<BpelEntity> bpelEntityList, boolean isScopeEntityIgnored) {
+        protected List<BpelEntity> chooseActivities(BpelEntity bpelEntity, 
+            List<BpelEntity> bpelEntityList) {
             if (bpelEntityList == null) return (new ArrayList<BpelEntity>());
             
-            if (bpelEntity instanceof Sequence) {
-                for (Activity activity : bpelEntity.getChildren(Activity.class)) {
-                    bpelEntityList.addAll(chooseActivities(activity, 
-                        new ArrayList<BpelEntity>(), true));
-                }
-            } else if ((bpelEntity instanceof Requester) || (bpelEntity instanceof Responder)) {
+            if ((bpelEntity instanceof Requester) || // add Receive, Reply, Invoke
+                (bpelEntity instanceof Responder)) {
                 bpelEntityList.add(bpelEntity);
             } else if (bpelEntity instanceof Pick) {
-                for (OnMessage onMessage : ((Pick) bpelEntity).getOnMessages()) {
-                    bpelEntityList.add(onMessage);
-                    for (Sequence sequence : onMessage.getChildren(Sequence.class)) {
-                        bpelEntityList.addAll(chooseActivities(sequence, 
-                            new ArrayList<BpelEntity>(), true));
-                    }
-                }
-                for (OnAlarmPick onAlarmPick : ((Pick) bpelEntity).getOnAlarms()) {
-                    for (Sequence sequence : onAlarmPick.getChildren(Sequence.class)) {
-                        bpelEntityList.addAll(chooseActivities(sequence, 
-                            new ArrayList<BpelEntity>(), true));
-                    }
-                }
+                bpelEntityList.addAll(handlePickEntity((Pick) bpelEntity, 
+                    new ArrayList<BpelEntity>()));
+            } else if (bpelEntity instanceof EventHandlers) {
+                bpelEntityList.addAll(handleEventHandlersEntity((EventHandlers) bpelEntity, 
+                    new ArrayList<BpelEntity>()));
             } else {
                 // collect activity from the global scope (whole Process scope),
-                // ignoring all sub-scope, or from the current selected scope only
-                if (! ((bpelEntity instanceof Scope) && (isScopeEntityIgnored))) {
-                    for (Sequence sequence : bpelEntity.getChildren(Sequence.class)) {
-                        bpelEntityList.addAll(chooseActivities(sequence, 
-                            new ArrayList<BpelEntity>(), true));
-                    }
-                }
+                // ignoring all sub-scope
+                addAllChildActivities(bpelEntity, bpelEntityList);
             }
             return bpelEntityList;
         }
-        /*
-        protected  List<BpelEntity> removeResponderActivityAbove(List<BpelEntity> activityList, 
-            BpelEntity mainBpelEntity) {
-            // remove all Responder-activities above mainBpelEntity
-            BpelEntity activity = null;
-            int index = 0;
-            while (true) {
-                activity = activityList.get(index);
-                if (activity.equals(mainBpelEntity)) break;
-
-                if ((activity instanceof Responder) && (! (activity instanceof Requester))) {
-                    activityList.remove(index);
-                } else {
-                    ++index;
-                }
+        
+        protected void addAllChildActivities(BpelEntity bpelEntity, 
+            List<BpelEntity> bpelEntityList) {
+            for (BpelEntity childBpelEntity : bpelEntity.getChildren(BpelEntity.class)) {
+                bpelEntityList.addAll(chooseActivities(childBpelEntity, 
+                    new ArrayList<BpelEntity>()));
             }
-            return activityList;
         }
         
-        protected  List<BpelEntity> removeRequesterActivityBelow(List<BpelEntity> activityList, 
-            BpelEntity mainBpelEntity) {
-            // remove all Requester-activities below mainBpelEntity
-            BpelEntity activity = null;
-            int index = activityList.size() - 1;
-            while (true) {
-                activity = activityList.get(index);
-                if (activity.equals(mainBpelEntity)) break;    
-                    
-                if ((activity instanceof Requester) && (! (activity instanceof Responder))) {
-                    activityList.remove(index);
-                }
-                --index;
+        protected List<BpelEntity> handlePickEntity(Pick pickEntity, 
+            List<BpelEntity> bpelEntityList) {
+            for (OnMessage onMessage : pickEntity.getOnMessages()) {
+                bpelEntityList.add(onMessage);
+                addAllChildActivities(onMessage, bpelEntityList);
             }
-            return  activityList;
+            for (OnAlarmPick onAlarmPick : pickEntity.getOnAlarms()) {
+                addAllChildActivities(onAlarmPick, bpelEntityList);
+            }
+            return bpelEntityList;
         }
-        */
-    }
-    
-    private class RequesterActivityChooser extends AbstractActivityChooser {
-        public RequesterActivityChooser() {
-            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-            //    Responder.class}));
-            //forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-            //    Requester.class}));
-        }
-        @Override
-        public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
-            List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
-            if (activityList.isEmpty()) return activityList;
-            
-            // remove all Responder-activities above mainBpelEntity and mainBpelEntity itself
-            // activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
-            activityList.remove(mainBpelEntity);
-            return activityList;
-        }
-    }
-    
-    private class ResponderActivityChooser extends AbstractActivityChooser  {
-        public ResponderActivityChooser() {
-            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-            //    Requester.class}));
-        }
-        @Override
-        public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
-            List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
-            if (activityList.isEmpty()) return activityList;
 
-            // remove all Requester-activities below mainBpelEntity and mainBpelEntity itself
-            // activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
-            activityList.remove(mainBpelEntity);
-            return activityList;
+        protected List<BpelEntity> handleEventHandlersEntity(EventHandlers eventHandlersEntity, 
+            List<BpelEntity> bpelEntityList) {
+            for (OnEvent onEvent : eventHandlersEntity.getOnEvents()) {
+                bpelEntityList.add(onEvent);
+                addAllChildActivities(onEvent, bpelEntityList);
+            }
+            for (OnAlarmEvent onAlarmEvent : eventHandlersEntity.getOnAlarms()) {
+                addAllChildActivities(onAlarmEvent, bpelEntityList);
+            }
+            return bpelEntityList;
         }
     }
     
-    private class RequesterResponderActivityChooser extends AbstractActivityChooser  {
-        public RequesterResponderActivityChooser() {
-            // it's assumed that Invoke (Requester-Responder) is used as Requester only
-            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-            //    Responder.class}));
-            //forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-            //    Requester.class}));
-        }
+    private class DefaultActivityChooser extends AbstractActivityChooser  {
         @Override
-        public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
-            List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
+        public List<BpelEntity> getInitiatingActivityList(BpelEntity mainBpelEntity) {
+            List<BpelEntity> activityList = super.getInitiatingActivityList(mainBpelEntity);
             if (activityList.isEmpty()) return activityList;
             
-            // remove all Responder-activities above mainBpelEntity
-            // activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
-            
-            // remove all Requester-activities below mainBpelEntity
-            // activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
-            
-            // remove mainBpelEntity from the list
             activityList.remove(mainBpelEntity);
-            
-            return  activityList;
+            return activityList;
         }
     }
     //========================================================================//
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
         protected ChangeSupport changeSupport = new ChangeSupport(this);
-        protected int insetX = CommonUtils.isMacOS() ? 10 : 6, 
-                      insetY = CommonUtils.isMacOS() ? 10 : 6;
+        protected int insetX = 6, insetY = 6;
         
         protected JPanel createWizardPanel() {
             JPanel panel = new JPanel();
@@ -570,11 +506,13 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
     }
     //========================================================================//
-    public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
-        private final Dimension COMBOBOX_DIMENSION = new Dimension(350, 20);
+    public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel
+        implements ItemListener {
+        private final Dimension COMBOBOX_DIMENSION = 
+            new Dimension(350, CommonUtils.isMacOS() ? 25 : 20);
         private final int COMBOBOX_MAX_ROW_COUNT = 16;
         private final JComboBox activityComboBox = new JComboBox();
-        private BpelEntity previousSelectedActivity, currentSelectedActivity;
+        private BpelEntity previousSelectedActivity, initiatingActivity;
             
         public WizardSelectMessagingActivityPanel() {
             super();
@@ -583,6 +521,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 WizardSelectMessagingActivityPanel.class, "LBL_Initiating_Messaging_Activities")));
 
             fillActivityComboBox();
+            
+            activityComboBox.addItemListener(this);
             activityComboBox.setRenderer(new ComboBoxRenderer());
             activityComboBox.setMaximumRowCount(COMBOBOX_MAX_ROW_COUNT);
             activityComboBox.setEditable(false);
@@ -597,27 +537,25 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         private void fillActivityComboBox() {
             ActivityChooser activityChooser = null;
-            if ((mainBpelEntity instanceof Requester) && 
-                (mainBpelEntity instanceof Responder)) { // Invoke
-                activityChooser = new RequesterResponderActivityChooser();
-            } else if (mainBpelEntity instanceof Requester) {
-                activityChooser = new RequesterActivityChooser();
-            }  else if (mainBpelEntity instanceof Responder) {
-                activityChooser = new ResponderActivityChooser();
+            if ((correlatedActivity instanceof Requester) || // Invoke, Receive, Reply
+                (correlatedActivity instanceof Responder) ||
+                (correlatedActivity instanceof OnMessage) ||
+                (correlatedActivity instanceof OnEvent)) {
+                activityChooser = new DefaultActivityChooser();
             }
-            if (activityChooser == null) {
-                String errMsg = "Activity Chooser isn't defined for Bpel Entity of type [" +
-                    mainBpelEntity.getElementType().getName() + "]";
-                System.err.println(errMsg);
-                System.out.println(errMsg);
-                return;
-            }
-            List<BpelEntity> activityEntityList = activityChooser.getPermittedActivityList(mainBpelEntity);
+            assert (activityChooser != null);
+            List<BpelEntity> activityEntityList = activityChooser.getInitiatingActivityList(correlatedActivity);
             if (activityEntityList != null) {
                 ((DefaultComboBoxModel) activityComboBox.getModel()).removeAllElements();
                 for (BpelEntity activityEntity : activityEntityList) {
                     activityComboBox.addItem(activityEntity);
                 }
+            }
+        }
+
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                isValid();
             }
         }
         
@@ -628,26 +566,34 @@ public class DefineCorrelationWizard implements WizardProperties {
             
             wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
                 NbBundle.getMessage(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
+
+            if (isOK) {
+                String errMsg = WizardUtils.validateActivity(
+                    (BpelEntity) activityComboBox.getSelectedItem());
+                isOK &= (errMsg == null);
+                wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, errMsg);                              
+            }
+            
             if (buttonNext != null) buttonNext.setEnabled(isOK);
             return isOK;
         }
 
         @Override
         public void validate() throws WizardValidationException {
-            previousSelectedActivity = currentSelectedActivity;
-            currentSelectedActivity = (BpelEntity) activityComboBox.getSelectedItem();
+            previousSelectedActivity = initiatingActivity;
+            initiatingActivity = (BpelEntity) activityComboBox.getSelectedItem();
             WizardDefineCorrelationPanel wizardDefineCorrelationPanel = 
                 ((WizardDefineCorrelationPanel) wizardPanels[1]);
             if (previousSelectedActivity == null) { // this panel is shown for the 1st time
-                wizardDefineCorrelationPanel.buildCorrelationMapper(currentSelectedActivity, mainBpelEntity);
+                wizardDefineCorrelationPanel.buildCorrelationMapper(initiatingActivity, correlatedActivity);
             } else { // this panel is shown after clicking of the button "Back"
-                if (! previousSelectedActivity.equals(currentSelectedActivity)) {
-                    wizardDefineCorrelationPanel.buildCorrelationMapper(currentSelectedActivity, null);
+                if (! previousSelectedActivity.equals(initiatingActivity)) {
+                    wizardDefineCorrelationPanel.buildCorrelationMapper(initiatingActivity, null);
                 }
             }
         }
         //====================================================================//
-        private class ComboBoxRenderer extends BasicComboBoxRenderer.UIResource {
+        private class ComboBoxRenderer extends DefaultListCellRenderer {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -686,7 +632,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             super();
         }
         
-        public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
+        public void buildCorrelationMapper(BpelEntity leftBpelEntity, 
+            BpelEntity rightBpelEntity) {
             boolean isMapperChanged = (correlationMapper == null);
             CorrelationMapperTreeModel 
                 leftTreeModel  = (CorrelationMapperTreeModel) (correlationMapper == null ? null : 
@@ -912,7 +859,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             while (! correlationLinkers.isEmpty()) {
                 if (wizardWsdlModel == null) {
                     CorrelationWizardWSDLWrapper wizardWsdlWrapper = 
-                        CorrelationWizardWSDLWrapper.getInstance(mainBpelEntity.getBpelModel());
+                        CorrelationWizardWSDLWrapper.getInstance(correlatedActivity.getBpelModel());
                     wizardWsdlModel = wizardWsdlWrapper.getWsdlModel();
                     wizardWsdlWrapper.importIntoBpelModel();
                 }
@@ -928,7 +875,7 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
             if ((linkerList == null) || (linkerList.isEmpty())) return null;
-            BpelModel bpelModel = mainBpelEntity.getBpelModel();
+            BpelModel bpelModel = correlatedActivity.getBpelModel();
             BaseScope scopeEntity = bpelModel.getProcess();
             if (scopeEntity == null) {
                 return null;
@@ -1165,8 +1112,8 @@ public class DefineCorrelationWizard implements WizardProperties {
             private CorrelationMapperTreeNode mapperTreeNode;
 
             public WSDLModel getWSDLModel() {
-                PortType portType = ((PortTypeReference) activity).getPortType().get();
-                return portType.getModel();
+                PortType portType = WizardUtils.getBpelEntityPortType(activity);
+                return (portType == null ? null : portType.getModel());
             }
         
             public void createActivityCorrelation(CorrelationSet correlationSet) {
@@ -1250,7 +1197,7 @@ public class DefineCorrelationWizard implements WizardProperties {
              *    <correlation ... initiate="yes"/>
              */
             private void setCorrelationInitiateValue(BaseCorrelation correlation) {
-                correlation.setInitiate(mainBpelEntity.equals(activity) ? // is this activity CORRELATED
+                correlation.setInitiate(correlatedActivity.equals(activity) ? // is this activity CORRELATED
                     Initiate.NO :  // for CORRELATED activity
                     Initiate.YES); // for INITIATING activity
             }
@@ -1258,9 +1205,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             private Pattern defineInvokeCorrelationPattern(BpelEntity bpelEntity) {
                 assert (bpelEntity != null);
                 Operation operation = WizardUtils.getBpelEntityOperation(bpelEntity);
-                // Rule: The pattern attribute used in <correlation>  within 
-                // <invoke> is required for request-response operations, and 
-                // disallowed when a one-way operation (OneWayOperation) is invoked.
+                // Rule: The "pattern"-attribute, which is used inside the tag <correlation ...> 
+                // for Invoke activity, is required for request-response operations, and 
+                // has to be absent, when a one-way operation (OneWayOperation) is used.
                 if ((bpelEntity instanceof Invoke) && 
                     (operation instanceof RequestResponseOperation)) {
                     Message outputMessage = null, inputMessage = null;
@@ -1948,7 +1895,9 @@ class WizardUtils implements WizardConstants {
             return MessageFormat.format(onMessageOnEventNamePattern, new Object[] {
                 entityName, relatedObjName, operationName});
         }
-        return bpelEntity.getAttribute(BpelAttributes.NAME);
+        String bpelEntityName = bpelEntity.getAttribute(BpelAttributes.NAME);
+        return (bpelEntityName != null ? bpelEntityName :
+            UnnamedActivityNameHandler.getInstance().getActivityName(bpelEntity));
     }
         
     public static NamedComponentReference<? extends GlobalType> getSchemaComponentTypeRef(SchemaComponent schemaComponent) {
@@ -1991,9 +1940,19 @@ class WizardUtils implements WizardConstants {
         return (builtInSimpleType != null);
     }
     
+    public static PortType getBpelEntityPortType(BpelEntity bpelEntity) {
+        if (bpelEntity == null) return null;
+        try {
+            PortType portType = ((PortTypeReference) bpelEntity).getPortType().get();
+            return portType;
+        } catch(Exception e) {
+            return null;
+        }
+    }
+    
     public static Operation getBpelEntityOperation(BpelEntity bpelEntity) {
         if (bpelEntity == null) return null;
-        PortType portType = ((PortTypeReference) bpelEntity).getPortType().get();
+        PortType portType = getBpelEntityPortType(bpelEntity);
         Collection<Operation> operations = portType.getOperations();
         String requiredOperationName = bpelEntity.getAttribute(BpelAttributes.OPERATION);
         for (Operation operation : operations) {
@@ -2004,6 +1963,16 @@ class WizardUtils implements WizardConstants {
         return null;
     }
 
+    public static String validateActivity(BpelEntity bpelEntity) {
+        if (getBpelEntityPortType(bpelEntity) == null) {
+            return NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_ErrMsg_Activity_Has_Wrong_PortType");
+        }
+        if (getBpelEntityOperation(bpelEntity) == null) {
+            return NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_ErrMsg_Activity_Has_Wrong_Operation");
+        }
+        return null;
+    }
+    
     public static void importRequiredSchemas(WSDLModel wsdlModel, 
         List<SchemaComponent> schemaComponents) {
         try {
@@ -2531,6 +2500,41 @@ class CommonUtils {
      * @return true if an operation system belongs to MAC OS X family.
      */
     public static boolean isMacOS() {return osBelongsToFamily(MAC_OS_FAMILY_NAME);}
+}
+//============================================================================//
+class UnnamedActivityNameHandler {
+    private static UnnamedActivityNameHandler activityNameHandler;
+
+    private static final String namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
+        "LBL_Unnamed_Activity_Name_Pattern");
+    
+    private int nameCounter = 1;
+    private Map<BpelEntity, Integer> activityNameNumberMap = new HashMap<BpelEntity, Integer>();
+    
+    private UnnamedActivityNameHandler() {initialize();}
+    
+    public void initialize() {
+        nameCounter = 1;
+        activityNameNumberMap.clear();
+    }
+    
+    public String getActivityName(BpelEntity bpelEntity) {
+        Integer activityNameNumber = activityNameNumberMap.get(bpelEntity);
+        if (activityNameNumber == null) {
+            activityNameNumber = nameCounter++;
+            activityNameNumberMap.put(bpelEntity, activityNameNumber);
+        }
+        String fakeActivityName = MessageFormat.format(namePattern, new Object[] {
+            activityNameNumber});
+        return fakeActivityName;
+    }
+        
+    public static UnnamedActivityNameHandler getInstance() {
+        if (activityNameHandler == null) {
+            activityNameHandler = new UnnamedActivityNameHandler();
+        }
+        return activityNameHandler;
+    }
 }
 //============================================================================//
 interface WizardProperties {

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.editor.Settings;
-import org.netbeans.modules.cnd.builds.OutputWindowOutputStream;
 import org.netbeans.modules.cnd.editor.shell.ShellKit;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
 import org.openide.ErrorManager;
@@ -56,17 +55,6 @@ public class CndModule extends ModuleInstall {
 
     // Used in other CND sources...
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.cnd"); // NOI18N
-
-    @Override public void uninstalled() {
-        OutputWindowOutputStream.detachAllAnnotations();
-
-        // Print Options
-//        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-//	ps.removeOption((SystemOption)SystemOption.findObject(FPrintOptions.class, true));
-//      ps.removeOption((SystemOption)SystemOption.findObject(CCPrintOptions.class, true));
-//	ps.removeOption((SystemOption)SystemOption.findObject(MakefilePrintOptions.class, true));
-//	ps.removeOption((SystemOption)SystemOption.findObject(ShellPrintOptions.class, true));
-    }
 
     /** Module is being opened (NetBeans startup, or enable-toggled) */
     @Override public void restored() {
@@ -83,6 +71,17 @@ public class CndModule extends ModuleInstall {
         if (Utilities.isUnix()) {
             setExecutionPermission("bin/dorun.sh"); // NOI18N
             setExecutionPermission("bin/stdouterr.sh"); // NOI18N
+            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                if (System.getProperty("os.arch").equals("sparc")) {
+                    setExecutionPermission("bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+                } else {
+                    setExecutionPermission("bin/GdbHelper-SunOS-x86.so"); // NOI18N
+                }
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+                setExecutionPermission("bin/GdbHelper-Linux-x86.so"); // NOI18N
+            } else if (Utilities.isMac()) {
+                setExecutionPermission("bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
+            }
         }
     }
     

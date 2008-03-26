@@ -42,6 +42,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-pkg" depends="clean, unzip">
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 15360"/>
+        </exec>        
+        <echo message="sizeof.openesb=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>     
+        
         <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>

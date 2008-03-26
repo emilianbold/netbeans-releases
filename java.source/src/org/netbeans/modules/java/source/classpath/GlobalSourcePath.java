@@ -162,9 +162,8 @@ public class GlobalSourcePath {
         }
     }
     
-    public boolean isLibrary (final ClassPath cp) {
+    public final boolean isLibrary (final ClassPath cp) {
         assert cp != null;
-        final ClassIndexManager mgr = ClassIndexManager.getDefault();
         for (FileObject fo : cp.getRoots()) {
             if (isLibrary (fo)) {
                 return true;
@@ -173,14 +172,19 @@ public class GlobalSourcePath {
         return false;
     }
     
-    public boolean isLibrary (final FileObject root) {
+    public final boolean isLibrary (final FileObject root) {
         assert root != null;
         try {
-            return ClassIndexManager.getDefault().getUsagesQuery(root.getURL()) == null;
+            return isLibrary(root.getURL());
         } catch (FileStateInvalidException e) {
             Exceptions.printStackTrace(e);
             return true;    //Safer
         }
+    }
+    
+    public final boolean isLibrary (final URL root) {
+        assert root != null;
+        return ClassIndexManager.getDefault().getUsagesQuery(root) == null;
     }
     
     public ClassPathImplementation getSourcePath () {

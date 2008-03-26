@@ -140,7 +140,7 @@ public class AddWsOperationHelper {
                 getTitle(),
                 methodModel,
                 ClasspathInfo.create(
-                    EMPTY_PATH, // boot classpath
+                    ClassPath.getClassPath(fileObject, ClassPath.BOOT), // JDK classes
                     ClassPath.getClassPath(fileObject, ClassPath.COMPILE), // classpath from dependent projects and libraries
                     ClassPath.getClassPath(fileObject, ClassPath.SOURCE)), // source classpath
                 getExistingMethods(fileObject));

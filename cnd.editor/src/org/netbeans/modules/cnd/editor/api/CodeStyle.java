@@ -122,6 +122,11 @@ public final class CodeStyle {
                          EditorOptions.indentCasesFromSwitchDefault);
     }
 
+    public boolean absoluteLabelIndent() {
+        return getOption(EditorOptions.absoluteLabelIndent,
+                         EditorOptions.absoluteLabelIndentDefault);
+    }
+
     public boolean sharpAtStartLine(){
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
@@ -160,6 +165,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceBeforeSwitchParen,
                          EditorOptions.spaceBeforeSwitchParenDefault);
     }
+    public boolean spaceBeforeKeywordParen() {
+        return getOption(EditorOptions.spaceBeforeKeywordParen,
+                         EditorOptions.spaceBeforeKeywordParenDefault);
+    }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
@@ -176,12 +185,17 @@ public final class CodeStyle {
                                       EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
 
+    public BracePlacement getFormatNewLineBeforeBraceSwitch() {
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,
+                                      EditorOptions.newLineBeforeBraceSwitchDefault));
+    }
+
     public BracePlacement getFormatNewlineBeforeBrace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
                                       EditorOptions.newLineBeforeBraceDefault));
     }
 
-       //NewLine
+    //NewLine
     public boolean newLineCatch(){
         return getOption(EditorOptions.newLineCatch,
                          EditorOptions.newLineCatchDefault);
@@ -194,12 +208,17 @@ public final class CodeStyle {
         return getOption(EditorOptions.newLineWhile,
                          EditorOptions.newLineWhileDefault);
     }
-         
+    public boolean newLineFunctionDefinitionName(){
+        return getOption(EditorOptions.newLineFunctionDefinitionName,
+                         EditorOptions.newLineFunctionDefinitionNameDefault);
+    }
+    
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
+    //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -210,21 +229,45 @@ public final class CodeStyle {
                          EditorOptions.alignMultilineMethodParamsDefault);
     }
 
+    public boolean alignMultilineFor() {
+        return getOption(EditorOptions.alignMultilineFor,
+                         EditorOptions.alignMultilineForDefault);
+    }
+    public boolean alignMultilineIfCondition() {
+        return getOption(EditorOptions.alignMultilineIfCondition,
+                         EditorOptions.alignMultilineIfConditionDefault);
+    }
+    public boolean alignMultilineWhileCondition() {
+        return getOption(EditorOptions.alignMultilineWhileCondition,
+                         EditorOptions.alignMultilineWhileConditionDefault);
+    }
+    public boolean alignMultilineParen() {
+        return getOption(EditorOptions.alignMultilineParen,
+                         EditorOptions.alignMultilineParenDefault);
+    }
+    public boolean alignMultilineArrayInit() {
+        return getOption(EditorOptions.alignMultilineArrayInit,
+                         EditorOptions.alignMultilineArrayInitDefault);
+    }
+
+    //SpacesAroundOperators
     public boolean spaceAroundUnaryOps() {
         return getOption(EditorOptions.spaceAroundUnaryOps,
                          EditorOptions.spaceAroundUnaryOpsDefault);
     }
-
     public boolean spaceAroundBinaryOps() {
         return getOption(EditorOptions.spaceAroundBinaryOps,
                          EditorOptions.spaceAroundBinaryOpsDefault);
     }
-
     public boolean spaceAroundAssignOps() {
         return getOption(EditorOptions.spaceAroundAssignOps,
                          EditorOptions.spaceAroundAssignOpsDefault);
     }
-    
+    public boolean spaceAroundTernaryOps() {
+        return getOption(EditorOptions.spaceAroundTernaryOps,
+                         EditorOptions.spaceAroundTernaryOpsDefault);
+    }
+            
     public boolean spaceBeforeWhile() {
         return getOption(EditorOptions.spaceBeforeWhile,
                          EditorOptions.spaceBeforeWhileDefault);

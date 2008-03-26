@@ -59,7 +59,7 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Jonathan Giron
@@ -68,7 +68,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class FlatfileColumnTableModel extends RowEntryTableModel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileColumnTableModel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileColumnTableModel.class.getName());
     
     private static transient final Localizer mLoc = Localizer.get();
     /**
@@ -130,45 +130,45 @@ public class FlatfileColumnTableModel extends RowEntryTableModel {
             List errorList = new ArrayList();
 
             String columnName = column.getName();
-            String nbBundle1 = mLoc.t("PRSR001: Missing column name - please enter a unique string value.");
-            String nbBundle2 = mLoc.t("PRSR001: Invalid column name - must start with an alphabetical character and contain alphanumeric characters and/or underscores.");
-            String nbBundle3 = mLoc.t("PRSR001: Invalid length - please enter a non-zero, positive integer value.");
+            String nbBundle1 = mLoc.t("BUND210: Missing column name - please enter a unique string value.");
+            String nbBundle2 = mLoc.t("BUND211: Invalid column name - must start with an alphabetical character and contain alphanumeric characters and/or underscores.");
+            String nbBundle3 = mLoc.t("BUND212: Invalid length - please enter a non-zero, positive integer value.");
             if (columnName == null || columnName.trim().length() == 0) {
-                String msg = Localizer.parse(nbBundle1);
+                String msg = nbBundle1.substring(15);
                 errorList.add(msg);
             } else if (!StringUtil.isValid(columnName, "[A-Za-z]+[A-Za-z0-9_$#]*")) {
-                String msg = Localizer.parse(nbBundle2);
+                String msg = nbBundle2.substring(15);
                 errorList.add(msg);
             }
 
             int precLength = column.getPrecision();
             if (precLength <= 0) {
-                String msg = Localizer.parse(nbBundle3);
+                String msg = nbBundle3.substring(15);
                 errorList.add(msg);
             }
 
             int sqlType = Integer.MIN_VALUE;
-            String nbBundle4 = mLoc.t("PRSR001: Invalid data type - please select from the list of available types.");
+            String nbBundle4 = mLoc.t("BUND213: Invalid data type - please select from the list of available types.");
             if (column.getJdbcTypeString() == null) {
-                String msg =  Localizer.parse(nbBundle4);
+                String msg =  nbBundle4.substring(15);
                 errorList.add(msg);
             } else {
                 sqlType = column.getJdbcType();
             }
 
             int scale = column.getScale();
-            String nbBundle5 = mLoc.t("PRSR001: Invalid scale - please enter a non-negative integer value.");
-            String nbBundle6 = mLoc.t("PRSR001: Scale exceeds precision - please enter a smaller non-negative integer value.");
+            String nbBundle5 = mLoc.t("BUND214: Invalid scale - please enter a non-negative integer value.");
+            String nbBundle6 = mLoc.t("BUND215: Scale exceeds precision - please enter a smaller non-negative integer value.");
             if (column.getScale() < 0) {
-                String msg = Localizer.parse(nbBundle5);
+                String msg = nbBundle5.substring(15);
                 errorList.add(msg);
             } else if (Types.NUMERIC == sqlType && scale > precLength) {
-                String msg = Localizer.parse(nbBundle6);
+                String msg = nbBundle6.substring(15);
                 errorList.add(msg);
             }
-            String nbBundle7 = mLoc.t("PRSR001: Column #{0}:",new Integer(column.getOrdinalPosition()));
+            String nbBundle7 = mLoc.t("BUND216: Column #{0}:",new Integer(column.getOrdinalPosition()));
             if (!errorList.isEmpty()) {
-                String header = Localizer.parse(nbBundle7);
+                String header = nbBundle7.substring(15);
                 errorList.add(0, header);
             }
 

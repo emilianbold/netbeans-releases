@@ -83,15 +83,15 @@ public class WSDLExtensibilityElementsFactoryImpl extends WSDLExtensibilityEleme
             if (fo == null) {
                 throw new Exception(NbBundle.getMessage(WSDLExtensibilityElementsFactoryImpl.class, "ERR_MSG_FOLDERN_NOT_FOUND", folderName));
             }
-
             return DataFolder.findFolder(fo);
         } catch (Exception ex) {
             throw new InternalError(NbBundle.getMessage(WSDLExtensibilityElementsFactoryImpl.class, "ERR_MSG_FOLDERN_NOT_FOUND", folderName));
         }
     }
 
-	
-	public WSDLExtensibilityElements getWSDLExtensibilityElements() {
-		return mElements;
-	}
+    public WSDLExtensibilityElements getWSDLExtensibilityElements() {
+        return mElements;
+    }
+    
+    
 }

@@ -46,9 +46,9 @@ public class ANDIcon2D extends Icon2D {
     private static final Shape SHAPE;
 
     static {
-        Area a = new Area(new Rectangle2D.Double(-3, -10.5, 6, 21));
+        Area a = new Area(new Rectangle2D.Double(-2.1, -7.35, 4.2, 14.7));
         
-        a.add(new Area(new Rectangle2D.Double(-10.5, -3, 21, 6)));
+        a.add(new Area(new Rectangle2D.Double(-7.35, -2.1, 14.7, 4.2)));
 
         SHAPE = new GeneralPath(a);
     }

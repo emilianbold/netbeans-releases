@@ -43,6 +43,8 @@ package org.netbeans.modules.javascript.editing;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -108,5 +110,24 @@ public class JsLanguage implements GsfLanguage {
         }
 
         return jsStubsFO;
+    }
+    
+    public String getDisplayName() {
+        return "JavaScript";
+    }
+    
+    public String getPreferredExtension() {
+        return "js"; // NOI18N
+    }
+    
+    public Map<String,String> getSourceGroupNames() {
+        Map<String,String> sourceGroups = new HashMap<String,String>();
+        sourceGroups.put("RubyProject", "ruby"); // NOI18N
+        sourceGroups.put("RailsProject", "ruby"); // NOI18N
+
+        // It doesn't look like the WebProject has a dedicated source type for the web/ folder
+        sourceGroups.put("WebProject", "java"); // NOI18N
+        
+        return sourceGroups;
     }
 }

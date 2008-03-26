@@ -76,6 +76,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -83,6 +84,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -91,6 +93,7 @@ import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -121,16 +124,22 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private AttributeSet attribsRight = null;
     private AttributeSet attribsMiddle = null;
     private AttributeSet attribsAll = null;
+
+    private AttributeSet attribsSlave = null;
+    private AttributeSet attribsSlaveLeft = null;
+    private AttributeSet attribsSlaveRight = null;
+    private AttributeSet attribsSlaveMiddle = null;
+    private AttributeSet attribsSlaveAll = null;
     
     /** Creates a new instance of InstantRenamePerformer */
-    private InstantRenamePerformer(JTextComponent target, Set<Token<JavaTokenId>> highlights, int caretOffset) throws BadLocationException {
+    private InstantRenamePerformer(JTextComponent target, Set<Token> highlights, int caretOffset) throws BadLocationException {
 	this.target = target;
 	doc = target.getDocument();
 	
 	MutablePositionRegion mainRegion = null;
 	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
         
-	for (Token<JavaTokenId> h : highlights) {
+	for (Token h : highlights) {
 	    Position start = NbDocument.createPosition(doc, h.offset(null), Bias.Backward);
 	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length(), Bias.Forward);
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
@@ -179,7 +188,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             JavaSource js = JavaSource.forFileObject(od.getPrimaryFile());
             final boolean[] wasResolved = new boolean[1];
             @SuppressWarnings("unchecked")
-            final Set<Token<JavaTokenId>>[] changePoints = new Set[1];
+            final Set<Token>[] changePoints = new Set[1];
             
             js.runUserActionTask(new Task<CompilationController>() {
 
@@ -217,17 +226,18 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
     
-    private static void doInstantRename(Set<Token<JavaTokenId>> changePoints, JTextComponent target, int caret, String ident) throws BadLocationException {
+    private static void doInstantRename(Set<Token> changePoints, JTextComponent target, int caret, String ident) throws BadLocationException {
         InstantRenamePerformer.performInstantRename(target, changePoints, caret);
     }
     
-    static Set<Token<JavaTokenId>> computeChangePoints(final CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
+    static Set<Token> computeChangePoints(final CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
         final Document doc = info.getDocument();
         
         if (doc == null)
             return null;
         
         final int[] adjustedCaret = new int[] {caret};
+        final boolean[] insideJavadoc = {false};
         
         doc.render(new Runnable() {
             public void run() {
@@ -235,13 +245,24 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 
                 ts.move(caret);
                 
-                if (ts.moveNext() && ts.token()!=null && ts.token().id() == JavaTokenId.IDENTIFIER) {
-                    adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
+                if (ts.moveNext() && ts.token()!=null) {
+                    if (ts.token().id() == JavaTokenId.IDENTIFIER) {
+                        adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
+                    } else if (ts.token().id() == JavaTokenId.JAVADOC_COMMENT) {
+                        TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
+                        if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
+                            jdts.move(caret);
+                            if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
+                                adjustedCaret[0] = jdts.offset();
+                                insideJavadoc[0] = true;
+                            }
+                        }
+                    }
                 }
             }
         });
         
-        TreePath path = info.getTreeUtilities().pathFor(adjustedCaret[0]);
+        TreePath path = insideJavadoc[0]? null: info.getTreeUtilities().pathFor(adjustedCaret[0]);
         
         //correction for int something[]:
         if (path != null && path.getParentPath() != null) {
@@ -258,7 +279,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
         }
         
-        Element el = info.getTrees().getElement(path);
+        Element el = insideJavadoc[0]
+                ? JavadocImports.findReferencedElement(info, adjustedCaret[0])
+                : info.getTrees().getElement(path);
         
         if (el == null) {
             wasResolved[0] = false;
@@ -266,7 +289,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         //#89736: if the caret is not in the resolved element's name, no rename:
-        final Token<JavaTokenId> name = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, path);
+        final Token name = insideJavadoc[0]
+                ? JavadocImports.findNameTokenOfReferencedElement(info, adjustedCaret[0])
+                : org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, path);
         
         if (name == null)
             return null;
@@ -286,7 +311,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         if (allowInstantRename(el)) {
-            final Set<Token<JavaTokenId>> points = new HashSet<Token<JavaTokenId>>(new FindLocalUsagesQuery().findUsages(el, info, doc));
+            final Set<Token> points = new HashSet<Token>(new FindLocalUsagesQuery().findUsages(el, info, doc));
             
             if (el.getKind().isClass()) {
                 //rename also the constructors:
@@ -294,7 +319,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     TreePath t = info.getTrees().getPath(c);
                     
                     if (t != null) {
-                        Token<JavaTokenId> token = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, t);
+                        Token token = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, t);
                         
                         if (token != null) {
                             points.add(token);
@@ -316,6 +341,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
             
             return points;
+        } else if (insideJavadoc[0]) {
+            // java refactoring does not support javadoc
+            wasResolved[0] = false;
         }
         
         return null;
@@ -336,7 +364,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return false;
     }
     
-    private static boolean overlapsWithGuardedBlocks(Document doc, Set<Token<JavaTokenId>> highlights) {
+    private static boolean overlapsWithGuardedBlocks(Document doc, Set<Token> highlights) {
         if (!(doc instanceof GuardedDocument))
             return false;
         
@@ -344,7 +372,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         MarkBlock current = gd.getGuardedBlockChain().getChain();
         
         while (current != null) {
-            for (Token<JavaTokenId> h : highlights) {
+            for (Token h : highlights) {
                 if ((current.compare(h.offset(null), h.offset(null) + h.length()) & MarkBlock.OVERLAP) != 0) {
                     return true;
                 }
@@ -359,7 +387,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private static final Set<ElementKind> LOCAL_CLASS_PARENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.METHOD, ElementKind.STATIC_INIT);
     
     
-    public static void performInstantRename(JTextComponent target, Set<Token<JavaTokenId>> highlights, int caretOffset) throws BadLocationException {
+    public static void performInstantRename(JTextComponent target, Set<Token> highlights, int caretOffset) throws BadLocationException {
 	new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
@@ -516,49 +544,81 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         } else {
             // Compute attributes
             if (attribs == null) {
-                attribs = getSyncedTextBlocksHighlight();
+                // read the attributes for the master region
+                attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext"); //NOI18N
                 Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
                 Color background = (Color) attribs.getAttribute(StyleConstants.Background);
-                attribsLeft = AttributesUtilities.createImmutable(
+                attribsLeft = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.LeftBorderLineColor, foreground, 
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsRight = AttributesUtilities.createImmutable(
+                attribsRight = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.RightBorderLineColor, foreground, 
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsMiddle = AttributesUtilities.createImmutable(
+                attribsMiddle = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
-                attribsAll = AttributesUtilities.createImmutable(
+                attribsAll = createAttribs(
                         StyleConstants.Background, background,
                         EditorStyleConstants.LeftBorderLineColor, foreground, 
                         EditorStyleConstants.RightBorderLineColor, foreground,
                         EditorStyleConstants.TopBorderLineColor, foreground, 
                         EditorStyleConstants.BottomBorderLineColor, foreground
                 );
+
+                // read the attributes for the slave regions
+                attribsSlave = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext-slave"); //NOI18N
+                Color slaveForeground = (Color) attribsSlave.getAttribute(StyleConstants.Foreground);
+                Color slaveBackground = (Color) attribsSlave.getAttribute(StyleConstants.Background);
+                attribsSlaveLeft = createAttribs(
+                        StyleConstants.Background, slaveBackground,
+                        EditorStyleConstants.LeftBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.TopBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.BottomBorderLineColor, slaveForeground
+                );
+                attribsSlaveRight = createAttribs(
+                        StyleConstants.Background, slaveBackground,
+                        EditorStyleConstants.RightBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.TopBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.BottomBorderLineColor, slaveForeground
+                );
+                attribsSlaveMiddle = createAttribs(
+                        StyleConstants.Background, slaveBackground,
+                        EditorStyleConstants.TopBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.BottomBorderLineColor, slaveForeground
+                );
+                attribsSlaveAll = createAttribs(
+                        StyleConstants.Background, slaveBackground,
+                        EditorStyleConstants.LeftBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.RightBorderLineColor, slaveForeground,
+                        EditorStyleConstants.TopBorderLineColor, slaveForeground, 
+                        EditorStyleConstants.BottomBorderLineColor, slaveForeground
+                );
             }
             
             OffsetsBag nue = new OffsetsBag(doc);
-            int startOffset = region.getFirstRegionStartOffset();
-            int endOffset = region.getFirstRegionEndOffset();
-            int size = region.getFirstRegionLength();
-            if (size == 1) {
-                nue.addHighlight(startOffset, endOffset, attribsAll);
-            } else if (size > 1) {
-                nue.addHighlight(startOffset, startOffset + 1, attribsLeft);
-                nue.addHighlight(endOffset - 1, endOffset, attribsRight);
-                if (size > 2) {
-                    nue.addHighlight(startOffset + 1, endOffset - 1, attribsMiddle);
+            for(int i = 0; i < region.getRegionCount(); i++) {
+                int startOffset = region.getRegion(i).getStartOffset();
+                int endOffset = region.getRegion(i).getEndOffset();
+                int size = region.getRegion(i).getLength();
+                if (size == 1) {
+                    nue.addHighlight(startOffset, endOffset, i == 0 ? attribsAll : attribsSlaveAll);
+                } else if (size > 1) {
+                    nue.addHighlight(startOffset, startOffset + 1, i == 0 ? attribsLeft : attribsSlaveLeft);
+                    nue.addHighlight(endOffset - 1, endOffset, i == 0 ? attribsRight : attribsSlaveRight);
+                    if (size > 2) {
+                        nue.addHighlight(startOffset + 1, endOffset - 1, i == 0 ? attribsMiddle : attribsSlaveMiddle);
+                    }
                 }
             }
-
+            
             OffsetsBag bag = getHighlightsBag(doc);
             bag.setHighlights(nue);
         }
@@ -567,10 +627,29 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 //    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
     private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
     
-    private static AttributeSet getSyncedTextBlocksHighlight() {
+    private static AttributeSet getSyncedTextBlocksHighlight(String name) {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        AttributeSet as = fcs != null ? fcs.getFontColors("synchronized-text-blocks-ext") : null; //NOI18N
+        AttributeSet as = fcs != null ? fcs.getFontColors(name) : null;
         return as == null ? defaultSyncedTextBlocksHighlight : as;
+    }
+    
+    private static AttributeSet createAttribs(Object... keyValuePairs) {
+        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
+            "They are key-value pairs of attributes that will be inserted into the set.";
+
+        List<Object> list = new ArrayList<Object>();
+        
+        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
+            Object attrKey = keyValuePairs[2 * i];
+            Object attrValue = keyValuePairs[2 * i + 1];
+
+            if (attrKey != null && attrValue != null) {
+                list.add(attrKey);
+                list.add(attrValue);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(list.toArray());
     }
     
     public static OffsetsBag getHighlightsBag(Document doc) {

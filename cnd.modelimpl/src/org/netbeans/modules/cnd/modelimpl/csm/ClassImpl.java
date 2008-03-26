@@ -292,6 +292,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	
         @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
+            type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
     }
@@ -356,7 +357,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
-        register(scope);
+        register(scope, false);
     }
     
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {

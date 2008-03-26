@@ -42,9 +42,10 @@ package org.netbeans.modules.websvc.saas.codegen.java.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
@@ -53,11 +54,14 @@ import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.SaasCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 
 /**
  *
@@ -70,15 +74,22 @@ public class WadlSaasBean extends SaasBean {
     public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
+    private String groupName;
+    private String displayName;
+    private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
+        this(m, false);
+    }
+    
+    public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
         super(Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
-        setResourceClassTemplate(RESOURCE_TEMPLATE);
+        setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
 
@@ -86,35 +97,76 @@ public class WadlSaasBean extends SaasBean {
         return m;
     }
     
-    private void init() {    
+    public String getGroupName() {
+        return groupName;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public String getSaasName() {
+        return getGroupName()+getDisplayName();
+    }
+    
+    public String getSaasServiceName() {
+        return getGroupName()+getDisplayName()/*+"Service"*/;
+    }
+    
+    public String getSaasServicePackageName() {
+        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
+                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
+    }
+    
+    public String getSaasServiceMethodName() {
+        if(serviceMethodName == null) {
+            serviceMethodName = Util.deriveMethodName(getMethod().getName());
+            serviceMethodName = serviceMethodName.substring(0, 1).toLowerCase() + serviceMethodName.substring(1);
+        }
+        return serviceMethodName;
+    }
+    
+    public String getAuthenticatorClassName() {
+        return Util.getAuthenticatorClassName(getSaasName());
+    }
+    
+    public String getAuthorizationFrameClassName() {
+        return Util.getAuthorizationFrameClassName(getSaasName());
+    }
+    
+    private void init() throws IOException { 
+        setResourceClassTemplate(RESOURCE_TEMPLATE);
+        SaasGroup g = getMethod().getSaas().getParentGroup();
+        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
+            g = getMethod().getSaas().getTopLevelGroup();
+        this.groupName = Util.normailizeName(g.getName());
+        this.displayName = Util.normailizeName(getMethod().getSaas().getDisplayName());
+        setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
         findAuthentication(m);
         initUrl();
         getInputParameters();//init parameters
         initMimeTypes();
+        setMethodTypes(new HttpMethodType[]{getHttpMethod()});
     }
 
-    private void initUrl() {
-        List<MimeType> mimeTypes = new ArrayList<MimeType>();
-        try {
-            Resource[] rArray = m.getResourcePath();
-            if(rArray == null || rArray.length == 0)
-                throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
-            String url2 = m.getSaas().getWadlModel().getResources().getBase();
-            
-            url2 = url2.replace(PROTOCOL_SEPERATOR, PROTOCOL_SEPERATOR_ALT);//replace now, add :// later
-            for(Resource r: rArray){
-                String path = r.getPath();
-                if(path != null && path.trim().length() > 0) {
-                    url2 += "/" + path;
-                }
+    private void initUrl() throws IOException {
+        Resource[] rArray = m.getResourcePath();
+        if(rArray == null || rArray.length == 0)
+            throw new IllegalArgumentException("Method do not belong to any resource in the WADL.");
+        String url2 = m.getSaas().getWadlModel().getResources().getBase();
+
+        url2 = url2.replace(PROTOCOL_SEPERATOR, PROTOCOL_SEPERATOR_ALT);//replace now, add :// later
+        for(Resource r: rArray){
+            String path = r.getPath();
+            if(path != null && path.trim().length() > 0) {
+                url2 += "/" + path;
             }
-            url2 = url2.replace("//", "/");
-            url2 = url2.replace("/"+PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR_ALT);//special case 
-            url2 = url2.replace(PROTOCOL_SEPERATOR_ALT+"/", PROTOCOL_SEPERATOR_ALT);//special case 
-            url2 = url2.replace(PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR);//put back ://
-            this.url = url2;
-        } catch (Exception ex) {
-        } 
+        }
+        url2 = url2.replace("//", "/");
+        url2 = url2.replace("/"+PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR_ALT);//special case 
+        url2 = url2.replace(PROTOCOL_SEPERATOR_ALT+"/", PROTOCOL_SEPERATOR_ALT);//special case 
+        url2 = url2.replace(PROTOCOL_SEPERATOR_ALT, PROTOCOL_SEPERATOR);//put back ://
+        this.url = url2;
     }
     
     protected List<ParameterInfo> initInputParameters() {
@@ -154,7 +206,7 @@ public class WadlSaasBean extends SaasBean {
         return inputParams;
     }
     
-    public static ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
+    public ArrayList<ParameterInfo> findWadlParams(WadlSaasMethod wsm) {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         inputParams.addAll(findWadlParams(wsm.getWadlMethod()));
         Resource[] rArray = wsm.getResourcePath();
@@ -166,7 +218,7 @@ public class WadlSaasBean extends SaasBean {
         return inputParams;
     }
     
-    public static ArrayList<ParameterInfo> findWadlParams(Method wm) {
+    public ArrayList<ParameterInfo> findWadlParams(Method wm) {
         ArrayList<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
         Request req = wm.getRequest();
         findWadlParams(inputParams, req.getParam());
@@ -179,31 +231,37 @@ public class WadlSaasBean extends SaasBean {
 
     private void initMimeTypes() {
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
-        try {
-            Response response = m.getWadlMethod().getResponse();
-            findMediaType(response, mimeTypes);
-            if(mimeTypes.size() > 0)
-                this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
-        } catch (Exception ex) {
-        } 
+        Response response = m.getWadlMethod().getResponse();
+        findMediaType(response, mimeTypes);
+        if(mimeTypes.size() > 0)
+            this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
     }
+    
+    public static List<QName> findRepresentationTypes(WadlSaasMethod wm) {
+        List<QName> repTypes = new ArrayList<QName>();
+        Response response = wm.getWadlMethod().getResponse();
+        findRepresentationType(response, repTypes);
+        return repTypes;
+    }
+    
     
     public String getUrl() {
         return this.url;
     }
 
     public static void findMediaType(Response response, List<MimeType> mimeTypes) {
-        List repOrFaults = response.getRepresentationOrFault();
-        for(Object repOrFault: repOrFaults) {
-            if(repOrFault instanceof RepresentationType) {
-                RepresentationType rep = (RepresentationType) repOrFault;
-                String mediaType = rep.getMediaType();
-                String[] mTypes = mediaType.split(",");
-                for(String m:mTypes) {
-                    MimeType mType = MimeType.find(m);
-                    if (mType != null) {
-                        mimeTypes.add(mType);
-                    }
+        if(response == null)
+            return;
+        List<JAXBElement<RepresentationType>> repOrFaults = response.getRepresentationOrFault();
+        for (JAXBElement<RepresentationType> repElement : repOrFaults) {
+            String mediaType = repElement.getValue().getMediaType();
+            if(mediaType == null)
+                continue;
+            String[] mTypes = mediaType.split(",");
+            for(String m:mTypes) {
+                MimeType mType = MimeType.find(m);
+                if (mType != null && !mimeTypes.contains(mType)) {
+                    mimeTypes.add(mType);
                 }
             }
         }
@@ -227,6 +285,18 @@ public class WadlSaasBean extends SaasBean {
             }
         }
     }
+    
+    public static void findRepresentationType(Response response, List<QName> repTypes) {
+        if(response == null)
+            return;
+        List<JAXBElement<RepresentationType>> repOrFaults = response.getRepresentationOrFault();
+        for (JAXBElement<RepresentationType> repElement : repOrFaults) {
+            QName repType = repElement.getValue().getElement();
+            if(repType == null || repTypes.contains(repType))
+                continue;
+            repTypes.add(repType);
+        }
+    }
 
     public String getSaasServiceTemplate() {
         return SAAS_SERVICE_TEMPLATE;
@@ -248,5 +318,10 @@ public class WadlSaasBean extends SaasBean {
             }
         }
         return null;
+    }
+    
+    public boolean canGenerateJAXBUnmarshaller() {
+        return getHttpMethod() == HttpMethodType.GET &&
+                    !findRepresentationTypes(getMethod()).isEmpty();
     }
 }

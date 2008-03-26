@@ -96,8 +96,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         if (panels == null) {
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            List<ConfigFileGroup> configFileGroups = getConfigFileManager(p).getConfigFileGroups();
-            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups.isEmpty() ? null : new SpringXMLConfigGroupPanel(configFileGroups);
+            ConfigFileManager manager = getConfigFileManager(p);
+            List<ConfigFileGroup> configFileGroups = manager != null ? manager.getConfigFileGroups() : null;
+            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups != null && !configFileGroups.isEmpty() ? new SpringXMLConfigGroupPanel(configFileGroups) : null;
             WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, configGroupPanel);
 
             panels = new WizardDescriptor.Panel[] {
@@ -350,8 +351,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
     
     static ConfigFileManager getConfigFileManager(Project p) {
         ProjectSpringScopeProvider scopeProvider = p.getLookup().lookup(ProjectSpringScopeProvider.class);
-        ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
-        return manager;
+        return scopeProvider != null ?  scopeProvider.getSpringScope().getConfigFileManager() : null;
     }
     
     static FileObject getSourceGroupArtifact(Project project, FileObject preferredArtifact) {

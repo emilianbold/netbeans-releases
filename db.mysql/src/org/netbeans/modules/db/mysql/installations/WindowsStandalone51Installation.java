@@ -39,17 +39,15 @@
 
 package org.netbeans.modules.db.mysql.installations;
 
-import org.netbeans.modules.db.mysql.Installation;
-import org.openide.util.Utilities;
-
 /**
- * Standalone version 5.0 on Windows, not installed as a server
+ * Standalone version 5.1 on Windows
  * 
  * @author David Van Couvering
  */
-public class WindowsStandalone51Installation extends AbstractStandaloneInstallation {
+public class WindowsStandalone51Installation 
+        extends WindowsStandalone50Installation {
     private static final String DEFAULT_BASE_PATH = 
-            "C:\\Program Files\\MySQL\\MySQL Server 5.1";
+            "C:/Program Files/MySQL/MySQL Server 5.1";
     
     private static final WindowsStandalone51Installation DEFAULT = new
             WindowsStandalone51Installation(DEFAULT_BASE_PATH);
@@ -61,14 +59,4 @@ public class WindowsStandalone51Installation extends AbstractStandaloneInstallat
     private WindowsStandalone51Installation(String basePath) {
         super(basePath);
     }
-    
-    @Override
-    protected Installation createInstallation(String basePath) {
-        return new WindowsStandalone51Installation(basePath);
-    }
-
-    public boolean isValidOnCurrentOS() {
-        return Utilities.isWindows();
-    }
-
 }

@@ -1,0 +1,131 @@
+/*
+ *  PersonConverter
+ *
+ * Created on March 22, 2008, 4:30 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package converter;
+
+import entity.Person;
+import java.net.URI;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "person")
+public class PersonConverter {
+    private Person entity;
+    private URI uri;
+  
+    /** Creates a new instance of PersonConverter */
+    public PersonConverter() {
+        entity = new Person();
+    }
+
+    /**
+     * Creates a new instance of PersonConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     */
+    public PersonConverter(Person entity, URI uri) {
+        this.entity = entity;
+        this.uri = uri;
+    }
+
+    /**
+     * Getter for id.
+     *
+     * @return value for id
+     */
+    @XmlElement
+    public String getId() {
+        return entity.getId();
+    }
+
+    /**
+     * Setter for id.
+     *
+     * @param value the value to set
+     */
+    public void setId(String value) {
+        entity.setId(value);
+    }
+
+    /**
+     * Getter for lastName.
+     *
+     * @return value for lastName
+     */
+    @XmlElement
+    public String getLastName() {
+        return entity.getLastName();
+    }
+
+    /**
+     * Setter for lastName.
+     *
+     * @param value the value to set
+     */
+    public void setLastName(String value) {
+        entity.setLastName(value);
+    }
+
+    /**
+     * Getter for firstName.
+     *
+     * @return value for firstName
+     */
+    @XmlElement
+    public String getFirstName() {
+        return entity.getFirstName();
+    }
+
+    /**
+     * Setter for firstName.
+     *
+     * @param value the value to set
+     */
+    public void setFirstName(String value) {
+        entity.setFirstName(value);
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns the Person entity.
+     *
+     * @return an entity
+     */
+    @XmlTransient
+    public Person getEntity() {
+        return entity;
+    }
+
+    /**
+     * Sets the Person entity.
+     *
+     * @param entity to set
+     */
+    public void setEntity(Person entity) {
+        this.entity = entity;
+    }
+}

@@ -312,27 +312,29 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     private void writeJaxWsModel(final JaxWsModel jaxWsModel) {
         try {
             final FileObject jaxWsFo = project.getProjectDirectory().getFileObject("nbproject/jax-ws.xml"); //NOI18N
-            jaxWsFo.getFileSystem().runAtomicAction(new AtomicAction() {
-                public void run() {
-                    FileLock lock=null;
-                    OutputStream os=null;
-                    try {
-                        lock = jaxWsFo.lock();
-                        os = jaxWsFo.getOutputStream(lock);
-                        jaxWsModel.write(os);
-                        os.close();
-                    } catch (java.io.IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    } finally {
-                        if (os!=null) {
-                            try {
-                                os.close();
-                            } catch (IOException ex) {}
+            if (jaxWsFo != null) {
+                jaxWsFo.getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() {
+                        FileLock lock=null;
+                        OutputStream os=null;
+                        try {
+                            lock = jaxWsFo.lock();
+                            os = jaxWsFo.getOutputStream(lock);
+                            jaxWsModel.write(os);
+                            os.close();
+                        } catch (java.io.IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } finally {
+                            if (os!=null) {
+                                try {
+                                    os.close();
+                                } catch (IOException ex) {}
+                            }
+                            if (lock!=null) lock.releaseLock();
                         }
-                        if (lock!=null) lock.releaseLock();
                     }
-                }
-            });
+                });
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }

@@ -325,10 +325,12 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         // TODO add your handling code here:
         File baseFolder = null;
+        File libFolder = null;
         if (area != null) {
             baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
+            libFolder = new File(baseFolder, impl.getName());
         }
-        FileChooser chooser = new FileChooser(baseFolder, baseFolder);
+        FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
@@ -534,16 +536,15 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 LibraryStorageArea area = model.getArea();
                 FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
                 if (fo == null) {
-                    String path = LibrariesSupport.convertURLToFilePath(url);
-                    if (path.startsWith("${")) { // NOI18N
-                        // if URL starts with an Ant property name assume it is OK.
-                        // url cannot be resolved because customizer does not have necessary context.
-                        // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
-                    } else {
-                        broken = true;
-                    }
+                    broken = true;
                     if ("file".equals(url.getProtocol())) { //NOI18N
                         displayName = LibrariesSupport.convertURLToFilePath(url);
+                        if (displayName.startsWith("${")) { // NOI18N
+                            // if URL starts with an Ant property name assume it is OK.
+                            // url cannot be resolved because customizer does not have necessary context.
+                            // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
+                            broken = false;
+                        }
                     } else {
                         displayName = url.toExternalForm();
                     }

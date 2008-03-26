@@ -144,17 +144,18 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                 doc.readLock();
                 try {
                     int length = doc.getLength();
-                    int startPos = closest.getSourceStart();
-                    int endPos = closest.getSourceEnd();
+                    OffsetRange astRange = AstUtilities.getRange(closest);
+                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                    int lexStartPos = lexRange.getStart();
+                    int lexEndPos = lexRange.getEnd();
 
                     // If the buffer was just modified where a lot of text was deleted,
                     // the parse tree positions could be pointing outside the valid range
-                    if (startPos > length) {
-                        startPos = length;
+                    if (lexStartPos > length) {
+                        lexStartPos = length;
                     }
-
-                    if (endPos > length) {
-                        endPos = length;
+                    if (lexEndPos > length) {
+                        lexEndPos = length;
                     }
 
                     // One special case I care about: highlighting method exit points. In
@@ -193,7 +194,8 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                         // Fall through and set closest to null such that I don't do other highlighting
                         closest = null;
                     } else if (closest.getType() == Token.CALL && 
-                            Utilities.getRowStart(doc, startPos) != Utilities.getRowStart(doc, endPos)) {
+                            lexStartPos != -1 && lexEndPos != -1 && 
+                                Utilities.getRowStart(doc, lexStartPos) != Utilities.getRowStart(doc, lexEndPos)) {
                         // Some nodes may span multiple lines, but the range we care about is only
                         // on a single line because we're pulling out the lvalue - for example,
                         // a method call may span multiple lines because of a long parameter list,
@@ -312,20 +314,27 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         int type = node.getType();
         
         if (type == Token.THROW || type == Token.RETHROW || type == Token.RETURN) {
-            OffsetRange range = AstUtilities.getRange(node);
+            OffsetRange astRange = AstUtilities.getRange(node);
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
-                int lineStart = Utilities.getRowStart(doc, range.getStart());
-                int endLineStart = Utilities.getRowStart(doc, range.getEnd());
-                if (lineStart != endLineStart) {
-                    range = new OffsetRange(range.getStart(), Utilities.getRowEnd(doc, range.getStart()));
+                
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                if (lexRange != OffsetRange.NONE) {
+                    int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
+                    int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
+                    if (lineStart != endLineStart) {
+                        lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
+                        astRange = AstUtilities.getAstOffsets(info, lexRange);
+                    }
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            if (astRange != OffsetRange.NONE) {
+                highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
+            }
         } else if (type == Token.FUNCTION || type == Token.SCRIPT) {
             // Don't go into sub methods
             return;

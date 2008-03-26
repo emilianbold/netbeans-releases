@@ -83,19 +83,11 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION;
-    static final String RDEBUG_BASE_VERSION;
+    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
     
-    static {
-        if (Utilities.isWindows()) {
-            RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
-            RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
-        } else {
-            RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-            RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
-        }
-    }
-
+    /** Required version of ruby-debug-base gem. */
+    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+    
     private final Info info;
     
     private final String id;
@@ -622,7 +614,7 @@ public final class RubyPlatform {
     }
 
     private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
-        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion)) {
+        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
             errors.append("<br>"); // NOI18N
         }
@@ -798,7 +790,7 @@ public final class RubyPlatform {
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
             this.platform = props.getProperty(RUBY_PLATFORM);
-            this.gemHome = props.getProperty(GEM_HOME);
+            setGemHome(props.getProperty(GEM_HOME));
             this.gemPath = props.getProperty(GEM_PATH);
             this.gemVersion = props.getProperty(GEM_VERSION);
         }
@@ -846,7 +838,7 @@ public final class RubyPlatform {
         }
 
         public void setGemHome(String gemHome) {
-            this.gemHome = gemHome;
+            this.gemHome = gemHome == null ? null : new File(gemHome).getAbsolutePath();
         }
         
         public String getGemHome() {

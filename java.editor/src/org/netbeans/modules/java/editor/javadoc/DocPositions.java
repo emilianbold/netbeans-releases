@@ -44,6 +44,7 @@ import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -122,6 +123,15 @@ public final class DocPositions {
     public int getBlockSectionStart() {
         resolve();
         return blockSectionStart;
+    }
+    
+    List<? extends Tag> getTags() {
+        resolve();
+        List<Tag> tags = new ArrayList<Tag>(sortedTags.size());
+        for (TagEntry entry : sortedTags) {
+            tags.add(entry.tag());
+        }
+        return tags;
     }
 
     private void resolve() {
@@ -378,14 +388,14 @@ public final class DocPositions {
 
         private static final Tag[] EMPTY_TAGS = new Tag[0];
         private final String name;
-        private final Doc javadoc;
+        private final Reference<Doc> wjavadoc;
         private final String kind;
         private CharSequence text;
 
         public UnclosedTag(String name, String kind, Doc javadoc) {
             this.name = name;
             this.kind = kind;
-            this.javadoc = javadoc;
+            this.wjavadoc = new WeakReference<Doc>(javadoc);
         }
 
         public String name() {
@@ -393,7 +403,7 @@ public final class DocPositions {
         }
 
         public Doc holder() {
-            return javadoc;
+            return wjavadoc.get();
         }
 
         public String kind() {
@@ -424,12 +434,15 @@ public final class DocPositions {
     }
     
     private static final class TagEntry implements Comparable<TagEntry> {
-        final WeakReference<Tag> wtag;
+        final Reference<Tag> wtag;
+        final UnclosedTag utag;
         final boolean isBlock;
         final int[] span;
 
         public TagEntry(Tag tag ,int[] span, boolean isBlock) {
             this.wtag = new  WeakReference<Tag>(tag);
+            // hard reference UnclosedTag otherwise its weak reference will be GCed soon
+            this.utag = (UnclosedTag) (tag instanceof UnclosedTag ? tag : null);
             this.isBlock = isBlock;
             assert span.length == 2;
             this.span = span;

@@ -33,11 +33,11 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.products.glassfish;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,30 +67,31 @@ import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 /**
  *
  * @author Kirill Sorokin
+ * @author Dmitry Lipin
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
-    
+
     // constructor //////////////////////////////////////////////////////////////////
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
                 getClass().getClassLoader());
     }
-    
+
     // configuration logic implementation ///////////////////////////////////////////
     public void install(final Progress progress)
-    throws InstallationException {
+            throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
-        
+
         final String username = getProperty(GlassFishPanel.USERNAME_PROPERTY);
         final String password = getProperty(GlassFishPanel.PASSWORD_PROPERTY);
         final String httpPort = getProperty(GlassFishPanel.HTTP_PORT_PROPERTY);
         final String httpsPort = getProperty(GlassFishPanel.HTTPS_PORT_PROPERTY);
         final String adminPort = getProperty(GlassFishPanel.ADMIN_PORT_PROPERTY);
-        
+
         final File javaHome =
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
         JavaInfo info = JavaUtils.getInfo(javaHome);
@@ -99,13 +100,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         LogManager.log("... version : "  + info.getVersion().toJdkStyle());
         LogManager.log("... vendor  : "  + info.getVendor());
         LogManager.log("... final   : "  + (!info.isNonFinal()));
-        
+
         final FilesList list = getProduct().getInstalledFiles();
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.copy.files")); // NOI18N
-            
+
             if (SystemUtils.isWindows()) {
                 list.add(FileUtils.copyFile(
                         new File(directory, ASENV_BAT_TEMPLATE),
@@ -225,13 +226,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.copy.files"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.replace.tokens")); // NOI18N
-            
+
             final Map<String, Object> map = new HashMap<String, Object>();
-            
+
             map.put(CONFIG_HOME_TOKEN, new File(directory, CONFIG_SUBDIR));
             map.put(INSTALL_HOME_TOKEN, directory);
             map.put(WEBSERVICES_LIB_TOKEN, new File(directory, LIB_SUBDIR));
@@ -270,10 +271,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(AS_ADMIN_PORT_TOKEN,adminPort);
             map.put(AS_ADMIN_PROFILE_TOKEN,AS_ADMIN_PROFILE);
             map.put(AS_ADMIN_SECURE_TOKEN,AS_ADMIN_SECURE);
-            
+
             FileUtils.modifyFile(new File(directory, BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR), map);
-            
+
             map.put(UC_INSTALL_HOME_TOKEN,new File(directory, UC_INSTALL_HOME_SUBDIR));
             map.put(UC_EXT_LIB_TOKEN,new File(directory, UC_EXT_LIB));
             map.put(UC_AS_HOME_TOKEN, directory);
@@ -308,11 +309,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 map.put(JDIC_STUB_LIB_TOKEN,
                         new File(directory, JDIC_STUB_LIB_SOLARIS));
             }
-            
+
             FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
-            
-            
+
+
             final String javaHomeString = javaHome.getAbsolutePath();
             final String imqVarHomeString = new File(
                     directory,
@@ -321,7 +322,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     IMQENV_CONF_ADDITION,
                     javaHomeString,
                     imqVarHomeString);
-            
+
             list.add(FileUtils.writeFile(
                     new File(directory, IMQENV_CONF),
                     contents,
@@ -331,7 +332,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.replace.tokens"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         //try {
         //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
@@ -342,11 +343,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //            getString("CL.install.error.irrelevant.files"), // NOI18N
         //            e);
         //}
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-            
+
             SystemUtils.correctFilesPermissions(
                     new File(directory, "bin"));
             SystemUtils.correctFilesPermissions(
@@ -358,11 +359,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.create.domain")); // NOI18N
-            
+
             GlassFishUtils.createDomain(
                     directory,
                     DOMAIN_NAME,
@@ -375,49 +376,49 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             final InstallationException firstException = new InstallationException(
                     getString("CL.install.error.create.domain"), // NOI18N
                     e);
-            
+
             final File asadminpass = new File(
                     SystemUtils.getUserHomeDirectory(),
                     ".asadminpass");
-                    final File asadmintruststore = new File(
-                            SystemUtils.getUserHomeDirectory(),
-                            ".asadmintruststore");
-                    if (asadminpass.exists() || asadmintruststore.exists()) {
-                        LogManager.log("either .asadminpass or .asadmintruststore " +
-                                "files exist -- deleting them");
-                        
-                        getProduct().addInstallationWarning(firstException);
-                        
-                        try {
-                            FileUtils.deleteFile(asadminpass);
-                            FileUtils.deleteFile(asadmintruststore);                            
-                            FileUtils.deleteFile(
-                                    new File(directory,
-                                    DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
-                                    true);
-                            
-                            GlassFishUtils.createDomain(
-                                    directory,
-                                    DOMAIN_NAME,
-                                    username,
-                                    password,
-                                    httpPort,
-                                    httpsPort,
-                                    adminPort);
-                        } catch (IOException ex) {
-                            throw new InstallationException(
-                                    getString("CL.install.error.create.domain"), // NOI18N
-                                    ex);
-                        }
-                    } else {
-                        throw firstException;
-                    }
+            final File asadmintruststore = new File(
+                    SystemUtils.getUserHomeDirectory(),
+                    ".asadmintruststore");
+            if (asadminpass.exists() || asadmintruststore.exists()) {
+                LogManager.log("either .asadminpass or .asadmintruststore " +
+                        "files exist -- deleting them");
+
+                getProduct().addInstallationWarning(firstException);
+
+                try {
+                    FileUtils.deleteFile(asadminpass);
+                    FileUtils.deleteFile(asadmintruststore);
+                    FileUtils.deleteFile(
+                            new File(directory,
+                            DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
+                            true);
+
+                    GlassFishUtils.createDomain(
+                            directory,
+                            DOMAIN_NAME,
+                            username,
+                            password,
+                            httpPort,
+                            httpsPort,
+                            adminPort);
+                } catch (IOException ex) {
+                    throw new InstallationException(
+                            getString("CL.install.error.create.domain"), // NOI18N
+                            ex);
+                }
+            } else {
+                throw firstException;
+            }
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.extra.files")); // NOI18N
-            
+
             list.add(new File(directory, DOMAINS_SUBDIR));
             list.add(new File(directory, DERBY_LOG));
         } catch (IOException e) {
@@ -425,65 +426,106 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.extra.files"), // NOI18N
                     e);
         }
-        
+
+        //get bundled registry to perform further runtime integration
+        //http://wiki.netbeans.org/NetBeansInstallerIDEAndRuntimesIntegration
+        Registry bundledRegistry = new Registry();
+        try {
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+
+            bundledRegistry.loadProductRegistry(
+                    (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+        } catch (InitializationException e) {
+            LogManager.log("Cannot load bundled registry", e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
-            
+
             final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
-            for (Product ide: ides) {
+            List<Product> productsToIntegrate = new ArrayList<Product>();
+            for (Product ide : ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
-                    final File nbLocation = ide.getInstallationLocation();
-                    
-                    if (nbLocation != null) {
-                        NetBeansUtils.setJvmOption(
-                                nbLocation,
-                                JVM_OPTION_NAME,
-                                directory.getAbsolutePath(),
-                                true);
-                        
-                        // if the IDE was installed in the same session as the
-                        // appserver, we should add its "product id" to the IDE
-                        if (ide.hasStatusChanged()) {
-                            NetBeansUtils.addPackId(
-                                    nbLocation,
-                                    PRODUCT_ID);
+                    LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
+                    final File location = ide.getInstallationLocation();
+                    if (location != null && FileUtils.exists(location) && !FileUtils.isEmpty(location)) {
+                        final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
+                        if (bundledProduct != null) {
+                            //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
+                            productsToIntegrate.add(ide);
+                            LogManager.log("... will be integrated since this produce is also bundled");
+                        } else {
+                            //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
+                            try {
+                                String path = NetBeansUtils.getJvmOption(location, JVM_OPTION_NAME);
+                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
+                                    LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
+                                    productsToIntegrate.add(ide);
+                                } else {
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                }
+                            } catch (IOException e)  {
+                                LogManager.log(e);
+                            }
                         }
                     }
                 }
             }
-        } catch (IOException e) {
+
+            for (Product productToIntegrate : productsToIntegrate) {
+                final File location = productToIntegrate.getInstallationLocation();
+                LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
+                NetBeansUtils.setJvmOption(
+                        location,
+                        JVM_OPTION_NAME,
+                        directory.getAbsolutePath(),
+                        true);
+
+                // if the IDE was installed in the same session as the
+                // appserver, we should add its "product id" to the IDE
+                if (productToIntegrate.hasStatusChanged()) {
+                    NetBeansUtils.addPackId(
+                            location,
+                            PRODUCT_ID);
+
+                }
+            }
+        } catch  (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.ide.integration"), // NOI18N
                     e);
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-    
+
     public void uninstall(final Progress progress)
-    throws UninstallationException {
+            throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
-        
+
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
-            
+
             final List<Product> ides =
                     Registry.getInstance().getProducts("nb-base");
             for (Product ide: ides) {
                 if (ide.getStatus() == Status.INSTALLED) {
+                    LogManager.log("... checking if " + ide.getDisplayName() + " is integrated with " + getProduct().getDisplayName() + " installed at " + directory);
                     final File nbLocation = ide.getInstallationLocation();
-                    
+
                     if (nbLocation != null) {
+                        LogManager.log("... ide location is " + nbLocation);
                         final String value = NetBeansUtils.getJvmOption(
                                 nbLocation,
                                 JVM_OPTION_NAME);
-                        
+                        LogManager.log("... ide integrated with: " + value);
                         if ((value != null) &&
                                 (value.equals(directory.getAbsolutePath()))) {
+			    LogManager.log("... removing integration");
                             NetBeansUtils.removeJvmOption(
                                     nbLocation,
                                     JVM_OPTION_NAME);
@@ -496,22 +538,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.ide.integration"), // NOI18N
                     e);
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.delete.domain")); // NOI18N
-            
+
             GlassFishUtils.deleteDomain(directory, DOMAIN_NAME);
         } catch (IOException e) {
             throw new UninstallationException(
                     getString("CL.uninstall.error.delete.domain"), // NOI18N
                     e);
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.uninstall.extra.files")); // NOI18N
-            
+
             if (SystemUtils.isWindows()) {
                 FileUtils.deleteFile(new File(directory, ASENV_BAT));
                 FileUtils.deleteFile(new File(directory, ASADMIN_BAT));
@@ -553,22 +595,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.uninstall.error.extra.files"), // NOI18N
                     e);
         }
-        
-        /////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
-    
+
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }
-    
+
     @Override
     public boolean allowModifyMode() {
         return false;
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
+/////////////////////////////////////////////////////////////////////////////////
+// Constants
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/glassfish/wizard.xml"; // NOI18N
@@ -828,7 +870,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "@JDIC_LIB@"; //NOI18N
     public static final String JDIC_STUB_LIB_TOKEN =
             "@JDIC_STUB_LIB@"; //NOI18N
-    public static final String REGISTRATION_DIR_TOKEN = 
+    public static final String REGISTRATION_DIR_TOKEN =
             "@REGISTRATION_DIR@";//NOI18N
     
     public static final String JDIC_LIB_WINDOWS =
@@ -894,13 +936,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String HADB_HOME =
             " "; // NOI18N
-    public static final String MFWK_HOME_WINDOWS = 
+    public static final String MFWK_HOME_WINDOWS =
             "lib\\SUNWmfwk"; //NOI18N
-    public static final String MFWK_HOME_SOLARIS = 
+    public static final String MFWK_HOME_SOLARIS =
             "/opt/SUNWmfwk"; //NOI18N
-    public static final String MFWK_HOME_LINUX = 
+    public static final String MFWK_HOME_LINUX =
             "/opt/sun/mfwk/share"; //NOI18N
-    public static final String MFWK_HOME_MACOSX = 
+    public static final String MFWK_HOME_MACOSX =
             "/opt/SUNWmfwk"; //NOI18N
     
     public static final String USE_NATIVE_LAUNCHER=

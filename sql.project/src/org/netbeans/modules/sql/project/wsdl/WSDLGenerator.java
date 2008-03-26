@@ -374,6 +374,7 @@ public class WSDLGenerator {
         try {
             Element currRequest = null;
             Element currResponse = null;
+            Element selectRecord = null;
             
             //Read sql file.
             BufferedReader reader = new BufferedReader(new FileReader(sqlFile));
@@ -405,9 +406,10 @@ public class WSDLGenerator {
                             if (STATEMENT_TYPE.equalsIgnoreCase(SELECT_STATEMENT)) {
                                 currResponse = getElementByName(e, sqlFileName + "Response");
                                 if (currResponse == null) {
-                                    currResponse = createElementWithComplexType(sqlFileName + "Response");
+                                    currResponse = createElementWithComplexTypeSelect(sqlFileName + "Response");
+                                    selectRecord = createElementWithComplexTypeRecord("record");
                                 }
-                                generateSelectSchemaElements(currRequest, currResponse);
+                                generateSelectSchemaElements(currRequest, selectRecord);
                             } else if (STATEMENT_TYPE.equalsIgnoreCase(INSERT_STATEMENT)) {
                             	currResponse = getElementByName(e, sqlFileName + "Response");
                             	removeSchemaElements(currRequest, currResponse);
@@ -494,6 +496,9 @@ public class WSDLGenerator {
                             }
                             e.appendChild(currRequest);
                             e.appendChild(currResponse);
+                            if(selectRecord != null || STATEMENT_TYPE.equalsIgnoreCase(SELECT_STATEMENT)){
+                            	e.appendChild(selectRecord);
+                            }
                         } else {
                             throw new Exception("Unsupported SQL Statement entered: " + sqlText);
                         }
@@ -1034,13 +1039,15 @@ public class WSDLGenerator {
         String colType = null;
         if (sequenceElement != null) {
             NodeList list = sequenceElement.getChildNodes();
-            if (list != null) {
+            
+			if (list != null) {
                 for (int j = list.getLength() - 1; j >= 0; j--) {
                     sequenceElement.removeChild(list.item(j));
                 }
             }
         }
-        if (prep != null) {
+
+		if (prep != null) {
             ResultSetColumn[] rs = prep.getResultSetColumns();
             if (rs != null && rs.length > 0) {
                 for (int i = 0; i < rs.length; i++) {
@@ -1058,7 +1065,7 @@ public class WSDLGenerator {
                         throw new WSDLException(WSDLException.INVALID_WSDL, "Check if the sql entered is valid");
                     }
                 }
-            }
+            }			
         }
     }
 
@@ -1274,6 +1281,30 @@ public class WSDLGenerator {
         return (builtInTypes.get(type) != null);
     }
 
+    private Element createElementWithComplexTypeSelect(String name) {
+        Element elem = doc.createElement("xsd:element");
+        elem.setAttribute("name", name);
+        Element complexType = doc.createElement("xsd:complexType");
+        Element sequence = doc.createElement("xsd:sequence");
+        Element record = doc.createElement("xsd:element");
+        record.setAttribute("ref", "record");
+        record.setAttribute("maxOccurs", "unbounded");
+        sequence.appendChild(record);
+        complexType.appendChild(sequence);
+        elem.appendChild(complexType);
+        return elem;
+    }
+    
+    private Element createElementWithComplexTypeRecord(String name) {
+        Element elem = doc.createElement("xsd:element");
+        elem.setAttribute("name", name);
+        Element complexType = doc.createElement("xsd:complexType");
+        Element sequence = doc.createElement("xsd:sequence");
+        complexType.appendChild(sequence);
+        elem.appendChild(complexType);
+        return elem;
+    }
+    
     private Element createElementWithComplexType(String name) {
         Element elem = doc.createElement("xsd:element");
         elem.setAttribute("name", name);

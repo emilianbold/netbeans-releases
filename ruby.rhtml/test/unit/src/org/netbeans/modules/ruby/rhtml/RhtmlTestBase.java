@@ -90,9 +90,8 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
         if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
-            List<String> extensions = Collections.singletonList("rhtml");
-            Language dl = new DefaultLanguage("RHTML", "org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, extensions, 
-                    actions, new RubyLanguage(), 
+            Language dl = new DefaultLanguage("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, 
+                    actions, new RhtmlLanguage(), 
                     null, new RhtmlCompleter(), new RenameHandler(), new RhtmlFinder(), 
                     null, new BracketCompleter(), null, null, null, true);
             List<Language> languages = new ArrayList<Language>();

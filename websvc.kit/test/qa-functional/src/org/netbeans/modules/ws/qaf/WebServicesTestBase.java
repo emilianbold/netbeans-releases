@@ -166,7 +166,6 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                     return -1;
                 case WEB:
                 case EJB:
-                    return 1;
                 case APPCLIENT:
                     return 0;
             }
@@ -184,9 +183,8 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                     return -1;
                 case WEB:
                 case APPCLIENT:
-                    return 2;
                 case EJB:
-                    return 0;
+                    return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -205,10 +203,11 @@ public abstract class WebServicesTestBase extends JellyTestCase {
             switch (this) {
                 case J2EE14:
                     //J2EE 1.4
-                    return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "J2EESpecLevel_14");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14");
                 case JAVAEE5:
                     //Java EE 5
-                    return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "JavaEESpecLevel_50");
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50");
+                    
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -452,17 +451,15 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 projectLocation = new File(System.getProperty("java.io.tmpdir")); //NOI18N
             }
             op.txtProjectLocation().setText(projectLocation.getAbsolutePath());
-            if (!ProjectType.JAVASE_APPLICATION.equals(type)) {
-                //choose server type and Java EE version
-                JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
-                jcboServer.selectItem(REGISTERED_SERVER.toString());
-                JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
-                jcboVersion.selectItem(javaeeVersion.toString());
-            }
         }
         if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
-            //second panel in Web, Ejb and Ear is now mandatory
+            //second panel in New Web, Ejb and AppClient project wizards
             op.next();
+            //choose server type and Java EE version
+            JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
+            jcboServer.selectItem(REGISTERED_SERVER.toString());
+            JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
+            jcboVersion.selectItem(javaeeVersion.toString());
         }
         op.finish();
         // Opening Projects
@@ -574,11 +571,11 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         }
         appsNode.expand();
         appsNode.callPopup().pushMenu(refreshLabel);
-        if (appsNode.isChildPresent(projectName)) {
-            Node n = new Node(appsNode, projectName);
-            n.callPopup().pushMenu(undeployLabel);
-            new EventTool().waitNoEvent(2000);
-        }
+        // needed for slower machines
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); //NOI18N
+        Node n = new Node(appsNode, projectName);
+        n.callPopup().pushMenu(undeployLabel);
+        new EventTool().waitNoEvent(2000);
         appsNode.callPopup().pushMenu(refreshLabel);
         new EventTool().waitNoEvent(2000);
         dumpOutput();

@@ -68,14 +68,14 @@ public class InstanceWatcherTest extends NbTestCase {
                
         WeakReference tmp; // For forcing GC
         
-        tmp = new WeakReference( new Object() );
+        tmp = new WeakReference<Object>( new Object() );
         assertGC( "", tmp );
         
         assertEquals( "There should be no change in the queue", 0, listener.changeCount );
         
         ts1 = null; // Remove hard reference
         
-        tmp = new WeakReference( new Object() );        
+        tmp = new WeakReference<Object>( new Object() );        
         assertGC( "", tmp ); // Do garbage collect
         
         assertEquals( "There should be one change in the queue", 1, listener.changeCount );

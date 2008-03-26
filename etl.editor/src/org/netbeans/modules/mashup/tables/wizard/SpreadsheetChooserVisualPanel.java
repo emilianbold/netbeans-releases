@@ -17,12 +17,12 @@ import jxl.Workbook;
 import jxl.WorkbookSettings;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 public final class SpreadsheetChooserVisualPanel extends JPanel {
     
     private SpreadsheetChooserPanel owner;
-    private static transient final Logger mLogger = LogUtil.getLogger(SpreadsheetChooserVisualPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SpreadsheetChooserVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private boolean canAdvance = false;
     
@@ -56,8 +56,8 @@ public final class SpreadsheetChooserVisualPanel extends JPanel {
     
     @Override
     public String getName() {
-        String nbBundle1 = mLoc.t("PRSR001: Choose a Sheet");
-        return Localizer.parse(nbBundle1);
+        String nbBundle1 = mLoc.t("BUND295: Choose a Sheet");
+        return nbBundle1.substring(15);
     }
     
     public void populateSheets(String fileName) {
