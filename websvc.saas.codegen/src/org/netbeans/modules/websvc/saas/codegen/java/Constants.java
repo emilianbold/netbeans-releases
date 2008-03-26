@@ -61,6 +61,8 @@ public class Constants {
     
     public static final String PUT_POST_CONTENT = "content";
     
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";
+    
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     
     public static final String QUERY_PARAMS = "queryParams"; // NOI18n
@@ -186,6 +188,33 @@ public class Constants {
    
     public static final String JAVA_EXT = "java"; //NI18N
     
+    public enum DropFileType {
+        JAVA_CLIENT("javaClient", "System.out"), 
+        RESOURCE("resource", "System.out"),
+        SERVLET("servlet", "out"),
+        JSP("jsp", "out");
+        
+        private String prefix; 
+        private String printWriterType;
+        
+        DropFileType(String prefix, String printWriterType) {
+            this.prefix = prefix;
+            this.printWriterType = printWriterType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getPrintWriterType() {
+            return printWriterType;
+        }
+    }
+
     public enum MimeType {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N

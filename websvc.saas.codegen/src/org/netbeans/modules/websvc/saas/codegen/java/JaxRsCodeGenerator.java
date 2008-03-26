@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
@@ -97,6 +98,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     private JavaSource saasAuthJS;
     private FileObject serviceFolder = null;
     private HashMap<String, ParameterInfo> filterParamMap;
+    private DropFileType dropFileType;
 
     public JaxRsCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
@@ -126,7 +128,15 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         }
         return serviceFolder;
     }
-
+    
+    public DropFileType getDropFileType() {
+        return dropFileType;
+    }
+    
+    void setDropFileType(DropFileType dropFileType) {
+        this.dropFileType = dropFileType;
+     }
+    
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
@@ -892,22 +902,30 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         return types;
     }
 
-    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params,
+            String indent) {
+        if(indent == null)
+            indent = " ";
         String paramDecl = "";
         for (ParameterInfo param : params) {
             String name = getVariableName(param.getName());
             String paramVal = findParamValue(param);
             if (param.getType() != String.class) {
-                paramDecl += "                 " + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
+                paramDecl += indent + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
             } else {
                 if (paramVal != null) {
-                    paramDecl += "                 String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl += indent+"String " + name + " = \"" + paramVal + "\";\n";
                 } else {
-                    paramDecl += "                 String " + name + " = null;\n";
+                    paramDecl += indent+"String " + name + " = null;\n";
                 }
             }
         }
         return paramDecl;
+    }
+    
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
+        String indent = "                 ";
+        return getHeaderOrParameterDeclaration(params, indent);
     }
 
     //String pathParams[] = new String[][]  { {"{volumeId}", volumeId},  {"{objectId}", objectId}}; 

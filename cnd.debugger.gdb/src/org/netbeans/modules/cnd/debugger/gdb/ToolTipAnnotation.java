@@ -107,7 +107,7 @@ public class ToolTipAnnotation extends Annotation {
             }
             try {
                 // There is a small window during debugger startup when getGdbProxy() returns null
-                return debugger.evaluateToolTip(expression);
+                return debugger.evaluate(expression);
             } catch (NullPointerException npe) {
             }
         } catch (IOException e) {

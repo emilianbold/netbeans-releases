@@ -8,6 +8,8 @@ package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,20 +42,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     final ServerInstance server;
     private Color nbErrorForeground;
 
-    private void validatePanel() {
+    private void validatePanel(String databaseName) {
         if (descriptor == null) {
             return;
         }
         
         String error = null;
-        
+
         comboUsers.setEnabled(this.isGrantAccess());
-        
-        if ( getDatabaseName() == null || getDatabaseName().equals("")) {
+                
+        if ( Utils.isEmpty(databaseName) ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
-        
+
         if (error != null) {
             messageLabel.setText(error);
             descriptor.setValid(false);
@@ -62,7 +64,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    
+        
     public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -84,6 +86,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             // The user cancelled
             if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
                 return null;
+            }
+            
+            if ( Utils.isEmpty(panel.getDatabaseName())) {
+                Utils.displayErrorMessage(
+                    NbBundle.getMessage(CreateDatabasePanel.class,
+                    "CreateDatabasePanel.MSG_EmptyDatabaseName"));
+                continue;
             }
                         
             return createDatabase(panel.getServer(), panel.getDatabaseName(),
@@ -142,7 +151,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
     private static void displayCreateFailure(ServerInstance server,
             DatabaseException ex, String dbname, boolean dbCreated) {
-        Utils.displayError("CreateDatabasePanel.MSG_CreateFailed", ex);
+        Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
+                "CreateDatabasePanel.MSG_CreateFailed"), ex);
 
         if ( dbCreated ) {
             NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
@@ -239,6 +249,31 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         comboDatabaseName.setModel(new DatabaseComboModel());
         
+        comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
+            new KeyListener() {
+
+            public void keyTyped(KeyEvent event) {
+                // Get the actual key.  apparently getItem() doesn't return the current
+                // string typed until *after* this event finishes :(
+                String keyStr = Character.toString(event.getKeyChar()).trim();
+                String dbname;
+                if ( Utils.isEmpty(keyStr)) {
+                    dbname = comboDatabaseName.getEditor().getItem().toString().trim();
+                } else {
+                    // We know the database name has at least this character in it
+                    dbname = keyStr;
+                }
+                
+                validatePanel(dbname);
+            }
+
+            public void keyPressed(KeyEvent event) {
+            }
+
+            public void keyReleased(KeyEvent event) {
+            }
+        });
+                        
         comboUsers.setModel(new UsersComboModel(server));
         
         if ( comboUsers.getItemCount() == 0 ) {
@@ -269,7 +304,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
-        validatePanel();
+        validatePanel("");
     }
     
     private void setGrantAccess(boolean grant) {
@@ -321,9 +356,19 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 comboDatabaseNameFocusLost(evt);
             }
         });
+        comboDatabaseName.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                comboDatabaseNameInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
         comboDatabaseName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 comboDatabaseNameKeyTyped(evt);
+            }
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                comboDatabaseNameKeyPressed(evt);
             }
         });
         comboDatabaseName.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -381,11 +426,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-    validatePanel();
+
 }//GEN-LAST:event_comboDatabaseNameActionPerformed
 
 private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
-    validatePanel();
+    validatePanel(evt.getItem().toString().trim());
 }//GEN-LAST:event_comboDatabaseNameItemStateChanged
 
 private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased
@@ -407,6 +452,14 @@ private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN
         comboUsers.setEnabled(false);
     }
 }//GEN-LAST:event_chkGrantAccessItemStateChanged
+
+private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboDatabaseNameKeyPressed
+
+}//GEN-LAST:event_comboDatabaseNameKeyPressed
+
+private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_comboDatabaseNameInputMethodTextChanged
+
+}//GEN-LAST:event_comboDatabaseNameInputMethodTextChanged
 
 
 

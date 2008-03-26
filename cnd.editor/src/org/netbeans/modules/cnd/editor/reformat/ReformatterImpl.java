@@ -63,6 +63,7 @@ public class ReformatterImpl {
     private final int startOffset;
     private final int endOffset;
     private PreprocessorFormatter preprocessorFormatter;
+    private int tabSize;
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
         braces = new BracesStack(codeStyle);
@@ -74,6 +75,11 @@ public class ReformatterImpl {
     }
     
     LinkedList<Diff> reformat(){
+        // cache tab size. it is expensive operation
+        tabSize = codeStyle.getGlobalTabSize();
+        if (tabSize <= 1) {
+            tabSize = 4;
+        }
         ts.moveStart();
         Token<CppTokenId> previous = ts.lookPrevious();
         while(ts.moveNext()){
@@ -678,7 +684,7 @@ public class ReformatterImpl {
     }
 
     /*package local*/ int getCaseIndent() {
-        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
             if (codeStyle.indentCasesFromSwitch()) {
                 return getParentIndent() + codeStyle.indentSize()/2;
             } else {
@@ -708,12 +714,18 @@ public class ReformatterImpl {
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),
                         break;
+                    case SWITCH: 
+                        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize()/2;
+                        } else {
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize();
+                        }
+                        break;
                     case IF: 
                     case ELSE: 
                     case FOR: 
                     case DO: 
                     case WHILE: 
-                    case SWITCH: 
                     case CATCH: 
                         if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
                             shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize()/2;
@@ -808,7 +820,7 @@ public class ReformatterImpl {
                 }
                 case SWITCH: //("switch", "keyword-directive"),
                 {
-                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBrace(),
+                    newLine(previous, current, codeStyle.getFormatNewLineBeforeBraceSwitch(),
                             codeStyle.spaceBeforeSwitchLeftBrace(), 1);
                     return;
                 }
@@ -847,9 +859,9 @@ public class ReformatterImpl {
         if (entry != null && entry.isLikeToFunction()) {
             newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceDeclaration(),
                     codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
-            if (codeStyle.newLineFunctionDefinitionName()) {
-                functionDefinitionNewLine();
-            }
+            //if (codeStyle.newLineFunctionDefinitionName()) {
+            //    functionDefinitionNewLine();
+            //}
         } else if (entry != null && entry.isLikeToArrayInitialization()) {
             StackEntry prevEntry = braces.lookPerevious();
             if (prevEntry != null && prevEntry.isLikeToArrayInitialization()) {
@@ -866,6 +878,7 @@ public class ReformatterImpl {
                 }
                 newLine(previous, current, CodeStyle.BracePlacement.SAME_LINE,
                         concurent || codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
+                spaceAfter(current, codeStyle.spaceWithinBraces());
             }
         } else {
             // TODO add options for block spaces 
@@ -893,7 +906,7 @@ public class ReformatterImpl {
             newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE, true, 1);
         }
     }
-    
+
     // Method does not preserve token sequence position
     // Method skips redundant NL
     private void newLinesAfter(Token<CppTokenId> previous, Token<CppTokenId> current){
@@ -970,6 +983,63 @@ public class ReformatterImpl {
         }
     }
 
+    private void checkDefinition() {
+        int index = ts.index();
+        try {
+            int paren = 1;
+            int comma = 0;
+            int constructor = -1;
+            Token<CppTokenId> next = ts.lookNextImportant();
+            if (next != null && next.id() != RPAREN){
+                comma = 1;
+            }
+            while (ts.moveNext()) {
+                switch (ts.token().id()) {
+                    case COLON:
+                        if (paren == 0){
+                            constructor = ts.index();
+                        }
+                    case SEMICOLON:
+                        if (comma == 0) {
+                            return;
+                        }
+                        comma--;
+                    case COMMA:
+                        if (paren == 1){
+                            comma++;
+                        }
+                        break;
+                    case RPAREN:
+                        paren--;
+                        break;
+                    case LPAREN:
+                        paren++;
+                        break;
+                    case LBRACE:
+                        if (paren == 0) {
+                            if (constructor > 0) {
+                                ts.moveIndex(constructor);
+                                ts.movePrevious();
+                            }
+                            functionDefinitionNewLine();
+                        }
+                        return;
+                    case FOR:
+                    case WHILE:
+                    case IF:
+                    case RBRACE:
+                        return;
+                    default:
+                        break;
+                }
+            }
+            return;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
     private void functionDefinitionNewLine() {
         int index = ts.index();
         try {
@@ -989,12 +1059,26 @@ public class ReformatterImpl {
                         if (paren==0 && hasParen){
                             Token<CppTokenId> function = ts.lookPreviousImportant();
                             if (function != null && function.id()==IDENTIFIER) {
+                                int startName = -1;
                                 while (ts.movePrevious()) {
-                                    if (ts.token().id() == IDENTIFIER){
-                                        break;
+                                    switch(ts.token().id()){
+                                        case COMMA:
+                                        case COLON:
+                                            return;
+                                        case WHITESPACE:
+                                            break;
+                                        case IDENTIFIER:
+                                        case SCOPE:
+                                        case TILDE:
+                                            startName = ts.index();
+                                            break;
+                                        default:
+                                            ts.moveIndex(startName);
+                                            ts.moveNext();
+                                            newLineBefore();
+                                            return;
                                     }
                                 }
-                                newLineBefore();
                                 return;
                             }
                         }
@@ -1047,7 +1131,15 @@ public class ReformatterImpl {
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        diff.replace.replaceSpaces(indent); // NOI18N
+                        if (entry.isLikeToArrayInitialization()) {
+                            if (codeStyle.spaceWithinBraces() && !diff.replace.hasNewLine()) {
+                                diff.replace.replaceSpaces(1);
+                            } else {
+                                diff.replace.replaceSpaces(0);
+                            }
+                        } else {
+                            diff.replace.replaceSpaces(indent);
+                        }
                     } else {
                         diff.replace.replaceSpaces(0); // NOI18N
                     }
@@ -1060,6 +1152,8 @@ public class ReformatterImpl {
                         } else {
                             if (!entry.isLikeToArrayInitialization()) {
                                 ts.addBeforeCurrent(1, indent);
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
                     }
@@ -1074,8 +1168,9 @@ public class ReformatterImpl {
                         if (braces.parenDepth <= 0) {
                             ts.replacePrevious(previous, 1, indent);
                         } else {
-                            //it a array?
-                            // do nothing
+                            if (entry.isLikeToArrayInitialization()) {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            }
                         }
                     }
                 } else if (previous.id() == NEW_LINE ||
@@ -1085,6 +1180,8 @@ public class ReformatterImpl {
                 } else {
                     if (!entry.isLikeToArrayInitialization()) {
                         ts.addBeforeCurrent(1, indent);
+                    } else {
+                        spaceBefore(previous, codeStyle.spaceWithinBraces());
                     }
                 }
             }
@@ -1351,10 +1448,6 @@ public class ReformatterImpl {
             // do not format block comments inside cole line
             return;
         }
-        int tab = codeStyle.getGlobalTabSize();
-        if (tab <= 1) {
-            tab = 4;
-        }
         int originalIndent = 0;
         if (previous == null || previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE){
             originalIndent = 0;
@@ -1364,7 +1457,7 @@ public class ReformatterImpl {
                 if (s.charAt(i) == ' '){ // NOI18N
                     originalIndent++;
                 } else if (s.charAt(i) == '\t'){ // NOI18N
-                    originalIndent = (originalIndent/tab+1)*tab;
+                    originalIndent = (originalIndent/tabSize+1)*tabSize;
                 }
             }
         }
@@ -1383,7 +1476,7 @@ public class ReformatterImpl {
                 if (s.charAt(i) == ' '){ // NOI18N
                     currentIndent++;
                 } else if (s.charAt(i) == '\t'){ // NOI18N
-                    currentIndent = (currentIndent/tab+1)*tab;
+                    currentIndent = (currentIndent/tabSize+1)*tabSize;
                 }
             } else {
                 if (start >= 0) {
@@ -1786,6 +1879,9 @@ public class ReformatterImpl {
                 if (entry == null){
                     spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen());
                     spaceAfter(current, codeStyle.spaceWithinMethodDeclParens());
+                    if (codeStyle.newLineFunctionDefinitionName()) {
+                        checkDefinition();
+                    }
                     return;
                 }
                 if (entry.getImportantKind() != null) {
@@ -1794,6 +1890,9 @@ public class ReformatterImpl {
                         case NAMESPACE:
                             spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen());
                             spaceAfter(current, codeStyle.spaceWithinMethodDeclParens());
+                            if (codeStyle.newLineFunctionDefinitionName()) {
+                                checkDefinition();
+                            }
                             return;
                     }
                 }

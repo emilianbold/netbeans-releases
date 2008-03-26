@@ -162,22 +162,39 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //What about []:
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
-
-    //IZ#130916:'Multiline Alignment|Array Initializer' checkbox works wrongly
-    public void testMultilineArrayAlignment() {
+    public void testSpaceWithinBraces() {
         setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineArrayInit, true);
+                putBoolean(EditorOptions.spaceWithinBraces, true);
         setLoadDocumentText(
-            "        int array[10] ={1, 2, 3, 4,\n" +
-            "    5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
         reformat();
-        assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
-            "int array[10] = {1, 2, 3, 4,\n" +
-            "                 5, 6, 7, 8, 9\n" +
-            "};\n"
-            );
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testSpaceWithinBraces2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int c[] = {1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
     }
 }
