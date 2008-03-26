@@ -41,6 +41,7 @@
 
 package org.netbeans.core.multiview;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 
 import javax.swing.Action;
@@ -61,7 +62,8 @@ public class MVElem implements MultiViewElement {
     private StringBuffer log;
     private Action[] actions;
     public MultiViewElementCallback observer;
-    private JPanel visualRepre;
+    private JComponent visualRepre;
+    private WeakReference<JComponent> visualRepreW;
     private transient UndoRedo undoredo;
     
     MVElem() {
@@ -71,7 +73,6 @@ public class MVElem implements MultiViewElement {
     MVElem(Action[] actions) {
         log = new StringBuffer();
         this.actions = actions;
-        visualRepre = new JPanel();
     }
     
     public String getLog() {
@@ -89,6 +90,7 @@ public class MVElem implements MultiViewElement {
     
     public void componentClosed() {
         log.append("componentClosed-");
+        visualRepre = null;
     }
     
     public void componentDeactivated() {
@@ -101,6 +103,7 @@ public class MVElem implements MultiViewElement {
     
     public void componentOpened() {
         log.append("componentOpened-");
+        visualRepre = getVisualRepresentation();
     }
     
     public void componentShowing() {
@@ -120,7 +123,15 @@ public class MVElem implements MultiViewElement {
     }
     
     public javax.swing.JComponent getVisualRepresentation() {
-        return visualRepre;
+        // modified as part of 130919 fix - hold visual repre more weakly
+        JComponent result = null;
+        if (visualRepreW == null || visualRepreW.get() == null) {
+            result = new JPanel();
+            visualRepreW = new WeakReference<JComponent>(result);
+        } else {
+            result = visualRepreW.get();
+        }
+        return result;
     }
     
     public String preferredID() {
