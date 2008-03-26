@@ -86,6 +86,7 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
     private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
     private static final FileInformation FILE_INFORMATION_UPTODATE_DIRECTORY = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true);
+    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
@@ -568,12 +569,14 @@ public class FileStatusCache {
      *
      * @param file
      */
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public void refreshAll(File root) {
         if (root.isDirectory()) {
             File repository = Mercurial.getInstance().getTopmostManagedParent(root);
             if (repository == null) {
                 return;
             }
+            Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(root, FILE_STATUS_MAP);
             Map<File, FileInformation> interestingFiles;
             try {
                 interestingFiles = HgCommand.getInterestingStatus(repository, root);
@@ -581,6 +584,15 @@ public class FileStatusCache {
                     FileInformation fi = interestingFiles.get(file);
                     Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
                     refreshFileStatus(file, fi, interestingFiles, true);
+                }
+                if (files != null) {
+                    for (File file : files.keySet()) {
+                        if (!interestingFiles.containsKey(file)) {
+                        // A file was in cache but is now up to date
+                        Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0}", file); // NOI18N
+                            refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
+                        }
+                    }
                 }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N

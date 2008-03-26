@@ -110,7 +110,7 @@ public class __NAME__ {
                 sessionSecret = result.substring(result.indexOf("<secret>") + 8,
                     result.indexOf("</secret>"));
             } catch (Exception ex) {
-                throw new IOException("Failed to get session key and secret.");
+                throw new IOException("Failed to get session key and secret: " + result);
             }
         }
     }
@@ -147,7 +147,7 @@ public class __NAME__ {
                     result.indexOf("</auth_createToken_response>"));
             token = token.substring(token.indexOf(">") + 1);
         } catch (Exception ex) {
-            throw new IOException("Failed to get session token.");
+            throw new IOException("Failed to get session token: " + result);
         }
 
         String loginUrl = "http://www.facebook.com/login.php?api_key=" +
