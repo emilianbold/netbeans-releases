@@ -705,6 +705,24 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return children;
     }
     
+    // For debugging
+    private void printChildren(String message, Vector children) {
+        System.out.println("");
+        System.out.println(message);
+        for ( Object child : children ) {
+            StringBuffer childstr = new StringBuffer(child.getClass().getName());
+            
+            if ( child instanceof DatabaseNodeInfo ) {
+                childstr.append(": " + ((DatabaseNodeInfo)child).getDisplayName());
+            } else {
+                childstr.append(": " + child.toString());
+            }
+            
+            System.out.println(childstr.toString());            
+        }
+        
+    }
+    
     public void addChild(DatabaseNodeInfo child) throws DatabaseException {
         addChild(child, true);
     }

@@ -285,7 +285,11 @@ public class ElementNode extends AbstractNode {
             hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
             hash = 29 * hash + (this.elementHandle != null ? this.elementHandle.getKind().hashCode() : 0);
             return hash;
-        }                       
+        }
+        
+        public String getName() {
+            return name;
+        }
         
         public static Description deepCopy( Description d ) {
          
