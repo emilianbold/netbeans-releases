@@ -202,20 +202,22 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
 
         if (serviceType == WizardProperties.FROM_SCRATCH) {
-//            if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
-//                    ((Util.isJavaEE5orHigher(project) &&
-//                    (projectType == WEB_PROJECT_TYPE || projectType == EJB_PROJECT_TYPE))) ||
-//                    (jwsdpSupported)
-//                    ) {
             JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
-            wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
-            handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
-            //add the JAXWS 2.0 library, if not already added
-            if (addJaxWsLib) {
-                addJaxws21Library(projectInfo.getProject());
+            if (jaxWsSupport != null) {
+                wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
+                handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
+                //add the JAXWS 2.0 library, if not already added
+                if (addJaxWsLib) {
+                    addJaxws21Library(projectInfo.getProject());
+                }
+                generateJaxWSImplFromTemplate(pkg, wsName, projectType);
+                handle.finish();
+            } else {
+                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(JaxWsServiceCreator.class, "TXT_JaxWsNotSupported"),
+                        NotifyDescriptor.ERROR_MESSAGE));
+                 handle.finish();
             }
-            generateJaxWSImplFromTemplate(pkg, wsName, projectType);
-            handle.finish();
             return;
         }
         if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
@@ -223,13 +225,18 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     ) {
 
                 JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
-                wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
-                handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
-                Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
-                generateWebServiceFromEJB(wsName, pkg, projectInfo, nodes);
-
-                handle.progress(70);
-                handle.finish();
+                if (jaxWsSupport != null) {
+                    wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
+                    handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
+                    Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
+                    generateWebServiceFromEJB(wsName, pkg, projectInfo, nodes);
+                    handle.finish();
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(JaxWsServiceCreator.class, "TXT_JaxWsNotSupported"),
+                        NotifyDescriptor.ERROR_MESSAGE));
+                    handle.finish();                   
+                }
             }
         }
     }
