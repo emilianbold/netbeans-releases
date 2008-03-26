@@ -266,11 +266,11 @@ public final class Library {
     }
     
     static {
-        LibraryAccessor.DEFAULT = new LibraryAccessor () {
+        LibraryAccessor.setInstance( new LibraryAccessor () {
             public Library createLibrary (LibraryImplementation impl) {
                 return new Library(impl, LibraryManager.getDefault());
             }
-        };
+        });
     }
 
 } // end Library

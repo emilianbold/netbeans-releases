@@ -55,15 +55,23 @@ import org.openide.util.Exceptions;
 
 public abstract class LibraryAccessor {
     
-    public static LibraryAccessor DEFAULT;
+    private static volatile LibraryAccessor instance;
     
-    // force loading of Library class. That will set DEFAULT variable.
-    static {
-        try {
-            Object o = Class.forName("org.netbeans.api.project.libraries.Library",true,LibraryAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException cnf) {
-            Exceptions.printStackTrace(cnf);
+    public static synchronized LibraryAccessor getInstance () {
+        if (instance == null) {
+            try {
+                Object o = Class.forName("org.netbeans.api.project.libraries.Library",true,LibraryAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
         }
+        assert instance != null;
+        return instance;
+    }
+    
+    public static void setInstance (final LibraryAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
     }
     
     public abstract Library createLibrary (LibraryImplementation libraryImplementation);
