@@ -72,8 +72,6 @@ public final class HyperlinkEnv {
     private String tokenImage;
     private int beanTagOffset;
     private String tagName;
-    private int tagOffset;
-    private Map<String, String> attribs;
     private Map<String, String> beanAttribs;
 
     public static enum Type {
@@ -133,9 +131,7 @@ public final class HyperlinkEnv {
                 beanTagOffset = beanTag.getElementOffset();
                 beanAttribs = collectAttributes(beanTag);
             }
-            attribs = collectAttributes(currentTag);
             tagName = currentTag.getNodeName();
-            tagOffset = currentTag.getElementOffset();
         }
         
         if (ContextUtilities.isValueToken(token)) {
@@ -172,10 +168,6 @@ public final class HyperlinkEnv {
         return tagName;
     }
 
-    public int getTagOffset() {
-        return tagOffset;
-    }
-    
     public String getValueString() {
         return valueString;
     }
@@ -206,10 +198,6 @@ public final class HyperlinkEnv {
 
     public Map<String, String> getBeanAttributes() {
         return beanAttribs;
-    }
-
-    public Map<String, String> getAttributes() {
-        return attribs;
     }
 
     public int getBeanTagOffset() {
