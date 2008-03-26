@@ -955,6 +955,13 @@ public class StructureAnalyzer implements StructureScanner {
             }
 
             if ((kind == ElementKind.METHOD) || (kind == ElementKind.CONSTRUCTOR)) {
+                // consider also arity (#131134)
+                Arity arity = Arity.getDefArity(node.getNode());
+                Arity darity = Arity.getDefArity(d.node.getNode());
+                if (!arity.equals(darity)) {
+                    return false;
+                }
+
                 // consider parameters names and thus their arity (issue 101508)
                 List<String> parameters = ((AstMethodElement) node).getParameters();
                 List<String> dparameters = ((AstMethodElement) d.node).getParameters();

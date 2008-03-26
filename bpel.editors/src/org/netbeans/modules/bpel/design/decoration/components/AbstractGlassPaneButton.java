@@ -69,6 +69,10 @@ public class AbstractGlassPaneButton extends JToggleButton implements
         myGlassPane.addHierarchyListener(this);
     }
 
+    public void updateText(String text) {
+      myGlassPane.updateText(text);
+    }
+
     protected void updatePreferredSize() {
         setPreferredSize(new Dimension(myIcon.getIconWidth() + 6, myIcon.getIconHeight() + 6));
     }
@@ -93,6 +97,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements
         getDesignView().getOverlayView().add(myGlassPane);
         updateGlassPaneBounds();
         myGlassPane.scrollRectToVisible(new Rectangle(0, 0, myGlassPane.getWidth(), myGlassPane.getHeight()));
+        myGlassPane.requestFocus();
     }
     
     protected void addTitle(Icon icon, String text, Color color) {

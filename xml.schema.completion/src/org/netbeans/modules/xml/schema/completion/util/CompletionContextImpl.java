@@ -522,6 +522,9 @@ public class CompletionContextImpl extends CompletionContext {
         if(primaryFile == null)
             return;
         java.io.File file = FileUtil.toFile(primaryFile);
+        if(file == null || !file.isFile())
+            return;
+        
         String[] schemas = CompletionUtil.getDeclaredNamespaces(file);
         for(String temp : schemas) {
             try {

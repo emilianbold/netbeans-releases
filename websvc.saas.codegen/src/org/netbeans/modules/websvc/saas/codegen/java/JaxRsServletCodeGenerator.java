@@ -95,39 +95,32 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
-        
+        String indent2 = "                 ";
+                
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
         filterParams = super.getServiceMethodParameters();
         paramDecl += getHeaderOrParameterDeclaration(filterParams);      
-        return getCustomMethodBody(paramDecl, paramUse);
+        return getCustomMethodBody(paramDecl, paramUse, indent2);
     }
     
-    protected String getCustomMethodBody(String paramDecl, String paramUse) {
+    protected String getCustomMethodBody(String paramDecl, String paramUse, String indent2) {
+        String indent = "             ";
         String methodBody = "";
-        methodBody += "             try {\n";
+        methodBody += indent+"try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "                 "+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+        methodBody +=indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "                 response.setContentType(\"application/xml\");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET) {
-            if(getBean().canGenerateJAXBUnmarshaller()) {
-                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += "                 "+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += "                 System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
-                methodBody += "                 out.println(resultObj.toString());\n";
-            } else {
-                methodBody += "                 System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
-                methodBody += "                 out.println(result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
-            methodBody += "                 out.println(result);\n";
-        }
-        methodBody += "             } catch (Exception ex) {\n";
-        methodBody += "                 ex.printStackTrace();\n";
-        methodBody += "             }\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
         return methodBody;
     }
     

@@ -166,7 +166,7 @@ public class RADComponentNode extends FormNode
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.component-inspector"); // NOI18N
+        return new HelpCtx("gui.components.editing"); // NOI18N
     }
 
     @Override

@@ -83,6 +83,7 @@ public class ReportCustomizationPanel extends javax.swing.JPanel {
  
     private void initGUI() {
         generateVerboseReportCheckBox.setSelected(mOptions.isGenerateVerboseReport());
+        includeOnlyElementsWithDocumentationCheckBox.setSelected(mOptions.isIncludeOnlyElementsWithDocumentation());
     }
 
     public boolean isGenerateVerboseReport() {
