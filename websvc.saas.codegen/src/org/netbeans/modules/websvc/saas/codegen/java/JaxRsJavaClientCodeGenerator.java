@@ -48,16 +48,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * Code generator for Accessing Saas services.
@@ -80,10 +75,7 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle);
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
-        addImportsToTargetFile();
-        
+
         preGenerate();
         
         //Create Authenticator classes
@@ -99,6 +91,19 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         //Modify Authenticator class
         modifyAuthenticationClass(); 
         
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        //No need to check scanning, since we are not locking document
+        //Util.checkScanning();
+        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+    
+    private void setJaxbWrapper() {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if(!repTypesFromWadl.isEmpty()) {
             getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
@@ -106,10 +111,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
                     (getBean().getGroupName()+"."+
                         getBean().getDisplayName()).toLowerCase());
         }
-        
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
     @Override 

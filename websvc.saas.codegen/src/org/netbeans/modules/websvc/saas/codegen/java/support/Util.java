@@ -1615,7 +1615,7 @@ public class Util {
             methodBody += indent+"response.setContentType(\"application/xml\");\n";
         if(methodType == HttpMethodType.GET) {
             if(canGenerateJaxb) {
-                String resultClass = pkg+ "." +serviceName;
+                String resultClass = pkg+ "." + Util.upperFirstChar(serviceName);
                 methodBody += indent+resultClass+" resultObj = " +
                         "result.getDataAsJaxbObject("+resultClass+".class);\n";
                 methodBody += indent+dropFileType.getPrintWriterType()+
