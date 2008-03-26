@@ -1221,6 +1221,58 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
     </target>
 
+    <target name="build-mysql">
+        <echo message="BUILDING MySQL ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql"  target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/mysql"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
+
+    <target name="build-mysql-connector">
+        <echo message="BUILDING MySQL Connector =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql-connector" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/mysql-connector"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
+
     <target name="build-sjsas">        
 	<echo message="BUILDING SJSAS ============================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsas" target="release-all">
@@ -2162,6 +2214,98 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
+    <target name="generate-netbeans-mysql-bundles">
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-x86" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-ppc" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.dmg"/>
+            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
+        </antcall>
+
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.dmg"/>
+            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
+        </antcall>       
+
+        <delete>
+            <fileset dir="${nb.bundles.output.dir}">
+		<include name="${nb.bundle.files.prefix}-mysql-macosx*zip"/>
+            </fileset>
+        </delete>
+    </target>
 
     <target name="get-bundled-jvms" if="do.build.jdk">
         <set property="jvm.cache.dir" 
