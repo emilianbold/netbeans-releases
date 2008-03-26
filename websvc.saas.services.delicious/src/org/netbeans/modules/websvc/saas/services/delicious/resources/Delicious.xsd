@@ -35,7 +35,7 @@
             <xsd:sequence>
                 <xsd:element name="date" minOccurs="0" maxOccurs="unbounded">
                     <xsd:complexType>
-                        <xsd:attribute name="count" type="xsd:int"/>
+                        <xsd:attribute name="count" type="xsd:integer"/>
                         <xsd:attribute name="date" type="xsd:date"/>
                     </xsd:complexType>
                 </xsd:element>
