@@ -98,6 +98,24 @@
                 </file>
             </folder>
         </folder>
+        <folder name="WsitCallbackProjectExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="port"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="wsit-callback-project"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/wsit/callbackproject"/>
+            <attr name="SystemFileSystem.localizingBundle"
+                  stringvalue="org.namebeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon"
+                  urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.WsitCallbackExtenionPropertyClassProvider"/>
+            <folder name="WsitCallback">
+                <file name="CallbackProject">
+                    <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.properties.CallbackProjectExtensionProperty"/>
+                    <attr name="description" stringvalue="WSIT Callback handler Java project"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     
 </filesystem>

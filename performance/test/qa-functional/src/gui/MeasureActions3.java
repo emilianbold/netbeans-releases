@@ -70,6 +70,7 @@ public class MeasureActions3  {
         
         suite.addTest(new CloseEditorTab("measureTime", "Close on tab from Editor window"));
         
+/* Incorrect results on Vista
         suite.addTest(new CloseEditorModified("measureTime", "Close modified Java file"));
         
         suite.addTest(new SaveModifiedFile("measureTime", "Save modified Java file"));
@@ -77,7 +78,7 @@ public class MeasureActions3  {
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
-        
+*/        
         suite.addTest(new AddToFavorites("testAddJavaFile", "Add to Favorites Java file"));
         
         

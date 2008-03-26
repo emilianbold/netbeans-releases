@@ -64,18 +64,14 @@ public class CustomerDBSampleWizardIterator extends SampleWizardIterator {
         return new CustomerDBSampleWizardIterator();
     }
     
-    protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(CustomerDBSampleWizardIterator.class, "MSG_NameAndLocation"),
-        };
-    }
-    
+    @Override
     protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new CustomerDBSampleWizardPanel(),
         };
     }
     
+    @Override
     public Set instantiate() throws IOException {
         setProjectConfigNamespace(null);
         Set resultSet = super.instantiate();
