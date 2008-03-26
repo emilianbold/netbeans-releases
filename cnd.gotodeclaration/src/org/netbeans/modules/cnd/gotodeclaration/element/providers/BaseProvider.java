@@ -105,7 +105,7 @@ public abstract class BaseProvider implements ElementProvider {
                 return getElements(csmProject, text, type, first);
             }            
             
-            public Collection<? extends ElementDescriptor> getElements(CsmProject csmProject, String text, SearchType type, boolean first) {
+            /* package */ Collection<? extends ElementDescriptor> getElements(CsmProject csmProject, String text, SearchType type, boolean first) {
                 NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
                 if( comparator == null ) {
                     return Collections.emptyList();

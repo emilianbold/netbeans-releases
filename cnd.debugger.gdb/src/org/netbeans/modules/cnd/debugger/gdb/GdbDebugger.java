@@ -696,11 +696,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             programPID = 0;
             gdbEngineProvider.getDestructor().killEngine();
             GdbActionHandler gah = (GdbActionHandler) lookupProvider.lookupFirst(null, GdbActionHandler.class);
-            if (gah == null) {
-                gah = new GdbActionHandler(); // this is null for attached processes...
+            if (gah != null) { // gah is null if we attached (but we don't need it then)
+                gah.executionFinished(0);
             }
-            gah.executionFinished(0);
             Disassembly.close();
+            GdbContext.getInstance().invalidate(true);
             GdbTimer.getTimer("Step").reset(); // NOI18N
         }
     }
