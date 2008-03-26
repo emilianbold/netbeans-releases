@@ -1611,23 +1611,91 @@ public class Util {
             DropFileType dropFileType, HttpMethodType methodType, 
             boolean canGenerateJaxb, String indent) {
         String methodBody = "";
-        if(dropFileType == DropFileType.SERVLET || dropFileType == DropFileType.JSP)
-            methodBody += indent+"response.setContentType(\"application/xml\");\n";
+        methodBody += indent+"//TODO - Uncomment the print Statement below to print result.\n";
         if(methodType == HttpMethodType.GET) {
             if(canGenerateJaxb) {
                 String resultClass = pkg+ "." +serviceName;
-                methodBody += indent+resultClass+" resultObj = " +
+                methodBody += indent+"//"+resultClass+" resultObj = " +
                         "result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += indent+dropFileType.getPrintWriterType()+
+                methodBody += indent+"//"+dropFileType.getPrintWriterType()+
                         ".println(\"The SaasService returned: \" + resultObj.toString());\n";
             } else {
-                methodBody += indent+dropFileType.getPrintWriterType()+
+                methodBody += indent+"//"+dropFileType.getPrintWriterType()+
                         ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
             }
         } else {
-            methodBody += indent+dropFileType.getPrintWriterType()+
+            methodBody += indent+"//"+dropFileType.getPrintWriterType()+
                     ".println(\"The SaasService returned: \"+result);\n";
         }
         return methodBody;
+    }
+    
+    public static void addInputParamField(JavaSource source, 
+            final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);  
+                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
+                ClassTree modifiedTree = JavaSourceHelper.addField(copy, 
+                        initial, 
+                        Constants.PRIVATE, 
+                        annotations, annotationAttrs, 
+                        getParameterName(p, true, true, true),
+                        p.getTypeName(), 
+                        getParamValue(p));
+                copy.rewrite(initial, modifiedTree);
+            }
+        });
+        result.commit();
+    }
+    
+    public static void addInputParamFields(JavaSource source, 
+            final List<ParameterInfo> params) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);       
+                JavaSourceHelper.addFields(copy, getParamNames(params),
+                        getParamTypeNames(params), getParamValues(params));
+            }
+        });
+        result.commit();
+    }
+
+    public static String[] getParamNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(getParameterName(param, true, true, true));
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    public static String[] getParamTypeNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(param.getTypeName());
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    public static Object[] getParamValues(List<ParameterInfo> params) {
+        List<Object> results = new ArrayList<Object>();
+        
+        for (ParameterInfo param : params) {
+            results.add(getParamValue(param));
+        }
+        
+        return results.toArray(new Object[results.size()]);
+    }
+    
+    public static Object getParamValue(ParameterInfo p) {
+        Object defaultValue = null;
+        if (p.getStyle() != ParamStyle.QUERY) {
+            defaultValue = p.getDefaultValue();
+        }
+        return defaultValue;
     }
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
@@ -164,4 +166,42 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     @Override
     protected void addJaxbLib() throws IOException {}
+    
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+        super.addImportsToTargetFile();
+        if(getDropFileType() == Constants.DropFileType.RESOURCE) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.JAVA_ANNOTATION_PACKAGE+Constants.JAVA_ANNOTATION_RESOURCE);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getTargetSource(), imports);
+            
+            //Also add injection member variables
+            Map<String, String> fieldsMap = new HashMap<String, String>();
+            JavaSourceHelper.getAvailableFieldSignature(getTargetSource(), fieldsMap);
+            String[] annotations = new String[] { Constants.JAVA_ANNOTATION_RESOURCE };
+            Object[] annotationAttrs = new Object[] {null};
+            List<ParameterInfo> injectionParams = Util.getAuthenticatorMethodParametersForWeb();
+            for(ParameterInfo p: injectionParams) {
+                String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
+                    getParameterName(p, true, true, true));
+                if(!fieldsMap.containsKey(sign)) {
+                    Util.addInputParamField(getTargetSource(), p, annotations, annotationAttrs);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addImportsToSaasService() throws IOException {
+        super.addImportsToSaasService();
+        
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getSaasServiceSource(), imports);
+        }
+    }
 }
