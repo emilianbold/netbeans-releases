@@ -296,7 +296,7 @@ public final class Stamps {
     
 
     private static AtomicLong stamp(boolean checkStampFile) {
-        AtomicLong result = new AtomicLong(-1);
+        AtomicLong result = new AtomicLong();
         StringBuilder sb = new StringBuilder();
         
         Set<File> processedDirs = new HashSet<File>();
@@ -324,10 +324,6 @@ public final class Stamps {
             if (!compareAndUpdateFile(checkSum, sb.toString(), result)) {
                 discardCachesImpl(result);
             }
-        }
-        
-        if (result.get() <= 0) {
-            result.set(System.currentTimeMillis());
         }
         
         return result;
@@ -364,7 +360,7 @@ public final class Stamps {
         
         highestStampForDir(configDir, result);
         highestStampForDir(modulesDir, result);
-    
+        
         if (createStampFile) {
             try {
                 stamp.getParentFile().mkdirs();
