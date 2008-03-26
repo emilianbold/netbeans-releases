@@ -26,6 +26,7 @@ import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -39,13 +40,10 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Roles;
-import org.netbeans.modules.soa.mappercore.icons.StringIcon2D;
-import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
-import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 
@@ -115,8 +113,10 @@ public class CopyFromProcessor {
             // there is only one link
             ArrayList<TreeItemFinder> fromNodeFinderList = 
                     constructFindersList(mCopy);
-            TreePath sourceTreePath = 
-                    leftTreeModel.findFirstNode(fromNodeFinderList);
+            TreeFinderProcessor fProcessor = new TreeFinderProcessor(leftTreeModel);
+            TreePath sourceTreePath = fProcessor.findFirstNode(fromNodeFinderList);
+//            TreePath sourceTreePath = 
+//                    leftTreeModel.findFirstNode(fromNodeFinderList);
             if (sourceTreePath != null) {
                 TreeSourcePin sourcePin = new TreeSourcePin(sourceTreePath);
                 Link newLink = new Link(sourcePin, graph);

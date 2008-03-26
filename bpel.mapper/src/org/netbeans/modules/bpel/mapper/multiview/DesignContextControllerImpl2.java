@@ -30,7 +30,6 @@ import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -379,11 +378,12 @@ public class DesignContextControllerImpl2
     }
 
     private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
+        if (mBpelModelUpdateSourceRef == null) {
+            // Mapper is the default synchronization source
+            return mMapperTcContext.getMapper();
+        } else {
             return mBpelModelUpdateSourceRef.get();
         }
-        //
-        return null;
     }
 
     /**
