@@ -74,11 +74,11 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         ACTIONS = Collections.unmodifiableSet(s);
     }
     
-    private Semaphore frontEndSemaphore = new Semaphore(1, true);
-    private Semaphore backEndSemaphore = new Semaphore(1, true);
+    private final Semaphore frontEndSemaphore;
+    private final Semaphore backEndSemaphore;
     
-    private ContextProviderWrapper contextProvider;
-    private RubyDebuggerEngineProvider engineProvider;
+    private final ContextProviderWrapper contextProvider;
+    private final RubyDebuggerEngineProvider engineProvider;
     private final RubySession rubySession;
     private Boolean terminated;
     
