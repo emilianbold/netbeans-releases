@@ -162,22 +162,39 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //What about []:
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
-    public void testGnuStuleNewLineName4() {
-        setDefaultsOptions("GNU");
+    public void testSpaceWithinBraces() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinBraces, true);
         setLoadDocumentText(
-                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
-                ": imp_ (0)\n" +
-                ", env_ (env)\n" +
-                "{\n" +
-                "}\n"
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
                 );
         reformat();
         assertDocumentText("Incorrect formatting GNU new line neme",
-                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
-                ": imp_ (0)\n" +
-                ", env_ (env)\n" +
-                "{\n" +
-                "}\n"
+                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testSpaceWithinBraces2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int c[] = {1, (1 + 2), (2 + 3)\n" +
+                "};\n"
                 );
     }
 }
