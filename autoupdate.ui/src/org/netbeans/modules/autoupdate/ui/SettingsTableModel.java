@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,10 +52,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -120,16 +118,7 @@ public class SettingsTableModel extends AbstractTableModel {
         }
         // check removed providers
         if (oldValue != null && ! oldValue.isEmpty () && ! newValue.containsAll (oldValue)) {
-            getSettingsTab ().setWaitingState (true);
-            Utilities.startAsWorkerThread (new Runnable () {
-                public void run () {
-                    try {
-                        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
-                    } finally {
-                        getSettingsTab ().setWaitingState (false);
-                    }
-                }
-            });
+            getSettingsTab ().setNeedRefresh ();
         }
         updateProviders = new ArrayList<UpdateUnitProvider> (providers);
         originalProviders = newValue;
@@ -142,7 +131,7 @@ public class SettingsTableModel extends AbstractTableModel {
         if (unitProvider != null) {
             UpdateUnitProviderFactory.getDefault ().remove (unitProvider);
         }
-        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
+        getSettingsTab ().setNeedRefresh ();
     }
     
     public void add (String name, String displayName, URL url, boolean state) {
@@ -176,35 +165,12 @@ public class SettingsTableModel extends AbstractTableModel {
             boolean newValue = ((Boolean) aValue).booleanValue ();
             if (oldValue != newValue) {
                 unitProvider.setEnable (newValue);
-                if (oldValue) {
-                    RequestProcessor.getDefault ().post (new Runnable () {
-                        public void run () {
-                            // was enabled and won't be more -> remove it from model
-                            getSettingsTab ().setWaitingState (true);
-                            Utilities.startAsWorkerThread (new Runnable () {
-                                public void run () {
-                                    try {
-                                        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
-                                    } finally {
-                                        getSettingsTab ().setWaitingState (false);
-                                    }
-                                }
-                            });
-                        }
-                    });
+                if (newValue) {
+                    // was not enabled and will be -> add it to model and read its content
+                    getSettingsTab ().refreshProvider (unitProvider, false);
                 } else {
-                    // was enabled and won't be more -> add it from model and read its content
-                    getSettingsTab ().setWaitingState (true);
-                    Utilities.startAsWorkerThread (new Runnable () {
-                        public void run () {
-                            try {
-                                Utilities.presentRefreshProvider (unitProvider, getSettingsTab ().getPluginManager (), false);
-                                getSettingsTab ().getPluginManager ().updateUnitsChanged ();
-                            } finally {
-                                getSettingsTab ().setWaitingState (false);
-                            }
-                        }
-                    });
+                    // was enabled -> remove from model and refresh
+                    getSettingsTab ().setNeedRefresh ();
                 }
             }
             break;
