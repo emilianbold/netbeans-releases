@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.rt.providers.impl.absent.AbsentServerProvider;
@@ -47,7 +49,9 @@ import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
 import org.netbeans.modules.php.rt.utils.ServersUtils;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -68,7 +72,28 @@ public final class Utils {
     }
 
     public static WebServerProvider getProvider(PhpProject project) {
-        String provider = project.getEvaluator().getProperty(PhpProject.PROVIDER_ID);
+        PropertyEvaluator evaluator = project.getEvaluator();
+        String url = evaluator.getProperty(PhpProject.URL);
+        String domain = null;
+        String baseDir = null;      
+        String port = null;        
+        if (url != null) {
+            try {
+                URL u = new URL(url);
+                domain = u.getHost();
+                baseDir = u.getPath();
+                int portNumber = u.getPort();
+                port = (portNumber != -1) ? String.valueOf(portNumber) : null;
+            } catch(MalformedURLException mex) {
+                Exceptions.printStackTrace(mex);
+            }
+        }
+        String docRoot = evaluator.getProperty(PhpProject.COPY_SRC_TARGET);        
+        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : getOriginalProvider(project);
+    }
+
+    public static WebServerProvider getOriginalProvider(PhpProject project) {
+         String provider = project.getEvaluator().getProperty(PhpProject.PROVIDER_ID);
         if (provider == null) {
             // TODO realize fake provider that will return commands but will 
             // suggest to setup real server
@@ -83,7 +108,8 @@ public final class Utils {
         }
         return null;
     }
-
+    
+    
     public static Host findHostById(String hostId) {
         return ServersUtils.findHostById(hostId);
     }

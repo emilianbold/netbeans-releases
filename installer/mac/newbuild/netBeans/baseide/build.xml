@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${baseide.install.name}"/>
+                <filter token="TITLE" value="${netbeans-Title}"/>
             </filterset>
         </copy>
         
