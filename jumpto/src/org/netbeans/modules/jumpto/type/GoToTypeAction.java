@@ -321,11 +321,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         Rectangle r = Utilities.getUsableScreenBounds();
         int maxW = (r.width * 9) / 10;
         int maxH = (r.height * 9) / 10;
-        Dimension dim = d.getPreferredSize();
+        final Dimension dim = d.getPreferredSize();
         dim.width = Math.min(dim.width, maxW);
         dim.height = Math.min(dim.height, maxH);
         d.setBounds(Utilities.findCenterBounds(dim));
-        
+        initialDimension = dim;
         d.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
                 cleanup();
@@ -335,6 +335,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return d;
 
     } 
+   
+    private Dimension initialDimension;
     
     private void cleanup() {
         //System.out.println("CLEANUP");                
@@ -343,15 +345,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         if ( GoToTypeAction.this.dialog != null ) { // Closing event for some reson sent twice
         
             // Save dialog size only when changed
-            final int lastWidth = UiOptions.GoToTypeDialog.getWidth();
-            final int lastHeight = UiOptions.GoToTypeDialog.getHeight();
             final int currentWidth = dialog.getWidth();
             final int currentHeight = dialog.getHeight();
-            if (lastWidth != currentWidth || lastHeight != currentHeight) {
+            if (initialDimension != null && (initialDimension.width != currentWidth || initialDimension.height != currentHeight)) {
                 UiOptions.GoToTypeDialog.setHeight(currentHeight);
                 UiOptions.GoToTypeDialog.setWidth(currentWidth);
             }
-            
+            initialDimension = null;
             // Clean caches
             GoToTypeAction.this.dialog.dispose();
             GoToTypeAction.this.dialog = null;
