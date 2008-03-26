@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Debug">
             <file name="org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.instance"/>
+            <file name="org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
         </folder>
     </folder>
     <folder name="Editors">
@@ -281,6 +282,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-DisassemblyAction.instance"/>
                     <attr name="position" intvalue="950"/>
                 </file>
+                <file name="org-netbeans-modules-cnd-debugger-gdb-actions-RegistersAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-ui-RegistersAction.instance"/>
+                    <attr name="position" intvalue="951"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -359,4 +364,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="RegistersTopComponent.settings" url="RegistersTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="debugger">
+                <file name="RegistersTopComponent.wstcref" url="RegistersTopComponentWstcref.xml">
+                    <attr name="position" intvalue="1200"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

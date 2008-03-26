@@ -463,10 +463,16 @@ public class CompletionTest extends JellyTestCase {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }
-                if (printDirectly) {
+                if (printDirectly && !isJavaScript()) {
                     ref(g.getTextUni());
                 } else {
                     finalItems.add(g.getTextUni());
+                }
+            }
+            if (printDirectly && isJavaScript()){
+                Collections.sort(finalItems);
+                for (String str : finalItems) {
+                    ref(str);
                 }
             }
             class DefaultActionRunner implements Runnable {
@@ -488,6 +494,9 @@ public class CompletionTest extends JellyTestCase {
             if (selectedItem != null) {
                 // move to separate class
                 if (!printDirectly) {
+                    if (isJavaScript()){
+                        Collections.sort(finalItems);
+                    }
                     for (String str : finalItems) {
                         ref(str);
                     }

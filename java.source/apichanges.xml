@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GeneratorUtilities.createMethod">
+             <api name="general"/>
+             <summary>Added GeneratorUtilities.createMethod</summary>
+             <version major="0" minor="34"/>
+             <date day="25" month="3" year="2008"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added method to create a new method tree for given method element.
+             </description>
+            <issue number="999999"/>
+        </change>
         <change id="CommitToGuards">
             <api name="general"/>
             <summary>Added ModificationResult.Difference.setCommitToGuards(boolean) and isCommitToGuards() methods permitting to write modifications even to guarded sections</summary>
