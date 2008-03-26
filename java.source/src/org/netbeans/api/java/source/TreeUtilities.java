@@ -185,7 +185,7 @@ public final class TreeUtilities {
             assert assertsEnabled = true;
             
             if (assertsEnabled) {
-                TreePath tp = TreePath.getPath(info.getCompilationUnit(), tree);
+                TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
                 
                 if (tp == null) {
                     Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
