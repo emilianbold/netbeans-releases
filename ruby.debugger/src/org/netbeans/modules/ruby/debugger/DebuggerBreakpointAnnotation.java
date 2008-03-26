@@ -38,40 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import org.openide.util.HelpCtx;
+package org.netbeans.modules.ruby.debugger;
+
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.text.Annotatable;
+import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.BooleanStateAction;
 
-public final class BreakpointEnableAction extends BooleanStateAction {
-
-    @Override
-    public boolean isEnabled() {
-        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
-        if (bp != null) {
-            super.setBooleanState(bp.isEnabled());
-            return true;
-        }
-        return false;
+/**
+ * Debugger Annotation class.
+ */
+public final class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
+    
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
+    
+    private final String type;
+    private final Breakpoint breakpoint;
+    
+    public DebuggerBreakpointAnnotation(final String type, final Annotatable annotatable,
+                                        final Breakpoint b) {
+        this.type = type;
+        this.breakpoint = b;
+        attach(annotatable);
     }
-
-    public String getName() {
-        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
+    
+    public String getAnnotationType() {
+        return type;
     }
-
-    @Override
-    public void setBooleanState(boolean value) {
-        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
-        if (value) {
-            bp.enable();
+    
+    public String getShortDescription() {
+        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
+        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
         } else {
-            bp.disable();
+            return null;
         }
-        super.setBooleanState(value);
+    }
+    
+    private static String getMessage(final String key) {
+        return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString(key);
     }
 
-    public HelpCtx getHelpCtx() {
-        return null;
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
+    
 }
