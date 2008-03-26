@@ -95,6 +95,20 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNotNull("rdoc found", platform.getRDoc());
     }
     
+    public void testFindIRB() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertNotNull("irb found", platform.getIRB());
+    }
+
+    public void testFindJIRB() throws Exception {
+        assertNotNull("jirb found", RubyPlatformManager.getDefaultPlatform().getIRB());
+    }
+
+    public void testFindIRBWithSuffix() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        assertNotNull("irb found", platform.getIRB());
+    }
+    
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
@@ -118,6 +132,13 @@ public class RubyPlatformTest extends RubyTestBase {
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
+    }
+    
+    public void testHasFastDebuggerInstalledExactness() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
+        installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
+        assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
     }
     
     public void testFireGemsChanged() throws Exception {

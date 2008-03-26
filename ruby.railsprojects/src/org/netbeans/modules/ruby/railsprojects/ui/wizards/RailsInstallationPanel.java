@@ -193,7 +193,7 @@ public class RailsInstallationPanel extends JPanel {
                         .add(railsButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(jrubyLabel)
                     .add(proxyButton)
                     .add(jrubySslLabel)

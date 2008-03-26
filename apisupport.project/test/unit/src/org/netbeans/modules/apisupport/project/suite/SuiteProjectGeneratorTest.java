@@ -72,7 +72,7 @@ public class SuiteProjectGeneratorTest extends TestBase {
     
     public void testCreateSuiteProject() throws Exception {
         File targetPrjDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(targetPrjDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(targetPrjDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);
@@ -87,7 +87,7 @@ public class SuiteProjectGeneratorTest extends TestBase {
     
     public void testSuiteProjectWithDotInName() throws Exception {
         File targetPrjDir = new File(getWorkDir(), "testSuite 1.0");
-        SuiteProjectGenerator.createSuiteProject(targetPrjDir, NbPlatform.PLATFORM_ID_DEFAULT);
+        SuiteProjectGenerator.createSuiteProject(targetPrjDir, NbPlatform.PLATFORM_ID_DEFAULT, false);
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);

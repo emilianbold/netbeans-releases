@@ -56,7 +56,8 @@ public class SimpleStatistics extends BaseStatistics<Integer> {
     
     public void print(PrintStream ps) {
 	int avg = (cnt == 0) ? 0 : sum / cnt;
-	ps.printf("%s %8d min    %8d max    %8d avg\n", text, min, max, avg);	// NOI18N
+	//ps.printf("%s %8d min    %8d max    %8d avg\n", text, min, max, avg);	// NOI18N
+        ps.printf("%s %8d min    %8d max    %8d avg    %8d cnt    %8d sum\n", text, min, max, avg, cnt, sum);	// NOI18N
 	if( values != null ) {
 	    printDistribution(ps);
 	}

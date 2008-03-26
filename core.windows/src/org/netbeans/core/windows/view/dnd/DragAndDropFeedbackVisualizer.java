@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Area;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.Tabbed;
@@ -79,6 +80,9 @@ public class DragAndDropFeedbackVisualizer {
         Dimension tabContentSize = source.getTopComponentAt(idx).getSize();
         tabContentSize.width--;
         tabContentSize.height--;
+        //#129900 - IllegalArgumentException
+        tabContentSize.width = Math.max( tabContentSize.width, 1 );
+        tabContentSize.height = Math.max( tabContentSize.height, 1 );
         
         Dimension size = new Dimension( tabContentSize );
         if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
@@ -122,12 +126,17 @@ public class DragAndDropFeedbackVisualizer {
 
         DragWindow tmp = createDragWindow( tabIndex );
         if( null != tmp ) {
-            dragOffset = e.getDragOrigin();
+            dragOffset = new Point( e.getDragOrigin() );
             if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
                 dragOffset.x -= tabRect.x;
+                int maxWidth = prefs.getInt(WinSysPrefs.DND_SMALLWINDOWS_WIDTH, 250);
+                if( e.getDragOrigin().x - tabRect.x > maxWidth ) {
+                    dragOffset.x = maxWidth - 20;
+                }
             }
-            //move the window of the visible screen area to avoid blinking
-            tmp.setLocation( e.getDragOrigin().x-dragOffset.x, e.getDragOrigin().y-dragOffset.y );
+            Point loc = new Point( e.getDragOrigin() );
+            SwingUtilities.convertPointToScreen(loc, source.getComponent());
+            tmp.setLocation( loc.x-dragOffset.x, loc.y-dragOffset.y );
             //let the JNA transparency stuff to kick in
             tmp.setVisible( true );
             //make drag window visible, i.e. move to proper location, 

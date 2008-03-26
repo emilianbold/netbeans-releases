@@ -84,11 +84,11 @@ public class VWPMeasureActions  {
         
         //suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
         
-        suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
-        suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
-        
-        suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject","CnB project with single opened page"));
-        suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
+//        suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
+//        suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
+//        
+//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject","CnB project with single opened page"));
+//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
         
         suite.addTest(new PageSwitchTest("testPageSwitch"));
         suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));

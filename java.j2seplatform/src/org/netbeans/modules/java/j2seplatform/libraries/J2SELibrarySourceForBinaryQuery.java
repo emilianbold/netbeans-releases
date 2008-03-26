@@ -52,7 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -65,16 +65,16 @@ import org.openide.util.WeakListeners;
  * Finds the locations of sources for various libraries.
  * @author Tomas Zezula
  */
-public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
+public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
-    private final Map<URL,SourceForBinaryQuery.Result> cache = new ConcurrentHashMap<URL,SourceForBinaryQuery.Result>();
+    private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new ConcurrentHashMap<URL,SourceForBinaryQueryImplementation2.Result>();
     private final Map<URL,URL> normalizedURLCache = new ConcurrentHashMap<URL,URL>();
 
     /** Default constructor for lookup. */
     public J2SELibrarySourceForBinaryQuery() {}
 
-    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
+    public SourceForBinaryQueryImplementation2.Result findSourceRoots2 (URL binaryRoot) {
+        SourceForBinaryQueryImplementation2.Result res = cache.get(binaryRoot);
         if (res != null) {
             return res;
         }
@@ -99,6 +99,10 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         return null;
     }
     
+    
+    public SourceForBinaryQuery.Result findSourceRoots (final URL binaryRoot) {
+        return this.findSourceRoots2(binaryRoot);
+    }
     
     private URL getNormalizedURL (URL url) {
         //URL is already nornalized, return it
@@ -137,7 +141,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     }
     
     
-    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
+    private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
         
         private Library lib;
         private URL entry;
@@ -187,6 +191,10 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 }
                 cs.fireChange();
             }
+        }
+
+        public boolean preferSources() {
+            return false;
         }
         
     }

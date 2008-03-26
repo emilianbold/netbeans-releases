@@ -593,7 +593,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         topPanel.add(upFolderButton);
         topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
-        System.out.println( "Go home action " +getGoHomeAction().getValue( Action.SHORT_DESCRIPTION) );
         
         // no home on Win platform
         if (!Utilities.isWindows()) {

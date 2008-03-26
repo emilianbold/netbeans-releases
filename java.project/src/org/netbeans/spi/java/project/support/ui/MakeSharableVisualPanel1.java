@@ -122,7 +122,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
         String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
         helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
         if (loc == null) {
-            loc = ".." + File.separator + "libraries"; //NOI18N
+            loc = "." + File.separator + "lib"; //NOI18N
         } else {
             loc = loc.substring(0, loc.length() - SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME.length());
         }

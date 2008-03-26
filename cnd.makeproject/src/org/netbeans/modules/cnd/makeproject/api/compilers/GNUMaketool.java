@@ -48,4 +48,11 @@ public class GNUMaketool extends Tool {
     public GNUMaketool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(flavor, MakeTool, name, displayName, path); // NOI18N
     }
+    
+    @Override
+    public GNUMaketool createCopy() {
+        GNUMaketool copy = new GNUMaketool(getFlavor(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
 }

@@ -57,7 +57,7 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
+import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
@@ -111,14 +111,14 @@ public final class ClasspathInfo {
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath);
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
-	if ( srcCp != null && !GlobalSourcePath.getDefault().isLibrary(srcCp)) {
-            this.srcClassPath = srcCp;
-            this.outputClassPath = CacheClassPath.forSourcePath (this.srcClassPath);
-	    this.srcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.srcClassPath));
-	}
-        else {
+        if (srcCp == null) {
             this.srcClassPath = ClassPathSupport.createClassPath(new URL[0]);
             this.outputClassPath = ClassPathSupport.createClassPath(new URL[0]);
+        }
+        else {
+            this.srcClassPath = SourcePath.create(srcCp, backgroundCompilation);
+            this.outputClassPath = CacheClassPath.forSourcePath (this.srcClassPath);
+	    this.srcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.srcClassPath));
         }
         this.backgroundCompilation = backgroundCompilation;
         this.ignoreExcludes = ignoreExcludes;

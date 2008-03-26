@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -72,7 +71,8 @@ import org.netbeans.modules.asm.core.assistance.RegisterChooserListener;
 import org.netbeans.modules.asm.core.assistance.RegisterChooser;
 import org.netbeans.modules.asm.model.AsmModel;
 import org.netbeans.modules.asm.model.lang.Register;
-import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValuesProvider;
+//import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
+//import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValue;
 
 public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
                                           RegisterUsageAccesor, PropertyChangeListener {
@@ -102,15 +102,13 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         
         jRegisterTable.setDefaultRenderer(Register.class, new RegisterCellRendererForRegister());
         jRegisterTable.setDefaultRenderer(RegisterStatus.class, new RegisterCellRendererForUsage());
-        jRegisterTable.setDefaultRenderer(RegisterValuesProvider.RegisterValue.class, new RegisterCellRendererForValue());
+        //jRegisterTable.setDefaultRenderer(RegisterValue.class, new RegisterCellRendererForValue());
                
         jRegisterTable.setModel(tmpModel); 
         
         jRegisterTable.getSelectionModel().addListSelectionListener(new RegisterSelectionListener());
-        
-        RegisterValuesProvider.getInstance().addPropertyChangeListener(this);
     }
-
+    
     @Override
     public String getName() {
         return NbBundle.getMessage(RegisterUsagesPanel.class, "CTL_REGS_NAME");
@@ -122,6 +120,14 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     
     public JPanel getPanel() {
         return this;
+    }
+    
+    public void opened() {
+        //GdbContext.getInstance().addPropertyChangeListener(GdbContext.PROP_REGISTERS, this);
+    }
+    
+    public void closed() {
+        //GdbContext.getInstance().removePropertyChangeListener(GdbContext.PROP_REGISTERS, this);
     }
     
     public void setDocument(DataObject dob) {
@@ -143,14 +149,15 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
     }
     
     private void updateRegisterValues() {
-        Map<String, RegisterValuesProvider.RegisterValue> res = RegisterValuesProvider.getInstance().getRegisterValues();
+        /*Collection<RegisterValue> res =
+                (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
         if (res == null) {
             clearValues();
         } else {
-            for (String name : res.keySet()) {
-                setRegisterValue(name, res.get(name));
+            for (RegisterValue value : res) {
+                setRegisterValue(value.getName(), value);
             }
-        }
+        }*/
     }
     
     private static boolean isTheSame(Register reg, String name) {
@@ -165,7 +172,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
         return false;
     }
     
-    public void setRegisterValue(String reg, RegisterValuesProvider.RegisterValue value) {
+    /*private void setRegisterValue(String reg, RegisterValue value) {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             Register curReg = (Register)tableModel.getValueAt(i, RegisterTableModel.COLUMN_REGISTER);
             if (isTheSame(curReg, reg)) {
@@ -173,7 +180,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
                 return;
             }
         }
-    }
+    }*/
     
     public void setRegisterStatus(Register reg, RegisterStatus status) {        
         for (int i = 0; i < tableModel.getRowCount(); i++) {
@@ -277,15 +284,15 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
 	}	                                             
     }
     
-    private static class RegisterCellRendererForValue extends DefaultTableCellRenderer.UIResource {
+    /*private static class RegisterCellRendererForValue extends DefaultTableCellRenderer.UIResource {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setEnabled(table == null || table.isEnabled());
             
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             
-            if (value instanceof RegisterValuesProvider.RegisterValue) {
-                RegisterValuesProvider.RegisterValue rval = (RegisterValuesProvider.RegisterValue) value;
+            if (value instanceof RegisterValue) {
+                RegisterValue rval = (RegisterValue) value;
                 if (rval.isModified()) {
                     super.setFont(getFont().deriveFont(Font.BOLD));
                 }
@@ -293,7 +300,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
             
             return this;
         }
-    }
+    }*/
     
     private static class RegisterTableModel extends DefaultTableModel {
         public static final int COLUMN_REGISTER=0;
@@ -309,7 +316,7 @@ public class RegisterUsagesPanel extends JPanel implements NavigatorTab,
                         NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_USAGE"),
                         NbBundle.getMessage(RegisterUsagesPanel.class, "LBL_REGUSAGE_VALUE")});
              
-             types = new Class [] { Register.class, RegisterStatus.class, RegisterValuesProvider.RegisterValue.class };
+             types = new Class [] { Register.class, RegisterStatus.class, String.class/*RegisterValue.class*/ };
          }
                
         @Override

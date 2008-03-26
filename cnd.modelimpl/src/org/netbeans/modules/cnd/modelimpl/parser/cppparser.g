@@ -1769,7 +1769,7 @@ restrict_declarator
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
-		(LITERAL___restrict!)? direct_declarator
+		(literal_restrict!)? direct_declarator
         ;
 
 direct_declarator
@@ -2169,7 +2169,7 @@ type_name // aka type_id
  */
 abstract_declarator
 	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (LITERAL___restrict!)? abstract_declarator 
+		ptr_operator (literal_restrict!)? abstract_declarator 
 	|	
 		LPAREN abstract_declarator RPAREN
 		(abstract_declarator_suffix)*
@@ -3423,3 +3423,6 @@ literal_volatile : LITERAL_volatile|LITERAL___volatile|LITERAL___volatile__;
 
 protected
 literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict;

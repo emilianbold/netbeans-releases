@@ -48,6 +48,7 @@ import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
+import org.netbeans.modules.java.editor.options.JavaOptions;
 
 /**
 * Nb settings for Java.
@@ -79,6 +80,8 @@ public class NbJavaSettingsInitializer extends Settings.AbstractInitializer {
 
             settingsMap.put(ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
                             ExtSettingsDefaults.defaultShowDeprecatedMembers);
+            settingsMap.put(JavaOptions.GUESS_METHOD_ARGUMENTS_PROP,
+                            Boolean.TRUE);
             
             settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, JavaSettingsDefaults.defaultCodeFoldingEnable);
             settingsMap.put(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD, JavaSettingsDefaults.defaultCodeFoldingCollapseMethod);

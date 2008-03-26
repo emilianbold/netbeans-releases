@@ -26,7 +26,6 @@ Microsystems, Inc. All Rights Reserved.
                 exclude-result-prefixes="xalan p ejb projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4" />
     <xsl:template match="/">
-        
         <xsl:comment>
             <![CDATA[
 *** GENERATED FROM project.xml - DO NOT EDIT  ***
@@ -45,50 +44,51 @@ is divided into following sections:
 
 ]]>
         </xsl:comment>
-        
         <xsl:variable name="name" select="/p:project/p:configuration/ejb:data/ejb:name" />
         <project name="{$name}-impl">
-            <xsl:attribute name="default">build</xsl:attribute>
-            <xsl:attribute name="basedir">..</xsl:attribute>
-            
+            <xsl:attribute name="default">build
+            <echo> Before setting attribute basedir </echo>
+            </xsl:attribute>
+            <xsl:attribute name="basedir">..
+            </xsl:attribute>
             <target name="default">
-                <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
-                <xsl:attribute name="description">Build whole project.</xsl:attribute>
+                <xsl:attribute name="depends">dist,javadoc
+                </xsl:attribute>
+                <xsl:attribute name="description">Build whole project.
+                </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 ====================== 
                 INITIALIZATION SECTION
                 ======================
             </xsl:comment>
-            
             <target name="pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
             <target name="init-private">
-                <xsl:attribute name="depends">pre-init</xsl:attribute>
+                <xsl:attribute name="depends">pre-init
+                </xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
             </target>
-            
             <target name="init-userdir">
-                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private
+                </xsl:attribute>
                 <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
             </target>
-            
             <target name="init-user">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir
+                </xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
-            
             <target name="init-project">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user
+                </xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
-            
             <target name="do-init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project
+                </xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:explicit-platform">
                     <!--Setting java and javac default location -->
                     <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
@@ -103,68 +103,92 @@ is divided into following sections:
                         platform.javac=$${platforms.${platform.active}.javac}
                     </echo>
                     <property file="${{file.tmp}}"/>
-                    
                     <delete file="${{file.tmp}}"/>
-                    <fail unless="platform.home">Must set platform.home</fail>
-                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
-                    <fail unless="platform.java">Must set platform.java</fail>
-                    <fail unless="platform.javac">Must set platform.javac</fail>
+                    <fail unless="platform.home">Must set platform.home
+                    </fail>
+                    <fail unless="platform.bootcp">Must set platform.bootcp
+                    </fail>
+                    <fail unless="platform.java">Must set platform.java
+                    </fail>
+                    <fail unless="platform.javac">Must set platform.javac
+                    </fail>
                 </xsl:if>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
                 <property name="default.javac.target" value="1.4"/>
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:use-manifest">
-                    <fail unless="manifest.file">Must set manifest.file</fail>
+                    <fail unless="manifest.file">Must set manifest.file
+                    </fail>
                 </xsl:if>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
             </target>
-            
             <target name="post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
             <target name="init-check">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init
+                </xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-                <fail unless="src.dir">Must set src.dir</fail>
-                <fail unless="build.dir">Must set build.dir</fail>
-                <fail unless="build.generated.dir">Must set build.generated.dir</fail>
-                <fail unless="dist.dir">Must set dist.dir</fail>
-                <fail unless="build.classes.dir">Must set build.classes.dir</fail>
-                <fail unless="dist.jar">Must set dist.jar</fail>
+                <fail unless="src.dir">Must set src.dir
+                </fail>
+                <fail unless="build.dir">Must set build.dir
+                </fail>
+                <fail unless="build.generated.dir">Must set build.generated.dir
+                </fail>
+                <fail unless="dist.dir">Must set dist.dir
+                </fail>
+                <fail unless="build.classes.dir">Must set build.classes.dir
+                </fail>
+                <fail unless="dist.jar">Must set dist.jar
+                </fail>
             </target>
-            
-            <target name="init-taskdefs">
+            <target name="init-taskdefs" depends="pre-init">
+                <fail unless="netbeans.home">netbeans.home not found !!!
+                </fail>
+                <path id="ant.task.classpath">
+                    <fileset dir="${{module.install.dir}}">
+                        <include name="org-netbeans-modules-etl-editor.jar"/>
+                        <include name="org-netbeans-modules-etl-project.jar"/>
+                    </fileset>
+                    <fileset dir="${{module.install.dir}}/ext/etlpro">
+                        <include name="org-netbeans-modules-etl-project-anttask.jar"/>
+                    </fileset>
+                    <fileset dir="${{o.n.soa.libs.wsdl4j.dir}}/modules">
+                        <include name="org-netbeans-soa-libs-wsdl4j.jar" />
+                    </fileset>
+                    <fileset dir="${{openide.filesystems.dir}}/core">
+                        <include name="org-openide-filesystems.jar" />
+                    </fileset>
+                    <fileset dir="${{openide.filesystems.dir}}/lib">
+                        <include name="org-openide-util.jar" />
+                    </fileset>
+                    <fileset dir="${{openide.filesystems.dir}}/modules">
+                        <include name="org-openide-text.jar" />
+                    </fileset>
+                    <fileset dir="${{openide.filesystems.dir}}/modules/">
+                        <include name="org-openide-loaders.jar"/>
+                        <include name="org-openide-nodes.jar"/>
+                        <include name="org-openide-util.jar"/>
+                        <include name="org-openide-text.jar"/>
+                        <include name="org-openide-windows.jar"/>
+                        <include name="org-openide-awt.jar"/>
+                        <include name="org-openide-dialogs.jar"/>
+                    </fileset>
+                    <fileset dir="${{dbapi.dir}}/modules/">
+                        <include name="org-netbeans-modules-db.jar"/>
+                    </fileset>
+                </path>
                 <taskdef name="generate-wsdl" classname="org.netbeans.modules.etl.project.anttasks.GenerateWSDL">
-                    <classpath>
-                        <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
-                        <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../soa2/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
-                    </classpath>
-                </taskdef>   
-                <taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">
-                    <classpath>
-                        <fileset dir="${{module.install.dir}}"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etlpro"><include name="*.jar" /></fileset>
-                        <fileset dir="${{module.install.dir}}/ext/etl"><include name="*.jar" /></fileset>                                                
-                        <fileset dir="${{module.install.dir}}/ext"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../ide9/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/modules"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/core"><include name="*.jar" /></fileset>
-                        <fileset dir="${{netbeans.home}}/../platform8/lib"><include name="*.jar" /></fileset>
-                    </classpath>
+                    <classpath refid="ant.task.classpath"/>
+                </taskdef>
+                <taskdef name="bulk-loader" classname="org.netbeans.modules.etl.project.anttasks.ETLBulkLoader">
+                    <classpath refid="ant.task.classpath"/>
                 </taskdef>
             </target>
             <target name="init">
@@ -173,18 +197,15 @@ is divided into following sections:
                     pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-taskdefs
                 </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 =================== 
                 COMPILATION SECTION
                 ===================
             </xsl:comment>
-            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'" />
                 <xsl:with-param name="type" select="'jar'" />
             </xsl:call-template>
-            
             <xsl:if
                 test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <target name="wscompile-init">
@@ -196,13 +217,11 @@ is divided into following sections:
                     <mkdir dir="${{build.generated.dir}}/wssrc" />
                 </target>
             </xsl:if>
-            
             <xsl:for-each
                 select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
                 <xsl:variable name="wsname">
                     <xsl:value-of select="ejb:web-service-name" />
                 </xsl:variable>
-                
                 <target name="{$wsname}_wscompile"
                         depends="wscompile-init">
                     <wscompile server="true" fork="true" keep="true"
@@ -215,13 +234,11 @@ is divided into following sections:
                     </wscompile>
                 </target>
             </xsl:for-each>
-            
             <xsl:for-each
                 select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
                 <xsl:variable name="wsclientname">
                     <xsl:value-of select="ejb:web-service-client-name" />
                 </xsl:variable>
-                
                 <target name="{$wsclientname}_client_wscompile"
                         depends="wscompile-init">
                     <copy
@@ -245,14 +262,12 @@ is divided into following sections:
                     </wscompile>
                 </target>
             </xsl:for-each>
-            
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">
                     init,deps-jar
                 </xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}" />
             </target>
-            
             <target name="pre-compile">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -262,7 +277,6 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="library-inclusion-in-archive"
                     depends="compile">
                 <xsl:for-each select="//ejb:included-library">
@@ -278,7 +292,6 @@ is divided into following sections:
                     </unjar>
                 </xsl:for-each>
             </target>
-            
             <target name="library-inclusion-in-manifest"
                     depends="compile">
                 <xsl:for-each select="//ejb:included-library">
@@ -320,14 +333,14 @@ is divided into following sections:
                                     <xsl:value-of
                                         select="concat('${included.lib.', ., '}')" />
                                 </xsl:variable>
-                                <xsl:if test="position()>1">,</xsl:if>
+                                <xsl:if test="position()>1">,
+                                </xsl:if>
                                 <xsl:value-of select="$base.prop.name" />
                             </xsl:for-each>
                         </xsl:attribute>
                     </attribute>
                 </manifest>
             </target>
-            
             <target name="do-compile">
                 <xsl:attribute name="depends">
                     init,deps-jar,pre-pre-compile,pre-compile
@@ -344,7 +357,6 @@ is divided into following sections:
                     </delete>
                 </xsl:if>
             </target>
-            
             <target name="post-compile">
                 <xsl:if
                     test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
@@ -371,7 +383,6 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="compile">
                 <xsl:attribute name="depends">
                     init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile
@@ -380,7 +391,6 @@ is divided into following sections:
                     Compile project.
                 </xsl:attribute>
             </target>
-            
             <target name="pre-compile-single">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -390,7 +400,6 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="do-compile-single">
                 <xsl:attribute name="depends">
                     init,deps-jar,pre-pre-compile
@@ -406,7 +415,6 @@ is divided into following sections:
                     </customize>
                 </ejbproject:javac>
             </target>
-            
             <target name="post-compile-single">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -416,33 +424,28 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="compile-single">
                 <xsl:attribute name="depends">
                     init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single
                 </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 ==================== DIST BUILDING SECTION
                 ====================
             </xsl:comment>
             <target name="gen-wsdl">
-                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
                 <mkdir dir="${{build.dir}}" />
                 <generate-wsdl
                     srcDirectoryLocation="${{basedir}}/${{src.dir}}"
                     buildDirectoryLocation="${{basedir}}/${{build.dir}}" />
             </target>
-            <target name="gen-schema">      
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <!--echo message="SAMPLE" /--> 
-                <generate-schema/>      
-                <!--taskdef name="generate-schema" classname="org.netbeans.modules.etl.project.anttasks.EViewDesignTime">                        
-                </taskdef-->
-                <!--echo message="SAMPLE COMPLETED" /--> 
+            <target name="etl_bulkloader">
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
+                <bulk-loader/>
             </target>
-            
             <target name="pre-dist">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -456,19 +459,7 @@ is divided into following sections:
                     srcDirectoryLocation="${{basedir}}/${{src.dir}}"
                     buildDirectoryLocation="${{basedir}}/${{build.dir}}">
                 </generate-wsdl>  
-                <!--generate-schema/-->
-                <!--
-					<xslt in="${{basedir}}/${{build.dir}}/etlmap.xml" out="${{build.dir}}/portmap.xml"
-					style="${{basedir}}/nbproject/genPortmap.xsl">
-					<outputproperty name="method" value="xml"/>
-					<outputproperty name="standalone" value="yes"/>
-					<outputproperty name="encoding" value="UTF-8"/>
-					<outputproperty name="indent" value="yes"/>
-					</xslt>
-				-->
-
             </target>
-            
             <target name="dist_se">
                 <xsl:attribute name="depends">
                     init,pre-dist
@@ -486,13 +477,11 @@ is divided into following sections:
                     </fileset>
                 </jar>
             </target>
-            
             <target name="do-dist">
                 <xsl:attribute name="depends">
                     init,pre-dist,dist_se
                 </xsl:attribute>
             </target>
-            
             <target name="post-dist">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -502,7 +491,6 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="dist">
                 <xsl:attribute name="depends">
                     init,pre-dist,do-dist,post-dist
@@ -514,52 +502,21 @@ is divided into following sections:
                     Build distribution (JAR).
                 </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 ================= EXECUTION SECTION =================
             </xsl:comment>
             <target name="run">
-                <xsl:attribute name="depends">run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">run-deploy
+                </xsl:attribute>
                 <xsl:attribute name="description">
                     Deploy to server.
                 </xsl:attribute>
             </target>
-            
             <target name="init-deploy">
                 <property name="include.jar.manifest" value="" />
             </target>
-            
             <target name="run-deploy">
-                <!-- No more deploy action in subprojects
-					<xsl:attribute name="depends">init,init-deploy,compile,library-inclusion-in-archive</xsl:attribute>
-					
-					<generate-deployment-path
-					jarFileClasspath="${{module.install.dir}}/org-netbeans-modules-etl-project.jar"
-					privatePropertiesFileLocation="${{basedir}}/nbproject/private/private.properties"
-					netBeansUserPropertyValue="${{netbeans.user}}">
-					</generate-deployment-path>
-					
-					<exec dir="${{basedir}}" executable="${{com.sun.jbi.ui.devtool.appserver.instance.location}}/bin/asant.bat">
-					<arg value="-f"/>
-					<arg value="${{com.sun.jbi.ui.devtool.appserver.instance.location}}/bin/jbi_admin.xml"/>
-					<arg value="-Djbi.host=${{com.sun.jbi.ui.devtool.appserver.instance.hostName}}" />
-					<arg value="-Djbi.port=${{com.sun.jbi.management.JmxPort}}" />
-					<arg value="-Djbi.deploymentId=${{com.sun.jbi.ui.devtool.jbi.guid.assembly-unit}}" />
-					<arg value="undeploy"/>
-					</exec>
-					
-					
-					<exec dir="${{basedir}}" executable="${{com.sun.jbi.ui.devtool.appserver.instance.location}}/bin/asant.bat">
-					<arg value="-f"/>
-					<arg value="${{com.sun.jbi.ui.devtool.appserver.instance.location}}/bin/jbi_admin.xml"/>
-					<arg value="-Djbi.host=${{com.sun.jbi.ui.devtool.appserver.instance.hostName}}" />
-					<arg value="-Djbi.port=${{com.sun.jbi.management.JmxPort}}" />
-					<arg value="-Djbi.deploymentJar=${{basedir}}/${{dist.jar}}" />
-					<arg value="deploy"/>
-					</exec>
-				-->
             </target>
-            
             <xsl:comment>
                 ================= DEBUGGING SECTION =================
             </xsl:comment>
@@ -570,7 +527,8 @@ is divided into following sections:
                 <xsl:attribute name="depends">
                     init,compile
                 </xsl:attribute>
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home
+                </xsl:attribute>
                 <nbdeploy debugmode="true"
                           clientUrlPart="${{client.urlPart}}" />
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}"
@@ -589,36 +547,36 @@ is divided into following sections:
                     </xsl:if>
                 </nbjpdaconnect>
             </target>
-            
             <target name="pre-debug-fix">
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <fail unless="fix.includes">Must set fix.includes</fail>
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
+                <fail unless="fix.includes">Must set fix.includes
+                </fail>
                 <property name="javac.includes"
                           value="${{fix.includes}}.java" />
             </target>
-            
             <target name="do-debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home
+                </xsl:attribute>
                 <xsl:attribute name="depends">
                     init,pre-debug-fix,compile-single
                 </xsl:attribute>
                 <j2seproject:nbjpdareload
                     xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" />
             </target>
-            
             <target name="debug-fix">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home
+                </xsl:attribute>
                 <xsl:attribute name="depends">
                     init,pre-debug-fix,do-debug-fix
                 </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 =============== JAVADOC SECTION ===============
             </xsl:comment>
-            
             <target name="javadoc-build">
-                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}" />
                 <!-- XXX do an up-to-date check first -->
                 <javadoc destdir="${{dist.javadoc.dir}}"
@@ -644,9 +602,9 @@ is divided into following sections:
                     <fileset dir="${{src.dir}}" />
                 </javadoc>
             </target>
-            
             <target name="javadoc-browse">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home
+                </xsl:attribute>
                 <xsl:attribute name="unless">
                     no.javadoc.preview
                 </xsl:attribute>
@@ -655,7 +613,6 @@ is divided into following sections:
                 </xsl:attribute>
                 <nbbrowse file="${{dist.javadoc.dir}}/index.html" />
             </target>
-            
             <target name="javadoc">
                 <xsl:attribute name="depends">
                     init,javadoc-build,javadoc-browse
@@ -664,21 +621,18 @@ is divided into following sections:
                     Build Javadoc.
                 </xsl:attribute>
             </target>
-            
             <xsl:comment>
                 =============== CLEANUP SECTION ===============
             </xsl:comment>
-            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'" />
             </xsl:call-template>
-            
             <target name="do-clean">
-                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="depends">init
+                </xsl:attribute>
                 <delete dir="${{build.dir}}" />
                 <delete dir="${{dist.dir}}" />
             </target>
-            
             <target name="post-clean">
                 <xsl:comment>
                     Empty placeholder for easier customization.
@@ -688,7 +642,6 @@ is divided into following sections:
                     file.
                 </xsl:comment>
             </target>
-            
             <target name="clean">
                 <xsl:attribute name="depends">
                     init,deps-clean,do-clean,post-clean
@@ -715,7 +668,6 @@ is divided into following sections:
 			-Dorg.netbeans.modules.javahelp=0
 			
 		-->
-
     </xsl:template>
     
     <!---
@@ -730,7 +682,8 @@ is divided into following sections:
         <xsl:param name="targetname" />
         <xsl:param name="type" />
         <target name="{$targetname}">
-            <xsl:attribute name="depends">init</xsl:attribute>
+            <xsl:attribute name="depends">init
+            </xsl:attribute>
             <xsl:attribute name="unless">
                 ${no.dependencies}
             </xsl:attribute>
@@ -792,5 +745,5 @@ is divided into following sections:
             </xsl:for-each>
         </target>
     </xsl:template>
-    
 </xsl:stylesheet>
+

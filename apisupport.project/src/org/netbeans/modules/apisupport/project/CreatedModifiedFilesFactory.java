@@ -559,7 +559,7 @@ public final class CreatedModifiedFilesFactory {
             if (layer != null && layer.findResource(layerPath) != null) {
                 layerOp = new CreatedModifiedFiles.Operation() {
                     public void run() throws IOException {
-                        throw new IOException("cannot run"); // NOI18N
+                        throw new IOException("cannot overwrite " + layerPath); // NOI18N
                     }
                     public String[] getModifiedPaths() {
                         return new String[0];

@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.editor.reformat;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
@@ -53,8 +54,9 @@ class StackEntry {
     private CppTokenId importantKind;
     private boolean likeToFunction = false;
     private boolean likeToArrayInitialization = false;
-    private boolean likeToArrayInExpression = false;
     private String text;
+    private int indent;
+    private int selfIndent;
 
     StackEntry(ExtendedTokenSequence ts) {
         super();
@@ -101,6 +103,12 @@ class StackEntry {
                     case LPAREN: //("(", "separator"),
                     {
                         if (paren == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             likeToArrayInitialization = true;
                             return;
                         }
@@ -120,7 +128,14 @@ class StackEntry {
                     case EQ: //("=", "operator"),
                     {
                         if (paren == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             likeToArrayInitialization = true;
+                            likeToFunction = false;
                             return;
                         }
                         break;
@@ -128,6 +143,12 @@ class StackEntry {
                     case GT: //(">", "operator"),
                     {
                         if (paren == 0 && curly == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && prev.id() == OPERATOR) {
+                                likeToArrayInitialization = false;
+                                likeToFunction = true;
+                                return;
+                            }
                             triangle++;
                         }
                         break;
@@ -136,6 +157,12 @@ class StackEntry {
                     {
                         if (paren == 0 && curly == 0) {
                             if (triangle == 0) {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                                if (prev != null && prev.id() == OPERATOR) {
+                                    likeToArrayInitialization = false;
+                                    likeToFunction = true;
+                                    return;
+                                }
                                 // undefined
                                 return;
                             }
@@ -199,6 +226,22 @@ class StackEntry {
         }
     }
 
+    public int getIndent(){
+        return indent;
+    }
+
+    public void setIndent(int indent){
+        this.indent = indent;
+    }
+
+    public int getSelfIndent(){
+        return selfIndent;
+    }
+
+    public void setSelfIndent(int selfIndent){
+        this.selfIndent = selfIndent;
+    }
+    
     public int getIndex() {
         return index;
     }
@@ -229,14 +272,6 @@ class StackEntry {
 
     public void setLikeToArrayInitialization(boolean likeToArrayInitialization) {
         this.likeToArrayInitialization = likeToArrayInitialization;
-    }
-
-    public boolean isLikeToArrayInExpression() {
-        return likeToArrayInExpression;
-    }
-
-    public void setLikeToArrayInExpression(boolean likeToArrayInExpression) {
-        this.likeToArrayInExpression = likeToArrayInExpression;
     }
 
     @Override

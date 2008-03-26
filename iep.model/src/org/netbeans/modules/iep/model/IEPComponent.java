@@ -23,7 +23,9 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
 
@@ -58,4 +60,5 @@ public interface IEPComponent extends DocumentComponent<IEPComponent> {
     
     void removeChild(IEPComponent child);
     
+//    <T extends ReferenceableWSDLComponent> NamedComponentReference<T> createReferenceTo(T target, Class<T> type);
 }

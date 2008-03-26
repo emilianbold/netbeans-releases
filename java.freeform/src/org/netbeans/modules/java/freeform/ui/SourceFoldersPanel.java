@@ -448,8 +448,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         add(includesExcludesButton, gridBagConstraints);
         includesExcludesButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Name")); // NOI18N
         includesExcludesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Desc")); // NOI18N

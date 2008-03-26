@@ -49,6 +49,32 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
+    public static final String HTTP_SERVLET_REQUEST_CLASS = "javax.servlet.http.HttpServletRequest";
+    
+    public static final String HTTP_SERVLET_RESPONSE_CLASS = "javax.servlet.http.HttpServletResponse";
+    
+    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";
+    
+    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";
+    
+    public static final String CONTENT_TYPE = "Content-Type";
+    
+    public static final String PUT_POST_CONTENT = "content";
+    
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";
+    
+    public static final String HEADER_PARAMS = "headerParams"; // NOI18n
+    
+    public static final String QUERY_PARAMS = "queryParams"; // NOI18n
+    
+    public static final String PATH_PARAMS = "pathParams"; // NOI18n
+    
+    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
+            
+    public static final String SERVICE_AUTHENTICATOR = "Authenticator"; //NOI18N
+    
+    public static final String SERVICE_AUTHORIZATION_FRAME = "AuthorizationFrame"; //NOI18N
+    
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
    
     public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
@@ -59,7 +85,7 @@ public class Constants {
     
     public static final String PATH_ANNOTATION = "Path"; //NOI18N
     
-    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
+    public static final String URI_PARAM_ANNOTATION = "PathParam";       //NOI18N
     
     public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
     
@@ -77,7 +103,7 @@ public class Constants {
     
     public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
     
-    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
+    public static final String HTTP_CONTEXT_ANNOTATION = "Context";     //NOI18N
 
     public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
     
@@ -109,7 +135,7 @@ public class Constants {
     
     public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     
-    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.Context";    //NOI18N
     
     public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
@@ -162,6 +188,33 @@ public class Constants {
    
     public static final String JAVA_EXT = "java"; //NI18N
     
+    public enum DropFileType {
+        JAVA_CLIENT("javaClient", "System.out"), 
+        RESOURCE("resource", "System.out"),
+        SERVLET("servlet", "out"),
+        JSP("jsp", "out");
+        
+        private String prefix; 
+        private String printWriterType;
+        
+        DropFileType(String prefix, String printWriterType) {
+            this.prefix = prefix;
+            this.printWriterType = printWriterType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getPrintWriterType() {
+            return printWriterType;
+        }
+    }
+
     public enum MimeType {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N
@@ -225,17 +278,23 @@ public class Constants {
     }
     
     public enum SaasAuthenticationType {
-        PLAIN("plain"),
-        HTTP_BASIC("http-basic"), 
-        API_KEY("api-key"),
-        CUSTOM("custom"),
-        SIGNED_URL("singed-url"),
-        SESSION_KEY("session-key");
+        PLAIN("Plain", "plain"),
+        HTTP_BASIC("HttpBasic", "http-basic"), 
+        API_KEY("ApiKey", "api-key"),
+        CUSTOM("Custom", "custom"),
+        SIGNED_URL("SignedUrl", "signed-url"),
+        SESSION_KEY("SessionKey", "session-key");
         
+        private String classId;
         private String value;
         
-        SaasAuthenticationType(String value) {
+        SaasAuthenticationType(String classId, String value) {
+            this.classId = classId;
             this.value = value;
+        }
+        
+        public String getClassIdentifier() {
+            return classId;
         }
         
         public String value() {

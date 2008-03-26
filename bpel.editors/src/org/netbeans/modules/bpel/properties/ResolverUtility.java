@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.properties;
 
-import org.netbeans.modules.bpel.properties.Constants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -32,7 +31,7 @@ import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.bpel.project.ProjectConstants;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -158,14 +157,13 @@ public final class ResolverUtility {
         if (bpelFo == null) {
             return null;
         }
-        Sources sources = safeGetSources(safeGetProject(bpelModel));
+        Sources sources = safeGetSources(Utils.safeGetProject(bpelModel));
         if (sources == null) {
             return null;
         }
         
         String bpelFoPath = bpelFo.getPath();
-        SourceGroup[] sourceGroupArr = sources.getSourceGroups(
-                ProjectConstants.SOURCES_TYPE_BPELPRO);
+        SourceGroup[] sourceGroupArr = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
         for (SourceGroup srcGroup : sourceGroupArr) {
             String srcFolderName = srcGroup.getRootFolder().getPath();
             //
@@ -315,22 +313,10 @@ public final class ResolverUtility {
     
     /**
      * Returns the project Sources for the specified bpel process.
-     * Use the following line to access the SourceGroup array.
-     *  SourceGroup[] sourceGroup =
-     *  sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_BPELPRO);
      */
     public static Sources safeGetSources(Project project) {
         if (project != null) {
             return ProjectUtils.getSources(project);
-        } else {
-            return null;
-        }
-    }
-    
-    public static Project safeGetProject(BpelModel bpelModel) {
-        FileObject fo = Util.getFileObjectByModel(bpelModel);
-        if (fo != null && fo.isValid()) {
-            return FileOwnerQuery.getOwner(fo);
         } else {
             return null;
         }
@@ -354,8 +340,7 @@ public final class ResolverUtility {
         //
         Sources sources = safeGetSources(project);
         if (sources != null) {
-            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
-                    ProjectConstants.SOURCES_TYPE_BPELPRO);
+            SourceGroup[] sourceGroupArr = sources.getSourceGroups(Utils.SOURCES_TYPE_BPELPRO);
             //
             for (SourceGroup srcGroup : sourceGroupArr) {
                 String srcFolderName = srcGroup.getRootFolder().getPath();

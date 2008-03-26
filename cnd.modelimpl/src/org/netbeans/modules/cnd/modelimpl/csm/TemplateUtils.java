@@ -142,7 +142,17 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
-                    res.add(new TemplateParameterImpl(child.getFirstChild().getFirstChild().getText()));
+                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                        switch (paramChild.getType()) {
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                                AST typeName = paramChild.getFirstChild();
+                                if (typeName != null) {
+                                    res.add(new TemplateParameterImpl(typeName.getText()));
+                                }
+                                break;
+                        }
+                    }
                     break;
             }
         }

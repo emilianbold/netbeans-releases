@@ -7,17 +7,17 @@ Delete:  source : <TESTURL>/class-inheritance-ext.js
 
 Document 1
 Indexed:
-  base : expand;Ext.tree.AsyncTreeNode;expand|FUNCTION|deep,anim,callback;0;;;;
-  base : initcomponent;Ext.TabPanel;initComponent|FUNCTION|;0;;;;
-  base : monitorresize;Ext.TabPanel;monitorResize|PROPERTY|;0;;;;
-  base : reload;Ext.tree.AsyncTreeNode;reload|FUNCTION|callback;0;;;;
-  base : render;Ext.TabPanel;render|FUNCTION|;0;;;;
+  base : expand;Ext.tree.AsyncTreeNode;expand;|FUNCTION|;deep,anim,callback;0;;;void;
+  base : initcomponent;Ext.TabPanel;initComponent;|FUNCTION|;;0;;;void;
+  base : monitorresize;Ext.TabPanel;monitorResize;|PROPERTY|;;0;;;Boolean;
+  base : reload;Ext.tree.AsyncTreeNode;reload;|FUNCTION|;callback;0;;;void;
+  base : render;Ext.TabPanel;render;|FUNCTION|;;0;;;void;
   extend : ext.tabpanel;Ext.TabPanel;Ext.Panel
   extend : ext.tree.asynctreenode;Ext.tree.AsyncTreeNode;Ext.tree.TreeNode
-  fqn : ext.tabpanel.initcomponent;;Ext.TabPanel.initComponent|FUNCTION|;0;;;;
-  fqn : ext.tabpanel.monitorresize;;Ext.TabPanel.monitorResize|PROPERTY|;0;;;;
-  fqn : ext.tabpanel.render;;Ext.TabPanel.render|FUNCTION|;0;;;;
-  fqn : ext.tree.asynctreenode.expand;;Ext.tree.AsyncTreeNode.expand|FUNCTION|deep,anim,callback;0;;;;
-  fqn : ext.tree.asynctreenode.reload;;Ext.tree.AsyncTreeNode.reload|FUNCTION|callback;0;;;;
+  fqn : ext.tabpanel.initcomponent;;Ext.TabPanel.initComponent;|FUNCTION|;;0;;;void;
+  fqn : ext.tabpanel.monitorresize;;Ext.TabPanel.monitorResize;|PROPERTY|;;0;;;Boolean;
+  fqn : ext.tabpanel.render;;Ext.TabPanel.render;|FUNCTION|;;0;;;void;
+  fqn : ext.tree.asynctreenode.expand;;Ext.tree.AsyncTreeNode.expand;|FUNCTION|;deep,anim,callback;0;;;void;
+  fqn : ext.tree.asynctreenode.reload;;Ext.tree.AsyncTreeNode.reload;|FUNCTION|;callback;0;;;void;
 
 Not Indexed:

@@ -7,6 +7,9 @@ Axt.Template.prototype = {
      * object (i.e. {foo: 'bar'})
      * @param {Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)
      * @return {HTMLElement/Axt.Element} The new node or Alement
+     * @private
+     * @constructor
+     * @deprecated
      */
     insertBeeefore: function(el, values, returnElement){
         // Initial
@@ -14,6 +17,7 @@ Axt.Template.prototype = {
         values = /foo/;
         return this.doInsert('beforeBegin', el, values, returnElement);
     },
+    /** @ignore */
     usage: function() {
         mycall = insertBeeefore("", "", "");
         alert(mycall);

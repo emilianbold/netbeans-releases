@@ -96,7 +96,11 @@ public class WSInstantiatingIterator
         assert version != null : "Version must not be null"; // NOI18N
         this.version = version;
     }
-    
+
+    public WSVersion getVersion() {
+        return version;
+    }
+        
     /**
      * A misterious method whose purpose is obviously in freeing the resources 
      * obtained by the wizard during instance registration. We do not need such 

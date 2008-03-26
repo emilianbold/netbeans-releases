@@ -53,7 +53,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -78,6 +77,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -139,6 +139,10 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         }
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
         setValue("wsdl-url",client.getWsdlUrl());
+    }
+    
+    public WsdlModel getWsdlModel(){
+        return this.getWsdlModeler().getAndWaitForWsdlModel();
     }
     
     @Override
@@ -346,6 +350,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
                 ((JaxWsClientChildren)getChildren()).refreshKeys(false);
             } else {
+                wsdlFileObject= null;
                 ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
             }
         } else {
@@ -465,8 +470,12 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     FileObject getLocalWsdl() {
         if (wsdlFileObject==null) {
             FileObject localWsdlocalFolder = getJAXWSClientSupport().getLocalWsdlFolderForClient(client.getName(),false);
-            if (localWsdlocalFolder!=null)
-                wsdlFileObject=localWsdlocalFolder.getFileObject(client.getLocalWsdlFile());
+            if (localWsdlocalFolder!=null) {
+                String relativePath = client.getLocalWsdlFile();
+                if (relativePath != null) {
+                    wsdlFileObject=localWsdlocalFolder.getFileObject(relativePath);
+                }
+            }
         }
         return wsdlFileObject;
     }

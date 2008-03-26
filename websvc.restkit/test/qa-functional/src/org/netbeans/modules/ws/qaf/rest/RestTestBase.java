@@ -38,19 +38,11 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.PostMethodWebRequest;
-import com.meterware.httpunit.PutMethodWebRequest;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -73,7 +65,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.xml.sax.SAXException;
 
 /**
  * Base class for REST tests
@@ -81,13 +72,17 @@ import org.xml.sax.SAXException;
  */
 public abstract class RestTestBase extends WebServicesTestBase {
 
+    //don't try to (un)deploy REST apps on windows!!!
+    //see: https://jersey.dev.java.net/issues/show_bug.cgi?id=45
+    private static final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows"); //NOI18N
+    
+    
     private static final String HOSTNAME = "localhost"; //NOI18N
     private static final int PORT = resolveServerPort();
     private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver"; //NOI18N
     private static final String JDBC_URL = "jdbc:derby://localhost:1527/sample"; //NOI18N
     private static final String DB_USERNAME = "app"; //NOI18N
     private static final String DB_PASSWORD = "app"; //NOI18N
-    private WebConversation wc;
     private Connection connection;
 
     private static boolean CREATE_GOLDEN_FILES;
@@ -126,7 +121,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        wc = new WebConversation();
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(JDBC_URL, DB_USERNAME, DB_PASSWORD);
@@ -138,7 +132,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        wc = null;
         try {
             if (connection != null) {
                 connection.close();
@@ -206,81 +199,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
      */
     protected String getResourcesURL() {
         return getRestAppURL() + "/resources"; //NOI18N
-    }
-
-    /**
-     * Get instance of used <code>WebConversation</code>
-     *
-     * @return instance of <code>WebConversation</code>
-     */
-    protected WebConversation getWebConversation() {
-        return wc;
-    }
-
-    /**
-     * Run HTTP GET request on given <code>url</code> with given <code>mimeType</code>
-     *
-     * @param url where to send a request
-     * @param mimeType mime type to be used
-     * @return response of the request
-     * @throws java.net.MalformedURLException
-     * @throws java.io.IOException
-     * @throws org.xml.sax.SAXException
-     */
-    protected WebResponse doGet(String url, MimeType mimeType) throws MalformedURLException, IOException, SAXException {
-        WebRequest request = new GetMethodWebRequest(url);
-        request.setHeaderField("Accept", mimeType.toString()); //NOI18N
-        return getWebConversation().getResponse(request);
-    }
-
-    /**
-     * Run HTTP POST request on given <code>url</code> with given <code>mimeType</code>
-     *
-     * @param url where to send a request
-     * @param is InputStream containing data to be send within the request
-     * @param mimeType mime type to be used
-     * @return response of the request
-     * @throws java.net.MalformedURLException
-     * @throws java.io.IOException
-     * @throws org.xml.sax.SAXException
-     */
-    protected WebResponse doPost(String url, InputStream is, MimeType mimeType) throws MalformedURLException, IOException, SAXException {
-        PostMethodWebRequest request = new PostMethodWebRequest(url, is, mimeType.toString());
-        request.setHeaderField("Accept", mimeType.toString()); //NOI18N
-        return getWebConversation().getResponse(request);
-    }
-
-    /**
-     * Run HTTP PUT request on given <code>url</code> with given <code>mimeType</code>
-     *
-     * @param url where to send a request
-     * @param is InputStream containing data to be send within the request
-     * @param mimeType mime type to be used
-     * @return response of the request
-     * @throws java.net.MalformedURLException
-     * @throws java.io.IOException
-     * @throws org.xml.sax.SAXException
-     */
-    protected WebResponse doPut(String url, InputStream is, MimeType mimeType) throws MalformedURLException, IOException, SAXException {
-        WebRequest request = new PutMethodWebRequest(url, is, mimeType.toString());
-        request.setHeaderField("Accept", mimeType.toString()); //NOI18N
-        return getWebConversation().getResponse(request);
-    }
-
-    /**
-     * Run HTTP DELETE request on given <code>url</code> with given <code>mimeType</code>
-     *
-     * @param url where to send a request
-     * @param mimeType mime type to be used
-     * @return response of the request
-     * @throws java.net.MalformedURLException
-     * @throws java.io.IOException
-     * @throws org.xml.sax.SAXException
-     */
-    protected WebResponse doDelete(String url, MimeType mimeType) throws MalformedURLException, IOException, SAXException {
-        WebRequest request = new DeleteMethodWebRequest(url);
-        request.setHeaderField("Accept", mimeType.toString()); //NOI18N
-        return getWebConversation().getResponse(request);
     }
 
     /**
@@ -427,6 +345,20 @@ public abstract class RestTestBase extends WebServicesTestBase {
         assertTrue("Golden files generated.", false); //NOI18N
     }
 
+    @Override
+    protected void deployProject(String projectName) throws IOException {
+        if (!isWindows) {
+           super.deployProject(projectName);
+        }
+    }
+
+    @Override
+    protected void undeployProject(String projectName) throws IOException {
+        if (!isWindows) {
+            super.undeployProject(projectName);
+        }
+    }    
+    
     private static int resolveServerPort() {
         Integer i = Integer.getInteger("glassfish.server.port"); //NOI18N
         return i != null ? i.intValue() : 8080;

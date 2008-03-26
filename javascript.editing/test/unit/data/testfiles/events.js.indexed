@@ -7,31 +7,31 @@ Delete:  source : <TESTURL>/events.js
 
 Document 1
 Indexed:
-  base : bar;Foo;bar|FUNCTION|;0;;;;
-  base : foo;;Foo|DOCUMENTED|CONSTRUCTOR|;;0;18b;;;
-  base : foo;Foo;foo|PROPERTY|;0;;;;
-  base : jmaki;;Jmaki|DOCUMENTED|CONSTRUCTOR|;;0;120;;;
-  base : move;Spry.Effect;Move|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;;
-  base : mysubclass;;MySubClass|DOCUMENTED|CONSTRUCTOR|;element,fromPos,toPos,options;0;2c9;;;
-  base : mysubclass;;MySubClass|DOCUMENTED|PROPERTY|;0;2c9;;;
-  base : onsubmit;;onsubmit|FUNCTION|;0;;;;
-  base : onwhatever;Window;onwhatever|FUNCTION|STATIC|;;0;;;;
-  base : processcall;Jmaki;processCall|FUNCTION|;0;;;;
-  clz : Foo;89;;0;18b;;;
-  clz : Jmaki;89;;0;120;;;
-  clz : Move;99;element,fromPos,toPos,options;0;203;;;
-  clz : MySubClass;89;element,fromPos,toPos,options;0;2c9;;;
+  base : bar;Foo;bar;|FUNCTION|;;0;;;void;
+  base : foo;;Foo;|DOCUMENTED|CONSTRUCTOR|;;0;18b;;Foo;
+  base : foo;Foo;foo;|PROPERTY|;;0;;;Number;
+  base : jmaki;;Jmaki;|DOCUMENTED|CONSTRUCTOR|;;0;120;;Jmaki;
+  base : move;Spry.Effect;Move;|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;Spry.Effect.Move;
+  base : mysubclass;;MySubClass;|DOCUMENTED|CONSTRUCTOR|;element,fromPos,toPos,options;0;2c9;;MySubClass;
+  base : mysubclass;;MySubClass;|DOCUMENTED|PROPERTY|;;0;2c9;;;
+  base : onsubmit;;onsubmit;|FUNCTION|;;0;;;void;
+  base : onwhatever;Window;onwhatever;|FUNCTION|STATIC|;;0;;;void;
+  base : processcall;Jmaki;processCall;|FUNCTION|;;0;;;void;
+  clz : Foo;|DOCUMENTED|CONSTRUCTOR|;;0;18b;;Foo;
+  clz : Jmaki;|DOCUMENTED|CONSTRUCTOR|;;0;120;;Jmaki;
+  clz : Move;|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;Spry.Effect.Move;
+  clz : MySubClass;|DOCUMENTED|CONSTRUCTOR|;element,fromPos,toPos,options;0;2c9;;MySubClass;
   extend : mysubclass;MySubClass;MySuperClass
   extend : spry.effect.move;Spry.Effect.Move;Spry.Effect.Animator
-  fqn : foo.bar;;Foo.bar|FUNCTION|;0;;;;
-  fqn : foo.foo;;Foo.foo|PROPERTY|;0;;;;
-  fqn : foo;;Foo|DOCUMENTED|CONSTRUCTOR|;;0;18b;;;
-  fqn : jmaki.processcall;;Jmaki.processCall|FUNCTION|;0;;;;
-  fqn : jmaki;;Jmaki|DOCUMENTED|CONSTRUCTOR|;;0;120;;;
-  fqn : mysubclass;;MySubClass|DOCUMENTED|CONSTRUCTOR|;element,fromPos,toPos,options;0;2c9;;;
-  fqn : mysubclass;;MySubClass|DOCUMENTED|PROPERTY|;0;2c9;;;
-  fqn : onsubmit;;onsubmit|FUNCTION|;0;;;;
-  fqn : spry.effect.move;;Spry.Effect.Move|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;;
-  fqn : window.onwhatever;;Window.onwhatever|FUNCTION|STATIC|;;0;;;;
+  fqn : foo.bar;;Foo.bar;|FUNCTION|;;0;;;void;
+  fqn : foo.foo;;Foo.foo;|PROPERTY|;;0;;;Number;
+  fqn : foo;;Foo;|DOCUMENTED|CONSTRUCTOR|;;0;18b;;Foo;
+  fqn : jmaki.processcall;;Jmaki.processCall;|FUNCTION|;;0;;;void;
+  fqn : jmaki;;Jmaki;|DOCUMENTED|CONSTRUCTOR|;;0;120;;Jmaki;
+  fqn : mysubclass;;MySubClass;|DOCUMENTED|CONSTRUCTOR|;element,fromPos,toPos,options;0;2c9;;MySubClass;
+  fqn : mysubclass;;MySubClass;|DOCUMENTED|PROPERTY|;;0;2c9;;;
+  fqn : onsubmit;;onsubmit;|FUNCTION|;;0;;;void;
+  fqn : spry.effect.move;;Spry.Effect.Move;|DOCUMENTED|CONSTRUCTOR|STATIC|;element,fromPos,toPos,options;0;203;;Spry.Effect.Move;
+  fqn : window.onwhatever;;Window.onwhatever;|FUNCTION|STATIC|;;0;;;void;
 
 Not Indexed:

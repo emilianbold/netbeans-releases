@@ -40,6 +40,7 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.util.Utilities;
 
 /**
@@ -47,28 +48,50 @@ import org.openide.util.Utilities;
  * 
  * @author David Van Couvering
  */
-public class WindowsStandalone50Installation extends AbstractStandaloneInstallation {
+public class WindowsStandalone50Installation implements Installation {
     private static final String DEFAULT_BASE_PATH = 
-            "C:\\Program Files\\MySQL\\MySQL Server 5.0";
+            "C:/Program Files/MySQL/MySQL Server 5.0";
     
     private static final WindowsStandalone50Installation DEFAULT = new
             WindowsStandalone50Installation(DEFAULT_BASE_PATH);
     
+    private final String basePath;
+        
     public static WindowsStandalone50Installation getDefault() {
         return DEFAULT;
     }
 
-    private WindowsStandalone50Installation(String basePath) {
-        super(basePath);
+    protected WindowsStandalone50Installation(String basePath) {
+        this.basePath = basePath;
     }
     
-    @Override
-    protected Installation createInstallation(String basePath) {
-        return new WindowsStandalone50Installation(basePath);
+    public String[] getStartCommand() {
+        return new String[] { basePath + "/bin/mysqld-nt.exe", ""}; // NOI18N
     }
 
-    public boolean isValidOnCurrentOS() {
-        return Utilities.isWindows();
+    public String[] getStopCommand() {
+        return new String[] { basePath + "/bin/mysql.exe", "-u root stop"}; // NOI18N
+    }
+    
+    public boolean isInstalled() {
+        return Utilities.isWindows() && 
+                Utils.isValidExecutable(getStartCommand()[0]);
+    }
+
+    public boolean isStackInstall() {
+        return false;
+    }
+
+    public String[] getAdminCommand() {
+        return new String[] { "", ""};
+    }
+
+    public String getDefaultPort() {
+        return "3306"; // NOI8N
+    }
+
+    public Installation getInstallation(String command, Command cmdType) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

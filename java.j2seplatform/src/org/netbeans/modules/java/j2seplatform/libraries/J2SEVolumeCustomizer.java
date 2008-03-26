@@ -46,7 +46,6 @@ import java.awt.Component;
 import java.beans.Customizer;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -68,7 +67,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
@@ -328,10 +326,12 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         File baseFolder = null;
+        File libFolder = null;
         if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
             baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
+            libFolder = new File(baseFolder, impl.getName());
         }
-        FileChooser chooser = new FileChooser(baseFolder, baseFolder);
+        FileChooser chooser = new FileChooser(baseFolder, libFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
@@ -543,6 +543,12 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     broken = true;
                     if ("file".equals(uri.getScheme())) { //NOI18N
                         displayName = LibrariesSupport.convertURIToFilePath(uri);
+                        if (displayName.startsWith("${")) { // NOI18N
+                            // if URL starts with an Ant property name assume it is OK.
+                            // url cannot be resolved because customizer does not have necessary context.
+                            // for example in case of hand written library entry ${MAVEN_REPO}/struts/struts.jar
+                            broken = false;
+                        }
                     } else {
                         displayName = uri.toString();
                     }

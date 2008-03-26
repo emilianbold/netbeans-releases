@@ -33,7 +33,6 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.openide.util.Exceptions;
@@ -56,22 +55,22 @@ import org.openide.windows.WindowManager;
 public class RefreshMetadataAction extends GraphAction {
 
     private static final URL synchroniseImgUrl = RefreshMetadataAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(RefreshMetadataAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(RefreshMetadataAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+    public String nbBundle1 = mLoc.t("BUND024: Refresh Metadata");
     public RefreshMetadataAction() {
         //action name
-        String nbBundle1 = mLoc.t("PRSR001: Refresh Metadata");
-        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
+        
+        this.putValue(Action.NAME,nbBundle1.substring(15));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(synchroniseImgUrl));
 
         //action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Refresh Metadata (Cntl-R)");
-        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
-        // Acceleratot Cntl-R
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('R', InputEvent.CTRL_MASK ));
+        String nbBundle2 = mLoc.t("BUND025: Refresh Metadata (Shift-R)");
+        this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
+        // Acceleratot Shift-R
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('R', InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**
@@ -83,11 +82,10 @@ public class RefreshMetadataAction extends GraphAction {
         IGraphView graphView = (IGraphView) ev.getSource();
         CollabSQLUIModel model = (CollabSQLUIModel) graphView.getGraphModel();
         List infoList = new ArrayList();
-        String nbBundle3 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
-        String dlgMsg = Localizer.parse(nbBundle3);
+        String nbBundle3 = mLoc.t("BUND026: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = nbBundle3.substring(15);
+        String dlgTitle = nbBundle1.substring(15);
         
-        String nbBundle4 = mLoc.t("PRSR001: Refresh Metadata");
-        String dlgTitle = Localizer.parse(nbBundle4);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
         if (JOptionPane.OK_OPTION == response) {
         Iterator targetTables = model.getSQLDefinition().getTargetTables().iterator();

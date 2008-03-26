@@ -35,7 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 
 /**
@@ -47,9 +47,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     DocumentListener {
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
-    String nbBundle20 = mLoc.t("PRSR001: new");
-    String nbBundle28 = mLoc.t("PRSR001: Browse...");
-    private final String NEW_FILE_PREFIX = Localizer.parse(nbBundle20); // NOI18N
+    String nbBundle20 = mLoc.t("BUND089: new");
+    String nbBundle28 = mLoc.t("BUND090: Browse...");
+    private final String NEW_FILE_PREFIX = nbBundle20.substring(15); // NOI18N
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
     private Project project;
     private String expectedExtension;
@@ -73,7 +73,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private javax.swing.JTextField projectTextField;
     private javax.swing.JSeparator targetSeparator;
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SimpleTargetChooserPanelGUI.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SimpleTargetChooserPanelGUI.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates new form SimpleTargetChooserGUI
@@ -103,9 +103,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         locationComboBox.addActionListener(this);
         documentNameTextField.getDocument().addDocumentListener(this);
         folderTextField.getDocument().addDocumentListener(this);
-        String nbBundle1 = mLoc.t("PRSR001: Name and Location");
+        String nbBundle1 = mLoc.t("BUND088: Name and Location");
         setName(
-           Localizer.parse(nbBundle1)
+           nbBundle1.substring(15)
         ); // NOI18N
     }
 
@@ -172,55 +172,55 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
             documentNameTextField.selectAll();
         }
-        String nbBundle2 = mLoc.t("PRSR001: Folder Name:");
+        String nbBundle2 = mLoc.t("BUND092: Folder Name:");
         if (isFolder) {
             jLabel3.setText(
-               Localizer.parse(nbBundle2)
+               nbBundle2.substring(15)
             ); // NOI18N
-            String nbBundle3 = mLoc.t("PRSR001: N");
+            String nbBundle3 = mLoc.t("BUND093: N");
             jLabel3.setDisplayedMnemonic(
-              Localizer.parse(nbBundle3).charAt(0)
+              nbBundle3.substring(15).charAt(0)
             ); // NOI18N
-            String nbBundle4 = mLoc.t("PRSR001: Parent Folder:");
+            String nbBundle4 = mLoc.t("BUND094: Parent Folder:");
             jLabel2.setText(
-              Localizer.parse(nbBundle4)
+              nbBundle4.substring(15)
             ); // NOI18N
-            String nbBundle5 = mLoc.t("PRSR001: r");
+            String nbBundle5 = mLoc.t("BUND095: r");
             jLabel2.setDisplayedMnemonic(
-               Localizer.parse(nbBundle5).charAt(0)
+               nbBundle5.substring(15).charAt(0)
             ); // NOI18N
-            String nbBundle6 = mLoc.t("PRSR001: Created Folder:");
+            String nbBundle6 = mLoc.t("BUND096: Created Folder:");
             jLabel4.setText(
-               Localizer.parse(nbBundle6)
+               nbBundle6.substring(15)
             ); // NOI18N
-            String nbBundle7 = mLoc.t("PRSR001: C");
+            String nbBundle7 = mLoc.t("BUND097: C");
             jLabel4.setDisplayedMnemonic(
-                Localizer.parse(nbBundle7).charAt(0)
+                nbBundle7.substring(15).charAt(0)
             ); // NOI18N
         } else {
-            String nbBundle8 = mLoc.t("PRSR001: File Name:");
+            String nbBundle8 = mLoc.t("BUND098: File Name:");
             jLabel3.setText(
-              Localizer.parse(nbBundle8)
+              nbBundle8.substring(15)
             ); // NOI18N
-            String nbBundle9 = mLoc.t("PRSR001: Folder:");
+            String nbBundle9 = mLoc.t("BUND099: Folder:");
             jLabel2.setText(
-              Localizer.parse(nbBundle9)
+              nbBundle9.substring(15)
             ); // NOI18N
-            String nbBundle10 = mLoc.t("PRSR001: Created File:");
+            String nbBundle10 = mLoc.t("BUND100: Created File:");
             jLabel4.setText(
-               Localizer.parse(nbBundle10)
+               nbBundle10.substring(15)
             ); // NOI18N
-            String nbBundle11 = mLoc.t("PRSR001: N");
+            String nbBundle11 = mLoc.t("BUND093: N");
             jLabel3.setDisplayedMnemonic(
-                Localizer.parse(nbBundle11).charAt(0)
+                nbBundle11.substring(15).charAt(0)
             ); // NOI18N
-            String nbBundle12 = mLoc.t("PRSR001: l");
+            String nbBundle12 = mLoc.t("BUND102: l");
             jLabel2.setDisplayedMnemonic(
-              Localizer.parse(nbBundle12).charAt(0)
+              nbBundle12.substring(15).charAt(0)
             ); // NOI18N
-            String nbBundle13 = mLoc.t("PRSR001: C");
+            String nbBundle13 = mLoc.t("BUND097: C");
             jLabel4.setDisplayedMnemonic(
-             Localizer.parse(nbBundle13).charAt(0)
+             nbBundle13.substring(15).charAt(0)
             ); // NOI18N
         }
     }
@@ -324,8 +324,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         jLabel2 = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
-        browseButton.setMnemonic(Localizer.parse(nbBundle28).charAt(0));
-        browseButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle28));
+        browseButton.setMnemonic(nbBundle28.substring(15).charAt(0));
+        browseButton.getAccessibleContext().setAccessibleName(nbBundle28.substring(15));
         jLabel4 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
@@ -333,20 +333,20 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         setLayout(new java.awt.GridBagLayout());
         
-        String nbBundle14 = mLoc.t("PRSR001: N/A");
+        String nbBundle14 = mLoc.t("BUND051: N/A");
         getAccessibleContext().setAccessibleDescription(
-           Localizer.parse(nbBundle14)
+           nbBundle14.substring(15)
         );
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        String nbBundle15 = mLoc.t("PRSR001: N");
+        String nbBundle15 = mLoc.t("BUND093: N");
         jLabel3.setDisplayedMnemonic(
-            Localizer.parse(nbBundle15).charAt(0)
+            nbBundle15.substring(15).charAt(0)
         );
         jLabel3.setLabelFor(documentNameTextField);
-        String nbBundle16 = mLoc.t("PRSR001: File Name:");
+        String nbBundle16 = mLoc.t("BUND098: File Name:");
         jLabel3.setText(
-           Localizer.parse(nbBundle16)
+           nbBundle16.substring(15)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -358,9 +358,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
-        String nbBundle17 = mLoc.t("PRSR001: N/A");
         documentNameTextField.getAccessibleContext().setAccessibleDescription(
-           Localizer.parse(nbBundle17)
+            nbBundle14.substring(15)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -369,13 +368,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
-        String nbBundle18 = mLoc.t("PRSR001: P");
+        String nbBundle18 = mLoc.t("BUND107: P");
         jLabel1.setDisplayedMnemonic(
-            Localizer.parse(nbBundle18).charAt(0)
+            nbBundle18.substring(15).charAt(0)
         );
-        String nbBundle19 = mLoc.t("PRSR001: Project:");
+        String nbBundle19 = mLoc.t("BUND108: Project:");
         jLabel1.setText(
-          Localizer.parse(nbBundle19)
+          nbBundle19.substring(15)
         );
         jLabel1.setLabelFor(projectTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -389,19 +388,18 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
-        String nbBundle20 = mLoc.t("PRSR001: N/A");
         projectTextField.getAccessibleContext().setAccessibleDescription(
-          Localizer.parse(nbBundle20)
+           nbBundle14.substring(15)
         );
 
-        String nbBundle21 = mLoc.t("PRSR001: t");
+        String nbBundle21 = mLoc.t("BUND500: t");
         locationLabel.setDisplayedMnemonic(
-           Localizer.parse(nbBundle21).charAt(0)
+           nbBundle21.substring(15).charAt(0)
         );
         locationLabel.setLabelFor(locationComboBox);
-        String nbBundle22 = mLoc.t("PRSR001: Location:");
+        String nbBundle22 = mLoc.t("BUND109: Location:");
         locationLabel.setText(
-           Localizer.parse(nbBundle22)
+           nbBundle22.substring(15)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -415,19 +413,18 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(locationComboBox, gridBagConstraints);
-        String nbBundle23 = mLoc.t("PRSR001: N/A");
         locationComboBox.getAccessibleContext().setAccessibleDescription(
-            Localizer.parse(nbBundle23)
+          nbBundle14.substring(15)
         );
 
-        String nbBundle24 = mLoc.t("PRSR001: r");
+        String nbBundle24 = mLoc.t("BUND095: r");
         jLabel2.setDisplayedMnemonic(
-           Localizer.parse(nbBundle24).charAt(0)
+           nbBundle24.substring(15).charAt(0)
         );
         jLabel2.setLabelFor(folderTextField);
-        String nbBundle25 = mLoc.t("PRSR001: Folder:");
+        String nbBundle25 = mLoc.t("BUND099: Folder:");
         jLabel2.setText(
-           Localizer.parse(nbBundle25)
+           nbBundle25.substring(15)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -442,36 +439,34 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
-        String nbBundle26 = mLoc.t("PRSR001: N/A");
         folderTextField.getAccessibleContext().setAccessibleDescription(
-          Localizer.parse(nbBundle26)
+          nbBundle14.substring(15)
         );
 
-        String nbBundle27 = mLoc.t("PRSR001: w");
+        String nbBundle27 = mLoc.t("BUND112: w");
         browseButton.setMnemonic(
-            Localizer.parse(nbBundle27).charAt(0)
+            nbBundle27.substring(15).charAt(0)
         );
 
         browseButton.setText(
-           Localizer.parse(nbBundle28)
+           nbBundle28.substring(15)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
-        String nbBundle29 = mLoc.t("PRSR001: N/A");
         browseButton.getAccessibleContext().setAccessibleDescription(
-          Localizer.parse(nbBundle29)
+          nbBundle14.substring(15)
         );
 
-        String nbBundle30= mLoc.t("PRSR001: C");
+        String nbBundle30= mLoc.t("BUND097: C");
         jLabel4.setDisplayedMnemonic(
-           Localizer.parse(nbBundle30).charAt(0)
+           nbBundle30.substring(15).charAt(0)
         );
-        String nbBundle31= mLoc.t("PRSR001: Created File:");
+        String nbBundle31= mLoc.t("BUND100: Created File:");
         jLabel4.setText(
-            Localizer.parse(nbBundle31)
+           nbBundle31.substring(15)
         );
         jLabel4.setLabelFor(fileTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -486,9 +481,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
-        String nbBundle32= mLoc.t("PRSR001: N/A");
         fileTextField.getAccessibleContext().setAccessibleDescription(
-           Localizer.parse(nbBundle32)
+        nbBundle14.substring(15)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -640,10 +634,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 if (projectDisplayName.equals(groupDisplayName)) {
                     setText(groupDisplayName);
                 } else {
-                    String nbBundle33 = mLoc.t("PRSR001: {0} [{1}]",groupDisplayName,projectDisplayName);
+                    String nbBundle33 = mLoc.t("BUND115: {0} [{1}]",groupDisplayName,projectDisplayName);
                     setText(
                         MessageFormat.format(
-                            Localizer.parse(nbBundle33), // NOI18N
+                            nbBundle33.substring(15), // NOI18N
                             new Object[] {groupDisplayName, projectDisplayName}
                         )
                     );

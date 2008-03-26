@@ -66,7 +66,7 @@ import org.openide.util.datatransfer.PasteType;
  * @author Jan Jancura, Maros Sandor
  */
 public class FixedWatchesManager implements TreeModelFilter, 
-NodeActionsProviderFilter, ExtendedNodeModelFilter {
+NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             
     public static final String FIXED_WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/FixedWatch.gif";
@@ -116,7 +116,8 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
                     return false;
                 }
                 String type = v.getType ();
-                return "boolean".equals(type) ||
+                return "".equals(type)        ||
+                        "boolean".equals(type)||
                         "byte".equals (type)  || 
                         "char".equals (type)  || 
                         "short".equals (type) ||
@@ -362,6 +363,22 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter {
         if (fixedWatches.containsKey (node))
             return FIXED_WATCH;
         return original.getIconBaseWithExtension (node);
+    }
+
+    public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        return original.getValueAt(node, columnID);
+    }
+
+    public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
+        if (fixedWatches.containsKey(node)) {
+            return true;
+        } else {
+            return original.isReadOnly(node, columnID);
+        }
+    }
+
+    public void setValueAt(TableModel original, Object node, String columnID, Object value) throws UnknownTypeException {
+        original.setValueAt(node, columnID, value);
     }
 
 }

@@ -736,7 +736,7 @@ public class DatabaseConnection implements DBConnection {
     public void selectInExplorer() {
         String nodeName = null;
         try {
-            nodeName = findConnectionNodeInfo(getName()).getNode().getName();
+            nodeName = findConnectionNodeInfo(getName()).getName();
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
             return;

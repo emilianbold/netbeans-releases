@@ -50,9 +50,9 @@
                api-doc="http://groups.google.com/group/twitter-development-talk/web/api-documentation"
                url="org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
 
-    <description>Twitter Service</description>
+    <description>What Are You Doing Service</description>
     
-    <display-name>TwitterService</display-name>
+    <display-name>What Are You Doing Service</display-name>
 
     <saas-metadata>
 
@@ -67,6 +67,7 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="getPublicTimeline" 
             href="#twitter.getPublicTimeline"/>
@@ -75,5 +76,6 @@
         <method name="sendDirectMessage" 
             href="#twitter.sendDirectMessage"/>
     </methods>
-
+    -->
+    
 </saas-services>

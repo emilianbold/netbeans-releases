@@ -280,7 +280,9 @@ public class Registry implements PropertyContainer {
         }
         
         applyRegistryFilters();
-        changeStatuses();
+	if (System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
+            changeStatuses();
+	}
         
         LogManager.logExit("... product registry initialization complete");
     }
@@ -1041,7 +1043,12 @@ public class Registry implements PropertyContainer {
                         parentNode.addChild(product);
                         loadRegistryComponents(product, child, registryType);
                     } else {
-                        loadRegistryComponents(existing.get(0), child, registryType);
+                        final RegistryNode existingNode = existing.get(0);
+                        if(!existingNode.getParent().getUid().equals(parentNode.getUid())){                            
+                            existingNode.getParent().removeChild(existingNode);                                                       
+                            parentNode.addChild(existingNode);                                                                             
+                        }                                                
+                        loadRegistryComponents(existingNode, child, registryType);
                     }
                 }
                 

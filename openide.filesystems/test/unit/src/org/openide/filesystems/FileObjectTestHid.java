@@ -410,16 +410,9 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         FileObject fold = getTestFolder1(root);
         final FileObject fo1 = getTestFile1(fold);
-
-        try {
-            firstThreadImpl1(fo1, deadlockInWrite);
-            firstThreadImpl2(fo1, deadlockInWrite);            
-        } catch (IOException iex) {
-            fsAssert(
-                    "expected move will success on writable FS",
-                    fs.isReadOnly() || fo1.isReadOnly()
-            );
-        }
+        if (fs.isReadOnly() || fo1.isReadOnly()) return;
+        firstThreadImpl1(fo1, deadlockInWrite);
+        firstThreadImpl2(fo1, deadlockInWrite);
     }
 
     private static void firstThreadImpl1(final FileObject fo1, final boolean deadlockInWrite) throws IOException, InterruptedException {
@@ -1612,7 +1605,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }                
     }
 
-    public void testDelete2() throws IOException {
+    public void testDelete2() throws Exception {
         checkSetUp();
         
         FileObject folder = getTestFolder1 (root);
@@ -1637,14 +1630,20 @@ public class FileObjectTestHid extends TestBaseHid {
             
     }
 
-    public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) {        
+    public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) throws InterruptedException {        
         final List l = new ArrayList();
         folder.addFileChangeListener(new FileChangeAdapter(){
             public void fileFolderCreated(FileEvent fe) {
                 l.add(fe.getFile());
+                synchronized(l) {
+                    l.notifyAll();
+                }
             }                
         });
         FileObject child = folder.getFileObject(childName);
+        synchronized(l) {
+            l.wait(1000);
+        }
         if (l.size() == 0) {
             assertNull(child);        
         } else {

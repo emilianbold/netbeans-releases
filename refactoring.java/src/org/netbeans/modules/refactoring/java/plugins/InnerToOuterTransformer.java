@@ -266,7 +266,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                 rewrite(memberSelect, m);
             } else {
-                problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(PushDownTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+                problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+                isThisReferenceToOuter();
             }
         }
         

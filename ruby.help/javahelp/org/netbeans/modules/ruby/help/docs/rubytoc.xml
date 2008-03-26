@@ -13,7 +13,7 @@
 		<tocitem text="Working With NetBeans Ruby" target="nbruby_ruby_quickref" />
 		<tocitem text="Ruby Editor Shortcut Keys and Code Templates" target="nbruby_editor_shortcuts_codetemplates" />
 		<tocitem text="Using Database Servers With JRuby" target="nbruby_usedatabase" />
-		<tocitem text="Setting the Ruby Interpreter" target="nbruby_settingrubyinterpreter" />
 		<tocitem text="Using Interactive Ruby (IRB)" target="nbruby_usingirb" />
+		<tocitem text="Ruby Platform Manager" target="org.netbeans.modules.ruby.platform.RubyPlatformCustomizer" />
 	</tocitem>
 </toc>

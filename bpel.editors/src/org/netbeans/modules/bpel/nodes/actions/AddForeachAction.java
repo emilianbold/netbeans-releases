@@ -24,6 +24,9 @@ import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
+import org.netbeans.modules.bpel.model.api.ForEach;
+import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 
 /**
  *
@@ -51,7 +54,17 @@ public class AddForeachAction extends AddPaletteActivityAction {
     }
 
     protected ExtendableActivity getPaletteActivity(BpelModel model) {
-        return model.getBuilder().createForEach();
+        ForEach fe = model.getBuilder().createForEach();
+        fe.setParallel(TBoolean.NO);
+        try {
+            fe.setCounterName(fe.getName() + "Counter"); // NOI18N
+        } catch (VetoException ex) {
+            // Somebody does not like this counter name 
+            // or property is not supported or something else.
+            // Anyway we unable to determine cause of problem, 
+            // so will ignore this exception.            
+        }
+        return fe;        
     }
 
 }

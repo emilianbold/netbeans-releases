@@ -49,6 +49,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,7 +139,7 @@ public class ServerInstance implements Node.Cookie {
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
-    ArrayList<DatabaseModel> databases = new ArrayList<DatabaseModel>();
+    HashMap<String, DatabaseModel> databases = new HashMap<String, DatabaseModel>();
 
     public static synchronized ServerInstance getDefault() {
         if ( DEFAULT == null ) {
@@ -266,7 +267,8 @@ public class ServerInstance implements Node.Cookie {
 
 
     public String getHost() {
-        return OPTIONS.getHost();
+        return Utils.isEmpty(OPTIONS.getHost()) ?  
+            MySQLOptions.getDefaultHost() : OPTIONS.getHost();
     }
 
     public void setHost(String host) {
@@ -383,23 +385,32 @@ public class ServerInstance implements Node.Cookie {
     }
     
     private synchronized void updateDisplayName() {
-        State state = getState();
+        String label;
         if ( state == State.CONNECTED ) {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerDisplayName"));
+            label = "LBL_ServerDisplayName";
         } else if ( state == State.DISCONNECTED ) {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class,
-                    "LBL_ServerNotConnectedDisplayName"));
+            label = "LBL_ServerNotConnectedDisplayName";
         } else {
-            setDisplayName(NbBundle.getMessage(ServerInstance.class, 
-                    "LBL_ServerConnectingDisplayName"));
+            label = "LBL_ServerConnectingDisplayName";
         }
+        setDisplayName(NbBundle.getMessage(ServerInstance.class,
+                label, getHostPort(), getUser()));
     }
     
     public String getShortDescription() {
         return NbBundle.getMessage(ServerInstance.class,
-                "LBL_ServerDisplayName");
+                "LBL_ServerShortDescription", getHostPort(), getUser());
     }
+    
+    private String getHostPort() {
+        String port = getPort();
+        if ( Utils.isEmpty(port)) {
+            port = "";
+        } else {
+            port = ":" + port;
+        }
+        return getHost() + port;
+   }
     
     public String getURL() {
         return DatabaseUtils.getURL(getHost(), getPort());
@@ -437,14 +448,15 @@ public class ServerInstance implements Node.Cookie {
     public void refreshDatabaseList() throws DatabaseException {        
         try {
             synchronized(this) {
-                databases = new ArrayList<DatabaseModel>();
+                databases = new HashMap<String, DatabaseModel>();
                 if ( isConnected() ) {        
                     ResultSet rs = adminConn.getConnection()
                             .prepareStatement(GET_DATABASES_SQL)
                             .executeQuery();
 
                     while ( rs.next() ) {
-                        databases.add(new DatabaseModel(this, rs.getString(1)));
+                        String dbname = rs.getString(1);
+                        databases.put(dbname, new DatabaseModel(this, dbname));
                     }
                 }
             }
@@ -470,7 +482,7 @@ public class ServerInstance implements Node.Cookie {
             refreshDatabaseList();
         }
         
-        return databases;
+        return databases.values();
     }
         
     /**
@@ -492,13 +504,13 @@ public class ServerInstance implements Node.Cookie {
     
     public synchronized void disconnect() {
         adminConn.disconnect();
+        setState(State.DISCONNECTED);
         
         try {
             this.refreshDatabaseList();
         } catch ( DatabaseException dbe ) {
             LOGGER.log(Level.FINE, null, dbe);
         }
-        setState(State.DISCONNECTED);
     }
     
     /**
@@ -561,6 +573,9 @@ public class ServerInstance implements Node.Cookie {
                         LOGGER.log(Level.INFO, message);
                         progress.finish();
                     }
+                 } catch ( Throwable t ) {
+                     LOGGER.log(Level.INFO, null, t);
+                     progress.finish();
                  }
              };
          });
@@ -597,8 +612,8 @@ public class ServerInstance implements Node.Cookie {
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
         refreshDatabaseList();
-        
-        return getDatabases().contains(dbname);
+
+        return databases.containsKey(dbname);
     }
     
     public void createDatabase(String dbname) throws DatabaseException {
@@ -803,11 +818,11 @@ public class ServerInstance implements Node.Cookie {
             String outputLabel) throws DatabaseException {
         
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
-            // TODO - find a way to run .app files.  This feels like a hack
-            String[] pieces = command.split("/"); // NOI18N
-            String base = pieces[pieces.length - 1];
-            base = base.replace(".app", ""); // NOI18N
-            command = command + "/Contents/MacOS/" + base; // NOI18N
+            // The command is actually the first argument, with /usr/bin/open
+            // as the actual command.  Put the .app file path in quotes to 
+            // deal with spaces in the path.
+            args = "\"" + command + "\" " + args; // NOI18N
+            command = "/usr/bin/open"; // NOI18N     
         }
         try {
             NbProcessDescriptor desc = new NbProcessDescriptor(command, args);

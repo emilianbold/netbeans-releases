@@ -184,26 +184,6 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertEquals("ejb path", "otherPath/testEA-ejb.jar", app.getModule(0).getEjb());
     }
     
-    public void testSetACPrivateProperties() throws Exception { // #81964
-        
-        
-        // #102486 - test broken for long time; commenting out
-        if (true) return;
-        
-        
-        File earDirF = new File(getWorkDir(), "testEA-2");
-        String name = "Test EnterpriseApplication";
-        String j2eeLevel = J2eeModule.JAVA_EE_5;
-        String acName = "testEA-ac";
-        NewEarProjectWizardIteratorTest.generateEARProject(earDirF, name, j2eeLevel,
-                serverID, null, null, acName, null, null, null);
-        EarProject earProject = (EarProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(earDirF));
-        earProject.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH).delete();
-        EarProjectTest.openProject(earProject);
-        assertNotNull("private properties successfully regenerated", earProject.getAntProjectHelper().getProperties(
-                AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(EarProjectProperties.APPCLIENT_WA_COPY_CLIENT_JAR_FROM));
-    }
-    
     public static void putProperty(EarProject p, String key, String value) throws IOException {
         EditableProperties projectProperties = p.getUpdateHelper().getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         projectProperties.setProperty(key, value);

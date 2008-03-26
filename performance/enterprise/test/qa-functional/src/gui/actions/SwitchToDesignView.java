@@ -73,29 +73,31 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
     
     protected void initialize() {
         log(":: initialize");
-        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
-    }
-        
-    public void prepare() {
-        log(":: prepare");
         Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
         schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
-        schemaComponentOperator.getSchemaButton().pushNoBlock();
+        schemaComponentOperator.getSchemaButton().push();        
+
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;        
+    }
+        
+    public void prepare() {
+        log(":: prepare");
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().push();
         
-        return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
+        return schemaComponentOperator;
     }
     
     public void close() {
         log("::close");
-        ((XMLSchemaComponentOperator)testedComponentOperator).close();
+        if (schemaComponentOperator != null) {
+            schemaComponentOperator.getSchemaButton().push();
+        }
     }
     
     public static void main(String[] args) {

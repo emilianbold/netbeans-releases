@@ -57,7 +57,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**

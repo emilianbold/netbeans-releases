@@ -81,21 +81,27 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
         return checkProjectLicense(all);
     }
     
-    private static Map<String, ? extends Object> checkProjectLicense(Map<String, Object> m) {
+    static Map<String, ? extends Object> checkProjectLicense(Map<String, Object> m) {
         Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
-        Map<String, Object> newMap = null;
         if (prjAttrObj instanceof Map) {
-            Map prjAttrs = (Map) prjAttrObj;
-            if (prjAttrs.get(ATTR_LICENSE) != null) {
-                return m;
+            @SuppressWarnings("unchecked")
+            Map<String, Object> prjAttrs = (Map<String, Object>) prjAttrObj;
+            if (prjAttrs.get(ATTR_LICENSE) == null) {
+                Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);
+                m.put(ATTR_PROJECT, newPrjAttrs);
+                newPrjAttrs.put(ATTR_LICENSE, "default"); // NOI18N
             }
-        } else if (prjAttrObj != null) {
             return m;
-        } else {
-            newMap = new HashMap<String, Object>();
         }
-        newMap.put(ATTR_PROJECT, Collections.<String, String>singletonMap(ATTR_LICENSE, "default")); // NOI18N
-        return newMap;
+        if (prjAttrObj != null) {
+            // What can we do?
+            return m;
+        }
+        Map<String, String> licenseMap = Collections.singletonMap(ATTR_LICENSE, "default"); // NOI18N
+        if (m != null) {
+            m.put(ATTR_PROJECT, licenseMap); // NOI18N
+            return m;
+        }
+        return Collections.singletonMap(ATTR_PROJECT, licenseMap);
     }
-    
 }

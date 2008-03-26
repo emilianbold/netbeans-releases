@@ -166,8 +166,10 @@ public class OptionsPanel extends JPanel {
         JComponent component = category.getComponent();                
         category.update(controllerListener, false);
         final Dimension size = component.getSize();
-        pOptions.add(component, category.getCategoryName());
-        cLayout.show(pOptions, category.getCategoryName());
+        if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
+            pOptions.add(component, category.getCategoryName());
+            cLayout.show(pOptions, category.getCategoryName());
+        }
         checkSize (size);
         /*if (CategoryModel.getInstance().getCurrent() != null) {
             ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();

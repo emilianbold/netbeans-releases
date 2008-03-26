@@ -43,6 +43,7 @@ import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
@@ -67,11 +68,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/products/portletcontainer/wizard.xml"; // NOI18N
     
-    private static final String GLASSFISH_UID =
-            "glassfish"; // NOI18N
-    private static final String APPSERVER_UID =
-            "sjsas"; // NOI18N
-    
     private static final String PC_INSTALLER =
             "portlet-container-configurator.jar"; // NOI18N
     
@@ -90,7 +86,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(APPSERVER_UID);
+                getProduct().getDependencies(Requirement.class);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -138,12 +134,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public void uninstall(final Progress progress) throws UninstallationException {
+        progress.setPercentage(Progress.COMPLETE);
     }
     
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }
     
+    @Override
     public boolean registerInSystem() {
         return false;
     }

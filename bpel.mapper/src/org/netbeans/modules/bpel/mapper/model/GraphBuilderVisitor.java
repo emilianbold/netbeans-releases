@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -245,7 +246,9 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
     }
 
     protected void connectToLeftTree(List<TreeItemFinder> finderList) {
-        TreePath sourceTreePath = mLeftTreeModel.findFirstNode(finderList);
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(mLeftTreeModel);
+        TreePath sourceTreePath = fProcessor.findFirstNode(finderList);
+        // TreePath sourceTreePath = mLeftTreeModel.findFirstNode(finderList);
         if (sourceTreePath != null) {
             TreeSourcePin sourcePin = new TreeSourcePin(sourceTreePath);
             //

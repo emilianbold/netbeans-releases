@@ -50,7 +50,7 @@ public class ProcessBorder extends BorderElement {
         
         // draw background
         Rectangle2D headerRectangle = new Rectangle2D.Float(shape.x, shape.y, 
-                shape.width, 32);
+                shape.width, HEADER_HEIGHT);
         g2.setPaint(BACKGROUND);
         g2.fill(shape);
         g2.setPaint(new TexturePaint(GRADIENT_TEXTURE, headerRectangle));
@@ -64,13 +64,13 @@ public class ProcessBorder extends BorderElement {
         g2.setStroke(STROKE.createStroke(g2));
         g2.draw(shape);
         float x = shape.x;
-        float y = shape.y + 32;
+        float y = shape.y + HEADER_HEIGHT;
         g2.draw(new Line2D.Float(x, y, x + shape.width, y));
         
         if (isPaintText()) {
             g2.setPaint(getTextColor());
-            drawCenteredString(g2, getText(), getCenterX(), getY() + 16, 
-                    getWidth() - 8); 
+            drawCenteredString(g2, getText(), getCenterX(), 
+                    getY() + HEADER_HEIGHT / 2, getWidth() - 8); 
         }
     }
     
@@ -78,7 +78,7 @@ public class ProcessBorder extends BorderElement {
     public void paintThumbnail(Graphics2D g2) {
         FShape shape = this.shape;
         Rectangle2D headerRectangle = new Rectangle2D.Float(shape.x, shape.y, 
-                shape.width, 32);
+                shape.width, HEADER_HEIGHT);
 
         g2.setPaint(BACKGROUND);
         g2.fill(shape);
@@ -93,13 +93,14 @@ public class ProcessBorder extends BorderElement {
         
         g2.draw(shape);
         float x = shape.x;
-        float y = shape.y + 32;
+        float y = shape.y + HEADER_HEIGHT;
         g2.draw(new Line2D.Float(x, y, x + shape.width, y));
     }
     
     
-    public static final FShape SHAPE = new FRectangle(72 + 16 + 16, 48 + 16);
-    public static final FInsets INSETS = new FInsets(48, 16, 16, 16);
+    public static final int HEADER_HEIGHT = 24;
+    public static final FShape SHAPE = new FRectangle(40 + 12 + 12, HEADER_HEIGHT + 16 + 16);
+    public static final FInsets INSETS = new FInsets(16 + HEADER_HEIGHT, 12, 16, 12);
 
     public static Paint BACKGROUND = new Color(0xFFFFFF);
     private static FStroke STROKE = new FStroke(1);

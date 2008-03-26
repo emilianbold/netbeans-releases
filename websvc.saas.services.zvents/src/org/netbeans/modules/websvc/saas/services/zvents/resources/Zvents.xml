@@ -47,12 +47,12 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://www.zvents.com/howto/api/APIOverview.htm"
+               api-doc="http://corporate.zvents.com/developers/documentation.html"
                url="org/netbeans/modules/websvc/saas/services/zvents/resources/ZventsWadl.xml">
 
     <description>Zvents Service</description>
     
-    <display-name>Zvents</display-name>
+    <display-name>Event Search Service</display-name>
 
     <saas-metadata>
 
@@ -67,8 +67,10 @@
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="searchGet" href="#zvents.searchGet"/>
     </methods>
-
+    -->
+    
 </saas-services>

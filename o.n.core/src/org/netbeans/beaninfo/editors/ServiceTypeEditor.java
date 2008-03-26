@@ -122,7 +122,18 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         Enumeration ee = registry.services (clazz);
         while (ee.hasMoreElements()) {
             ServiceType e = (ServiceType) ee.nextElement();
-            names.add(e.getName());
+            BeanDescriptor bd = null;
+            
+            try {
+                BeanInfo bi = Introspector.getBeanInfo(e.getClass());
+                bd = bi.getBeanDescriptor();
+            } catch (IntrospectionException ie) {
+                //ignore
+            }
+            
+            if (bd == null || !bd.isHidden()) {
+                names.add(e.getName());
+            }
         }
         names.toArray(tags = new String[names.size()]);
     }

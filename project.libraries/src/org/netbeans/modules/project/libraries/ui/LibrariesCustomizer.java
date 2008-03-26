@@ -109,12 +109,15 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     
     private void expandTree() {
         // get first library node
-        Node[] n = getExplorerManager().getRootContext().getChildren().getNodes()[0].getChildren().getNodes();
-        if (n.length != 0) {
-            try {
-                getExplorerManager().setSelectedNodes(new Node[]{n[0]});
-            } catch (PropertyVetoException ex) {
-                // OK to ignore - it is just selection initialization
+        Node[] n1 = getExplorerManager().getRootContext().getChildren().getNodes();
+        if (n1.length != 0) { //#130730 in case there are no LibraryTypeProviders in LibraryTypeRegistry.getDefault().getLibraryTypeProviders()
+            Node[] n = n1[0].getChildren().getNodes();
+            if (n.length != 0) {
+                try {
+                    getExplorerManager().setSelectedNodes(new Node[]{n[0]});
+                } catch (PropertyVetoException ex) {
+                    // OK to ignore - it is just selection initialization
+                }
             }
         }
     }
@@ -707,11 +710,13 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             this.area = area;
         }
 
+        @Override
         public void addNotify () {
             // Could also filter by area (would then need to listen to model too)
             this.setKeys(LibraryTypeRegistry.getDefault().getLibraryTypeProviders());
         }
         
+        @Override
         public void removeNotify () {
             this.setKeys(new LibraryTypeProvider[0]);
         }

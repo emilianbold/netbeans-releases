@@ -1,0 +1,15 @@
+root:null<0,68>
+-a:TAG<0,68>
+--a:OPEN_TAG<0,3>
+--b:TAG<8,32>
+---b:OPEN_TAG<8,11>
+---c:UNMATCHED_TAG<20,23>
+----c:OPEN_TAG<20,23>
+---b:ENDTAG<28,32>
+--c:UNMATCHED_TAG<41,45>
+---c:ENDTAG<41,45>
+--d:TAG<50,54>
+---d:OPEN_TAG<50,54>
+--e:TAG<59,63>
+---e:OPEN_TAG<59,63>
+--a:ENDTAG<64,68>

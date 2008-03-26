@@ -44,6 +44,7 @@ import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +77,10 @@ public final class DocPositions {
     
     // context that should be descarded after resolve()
     private Env env;
+    
+    // test properties
+    static boolean isTestMode = false;
+    String tokenSequenceDump;
 
     public static final DocPositions get(CompilationInfo javac, Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
         return DocPositionsManager.get(javac).get(javadoc, jdts);
@@ -119,6 +124,15 @@ public final class DocPositions {
         resolve();
         return blockSectionStart;
     }
+    
+    List<? extends Tag> getTags() {
+        resolve();
+        List<Tag> tags = new ArrayList<Tag>(sortedTags.size());
+        for (TagEntry entry : sortedTags) {
+            tags.add(entry.tag());
+        }
+        return tags;
+    }
 
     private void resolve() {
         if (this.positions != null) {
@@ -137,13 +151,15 @@ public final class DocPositions {
             Token<JavadocTokenId> token = null;
             Token<JavadocTokenId> prev = null;
             jdts.moveStart();
+            boolean isFirstLineWS = true;
             while (jdts.moveNext()) {
                 prev = token;
                 token = jdts.token();
                 if (token.id() == JavadocTokenId.TAG) {
-                    if (prev == null) {
-                        // fist token in javadoc
+                    if (prev == null || isFirstLineWS) {
+                        // first token or first after white spaces in javadoc
                         // block tag
+                        isFirstLineWS = false;
                         addBlockTag(token, jdts.offset());
                     } else if (prev.id() == JavadocTokenId.OTHER_TEXT) {
                         if (JavadocCompletionUtils.isLineBreak(prev)/*BR*/) {
@@ -156,6 +172,11 @@ public final class DocPositions {
                             token = jdts.token();
                         }
                     }
+                } else if (isFirstLineWS && token.id() == JavadocTokenId.OTHER_TEXT && JavadocCompletionUtils.isWhiteSpace(token)) {
+                    // javadoc content starts with white spaces on first line behind /**
+                    // continue
+                } else {
+                    isFirstLineWS = false;
                 }
             }
             if (token != null) {
@@ -169,7 +190,16 @@ public final class DocPositions {
             } else {
                 blockSectionStart = 0;
             }
+        } catch (Throwable t) {
+            // for debug purposes
+            tokenSequenceDump = String.valueOf(env.jdts);
+            throw new IllegalStateException(
+                    '\'' + env.javadoc.getRawCommentText() + "'\n" + this.toString(), // NOI18N
+                    t);
         } finally {
+            if (isTestMode) {
+                tokenSequenceDump = String.valueOf(env.jdts);
+            }
             env = null;
         }
     }
@@ -328,6 +358,7 @@ public final class DocPositions {
         } else {
             sb.append(" Not resolved yet."); // NOI18N
         }
+        sb.append("\ntoken sequence dump: " + tokenSequenceDump);
         return sb.toString();
     }
     
@@ -364,14 +395,14 @@ public final class DocPositions {
 
         private static final Tag[] EMPTY_TAGS = new Tag[0];
         private final String name;
-        private final Doc javadoc;
+        private final Reference<Doc> wjavadoc;
         private final String kind;
         private CharSequence text;
 
         public UnclosedTag(String name, String kind, Doc javadoc) {
             this.name = name;
             this.kind = kind;
-            this.javadoc = javadoc;
+            this.wjavadoc = new WeakReference<Doc>(javadoc);
         }
 
         public String name() {
@@ -379,7 +410,7 @@ public final class DocPositions {
         }
 
         public Doc holder() {
-            return javadoc;
+            return wjavadoc.get();
         }
 
         public String kind() {
@@ -410,12 +441,15 @@ public final class DocPositions {
     }
     
     private static final class TagEntry implements Comparable<TagEntry> {
-        final WeakReference<Tag> wtag;
+        final Reference<Tag> wtag;
+        final UnclosedTag utag;
         final boolean isBlock;
         final int[] span;
 
         public TagEntry(Tag tag ,int[] span, boolean isBlock) {
             this.wtag = new  WeakReference<Tag>(tag);
+            // hard reference UnclosedTag otherwise its weak reference will be GCed soon
+            this.utag = (UnclosedTag) (tag instanceof UnclosedTag ? tag : null);
             this.isBlock = isBlock;
             assert span.length == 2;
             this.span = span;

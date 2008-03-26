@@ -74,7 +74,6 @@ import javax.swing.event.ChangeListener;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 
 /**
@@ -99,7 +98,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
     private static final Integer MAX_CHAR_PRECISION = new Integer(Integer.MAX_VALUE);
     private static final Integer ZERO = new Integer(0);
     private static final Integer ONE = new Integer(1);
-    private static transient final Logger mLogger = LogUtil.getLogger(CastAsDialog.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(CastAsDialog.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     
 
@@ -136,12 +135,12 @@ public class CastAsDialog extends JDialog implements ActionListener {
         super(parent, title, modal);
 
         try {
-            String nbBundle1 = mLoc.t("PRSR001: Ok");
-            mOkButton = new JButton(Localizer.parse(nbBundle1)); //NOI18N
-            mOkButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle1));
-            String nbBundle2 = mLoc.t("PRSR001: Cancel");
-            mCancelButton = new JButton(Localizer.parse(nbBundle2)); //NOI18N
-            mCancelButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle2));
+            String nbBundle1 = mLoc.t("BUND408: Ok");
+            mOkButton = new JButton(nbBundle1.substring(15)); //NOI18N
+            mOkButton.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
+            String nbBundle2 = mLoc.t("BUND048: Cancel");
+            mCancelButton = new JButton(nbBundle2.substring(15)); //NOI18N
+            mCancelButton.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
 
             initComponents();
         } catch (Exception e) {
@@ -362,9 +361,9 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.gridwidth = 1;
         constraints.insets = leftInsets;
 
-        String nbBundle3 = mLoc.t("PRSR001: Type:");
-        JLabel typeLabel = new JLabel(Localizer.parse(nbBundle3)); //NOI18N
-        typeLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
+        String nbBundle3 = mLoc.t("BUND410: Type:");
+        JLabel typeLabel = new JLabel(nbBundle3.substring(15)); //NOI18N
+        typeLabel.getAccessibleContext().setAccessibleName(nbBundle3.substring(15));
         gridBag.setConstraints(typeLabel, constraints);
         formPanel.add(typeLabel);
 
@@ -378,9 +377,9 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.gridy = 1;
         constraints.insets = leftInsets;
         constraints.weightx = 1.0;
-        String nbBundle4 = mLoc.t("PRSR001: Precision/length:");
-        JLabel precLengthLabel = new JLabel(Localizer.parse(nbBundle4)); //NOI18N
-        precLengthLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle4));
+        String nbBundle4 = mLoc.t("BUND411: Precision/length:");
+        JLabel precLengthLabel = new JLabel(nbBundle4.substring(15)); //NOI18N
+        precLengthLabel.getAccessibleContext().setAccessibleName(nbBundle4.substring(15));
         gridBag.setConstraints(precLengthLabel, constraints);
         formPanel.add(precLengthLabel);
 
@@ -397,9 +396,9 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.gridy = 2;
         constraints.insets = leftInsets;
         constraints.weightx = 1.0;
-        String nbBundle5 = mLoc.t("PRSR001: Scale:");
-        JLabel scaleLabel = new JLabel(Localizer.parse(nbBundle5)); //NOI18N
-        scaleLabel.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle5));
+        String nbBundle5 = mLoc.t("BUND412: Scale:");
+        JLabel scaleLabel = new JLabel(nbBundle5.substring(15)); //NOI18N
+        scaleLabel.getAccessibleContext().setAccessibleName(nbBundle5.substring(15));
         gridBag.setConstraints(scaleLabel, constraints);
         formPanel.add(scaleLabel);
 

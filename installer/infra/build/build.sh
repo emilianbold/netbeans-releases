@@ -150,10 +150,20 @@ if [ -z "$ML_BUILD" ] ; then
     ML_BUILD=0
 fi
 
+if [ -z "$BUILD_JTB" ] ; then
+    #do not build NetBeans/JDK5 bundles by default
+    BUILD_JTB=0
+fi
+
+if [ -z "$BUILD_MYSQL" ] ; then
+    #do not build NetBeans/GlassFish/MySQL bundles by default
+    BUILD_MYSQL=0
+fi
+
 run() {
     ################################################################################
     # run the build
-    ant build \
+    ant build\
             \"-Dbuild.number=${BUILD_NUMBER}\" \
             \"-Doutput.dir=${OUTPUT_DIR}\" \
             \"-Dbinary.cache.host=${BINARY_CACHE_HOST}\" \
@@ -172,6 +182,8 @@ run() {
             \"-Dcvs.branch=${CVS_BRANCH}\" \
             \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
             \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
+            \"-Dbuild.jtb=${BUILD_JTB}\" \
+            \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \

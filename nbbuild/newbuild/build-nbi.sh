@@ -90,12 +90,12 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi    
-        #scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/bundles
-        #ERROR_CODE=$?
-        #if [ $ERROR_CODE != 0 ]; then
-        #    echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
-        #    exit $ERROR_CODE;
-        #fi
+        scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/bundles
+        ERROR_CODE=$?
+        if [ $ERROR_CODE != 0 ]; then
+            echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
+            #exit $ERROR_CODE;
+        fi
 	if [ 1 -eq $ML_BUILD ] ; then
 		scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist/* $DIST/ml/bundles
 		scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist_ml/* $DIST/ml/bundles

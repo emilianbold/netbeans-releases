@@ -77,13 +77,15 @@ public class RenameGroupAction extends RenameAction {
                     NbBundle.getMessage(RenameAction.class, "CTL_RenameTitle"));
             dlg.setInputText(n.getName());
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
-                try {
-                    String name = dlg.getInputText().trim();
-                    n.setName(name);
-                    SaasServicesModel.getInstance().renameGroup(group, name);
-                } catch (IllegalArgumentException e) {
-                    Exceptions.printStackTrace(e);
+                String name = dlg.getInputText().trim();
+                if (group.getParent().getChildGroup(name) != null) {
+                    String msg = NbBundle.getMessage(RenameGroupAction.class, "MSG_DuplicateGroupName");
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                    return;
                 }
+                SaasServicesModel.getInstance().renameGroup(group, name);
+                n.setName(name);
             }
         }
     }

@@ -45,8 +45,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
@@ -168,6 +170,28 @@ public class JsIndex {
         // TODO - search by the FIELD_CLASS thingy
         return getUnknownFunctions(name, kind, scope, false, context, true, true);
     }
+
+    public Map<String,String> getAllExtends() {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        search(JsIndexer.FIELD_EXTEND, "", NameKind.CASE_INSENSITIVE_PREFIX, result, JsIndex.ALL_SCOPE, TERMS_EXTEND);
+        Map<String,String> classes = new HashMap<String,String>();
+        for (SearchResult map : result) {
+            String[] exts = map.getValues(JsIndexer.FIELD_EXTEND);
+            
+            if (exts != null) {
+                for (String ext : exts) {
+                    int clzBegin = ext.indexOf(';')+1;
+                    int superBegin = ext.indexOf(';', clzBegin)+1;
+                    
+                    String clz = ext.substring(clzBegin, superBegin-1);
+                    String superClz = ext.substring(superBegin);
+                    classes.put(clz, superClz);
+                }
+            }
+        }
+        
+        return classes;
+    }
     
     private String getExtends(String className, Set<Index.SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
@@ -198,13 +222,18 @@ public class JsIndex {
      */
     public Set<IndexedElement> getElements(String prefix, String type,
             NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
-        return getByFqn(prefix, type, kind, scope, false, context, true, true);
+        return getByFqn(prefix, type, kind, scope, false, context, true, true, false);
     }
 
+    public Set<IndexedElement> getAllElements(String prefix, String type,
+            NameKind kind, Set<Index.SearchScope> scope, JsParseResult context) {
+        return getByFqn(prefix, type, kind, scope, false, context, true, true, true);
+    }
+    
     @SuppressWarnings("unchecked")
     public Set<IndexedFunction> getFunctions(String name, String in, NameKind kind,
         Set<Index.SearchScope> scope, JsParseResult context, boolean includeMethods) {
-        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false);
+        return (Set<IndexedFunction>)(Set)getByFqn(name, in, kind, scope, false, context, includeMethods, false, false);
     }
     
     private Set<IndexedElement> getUnknownFunctions(String name, NameKind kind,
@@ -315,7 +344,8 @@ public class JsIndex {
                         continue;
                     }
                     
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+                    String fqn = null; // Compute lazily
+                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), fqn, elementName, funcIn, inEndIdx, this, false);
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
@@ -335,7 +365,7 @@ public class JsIndex {
     
     private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
         Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
-        boolean includeMethods, boolean includeProperties) {
+        boolean includeMethods, boolean includeProperties, boolean includeDuplicates) {
         //assert in != null && in.length() > 0;
         
         final Set<SearchResult> result = new HashSet<SearchResult>();
@@ -356,7 +386,7 @@ public class JsIndex {
             //terms = FQN_BASE_LOWER;
         }
 
-        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
+        final Set<IndexedElement> elements = includeDuplicates ? new DuplicateElementSet() : new HashSet<IndexedElement>();
         String searchUrl = null;
         if (context != null) {
             try {
@@ -430,13 +460,13 @@ public class JsIndex {
 
                         String elementName = null;
                         int nameEndIdx = signature.indexOf(';');
-                        assert nameEndIdx != -1;
+                        assert nameEndIdx != -1 : signature;
                         elementName = signature.substring(0, nameEndIdx);
                         nameEndIdx++;
 
                         String funcIn = null;
                         int inEndIdx = signature.indexOf(';', nameEndIdx);
-                        assert inEndIdx != -1;
+                        assert inEndIdx != -1 : signature;
                         inEndIdx++;
 
                         int startCs = inEndIdx;
@@ -467,10 +497,10 @@ public class JsIndex {
                                 }
                                 if (type != null && type.length() > 0) {
                                     String pkg = elementName.substring(type.length()+1, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 } else {
                                     String pkg = elementName.substring(0, nextDot);
-                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
+                                    element = new IndexedPackage(null, pkg, null, this, map.getPersistentUrl(), signature, flags, k);
                                 }
                             } else {
                                 funcIn = elementName.substring(0, lastDot);
@@ -481,7 +511,7 @@ public class JsIndex {
                             elementName = elementName.substring(lastDot+1);
                         }
                         if (element == null) {
-                            element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
+                            element = IndexedElement.create(signature, map.getPersistentUrl(), null, elementName, funcIn, inEndIdx, this, false);
                         }
                         boolean isFunction = element instanceof IndexedFunction;
                         if (isFunction && !includeMethods) {
@@ -523,101 +553,116 @@ public class JsIndex {
         return elements;
     }
     
-    /** Try to find the type of a symbol and return it */
-    public String getType(String symbol) {
-        //assert in != null && in.length() > 0;
+    public String getType(String fqn) {
+        int baseIndex = fqn.lastIndexOf('.');
+        if (baseIndex == -1) {
+            return getSimpleType(fqn);
+        }
+        String clz = fqn.substring(0, baseIndex);
+        List<String> ancestors = ClassCache.INSTANCE.getAncestors(clz, this);
+        if (ancestors.size() <= 1) {
+            return getSimpleType(fqn);
+        }
         
+        String base = fqn.substring(baseIndex+1);
+        int baseLength = base.length();
+        
+        // Look for inheritance too, e.g. if you're searching for HTMLDocument.createElement
+        // and no such entry is found it will look at Document.createElement and return it provided
+        // Document looks related to HTMLDocument through inheritance
         final Set<SearchResult> result = new HashSet<SearchResult>();
 
-        String field = JsIndexer.FIELD_FQN;
+        String field = JsIndexer.FIELD_BASE;
         Set<String> terms = TERMS_BASE;
-        String lcsymbol = symbol.toLowerCase();
+        String lcsymbol = base.toLowerCase();
+        assert lcsymbol.length() == baseLength;
         search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
-
-//        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-//        String searchUrl = null;
-//        if (context != null) {
-//            try {
-//                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-//            } catch (FileStateInvalidException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
 
         for (SearchResult map : result) {
             String[] signatures = map.getValues(field);
             
             if (signatures != null) {
-//                // Check if this file even applies
-//                if (context != null) {
-//                    String fileUrl = map.getPersistentUrl();
-//                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-//                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-//                        if (!isLibrary && !isReachable(context, fileUrl)) {
-//                            continue;
-//                        }
-//                    }
-//                }
-                
                 for (String signature : signatures) {
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
                     // Make sure the name matches exactly
                     // We know that the prefix is correct from the first part of
                     // this if clause, by the signature may have more
-                    if (((signature.length() > lcsymbol.length()) &&
-                            (signature.charAt(lcsymbol.length()) != ';'))) {
+                    if (!signature.startsWith(lcsymbol) || signature.charAt(baseLength) != ';') {
                         continue;
                     }
 
-                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-                    assert map != null;
-
-                    String elementName = null;
-                    int nameEndIdx = signature.indexOf(';');
-                    assert nameEndIdx != -1;
-                    elementName = signature.substring(0, nameEndIdx);
-                    if (!elementName.startsWith(symbol)) {
+                    // Make sure the containing document is one of the superclasses
+                    assert signature.charAt(baseLength) == ';';
+                    int inBegin = baseLength+1;
+                    int inEnd = signature.indexOf(';', inBegin);
+                    if (inEnd == inBegin) {
+                        // No in - only qualifies if the target has no in
+                        // However, we're currently processing those separately so
+                        // this is not a match
                         continue;
                     }
-                    nameEndIdx++;
-
-                    String funcIn = null;
-                    int inEndIdx = signature.indexOf(';', nameEndIdx);
-                    assert inEndIdx != -1;
-                    if (inEndIdx > nameEndIdx+1) {
-                        funcIn = signature.substring(nameEndIdx, inEndIdx);
+                    String in = signature.substring(inBegin, inEnd);
+                    for (String ancestor : ancestors) {
+                        if (ancestor.equals(in)) {
+                            // This is a good one
+                            
+                            String type = getTypeInSignature(signature);
+                            if (type != null) {
+                                return type;
+                            }
+                        }
                     }
-                    inEndIdx++;
+                }
+            }
+        }
+        
+        return null;
+        
+    }
+    
+    private static String getTypeInSignature(String signature) {
+        // Look for the type
+        int typeIndex = 0;
+        int section = IndexedElement.TYPE_INDEX;
+        for (int i = 0; i < section; i++) {
+            typeIndex = signature.indexOf(';', typeIndex+1);
+        }
+        typeIndex++;
+        int endIndex = signature.indexOf(';', typeIndex);
+        if (endIndex > typeIndex) {
+            return signature.substring(typeIndex, endIndex);
+        }
+        
+        return null;
+    }
+    
+    /** 
+     * Try to find the type of a symbol and return it. This method does not look for overridden
+     * methods etc, it matches by exact signature.
+     */
+    private String getSimpleType(String fqn) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
 
-                    int startCs = inEndIdx;
-                    inEndIdx = signature.indexOf(';', startCs);
-                    assert inEndIdx != -1;
-//                    if (inEndIdx > startCs) {
-//                        // Compute the case sensitive name
-//                        elementName = signature.substring(startCs, inEndIdx);
-//                    }
-                    inEndIdx++;
-                    
-                    // Filter out methods on other classes
-//                    if (!includeMethods && (funcIn != null)) {
-//                        continue;
-//                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
-//                        continue;
-//                    }
-                    
-                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-//                    boolean isFunction = element instanceof IndexedFunction;
-//                    if (isFunction && !includeMethods) {
-//                        continue;
-//                    } else if (!isFunction && !includeProperties) {
-//                        continue;
-//                    }
-//                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
-//                        continue;
-//                    }
-//                    elements.add(element);
-                    
-                    String type = element.getType();
+        String field = JsIndexer.FIELD_FQN;
+        Set<String> terms = TERMS_BASE;
+        String lcsymbol = fqn.toLowerCase();
+        int symbolLength = fqn.length();
+        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
+
+        for (SearchResult map : result) {
+            String[] signatures = map.getValues(field);
+            
+            if (signatures != null) {
+                for (String signature : signatures) {
+                    // Lucene returns some inexact matches, TODO investigate why this is necessary
+                    // Make sure the name matches exactly
+                    // We know that the prefix is correct from the first part of
+                    // this if clause, by the signature may have more
+                    if (!signature.startsWith(lcsymbol) || signature.charAt(symbolLength) != ';') {
+                        continue;
+                    }
+
+                    String type = getTypeInSignature(signature);
                     if (type != null) {
                         return type;
                     }

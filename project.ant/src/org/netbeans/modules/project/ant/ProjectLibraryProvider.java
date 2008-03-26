@@ -681,8 +681,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 // store properties always separated by '/' for consistency
                 String entryPath = LibrariesSupport.convertURIToFilePath(entry).replace('\\', '/');
                 StringBuilder s = new StringBuilder();
-                if (entry.isAbsolute()) {
-                    s.append(entryPath); //NOI18N
+                if (entryPath.startsWith("${")) { // NOI18N
+                    // if path start with an Ant property do not prefix it with "${base}".
+                    // supports hand written customizations of nblibrararies.properties.
+                    // for example libs.struts.classpath=${MAVEN_REPO}/struts/struts.jar
+                    s.append(entryPath.replace('\\', '/')); // NOI18N
+                } else if (entry.isAbsolute()) {
+                    s.append(entryPath);
                 } else {
                     s.append("${base}/" + entryPath); // NOI18N
                 }

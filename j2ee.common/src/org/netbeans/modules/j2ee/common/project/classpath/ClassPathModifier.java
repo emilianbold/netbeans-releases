@@ -153,7 +153,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     
     public boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
-        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
+        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), operation);
     }
     
     boolean handleRoots (final URI[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -305,7 +305,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             items.add(item);
         }
         boolean res = handleLibraryClassPathItems(items, classPathProperty, projectXMLElementName, operation, true);
-        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties);
+        ProjectProperties.storeLibrariesLocations(project, antHelper, cs, libUpdaterProperties, null, false);
         return res;
     }
     

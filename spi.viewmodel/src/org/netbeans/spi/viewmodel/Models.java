@@ -45,6 +45,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.StringBuffer;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +64,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
+import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -94,7 +97,7 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     /** Cached default implementations of expansion models. */
-    private static WeakHashMap<Object, TreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, TreeExpansionModel>();
+    private static WeakHashMap<Object, DefaultTreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, DefaultTreeExpansionModel>();
     /**
      * Empty model - returns default root node with no children.
      */
@@ -284,16 +287,19 @@ public final class Models {
             TreeModel etm = new EmptyTreeModel();
             treeModels = Collections.singletonList(etm);
         }
+        DefaultTreeExpansionModel defaultExpansionModel = null;
         if (treeExpansionModels.isEmpty()) {
-            TreeExpansionModel tem = defaultExpansionModels.get(models);
-            if (tem == null) {
-                tem = new DefaultTreeExpansionModel();
-                defaultExpansionModels.put(models, tem);
+            defaultExpansionModel = defaultExpansionModels.get(models);
+            if (defaultExpansionModel != null) {
+                defaultExpansionModel = defaultExpansionModel.cloneForNewModel();
+            } else {
+                defaultExpansionModel = new DefaultTreeExpansionModel();
             }
-            treeExpansionModels = Collections.singletonList(tem);
+            defaultExpansionModels.put(models, defaultExpansionModel);
+            treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
         }
         
-        return new CompoundModel (
+        CompoundModel cm = new CompoundModel (
             createCompoundTreeModel (
                 new DelegatingTreeModel (treeModels),
                 treeModelFilters
@@ -314,6 +320,10 @@ public final class Models {
             ),
             propertiesHelpID
         );
+        if (defaultExpansionModel != null) {
+            defaultExpansionModel.setCompoundModel(cm);
+        }
+        return cm;
     }
     
     private static <T> void revertOrder(List<T> filters) {
@@ -1618,8 +1628,15 @@ public final class Models {
     
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
-        private Set<Object> expandedNodes = new WeakSet<Object>();
-        private Set<Object> collapsedNodes = new WeakSet<Object>();
+        private Reference<CompoundModel> cmRef;
+        private CompoundModel oldCM;
+        
+        public DefaultTreeExpansionModel() {
+        }
+        
+        private DefaultTreeExpansionModel(CompoundModel oldCM) {
+            this.oldCM = oldCM;
+        }
         
         /**
          * Defines default state (collapsed, expanded) of given node.
@@ -1629,16 +1646,9 @@ public final class Models {
          */
         public boolean isExpanded (Object node) 
         throws UnknownTypeException {
-            synchronized (this) {
-                if (expandedNodes.contains(node)) {
-                    return true;
-                }
-                if (collapsedNodes.contains(node)) {
-                    return false;
-                }
-            }
-            // Default behavior follows:
-            return false;
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return false;
+            return DefaultTreeExpansionManager.get(cm).isExpanded(node);
         }
 
         /**
@@ -1647,10 +1657,9 @@ public final class Models {
          * @param node a expanded node
          */
         public void nodeExpanded (Object node) {
-            synchronized (this) {
-                expandedNodes.add(node);
-                collapsedNodes.remove(node);
-            }
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return ;
+            DefaultTreeExpansionManager.get(cm).setExpanded(node);
         }
 
         /**
@@ -1659,12 +1668,23 @@ public final class Models {
          * @param node a collapsed node
          */
         public void nodeCollapsed (Object node) {
-            synchronized (this) {
-                collapsedNodes.add(node);
-                expandedNodes.remove(node);
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return ;
+            DefaultTreeExpansionManager.get(cm).setCollapsed(node);
+        }
+
+        private void setCompoundModel(CompoundModel cm) {
+            if (oldCM != null) {
+                DefaultTreeExpansionManager.copyExpansions(oldCM, cm);
+                oldCM = null;
             }
+            cmRef = new WeakReference<CompoundModel>(cm);
         }
         
+        private DefaultTreeExpansionModel cloneForNewModel() {
+            return new DefaultTreeExpansionModel(cmRef.get());
+        }
+
     }
 
     /**

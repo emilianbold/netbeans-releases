@@ -60,6 +60,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
@@ -107,6 +108,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private NativeProject nativeProject = null;
     public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
+    private String sourceEncoding = null;
 
     public MakeConfigurationDescriptor(String baseDir) {
         super();
@@ -116,6 +118,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
+        sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
     }
 
     /*
@@ -405,6 +408,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
+        setSourceEncoding(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceEncoding());
     }
 
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
@@ -427,6 +431,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setSourceEncoding(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceEncoding());
     }
 
     public ConfigurationDescriptor cloneProjectDescriptor() {
@@ -438,6 +443,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
+        clone.setSourceEncoding(getSourceEncoding());
         return clone;
     }
 
@@ -478,6 +484,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
         task.waitFinished();
         return saveRunnable.ret;
+    }
+
+    public String getSourceEncoding() {
+        return sourceEncoding;
+    }
+
+    public void setSourceEncoding(String sourceEncoding) {
+        this.sourceEncoding = sourceEncoding;
     }
 
     private class SaveRunnable implements Runnable {
@@ -624,6 +638,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         return subProjects;
     }
+    
+    public void addSourceRootRaw(String path) {
+        synchronized(sourceRoots) {
+            sourceRoots.add(path);
+        }
+    }
 
     /*
      * Add a new root.
@@ -690,12 +710,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     /*
      * Return real list
      */
-    public List<String> getSourceRootsRaw() {
-        synchronized (sourceRoots) {
-            return sourceRoots;
-        }
+    private List<String> getSourceRootsRaw() {
+        return sourceRoots;
     }
-
+    
     public void setSourceRoots(List list) {
         synchronized (sourceRoots) {
             sourceRoots = list;
@@ -809,7 +827,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                     folder.addFolder(top);
                 }
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null, filesAdded, notify);
                 getNativeProject().fireFilesAdded(filesAdded);
 
                 addSourceRoot(folderEntry.getFile().getPath());
@@ -850,7 +868,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                         top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
                         folder.addFolder(top);
                     }
-                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded);
+                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), FolderEntry.getFileFilter(), handle, filesAdded, true);
                     addSourceRoot(folderEntry.getFile().getPath());
                 }
             } finally {
@@ -867,7 +885,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded) {
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded, boolean notify) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
@@ -901,14 +919,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                         dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                     }
                 }
-                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded);
+                addFiles(dirfolder, files[i], addSubFolders, filter, handle, filesAdded, notify);
                 if (dirfolder.size() == 0) {
                     folder.removeFolder(dirfolder);
                 }
             } else {
                 String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                 Item item = new Item(FilePathAdaptor.normalize(filePath));
-                if (folder.addItem(item) != null) {
+                if (folder.addItem(item, notify) != null) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {

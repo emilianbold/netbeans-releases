@@ -333,11 +333,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                 }
             }
@@ -727,8 +727,7 @@ public final class LibrariesNode extends AbstractNode {
                             //sort of hack, in this case we don't want the classpath modifier to perform
                             // the heuristics it normally does, as the user explitly defined how the jar/folder
                             //shall be referenced.
-                            SourceGroup[] grps = modifierImpl.getExtensibleSourceGroups();
-                            modifierImpl.addRoots(new URI[]{u}, grps[0], ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
+                            modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
                         } else {
                             //fallback to call that will perform heuristics and eventually override user preferences..
                             ProjectClassPathModifier.addRoots(new URI[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
@@ -740,6 +739,16 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+    }
+    
+    private static SourceGroup findSourceGroup(FileObject fo, ClassPathModifier modifierImpl) {
+        SourceGroup[]sgs = modifierImpl.getExtensibleSourceGroups();
+        for (SourceGroup sg : sgs) {
+            if ((fo == sg.getRootFolder() || FileUtil.isParentOf(sg.getRootFolder(),fo)) && sg.contains(fo)) {
+                return sg;
+            }
+        }
+        throw new AssertionError("Cannot find source group for '"+fo+"' in "+Arrays.asList(sgs)); // NOI18N
     }
 
     private static class SimpleFileFilter extends FileFilter {

@@ -155,15 +155,15 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         scrollPane.addMouseListener(this);
         editorPane.addMouseListener(this);
 
-        this.addFocusListener(this);
-        scrollPane.addFocusListener(this);
         editorPane.addFocusListener(this);
+        updateText(text);
 
-        if (text != null) {
-          editorPane.setText(text);
-          editorPane.setCaretPosition(editorPane.getDocument().getStartPosition().getOffset());
-        }
         myActionListener = actionListener;
+    }
+
+    @Override
+    public void requestFocus() {
+      editorPane.requestFocus();
     }
     
     public boolean contains(int x, int y) {
@@ -225,6 +225,12 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         fillHTMLSpacer();
     }
     
+    public void updateText(String text) {
+      if (text != null) {
+        editorPane.setText(text);
+      }
+    }
+
     public void updateHTML() {
         if (html.length() == 0) {
             fillHTMLHeader();
@@ -311,6 +317,16 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     }
 
     private void hidePane() {
+        if (getParent() == null) {
+          return;
+        }
+//System.out.println();
+//System.out.println();
+//System.out.println("getParent() 1: " + getParent());
+//System.out.println();
+//System.out.println("getParent() 2: " + getParent().getParent());
+//System.out.println();
+//System.out.println("getParent() 3: " + getParent().getParent().getParent());
         DesignView designView = (DesignView) (getParent().getParent().getParent());
         designView.getOverlayView().remove(this);
         

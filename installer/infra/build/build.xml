@@ -307,6 +307,18 @@
 	     </and>
         </condition>
 
+        <condition property="do.build.jtb">
+	     <and>
+		     <equals arg1="${build.jtb}" arg2="1"/>
+		     <not>
+			<isset property="do.build.netbeans"/>
+		     </not>
+             </and>
+        </condition>
+
+        <condition property="do.build.mysql">
+	     <equals arg1="${build.mysql}" arg2="1"/>
+        </condition>
 
 
         <condition property="nb.locales.isset">
@@ -347,59 +359,50 @@
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-        <!--        
-        <get
-            src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
-            dest="${temp.file}"/>
-        <swdp-buildnumber 
-            file="${temp.file}" 
-            prefix="swdp"/>
-        <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_04/archive/fcs/latest/bundles/"
-            dest="${temp.file}"/>
-	<sjsam-buildnumber
-	    file="${temp.file}" 
-            prefix="sjsam"/>
-        <portletcontainer-buildnumber 
-            file="${temp.file}" 
-            prefix="portletcontainer"/>
-        <javaeesdk-firstcup-buildnumber 
-            file="${temp.file}" 
-            prefix="javaeesdk-firstcup"/>
-        <javaeesdk-blueprints-buildnumber 
-            file="${temp.file}" 
-            prefix="javaeesdk-blueprints"/>
-        <javaeesdk-blueprints-buildnumber 
-            file="${temp.file}" 
-            prefix="javaeesdk-samples"/>
-	<wsrp-buildnumber
-	    file="${temp.file}" 
-            prefix="wsrp"/>
 
-        <get
-            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb601/build.txt"
-            dest="${temp.file}"/>
-        <loadfile property="portalpack.build.number"
-      	    srcFile="${temp.file}">
-	    <filterchain>
-    		<striplinebreaks/>
-  	    </filterchain>
-	</loadfile>
-
-
-
-        <property name="javaeesdk-javadocs.build.number" value="20070814"/>
-        -->
-        <!--
-        <get
-            src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
-            dest="${temp.file}"/>
-        -->
-            
-        <!--
-        <property name="sjsam.milestone.number" value="1"/>
-        <property name="sjsam.build.number" value="20070614"/>
-        -->
+        <if property="do.build.jtb">
+	    <!--
+            <get
+                src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
+                dest="${temp.file}"/>
+            <swdp-buildnumber 
+                file="${temp.file}" 
+                prefix="swdp"/>
+	    -->
+            <get
+                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_04/archive/fcs/latest/bundles/"
+                dest="${temp.file}"/>
+	    <sjsam-buildnumber
+	        file="${temp.file}" 
+                prefix="sjsam"/>
+            <portletcontainer-buildnumber 
+                file="${temp.file}" 
+                prefix="portletcontainer"/>
+            <javaeesdk-firstcup-buildnumber 
+                file="${temp.file}" 
+                prefix="javaeesdk-firstcup"/>
+            <javaeesdk-blueprints-buildnumber 
+                file="${temp.file}" 
+                prefix="javaeesdk-blueprints"/>
+            <javaeesdk-blueprints-buildnumber 
+                file="${temp.file}" 
+                prefix="javaeesdk-samples"/>
+	    <!--
+	    <wsrp-buildnumber
+	        file="${temp.file}" 
+                prefix="wsrp"/>
+            -->
+            <get
+                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb61/build.txt"
+                dest="${temp.file}"/>
+            <loadfile property="portalpack.build.number"
+          	    srcFile="${temp.file}">
+	        <filterchain>
+        	    <striplinebreaks/>
+    	        </filterchain>
+	    </loadfile>            
+            <property name="javaeesdk-javadocs.build.number" value="20070814"/>
+        </if>
         
         <delete file="${temp.file}" failonerror="false"/>
     </target>
@@ -463,14 +466,13 @@ nb.zip.files.prefix=${nb.zip.files.prefix}
 nb.bundle.files.prefix=${nb.bundle.files.prefix}
 	</echo>
 
+        <if property="do.build.jtb">
 	<!-- SJSAM properties -->
-	<!--
         <echo file="${environment.properties}" append="true">
 sjsam.builds.host=${sjsam.builds.host}
 sjsam.milestone.number=${sjsam.milestone.number}
 sjsam.build.number=${sjsam.build.number}
 	</echo>
-	-->
 	<!-- SWDP properties -->
 	<!--
         <echo file="${environment.properties}" append="true">
@@ -482,7 +484,6 @@ swdp.macro.number=${swdp.macro.number}
 	-->
 
 	<!-- Java EE SDK component properties -->
-	<!--
         <echo file="${environment.properties}" append="true">
 portalpack.builds.host=${portalpack.builds.host}
 
@@ -506,11 +507,11 @@ portletcontainer.build.number=${portletcontainer.build.number}
 portletcontainer.macro.number=${portletcontainer.macro.number}
 portletcontainer.micro.number=${portletcontainer.micro.number}
 
-wsrp.milestone.number=${wsrp.milestone.number}
-wsrp.build.number=${wsrp.build.number}
+#wsrp.milestone.number=${wsrp.milestone.number}
+#wsrp.build.number=${wsrp.build.number}
 portalpack.build.number=${portalpack.build.number}
         </echo>
-        -->
+        </if>
 
 	<!-- WTK component properties -->
 	 <!--
@@ -518,6 +519,7 @@ portalpack.build.number=${portalpack.build.number}
 wtk.builds.host=${wtk.builds.host}
 	 </echo>
 	 -->
+        <if property="do.build.jtb">
 	<!-- SJSAS Image properties -->
          <echo file="${environment.properties}" append="true">
 remote.host.windows=${remote.host.windows}
@@ -546,6 +548,7 @@ sjsas.image.token.hostname.solaris-x86=${sjsas.image.token.hostname.solaris-x86}
 sjsas.image.token.hostname.solaris-sparc=${sjsas.image.token.hostname.solaris-sparc}
 sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
         </echo>
+        </if>
 
         <!-- Jar singing properties -->
 	<if property="jarsigner.enabled" value="true">
@@ -564,42 +567,64 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete failonerror="false">
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- nb components -->
+		<include name="**/nb*"/>
                 <exclude name="**/nb*${build.number}*"/>
-                
+                <exclude name="**/nb-portalpack*"/>
+
                 <!-- glassfish -->
+                <include name="**/glassfish*"/>
                 <exclude name="**/glassfish*${glassfish.milestone.number}.${glassfish.build.number}*"/>
                 
                 <!-- openesb -->
+		<include name="**/openesb*"/>
                 <exclude name="**/openesb*${glassfish.milestone.number}.${openesb.build.number}*"/>
                 
-                <!-- sjsam -->
-                <!--
-		<exclude name="**/sjsam*${glassfish.milestone.number}.${sjsam.build.number}*"/>
-		-->
-                
                 <!-- tomcat -->
-                <exclude name="**/tomcat*"/>
+		<include name="**/tomcat*"/>
+                <exclude name="**/tomcat*6.0.16.0.0*"/>
 
 		<!-- wtk -->
                 <exclude name="**/wtk*"/>
 
-
-		<!-- javaeesdk components -->
-		<!--
-                <exclude name="**/javaeesdk-samples*${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}*"/>
-		<exclude name="**/javaeesdk-blueprints*${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}*"/>
-		<exclude name="**/javaeesdk-firstcup*${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}*"/>
-	        <exclude name="**/javaeesdk-javadocs*${javaeesdk-javadocs.build.number}*"/>
-		<exclude name="**/portletcontainer*${portletcontainer.milestone.number}.${portletcontainer.build.number}*"/>
-		<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
-                <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
-		<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>-->
-
-                <!-- JDK -->
+		<!-- JDK -->
                 <exclude name="**/jdk*"/>
-
             </fileset>
         </delete>
+
+	<if property="do.build.jtb">
+		<delete failonerror="false">
+        	    <fileset dir="${nbi.cache.dir}/packaged">        
+			<!-- javaeesdk components -->
+			<include name="**/sjsam*"/>
+			<exclude name="**/sjsam*${glassfish.milestone.number}.${sjsam.build.number}*"/>
+
+			<include name="**/javaeesdk-samples*"/>
+		        <exclude name="**/javaeesdk-samples*${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}*"/>
+
+			<include name="**/javaeesdk-blueprints*"/>
+			<exclude name="**/javaeesdk-blueprints*${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}*"/>
+			
+			<include name="**/javaeesdk-firstcup*"/>
+			<exclude name="**/javaeesdk-firstcup*${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}*"/>
+
+			<include name="**/javaeesdk-javadocs"/>
+			<exclude name="**/javaeesdk-javadocs*${javaeesdk-javadocs.build.number}*"/>
+
+			<include name="**/portletcontainer*"/>
+			<exclude name="**/portletcontainer*${portletcontainer.milestone.number}.${portletcontainer.build.number}*"/>
+
+			<include name="**/wsrp*"/>
+			<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
+
+		        <include name="**/sjsas*"/>
+		        <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
+
+			<include name="**/nb-portalpack*"/>
+			<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
+                	
+        	    </fileset>
+	        </delete>
+	</if>
     </target>
 
 
@@ -611,8 +636,10 @@ jarsigner.storepass=${jarsigner.storepass}
 
         <antcall target="build-netbeans"/>
         <antcall target="build-runtimes"/>
+	<antcall target="build-mysql-components"/>
+
 	<!--<antcall target="build-wtk"/>-->
-        <!--<antcall target="build-javaeesdk"/>-->
+        <antcall target="build-javaeesdk"/>
         <antcall target="build-jdk"/>
 
         <!--<antcall target="export-temp-registry"/>-->
@@ -629,9 +656,13 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="build-core-engine"/>
         <antcall target="build-netbeans-engine"/>
     </target>
-
+    <target name="build-mysql-components" if="do.build.mysql">
+	<antcall target="build-mysql"/>
+	<antcall target="build-mysql-connector"/>
+    </target>
     <target name="build-netbeans" if="do.build.netbeans">
-        <!--<antcall target="build-nb-ide-group"/>-->
+	<set property="netbeans.group.uid" value=""/>
+
         <antcall target="build-nb-base"/>
         <antcall target="build-nb-javase"/>        
 	<!--<antcall target="build-nb-addons-group"/>-->
@@ -645,8 +676,20 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-netbeans-for-jdk" if="do.build.jdk.no.netbeans">
+	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-nb-base"/>
         <antcall target="build-nb-javase"/>        
+    </target>
+
+    <target name="build-tools" if="do.build.jtb">
+	<set property="netbeans.group.uid" value="nb-ide-group"/>
+	<antcall target="build-tools-group"/>
+        <antcall target="build-nb-ide-group"/>
+        <antcall target="build-nb-base"/>
+        <antcall target="build-nb-javase"/>        
+        <antcall target="build-nb-javaee"/>
+        <antcall target="build-nb-soa"/>
+        <antcall target="build-nb-portalpack"/>
     </target>
 
      <target name="build-runtimes" if="do.build.netbeans">
@@ -662,17 +705,19 @@ jarsigner.storepass=${jarsigner.storepass}
          <antcall target="build-jdk6"/>
      </target>
 
-    <target name="build-javaeesdk">        
+    <target name="build-javaeesdk" depends="build-tools" if="do.build.jtb">        
+        <antcall target="build-runtimes-group"/>
 	<antcall target="build-sjsas"/>
         <antcall target="build-sjsam"/>
-        <!--<antcall target="build-swdp"/>-->
+        <antcall target="build-openesb"/>
+        <antcall target="build-portletcontainer"/>
+	<!--<antcall target="build-wsrp"/>-->
+
+	<antcall target="build-documentation-group"/>
         <antcall target="build-javaeesdk-firstcup"/>
         <antcall target="build-javaeesdk-blueprints"/>
         <antcall target="build-javaeesdk-samples"/>
-        <antcall target="build-javaeesdk-javadocs"/>
-        <antcall target="build-portletcontainer"/>
-	<antcall target="build-wsrp"/>
-        <antcall target="build-nb-portalpack"/>        
+        <!--<antcall target="build-javaeesdk-javadocs"/>-->
     </target>
 
 
@@ -689,8 +734,9 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
         <antcall target="generate-netbeans-bundles"/>
+        <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
-        <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
+        <antcall target="generate-javatoolsbundle-bundles"/>
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,get-bundled-jvms" if="do.build.jdk">	
@@ -748,7 +794,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="tools-group"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -766,7 +812,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 value="${nbi.netbeans.dir}/infra/build/groups/tools-group"/>
             <property 
                 name="environment.properties" 
-                value="${environment.properties}"/>
+                value="${environment.properties}"/>   
             
             <property
                 name="release.parent.uid"
@@ -818,7 +864,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -845,7 +891,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -895,7 +941,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -922,7 +968,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -934,6 +980,11 @@ jarsigner.storepass=${jarsigner.storepass}
 
 
     <target name="build-nb-soa">        
+	<set property="server-uid" value="glassfish"/>
+        <if property="do.build.jtb">
+		<set property="server-uid" value="sjsas"/>
+        </if>
+
         <echo message="BUILDING NB-SOA ==========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-soa" target="release-all">
             <property 
@@ -949,13 +1000,17 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
             <property
                 name="release.parent.platforms"
                 value=""/>
+	    <property
+                name="server-uid"
+                value="${server-uid}"/>
+
         </ant>
     </target>
 
@@ -976,7 +1031,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1003,7 +1058,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1030,7 +1085,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1057,7 +1112,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="${netbeans.group.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1142,11 +1197,71 @@ jarsigner.storepass=${jarsigner.storepass}
      </target>
 
      <target name="build-openesb">
+	<set property="server-uid" value="glassfish"/>
+        <if property="do.build.jtb">
+		<set property="server-uid" value="sjsas"/>
+        </if>
+
         <echo message="BUILDING OPENESB =========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/openesb" target="release-all">
             <property 
                 name="basedir" 
                 value="${nbi.netbeans.dir}/infra/build/products/openesb"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+	    <property
+                name="server-uid"
+                value="${server-uid}"/>
+        </ant>
+    </target>
+
+    <target name="build-mysql">
+        <echo message="BUILDING MySQL ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql"  target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/mysql"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+    </target>
+
+    <target name="build-mysql-connector">
+        <echo message="BUILDING MySQL Connector =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql-connector" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/mysql-connector"/>
             <property 
                 name="environment.properties" 
                 value="${environment.properties}"/>
@@ -1261,7 +1376,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="runtimes-group"/>
+                value="documentation-group"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1287,7 +1402,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="runtimes-group"/>
+                value="documentation-group"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1313,7 +1428,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value="runtimes-group"/>
+                value="documentation-group"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1417,7 +1532,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
             <property
                 name="release.parent.uid"
-                value=""/>
+                value="tools-group"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1968,7 +2083,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="generate-javatoolsbundle-bundles">
+    <target name="generate-javatoolsbundle-bundles" depends="init-jtb-bundles" if="do.build.jtb">
 	<!-- Java Tools Bundle installer -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -2108,6 +2223,98 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
+    <target name="generate-mysql-bundles" if="do.build.mysql">
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-x86" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-ppc" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql" version="5.0.51.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+        </create-bundle>
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.dmg"/>
+            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
+        </antcall>
+
+        <antcall target="zip-to-dmg">
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.dmg"/>
+            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
+        </antcall>       
+
+        <delete>
+            <fileset dir="${nb.bundles.output.dir}">
+		<include name="${nb.bundle.files.prefix}-mysql-macosx*zip"/>
+            </fileset>
+        </delete>
+    </target>
 
     <target name="get-bundled-jvms" if="do.build.jdk">
         <set property="jvm.cache.dir" 
@@ -2138,6 +2345,15 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
+    <target name="init-jtb-bundles" if="do.build.jtb">
+	<set property="jtb.output.dir"
+             value="${nb.bundles.output.dir}"/>
+
+        <mkdir dir="${jtb.output.dir}"/>
+        <antcall target="build-netbeans-engine">
+		<param name="netbeans.engine.branding.kit" value="jtb"/>
+	</antcall>
+    </target>
 
     <target name="generate-jdk5-bundles" if="do.build.jdk5">
 	<!-- JavaSE + JDK5 bundles --> 
@@ -2418,11 +2634,12 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
     <target name="tgz-to-dmg">        
 	<echo message="Creating directory structure at MacOS system"/>	
         <echo message=""/>
+	<property name="temp.build.directory" value="~/.nbi-build"/>
 
         <sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="mkdir -p ~/.nbi-build/src ~/.nbi-build/tmp ~/.nbi-build/dmg"
+                 command="mkdir -p ${temp.build.directory}/src ${temp.build.directory}/tmp ${temp.build.directory}/dmg"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2434,7 +2651,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
              passphrase="${makedmg.ssh.keypass}"
              verbose="true"
              trust="true"
-             remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/src/temp.tgz"
+             remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/src/temp.tgz"
 	     file="${tgz.file}"/>
 
 	<echo message=""/>
@@ -2443,7 +2660,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
 	<sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="cd ~/.nbi-build/tmp; tar -xzvf ~/.nbi-build/src/temp.tgz; rm -rf ~/.nbi-build/src"
+                 command="cd ${temp.build.directory}/tmp; tar -xzvf ${temp.build.directory}/src/temp.tgz; rm -rf ${temp.build.directory}/src"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2455,7 +2672,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
         <sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="hdiutil create -fs HFS+ -srcfolder ~/.nbi-build/tmp -volname &quot;${dmg.name}&quot; ~/.nbi-build/dmg/image.dmg"
+                 command="hdiutil create -fs HFS+ -srcfolder ${temp.build.directory}/tmp -volname &quot;${dmg.name}&quot; ${temp.build.directory}/dmg/image.dmg"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"
@@ -2469,7 +2686,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
              verbose="true"
              trust="true"
              localTofile="${dmg.file}"
-	     file="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/dmg/image.dmg"/>
+	     file="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/dmg/image.dmg"/>
 
 	<echo message=""/>
 	<echo message="Clear temporary build directory on MacOS system"/>
@@ -2477,7 +2694,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
 	<sshexec host="${makedmg.remote.host}"
                  username="${makedmg.remote.user}"
 		 port="${makedmg.remote.port}"
-                 command="rm -rf ~/.nbi-build"
+                 command="rm -rf ${temp.build.directory}"
                  verbose="true"
                  trust="true"
                  keyfile="${makedmg.ssh.keyfile}"

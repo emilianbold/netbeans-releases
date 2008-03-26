@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.reformat.BracesStack.StatementKind;
 import org.netbeans.modules.cnd.editor.reformat.ContextDetector.OperatorKind;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
@@ -62,6 +63,7 @@ public class ReformatterImpl {
     private final int startOffset;
     private final int endOffset;
     private PreprocessorFormatter preprocessorFormatter;
+    private int tabSize;
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
         braces = new BracesStack(codeStyle);
@@ -73,6 +75,11 @@ public class ReformatterImpl {
     }
     
     LinkedList<Diff> reformat(){
+        // cache tab size. it is expensive operation
+        tabSize = codeStyle.getGlobalTabSize();
+        if (tabSize <= 1) {
+            tabSize = 4;
+        }
         ts.moveStart();
         Token<CppTokenId> previous = ts.lookPrevious();
         while(ts.moveNext()){
@@ -145,7 +152,7 @@ public class ReformatterImpl {
                 case LBRACE: //("{", "separator"),
                 {
                     int start = braces.lastStatementStart;
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
                     if (doFormat()) {
                         braceFormat(previous, current);
 
@@ -187,6 +194,9 @@ public class ReformatterImpl {
                             // save K&R start
                             braces.lastKRstart = braces.lastStatementStart;
                         }
+                        if (braces.lastStatementParen >= 0) {
+                            braces.lastStatementParen = ts.index();
+                        }
                     }
                     braces.parenDepth++;
                     if (doFormat()) {
@@ -207,6 +217,9 @@ public class ReformatterImpl {
                             entry.getImportantKind() == CLASS || entry.getImportantKind() == NAMESPACE){
                             braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                         }
+                        if (braces.lastStatementParen >= 0) {
+                            braces.lastStatementParen = -1;
+                        }
                     }
                     if (doFormat()) {
                         formatRightParen(previous, current);
@@ -223,26 +236,7 @@ public class ReformatterImpl {
                     if (isStart) {
                         Token<CppTokenId> next = ts.lookNextImportant();
                         if (next != null && next.id() == COLON) {
-                            braces.isLabel = true;
-                            if (doFormat()) {
-                                if (!ts.isFirstLineToken()) {
-                                    ts.addBeforeCurrent(1, 0);
-                                } else {
-                                    DiffResult diff = diffs.getDiffs(ts, -1);
-                                    if (diff == null){
-                                        if (previous != null && previous.id() == WHITESPACE) {
-                                            ts.replacePrevious(previous, 0, 0);
-                                        }
-                                    } else {
-                                        if (diff.after != null) {
-                                            diff.after.replaceSpaces(0);
-                                        }
-                                        if (diff.replace != null) {
-                                            diff.replace.replaceSpaces(0);
-                                        }
-                                    }
-                                }
-                            }
+                            indentLabel(previous);
                         }
                     }
                     break;
@@ -262,20 +256,9 @@ public class ReformatterImpl {
                     }
                     if (doFormat()) {
                         spaceBefore(previous, codeStyle.spaceBeforeSemi());
-                        if (true) {
-                            // TODO should be controlled
-                            // add new line after ;
-                            if (braces.parenDepth == 0) {
-                                Token<CppTokenId> next = ts.lookNext();
-                                if (next != null) {
-                                    Token<CppTokenId> n2 = ts.lookNext(2);
-                                    if (!(next.id() == NEW_LINE ||
-                                          next.id() == LINE_COMMENT ||
-                                          next.id() == WHITESPACE && n2 != null && n2.id() == LINE_COMMENT)){
-                                        ts.addAfterCurrent(current, 1, getIndent());
-                                        break;
-                                    }    
-                                }
+                        if (braces.parenDepth == 0) {
+                            if (addNewLineAfterSemocolon(current)){
+                                break;
                             }
                         }
                         spaceAfter(current, codeStyle.spaceAfterSemi());
@@ -351,37 +334,41 @@ public class ReformatterImpl {
                             braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                             break;
                         }
-                        spaceBefore(previous, codeStyle.spaceBeforeColon());
-                        spaceAfter(current, codeStyle.spaceAfterColon());
+                        if (ts.isQuestionColumn()) {
+                            spaceBefore(previous, codeStyle.spaceAroundTernaryOps());
+                            spaceAfter(current, codeStyle.spaceAroundTernaryOps());
+                        } else {
+                            spaceBefore(previous, codeStyle.spaceBeforeColon());
+                            spaceAfter(current, codeStyle.spaceAfterColon());
+                        }
                     }
                     break;
                 }
                 case RBRACE: //("}", "separator"),
                 {
                     StackEntry entry = braces.peek();
-                    int indent = braces.pop(ts);
-                    if (entry != null && 
-                       (entry.getKind() == DO || entry.getImportantKind() == DO)) {
-                        Token<CppTokenId> next = ts.lookNextImportant();
-                        if (next != null && next.id() == WHILE) {
-                            braces.isDoWhile = true;
+                    StackEntry statementEntry = null;
+                    if (entry != null) {
+                        if (entry.getKind() == DO || entry.getImportantKind() == DO) {
+                            Token<CppTokenId> next = ts.lookNextImportant();
+                            if (next != null && next.id() == WHILE) {
+                                braces.isDoWhile = true;
+                            }
+                        } else if (entry.getImportantKind() == TRY || entry.getImportantKind() == CATCH) {
+                            statementEntry = braces.lookPerevious();
                         }
                     }
+                    braces.pop(ts);
                     if (doFormat()) {
-                       boolean isClassDeclaration = entry != null && 
-                                            entry.getImportantKind() != null &&
-                                           (entry.getImportantKind() == CLASS ||
-                                            entry.getImportantKind() == STRUCT ||
-                                            entry.getImportantKind() == UNION ||
-                                            entry.getImportantKind() == ENUM);
-                        if (entry != null && entry.getImportantKind() == null) {
-                            entry = braces.peek();
-                            if (entry != null &&
-                                entry.getImportantKind() != null && entry.getImportantKind() == SWITCH) {
-                                indent--;
-                            }
-                        }
-                        indentRbrace(entry, previous, indent, current, isClassDeclaration);
+                        indentRbrace(entry, previous, current, statementEntry);
+                    }
+                    break;
+                }
+                case QUESTION: //("?", "operator"),
+                {
+                    if (doFormat()) {
+                        spaceBefore(previous, codeStyle.spaceAroundTernaryOps());
+                        spaceAfter(current, codeStyle.spaceAroundTernaryOps());
                     }
                     break;
                 }
@@ -391,12 +378,18 @@ public class ReformatterImpl {
                 case MINUSMINUS: //("--","operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
-                            spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
-                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
-                        } else {
+                        if (isOperator()) {
                             spaceBefore(previous, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
+                            Token<CppTokenId> prev = ts.lookPreviousImportant();
+                            if (prev != null && 
+                               (prev.id() == SEMICOLON || prev.id() == COMMA)){
+                               // do nothing because already formated
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                            }
+                            spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                         }
                     }
                     break;
@@ -405,18 +398,24 @@ public class ReformatterImpl {
                 case MINUS: //("-", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
                                 spaceAfter(current, codeStyle.spaceAroundBinaryOps());
                             } else if (kind == OperatorKind.UNARY){
-                                spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                                Token<CppTokenId> prev = ts.lookPreviousImportant();
+                                if (prev != null && 
+                                   (prev.id() == SEMICOLON || prev.id() == COMMA)){
+                                   // do nothing because already formated
+                                } else {
+                                    spaceBefore(previous, codeStyle.spaceAroundUnaryOps());
+                                }
                                 spaceAfter(current, codeStyle.spaceAroundUnaryOps());
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -425,7 +424,10 @@ public class ReformatterImpl {
                 case AMP: //("&", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
@@ -433,9 +435,6 @@ public class ReformatterImpl {
                             } else if (kind == OperatorKind.TYPE_MODIFIER){
                                 //TODO style of type declaration
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -444,7 +443,17 @@ public class ReformatterImpl {
                 case LT: //("<", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else if (isNewStyleCast(current)){
+                            if (current.id()==LT) {
+                                spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinTypeCastParens());
+                                spaceAfter(current, codeStyle.spaceAfterTypeCast());
+                            }
+                        } else {
                             OperatorKind kind = ts.getOperatorKind(current);
                             if (kind == OperatorKind.BINARY){
                                 spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
@@ -452,9 +461,6 @@ public class ReformatterImpl {
                             } else if (kind == OperatorKind.SEPARATOR){
                                 //TODO style of template declaration
                             }
-                        } else {
-                            spaceBefore(previous, false);
-                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
                         }
                     }
                     break;
@@ -472,12 +478,12 @@ public class ReformatterImpl {
                 case GTGT: //(">>", "operator"),
                 {
                     if (doFormat()) {
-                        if (!isOperator()) {
-                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
-                            spaceAfter(current, codeStyle.spaceAroundBinaryOps());
-                        } else {
+                        if (isOperator()) {
                             spaceBefore(previous, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen());
+                        } else {
+                            spaceBefore(previous, codeStyle.spaceAroundBinaryOps());
+                            spaceAfter(current, codeStyle.spaceAroundBinaryOps());
                         }
                     }
                     break;
@@ -521,7 +527,8 @@ public class ReformatterImpl {
                 }
                 case IF: //("if", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeIfParen(), LPAREN);
                     }
@@ -529,7 +536,7 @@ public class ReformatterImpl {
                 }
                 case ELSE: //("else", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
                     if (doFormat()) {
                        formatElse(previous);
                     }
@@ -537,7 +544,8 @@ public class ReformatterImpl {
                 }
                 case WHILE: //("while", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         boolean doSpaceBefore = true;
                         if (braces.isDoWhile) {
@@ -567,7 +575,8 @@ public class ReformatterImpl {
                 }
                 case FOR: //("for", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeForParen(), LPAREN);
                     }
@@ -575,12 +584,17 @@ public class ReformatterImpl {
                 }
                 case TRY: //("try", "keyword-directive"), // C++
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    if (doFormat()) {
+                        // TODO need UI?
+                        spaceBefore(previous, true);
+                    }
                     break;
                 }
                 case CATCH: //("catch", "keyword-directive"), //C++
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         boolean doSpaceBefore = true;
                         if (ts.isFirstLineToken()) {
@@ -607,17 +621,18 @@ public class ReformatterImpl {
                 }
                 case ASM: //("asm", "keyword-directive"), // gcc and C++
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
                     break;
                 }
                 case DO: //("do", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
                     break;
                 }
                 case SWITCH: //("switch", "keyword-directive"),
                 {
-                    braces.push(new StackEntry(ts));
+                    braces.push(ts);
+                    braces.lastStatementParen = ts.index();
                     if (doFormat()) {
                         spaceAfterBefore(current, codeStyle.spaceBeforeSwitchParen(), LPAREN);
                     }
@@ -646,6 +661,17 @@ public class ReformatterImpl {
                         }
                         spaceAfter(current, false);
                     }
+                    break;
+                }
+                case REINTERPRET_CAST:
+                case STATIC_CAST:
+                case CONST_CAST:
+                case DYNAMIC_CAST:
+                {
+                    if (doFormat()) {
+                        spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
+                    }
+                    break;
                 }
             }
             previous = current;
@@ -654,18 +680,30 @@ public class ReformatterImpl {
     }
     
     /*package local*/ int getParentIndent() {
-        return getIndent(braces.getLength()-1);
+        return continuationIndent(braces.getSelfIndent());
+    }
+
+    /*package local*/ int getCaseIndent() {
+        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+            if (codeStyle.indentCasesFromSwitch()) {
+                return getParentIndent() + codeStyle.indentSize()/2;
+            } else {
+                return getParentIndent();
+            }
+        } else {
+            if (codeStyle.indentCasesFromSwitch()) {
+                return getParentIndent() + codeStyle.indentSize();
+            } else {
+                return getParentIndent();
+            }
+        }
     }
 
     /*package local*/ int getIndent() {
-        return getIndent(braces.getLength());
+        return continuationIndent(braces.getIndent());
     }
 
-    /*package local*/ int getIndent(int shift) {
-        shift = shift * codeStyle.indentSize();
-        if (codeStyle.indentCasesFromSwitch()) {
-            shift += codeStyle.indentSize() * braces.switchDepth();
-        }
+    /*package local*/ int continuationIndent(int shift){
         StackEntry entry = braces.peek();
         if (entry != null) {
             if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE){
@@ -676,14 +714,24 @@ public class ReformatterImpl {
                     case ENUM: //("enum", "keyword"),
                     case UNION: //("union", "keyword"),
                         break;
+                    case SWITCH: 
+                        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize()/2;
+                        } else {
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize();
+                        }
+                        break;
                     case IF: 
                     case ELSE: 
                     case FOR: 
                     case DO: 
                     case WHILE: 
-                    case SWITCH: 
                     case CATCH: 
-                        shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize();
+                        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize()/2;
+                        } else {
+                            shift += codeStyle.getFormatStatementContinuationIndent() - codeStyle.indentSize();
+                        }
                         break;
                     default:
                     {
@@ -717,15 +765,23 @@ public class ReformatterImpl {
                 }
             }
         }
-        //Token<CppTokenId> next = ts.lookNextImportant();
-        //if (next != null) {
-        //    System.out.println("Indent:"+next.text().toString()+"="+shift);
-        //}
         if (shift > 0) {
             return shift;
         } else {
             return 0;
         }
+    }
+    
+    private boolean addNewLineAfterSemocolon(Token<CppTokenId> current) {
+        // TODO should be controlled
+        // add new line after ;
+        // TODO some styles allow short statement in line
+        // For example: case 1: i++; break;
+        if (!ts.isLastLineToken()) {
+            ts.addAfterCurrent(current, 1, getIndent());
+            return true;
+        }
+        return false;
     }
 
     private void braceFormat(Token<CppTokenId> previous, Token<CppTokenId> current) {
@@ -744,8 +800,10 @@ public class ReformatterImpl {
                 case ENUM: //("enum", "keyword"),
                 case UNION: //("union", "keyword"),
                 {
-                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceClass(),
-                            codeStyle.spaceBeforeClassDeclLeftBrace(), codeStyle.blankLinesAfterClassHeader()+1);
+                    Token<CppTokenId> next = ts.lookNextImportant();
+                    if (next != null){
+                        newLinesAfter(previous, current);
+                    }
                     return;
                 }
                 case IF: //("if", "keyword-directive"),
@@ -762,7 +820,7 @@ public class ReformatterImpl {
                 }
                 case SWITCH: //("switch", "keyword-directive"),
                 {
-                    newLine(previous, current, codeStyle.getFormatNewlineBeforeBrace(),
+                    newLine(previous, current, codeStyle.getFormatNewLineBeforeBraceSwitch(),
                             codeStyle.spaceBeforeSwitchLeftBrace(), 1);
                     return;
                 }
@@ -801,23 +859,26 @@ public class ReformatterImpl {
         if (entry != null && entry.isLikeToFunction()) {
             newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceDeclaration(),
                     codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
+            //if (codeStyle.newLineFunctionDefinitionName()) {
+            //    functionDefinitionNewLine();
+            //}
         } else if (entry != null && entry.isLikeToArrayInitialization()) {
-            Token<CppTokenId> p1 = ts.lookPreviousLineImportant();
-            if (p1 != null && p1.id() == LBRACE) {
+            StackEntry prevEntry = braces.lookPerevious();
+            if (prevEntry != null && prevEntry.isLikeToArrayInitialization()) {
                 // it a situation int a[][]={{
                 newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE,
-                        codeStyle.spaceBeforeArrayInitLeftBrace(), 1);
+                        codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
             } else {
-                // TODO more control
-                //newLine(previous, current, codeStyle.getFormatNewlineBeforeBrace(),
-                //        codeStyle.spaceBeforeArrayInitLeftBrace());
+                Token<CppTokenId> p1 = ts.lookPreviousLineImportant();
                 boolean concurent = false;
                 if (p1 != null) {
                     if (p1.id() == EQ){
                         concurent |= codeStyle.spaceAroundAssignOps();
                     }
                 }
-                spaceBefore(previous, concurent || codeStyle.spaceBeforeArrayInitLeftBrace());
+                newLine(previous, current, CodeStyle.BracePlacement.SAME_LINE,
+                        concurent || codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
+                spaceAfter(current, codeStyle.spaceWithinBraces());
             }
         } else {
             // TODO add options for block spaces 
@@ -843,6 +904,37 @@ public class ReformatterImpl {
                 return;
             }
             newLine(previous, current, CodeStyle.BracePlacement.NEW_LINE, true, 1);
+        }
+    }
+
+    // Method does not preserve token sequence position
+    // Method skips redundant NL
+    private void newLinesAfter(Token<CppTokenId> previous, Token<CppTokenId> current){
+        int start = ts.index();
+        int lastNL = -1;
+        int count = 0;
+    whileLabel:
+        while (ts.moveNext()) {
+            switch (ts.token().id()) {
+                case WHITESPACE:
+                    break;
+                case NEW_LINE:
+                    lastNL = ts.index();
+                    count++;
+                    break;
+                default:
+                    break whileLabel;
+            }
+        }
+        ts.moveIndex(start);
+        ts.moveNext();
+        newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceClass(),
+                codeStyle.spaceBeforeClassDeclLeftBrace(), codeStyle.blankLinesAfterClassHeader()+1);
+        if (count > 1) {
+            ts.moveNext();
+            while (ts.moveNext() && ts.index() <= lastNL) {
+                ts.replaceCurrent(ts.token(), 0, 0);
+            }
         }
     }
 
@@ -891,19 +983,163 @@ public class ReformatterImpl {
         }
     }
 
+    private void checkDefinition() {
+        int index = ts.index();
+        try {
+            int paren = 1;
+            int comma = 0;
+            int constructor = -1;
+            Token<CppTokenId> next = ts.lookNextImportant();
+            if (next != null && next.id() != RPAREN){
+                comma = 1;
+            }
+            while (ts.moveNext()) {
+                switch (ts.token().id()) {
+                    case COLON:
+                        if (paren == 0){
+                            constructor = ts.index();
+                        }
+                    case SEMICOLON:
+                        if (comma == 0) {
+                            return;
+                        }
+                        comma--;
+                    case COMMA:
+                        if (paren == 1){
+                            comma++;
+                        }
+                        break;
+                    case RPAREN:
+                        paren--;
+                        break;
+                    case LPAREN:
+                        paren++;
+                        break;
+                    case LBRACE:
+                        if (paren == 0) {
+                            if (constructor > 0) {
+                                ts.moveIndex(constructor);
+                                ts.movePrevious();
+                            }
+                            functionDefinitionNewLine();
+                        }
+                        return;
+                    case FOR:
+                    case WHILE:
+                    case IF:
+                    case RBRACE:
+                        return;
+                    default:
+                        break;
+                }
+            }
+            return;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+    
+    private void functionDefinitionNewLine() {
+        int index = ts.index();
+        try {
+            int paren = 0;
+            boolean hasParen = false;
+            while (ts.movePrevious()) {
+                if (braces.lastStatementStart >= ts.index()) {
+                    return;
+                }
+                switch (ts.token().id()) {
+                    case RPAREN:
+                        paren++;
+                        hasParen = true;
+                        break;
+                    case LPAREN:
+                        paren--;
+                        if (paren==0 && hasParen){
+                            Token<CppTokenId> function = ts.lookPreviousImportant();
+                            if (function != null && function.id()==IDENTIFIER) {
+                                int startName = -1;
+                                while (ts.movePrevious()) {
+                                    switch(ts.token().id()){
+                                        case COMMA:
+                                        case COLON:
+                                            return;
+                                        case WHITESPACE:
+                                            break;
+                                        case IDENTIFIER:
+                                        case SCOPE:
+                                        case TILDE:
+                                            startName = ts.index();
+                                            break;
+                                        default:
+                                            ts.moveIndex(startName);
+                                            ts.moveNext();
+                                            newLineBefore();
+                                            return;
+                                    }
+                                }
+                                return;
+                            }
+                        }
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    private void indentLabel(Token<CppTokenId> previous) {
+        braces.isLabel = true;
+        int indent = 0;
+        if (!codeStyle.absoluteLabelIndent()) {
+            indent = braces.getSelfIndent();
+        }
+        if (doFormat()) {
+            if (!ts.isFirstLineToken()) {
+                ts.addBeforeCurrent(1, 0);
+            } else {
+                DiffResult diff = diffs.getDiffs(ts, -1);
+                if (diff == null) {
+                    if (previous != null && previous.id() == WHITESPACE) {
+                        ts.replacePrevious(previous, 0, indent);
+                    }
+                } else {
+                    if (diff.after != null) {
+                        diff.after.replaceSpaces(indent);
+                    }
+                    if (diff.replace != null) {
+                        diff.replace.replaceSpaces(indent);
+                    }
+                }
+            }
+        }
+    }
+
     private void indentRbrace(StackEntry entry, Token<CppTokenId> previous,
-                              int indent, Token<CppTokenId> current, boolean isClassDeclaration) {
+                              Token<CppTokenId> current, StackEntry statementEntry) {
+        
+        int indent = continuationIndent(entry.getSelfIndent());
         if (previous != null) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 if (diff.before != null && previous.id() == WHITESPACE) {
-                    diff.before.replaceSpaces(getIndent(indent)); // NOI18N
+                    diff.before.replaceSpaces(indent); // NOI18N
                     done = true;
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        diff.replace.replaceSpaces(getIndent(indent)); // NOI18N
+                        if (entry.isLikeToArrayInitialization()) {
+                            if (codeStyle.spaceWithinBraces() && !diff.replace.hasNewLine()) {
+                                diff.replace.replaceSpaces(1);
+                            } else {
+                                diff.replace.replaceSpaces(0);
+                            }
+                        } else {
+                            diff.replace.replaceSpaces(indent);
+                        }
                     } else {
                         diff.replace.replaceSpaces(0); // NOI18N
                     }
@@ -912,9 +1148,13 @@ public class ReformatterImpl {
                 if (diff.after != null) {
                     if (!done) {
                         if (diff.after.hasNewLine() || ts.isFirstLineToken()) {
-                            diff.after.replaceSpaces(getIndent(indent)); // NOI18N
+                            diff.after.replaceSpaces(indent); // NOI18N
                         } else {
-                            diff.after.setText(1, getIndent(indent)); // NOI18N
+                            if (!entry.isLikeToArrayInitialization()) {
+                                ts.addBeforeCurrent(1, indent);
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            }
                         }
                     }
                     done = true;
@@ -923,20 +1163,35 @@ public class ReformatterImpl {
             if (!done) {
                 if (previous.id() == WHITESPACE) {
                     if (ts.isFirstLineToken()) {
-                        ts.replacePrevious(previous, 0, getIndent(indent));
+                        ts.replacePrevious(previous, 0, indent);
                     } else {
                         if (braces.parenDepth <= 0) {
-                            ts.replacePrevious(previous, 1, getIndent(indent));
+                            ts.replacePrevious(previous, 1, indent);
                         } else {
-                            //it a array?
-                            // do nothing
+                            if (entry.isLikeToArrayInitialization()) {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            }
                         }
                     }
-                } else if (previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE) {
-                    ts.addBeforeCurrent(0, getIndent(indent));
+                } else if (previous.id() == NEW_LINE ||
+                           previous.id() == PREPROCESSOR_DIRECTIVE ||
+                           previous.id() == ESCAPED_WHITESPACE) {
+                    ts.addBeforeCurrent(0, indent);
+                } else {
+                    if (!entry.isLikeToArrayInitialization()) {
+                        ts.addBeforeCurrent(1, indent);
+                    } else {
+                        spaceBefore(previous, codeStyle.spaceWithinBraces());
+                    }
                 }
             }
         }
+        boolean isClassDeclaration = entry.getImportantKind() != null &&
+                                    (entry.getImportantKind() == CLASS ||
+                                     entry.getImportantKind() == STRUCT ||
+                                     entry.getImportantKind() == UNION ||
+                                     entry.getImportantKind() == ENUM);
+
         Token<CppTokenId> next = ts.lookNext();
         if (isClassDeclaration) {
             if (next != null && !(next.id() == WHITESPACE || next.id() == NEW_LINE)) {
@@ -949,7 +1204,8 @@ public class ReformatterImpl {
             switch (nextImportant.id()) {
                 case WHILE:
                 {
-                    if (entry != null && entry.getKind() == DO) {
+                    StackEntry top = braces.peek();
+                    if (top != null && top.getKind() == DO) {
                         if (!codeStyle.newLineWhile()) {
                             if (ts.isLastLineToken()) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
@@ -959,7 +1215,7 @@ public class ReformatterImpl {
                             }
                         } else {
                             if (!ts.isLastLineToken()) {
-                                ts.addAfterCurrent(current, 1, getIndent(indent));
+                                ts.addAfterCurrent(current, 1, top.getSelfIndent());
                             }
                         }
                         return;
@@ -968,8 +1224,8 @@ public class ReformatterImpl {
                 }
                 case CATCH:
                 {
-                    if (entry != null &&
-                        (entry.getKind() == TRY || entry.getKind() == CATCH)) {
+                    if (statementEntry != null &&
+                        (statementEntry.getKind() == TRY || statementEntry.getKind() == CATCH)) {
                         if (!codeStyle.newLineCatch()) {
                             if (ts.isLastLineToken()) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
@@ -979,7 +1235,7 @@ public class ReformatterImpl {
                             }
                         } else {
                             if (!ts.isLastLineToken()) {
-                                ts.addAfterCurrent(current, 1, getIndent(indent));
+                                ts.addAfterCurrent(current, 1, statementEntry.getSelfIndent());
                             }
                         }
                         return;
@@ -997,7 +1253,7 @@ public class ReformatterImpl {
                         }
                     } else {
                         if (!ts.isLastLineToken()) {
-                            ts.addAfterCurrent(current, 1, getIndent(indent));
+                            ts.addAfterCurrent(current, 1, indent);
                         }
                     }
                     return;
@@ -1006,7 +1262,7 @@ public class ReformatterImpl {
         }
         next = ts.lookNextLineImportant();
         if (next != null && !(next.id() == RPAREN || next.id() == COMMA || next.id() == SEMICOLON || next.id() == NEW_LINE)) {
-            ts.addAfterCurrent(current, 1, getIndent(indent));
+            ts.addAfterCurrent(current, 1, indent);
         }
     }
 
@@ -1041,6 +1297,51 @@ public class ReformatterImpl {
                 Token<CppTokenId> prev = ts.findOpenParenToken(parenDepth);
                 if (prev != null) {
                     switch (prev.id()){
+                        case FOR:
+                        {
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineFor()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case IF:
+                        {
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineIfCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
+                        case WHILE:
+                        {
+                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            } else if (codeStyle.alignMultilineWhileCondition()){
+                                int i = ts.openParenIndent(parenDepth);
+                                if (i >=0) {
+                                    space = i;
+                                }
+                            }
+                            break;
+                        }
                         case IDENTIFIER:
                         {
                             if (braces.isDeclarationLevel()){
@@ -1050,17 +1351,36 @@ public class ReformatterImpl {
                                         space = i;
                                     }
                                 }
-                            } else {
-                                if (codeStyle.alignMultilineCallArgs()){
-                                    int i = ts.openParenIndent(parenDepth);
+                                break;
+                            }
+                        }
+                        // no break
+                        default:
+                        {
+                            Token<CppTokenId> closer = ts.findOpenParenToken(1);
+                            if (closer != null && closer.id() == IDENTIFIER) {
+                                if (codeStyle.alignMultilineCallArgs()) {
+                                    int i = ts.openParenIndent(1);
                                     if (i >=0) {
                                         space = i;
                                     }
+                                }
+                            } else if (codeStyle.alignMultilineParen()){
+                                int i = ts.openParenIndent(1);
+                                if (i >=0) {
+                                    space = i;
                                 }
                             }
                             break;
                         }
                     }
+                }
+            } else {
+                StackEntry top = braces.peek();
+                if (top != null &&
+                    top.isLikeToArrayInitialization() &&
+                    codeStyle.alignMultilineArrayInit()) {
+                    space = ts.openBraceIndent(1);
                 }
             }
             if (space == -1) {
@@ -1085,6 +1405,9 @@ public class ReformatterImpl {
                     }
                 }
                 if (first != null && (first.id() == CASE ||first.id() == DEFAULT)){
+                    space = getCaseIndent();
+                }
+                if (braces.isDoWhile && first != null && first.id() == WHILE){
                     space = getParentIndent();
                 }
             }
@@ -1109,9 +1432,9 @@ public class ReformatterImpl {
         int space;
         Token<CppTokenId> first = ts.lookNextLineImportant();
         if (first != null && (first.id() == CASE ||first.id() == DEFAULT)){
-            space = getParentIndent(); // NOI18N
+            space = getCaseIndent();
         } else {
-            space = getIndent(); // NOI18N
+            space = getIndent();
         }
         if (current.id() == WHITESPACE) {
             ts.replaceCurrent(current, 0, space);
@@ -1125,10 +1448,6 @@ public class ReformatterImpl {
             // do not format block comments inside cole line
             return;
         }
-        int tab = codeStyle.getGlobalTabSize();
-        if (tab <= 1) {
-            tab = 4;
-        }
         int originalIndent = 0;
         if (previous == null || previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE){
             originalIndent = 0;
@@ -1138,7 +1457,7 @@ public class ReformatterImpl {
                 if (s.charAt(i) == ' '){ // NOI18N
                     originalIndent++;
                 } else if (s.charAt(i) == '\t'){ // NOI18N
-                    originalIndent = (originalIndent/tab+1)*tab;
+                    originalIndent = (originalIndent/tabSize+1)*tabSize;
                 }
             }
         }
@@ -1157,7 +1476,7 @@ public class ReformatterImpl {
                 if (s.charAt(i) == ' '){ // NOI18N
                     currentIndent++;
                 } else if (s.charAt(i) == '\t'){ // NOI18N
-                    currentIndent = (currentIndent/tab+1)*tab;
+                    currentIndent = (currentIndent/tabSize+1)*tabSize;
                 }
             } else {
                 if (start >= 0) {
@@ -1217,6 +1536,8 @@ public class ReformatterImpl {
             CodeStyle.BracePlacement where, boolean spaceBefore, int newLineAfter){
         if (where == CodeStyle.BracePlacement.NEW_LINE) {
             newLineBefore();
+        } else if (where == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED) {
+            newLineBefore();
         } else if (where == CodeStyle.BracePlacement.SAME_LINE) {
             if (ts.isFirstLineToken()){
                 if (!removeLineBefore(spaceBefore)){
@@ -1229,7 +1550,7 @@ public class ReformatterImpl {
         if (newLineAfter>0){
             if (ts.isLastLineToken()) {
                 if (newLineAfter>1) {
-                    ts.addAfterCurrent(current, newLineAfter-1, getIndent());
+                    ts.addAfterCurrent(current, newLineAfter-1, 0);
                 }
             } else {
                 ts.addAfterCurrent(current, newLineAfter, getIndent());
@@ -1322,25 +1643,34 @@ public class ReformatterImpl {
     
     private void newLineBefore() {
         if (!ts.isFirstLineToken()) {
-           Token<CppTokenId> previous = ts.lookPrevious();
-           if (previous != null && previous.id() == WHITESPACE) {
+            Token<CppTokenId> previous = ts.lookPrevious();
+            if (previous != null) {
                 DiffResult diff = diffs.getDiffs(ts, -1);
-                if (diff != null) {
-                    if (diff.after != null) {
-                        diff.after.setText(1, getParentIndent());
-                        if (diff.replace != null){
-                            diff.replace.setText(0, 0);
+                if (previous.id() == WHITESPACE) {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            if (diff.replace != null) {
+                                diff.replace.setText(0, 0);
+                            }
+                            return;
+                        } else if (diff.replace != null) {
+                            diff.replace.setText(1, getParentIndent());
+                            return;
                         }
-                        return;
-                    } else if (diff.replace != null) {
-                        diff.replace.setText(1, getParentIndent());
-                        return;
+                    }
+                    ts.replacePrevious(previous, 1, getParentIndent());
+                    return;
+                } else {
+                    if (diff != null) {
+                        if (diff.after != null) {
+                            diff.after.setText(1, getParentIndent());
+                            return;
+                        }
                     }
                 }
-               ts.replacePrevious(previous, 1, getParentIndent());
-           } else {
-               ts.addBeforeCurrent(1, getParentIndent());
-           }
+            }
+            ts.addBeforeCurrent(1, getParentIndent());
         } else {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
@@ -1439,12 +1769,17 @@ public class ReformatterImpl {
                 return true;
             } else if (curr == COLON) {
                 return true;
-            } else if (prev == OPERATOR) {
+            } else if (curr == LT) {
+                return true;
+            } else if (curr == GT) {
                 return true;
             }
             return false;
         } else if (OPERATOR_CATEGORY.equals(prevCategory)) {
             if (OPERATOR_CATEGORY.equals(currCategory)) {
+                if (curr == GT && (prev == STAR || prev == AMP)){
+                    return true;
+                }
                 return false;
             }
             return true;
@@ -1487,7 +1822,10 @@ public class ReformatterImpl {
             } else if (canRemoveSpaceAfter(current)){
                 if (next.id() == WHITESPACE) {
                     Token<CppTokenId> n2 = ts.lookNext(2);
-                    if (n2 == null || !OPERATOR_CATEGORY.equals(n2.id().primaryCategory())){
+                    if (n2 == null ||
+                        SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
+                        !OPERATOR_CATEGORY.equals(n2.id().primaryCategory()) ||
+                        (KEYWORD_CATEGORY.equals(current.id().primaryCategory()) && n2.id() == LT)){
                         ts.replaceNext(current, next, 0, 0);
                     }
                 }
@@ -1541,6 +1879,9 @@ public class ReformatterImpl {
                 if (entry == null){
                     spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen());
                     spaceAfter(current, codeStyle.spaceWithinMethodDeclParens());
+                    if (codeStyle.newLineFunctionDefinitionName()) {
+                        checkDefinition();
+                    }
                     return;
                 }
                 if (entry.getImportantKind() != null) {
@@ -1549,11 +1890,39 @@ public class ReformatterImpl {
                         case NAMESPACE:
                             spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen());
                             spaceAfter(current, codeStyle.spaceWithinMethodDeclParens());
+                            if (codeStyle.newLineFunctionDefinitionName()) {
+                                checkDefinition();
+                            }
                             return;
                     }
                 }
                 spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen());
                 spaceAfter(current, codeStyle.spaceWithinMethodCallParens());
+                return;
+            } else if (p != null && 
+                       (KEYWORD_CATEGORY.equals(p.id().primaryCategory()) ||
+                        KEYWORD_DIRECTIVE_CATEGORY.equals(p.id().primaryCategory()))){
+                switch (p.id()) {
+                    case RETURN:
+                    case SIZEOF:
+                    case TYPEID:
+                    case TYPEOF:
+                    case __TYPEOF:
+                    case __TYPEOF__:
+                    case ALIGNOF:
+                    case __ALIGNOF__:
+                    case THROW:
+                    case __ATTRIBUTE__:
+                    case _DECLSPEC:
+                    case __DECLSPEC:
+                    case _FAR:
+                    case __FAR:
+                    case _NEAR:
+                    case __NEAR:
+                    case _STDCALL:
+                    case __STDCALL:
+                        spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
+                }
                 return;
             } else if (ts.isTypeCast()){
                 spaceAfter(current, codeStyle.spaceWithinTypeCastParens());
@@ -1646,6 +2015,54 @@ public class ReformatterImpl {
         return p != null && p.id() == OPERATOR;
     }
 
+    private boolean isNewStyleCast(Token<CppTokenId> current){
+        if (current.id() == LT) {
+            Token<CppTokenId> p = ts.lookPreviousImportant(1);
+            if (p != null) {
+                return p.id() == REINTERPRET_CAST ||
+                       p.id() == STATIC_CAST ||
+                       p.id() == CONST_CAST ||
+                       p.id() == DYNAMIC_CAST;
+            }
+            return false;
+        } else if (current.id() == GT) {
+            // TODO fing matched LT
+            int index = ts.index();
+            try {
+                int depth = 1;
+                while (ts.movePrevious()) {
+                    switch (ts.token().id()) {
+                        case GT:
+                            depth++;
+                            break;
+                        case LT:
+                        {
+                            depth--;
+                            if (depth <=0) {
+                                Token<CppTokenId> p = ts.lookPreviousImportant(1);
+                                if (p != null) {
+                                    return p.id() == REINTERPRET_CAST ||
+                                           p.id() == STATIC_CAST ||
+                                           p.id() == CONST_CAST ||
+                                           p.id() == DYNAMIC_CAST;
+                                }
+                                return false;
+                            }
+                            break;
+                        }
+                        case LBRACE:
+                        case RBRACE:
+                        case SEMICOLON:
+                            return false;
+                    }
+                }
+            } finally {
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
+        }
+        return false;
+    }
     
     // <importantFrom><WS><NL><WS><importantTo>
     // where <NL> replaced on nonNL
@@ -1752,7 +2169,7 @@ public class ReformatterImpl {
             diffToSpace.setText(0, 1);
         }
     }
-    
+
     /*package local*/ boolean doFormat(){
         return ts.offset() >= this.startOffset;
     }

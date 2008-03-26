@@ -43,6 +43,7 @@
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/redelivery"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.redelivery.RedirectTargetExtenionPropertyClassProvider"/>
             <folder name="redelivery">
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>
@@ -73,7 +74,7 @@
                 </folder>
                 <file name="maxAttempts">
                     <attr name="type" stringvalue="Integer"/>
-                    <attr name="description" stringvalue="Maximum redelivery attempts"/>
+                    <attr name="description" stringvalue="Maximum redelivery attempts. Use -1 for infinite."/>
                 </file>
                 <file name="waitTime">
                     <attr name="type" stringvalue="Integer"/>
@@ -94,6 +95,24 @@
                 <file name="maximumConcurrencyLimit">
                     <attr name="type" stringvalue="Integer"/>
                     <attr name="description" stringvalue="Maximim Concurrency Limit"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="WsitCallbackProjectExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd"/>
+            <attr name="extensionType" stringvalue="port"/>
+            <attr name="extensionTarget" stringvalue="sun-http-binding"/>
+            <attr name="prefix" stringvalue="wsit-callback-project"/>
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/wsit/callbackproject"/>
+            <attr name="SystemFileSystem.localizingBundle"
+                  stringvalue="org.namebeans.modules.compapp.configextension.Bundle"/>
+            <attr name="SystemFileSystem.icon"
+                  urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png"/>
+            <attr name="extensionClassProvider" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.WsitCallbackExtenionPropertyClassProvider"/>
+            <folder name="WsitCallback">
+                <file name="CallbackProject">
+                    <attr name="type" stringvalue="org.netbeans.modules.compapp.configextension.wsitcallback.properties.CallbackProjectExtensionProperty"/>
+                    <attr name="description" stringvalue="WSIT Callback handler Java project"/>
                 </file>
             </folder>
         </folder>

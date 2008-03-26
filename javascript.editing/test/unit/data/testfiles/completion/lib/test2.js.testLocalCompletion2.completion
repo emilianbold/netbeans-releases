@@ -71,6 +71,7 @@ CLASS      EvalError                                  Core JS
 CLASS      Event                                      DOM
 CLASS      EventException                             DOM
 CLASS      EventTarget                                DOM
+CLASS      FlashPlayer                                DOM
 CLASS      Form                                       DOM
 CLASS      Function                                   Core JS
 CLASS      HTMLAnchorElement                          DOM
@@ -174,32 +175,32 @@ CLASS      URIError                                   Core JS
 CLASS      ViewCSS                                    DOM
 CLASS      Window                                     DOM
 CLASS      XMLHttpRequest                             DOM
-METHOD     decodeURI(encodedURI)                      Core JS
+METHOD     decodeURI(encodedURI) : void               Core JS
 METHOD     decodeURIComponent(encodedURI)             Core JS
-METHOD     encodeURI(URI)                             Core JS
-METHOD     encodeURIComponent(String)                 Core JS
-METHOD     eval(string, object)                       Core JS
-METHOD     isFinite(number)                           Core JS
-METHOD     isNaN(testValue)                           Core JS
-METHOD     parseFloat(string)                         Core JS
-METHOD     parseInt(string, radix)                    Core JS
-METHOD     undefined()                                Core JS
+METHOD     encodeURI(URI) : void                      Core JS
+METHOD     encodeURIComponent(String) : v             Core JS
+METHOD     eval(string, object) : void                Core JS
+METHOD     isFinite(number) : void                    Core JS
+METHOD     isNaN(testValue) : void                    Core JS
+METHOD     parseFloat(string) : void                  Core JS
+METHOD     parseInt(string, radix) : void             Core JS
+METHOD     undefined() : void                         Core JS
 VARIABLE   arguments                                  null
 VARIABLE   bar2                                       
 VARIABLE   element2                                   
 VARIABLE   foo2                                       
 VARIABLE   options2                                   
 VARIABLE   update2                                    
-GLOBAL     cssRule                                    DOM
-GLOBAL     form                                       DOM
-GLOBAL     navigator                                  DOM
-GLOBAL     screen                                     DOM
-GLOBAL     selection                                  DOM
-GLOBAL     style                                      DOM
-GLOBAL     stylesheet                                 DOM
-GLOBAL     table                                      DOM
-GLOBAL     tableRow                                   DOM
-GLOBAL     window                                     DOM
+GLOBAL     cssRule : CSSRule                          DOM
+GLOBAL     form : Form                                DOM
+GLOBAL     navigator : Navigator                      DOM
+GLOBAL     screen : Screen                            DOM
+GLOBAL     selection : Selection                      DOM
+GLOBAL     style : Style                              DOM
+GLOBAL     stylesheet : Stylesheet                    DOM
+GLOBAL     table : Table                              DOM
+GLOBAL     tableRow : TableRow                        DOM
+GLOBAL     window : Window                            DOM
 PROPERTY   AbstractView                               DOM
 PROPERTY   Arguments                                  Core JS
 PROPERTY   Array                                      Core JS
@@ -262,6 +263,7 @@ PROPERTY   EventException                             DOM
 PROPERTY   EventListener                              DOM
 PROPERTY   EventTarget                                DOM
 PROPERTY   ExceptionCode                              DOM
+PROPERTY   FlashPlayer                                DOM
 PROPERTY   Form                                       DOM
 PROPERTY   Function                                   Core JS
 PROPERTY   HTMLAnchorElement                          DOM
@@ -381,16 +383,16 @@ PROPERTY   ViewCSS                                    DOM
 PROPERTY   Window                                     DOM
 PROPERTY   XMLHttpRequest                             DOM
 ------------------------------------
-METHOD     eval(string)                               Object
-METHOD     hasOwnProperty(prop)                       Object
-METHOD     isPrototypeOf(object)                      Object
-METHOD     propertyIsEnumerable(prop)                 Object
-METHOD     toLocaleString()                           Object
-METHOD     toSource()                                 Object
-METHOD     toString()                                 Object
-METHOD     unwatch(prop)                              Object
-METHOD     valueOf()                                  Object
-METHOD     watch(prop, handler)                       Object
+METHOD     eval(string) : void                        Object
+METHOD     hasOwnProperty(prop) : Boolean             Object
+METHOD     isPrototypeOf(object) : Boolea             Object
+METHOD     propertyIsEnumerable(prop) : B             Object
+METHOD     toLocaleString() : String                  Object
+METHOD     toSource() : void                          Object
+METHOD     toString() : String                        Object
+METHOD     unwatch(prop) : void                       Object
+METHOD     valueOf() : void                           Object
+METHOD     watch(prop, handler) : void                Object
 KEYWORD    abstract                                   null
 KEYWORD    boolean                                    null
 KEYWORD    break                                      null

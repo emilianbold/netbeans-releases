@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.api.Modifier;
  * @author Tor Norbye
  */
 public interface Element extends ElementHandle {
+    String getFqn();
     String getName();
     String getIn();
     ElementKind getKind();

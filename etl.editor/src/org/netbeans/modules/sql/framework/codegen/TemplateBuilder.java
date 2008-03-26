@@ -47,7 +47,7 @@ import org.apache.velocity.app.VelocityEngine;
 import net.java.hulp.i18n.Logger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval
@@ -63,7 +63,7 @@ public class TemplateBuilder {
     /** Prefix for global Velocity engine * */
     private static final String SQLFRAMEWORK_DB_PREFIX = "org/netbeans/modules/sql/framework/codegen/";
     private static AtomicReference<VelocityEngine> VELOCITY_ENGINE = null;
-    private static transient final Logger mLogger = LogUtil.getLogger(TemplateBuilder.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(TemplateBuilder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -98,7 +98,7 @@ public class TemplateBuilder {
             ve.mergeTemplate(SQLFRAMEWORK_DB_PREFIX + templateFile, TEMPLATE_ENCODING, context, sw);
             return sw.toString();
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR090: Problem in initializing/merging Velocity template:{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT090: Problem in initializing/merging Velocity template:{0}", LOG_CATEGORY), ex);
             return null;
         }
     }

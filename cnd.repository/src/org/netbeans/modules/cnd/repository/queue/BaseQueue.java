@@ -143,7 +143,7 @@ public class BaseQueue {
         }
     }
     
-    protected Object lock = new Object();
+    protected final Object lock = new Object();
     protected StopWatch stopWatch = needsTiming() ? new StopWatch(false) : null;
     protected Queue queue;
     

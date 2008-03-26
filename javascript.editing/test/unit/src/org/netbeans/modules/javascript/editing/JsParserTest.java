@@ -93,15 +93,15 @@ public class JsParserTest extends JsTestBase {
     }
         
     public void testPartial1() throws Exception {
-        checkParseTree("testfiles/broken1.rb", "\"str\".^", Token.STRING);
+        checkParseTree("testfiles/broken1.rb", "\"str\".^", Token.GETPROP);
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "x.^", Token.NAME);
+        checkParseTree("testfiles/broken2.rb", "x.^", Token.GETPROP);
     }
     
     public void testPartial3() throws Exception {
-        checkParseTree("testfiles/broken3.rb", "new String().^", Token.NEW);
+        checkParseTree("testfiles/broken3.rb", "new String().^", Token.GETPROP);
     }
     
     public void testPartial4() throws Exception {
@@ -117,6 +117,6 @@ public class JsParserTest extends JsTestBase {
     }
 
     public void testPartial7() throws Exception {
-        checkParseTree("testfiles/broken7.rb", "k.^", Token.NAME);
+        checkParseTree("testfiles/broken7.rb", "k.^", Token.GETPROP);
     }
 }

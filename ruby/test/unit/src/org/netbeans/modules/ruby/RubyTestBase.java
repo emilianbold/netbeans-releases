@@ -127,8 +127,7 @@ TranslatedSource translatedSource = null; // TODO
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
         if (!LanguageRegistry.getInstance().isSupported(RubyInstallation.RUBY_MIME_TYPE)) {
-            List<String> extensions = Collections.singletonList("rb");
-            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
+            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", actions, new RubyLanguage(), new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
             List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
             languages.add(dl);
             registry.addLanguages(languages);

@@ -44,6 +44,7 @@ package org.netbeans.modules.java.project;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -69,6 +70,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class BrokenReferencesModel extends AbstractListModel {

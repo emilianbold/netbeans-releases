@@ -118,6 +118,8 @@ import org.openide.util.UserCancelException;
 * @author Jaroslav Tulach
 */
 public abstract class CloneableEditorSupport extends CloneableOpenSupport {
+    static final RequestProcessor RP = new RequestProcessor("Document Processing");
+    
     /** Common name for editor mode. */
     public static final String EDITOR_MODE = "editor"; // NOI18N
     private static final String PROP_PANE = "CloneableEditorSupport.Pane"; //NOI18N
@@ -558,7 +560,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
 
             // The thread nume should be: "Loading document " + env; // NOI18N
-            prepareTask = RequestProcessor.getDefault().post(new Runnable() {
+            prepareTask = RP.post(new Runnable() {
                                                    private boolean runningInAtomicLock;
 
                                                    public void run() {
@@ -688,6 +690,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * <P>
     * If the document is not loaded the method blocks until
     * it is.
+    * 
+    * <p>Method will throw {@link org.openide.util.UserQuestionException} exception
+    * if file size is too big. This exception could be caught and 
+    * its method {@link org.openide.util.UserQuestionException#confirmed} 
+    * can be used for confirmation. You need to call {@link #openDocument}}
+    * one more time after confirmation.
     *
     * @return the styled document for this cookie that
     *   understands the guarded attribute
@@ -1677,7 +1685,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             synchronized (this) {
                 if (!this.inUserQuestionExceptionHandler) {
                     this.inUserQuestionExceptionHandler = true;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                                                            public void run() {
                                                                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),

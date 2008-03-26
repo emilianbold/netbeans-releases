@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.openide.util.Union2;
 
 /**
@@ -123,6 +124,8 @@ public class ComputeImports {
         Set<String> unresolvedNames = new HashSet<String>(v.unresolved);
         
         unresolvedNames.addAll(forcedUnresolved);
+        
+        unresolvedNames.addAll(JavadocImports.computeUnresolvedImports(info));
         
         for (String unresolved : unresolvedNames) {
             if (isCancelled())
@@ -352,7 +355,7 @@ public class ComputeImports {
                 if (simpleName != null) {
                     unresolved.add(simpleName);
                     
-                    Scope currentScope = info.getTrees().getScope(getCurrentPath());
+                    Scope currentScope = getScope();
                     
                     hints.add(new AccessibleHint(simpleName, currentScope));
                     
@@ -371,6 +374,21 @@ public class ComputeImports {
             return null;
         }
         
+        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.CLASS);
+        
+        //resolving scope for each unresolved identifier is very slow, and not really necessary for Trees.isAccessible -
+        //scope for the nearest class should be OK
+        private Scope getScope() {
+            TreePath tp = getCurrentPath();
+            Kind kind = tp.getLeaf().getKind();
+            
+            while (!SAFE_KIND_FOR_SCOPE.contains(kind)) {
+                tp = tp.getParentPath();
+                kind = tp.getLeaf().getKind();
+            }
+            
+            return info.getTrees().getScope(tp);
+        }
     }
     
     public static interface Hint {

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -105,7 +105,6 @@
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
-<mapID target="workspace.window.mode" url="configure/workspace/window_modes.html" />
 <mapID target="configure.menucustomize" url="configure/workspace/menu_customize.html" />
 <mapID target="configure.menucommands" url="configure/workspace/menu_commands.html" />
 <mapID target="configure.menucontextual" url="configure/workspace/menu_contextual.html" />
@@ -143,7 +142,15 @@
 <mapID target="accessibility.jhshortcuts" url="shortcuts/jhshortcuts.html" />
 <mapID target="accessibility.alternate.browser" url="accessibility/alternate_browser.html" />
 
+<!--javascript targets -->
 
+<mapID target="javascript.intro" url="javascript/javascript_editor.html" />
+<mapID target="js.code.completion" url="javascript/code_completion.html" />
+<mapID target="js.basics" url="javascript/js_basics.html" />
+<mapID target="js.refactoring" url="javascript/refactoring.html" />
+<mapID target="js.quickfixes" url="javascript/quickfixes.html" />
+<mapID target="js.browser.compatibility" url="javascript/browser_compat.html" />
+<mapID target="js.function.jump" url="javascript/function_jumping.html" />
 
 <!-- ================================ begin CSH IDs ================================ -->
 
@@ -258,6 +265,9 @@
 
     <!--ID for Find dialog-->
 <mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
+
+    <!--ID for Replace dialog-->
+<mapID target="editing.find" url="files/files_search.html" />    
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />

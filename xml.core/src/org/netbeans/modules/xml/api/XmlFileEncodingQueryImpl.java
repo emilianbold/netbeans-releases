@@ -36,6 +36,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -141,7 +143,18 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
                 return null;
             }
             else {
-                Charset c = Charset.forName(encoding);
+                Charset c;
+                try {
+                    c = Charset.forName(encoding);
+                } catch (UnsupportedCharsetException e) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                } catch (IllegalCharsetNameException e) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                }
                 encoder = c.newEncoder();
                 LOG.log (Level.FINEST,ENCODER_SELECTED,encoder);
                 return flushHead(in, out);
@@ -261,7 +274,18 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
                 return null;
             }
             else {
-                Charset c = Charset.forName(encoding);
+                Charset c;
+                try {
+                    c = Charset.forName(encoding);
+                } catch (UnsupportedCharsetException e) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                } catch (IllegalCharsetNameException e) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                }
                 decoder = c.newDecoder();
                 LOG.log (Level.FINEST,DECODER_SELECTED,decoder);
                 return flushHead(in, out);

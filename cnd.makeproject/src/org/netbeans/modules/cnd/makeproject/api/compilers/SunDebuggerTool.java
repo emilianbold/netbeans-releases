@@ -48,4 +48,11 @@ public class SunDebuggerTool extends Tool {
     public SunDebuggerTool(CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
+    
+    @Override
+    public SunDebuggerTool createCopy() {
+        SunDebuggerTool copy = new SunDebuggerTool(getFlavor(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
 }

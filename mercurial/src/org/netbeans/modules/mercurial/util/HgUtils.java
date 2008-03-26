@@ -306,7 +306,6 @@ public class HgUtils {
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
         String path = file.getPath();
-        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -317,12 +316,14 @@ public class HgUtils {
         // We assume that the Project should not be ignored.
         if(file.isDirectory()){
             ProjectManager projectManager = ProjectManager.getDefault();
-            if (projectManager.isProject(FileUtil.toFileObject(file))) {
+            FileObject fileObj =  FileUtil.toFileObject(file);
+            if (fileObj != null && projectManager.isProject(fileObj)) {
                 return false;
             }
         }
 
         Set<Pattern> patterns = getIgnorePatterns(topFile);
+        path = path.substring(topFile.getAbsolutePath().length() + 1);
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
@@ -330,8 +331,14 @@ public class HgUtils {
                 return true;
             }
         }
+        // If a parent of the file matches a pattern ignore the file
+        File parentFile = file.getParentFile();
+        while (!parentFile.equals(topFile)) {
+            if (isIgnored(parentFile, false)) return true;
+            parentFile = parentFile.getParentFile();
+        }
 
-        if (FILENAME_HGIGNORE.equals(name)) return false;
+        if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
             if (sharability == SharabilityQuery.NOT_SHARABLE) return true;

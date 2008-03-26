@@ -229,7 +229,7 @@ public class UtilTest extends TestBase {
         
         NbModuleProject project = generateStandaloneModule("module1");
         NbPlatform platform = project.getPlatform(false);
-        URL oneModuleDocURL = Util.urlForDir(oneModuleDoc);
+        URL oneModuleDocURL = FileUtil.urlForArchiveOrDir(oneModuleDoc);
         platform.addJavadocRoot(oneModuleDocURL);
         ModuleDependency md = new ModuleDependency(project.getModuleList().getEntry(project.getCodeNameBase()));
         
@@ -242,7 +242,7 @@ public class UtilTest extends TestBase {
         index = new File(moduleDoc, "index.html");
         assertTrue(index.createNewFile());
         
-        platform.addJavadocRoot(Util.urlForDir(nbDoc));
+        platform.addJavadocRoot(FileUtil.urlForArchiveOrDir(nbDoc));
         platform.removeJavadocRoots(new URL[] {oneModuleDocURL});
         url = Util.findJavadoc(md, platform);
         assertNotNull("url was found", url);

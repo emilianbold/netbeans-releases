@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <head>
 
-        <title>MySQL Support in NetBeans IDE</title>
+        <title>Using MySQL with the NetBeans IDE</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -52,34 +52,42 @@ made subject to such option by the copyright holder.
 
     <body>
 
-        <h2>MySQL Support in NetBeans IDE </h2>
+        <h2>Using MySQL with the NetBeans IDE </h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The NetBeans IDE comes with MySQL database support. In the Services window, a MySQL node appears under the Databases node when the IDE detects a running MySQL server on the local machine at the default port. </p>
+        <p>The NetBeans IDE comes with MySQL database support. In the Services window, a MySQL node appears under the Databases node when the IDE detects a running MySQL server on the local machine at the default port. The node is also registered automatically under the following conditions: </p>
+        <ul>
+          <li>If the IDE detects a recognized installation of MySQL.  This is currently  MAMP on Macintosh and XAMPP on Windows. </li>
+          <li>If a MySQL connection is registered, the IDE auto-registers the MySQL node using the properties defined on the connection.</li>
+          <li>If the user creates a new connection to MySQL, the IDE auto-registers the MySQL node at that time. </li>
+        </ul>
         <p>When you right-click the MySQL node, you see the following options:</p> 
         
         
         <ul>
-            <li><strong>Create a  database.</strong> This action brings up a dialog for creating a database, including sample databases.</li>
-            <li><strong>Start.</strong> This action starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command:</li>
-            <li><strong>Stop.</strong> This action stops the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command:</li>
-            <li><strong>Connect.</strong></li>
-            <li><strong>Refresh.</strong> This action refreshes the list of databases based on what's currently on the server.</li>
-            <li><strong>Delete.</strong> This action removes the MySQL node. It also marks the node as removed, so that next time the user starts up NetBeans we will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
-            <li><strong>Administer.</strong> This action brings up the administration tool that is registered with the runtime. The provider either invokes the admin tool as a separate system process, or if it is a web-based tool, brings up the provided URL in the default browser. If the administer command has not been set, then when the user picks the action, they are prompted to set the path to the command. </li>
-            <li><strong>Properties.</strong>  his action brings up a dialog that allows the user to configure important settings for the server. There are two tabs, one for basic settings and one for setting command paths to administrative commands (start, stop, administer) </li>
+            <li><strong>Create a  database.</strong> Brings up a dialog for creating a database, including sample databases.</li>
+            <li><strong>Start.</strong> Starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
+            <li><strong>Stop.</strong> Stops the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
+            <li><strong>Connect.</strong> Connects the IDE to the database. </li>
+            <li><strong>Refresh.</strong> Refreshes the list of databases based on what's currently on the server.</li>
+            <li><strong>Delete.</strong> Removes the MySQL node. It also marks the node as removed, so that next time the user starts up NetBeans the IDE will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
+            <li><strong>Run Administration Tool.</strong> Brings up the administration tool that is registered with the runtime. The provider either invokes the admin tool as a separate system process, or if it is a web-based tool, brings up the provided URL in the default browser. If the administer command has not been set, then when the user picks the action, they are prompted to set the path to the command. </li>
+            <li><strong>Properties.</strong>  Brings up a dialog that allows the user to configure important settings for the server. There are two tabs, one for basic settings and one for setting command paths to administrative commands (start, stop, administer) </li>
            
             </ol>
 
-        <p>When you expand the MySQL node, MySQL databases detected by the IDE appear as subnodes. By right-clicking a database subnode, you can either connect to  or delete the database.</p>
+        <p>When you expand the MySQL node, MySQL databases detected by the IDE appear under the node. By right-clicking a database, you can either connect to  or delete the database.</p>
   
         
         <p>
         If the IDE does not auto-detect and register the MySQL node, you can manually register it. In this case, the Databases node has a new subnode designed to register the server. When you right-click the Databases node, you see the following options:</p>
         <ul>
           <li><strong>New Connection.</strong> When you choose New Connection, the New Database Connection dialog box appears. </li>
-          <li>Register MySQL Database. If the IDE does not auto-detect and register the MySQL node, the user can manually register it. There will be a new action under Databases to register the server</li>
-          <li>Enable Debug. </li>
-          <li>Disable Debug   </li>
+          <li><strong>Register MySQL Database.</strong> If the IDE does not auto-detect and register the MySQL node, the user can manually register it. There will be a new action under Databases to register the server</li>
+          <li><strong>Enable Debug.</strong> Once debug mode is enabled, the IDE sends SQL statements to the Output window, 
+                where you can view the log of statements. Debug mode does not list all SQL statements, 
+                only those which you cannot see. For example, SQL queries for viewing data 
+          are not logged.</li>
+          <li><strong>Disable Debug.</strong> This terminates the debugging function. </li>
         </ul>
         
         <dl>

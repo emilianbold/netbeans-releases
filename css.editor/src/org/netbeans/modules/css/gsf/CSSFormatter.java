@@ -274,7 +274,11 @@ public class CSSFormatter implements Formatter {
 
     private TextBounds findTokenSequenceBounds(BaseDocument doc, TokenSequence tokenSequence) throws BadLocationException {
         tokenSequence.moveStart();
-        tokenSequence.moveNext();
+        
+        if (!tokenSequence.moveNext()){
+            return new TextBounds(0, 0); // empty token sequence
+        }
+        
         int absoluteStart = tokenSequence.offset();
         tokenSequence.moveEnd();
         tokenSequence.movePrevious();

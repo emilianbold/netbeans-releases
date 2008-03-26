@@ -77,9 +77,10 @@ import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 
 /**
@@ -255,11 +256,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
                     try {
+                        if (formEditor == null) {
+                            // Lazy synchronization of already closed form - issue 129877
+                            return;
+                        }
                         Lookup[] lookups = lookup.getSubLookups();
                         Node[] oldNodes = (Node[])evt.getOldValue();
                         Node[] nodes = (Node[])evt.getNewValue();
                         Lookup lastLookup = lookups[lookups.length-1];
-                        Node delegate = formEditor.getFormDataObject().getNodeDelegate();
+                        FormDataObject fdo = formEditor.getFormDataObject();
+                        if (!fdo.isValid()) {
+                            return; // Issue 130637
+                        }
+                        Node delegate = fdo.getNodeDelegate();
                         if (!(lastLookup instanceof NoNodeLookup)
                             && (oldNodes.length >= 1)
                             && (!oldNodes[0].equals(delegate))) {
@@ -318,8 +327,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void reset(FormEditor formEditor) {
+        if (menuEditLayer != null) {
+            menuEditLayer.hideMenuLayer();
+            menuEditLayer = null;
+        }
+                
         if (initialized) {
             clearSelection();
+            explorerManager.setRootContext(new AbstractNode(Children.LEAF));
         }
         initialized = false;
 
@@ -337,10 +352,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             textEditLayer=null;               
         }
         
-        if(menuEditLayer!=null) {
-            menuEditLayer = null;
-        }
-                
         if (formModel != null) {
             if (formModelListener != null) {
                 formModel.removeFormModelListener(formModelListener);                
@@ -1014,17 +1025,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = false;
-        if (selectedIds.size() >= 2) {
-            RADComponent parent = commonParent(selectedIds);
-            if (parent != null) {
-                LayoutModel layoutModel = formModel.getLayoutModel();
-                LayoutComponent parentLC = layoutModel.getLayoutComponent(parent.getId());
-                if ((parentLC != null) && (parentLC.isLayoutContainer())) {
-                    enabled = true;
-                }
-            }
-        }
+        boolean enabled = layoutDesigner.canAlign(selectedIds);;
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
@@ -1746,16 +1747,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     @Override
     public void componentClosed() {
         super.componentClosed();
-        if (formModel != null) {
-            if (formModelListener != null) {
-                formModel.removeFormModelListener(formModelListener);
-            }
-            if (settingsListener != null) {
-                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
-            }
-            topDesignComponent = null;
-            formModel = null;
-        }
+        // Closed FormDesigner is not going to be reused.
+        // Clear all references to prevent memory leaks - even if FormDesigner
+        // is kept for some reason, make sure FormModel is not held from it.
+        reset(null);
     }
 
     @Override

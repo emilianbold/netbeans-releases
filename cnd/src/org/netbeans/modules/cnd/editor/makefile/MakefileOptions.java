@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
+import org.netbeans.modules.cnd.MIMENames;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -58,12 +59,12 @@ public class MakefileOptions extends org.netbeans.modules.editor.options.BaseOpt
     }
 
     /** Return the Makefile Indent Engine class */
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return MakefileIndentEngine.class;
     }
 
     /** @return localized string */
-    protected String getString(String s) {
+    protected @Override String getString(String s) {
         try {
             String res = NbBundle.getBundle(MakefileOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;
@@ -73,7 +74,11 @@ public class MakefileOptions extends org.netbeans.modules.editor.options.BaseOpt
         }
     }
 
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_editor_makefile"); // NOI18N
+    }
+    
+    protected @Override String getContentType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }

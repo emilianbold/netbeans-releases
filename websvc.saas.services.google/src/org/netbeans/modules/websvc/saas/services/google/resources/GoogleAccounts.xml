@@ -52,7 +52,7 @@
 
     <description>Google Accounts Service</description>
     
-    <display-name>GoogleAccounts</display-name>
+    <display-name>Accounts Service</display-name>
 
     <saas-metadata>
 
@@ -67,9 +67,9 @@
 
     </saas-metadata>
 
-    <methods>
+    <!--<methods>
         <method name="accountsClientLogin" 
             href="#google.accounts_ClientLogin"/>
-    </methods>
+    </methods>-->
 
 </saas-services>

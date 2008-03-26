@@ -47,7 +47,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,7 +54,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
@@ -123,32 +121,25 @@ public final class RubyPlatformManager {
             return;
         }
         // Check the path to see if we find any other Ruby installations
-        String path = System.getenv("PATH"); // NOI18N
-        if (path == null) {
-            path = System.getenv("Path"); // NOI18N
-        }
 
-        if (path != null) {
-            final Set<File> rubies = new LinkedHashSet<File>();
-            Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-            for (String dir : dirs) {
-                for (String ruby : RUBY_EXECUTABLE_NAMES) {
-                    File f = findPlatform(dir, ruby);
-                    if (f != null) {
-                        rubies.add(f);
-                    }
+        final Set<File> rubies = new LinkedHashSet<File>();
+        for (String dir : Util.dirsOnPath()) {
+            for (String ruby : RUBY_EXECUTABLE_NAMES) {
+                File f = findPlatform(dir, ruby);
+                if (f != null) {
+                    rubies.add(f);
                 }
             }
+        }
 
-            for (File ruby : rubies) {
-                try {
-                    if (getPlatformByFile(ruby) == null) {
-                        addPlatform(ruby);
-                    }
-                } catch (IOException e) {
-                    // tell the user that something goes wrong
-                    LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+        for (File ruby : rubies) {
+            try {
+                if (getPlatformByFile(ruby) == null) {
+                    addPlatform(ruby);
                 }
+            } catch (IOException e) {
+                // tell the user that something goes wrong
+                LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
         }
         Util.setFirstPlatformTouch(false);

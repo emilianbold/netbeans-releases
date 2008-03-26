@@ -88,6 +88,8 @@ import com.sun.sql.rowset.CachedRowSetX;
 import com.sun.sql.rowset.SyncResolverX;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * <p>{@link TableDataProvider} implementation that wraps a <code>CachedRowSet</code>.
@@ -1469,16 +1471,20 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                                  
                                 metaDataFilename = filename;
                                 metaData = getCachedRowSet().getMetaData();                                
-                                mdSerializer.serialize(metaData, filename);
+                                mdSerializer.serialize(metaData, filename);                                                                
                                 refreshMetaDataFile = false;
                             } else {
                                 // Deserialize file now that it is available                                                    
                                 metaData = new MetaDataDeserializer().deserialize(filename);
-                            }                            
+                            }  
+                            // bind data source name
+                            new InitialContext().lookup(cachedRowSet.getDataSourceName());
                         }
                     }                                       
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
+                } catch (NamingException ne) {
+                    throw new RuntimeException(ne);
                 }
             }
         }
@@ -1709,19 +1715,22 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     }        
     
-    private String generateFilename() {
-        // Serialize ResultSetMetaData for improved design-time performance
-
-        String dataSourceName = getCachedRowSet().getDataSourceName().replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
-        String commandName = getCachedRowSet().getCommand().replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
+    private String generateFilename() throws NamingException {
+        int fixedDirLength = (System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata").length() + ".ser".length();  // NOI18N
+        String dataSourceName = getCachedRowSet().getDataSourceName();
+        if (dataSourceName == null) {
+            throw new NamingException(bundle.getString("NAME_NOT_FOUND")); 
+        }
+        dataSourceName = dataSourceName.replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
+        String commandName = getCachedRowSet().getCommand().replaceAll("\\n", ""); // NOI18N
+        commandName = commandName.replaceAll("\\r", "");  // NOI18N
+        commandName = commandName.replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
         commandName = commandName.toLowerCase();
         commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
-        commandName = commandName.replaceFirst("selectall", ""); // NOI18N
-
-        if (commandName.length() > 200) {
-            commandName = commandName.substring(0, 200);
+        commandName = commandName.replaceFirst("selectall", ""); // NOI18N  
+        if (fixedDirLength + (commandName + ".ser").length() > 200) {
+            commandName = commandName.substring(0, 200 - fixedDirLength);  // NOI18N
         }
-
         return dataSourceName + "_"  + "_" + commandName; // NOI18N
     }
 }
