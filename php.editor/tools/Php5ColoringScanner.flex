@@ -614,6 +614,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"{" {
+    pushState(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CURLY_OPEN;
 }
 
@@ -623,8 +624,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"}" {
-    if (!stack.isEmpty()) {
-        popState();
+             //  if (!stack.isEmpty()) {
+            
+            //we are pushing state when we enter the PHP code,
+            //so we need to ensure we do not pop the top most state
+            if(stack.size() > 1) {
+                popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
 }

@@ -702,7 +702,9 @@ public class EjbJarProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }

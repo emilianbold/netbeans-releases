@@ -55,6 +55,9 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        if (sup == null) {
+            return 0;
+        }
         if (typedText.equals(CsmIncludeCompletionItem.QUOTE) || 
                 typedText.equals(CsmIncludeCompletionItem.SYS_OPEN) || 
                 typedText.equals(" ") || // NOI18N

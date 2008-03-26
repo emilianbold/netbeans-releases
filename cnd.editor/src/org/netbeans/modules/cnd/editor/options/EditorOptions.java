@@ -672,6 +672,19 @@ public class EditorOptions {
         }
     }
 
+    public static void resetToDefault(CodeStyle codeStyle, String name){
+        Preferences preferences = getPreferences(codeStyle);
+        for(Map.Entry<String,Object> entry : namedDefaults.get(name).entrySet()){
+            if (entry.getValue() instanceof Boolean){
+                preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
+            } else if (entry.getValue() instanceof Integer){
+                preferences.putInt(entry.getKey(), (Integer)entry.getValue());
+            } else {
+                preferences.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+    }
+
     public static Set<String> keys(){
         return defaults.keySet();
     }
