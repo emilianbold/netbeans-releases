@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.php.project.customizer;
 
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;

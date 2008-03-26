@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.customizer;
 
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

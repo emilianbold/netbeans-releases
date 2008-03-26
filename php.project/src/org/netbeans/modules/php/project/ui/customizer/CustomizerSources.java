@@ -50,7 +50,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;

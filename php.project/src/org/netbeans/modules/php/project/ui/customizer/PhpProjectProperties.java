@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.customizer;
+package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.classpath.ClassPathSupport;
-import org.netbeans.modules.php.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -271,7 +270,7 @@ public class PhpProjectProperties {
      * use load() before to load properties
      * @return EditableProperties object. null if properties were not loaded using load()
      */
-    EditableProperties getProperties() {
+    public EditableProperties getProperties() {
         return myProperties;
     }
 

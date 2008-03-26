@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.project.customizer;
 
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import javax.swing.JPanel;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.rt.spi.providers.Host;

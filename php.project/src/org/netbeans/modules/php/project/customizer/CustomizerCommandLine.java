@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.php.project.customizer;
 
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.File;

@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.ClassPathSupport;
-import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
