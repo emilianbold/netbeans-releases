@@ -562,7 +562,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 }
 
                 // generate @Oneway annotation
-                if (isVoid) {
+                if (isVoid && method.getThrows().isEmpty()) {
                     TypeElement onewayEl = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
                     AnnotationTree onewayAn = make.Annotation(
                             make.QualIdent(onewayEl),
