@@ -166,10 +166,6 @@ public class DebugSession implements Runnable {
         getBridge().getThreadsModel().update();
         getBridge().getVariablesModel().clearModel();
         getBridge().getWatchesModel().clearModel();
-        SessionProgress progress = SessionProgress.forSessionId(getSessionId());
-        if (progress != null) {
-            progress.finish();
-        }
     }
 
     public void setId( InitMessage message ) {

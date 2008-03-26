@@ -115,8 +115,7 @@ public final class SessionProgress implements Cancellable {
                 synchronized (id) {
                     id.notifyAll();
                 }    	 
-            }	
-            session.kill();            
+            }	                        
         }
         instances.remove(session);
     }
