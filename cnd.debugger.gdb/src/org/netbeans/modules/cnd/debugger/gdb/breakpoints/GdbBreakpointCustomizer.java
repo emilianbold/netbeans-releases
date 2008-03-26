@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.debugger.breakpoints;
+package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.modules.ruby.debugger.breakpoints.ui.BreakpointCustomizer;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.beans.Customizer;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import org.netbeans.modules.cnd.debugger.gdb.models.BreakpointsActionsProvider;
+import org.netbeans.spi.debugger.ui.Controller;
 
 /**
- * Customize action for Ruby breakpoint, which is available from the gutter
- * popup.
+ *
+ * @author martin
  */
-public class BreakpointCustomizeAction extends NodeAction {
+public class GdbBreakpointCustomizer extends JPanel implements Customizer, Controller {
     
-    protected boolean enable(Node[] activatedNodes) {
-        return RubyBreakpointManager.getCurrentLineBreakpoint() != null;
+    private GdbBreakpoint b;
+    private JComponent c;
+    
+    public GdbBreakpointCustomizer() {
     }
 
-    public String getName() {
-        return NbBundle.getMessage(BreakpointCustomizeAction.class, "CTL_customize");
-    }
-
-    protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        RubyBreakpoint bp = RubyBreakpointManager.getCurrentLineBreakpoint();
-        if (bp != null) {
-            BreakpointCustomizer.customize(bp);
+    public void setObject(Object bean) {
+        if (!(bean instanceof GdbBreakpoint)) {
+            throw new IllegalArgumentException(bean.toString());
         }
+        this.b = (GdbBreakpoint) bean;
+        init(b);
     }
     
-    @Override
-    protected boolean asynchronous() {
-        return false; // This action should run in AWT.
+    private void init(GdbBreakpoint b) {
+        c = BreakpointsActionsProvider.getCustomizerComponent(b);
+        add(c);
     }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
+
+    public boolean ok() {
+        return ((Controller) c).ok();
     }
-    
+
+    public boolean cancel() {
+        return ((Controller) c).cancel();
+    }
+
 }

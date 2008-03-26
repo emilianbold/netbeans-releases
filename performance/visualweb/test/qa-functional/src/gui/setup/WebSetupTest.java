@@ -45,7 +45,6 @@ import gui.VWPUtilities;
 
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -103,7 +102,7 @@ public class WebSetupTest extends IDESetupTest {
             //App server node not found -(
             fail("Application Server Installation failed");
         }
-        ProjectsTabOperator.invoke();
+        VWPUtilities.invokePTO();
     }
     
     private void installAppServer() {

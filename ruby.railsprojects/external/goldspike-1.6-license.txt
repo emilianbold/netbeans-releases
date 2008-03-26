@@ -1,5 +1,5 @@
 Name: GoldSpike
-Version: 1.5
+Version: 1.6
 Description: Packaging of JRuby applications as WAR files
 License: MIT
 OSR: 6679

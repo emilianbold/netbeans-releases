@@ -675,7 +675,7 @@ Whitespace options {checkSkip=true;} :
 			// handle continuation lines
 		|	'\\' 
                         ( {$setType(BACK_SLASH);} |
-                            (	"\r\n"  // MS
+                            (	"\r\n" {offset--;} // MS
                             |	"\r"    // Mac
                             |	"\n"    // Unix 
                             )	{$setType(Token.SKIP); deferredNewline();}
@@ -761,7 +761,7 @@ DirectiveBody
 		( 
                         options{warnWhenFollowAmbig = false; }:
                         '\\'
-                        (	"\r\n"   // MS 
+                        (	"\r\n"  {offset--;} // MS 
 			|	"\r"     // MAC
 			|	"\n"     // Unix
 			)	{deferredNewline();}
@@ -792,7 +792,7 @@ protected STRING_LITERAL_BODY :
 		(       
                         '\\'                        
                         (   options{greedy=true;}:
-                            (	"\r\n" // MS 
+                            (	"\r\n" {offset--;} // MS 
                             |	"\r"     // MAC
                             |	"\n"     // Unix
                             ) {deferredNewline();}

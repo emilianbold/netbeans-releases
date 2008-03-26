@@ -160,5 +160,4 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         }
         return false;
     }
-    
 }

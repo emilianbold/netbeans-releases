@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.actions;
+package org.netbeans.modules.php.editor.lexer;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.BooleanStateAction;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
+import junit.framework.TestCase;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
- * Enables or disables breakpoints.
  *
- * @author Martin Entlicher
+ * @author Petr Pisl
  */
-public class BreakpointEnableAction extends BooleanStateAction {
-
-    @Override
-    public boolean isEnabled() {
-        GdbBreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
-        if (b != null) {
-            boolean value = b.isEnabled();
-            super.setBooleanState(value);
-            return true;
-        }
-        return false;
+public class PHPLexerUtils extends TestCase {
+    
+    public static TokenSequence<?> seqForText(String text, Language<? extends TokenId> language) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
+        return hi.tokenSequence();
     }
 
-    public String getName() {
-        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
+    public static void next(TokenSequence<?> ts, TokenId id, String fixedText) {
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, id, fixedText, -1);
     }
     
-    @Override
-    public void setBooleanState(boolean value) {
-        GdbBreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
-        if (b != null) {
-            if (value) {
-                b.enable();
-            } else {
-                b.disable();
-            }
-            super.setBooleanState(value);
+    /** This is used for debugging purposes
+     * 
+     * @param ts
+     * @param name
+     */
+    public static void printTokenSequence (TokenSequence<?> ts, String name) {
+        System.out.println("--- " + name + " ---");
+        while (ts.moveNext()) {
+            System.out.println(ts.token().id()+"\t"+ts.token());
         }
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
+        System.out.println("-----------------------");
     }
 }

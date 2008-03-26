@@ -108,17 +108,6 @@ public class AcceptanceTestCaseDTD extends AcceptanceTestCase {
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
 
-    static final String JAXB_CATEGORY_NAME = "XML";
-    static final String JAXB_COMPONENT_NAME = "JAXB Binding";
-
-    static final String BUTTON_NAME_VERBOSE = "verbose";
-    static final String BUTTON_NAME_READONLY = "readOnly";
-    static final String BUTTON_NAME_FINISH = "Finish";
-    static final String BUTTON_NAME_YES = "Yes";
-
-    static final String POPUP_CHANGE_JAXB_OPTIONS = "Change JAXB Options";
-    static final String POPUP_DELETE = "Delete";
-
     class CFulltextStringComparator implements Operator.StringComparator
     {
       public boolean equals( java.lang.String caption, java.lang.String match )
@@ -166,42 +155,16 @@ public class AcceptanceTestCaseDTD extends AcceptanceTestCase {
         endTest( );
     }
 
-    private void CreateJAXBBindingInternal( )
-    {
-        // Create JAXB Binding
-        NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
-        opNewFileWizard.selectCategory( JAXB_CATEGORY_NAME );
-        opNewFileWizard.selectFileType( JAXB_COMPONENT_NAME );
-        opNewFileWizard.next();
-
-        JDialogOperator opCustomizer = new JDialogOperator( );
-        new JTextFieldOperator( opCustomizer, 0 ).setText( JAXB_BINDING_NAME );
-
-        new JButtonOperator( opCustomizer, 0 ).pushNoBlock( );
-        JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-        opFileChooser.chooseFile( System.getProperty( "xtest.data" ) + File.separator + "toc_2_0.dtd" );
-
-        JDialogOperator opInformation = new JDialogOperator( "Information" );
-        new JButtonOperator( opInformation, "OK" ).pushNoBlock( );
-
-        new JTextFieldOperator( opCustomizer, 4 ).setText( JAXB_PACKAGE_NAME );
-
-        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_VERBOSE ).setSelected( true );
-
-        opNewFileWizard.finish( );
-
-        // Wait till JAXB really created
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-code-generation)." );
-        stt.stop( );
-    }
-
-
     public void CreateJAXBBinding() {
         startTest();
 
-        CreateJAXBBindingInternal( );
+        CreateJAXBBindingInternal(
+            JAXB_BINDING_NAME,
+            JAXB_PACKAGE_NAME,
+            TEST_JAVA_APP_NAME,
+            "toc_2_0.dtd",
+            true
+          );
 
         endTest();
     }
@@ -319,44 +282,7 @@ public class AcceptanceTestCaseDTD extends AcceptanceTestCase {
     {
         startTest( );
 
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
-
-        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
-        prn.select( );
-
-        Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME );
-        bindingNode.select( );
-        bindingNode.performPopupActionNoBlock( POPUP_CHANGE_JAXB_OPTIONS );
-
-        NbDialogOperator opCustomizer = new NbDialogOperator( "Change JAXB options" );
-        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_READONLY ).setSelected( true );
-        new JButtonOperator( opCustomizer, BUTTON_NAME_FINISH ).pushNoBlock( );
-        
-        // Wait till JAXB really deleted
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
-        stt.stop( );
-
-        // Check options
-        FilesTabOperator fto = FilesTabOperator.invoke( );
-
-        Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
-        projectNode.select( );
-
-        Node nodeWalk = new Node( projectNode, "nbproject|xml_binding_cfg.xml" );
-        nodeWalk.performPopupAction( "Edit" );
-        EditorOperator eoXMLCode = new EditorOperator( "xml_binding_cfg.xml" );
-        String sText = eoXMLCode.getText( );
-        if(
-            -1 == sText.indexOf( "<xjc-options>" )
-            || -1 == sText.indexOf( "<xjc-option name='-verbose' value='true'/>" )
-            || -1 == sText.indexOf( "<xjc-option name='-readOnly' value='true'/>" )
-          )
-        {
-          fail( "Unable to find required code inside xml_binding_cfg.xml" );
-        }
-        eoXMLCode.close( false );
+        ChangeJAXBOptionsInternal( JAXB_BINDING_NAME, TEST_JAVA_APP_NAME );
 
         endTest( );
     }
@@ -384,7 +310,13 @@ public class AcceptanceTestCaseDTD extends AcceptanceTestCase {
         stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
         stt.stop( );
 
-        CreateJAXBBindingInternal( );
+        CreateJAXBBindingInternal(
+            JAXB_BINDING_NAME,
+            JAXB_PACKAGE_NAME,
+            TEST_JAVA_APP_NAME,
+            "toc_2_0.dtd",
+            true
+          );
 
         endTest( );
     }

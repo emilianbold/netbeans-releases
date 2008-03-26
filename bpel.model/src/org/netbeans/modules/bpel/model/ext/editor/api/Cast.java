@@ -30,6 +30,7 @@ package org.netbeans.modules.bpel.model.ext.editor.api;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 
@@ -37,7 +38,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Cast extends ExtensionEntity, BpelContainer {
+public interface Cast extends ExtensionEntity, BpelContainer, ReferenceCollection {
     String SOURCE = "source"; //NOI18N
     String PATH = "path"; //NOI18N
     String TYPE = "type"; //NOI18N
