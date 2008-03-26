@@ -20,20 +20,15 @@ package org.netbeans.modules.bpel.model.api.support;
 
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
-import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
  * @author nk160297
  */
-public final class XPathModelFactory {
+public final class BpelXPathModelFactory {
 
     /**
      * This delimiter is used to separate multiple XPath expressions. 
@@ -68,20 +63,8 @@ public final class XPathModelFactory {
         model.setVariableResolver(new BpelVariableResolver(null, contextEntity));
         model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
         //
-        model.setExternalModelResolver(new ExternalModelResolver() {
-            public Collection<SchemaModel> getModels(String modelNsUri) {
-                BpelModel bpelModel = contextEntity.getBpelModel();
-                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
-            }
-
-            public Collection<SchemaModel> getVisibleModels() {
-                return null;
-            }
-
-            public boolean isSchemaVisible(String schemaNamespaceUri) {
-                return false;
-            }
-        });
+        model.setExternalModelResolver(
+                new BpelExternalModelResolver(contextEntity.getBpelModel()));
         //
         return model;
     }
