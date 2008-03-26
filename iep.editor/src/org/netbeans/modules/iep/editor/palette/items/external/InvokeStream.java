@@ -16,29 +16,25 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.model.ext.editor;
 
-import org.netbeans.modules.bpel.model.api.*;
+package org.netbeans.modules.iep.editor.palette.items.external;
 
-/**
+import org.netbeans.modules.iep.editor.tcg.palette.TcgActiveEditorDrop;
+
+/*
+ * StreamInput.java
  *
- * @author Vitaly Bychkov
- * @version 1.0
+ * Created on January 3, 2006, 5:18 PM
+ *
+ * @author Bing Lu
  */
-public interface Casts extends ExtensionEntity, BpelContainer {
-
-    Cast[] getCasts();
-
-    Cast getCast( int i );
-
-    void removeCast( int i );
-
-    void setCasts( Cast[] casts );
-
-    void setCast( Cast cast, int i );
-
-    void addCast( Cast cast );
-
-    void insertCast( Cast cast, int i );
-
+public class InvokeStream extends TcgActiveEditorDrop {
+    
+    /** 
+     * Creates a new instance of StreamInput 
+     */
+    public InvokeStream() {
+        mPath = "/IEP/External/InvokeStream";
+    }
+    
 }

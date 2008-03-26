@@ -98,6 +98,13 @@ public class GdbActionHandler implements CustomProjectActionHandler {
         listeners.remove(listeners.indexOf(l));
     }
     
+    /*
+     * Called when user cancels execution from progressbar in output window
+     */
+    public void cancel() {
+        // Do nothing for now. See IZ 130827 Cancel running task does not work
+    }
+    
     public void executionStarted() {
         for (int i = 0; i < listeners.size(); i++) {
             ExecutionListener listener = listeners.get(i);
