@@ -40,6 +40,7 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
+import java.util.Map;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -50,7 +51,6 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Publi
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 
 /**
  * Hyperlink Processor for factory-method attribute of a bean
@@ -60,8 +60,9 @@ import org.w3c.dom.Node;
 public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
-        Node tag = env.getCurrentTag();
-        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(tag, env.getFile());
+        Map<String, String> beanAttributes = env.getBeanAttributes();
+        int beanOffset = env.getBeanTagOffset();
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, beanOffset, env.getFileObject());
         if(mergedBean == null) {
             return;
         }

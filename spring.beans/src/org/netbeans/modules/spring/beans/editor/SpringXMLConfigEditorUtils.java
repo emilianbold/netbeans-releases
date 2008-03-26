@@ -43,8 +43,10 @@ package org.netbeans.modules.spring.beans.editor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,6 +128,21 @@ public final class SpringXMLConfigEditorUtils {
     };
     
     private SpringXMLConfigEditorUtils() {
+    }
+    
+    public static Map<String, String> getTagAttributes(Node node) {
+        NamedNodeMap namedNodeMap = node.getAttributes();
+        if(namedNodeMap == null || namedNodeMap.getLength() == 0) {
+            return Collections.<String, String>emptyMap();
+        }
+        
+        Map<String, String> attribs = new HashMap<String, String>();
+        for(int i = 0; i < namedNodeMap.getLength(); i++) {
+            Node attribNode = namedNodeMap.item(i);
+            attribs.put(attribNode.getNodeName(), attribNode.getNodeValue());
+        }
+        
+        return Collections.unmodifiableMap(attribs);
     }
     
     public static String getBeanPropertySetterName(String property) {
@@ -516,9 +533,9 @@ public final class SpringXMLConfigEditorUtils {
         return getMergedBean(logicalBean, fileObject);
     }
     
-    public static SpringBean getMergedBean(Node beanNode, FileObject fileObject) {
+    public static SpringBean getMergedBean(Map<String, String> beanAttribs, int beanOffset, FileObject fileObject) {
 
-        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanNode, fileObject);
+        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs, beanOffset, fileObject);
         if (!StringUtils.hasText(logicalBean.getParent())) {
             return logicalBean;
         }
@@ -649,19 +666,19 @@ public final class SpringXMLConfigEditorUtils {
         private int offset;
         private File file;
 
-        public NodeBasedSpringBean(Node node, FileObject fileObject) {
-            this.className = getAttribute(node, "class"); // NOI18N
-            this.factoryBean = getAttribute(node, "factory-bean"); // NOI18N
-            this.factoryMethod = getAttribute(node, "factory-method"); // NOI18N
-            this.parent = getAttribute(node, "parent"); // NOI18N
-            this.id = getAttribute(node, "id"); // NOI18N
-            this.offset = ((Tag) node).getElementOffset();
+        public NodeBasedSpringBean(Map<String, String> beanAttribs, int beanOffset, FileObject fileObject) {
+            this.className = beanAttribs.get("class"); // NOI18N
+            this.factoryBean = beanAttribs.get("factory-bean"); // NOI18N
+            this.factoryMethod = beanAttribs.get("factory-method"); // NOI18N
+            this.parent = beanAttribs.get("parent"); // NOI18N
+            this.id = beanAttribs.get("id"); // NOI18N
+            this.offset = beanOffset;
             this.file = FileUtil.toFile(fileObject);
             
-            if(!hasAttribute(node, "name")) { // NOI18N
+            if(beanAttribs.get("name") == null) { // NOI18N
                 this.names = Collections.<String>emptyList();
             }
-            this.names = StringUtils.tokenize(getAttribute(node, "name"), BEAN_NAME_DELIMITERS); // NOI18N
+            this.names = StringUtils.tokenize(beanAttribs.get("name"), BEAN_NAME_DELIMITERS); // NOI18N
         }
         
         public String getId() {

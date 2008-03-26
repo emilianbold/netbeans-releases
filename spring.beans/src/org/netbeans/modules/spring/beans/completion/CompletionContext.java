@@ -297,6 +297,15 @@ public class CompletionContext {
         return (element instanceof Tag) ? (Node) element : null;
     }
     
+    public int getTagOffset() {
+        Tag t = (Tag) getTag();
+        if(t == null) {
+            return -1;
+        }
+        
+        return t.getElementOffset();
+    }
+    
     public TokenItem getCurrentToken() {
         return documentContext.getCurrentToken();
     }
