@@ -179,7 +179,7 @@ public class GdbContext implements PropertyChangeListener {
             if (gdb != null) {
                 CommandBuffer cb = null;
                 if (!async) {
-                    cb = new CommandBuffer();
+                    cb = new CommandBuffer(gdb);
                 }
                 request(cb, gdb);
                 if (cb != null) {
