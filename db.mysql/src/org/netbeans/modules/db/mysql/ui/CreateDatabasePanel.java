@@ -62,9 +62,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             nameIsEmpty = false;
         } else {
             String item = comboDatabaseName.getEditor().getItem().toString().trim();
-            System.out.println("item is '" + item + "'");
             String selectedItem = comboDatabaseName.getSelectedItem().toString().trim();
-            System.out.println("selected item is '" + selectedItem + "'");
             if ( Utils.isEmpty(item) && Utils.isEmpty(selectedItem)) {
                 // It's a bad if both the selected item *and* the edited 
                 // item are empty
