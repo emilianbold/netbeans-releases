@@ -109,7 +109,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                     activeConfigurationChanged(pcp != null ? getActiveConfiguration(pcp) : null);
                     pcp.customize();
                 } else if (o != null) {
-                    activeConfigurationSelected((ProjectConfiguration) o, null);
+                    activeConfigurationSelected((ProjectConfiguration) o);
                 }
             }
         });
@@ -172,15 +172,11 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         }
     }
     
-    private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider ppcp) {
-        ProjectConfigurationProvider lpcp = pcp;
-        if (ppcp != null) {
-            lpcp = ppcp;
-        }
+    private synchronized void activeConfigurationSelected(ProjectConfiguration cfg) {
         LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
-        if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
+        if (pcp != null && cfg != null && !cfg.equals(getActiveConfiguration(pcp))) {
             try {
-                setActiveConfiguration(lpcp, cfg);
+                setActiveConfiguration(pcp, cfg);
             } catch (IOException x) {
                 LOGGER.log(Level.WARNING, null, x);
             }
@@ -282,7 +278,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                     JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(config.getDisplayName(), config.equals(activeConfig));
                     jmi.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            activeConfigurationSelected(config, pcp);
+                            activeConfigurationSelected(config);
                         }
                     });
                     add(jmi);
