@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -60,7 +63,8 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
     
     private static final String ATTR_PROJECT = "project"; // NOI18N
     private static final String ATTR_LICENSE = "license"; // NOI18N
-
+    private static final String ATTR_ENCODING = "encoding"; // NOI18N
+    
     public Map<String, ? extends Object> attributesFor(
             DataObject template, DataFolder target, String name) {
         
@@ -78,18 +82,18 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
             }
         }
         
-        return checkProjectLicense(all);
+        return checkProjectAttrs(all, target.getPrimaryFile());
     }
     
-    static Map<String, ? extends Object> checkProjectLicense(Map<String, Object> m) {
+    static Map<String, ? extends Object> checkProjectAttrs(Map<String, Object> m, FileObject parent) {
         Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
         if (prjAttrObj instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> prjAttrs = (Map<String, Object>) prjAttrObj;
-            if (prjAttrs.get(ATTR_LICENSE) == null) {
+            if (prjAttrs.get(ATTR_LICENSE) == null || prjAttrs.get(ATTR_ENCODING) == null) {
                 Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);
                 m.put(ATTR_PROJECT, newPrjAttrs);
-                newPrjAttrs.put(ATTR_LICENSE, "default"); // NOI18N
+                ensureProjectAttrs(newPrjAttrs, parent);
             }
             return m;
         }
@@ -97,11 +101,23 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
             // What can we do?
             return m;
         }
-        Map<String, String> licenseMap = Collections.singletonMap(ATTR_LICENSE, "default"); // NOI18N
+        Map<String, Object> projectMap = new HashMap<String, Object>();
+        ensureProjectAttrs(projectMap, parent);
         if (m != null) {
-            m.put(ATTR_PROJECT, licenseMap); // NOI18N
+            m.put(ATTR_PROJECT, projectMap); // NOI18N
             return m;
         }
-        return Collections.singletonMap(ATTR_PROJECT, licenseMap);
+        return Collections.singletonMap(ATTR_PROJECT, projectMap);
+    }
+    
+    private static void ensureProjectAttrs(Map<String, Object> map, FileObject parent) {
+        if (map.get(ATTR_LICENSE) == null) {
+            map.put(ATTR_LICENSE, "default"); // NOI18N
+        }
+        if (map.get(ATTR_ENCODING) == null) {
+            Charset charset = FileEncodingQuery.getEncoding(parent);
+            String encoding = charset != null ? charset.name() : "UTF-8"; // NOI18N
+            map.put(ATTR_ENCODING, encoding);
+        }
     }
 }

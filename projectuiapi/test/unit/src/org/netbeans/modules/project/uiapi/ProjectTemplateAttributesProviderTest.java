@@ -39,46 +39,96 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import junit.framework.TestCase;
+import org.netbeans.api.project.TestUtil;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Andrei Badea
  */
-public class ProjectTemplateAttributesProviderTest extends TestCase {
+public class ProjectTemplateAttributesProviderTest extends NbTestCase {
+
+    private FileObject scratch;
+    private FileObject folder;
 
     public ProjectTemplateAttributesProviderTest(String testName) {
         super(testName);
     }
 
-    public void testCheckProjectLicense() {
-        Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectLicense(null);
-        assertLicense("default", checked);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        scratch = TestUtil.makeScratchDir(this);
+        folder = scratch.createFolder("folder");
+        MockLookup.setInstances(new FEQImpl());
+        assertEquals(FEQImpl.ENCODING, FileEncodingQuery.getEncoding(folder).name());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        MockLookup.setInstances();
+        super.tearDown();
+    }
+
+    public void testcheckProjectAttrs() throws Exception {
+        Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectAttrs(null, folder);
+        assertAttribute("default", checked, "license");
+        assertAttribute(FEQImpl.ENCODING, checked, "encoding");
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("foo", "bar");
 
-        checked = ProjectTemplateAttributesProvider.checkProjectLicense(map);
-        assertLicense("default", checked);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        assertAttribute("default", checked, "license");
+        assertAttribute(FEQImpl.ENCODING, checked, "encoding");
         assertEquals("bar", checked.get("foo"));
 
         map.put("project", Collections.emptyMap());
-        checked = ProjectTemplateAttributesProvider.checkProjectLicense(map);
-        assertLicense("default", checked);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        assertAttribute("default", checked, "license");
+        assertAttribute(FEQImpl.ENCODING, checked, "encoding");
         assertEquals("bar", checked.get("foo"));
 
         map.put("project", Collections.singletonMap("license", "gpl"));
-        checked = ProjectTemplateAttributesProvider.checkProjectLicense(map);
-        assertLicense("gpl", checked);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        assertAttribute("gpl", checked, "license");
+        assertAttribute(FEQImpl.ENCODING, checked, "encoding");
+        assertEquals("bar", checked.get("foo"));
+
+        Map<String, String> projectMap = new HashMap<String, String>();
+        projectMap.put("license", "gpl");
+        projectMap.put("encoding", "UTF-8");
+        map.put("project", projectMap);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        assertAttribute("gpl", checked, "license");
+        assertAttribute("UTF-8", checked, "encoding");
         assertEquals("bar", checked.get("foo"));
     }
 
-    private static void assertLicense(String license, Map<String, ? extends Object> map) {
+    private static void assertAttribute(String expected, Map<String, ? extends Object> map, String attribute) {
         @SuppressWarnings("unchecked")
         Map<String, Object> attrs = (Map<String, Object>) map.get("project");
-        assertEquals(license, attrs.get("license"));
+        assertEquals(expected, attrs.get(attribute));
+    }
+
+    private final class FEQImpl extends FileEncodingQueryImplementation {
+
+        public static final String ENCODING = "ISO-8859-1";
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            if (file == folder) {
+                return Charset.forName(ENCODING);
+            }
+            return null;
+        }
     }
 }
