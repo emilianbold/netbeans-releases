@@ -183,6 +183,7 @@ Microsystems, Inc. All Rights Reserved.
                 <arg value="."/>
                 <arg value="${emma.txt.file}"/>
                 <arg value="${emma.jar.file}"/>
+                <arg value="$[emma.out.file}"/>
         </exec>
     </target>    
     

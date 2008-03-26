@@ -325,8 +325,8 @@
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
 <!-- New Libraries wizard-->
-    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableWizardPanel1" url="project/csh/proj_new_lib_wiz1.html" />
-    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableWizardPanel2" url="project/csh/proj_new_lib_wiz2.html" />
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="project/csh/proj_new_lib_wiz1.html" />
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" url="project/csh/proj_new_lib_wiz2.html" />
 
     <!--Source Packages (and Test Packages node) - currently F1 here reverts to Projects window-->
     <mapID target="org.netbeans.spi.java.project.support.ui.PackageView" url="pending.html" />
