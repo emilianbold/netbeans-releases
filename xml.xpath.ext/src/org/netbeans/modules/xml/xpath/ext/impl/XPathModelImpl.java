@@ -137,13 +137,7 @@ public class XPathModelImpl implements XPathModel {
      * @throws XPathException for any parsing errors
      */
     public XPathExpression parseExpression(String expression) throws XPathException {
-//ENABLE = expression.startsWith("$ItineraryIn.iti");
-//out();
-//out();
-//out();
-//out();
-//out();
-//out();
+//ENABLE = expression.startsWith("$ItineraryIn.iti"); // todo r
 //out();
 //out();
 //out();
@@ -364,7 +358,9 @@ public class XPathModelImpl implements XPathModel {
                 if (parentComponent != null) {
                     // vlv
                     SchemaComponent castType = getCastType(parentContext);
-
+//out();
+//out("CAST TYPE: " + castType);
+//out();
                     if (castType != null) {
                         parentComponent = castType;
                     }
@@ -475,21 +471,56 @@ public class XPathModelImpl implements XPathModel {
       myLastSchemaComponent = pair.getComp();
     }
 
+    // vlv
     private SchemaComponent getCastType(XPathSchemaContext context) {
+//out();
+//out("GET cast type");
+//out();
       if (myXPathCastResolver == null) {
         return null;
       }
       List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+//out("  1");
 
       if (casts == null) {
         return null;
       }
+      String path = context.toString();
+//out("  2    : " + path + " " + context.getClass().getName());
       for (XPathCast cast : casts) {
-        if (context.equals(cast.getContext())) {
+//out("    see: " + cast.getPath());
+        if (removePrefix(path).equals(removePrefix(cast.getPath()))) {
           return cast.getType();
         }
       }
+//out("  4");
       return null;
+    }
+
+    // vlv
+    private String removePrefix(String value) {
+      if (value == null) {
+        return null;
+      }
+      StringBuffer buffer = new StringBuffer();
+      boolean skip = false;
+
+      for (int i=value.length()-1; i >= 0; i--) {
+        char c = value.charAt(i);
+
+        if (c == ':') {
+          skip = true;
+          continue;
+        }
+        if (skip && c != '/') {
+          continue;
+        }
+        if (skip && c == '/') {
+          skip = false;
+        }
+        buffer.insert(0, c);
+      }
+      return buffer.toString();
     }
 
     public SchemaComponent getLastSchemaComponent() {
@@ -1379,8 +1410,7 @@ public class XPathModelImpl implements XPathModel {
                     }
                     //
                     throw new StopResolutionException(
-                        "A parent schema context must be specified to rosolve " +
-                        "a relative location path."); // NOI18N
+                        "A parent schema context must be specified to resolve a relative location path."); // NOI18N
                 }
             }
             //
