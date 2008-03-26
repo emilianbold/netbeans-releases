@@ -48,6 +48,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbCollections;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -114,8 +115,7 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
     }
 
     private static void assertAttribute(String expected, Map<String, ? extends Object> map, String attribute) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> attrs = (Map<String, Object>) map.get("project");
+        Map<String, Object> attrs = NbCollections.checkedMapByFilter((Map) map.get("project"), String.class, Object.class, false);
         assertEquals(expected, attrs.get(attribute));
     }
 

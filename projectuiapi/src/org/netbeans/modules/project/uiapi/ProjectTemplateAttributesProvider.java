@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbCollections;
 
 /**
  * Provides attributes that can be used inside scripting templates. It delegates
@@ -88,8 +89,7 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
     static Map<String, ? extends Object> checkProjectAttrs(Map<String, Object> m, FileObject parent) {
         Object prjAttrObj = m != null? m.get(ATTR_PROJECT): null;
         if (prjAttrObj instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> prjAttrs = (Map<String, Object>) prjAttrObj;
+            Map<String, Object> prjAttrs = NbCollections.checkedMapByFilter((Map) prjAttrObj, String.class, Object.class, false);
             if (prjAttrs.get(ATTR_LICENSE) == null || prjAttrs.get(ATTR_ENCODING) == null) {
                 Map<String, Object> newPrjAttrs = new HashMap<String, Object>(prjAttrs);
                 m.put(ATTR_PROJECT, newPrjAttrs);
