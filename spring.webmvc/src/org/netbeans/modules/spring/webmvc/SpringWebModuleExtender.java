@@ -286,7 +286,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
-            FileObject jsp = webInf.createFolder("jsp");
+            FileObject jsp = FileUtil.createFolder(webInf, "jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
