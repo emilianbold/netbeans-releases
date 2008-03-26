@@ -645,7 +645,7 @@ public class Mapper extends JPanel {
                 if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
                 if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-                // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                // find graph, which is the ups the current Graph
                 if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
                     if (maxGraph == null) {
                         maxGraph = graph;
@@ -680,7 +680,7 @@ public class Mapper extends JPanel {
                             if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
                             if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
                 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-                            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                            // 
                             if (compare(currentGraph, graph, getRoot().getTreePath()) > 0) {
                                 if (maxGraph == null) {
                                     maxGraph = graph;
@@ -736,7 +736,7 @@ public class Mapper extends JPanel {
             if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
             if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
-            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+            //
             if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
                 if (maxGraph == null) {
                     maxGraph = graph;

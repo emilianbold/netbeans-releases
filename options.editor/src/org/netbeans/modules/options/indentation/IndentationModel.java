@@ -46,8 +46,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
@@ -64,6 +67,7 @@ class IndentationModel {
     
     private boolean         changed = false;
 
+    private EditorKit kit;
     
     IndentationModel () {
         // save original values
@@ -73,29 +77,33 @@ class IndentationModel {
         originalRightMargin = getRightMargin().intValue ();
     }
     
+    private EditorKit getEditorKit() {
+	if(kit == null) 
+	    kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class);
+	return kit;
+    }
+    
     boolean isExpandTabs () {
-        return ((Boolean) getParameter ("isExpandTabs", Boolean.FALSE)).
-            booleanValue ();
+	return (Boolean) Settings.getValue(getEditorKit().getClass(), SettingsNames.EXPAND_TABS);
     }
     
     void setExpandTabs (boolean expand) {
-        setParameter ("setExpandTabs", Boolean.valueOf (expand), Boolean.TYPE);
+	Settings.setValue(getEditorKit().getClass(), SettingsNames.EXPAND_TABS, expand);
         updateChanged ();
     }
     
     Integer getSpacesPerTab () {
-        return (Integer) getParameter (
-            "getSpacesPerTab", new Integer (4)
-        );
+	Integer sp =
+		(Integer) Settings.getValue(getEditorKit().getClass(), SettingsNames.SPACES_PER_TAB);
+	return sp;
     }
     
     void setSpacesPerTab (Integer spaces) {
-	if (spaces.intValue () > 0)
-            setParameter (
-                "setSpacesPerTab", 
-                spaces, 
-                Integer.TYPE
-            );
+	if (spaces.intValue() > 0) { //we need to set both, otherwise preview won't work
+	                             //in the next run, it will be same anyway
+	    Settings.setValue(getEditorKit().getClass(), SettingsNames.SPACES_PER_TAB, spaces);
+	    Settings.setValue(getEditorKit().getClass(), SettingsNames.INDENT_SHIFT_WIDTH, spaces);
+	}
         updateChanged ();
     }
 
