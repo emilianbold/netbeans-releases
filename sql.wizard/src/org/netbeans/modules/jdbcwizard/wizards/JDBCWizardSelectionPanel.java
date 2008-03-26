@@ -137,6 +137,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
     public void initDataSourceCombo() {
         providers = new DefaultComboBoxModel();
+        int longinx = 0, longest = 0;
         final DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
         if(conns.length == 1){
         	providers.addElement("");
@@ -144,6 +145,10 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         if (conns.length > 0) {
             for (int i = 0; i < conns.length; i++) {
                 providers.addElement(new ConnectionWrapper(conns[i]));
+                if(longest < (new ConnectionWrapper(conns[i])).getDatabaseConnection().getDisplayName().length()){
+                longinx = i;
+                longest = (new ConnectionWrapper(conns[i])).getDatabaseConnection().getDisplayName().length();
+                }
             }
         } else {
             providers.addElement("<None>");
@@ -151,6 +156,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
        
         this.datasourceComboBox.setModel(providers);
         this.datasourceComboBox.setSelectedIndex(0);
+        this.datasourceComboBox.setPrototypeDisplayValue((new ConnectionWrapper(conns[longinx])).getDatabaseConnection().getDisplayName());
 
     }
 
@@ -192,11 +198,11 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.removeButton.setEnabled(false);
         this.addAllButton.setEnabled(false);
         this.removeAllButton.setEnabled(false);
-        this.jLabel1.setText("Data Source");
+        this.jLabel1.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_DS"));
 
-        this.availableTablesLabel.setText("Available Tables:");
+        this.availableTablesLabel.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_AVLB_TAB"));
 
-        this.selectedTablesLabel.setText("Selected Tables");
+        this.selectedTablesLabel.setText(NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_SEL_TAB"));
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
@@ -1164,9 +1170,9 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
     // private JList sourceList;
 
-    public static final String LBL_DEST_MSG = "Selected Tables:";
+    public static final String LBL_DEST_MSG = NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_SEL_TAB");
 
-    public static final String LBL_SOURCE_MSG = "Available Tables:";
+    public static final String LBL_SOURCE_MSG = NbBundle.getMessage(JDBCWizardSelectionPanel.class, "LBL_AVLB_TAB");
 
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;
@@ -1178,7 +1184,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     public static final String LBL_ADD = ">";
 
     /** Label indicating that all elements should be moved. */
-    public static final String LBL_ALL = "ALL";
+    public static final String LBL_ALL = NbBundle.getMessage(JDBCWizardSelectionPanel.class,"LBL_ALL");
 
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = JDBCWizardSelectionPanel.LBL_ALL + " " + JDBCWizardSelectionPanel.LBL_ADD;
