@@ -43,8 +43,10 @@ package org.netbeans.modules.spring.beans.editor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,6 +128,21 @@ public final class SpringXMLConfigEditorUtils {
     };
     
     private SpringXMLConfigEditorUtils() {
+    }
+    
+    public static Map<String, String> getTagAttributes(Node node) {
+        NamedNodeMap namedNodeMap = node.getAttributes();
+        if(namedNodeMap == null || namedNodeMap.getLength() == 0) {
+            return Collections.<String, String>emptyMap();
+        }
+        
+        Map<String, String> attribs = new HashMap<String, String>();
+        for(int i = 0; i < namedNodeMap.getLength(); i++) {
+            Node attribNode = namedNodeMap.item(i);
+            attribs.put(attribNode.getNodeName(), attribNode.getNodeValue());
+        }
+        
+        return Collections.unmodifiableMap(attribs);
     }
     
     public static String getBeanPropertySetterName(String property) {
@@ -262,8 +279,8 @@ public final class SpringXMLConfigEditorUtils {
         return getJavaSource(NbEditorUtilities.getFileObject(doc));
     }
 
-    public static void findAndOpenJavaClass(final String classBinaryName, Document doc) {
-        final JavaSource js = getJavaSource(doc);
+    public static void findAndOpenJavaClass(final String classBinaryName, FileObject fileObject) {
+        final JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
@@ -285,9 +302,9 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
 
-    public static ElementHandle<ExecutableElement> findMethod(Document doc, final String classBinName,
+    public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        JavaSource js = getJavaSource(doc);
+        JavaSource js = getJavaSource(fileObject);
         if (js != null) {
             try {
                 MethodFinder methodFinder = new MethodFinder(classBinName, methodName, argCount, publicFlag, staticFlag);
@@ -311,18 +328,18 @@ public final class SpringXMLConfigEditorUtils {
      * @param publicFlag YES if the method is public, NO if not, DONT_CARE if caller doesn't care
      * @param staticFlag YES if the method is static, NO if not, DONT_CARE if caller doesn't care
      */
-    public static void openMethodInEditor(Document doc, final String classBinName,
+    public static void openMethodInEditor(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
-        if (classBinName == null || methodName == null || doc == null) {
+        if (classBinName == null || methodName == null || fileObject == null) {
             return;
         }
 
-        final JavaSource js = getJavaSource(doc);
+        final JavaSource js = getJavaSource(fileObject);
         if (js == null) {
             return;
         }
 
-        final ElementHandle<ExecutableElement> eh = findMethod(doc, classBinName, methodName, argCount, publicFlag, staticFlag);
+        final ElementHandle<ExecutableElement> eh = findMethod(fileObject, classBinName, methodName, argCount, publicFlag, staticFlag);
         if (eh != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
@@ -516,9 +533,9 @@ public final class SpringXMLConfigEditorUtils {
         return getMergedBean(logicalBean, fileObject);
     }
     
-    public static SpringBean getMergedBean(Node beanNode, FileObject fileObject) {
+    public static SpringBean getMergedBean(Map<String, String> beanAttribs, FileObject fileObject) {
 
-        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanNode, fileObject);
+        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs);
         if (!StringUtils.hasText(logicalBean.getParent())) {
             return logicalBean;
         }
@@ -646,22 +663,18 @@ public final class SpringXMLConfigEditorUtils {
         private String parent;
         private String id;
         private List<String> names;
-        private int offset;
-        private File file;
 
-        public NodeBasedSpringBean(Node node, FileObject fileObject) {
-            this.className = getAttribute(node, "class"); // NOI18N
-            this.factoryBean = getAttribute(node, "factory-bean"); // NOI18N
-            this.factoryMethod = getAttribute(node, "factory-method"); // NOI18N
-            this.parent = getAttribute(node, "parent"); // NOI18N
-            this.id = getAttribute(node, "id"); // NOI18N
-            this.offset = ((Tag) node).getElementOffset();
-            this.file = FileUtil.toFile(fileObject);
+        public NodeBasedSpringBean(Map<String, String> beanAttribs) {
+            this.className = beanAttribs.get("class"); // NOI18N
+            this.factoryBean = beanAttribs.get("factory-bean"); // NOI18N
+            this.factoryMethod = beanAttribs.get("factory-method"); // NOI18N
+            this.parent = beanAttribs.get("parent"); // NOI18N
+            this.id = beanAttribs.get("id"); // NOI18N
             
-            if(!hasAttribute(node, "name")) { // NOI18N
+            if(beanAttribs.get("name") == null) { // NOI18N
                 this.names = Collections.<String>emptyList();
             }
-            this.names = StringUtils.tokenize(getAttribute(node, "name"), BEAN_NAME_DELIMITERS); // NOI18N
+            this.names = StringUtils.tokenize(beanAttribs.get("name"), BEAN_NAME_DELIMITERS); // NOI18N
         }
         
         public String getId() {
@@ -701,16 +714,8 @@ public final class SpringXMLConfigEditorUtils {
         }
         
         public Location getLocation() {
-            return new Location() {
-
-                public File getFile() {
-                    return file;
-                }
-
-                public int getOffset() {
-                    return offset;
-                }
-            };
+            // Logical bean cannot have a location
+            throw new UnsupportedOperationException();
         }
         
     }

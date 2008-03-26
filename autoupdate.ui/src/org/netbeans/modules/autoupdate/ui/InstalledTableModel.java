@@ -280,7 +280,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     }
 
     public int getTabIndex() {
-        return 3;
+        return PluginManagerUI.INDEX_OF_INSTALLED_TAB;
     }
 
     public boolean needsRestart () {

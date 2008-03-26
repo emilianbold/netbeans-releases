@@ -114,9 +114,9 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                 return null;
                             } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                 //find end
-                                do {
+                                while (ts.moveNext()) {
                                     Token t3 = ts.token();
-                                    if (!tokenInTag(t3)) {
+                                    if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                         return null;
                                     } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                                         if("/>".equals(t3.text().toString())) {
@@ -126,7 +126,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             return new int[]{t2.offset(th), t3.offset(th) + t3.length()};
                                         }
                                     }
-                                } while (ts.moveNext());
+                                } 
                                 break;
                             }
                         } while (ts.movePrevious());

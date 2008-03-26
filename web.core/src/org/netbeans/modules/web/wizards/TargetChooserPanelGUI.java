@@ -504,9 +504,12 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         
         // filling the folder field
         String target=null;
-        FileObject docBase = getLocationRoot();
-        if ( preselectedFolder != null && FileUtil.isParentOf( docBase, preselectedFolder ) ) {
-            target = FileUtil.getRelativePath( docBase, preselectedFolder );
+        for(int item = 0; target == null && item < locationCB.getModel().getSize(); item++) {
+            FileObject docBase = ((LocationItem)locationCB.getModel().getElementAt(item)).getFileObject();
+            if ( preselectedFolder != null && FileUtil.isParentOf( docBase, preselectedFolder ) ) {
+                target = FileUtil.getRelativePath( docBase, preselectedFolder );
+                locationCB.getModel().setSelectedItem(locationCB.getModel().getElementAt(item));
+            }
         }
         
         // leave target null for tag files and TLDs outside the web project
