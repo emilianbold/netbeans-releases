@@ -675,14 +675,12 @@ public final class Util {
 
     }
 
-
     public static void goToReferenceSource(Reference<Referenceable> reference) {
         Referenceable referenceable = reference.get();
         if (referenceable == null) return;
         if (!(referenceable instanceof DocumentComponent)) return;
         goToDocumentComponentSource((DocumentComponent<DocumentComponent>) referenceable);
     }
-
 
     public static boolean canGoToDocumentComponentSource(
             DocumentComponent<DocumentComponent> component)
@@ -734,8 +732,6 @@ public final class Util {
 
         return true;
     }
-
-
 
     public static void goToDocumentComponentSource(
             DocumentComponent<DocumentComponent> component)
