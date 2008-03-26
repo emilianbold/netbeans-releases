@@ -22,20 +22,20 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Mac Installer" basedir="." default="build-all-dmg">
     
     <import file="${basedir}/build.pro"/>
+    <property file="${basedir}/Bundle.properties"/>     
             
     <target name="build-glassfish-pkg" >
-        <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
+        <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
         <ant dir="glassfish"/>      
     </target>
     
     <target name="build-tomcat-pkg">
-        <echo message="Building ${tomcat.appname} into ${basedir}/tomcat"/>
+        <echo message="Building ${tomcat-title} into ${basedir}/tomcat"/>
         <ant dir="tomcat" target="build-pkg"/>              
     </target>
-    
-    
+        
     <target name="build-openesb-pkg">
-        <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
+        <echo message="Building ${openesb-title} into ${basedir}/openesb"/>
         <ant dir="openesb" target="build-pkg"/>                     
     </target>
     
@@ -48,11 +48,23 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${basedir}/netBeans/javase/build"/>
         <delete dir="${basedir}/netBeans/javaee/build"/>
         <delete dir="${basedir}/netBeans/baseide/build"/>    
-        <delete dir="${basedir}/netBeans/php/build"/>          
+        <delete dir="${basedir}/netBeans/php/build"/> 
+        <delete dir="${basedir}/tools/classes"/>           
     </target>
+    
+    <target name="init">    
+        <mkdir dir="${basedir}/tools/classes"/> 
+        <javac 
+            srcdir="${basedir}/tools/src" 
+            destdir="${basedir}/tools/classes"          
+            debug="true"/>  
+        <taskdef 
+           name="for-each" 
+           classname="org.netbeans.installer.mac.ant.ForEach" 
+           classpath="${basedir}/tools/classes/"/>           
+    </target>        
 
-
-    <target name="unzip-nb" description="Unzip clusters to modules" >
+    <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <mkdir dir="build"/> 
         <ant target="unzip-cluster">            
             <property name="cluster.name" value="cnd"/>
@@ -120,7 +132,6 @@ Microsystems, Inc. All Rights Reserved.
             <property name="cluster.name" value="gsf"/>
             <property name="module.name" value="baseide"/>          
         </ant>    
-
     </target>
     
     <target name="unzip-cluster">
@@ -141,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build"/>
         </exec>           
-    </target>    
+    </target>
 
     <target name="init-instrumentation">
 	<condition property="do.instrumentation">
@@ -173,8 +184,8 @@ Microsystems, Inc. All Rights Reserved.
                 <arg value="${emma.txt.file}"/>
                 <arg value="${emma.jar.file}"/>
         </exec>
-    </target>
-
+    </target>    
+    
     <target name="build-pkg" depends="unzip-nb,init-instrumentation,add-instrumentation-option" description="Builds NB and packs packages" >                  
         <ant target="size-pack-module">
             <property name="module.name" value="baseide"/>            
@@ -186,32 +197,32 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-modules">
         <ant target="build-module">
             <property name="module.name" value="javase"/>
-            <property name="module.title" value="${javase.appname}"/>            
+            <property name="module.title" value="${javase-title}"/>            
         </ant>
         
         <ant target="build-module">
             <property name="module.name" value="javaee"/>
-            <property name="module.title" value="${javaee.appname}"/>            
+            <property name="module.title" value="${javaee-title}"/>            
         </ant>
         
         <ant target="build-module">
             <property name="module.name" value="cpp"/>
-            <property name="module.title" value="${cpp.appname}"/>            
+            <property name="module.title" value="${cpp-title}"/>            
         </ant>
         
         <ant target="build-module">
             <property name="module.name" value="ruby"/>
-            <property name="module.title" value="${ruby.appname}"/>            
+            <property name="module.title" value="${ruby-title}"/>            
         </ant>
         
         <ant target="build-module">
             <property name="module.name" value="soa"/>
-            <property name="module.title" value="${soa.appname}"/>          
+            <property name="module.title" value="${soa-title}"/>          
         </ant>      
         
         <ant target="build-module">
             <property name="module.name" value="php"/>
-            <property name="module.title" value="${php.appname}"/>          
+            <property name="module.title" value="${php-title}"/>          
         </ant>          
         
     </target>
@@ -239,65 +250,121 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                                         
     </target>          
     
-    <target name="build-all-dmg" depends="clean,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
-        
-       <property file="${basedir}/build/sizes.pro"/>  
-       
-       <mkdir dir="dist"/>  
-       
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value=""/>
-           <property name="welcome.message" value="${welcome.full}"/>
-           <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/ruby.pkg ./build/cpp.pkg ./build/soa.pkg ./build/glassfish.pkg ./build/tomcat.pkg ./build/openesb.pkg"/>
-       </ant>   
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javase"/>      
-           <property name="welcome.message" value="${welcome.javase}"/>           
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg">                                                    
+        <property file="${basedir}/build/sizes.pro"/>  
+
+        <mkdir dir="dist"/>  
+        <ant target="build-dmg" > 
+           <property name="bundle.type" value=""/>           
+           <property name="packages" value="./build/*pkg"/>          
+        </ant>   
+        <ant target="build-dmg"> 
+           <property name="bundle.type" value="-javase"/>                
            <property name="packages" value="./build/baseide.pkg ./build/javase.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-javaee"/>
-           <property name="welcome.message" value="${welcome.javaee}"/>           
+        </ant> 
+        <ant target="build-dmg"> 
+           <property name="bundle.type" value="-javaee"/>           
            <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/javaee.pkg ./build/glassfish.pkg ./build/tomcat.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-cpp"/>
-           <property name="welcome.message" value="${welcome.cpp}"/>           
+        </ant> 
+        <ant target="build-dmg"> 
+           <property name="bundle.type" value="-cpp"/>           
            <property name="packages" value="./build/baseide.pkg ./build/cpp.pkg"/>          
-       </ant> 
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-ruby"/>
-           <property name="welcome.message" value="${welcome.ruby}"/>           
+        </ant> 
+        <ant target="build-dmg"> 
+           <property name="bundle.type" value="-ruby"/>           
            <property name="packages" value="./build/baseide.pkg ./build/ruby.pkg"/>          
-       </ant>
-       <ant target="build-dmg"> 
-           <property name="bundle.type" value="-php"/>
-           <property name="welcome.message" value="${welcome.php}"/>           
+        </ant>
+        <ant target="build-dmg"> 
+           <property name="bundle.type" value="-php"/>         
            <property name="packages" value="./build/baseide.pkg ./build/php.pkg"/>          
-       </ant>       
-       
-       <delete file="${basedir}/build/sizes.pro"/>
-    </target>      
-    
-    <target name="build-dmg">                   
-        <delete dir="dist_dmg"/>        
-        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>        
-        <mkdir dir="${mpkgfile}/Contents/Resources/English.lproj"/>
-        <mkdir dir="${mpkgfile}/Contents/Packages"/>
-        <copy file="dmg/license.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/License.txt"/>
-        <copy file="dmg/intro.txt" tofile="${mpkgfile}/Contents/Resources/English.lproj/Welcome.txt">
-            <filterset>
-                 <filter token="MESSAGE" value="${welcome.message}"/>
-            </filterset>
+        </ant>       
+        <delete file="${basedir}/build/sizes.pro"/>
+    </target>     
+            
+    <target name="prepare-lproj-dirs">  
+        <mkdir dir="${basedir}/dmg/Resources_full"/>
+        <property name="resources.full.dir" value="${basedir}/dmg/Resources_full"/> 
+        <copy file="${basedir}/Bundle.properties" todir="${resources.full.dir}"/>
+        <copy  todir="${resources.full.dir}">
+            <fileset dir="${basedir}/dmg/Resources/" includes="*.html"/>
         </copy>
-        <copy file="dmg/bgimage.tif" tofile="${mpkgfile}/Contents/Resources/English.lproj/background.tif"/>        
+        <ant target="copy-translated-files"/>
+        <condition property="nb.locales.nonzero.length">
+            <length string="${nb.locales}" when="greater" length="0"/>
+        </condition>   
+        <condition property="locales" value=",${nb.locales}" else="">
+            <and>
+                <istrue value="${mlbuild}"/>
+                <istrue value="${nb.locales.nonzero.length}"/>
+            </and>   
+        </condition>                   
+        <for-each list="${locales}" separator="," property="locale">
+            <ant target="build-lproj-dir"/>                           
+        </for-each>    
+        <delete dir="${resources.full.dir}"/>
+    </target> 
+  
+    <target name="copy-translated-files" if="mlbuild">    
+        <copy todir="${resources.full.dir}">   
+            <fileset dir="${basedir}/../translatedfiles/"/>
+        </copy>
+    </target>    
+       
+    <target name="init-locale-propeties">
+        <echo message="Init locale properties for locale: ${locale}"/>
+        <!-- set the name of the locale suffix-->                                   
+        <condition property="locale.suffix" value="" else="_${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>
+        <condition property="locale.name" value="english" else="${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>                                                            
+        <!-- find out name of lproj dir from the map file-->
+        <exec executable="sh" failonerror="yes" outputproperty="locale.dir">
+            <arg value="-c"/>
+            <arg value="cat ${basedir}/dmg/lprojdirnames.map  | sed '/'${locale.name}'=/!d;s/'${locale.name}'=//'"/>
+        </exec>                     
+    </target>  
+
+    <target name="build-lproj-dir" depends="init-locale-propeties">
+        <echo message="Building ${locale.dir}.lproj dir..."/>        
+        <!-- create lproj dir -->
+        <mkdir dir="${mpkgfile}/Contents/Resources/${locale.dir}.lproj"/>
+        <!-- copy Welcome.html and Localizable.strings -->                 
+        <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
+              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Welcome.html"/>               
+        <exec executable="sh" failonerror="yes" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//' 
+                > ${resources.full.dir}/Localizable.strings"/>
+        </exec>                                           
+                            
+        <move file="${resources.full.dir}/Localizable.strings"
+              tofile="${mpkgfile}/Contents/Resources/${locale.dir}.lproj/Localizable.strings">
+            <filterchain>                       
+                <replacetokens begintoken="$" endtoken="}">
+                    <token key="{buildnumber" value="${buildnumber}"/>  
+                    <token key="{tomcat.version" value="${tomcat.version}"/>                        
+                </replacetokens>
+            </filterchain>
+        </move>                                                    
+    </target>     
+            
+    <target name="build-dmg">     
+        <echo message="Building dmg for ${dmg.prefix.name}${bundle.type}..."/>             
+        <delete dir="dist_dmg"/>        
+        <property name="mpkgfile" value="dist_dmg/${appname}.mpkg"/>               
+        <copy file="${basedir}/dmg/Resources/bgimage.tif" 
+              tofile="${mpkgfile}/Contents/Resources/background.tif"/>  
+        <copy file="${basedir}/dmg/Resources/license.txt" 
+              tofile="${mpkgfile}/Contents/Resources/License.txt" />                         
+                         
+        <ant target="prepare-lproj-dirs"/>                                             
+
+        <mkdir dir="${mpkgfile}/Contents/Packages"/>        
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkgfile}/Contents/distribution.dist">                                    
-            <filterset>
-                <filter token="TITLE" value="${appname}"/>
-                <filter token="GF_TITLE" value="${glassfish.appname}"/>
-                <filter token="TC_TITLE" value="${tomcat.appname}"/>
-                <filter token="OESB_TITLE" value="${openesb.appname}"/>
-                <filter token="NB_TITLE" value="${baseide.install.name}"/>                
+            <filterset>                      
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
@@ -314,13 +381,16 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="cp -RPf ${packages} ./dist_dmg/'${appname}'.mpkg/Contents/Packages"/>
-        </exec>           
-                                           
+        </exec>                      
+                  
+        <condition property="ml.suffix" value="-ml" else="">
+            <equals arg1="${mlbuild}" arg2="true"/>
+        </condition>  
+        
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml_postfix}'.dmg '${appname}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.prefix.name}${bundle.type}'-macosx'${ml.suffix}'.dmg '${appname}'"/>
         </exec>  
         <delete dir="dist_dmg"/>
-    </target>         
-    
+    </target>             
 </project>          

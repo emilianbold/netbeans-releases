@@ -33,7 +33,6 @@ zipmodulclustersdir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
-ml_postfix=""
 
 instrumentation_options=""
 if [ -n "$5" ] && [ -n "$6" ] && [ -n "$7" ] ; then
@@ -50,8 +49,9 @@ else
    echo "INFO : STANDARD BUILD"
 fi
 
+mlbuild='false'
 if [ 1 -eq $ml_build ] ; then
-ml_postfix="-ml"
+    mlbuild='true'
 fi
 
 basename=`dirname "$0"`
@@ -62,5 +62,4 @@ chmod -R a+x *.sh
 
 commonname=$zipmodulclustersdir/$prefix-$buildnumber 
 
-ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dml_postfix=$ml_postfix -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options
-
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild=$mlbuild -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options
