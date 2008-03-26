@@ -49,6 +49,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
 
 /**
@@ -186,5 +187,21 @@ public final class QuerySupport {
         Parameters.notNull("testRoots", testRoots); // NOI18N
 
         return new FileBuiltQueryImpl(helper, evaluator, sourceRoots, testRoots);
+    }
+
+    /**
+     * Creates an implementation of {@link CreateFromTemplateAttributesProvider} providing
+     * attributes for the project license and encoding.
+     *
+     * @param helper {@link AntProjectHelper} used for reading the project properties.
+     * @param encodingQuery {@link FileEncodingQueryImplementation} used to obtain an encoding.
+     * @return a {@code CreateFromTemplateAttributesProvider}.
+     *
+     * @since 1.1
+     */
+    public static CreateFromTemplateAttributesProvider createTemplateAttributesProvider(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+        Parameters.notNull("helper", helper);
+        Parameters.notNull("encodingQuery", encodingQuery);
+        return new TemplateAttributesProviderImpl(helper, encodingQuery);
     }
 }
