@@ -124,24 +124,12 @@ public class ModuleInstaller extends ModuleInstall {
                     new DbExplorerConnectionListener());
         }
         private void findAndRegisterRunningServer() {
-            String host = MySQLOptions.getDefaultHost();
-            
-            // port may have been set through installation detection
-            String port = options.getPort();
-            if ( port == null || port.length() == 0 ) {
-                port = MySQLOptions.getDefaultPort();
-            }
-            String user = MySQLOptions.getDefaultAdminUser();
-            String password = MySQLOptions.getDefaultAdminPassword();
-            
             DatabaseConnection dbconn = findDatabaseConnection();
             if ( dbconn != null ) {
                 // The user has a registered connection for MySQL, 
                 // so let's use its settings to register the MySQL node
                 options.setAdminUser(dbconn.getUser());
-                if ( MySQLOptions.getDefaultAdminUser().equals(user)) {
-                    options.setAdminPassword(dbconn.getPassword());
-                }
+                options.setAdminPassword(dbconn.getPassword());
 
                 URLParser urlParser = new URLParser(dbconn.getDatabaseURL());
                 options.setHost(urlParser.getHost());
@@ -152,6 +140,19 @@ public class ModuleInstaller extends ModuleInstall {
             }
 
             // All right, now let's try auto-detection...
+            // host and port may have been set through installation detection
+            String host = options.getHost();
+            if ( Utils.isEmpty(host)) {
+                host = MySQLOptions.getDefaultHost();
+            }
+            
+            String port = options.getPort();
+            if ( port == null || port.length() == 0 ) {
+                port = MySQLOptions.getDefaultPort();
+            }
+            String user = MySQLOptions.getDefaultAdminUser();
+            String password = MySQLOptions.getDefaultAdminPassword();
+            
             String url = DatabaseUtils.getURL(host, port);
             ConnectStatus status = DatabaseUtils.testConnection(url, user, 
                     password);
@@ -161,6 +162,7 @@ public class ModuleInstaller extends ModuleInstall {
                 options.setHost(host);
                 options.setPort(port);
                 options.setAdminUser(user);
+                options.setAdminPassword(password);
                 
                 registerConnection(host, port, user);
                 registerProvider(true);
