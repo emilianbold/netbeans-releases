@@ -42,37 +42,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     final ServerInstance server;
     private Color nbErrorForeground;
 
-    private void validatePanel() {
+    private void validatePanel(String databaseName) {
         if (descriptor == null) {
             return;
         }
         
-        comboUsers.setEnabled(this.isGrantAccess());
-        
-        validateDatabasePanel("");
-    }
-    
-    private String validateDatabasePanel(String keyChar) {
         String error = null;
-        boolean nameIsEmpty;
-        
-        if ( ! Utils.isEmpty(keyChar)) {
-            // The user has typed a non-blank key, so we know the database
-            // name is not empty
-            nameIsEmpty = false;
-        } else {
-            String item = comboDatabaseName.getEditor().getItem().toString().trim();
-            String selectedItem = comboDatabaseName.getSelectedItem().toString().trim();
-            if ( Utils.isEmpty(item) && Utils.isEmpty(selectedItem)) {
-                // It's a bad if both the selected item *and* the edited 
-                // item are empty
-                nameIsEmpty = true;
-            } else {
-                nameIsEmpty = false;
-            }
-        }
-        
-        if ( nameIsEmpty ) {
+
+        comboUsers.setEnabled(this.isGrantAccess());
+                
+        if ( Utils.isEmpty(databaseName) ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
@@ -84,10 +63,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             messageLabel.setText(" "); // NOI18N
             descriptor.setValid(true);
         }
-        
-        return error;
     }
-    
+        
     public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
@@ -276,7 +253,18 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             new KeyListener() {
 
             public void keyTyped(KeyEvent event) {
-                validateDatabasePanel(Character.toString(event.getKeyChar()).trim());
+                // Get the actual key.  apparently getItem() doesn't return the current
+                // string typed until *after* this event finishes :(
+                String keyStr = Character.toString(event.getKeyChar()).trim();
+                String dbname;
+                if ( Utils.isEmpty(keyStr)) {
+                    dbname = comboDatabaseName.getEditor().getItem().toString().trim();
+                } else {
+                    // We know the database name has at least this character in it
+                    dbname = keyStr;
+                }
+                
+                validatePanel(dbname);
             }
 
             public void keyPressed(KeyEvent event) {
@@ -316,7 +304,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
-        validatePanel();
+        validatePanel("");
     }
     
     private void setGrantAccess(boolean grant) {
@@ -438,11 +426,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-    validatePanel();
+
 }//GEN-LAST:event_comboDatabaseNameActionPerformed
 
 private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
-    validatePanel();
+    validatePanel(evt.getItem().toString().trim());
 }//GEN-LAST:event_comboDatabaseNameItemStateChanged
 
 private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased
