@@ -52,7 +52,6 @@ import java.util.Iterator;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Settings;
@@ -98,7 +97,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     private static final Object NULL_VALUE = new Object();
 
     /** Map that contains the requested [setting-name, setting-value] pairs */
-    private HashMap settingsMap = new HashMap();
+    private final HashMap settingsMap = new HashMap();
 
     /** Contains the names of the keys that were turned
      * into custom settings and are no longer read from
@@ -128,10 +127,15 @@ public class ExtFormatter extends Formatter implements FormatLayer {
                 getKitClass().getName().lastIndexOf('.') + 1);
     }
 
-    public void settingsChange(SettingsChangeEvent evt) {
+    public @Override void settingsChange(SettingsChangeEvent evt) {
         super.settingsChange(evt);
         String settingName = (evt != null) ? evt.getSettingName() : null;
 
+        // #130965, race condition, this class is regitered for listening from
+        // its super, which means that an event may arrive even before an instance
+        // of this is fully initialized.
+        if (settingsMap == null) return;
+        
         Class kitClass = getKitClass();
         Iterator eit = settingsMap.entrySet().iterator();
         while (eit.hasNext()) {
@@ -295,7 +299,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     }
 
     /** Fix of #5620 - same method exists in Formatter (predecessor */
-    public int reformat(BaseDocument doc, int startOffset, int endOffset)
+    public @Override int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
         try {
             javax.swing.text.Position pos = doc.createPosition(endOffset);
@@ -356,6 +360,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
 
     /** Create the indentation writer.
     */
+    @Override
     public Writer createWriter(Document doc, int offset, Writer writer) {
         return new FormatWriter(this, doc, offset, writer, false);
     }
@@ -366,6 +371,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset of the original character
     */
+    @Override
     public int indentLine(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
             try {
@@ -405,6 +411,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset to place cursor to
     */
+    @Override
     public int indentNewLine(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
             BaseDocument bdoc = (BaseDocument)doc;
@@ -480,11 +487,13 @@ public class ExtFormatter extends Formatter implements FormatLayer {
             super(kitClass);
         }
 
+        @Override
         public boolean isSimple() {
             return true;
         }
         
         /** Returns offset of EOL for the white line */
+        @Override
         protected int getEOLOffset(BaseDocument bdoc, int offset) throws BadLocationException{
             return offset;
         }

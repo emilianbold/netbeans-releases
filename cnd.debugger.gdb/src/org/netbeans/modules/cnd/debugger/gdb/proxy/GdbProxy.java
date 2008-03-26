@@ -52,6 +52,8 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Utilities;
@@ -76,10 +78,12 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  */
 public class GdbProxy implements GdbMiDefinitions {
 
-    private GdbDebugger debugger;
-    private GdbProxyEngine engine;
-    private GdbLogger gdbLogger;
-    private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private final GdbDebugger debugger;
+    private final GdbProxyEngine engine;
+    private final GdbLogger gdbLogger;
+    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    
+    private final Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
 
     /**
      * Creates a new instance of GdbProxy
@@ -110,6 +114,18 @@ public class GdbProxy implements GdbMiDefinitions {
 
     public GdbLogger getLogger() {
         return gdbLogger;
+    }
+    
+    public CommandBuffer getCommandBuffer(Integer id) {
+        return map.get(id);
+    }
+    
+    public void removeCB(int id) {
+        map.remove(id);
+    }
+    
+    public void putCB(int id, CommandBuffer cb) {
+        map.put(id, cb);
     }
 
     /**

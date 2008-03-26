@@ -38,7 +38,7 @@ public class XPathPredicate extends AbstractPredicate {
         mLocationStep = locationStep;
     }
     
-    public XPathSchemaContext getContext() {
+    public XPathSchemaContext getSchemaContext() {
         return mLocationStep.getSchemaContext(); // TODO
     }
     

@@ -32,7 +32,7 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
@@ -224,12 +224,12 @@ public class CopyToProcessor {
         String exprLang = copyTo.getExpressionLanguage();
         String exprText = copyTo.getContent();
         boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
-                XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+                BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
         //
         // we can handle only xpath expressions.
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
             try {
-                XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
+                XPathModel newXPathModel = BpelXPathModelFactory.create(contextEntity);
                 // NOT NEED to specify schema context because of an 
                 // expression with variable is implied here. 
                 //
