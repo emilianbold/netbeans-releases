@@ -34,60 +34,33 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser;
 
-package org.netbeans.modules.javascript.editing.embedding;
-
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 
 /**
+ * Just s dummy impl. to enable the html, javascript and css navigator
+ * Needs to be implemented properly.
  *
- * @author Tor Norbye
+ * @author marek
  */
-public class JsEmbeddingModel implements EmbeddingModel {
-    // Depend on RhtmlTokenId?
-    static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-    static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N 
-    static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
-    
-    final Set<String> sourceMimeTypes = new HashSet<String>();
+public class PhpStructureScanner implements StructureScanner {
 
-    public JsEmbeddingModel() {
-        sourceMimeTypes.add(JSP_MIME_TYPE);
-        sourceMimeTypes.add(TAG_MIME_TYPE);
-        sourceMimeTypes.add(RHTML_MIME_TYPE);
-        sourceMimeTypes.add(HTML_MIME_TYPE);
-        sourceMimeTypes.add(PHP_MIME_TYPE);
-    }
-    
-    public String getTargetMimeType() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+        return Collections.emptyList();
     }
 
-    public Set<String> getSourceMimeTypes() {
-        return sourceMimeTypes;
+    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+        return Collections.emptyMap();
     }
 
-    public Collection<? extends TranslatedSource> translate(Document doc) {
-        // This will cache
-        JsModel model = JsModel.get(doc);
-        return Collections.singletonList(new JsTranslatedSource(this, model));
-    }
-
-    @Override
-    public String toString() {
-        return "JsEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
-    }
-    
-    
 }

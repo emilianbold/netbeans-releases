@@ -37,57 +37,45 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing.embedding;
+package org.netbeans.modules.php.editor.embedding;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  *
  * @author Tor Norbye
  */
-public class JsEmbeddingModel implements EmbeddingModel {
-    // Depend on RhtmlTokenId?
-    static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-    static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N 
-    static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
-    
-    final Set<String> sourceMimeTypes = new HashSet<String>();
+public class CssPhpTranslatedSource implements TranslatedSource {
+    private CssPhpModel model;
+    private CssPhpEmbeddingModel embeddingModel;
 
-    public JsEmbeddingModel() {
-        sourceMimeTypes.add(JSP_MIME_TYPE);
-        sourceMimeTypes.add(TAG_MIME_TYPE);
-        sourceMimeTypes.add(RHTML_MIME_TYPE);
-        sourceMimeTypes.add(HTML_MIME_TYPE);
-        sourceMimeTypes.add(PHP_MIME_TYPE);
-    }
-    
-    public String getTargetMimeType() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+    public CssPhpTranslatedSource(CssPhpEmbeddingModel embeddingModel, CssPhpModel model) {
+        this.embeddingModel = embeddingModel;
+        this.model = model;
     }
 
-    public Set<String> getSourceMimeTypes() {
-        return sourceMimeTypes;
+    public int getAstOffset(int lexicalOffset) {
+        return model.sourceToGeneratedPos(lexicalOffset);
     }
 
-    public Collection<? extends TranslatedSource> translate(Document doc) {
-        // This will cache
-        JsModel model = JsModel.get(doc);
-        return Collections.singletonList(new JsTranslatedSource(this, model));
+    public int getLexicalOffset(int astOffset) {
+        return model.generatedToSourcePos(astOffset);
     }
 
-    @Override
-    public String toString() {
-        return "JsEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
+    public String getSource() {
+        return model.getCode();
     }
-    
-    
+
+    public EmbeddingModel getModel() {
+        return embeddingModel;
+    }
+
+    public int getSourceStartOffset() {
+        return 0;
+    }
+
+    public int getSourceEndOffset() {
+        return model.getCode().length();
+    }
 }

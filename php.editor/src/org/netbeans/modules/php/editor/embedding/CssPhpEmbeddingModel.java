@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing.embedding;
+package org.netbeans.modules.php.editor.embedding;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,32 +46,24 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.php.editor.PHPLanguage;
+
 
 /**
+ * An implementation of EmbeddingModel providing CSS virtual source for PHP files.
  *
- * @author Tor Norbye
+ * @author Marek Fukala
  */
-public class JsEmbeddingModel implements EmbeddingModel {
-    // Depend on RhtmlTokenId?
-    static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-    static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N 
-    static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
-    
+public class CssPhpEmbeddingModel implements EmbeddingModel {
+
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
-    public JsEmbeddingModel() {
-        sourceMimeTypes.add(JSP_MIME_TYPE);
-        sourceMimeTypes.add(TAG_MIME_TYPE);
-        sourceMimeTypes.add(RHTML_MIME_TYPE);
-        sourceMimeTypes.add(HTML_MIME_TYPE);
-        sourceMimeTypes.add(PHP_MIME_TYPE);
+    public CssPhpEmbeddingModel() {
+        sourceMimeTypes.add(PHPLanguage.PHP_MIME_TYPE);
     }
     
     public String getTargetMimeType() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+        return "text/x-css";
     }
 
     public Set<String> getSourceMimeTypes() {
@@ -80,13 +72,13 @@ public class JsEmbeddingModel implements EmbeddingModel {
 
     public Collection<? extends TranslatedSource> translate(Document doc) {
         // This will cache
-        JsModel model = JsModel.get(doc);
-        return Collections.singletonList(new JsTranslatedSource(this, model));
+        CssPhpModel model = CssPhpModel.get(doc);
+        return Collections.singletonList(new CssPhpTranslatedSource(this, model));
     }
 
     @Override
     public String toString() {
-        return "JsEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
+        return "CssPhpEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
     }
     
     
