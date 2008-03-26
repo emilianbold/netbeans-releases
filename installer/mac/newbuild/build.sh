@@ -38,7 +38,8 @@ ml_postfix=""
 instrumentation_options=""
 if [ -n "$5" ] && [ -n "$6" ] && [ -n "$7" ] ; then
    echo "INFO : INSTRUMENTED BUILD"
-   instrumentation_options="-Dinstrument.jars=true -Demma.sh.file=\"$5\" -Demma.txt.file=\"$6\" -Demma.jar.file=\"$7\""
+   rm /tmp/nbi_instr.temp
+   instrumentation_options="-Dinstrument.jars=true -Demma.sh.file=\"$5\" -Demma.txt.file=\"$6\" -Demma.jar.file=\"$7\" -Demma.out.file=/tmp/nbi_instr.temp"
 
    if [ -n "$8" ] ; then
 	bash_exec="$8"
