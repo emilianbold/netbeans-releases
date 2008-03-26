@@ -243,7 +243,7 @@ public class ClassPathRootsListener implements PropertyChangeListener {
                     Reference<FileChangeSupportListener> ref = file2Listener.remove(r);
                     FileChangeSupportListener l = ref != null ? ref.get() : null;
                     
-                    if (l == null) {
+                    if (l != null) {
                         FileChangeSupport.DEFAULT.removeListener(l, r);
                     }
                     

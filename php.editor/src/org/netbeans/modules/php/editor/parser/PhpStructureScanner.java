@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,13 +36,31 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser;
 
-package org.netbeans.modules.php.editor.lexer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 
 /**
+ * Just s dummy impl. to enable the html, javascript and css navigator
+ * Needs to be implemented properly.
  *
- * @author Petr Pisl
+ * @author marek
  */
-public interface PHPScannerState {
+public class PhpStructureScanner implements StructureScanner {
+
+    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+        return Collections.emptyList();
+    }
+
+    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+        return Collections.emptyMap();
+    }
 
 }
