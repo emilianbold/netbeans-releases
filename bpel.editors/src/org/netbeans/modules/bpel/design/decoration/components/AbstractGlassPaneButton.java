@@ -69,6 +69,10 @@ public class AbstractGlassPaneButton extends JToggleButton implements
         myGlassPane.addHierarchyListener(this);
     }
 
+    public void updateText(String text) {
+      myGlassPane.updateText(text);
+    }
+
     protected void updatePreferredSize() {
         setPreferredSize(new Dimension(myIcon.getIconWidth() + 6, myIcon.getIconHeight() + 6));
     }
