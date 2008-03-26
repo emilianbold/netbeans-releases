@@ -45,6 +45,7 @@ import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
@@ -76,6 +77,11 @@ public abstract class AbstractCommandProvider implements CommandProvider {
     protected boolean isInvokedForSrcRoot(){
         return PhpCommandUtils.isInvokedForSrcRoot();
     }
+    
+    public Command[] getAdditionalCommands( Project project ) {
+        return new Command[] {};
+    }
+    
     
     //public static  String getContext( Project phpProject ) {
         /*EditableProperties props = phpProject.getHelper().getProperties(
