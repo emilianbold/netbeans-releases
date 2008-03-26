@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,61 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.ruby.debugger;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import org.openide.util.HelpCtx;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.text.Annotatable;
+import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.BooleanStateAction;
-import org.openide.util.actions.NodeAction;
-
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-
 
 /**
- * Enables or disables breakpoints.
- *
- * @author Martin Entlicher
+ * Debugger Annotation class.
  */
-public class BreakpointEnableAction extends BooleanStateAction {
-
-    public boolean isEnabled() {
-        JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
-        if (b == null) {
-            try {
-                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
-            } catch (java.awt.IllegalComponentStateException icsex) {}
-        }
-        if (b != null) {
-            boolean value = b.isEnabled();
-            super.setBooleanState(value);
-            return true;
-        }
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
+public final class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
+    
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint";
+    
+    private final String type;
+    private final Breakpoint breakpoint;
+    
+    public DebuggerBreakpointAnnotation(final String type, final Annotatable annotatable,
+                                        final Breakpoint b) {
+        this.type = type;
+        this.breakpoint = b;
+        attach(annotatable);
     }
     
-    public void setBooleanState(boolean value) {
-        JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
-        if (b == null) {
-            try {
-                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
-            } catch (java.awt.IllegalComponentStateException icsex) {}
-        }
-        if (value) {
-            b.enable();
+    public String getAnnotationType() {
+        return type;
+    }
+    
+    public String getShortDescription() {
+        if (type.equals(BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_BREAKPOINT"); // NOI18N
+        } else if (type.equals(DISABLED_BREAKPOINT_ANNOTATION_TYPE)) {
+            return getMessage("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
         } else {
-            b.disable();
+            return null;
         }
-        super.setBooleanState(value);
     }
     
-    public HelpCtx getHelpCtx() {
-        return null;
+    private static String getMessage(final String key) {
+        return NbBundle.getBundle(DebuggerBreakpointAnnotation.class).getString(key);
+    }
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
     
 }
