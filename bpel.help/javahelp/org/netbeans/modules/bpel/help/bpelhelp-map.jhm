@@ -108,4 +108,7 @@
 	<mapID target="orch_elements_compensatescope" url="elements/compensatescope.html"/>
 	<mapID target="orch_elements_rethrow" url="elements/rethrow.html"/>
 	<mapID target="design_print" url="windows_editors/design_print.html"/>
+	<mapID target="debug_windows_partner_links" url="debug/debug_windows_partner_links.html"/>
+	<mapID target="debug_windows_threads" url="debug/debug_windows_threads.html"/>
+	<mapID target="logging_about_logging" url="logging/about_logging.html"/>
 </map>
