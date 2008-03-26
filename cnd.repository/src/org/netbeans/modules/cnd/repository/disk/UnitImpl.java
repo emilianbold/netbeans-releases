@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.util.Pair;
 
 /**
  * Implements a repository unit
@@ -124,6 +126,10 @@ public class UnitImpl implements Unit {
     }
 
     public void close() throws IOException {
+        Collection<Pair<Key, Persistent>> hung = cache.clearHungObjects();
+        for( Pair<Key, Persistent> pair : hung ) {
+            putPhysically(pair.first, pair.second);
+        }
         singleFileStorage.close();
         multyFileStorage.close();
     }
