@@ -316,6 +316,9 @@
              </and>
         </condition>
 
+        <condition property="do.build.mysql">
+	     <equals arg1="${build.mysql}" arg2="1"/>
+        </condition>
 
 
         <condition property="nb.locales.isset">
@@ -633,6 +636,8 @@ jarsigner.storepass=${jarsigner.storepass}
 
         <antcall target="build-netbeans"/>
         <antcall target="build-runtimes"/>
+	<antcall target="build-mysql-components"/>
+
 	<!--<antcall target="build-wtk"/>-->
         <antcall target="build-javaeesdk"/>
         <antcall target="build-jdk"/>
@@ -651,7 +656,10 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="build-core-engine"/>
         <antcall target="build-netbeans-engine"/>
     </target>
-
+    <target name="build-mysql-components" if="do.build.mysql">
+	<antcall target="build-mysql"/>
+	<antcall target="build-mysql-connector"/>
+    </target>
     <target name="build-netbeans" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 
@@ -726,6 +734,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
         <antcall target="generate-netbeans-bundles"/>
+        <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
         <antcall target="generate-javatoolsbundle-bundles"/>
     </target>
@@ -2214,7 +2223,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="generate-netbeans-mysql-bundles">
+    <target name="generate-mysql-bundles" if="do.build.mysql">
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
