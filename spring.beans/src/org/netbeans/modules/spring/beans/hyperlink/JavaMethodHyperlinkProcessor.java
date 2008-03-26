@@ -63,7 +63,7 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
     }
     
     public void process(HyperlinkEnv env) {
-        String className = new BeanClassFinder(env.getBeanAttributes(), env.getBeanTagOffset(), env.getFileObject()).findImplementationClass();
+        String className = new BeanClassFinder(env.getBeanAttributes(), env.getFileObject()).findImplementationClass();
         if(className == null) {
             return;
         }

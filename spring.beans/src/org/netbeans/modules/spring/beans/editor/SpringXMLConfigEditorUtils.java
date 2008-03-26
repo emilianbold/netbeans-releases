@@ -533,9 +533,9 @@ public final class SpringXMLConfigEditorUtils {
         return getMergedBean(logicalBean, fileObject);
     }
     
-    public static SpringBean getMergedBean(Map<String, String> beanAttribs, int beanOffset, FileObject fileObject) {
+    public static SpringBean getMergedBean(Map<String, String> beanAttribs, FileObject fileObject) {
 
-        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs, beanOffset, fileObject);
+        NodeBasedSpringBean logicalBean = new NodeBasedSpringBean(beanAttribs);
         if (!StringUtils.hasText(logicalBean.getParent())) {
             return logicalBean;
         }
@@ -663,17 +663,13 @@ public final class SpringXMLConfigEditorUtils {
         private String parent;
         private String id;
         private List<String> names;
-        private int offset;
-        private File file;
 
-        public NodeBasedSpringBean(Map<String, String> beanAttribs, int beanOffset, FileObject fileObject) {
+        public NodeBasedSpringBean(Map<String, String> beanAttribs) {
             this.className = beanAttribs.get("class"); // NOI18N
             this.factoryBean = beanAttribs.get("factory-bean"); // NOI18N
             this.factoryMethod = beanAttribs.get("factory-method"); // NOI18N
             this.parent = beanAttribs.get("parent"); // NOI18N
             this.id = beanAttribs.get("id"); // NOI18N
-            this.offset = beanOffset;
-            this.file = FileUtil.toFile(fileObject);
             
             if(beanAttribs.get("name") == null) { // NOI18N
                 this.names = Collections.<String>emptyList();
@@ -718,16 +714,8 @@ public final class SpringXMLConfigEditorUtils {
         }
         
         public Location getLocation() {
-            return new Location() {
-
-                public File getFile() {
-                    return file;
-                }
-
-                public int getOffset() {
-                    return offset;
-                }
-            };
+            // Logical bean cannot have a location
+            throw new UnsupportedOperationException();
         }
         
     }

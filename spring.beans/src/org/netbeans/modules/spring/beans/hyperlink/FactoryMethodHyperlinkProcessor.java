@@ -60,8 +60,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         Map<String, String> beanAttributes = env.getBeanAttributes();
-        int beanOffset = env.getBeanTagOffset();
-        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, beanOffset, env.getFileObject());
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, env.getFileObject());
         if(mergedBean == null) {
             return;
         }

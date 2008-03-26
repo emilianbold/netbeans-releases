@@ -103,10 +103,10 @@ public class BeanClassFinder {
     private String startBeanName;
     private SpringBean startBean;
 
-    public BeanClassFinder(Map<String, String> beanAttribs, int beanOffset, FileObject fileObject) {
+    public BeanClassFinder(Map<String, String> beanAttribs, FileObject fileObject) {
         this.fileObject = fileObject;
         this.walkedBeanNames = new HashSet<String>();
-        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttribs, beanOffset, fileObject);
+        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttribs, fileObject);
         this.startBeanName = getBeanIdOrName(beanAttribs);
     }
 

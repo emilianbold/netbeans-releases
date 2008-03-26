@@ -67,7 +67,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         try {
-            final String className = new BeanClassFinder(env.getBeanAttributes(), env.getBeanTagOffset(), 
+            final String className = new BeanClassFinder(env.getBeanAttributes(), 
                                 env.getFileObject()).findImplementationClass();
             if (className == null) {
                 return;

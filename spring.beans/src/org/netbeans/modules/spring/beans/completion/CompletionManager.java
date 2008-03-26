@@ -312,7 +312,7 @@ public final class CompletionManager {
 
                     public void run(CompilationController cc) throws Exception {
                         String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()), 
-                                context.getTagOffset(), context.getFileObject()).findImplementationClass();
+                                context.getFileObject()).findImplementationClass();
                         if (className == null) {
                             return;
                         }
@@ -842,8 +842,8 @@ public final class CompletionManager {
 
         @Override
         protected String getTypeName(CompletionContext context) {
-            Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
-            return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag), beanTag.getElementOffset(),
+            Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
+            return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
                     context.getFileObject()).findImplementationClass();
         }
     }
@@ -874,7 +874,7 @@ public final class CompletionManager {
         protected String getTypeName(CompletionContext context) {
             Node tag = context.getTag();
             SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(SpringXMLConfigEditorUtils.getTagAttributes(tag),
-                    context.getTagOffset(), context.getFileObject());
+                     context.getFileObject());
             if(mergedBean == null) {
                 return null;
             }
@@ -945,7 +945,7 @@ public final class CompletionManager {
                     public void run(CompilationController cc) throws Exception {
                         Tag beanTag = (Tag) SpringXMLConfigEditorUtils.getBean(context.getTag());
                         String className = new BeanClassFinder(
-                                SpringXMLConfigEditorUtils.getTagAttributes(beanTag), beanTag.getElementOffset(),
+                                SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
                                 context.getFileObject()).findImplementationClass();
                         if (className == null) {
                             return;

@@ -81,7 +81,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
 
-            final String className = new BeanClassFinder(env.getBeanAttributes(), env.getBeanTagOffset(), 
+            final String className = new BeanClassFinder(env.getBeanAttributes(), 
                     env.getFileObject()).findImplementationClass();
             if(className == null) {
                 return;
