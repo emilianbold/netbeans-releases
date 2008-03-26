@@ -73,6 +73,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.game.dialog.AbstractImagePreviewComponent;
 import org.netbeans.modules.vmd.game.dialog.FullImageGridPreview;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
@@ -685,8 +686,12 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 			e.printStackTrace();
 		}
 		
-		assert(imageURL != null);
-				
+		//assert(imageURL != null);
+		
+                if (imageURL == null)
+                    Debug.warning("imageURL is empty"); //NOI18N
+                
+                
 		this.sliderWidth.removeChangeListener(this.sliderListener);
 		this.sliderHeight.removeChangeListener(this.sliderListener);
 
