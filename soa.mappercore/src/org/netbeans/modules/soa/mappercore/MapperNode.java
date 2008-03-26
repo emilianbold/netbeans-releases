@@ -87,7 +87,7 @@ class MapperNode implements GraphListener {
     private Mapper getMapper() { return mapper; }
     private RightTree getRightTree() { return mapper.getRightTree(); }
 
-    private MapperModel getModel() { return mapper.getModel(); }
+    private MapperModel getModel() { return mapper.getFilteredModel(); }
 
     MapperNode getParent() { return parent; }
     
@@ -330,7 +330,7 @@ class MapperNode implements GraphListener {
 
 
     void updateChildren() {
-        MapperModel model = mapper.getModel();
+        MapperModel model = mapper.getFilteredModel();
         
         List<MapperNode> oldChildren = Collections.emptyList();
         if (children != null) oldChildren = children;
@@ -479,7 +479,7 @@ class MapperNode implements GraphListener {
 
         int w = labelSize.width;
         int h = Math.max(getGraphHeight(), labelSize.height + 4) + 1;
-
+        
         int indent = mapper.getTotalIndent();
 
         if (isLeaf()) {
