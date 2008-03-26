@@ -162,26 +162,22 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //What about []:
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
-
-    //IZ#130898:'Spaces around ternary operators' is not working
-    public void testNewLineFunctionDefinitionName() {
-        setDefaultsOptions();
+    public void testGnuStuleNewLineName4() {
+        setDefaultsOptions("GNU");
         setLoadDocumentText(
-            "static char *concat (char *s1, char *s2)\n" +
-            "{\n" +
-            "  int i=0;\n" +
-            "  i=(i==1)?1:2;\n" +
-            "  return (0);\n" +
-            "}\n"
-            );
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
         reformat();
-        assertDocumentText("Incorrect spaces in binary operators",
-            "static char *concat(char *s1, char *s2)\n" +
-            "{\n" +
-            "    int i = 0;\n" +
-            "    i = (i == 1) ? 1 : 2;\n" +
-            "    return (0);\n" +
-            "}\n"
-            );
+        assertDocumentText("Incorrect formatting GNU new line neme",
+                "Db::Db (DbEnv *env, u_int32_t flags)\n" +
+                ": imp_ (0)\n" +
+                ", env_ (env)\n" +
+                "{\n" +
+                "}\n"
+                );
     }
 }

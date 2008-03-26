@@ -52,7 +52,6 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
-    <!--
     <testbag testattribs="stable,commit" executor="ide" name="Acceptance">
       <testset dir="qa-functional/src">
         <patternset>
@@ -68,7 +67,6 @@ made subject to such option by the copyright holder.
         </patternset>
       </testset>
     </testbag>
-    -->
 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

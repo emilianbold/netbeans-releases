@@ -43,13 +43,17 @@ package gui;
 
 import gui.window.WebFormDesignerOperator;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 /**
  * Utilities for Performance tests, workarrounds, often used methods, ...
@@ -100,4 +104,19 @@ public class VWPUtilities extends gui.Utilities{
         }
         return true;
     }
+    // Usage: VWPUtilities.invokePTO();
+    public static ProjectsTabOperator invokePTO() {
+        ProjectsTabOperator testOp = null;
+        try {
+            testOp = new ProjectsTabOperator();
+        } catch (TimeoutExpiredException tex) {
+            MainWindowOperator mv = MainWindowOperator.getDefault();
+            JMenuBarOperator menuBar = mv.menuBar();
+            //menuBar.pushMenu("Window|Projects");
+            JMenuItemOperator item = menuBar.showMenuItem("Window|Projects");
+            item.clickMouse();
+            testOp = new ProjectsTabOperator();
+        }       
+        return testOp;
+    }    
 }

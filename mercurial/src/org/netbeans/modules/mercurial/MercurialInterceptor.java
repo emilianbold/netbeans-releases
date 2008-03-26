@@ -279,8 +279,39 @@ public class MercurialInterceptor extends VCSInterceptor {
         reScheduleRefresh(1000, from.getParentFile());
     }
     
-    public boolean beforeCreate(File file, boolean isDirectory) {
-        return super.beforeCreate(file, isDirectory);
+    public boolean beforeCreate(final File file, boolean isDirectory) {
+        if (HgUtils.isPartOfMercurialMetadata(file)) return false;
+        if (!isDirectory && !file.exists()) {
+            FileInformation info = cache.getCachedStatus(file, false);
+            if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
+                Mercurial hg = Mercurial.getInstance();
+                final File root = hg.getTopmostManagedParent(file);
+                if (root == null) return false;
+                final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
+                final Throwable innerT[] = new Throwable[1];
+                Runnable outOfAwt = new Runnable() {
+                    public void run() {
+                        try {
+                            List<File> revertFiles = new ArrayList<File>();
+                            revertFiles.add(file);
+                            HgCommand.doRevert(root, revertFiles, null, false, logger);
+                        } catch (Throwable t) {
+                            innerT[0] = t;
+                        }
+                    }
+                };
+
+                Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+                if (innerT[0] != null) {
+                    Mercurial.LOG.log(Level.FINE, "beforeCreate(): File: {0} {1}", new Object[] {file.getAbsolutePath(), innerT[0].toString()}); // NOI18N
+                }
+                Mercurial.LOG.log(Level.FINE, "beforeCreate(): afterWaitFinished: {0}", file); // NOI18N
+                logger.closeLog();
+                file.delete();
+            }
+        }
+        return false;
     }
 
     public void doCreate(File file, boolean isDirectory) throws IOException {

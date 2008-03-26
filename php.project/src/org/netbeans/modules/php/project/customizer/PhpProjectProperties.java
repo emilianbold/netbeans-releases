@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -56,6 +57,9 @@ import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 
@@ -63,18 +67,18 @@ import org.openide.util.Mutex;
  * @author ads
  *
  */
-class PhpProjectProperties {
+public class PhpProjectProperties {
 
     public static final String STATUS_USE_NO_HOST = "use_no_host";
     public static final String STATUS_ABSENT_HOST = "absent_host";
 
     private static Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
     
-    PhpProjectProperties(PhpProject project) {
+    public PhpProjectProperties(PhpProject project) {
         myProject = project;
     }
 
-    void save() {
+    public void save() {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
 
             public Host run() {
@@ -113,6 +117,12 @@ class PhpProjectProperties {
 
                 try {
                     ProjectManager.getDefault().saveProject(getProject());
+                    // check whether src directory exists - if not, create it (can happen using customizer)
+                    String src = getProject().getEvaluator().getProperty(PhpProject.SRC);
+                    File srcDir = PropertyUtils.resolveFile(FileUtil.toFile(getProject().getProjectDirectory()), src);
+                    if (!srcDir.exists()) {
+                        FileUtil.createFolder(srcDir);
+                    }
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
@@ -199,11 +209,12 @@ class PhpProjectProperties {
         
     }
 
-    PhpProject getProject() {
+    public PhpProject getProject() {
         return myProject;
     }
 
-    EditableProperties load() {
+    // XXX remove this method
+    public EditableProperties load() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
 
             public Host run() {

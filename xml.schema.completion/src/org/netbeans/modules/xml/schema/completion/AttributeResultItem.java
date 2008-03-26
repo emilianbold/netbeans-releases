@@ -93,4 +93,11 @@ public class AttributeResultItem extends CompletionResultItem {
         return component;
     }
 
+    /**
+     * For atributes, the caret should go inside the double quotes.
+     */
+    @Override
+    public int getCaretPosition() {
+        return getReplacementText().length() -1;
+    }
 }
