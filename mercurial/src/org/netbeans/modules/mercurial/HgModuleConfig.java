@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Utilities;
 
 /**
  * Stores Mercurial module configuration.
@@ -158,6 +159,11 @@ public class HgModuleConfig {
     }
     
     public void setExecutableBinaryPath(String path) {
+        if(Utilities.isWindows() && path.endsWith(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE)){
+            path = path.substring(0, path.length() - (HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE).length());
+        }else  if(path.endsWith(HgCommand.HG_COMMAND)){
+            path = path.substring(0, path.length() - HgCommand.HG_COMMAND.length());            
+        }
         getPreferences().put(KEY_EXECUTABLE_BINARY, path);
     }
 
@@ -202,7 +208,7 @@ public class HgModuleConfig {
             } catch (Exception ex) {
                 return userName;
             }
-            userName = userId + " <" + userId + "@" + hostName + ">"; // NOI18N
+            userName = userId + "@" + hostName + ".zzz"; // NOI18N
         }
         return userName;
     }

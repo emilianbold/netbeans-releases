@@ -63,6 +63,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.options.PropertiesPanel;
 import org.netbeans.modules.mercurial.options.PropertiesTable;
 import org.netbeans.modules.mercurial.options.PropertiesTableModel;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDescriptor;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener {
     
@@ -167,6 +169,11 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             return false;
         }
         String execpath = panel.executablePathTextField.getText();
+        if(Utilities.isWindows() && execpath.endsWith(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE)){
+            execpath = execpath.substring(0, execpath.length() - (HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE).length());
+        }else  if(execpath.endsWith(HgCommand.HG_COMMAND)){
+            execpath = execpath.substring(0, execpath.length() - HgCommand.HG_COMMAND.length());            
+        }   
         if (!HgModuleConfig.getDefault().isExecPathValid(execpath)) {
             JOptionPane.showMessageDialog(null,
                                           NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"), // NOI18N

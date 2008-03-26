@@ -268,6 +268,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));              
                 revisionsComboBox.setModel(targetsModel);
                 revisionsComboBox.setEditable(false);
+                setDefaultOutputFile();
                 refreshViewThread = Thread.currentThread();
                 changesetPanel1.setInfo(repoRev.getLog());
                 Thread.interrupted();  // clear interupted status
@@ -276,13 +277,13 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 initislRevsSet.add(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
                 targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));
                 revisionsComboBox.setModel(targetsModel);
+                setDefaultOutputFile();
                 refreshViewThread = Thread.currentThread();
                 Thread.interrupted();  // clear interupted status
                 ph.start();
 
                 refreshRevisions();
             }
-            setDefaultOutputFile();
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
