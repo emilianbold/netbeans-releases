@@ -121,15 +121,15 @@ public class DoubleFileStorage extends FileStorage {
        cache_1_dataFile.close();
     }
     
-    public Persistent get(final Key key) throws IOException {
+    public Persistent read(final Key key) throws IOException {
         if( Stats.hardFickle && key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             return fickleMap.get(key);
         }
         
         boolean activeFlag = getFlag();
-        Persistent object = getFileByFlag(activeFlag).get(key);
+        Persistent object = getFileByFlag(activeFlag).read(key);
         if( object == null ) {
-            object = getFileByFlag(!activeFlag).get(key);
+            object = getFileByFlag(!activeFlag).read(key);
         }
         return object;
         

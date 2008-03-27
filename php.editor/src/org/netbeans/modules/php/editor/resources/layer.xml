@@ -78,6 +78,13 @@
                 </folder>
                 
             </folder>
+            <folder name="x-php-doccomment">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     <folder name="OptionsDialog">

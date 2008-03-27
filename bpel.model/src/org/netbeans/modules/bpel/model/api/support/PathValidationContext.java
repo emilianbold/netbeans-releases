@@ -176,21 +176,4 @@ public class PathValidationContext implements XPathValidationContext {
                 str);
         getVVisitor().getResultItems().add(resultItem);
     }
-
-    public boolean isSchemaImported(String soughtNamspace) {
-        assert soughtNamspace != null;
-        //
-        BpelModel model = ((BpelEntity) myXpathContentElement).getBpelModel();
-        if (model.getState() == State.VALID) {
-            for (Import anImport : model.getProcess().getImports()) {
-                if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
-                    if (soughtNamspace.equals(anImport.getNamespace())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        //
-        return false;
-    }
 }

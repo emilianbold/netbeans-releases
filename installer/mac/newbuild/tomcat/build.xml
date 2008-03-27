@@ -55,7 +55,7 @@
         
         <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${tomcat.appname}"/>
+                <filter token="TITLE" value="${tomcat-title}"/>
             </filterset>
         </copy>
         

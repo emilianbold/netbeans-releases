@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.zip.CRC32;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -92,6 +93,11 @@ abstract class SetupHid extends NbTestCase {
         ud.mkdirs();
         
         System.setProperty("netbeans.user", ud.getPath());
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected static void deleteRec(File f) throws IOException {

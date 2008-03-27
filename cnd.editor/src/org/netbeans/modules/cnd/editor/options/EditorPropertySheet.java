@@ -102,6 +102,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         initComponents();
 
         holder = new PropertySheet();
+        holder.setOpaque(false);
+        holder.setDescriptionAreaVisible(false);
         GridBagConstraints fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -412,11 +414,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
     
     void cancel() {
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
 
     // Change in the combo

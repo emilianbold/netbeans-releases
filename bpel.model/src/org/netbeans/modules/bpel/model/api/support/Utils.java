@@ -57,6 +57,8 @@ import java.util.Map.Entry;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ActivityBuilder;
@@ -69,7 +71,6 @@ import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ReceiveBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ReplyBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.AssignBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.WaitBuilder;
-import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.FlowBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.PickBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.IfBuilder;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl.ExitBuilder;
@@ -95,26 +96,29 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReferenceable;
 import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.api.support.Pattern;
-import org.netbeans.modules.bpel.model.api.support.Roles;
-import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.model.impl.references.BpelAttributesType;
 import org.netbeans.modules.bpel.model.impl.references.BpelReferenceBuilder;
 import org.netbeans.modules.bpel.model.impl.references.WSDLReferenceBuilder;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.netbeans.modules.bpel.model.xam.BpelTypes;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
-import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
@@ -128,6 +132,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
+import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
@@ -136,6 +141,8 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
+import org.netbeans.modules.xml.xam.Model.State;
 
 public final class Utils {
 
@@ -169,7 +176,7 @@ public final class Utils {
       return checkXPathExpression(element, null);
     }
 
-    public static SchemaComponent checkXPathExpression(ContentElement element, PathValidationContext context) {
+    public static SchemaComponent checkXPathExpression(ContentElement element, XPathValidationContext context) {
         String content = element.getContent();
         
         if (content == null) {
@@ -188,17 +195,19 @@ public final class Utils {
         return checkExpression(expressionLang, content, element, context);
     }
 
-    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final PathValidationContext context) {
-        boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
+    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final XPathValidationContext context) {
+        boolean isXPathExpr = exprLang == null || BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
         if ( !isXPathExpr) {
             return null;
         }
         XPathModelHelper helper= XPathModelHelper.getInstance();
         XPathModel model = helper.newXPathModel();
-        context.setXPathModel(model);
-        model.setValidationContext(context);
 
+        if (context != null) {
+          context.setXPathModel(model);
+          model.setValidationContext(context);
+        }
         ExNamespaceContext nsContext = ((BpelEntity) element).getNamespaceContext();
         model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
 
@@ -212,19 +221,36 @@ public final class Utils {
             }
 
             public Collection<SchemaModel> getVisibleModels() {
-                context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
+                if (context != null) {
+                  context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
+                }
                 return null;
             }
 
-            public boolean isSchemaVisible(String schemaNamespaceUri) {
-                return context.isSchemaImported(schemaNamespaceUri);
+            public boolean isSchemaVisible(String soughtNamspace) {
+                assert soughtNamspace != null;
+                //
+                BpelModel model = ((BpelEntity) element).getBpelModel();
+                if (model.getState() == State.VALID) {
+                    for (Import anImport : model.getProcess().getImports()) {
+                        if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
+                            if (soughtNamspace.equals(anImport.getNamespace())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                //
+                return false;
             }
         });
         model.setXPathCastResolver(createXPathCastResolver(element));
 
-        if (XPathModelFactory.isSplitable(exprText)) {
-            context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
-            String[] partsArr = XPathModelFactory.split(exprText);
+        if (BpelXPathModelFactory.isSplitable(exprText)) {
+            if (context != null) {
+              context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
+            }
+            String[] partsArr = BpelXPathModelFactory.split(exprText);
 
             for (String anExprText : partsArr) {
                 checkSingleExpr(model, anExprText);
@@ -310,67 +336,17 @@ public final class Utils {
         return null;
       }
 //out("     7");
-      return new MyXPathCastResolver(allCasts);
+      return new XPathCastResolverImpl(allCasts);
     }
 
-    // --------------------------------------------------------------------
-    private static class MyXPathCastResolver implements XPathCastResolver {
-      public MyXPathCastResolver(List<Cast> casts) {
-        myXPathCasts = new ArrayList<XPathCast>();
-
-        for (Cast cast : casts) {
-          myXPathCasts.add(new MyXPathCast(cast));
-        }
-      }
-
-      public List<XPathCast> getXPathCasts() {
-        return myXPathCasts;
-      }
-
-      private List<XPathCast> myXPathCasts;
-    }
-
-    // ----------------------------------------------------
-    private static class MyXPathCast implements XPathCast {
-      
-      public MyXPathCast(Cast cast) {
-        myType = getType(cast);
-        myPath = cast.getPath();
-      }
-
-      public String getPath() {
-        return myPath;
-      }
-
-      public GlobalType getType() {
-        return myType;
-      }
-
-      private GlobalType getType(Cast cast) {
-        SchemaReference<GlobalType> ref = cast.getType();
-    //System.out.println();
-    //System.out.println("---: " + ref);
-
-        if (ref == null) {
-          return null;
-        }
-    //System.out.println("   : " + ref.get());
-        return ref.get();
-      }
-
-      private String myPath;
-      private GlobalType myType;
-    }
-    
     public static QName getQName(String value, BpelEntity entity ) {
         if (value == null) {
             return null;
         }
         String[] splited = new String[2];
-        splitQName( value , splited );
+        splitQName(value, splited);
+        String uri = entity.getNamespaceContext().getNamespaceURI(splited[0]);
 
-        NamespaceContext context = entity.getNamespaceContext();
-        String uri = context.getNamespaceURI(splited[0]);
         if (uri == null) {
             return null;
         }
@@ -705,6 +681,43 @@ public final class Utils {
         }
     }
 
+    public static FileObject getFileObjectByModel(Model model) {
+        if (model != null){
+
+            ModelSource src = model.getModelSource();
+            if (src != null){
+
+                Lookup lookup = src.getLookup();
+                if (lookup != null){
+                    return lookup.lookup(FileObject.class);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Project safeGetProject(BpelModel bpelModel) {
+        FileObject fo = getFileObjectByModel(bpelModel);
+        if (fo != null && fo.isValid()) {
+            return FileOwnerQuery.getOwner(fo);
+        } else {
+            return null;
+        }
+    }
+    
+    public static SchemaModel getSchemaModel(FileObject fo) {
+        SchemaModel sModel = null;
+        //
+        try {
+            ModelSource modelSource = Utilities.getModelSource(fo, true);
+            sModel = SchemaModelFactory.getDefault().getModel(modelSource);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        //
+        return sModel;
+    }
+    
     
     private static ActivityBuilder getActivityBuilder( String tagName ){
         return ActivityCreatorHolder.ACTIVITY_BUILDERS.get( tagName );

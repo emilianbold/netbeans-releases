@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${glassfish.appname}"/>
+                <filter token="TITLE" value="${glassfish-title}"/>
             </filterset>
         </copy>
         
