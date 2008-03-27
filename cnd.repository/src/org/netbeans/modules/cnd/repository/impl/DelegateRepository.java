@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -71,7 +72,7 @@ public final class DelegateRepository implements Repository {
             delegate = new HashMapRepository ();
         } else {
             Stats.log("by default using HybridRepository."); // NOI18N
-            delegate = new HybridRepository();
+            delegate = new DiskRepositoryManager();
         }        
     }
 

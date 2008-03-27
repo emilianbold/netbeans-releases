@@ -557,7 +557,7 @@ public class Util {
             copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
             copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
-            copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+            copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
             copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
@@ -657,7 +657,7 @@ public class Util {
                 copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
                 copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
                 copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
-                copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+                copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
                 copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
                 copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
                 copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
@@ -690,9 +690,11 @@ public class Util {
                     Certificate[] chain = new Certificate[] {cert};
                     dstStore.setKeyEntry(dstAlias, privKey, dstPasswd.toCharArray(), chain);
                 }
-                dstStore.store(os, dstPasswd.toCharArray());
             } finally {
-                if (os != null) os.close();
+                if (os != null) {
+                    dstStore.store(os, dstPasswd.toCharArray());
+                    os.close();
+                }
             }
         } finally {
             if (is != null) is.close();
