@@ -294,11 +294,25 @@ public final class RubyPlatformManager {
         return null;
     }
     
-    public static synchronized RubyPlatform getPlatformByPath(String path) {
+    static synchronized RubyPlatform getPlatformByPath(String path) {
         return getPlatformByFile(new File(path));
     }
 
+    /**
+     * Adds platform to the current platform list. Checks whether such platform
+     * is already present.
+     * 
+     * @param interpreter interpreter to be added
+     * @return <tt>null</tt>, if the given <tt>interpreter</tt> is not valid
+     *         Ruby interpreter. If the platform is already present, returns it.
+     *         Otherwise new platform instance is returned.
+     * @throws java.io.IOException
+     */
     public static RubyPlatform addPlatform(final File interpreter) throws IOException {
+        RubyPlatform plaf = getPlatformByFile(interpreter);
+        if (plaf != null) {
+            return plaf;
+        }
         final Info info = computeInfo(interpreter);
         if (info == null) {
             return null;
@@ -324,7 +338,7 @@ public final class RubyPlatformManager {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        RubyPlatform plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), info);
+        plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), info);
         synchronized (RubyPlatform.class) {
             getPlatformsInternal().add(plaf);
         }
