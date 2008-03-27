@@ -21,8 +21,10 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -36,35 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.ruby.platform;
 
-import java.io.File;
-import org.openide.modules.InstalledFileLocator;
+package org.netbeans.spi.project.libraries;
 
-public final class InstalledFileLocatorImpl extends InstalledFileLocator {
+import java.net.URI;
+import java.util.List;
 
-    public InstalledFileLocatorImpl() {
-    }
+/**
+ * Library enhancement allowing setting/getting library content as URI list.
+ * Useful for example for storing relative library entries.
+ * 
+ * @since org.netbeans.modules.project.libraries/1 1.18
+ */
+public interface LibraryImplementation2 extends LibraryImplementation {
 
-    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
-        if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
-            File rubydebugDir = RubyTestBase.getDirectory("rubydebug.dir", true);
-            File cd = new File(rubydebugDir, "classic-debug.rb");
-            if (!cd.isFile()) {
-                throw new RuntimeException("classic-debug found in " + rubydebugDir);
-            }
-            return cd;
-        } else if (relativePath.equals("jruby-1.1RC3")) {
-            return TestUtil.getXTestJRubyHome();
-        } else if (relativePath.equals("platform_info.rb")) {
-            String script = System.getProperty("xtest.platform_info.rb");
-            if (script == null) {
-                throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
-            }
-            return new File(script);
-        } else {
-            return null;
-        }
-    }
-    
+    /**
+     * Returns List of resources contained in the given volume.
+     * The returned list is unmodifiable. To change the content of
+     * the given volume use setContent method.
+     * @param volumeType the type of volume for which the content should be returned.
+     * @return list of resource URIs (never null)
+     * @throws IllegalArgumentException if the library does not support given type of volume
+     */
+    List<URI> getURIContent(String volumeType) throws IllegalArgumentException;
+
+    /**
+     * Sets content of given volume
+     * @param volumeType the type of volume for which the content should be set
+     * @param path the list of resource URIs
+     * @throws IllegalArgumentException if the library does not support given volumeType
+     */
+    void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException;
+
 }
