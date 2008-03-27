@@ -5,6 +5,7 @@
 package org.netbeans.modules.bpel.design;
 
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,14 @@ public class ProcessView extends DiagramView {
         return new ListBuilder().getList();
 
     }
+    
+    public Insets getAutoscrollInsets() {
+        Insets insets = super.getAutoscrollInsets();
+        TriScrollPane scrollPane = getDesignView().getScrollPane();
+        insets.left += scrollPane.getLeftPreferredWidth();
+        insets.right += scrollPane.getRightPreferredWidth();
+        return insets;
+    }    
 
     class ListBuilder {
 
