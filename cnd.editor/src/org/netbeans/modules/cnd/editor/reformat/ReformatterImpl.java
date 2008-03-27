@@ -676,6 +676,7 @@ public class ReformatterImpl {
             }
             previous = current;
         }
+        //System.out.println("Reformatter have prepared "+diffs.getStorage().size()+" diffs");
         return diffs.getStorage();
     }
     
