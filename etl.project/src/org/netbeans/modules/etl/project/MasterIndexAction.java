@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -83,8 +84,8 @@ public class MasterIndexAction  extends CallableSystemAction {
     
     @Override
     public void performAction() {
-        mLogger.infoNoloc(mLoc.t("eTLeView Design Time - Query Builder [START] ...\n"));
-        System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
+        mLogger.infoNoloc(mLoc.t("Generating Schema ... "));
+        //System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
         dialog.setVisible(true);
         if ((dialog.getDBLocation()) != null && (dialog.getDBName()) != null && (dialog.getObjectDefinition()) != null) {
@@ -100,10 +101,13 @@ public class MasterIndexAction  extends CallableSystemAction {
                 }
                 dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
             }
-            System.out.println("\neTLeView Design Time - Query Builder [END].");
-            mLogger.infoNoloc(mLoc.t("\neTLeView Design Time - Query Builder [END]."));
+            String msg = "Generated the Schema Successfully";
+            mLogger.infoNoloc(mLoc.t(msg));            
+            //JOptionPane.showMessageDialog(new JFrame(), msg, "Generate Schema", JOptionPane.INFORMATION_MESSAGE);
         }else{
-            mLogger.infoNoloc(mLoc.t("The dialog is cancelled or any one of the fields are empty"));
+            String errMsg = "The dialog is cancelled or any one of the fields are empty";
+            mLogger.infoNoloc(mLoc.t(errMsg));
+            //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
