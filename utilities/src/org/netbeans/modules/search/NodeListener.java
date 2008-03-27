@@ -48,12 +48,15 @@ import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
 import static java.awt.event.InputEvent.BUTTON1_MASK;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -147,7 +150,7 @@ final class NodeListener implements MouseListener, KeyListener,
         if (!isPathSelected(path, tree)) {
             tree.setSelectionPath(path);
         }
-        if (tree.getSelectionCount() == 1) {
+        if (tree.getSelectionCount() >= 1) {
             final ResultModel resultModel = getResultModel(tree);
             if (!isInsideCheckBox(tree, path, resultModel, e)) {
                 showPopup(tree, path, resultModel, e);
@@ -215,28 +218,103 @@ final class NodeListener implements MouseListener, KeyListener,
                            final ResultModel resultModel,
                            final MouseEvent e) {
         final int pathCount = path.getPathCount();
+        if (tree.getSelectionCount() > 1) {
+            // check if path depth is same for all selected nodes
+            for (TreePath tp : tree.getSelectionPaths()) {
+                if (tp.getPathCount() != 2) {
+                    // no popup-menu for multiple selection of various depth
+                    return;
+                }
+            }
+        }
         if (pathCount == 1) {               //root node
             //no popup-menu for the root node
         } else if (pathCount == 2) {
-            Node nbNode = getNbNode(path, resultModel);
-            if (nbNode != null) {
-                JPopupMenu popup = createFileNodePopupMenu(nbNode);
-                if (popup != null) {
+            if (tree.getSelectionCount() > 1) {
+                // prepare "best effort" popup menu for multiple selected nodes
+                Node nbNode;
+                Action action;
+                JMenuItem menuItem;
+                Set<String> labels = new HashSet<String>();
+                for (TreePath tp : tree.getSelectionPaths()) {
+                    nbNode = getNbNode(tp, resultModel);
+                    if (nbNode != null) {
+                        action = getDefaultAction(nbNode);
+                        if (action == null) continue;
+                        menuItem = (action instanceof Presenter.Popup)
+                             ? ((Presenter.Popup) action).getPopupPresenter()
+                             : null;
+                        if ( menuItem != null ) {
+                            labels.add(menuItem.getText());
+                        } else {
+                            labels.add((String) action.getValue(Action.NAME));
+                        }
+                    }
+                }
+                if (labels.size()>0) {
+                    JPopupMenu popup = new JPopupMenu();
+                    menuItem = new JMenuItem();
+                    String newLabel = "";
+                    for (String label : labels) {
+                        if (newLabel.length()>0) {
+                            newLabel += "/" + label;
+                        } else {
+                            newLabel = label;
+                        }
+                    }
+                    menuItem.setText(newLabel);
+                    menuItem.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                callResultNodesDefaultActions(e,tree);
+                            }
+
+                        }
+                    );
+                    popup.add(menuItem);
                     Point location = getPopupMenuLocation(tree, path, e);
                     popup.show(tree, location.x, location.y);
                 }
+            } else {
+                Node nbNode = getNbNode(path, resultModel);
+                if (nbNode != null) {
+                    JPopupMenu popup = createFileNodePopupMenu(nbNode);
+                    if (popup != null) {
+                        Point location = getPopupMenuLocation(tree, path, e);
+                        popup.show(tree, location.x, location.y);
+                    }
+                }
             }
         } else if (pathCount == 3) {        //detail node
-            Node nbNode = getNbNode(path, resultModel);
-            if (nbNode != null) {
-                Point location = getPopupMenuLocation(tree, path, e);
-                nbNode.getContextMenu().show(tree, location.x, location.y);
+            if (tree.getSelectionCount() == 1) {
+                // show popup only when single node has been selected
+                Node nbNode = getNbNode(path, resultModel);
+                if (nbNode != null) {
+                    Point location = getPopupMenuLocation(tree, path, e);
+                    nbNode.getContextMenu().show(tree, location.x, location.y);
+                }
             }
         } else {
             assert false;
         }
     }
 
+    /**
+     * Performs default action on all file nodes selected in
+     * @param e  ActionEvent performed
+     */
+    private void callResultNodesDefaultActions(ActionEvent e, JTree tree) {
+        if ((tree != null) && (tree.getSelectionCount() >= 1)) {
+            Node nbNode;
+            ResultModel resultModel = getResultModel(tree);
+            for (TreePath tp : tree.getSelectionPaths()) {
+                nbNode = getNbNode(tp, resultModel);
+                if ((nbNode != null) && (tp.getPathCount() ==2)) {
+                    callDefaultAction(nbNode, e.getSource(), e.getID(), "click"); // NOI18N
+                }
+            }
+        }
+    }
+    
     /**
      * Determines location where the pop-up menu for a node should be displayed.
      * @param  tree  tree in which the pop-up menu should be displayed

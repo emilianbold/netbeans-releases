@@ -891,8 +891,13 @@ public class HgCommand {
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
     }
+
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, -1, logger);
     }
 
     public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
@@ -924,7 +929,6 @@ public class HgCommand {
                     files != null ? new ArrayList<File>(files) : null,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(list, messages);
-            
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
