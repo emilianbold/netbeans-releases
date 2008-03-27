@@ -79,6 +79,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.JemmyException;
 
 /**
  *
@@ -204,6 +205,64 @@ public class AcceptanceTestCase extends JellyTestCase {
         eoXMLCode.close( false );
     }
 
+    private void WaitCredCompletion( EditorOperator eoJavaCode )
+    {
+      eoJavaCode.insert( "Cred" );
+      eoJavaCode.typeKey( ' ', InputEvent.CTRL_MASK );
+      int iPassed = 0;
+      while( true )
+      {
+        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+        if( !sCompletedText.endsWith( "Cred\n" ) )
+          break;
+        if( ++iPassed > 10 )
+        {
+          try
+          {
+            CompletionJListOperator jCompl = new CompletionJListOperator( );
+            jCompl.clickOnItem( 0, 2 );
+          }
+          catch( JemmyException ex )
+          {
+          }
+        }
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+    private void WaitEndOfLine( EditorOperator eoJavaCode, String sEnd )
+    {
+      while( true )
+      {
+        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+        if( !sCompletedText.endsWith( sEnd ) )
+          break;
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+    private CompletionJListOperator GetCompletion( )
+    {
+      CompletionJListOperator comp = null;
+      while( true )
+      {
+        comp = new CompletionJListOperator( );
+        try
+        {
+          Object o = comp.getCompletionItems( ).get( 0 );
+          if( !o.toString( ).contains( "No suggestions" ) )
+            return comp;
+        }
+        catch( java.lang.Exception ex )
+        {
+          return null;
+        }
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+
+
     public void CodeCompletion1Internal( )
     {
         // Access java code with editor
@@ -219,57 +278,60 @@ public class AcceptanceTestCase extends JellyTestCase {
         JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
 
         // First most important line like "CreditReport cr = new CreditReport( );"
-        eoJavaCode.insert( "Cred" );
-        editor.typeKey( ' ', InputEvent.CTRL_MASK );
-        //eoJavaCode.insert( " cr = new Cred" );
-        //editor.typeKey( ' ', InputEvent.CTRL_MASK );
-        //eoJavaCode.insert( "( );\n" );
+        WaitCredCompletion( eoJavaCode );
+        eoJavaCode.insert( " cr = new " );
+        WaitCredCompletion( eoJavaCode );
+        eoJavaCode.insert( ";\n" );
 
         // Next lines
-        /*
         eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
-        CompletionJListOperator jCompl = new CompletionJListOperator( );
-        jCompl.clickOnItem( "setFirstName" );
-        eoJavaCode.insert( "\"Hello\"" );
+        CompletionJListOperator jCompl = GetCompletion( );
+        jCompl.clickOnItem( "setFirstName", 2 );
+        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
+        WaitEndOfLine( eoJavaCode, "cr.\n" );
+        editor.typeKey( '"' );
+        eoJavaCode.insert( "Hello" );
         eoJavaCode.pushKey( KeyEvent.VK_END );
         eoJavaCode.insert( "\n" );
-        */
 
-        // TODO : REMOVE TEMPORARY
-        eoJavaCode.insert( "cr.setFirstName( \"Hello\" );\n" );
-        eoJavaCode.insert( "cr.setLastName( \"World\" );\n" );
-        eoJavaCode.insert( "cr.setScore( 999 );\n" );
-        eoJavaCode.insert( "cr.setSsn( \"123-456-ABC\" );\n" );
-
-        /*
-        CompletionJListOperator jCompl = new CompletionJListOperator( );
-        //jCompl.
-        System.out.println( "**** 1 ****" );
-        try{Thread.sleep( 30000 );}catch(InterruptedException ex){}
-        jCompl.clickOnItem( "CreditReport" );
-        System.out.println( "**** 2 ****" );
-        jCompl.hideAll( );
-
-        System.out.println( "**** 3 ****" );
-
-        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
-        if( !sCompletedText.matches( "^[ \\t]*CreditReport$" ) )
-        {
-          fail( "Wrong completion of Cred: \"" + sCompletedText + "\"" );
-        }
-        eoJavaCode.insert( " cr = new CreditReport( );\ncr" );
-
-        // TODO : Wait till suggestions will come.
-        // How to access them?
-
+        // Next lines
+        eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
+        jCompl = GetCompletion( );
+        jCompl.clickOnItem( "setLastName", 2 );
+        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
+        WaitEndOfLine( eoJavaCode, "cr.\n" );
+        editor.typeKey( '"' );
+        eoJavaCode.insert( "World" );
+        eoJavaCode.pushKey( KeyEvent.VK_END );
+        eoJavaCode.insert( "\n" );
 
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
         jCompl = new CompletionJListOperator( );
-        jCompl.clickOnItem( "setLastName" );
+        jCompl.clickOnItem( "setScore", 2 );
+        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
+        WaitEndOfLine( eoJavaCode, "cr.\n" );
+        editor.typeKey( '9' );
+        eoJavaCode.insert( "99" );
+        eoJavaCode.pushKey( KeyEvent.VK_END );
+        eoJavaCode.insert( "\n" );
+
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
+        jCompl = new CompletionJListOperator( );
+        jCompl.clickOnItem( "setSsn", 2 );
+        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
+        WaitEndOfLine( eoJavaCode, "cr.\n" );
+        editor.typeKey( '"' );
+        eoJavaCode.insert( "123-456-ABC" );
+        eoJavaCode.pushKey( KeyEvent.VK_END );
+        eoJavaCode.insert( "\n" );
 
         // TODO : Check result
-        */
     }
 
     public void CodeCompletion2Internal( ) {

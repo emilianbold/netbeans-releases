@@ -15,7 +15,7 @@
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
-	<string>AdminAuthorization</string>
+	<string>RootAuthorization</string>
 	<key>IFPkgFlagBackgroundAlignment</key>
 	<string>topleft</string>
 	<key>IFPkgFlagBackgroundScaling</key>

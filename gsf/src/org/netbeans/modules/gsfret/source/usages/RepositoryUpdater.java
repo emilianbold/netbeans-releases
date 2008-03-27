@@ -153,6 +153,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
+    // TODO - make delay configurable?
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
     
     private static RepositoryUpdater instance;
@@ -1323,7 +1324,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1RC2");
+                        int rubyIndex = path.indexOf("jruby-1.1RC3");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }

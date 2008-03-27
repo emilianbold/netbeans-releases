@@ -48,10 +48,8 @@ import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
-import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -73,7 +71,7 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
         WebServicesClientSupportImpl jaxrpcClientSupport = new J2SEProjectJaxRpcClientSupport(project);
         final WebServicesClientSupport jaxRpcClientSupportApi = WebServicesClientSupportFactory.createWebServicesClientSupport(jaxrpcClientSupport);
         
-        LookupMerger<ProjectOpenedHook> openHook = UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHook() {
+        ProjectOpenedHook openHook = new ProjectOpenedHook() {
             @Override
             protected void projectOpened() {
                 if(jaxRpcClientSupportApi.isBroken(project)) {
@@ -83,7 +81,7 @@ public class J2SEWSSupportLookupProvider implements LookupProvider {
             @Override
             protected void projectClosed() {
             }
-        });
+        };
         return Lookups.fixed(new Object[] {jaxWsClientSupportApi,jaxRpcClientSupportApi,new J2SEProjectWSClientSupportProvider(), new JaxWsArtifactsClassPathProvider(project), openHook});
     }
 }

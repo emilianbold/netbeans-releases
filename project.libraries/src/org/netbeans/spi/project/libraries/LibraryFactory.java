@@ -65,7 +65,7 @@ public class LibraryFactory {
      */
     public static Library createLibrary (LibraryImplementation libraryImplementation) {
         assert libraryImplementation != null;
-        return LibraryAccessor.DEFAULT.createLibrary(libraryImplementation);
+        return LibraryAccessor.getInstance().createLibrary(libraryImplementation);
     }
     
 }

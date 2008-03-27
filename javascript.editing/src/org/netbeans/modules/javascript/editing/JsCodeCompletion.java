@@ -848,10 +848,6 @@ public class JsCodeCompletion implements Completable {
         return null;
     }
     
-    /** Determine if we're trying to complete the name for a "def" (in which case
-     * we'd show the inherited methods).
-     * This needs to be enhanced to handle "Foo." prefixes, e.g. def self.foo
-     */
     private boolean completeFunctions(List<CompletionProposal> proposals, CompletionRequest request) {
         JsIndex index = request.index;
         String prefix = request.prefix;
@@ -879,6 +875,10 @@ public class JsCodeCompletion implements Completable {
         }
 
         for (IndexedElement element : matches) {
+            if (element.isNoDoc()) {
+                continue;
+            }
+            
             JsCompletionItem item;
             if (element instanceof IndexedFunction) {
                 item = new FunctionItem((IndexedFunction)element, request);
@@ -1087,12 +1087,10 @@ public class JsCodeCompletion implements Completable {
 //                    continue;
 //                }
                 
-//                // Don't include private or protected methods on other objects
-//                if (skipPrivate && (method.isPrivate() && !"new".equals(method.getName()))) {
-//                    // TODO - "initialize" removal here should not be necessary since they should
-//                    // be marked as private, but index doesn't contain that yet
-//                    continue;
-//                }
+                // Don't include private or protected methods on other objects
+                if (skipPrivate && element.isPrivate()) {
+                    continue;
+                }
 //
 //                // We can only call static methods
 //                if (skipInstanceMethods && !method.isStatic()) {
@@ -1212,13 +1210,15 @@ public class JsCodeCompletion implements Completable {
                         if ((prefix.length() > 0) && !element.getName().startsWith(prefix)) {
                             continue;
                         }
+                        
+                        if (element.isNoDoc()) {
+                            continue;
+                        }
+
+                        
 
 //                        // For def completion, skip local methods, only include superclass and included
 //                        if ((fqn != null) && fqn.equals(method.getClz())) {
-//                            continue;
-//                        }
-//                        
-//                        if (method.isNoDoc()) {
 //                            continue;
 //                        }
 
@@ -1356,6 +1356,10 @@ public class JsCodeCompletion implements Completable {
         if (element == null) {
             return null;
         }
+        if (element instanceof IndexedPackage) {
+            return null;
+        }
+        
         if (element instanceof KeywordElement) {
             return null; //getKeywordHelp(((KeywordElement)element).getName());
         } else if (element instanceof CommentElement) {
@@ -1863,7 +1867,7 @@ public class JsCodeCompletion implements Completable {
                 String type = indexedElement.getType();
                 if (type != null && type != Node.UNKNOWN_TYPE) {
                     formatter.appendHtml(" : "); // NOI18N
-                    formatter.appendText(type);
+                    formatter.appendText(JsUtils.normalizeTypeString(type));
                 }
             }
 
@@ -1997,6 +2001,7 @@ public class JsCodeCompletion implements Completable {
                     int typeIndex = param.indexOf(':');
                     if (typeIndex != -1) {
                         formatter.type(true);
+                        // TODO - call JsUtils.normalizeTypeString() on this string?
                         formatter.appendText(param, typeIndex+1, param.length());
                         formatter.type(false);
                         formatter.appendHtml(" ");
@@ -2019,7 +2024,7 @@ public class JsCodeCompletion implements Completable {
                     indexedElement.getType() != Node.UNKNOWN_TYPE &&
                     indexedElement.getKind() != ElementKind.CONSTRUCTOR) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(indexedElement.getType());
+                formatter.appendText(JsUtils.normalizeTypeString(indexedElement.getType()));
             }
             
             return formatter.getText();

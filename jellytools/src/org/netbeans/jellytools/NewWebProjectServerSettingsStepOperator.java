@@ -1,7 +1,42 @@
 /*
- * NewWebApplication.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on 25.3.08 18:32
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.jellytools;
 
@@ -9,32 +44,35 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
-/** Class implementing all necessary methods for handling "New Web Application" NbDialog.
- *
- * @author Dan Kolar
- * @version 1.0
+/**
+ * Handle "Server and Settings" panel of the New Web Project wizard.
+ * Components on the panel differs according to type of project selected.<br><br>
+ * <u>Web Application</u><br>
+ * <ol>
+ * <li>ComboBox Server: <code>cbSourceStructure().selectItem("item")</code>
+ * <li>Button for Adding new Server: <code>btAdd().pushNoBlock()</code>
+ * <li>ComboBox J2EE Version: <code>cbJ2EEVersion().selectItem("item")</code>
+ * <li>Label and TextField Context Path: <code>txtContextPath().setText()</code>
+ * </ol>
+ * <u>Web Project with Existing Sources</u><br>
+ * <ol>
+ * <li>ComboBox Server: <code>cbSourceStructure().selectItem("item")</code>
+ * <li>Button for Adding new Server: <code>btAdd().pushNoBlock()</code>
+ * <li>ComboBox J2EE Version: <code>cbJ2EEVersion().selectItem("item")</code>
+ * <li>Label and TextField Context Path: <code>txtContextPath().setText()</code>
+ * </ol>
+ * @author  dk198696
  */
 public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOperator {
 
-    /** Creates new NewWebApplication that can handle it.
-     */
-
-    private JLabelOperator _lblSteps;
-    private JListOperator _lstSteps;
-    public static final String ITEM_4 = "4.";
-    private JLabelOperator _lblServerAndSettings;
     private JLabelOperator _lblContextPath;
     private JLabelOperator _lblServer;
     private JLabelOperator _lblJavaEEVersion;
     private JTextFieldOperator _txtContextPath;
     private JCheckBoxOperator _cbCopyServerJARFilesToLibrariesFolder;
     private JComboBoxOperator _cboServer;
-    public static final String ITEM_APACHETOMCAT6016 = "Apache Tomcat 6.0.16";
-    public static final String ITEM_GLASSFISHV2 = "GlassFish V2";
     private JButtonOperator _btAdd;
     private JComboBoxOperator _cboJavaEEVersion;
     public static final String ITEM_JAVAEE5 = "Java EE 5";
@@ -42,48 +80,11 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
     public static final String ITEM_J2EE13 = "J2EE 1.3";
     private JLabelOperator _lblAddToEnterpriseApplication;
     private JComboBoxOperator _cboAddToEnterpriseApplication;
-    public static final String ITEM_NONE = "<None>";
-    private JLabelOperator _lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml;
-    private JButtonOperator _btBack;
-    private JButtonOperator _btNext;
-    private JButtonOperator _btFinish;
-    private JButtonOperator _btCancel;
-    private JButtonOperator _btHelp;
-
+    private JLabelOperator _lblSharingJARLicenseRemark;
 
     //******************************
     // Subcomponents definition part
     //******************************
-
-    /** Tries to find "Steps" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblSteps() {
-        if (_lblSteps==null) {
-            _lblSteps = new JLabelOperator(this, "Steps");
-        }
-        return _lblSteps;
-    }
-
-    /** Tries to find null JList in this dialog.
-     * @return JListOperator
-     */
-    public JListOperator lstSteps() {
-        if (_lstSteps==null) {
-            _lstSteps = new JListOperator(this);
-        }
-        return _lstSteps;
-    }
-
-    /** Tries to find "Server and Settings" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblServerAndSettings() {
-        if (_lblServerAndSettings==null) {
-            _lblServerAndSettings = new JLabelOperator(this, "Server and Settings");
-        }
-        return _lblServerAndSettings;
-    }
 
     /** Tries to find "Context Path:" JLabel in this dialog.
      * @return JLabelOperator
@@ -188,63 +189,12 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
     /** Tries to find "<html>There may be legal considerations when sharing server JAR files. Be sure to check the license for your server to make sure you can distribute server JAR files to other developers.</html>" WizardDescriptor$FixedHeightLabel in this dialog.
      * @return JLabelOperator
      */
-    public JLabelOperator lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml() {
-        if (_lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml==null) {
-            _lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml = new JLabelOperator(this, "<html>There may be legal considerations when sharing server JAR files. Be sure to check the license for your server to make sure you can distribute server JAR files to other developers.</html>");
+    public JLabelOperator lblSharingJARLicenseRemark() {
+        if (_lblSharingJARLicenseRemark == null) {
+            _lblSharingJARLicenseRemark = new JLabelOperator(this, "<html>There may be legal considerations when sharing server JAR files. Be sure to check the license for your server to make sure you can distribute server JAR files to other developers.</html>");
         }
-        return _lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml;
+        return _lblSharingJARLicenseRemark;
     }
-
-    /** Tries to find "< Back" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btBack() {
-        if (_btBack==null) {
-            _btBack = new JButtonOperator(this, "< Back");
-        }
-        return _btBack;
-    }
-
-    /** Tries to find "Next >" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btNext() {
-        if (_btNext==null) {
-            _btNext = new JButtonOperator(this, "Next >");
-        }
-        return _btNext;
-    }
-
-    /** Tries to find "Finish" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btFinish() {
-        if (_btFinish==null) {
-            _btFinish = new JButtonOperator(this, "Finish");
-        }
-        return _btFinish;
-    }
-
-    /** Tries to find "Cancel" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btCancel() {
-        if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
-        }
-        return _btCancel;
-    }
-
-    /** Tries to find "Help" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btHelp() {
-        if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
-        }
-        return _btHelp;
-    }
-
 
     //****************************************
     // Low-level functionality definition part
@@ -297,7 +247,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
     /** clicks on "Add..." JButton
      */
     public void add() {
-        btAdd().push();
+        btAdd().pushNoBlock();
     }
 
     /** returns selected item for cboJavaEEVersion
@@ -328,37 +278,6 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
         cboAddToEnterpriseApplication().selectItem(item);
     }
 
-    /** clicks on "< Back" JButton
-     */
-    public void back() {
-        btBack().push();
-    }
-
-    /** clicks on "Next >" JButton
-     */
-    public void next() {
-        btNext().push();
-    }
-
-    /** clicks on "Finish" JButton
-     */
-    public void finish() {
-        btFinish().push();
-    }
-
-    /** clicks on "Cancel" JButton
-     */
-    public void cancel() {
-        btCancel().push();
-    }
-
-    /** clicks on "Help" JButton
-     */
-    public void help() {
-        btHelp().push();
-    }
-
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -366,9 +285,6 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
     /** Performs verification of NewWebApplication by accessing all its components.
      */
     public void verify() {
-        lblSteps();
-        lstSteps();
-        lblServerAndSettings();
         lblContextPath();
         lblServer();
         lblJavaEEVersion();
@@ -379,20 +295,12 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
         cboJavaEEVersion();
         lblAddToEnterpriseApplication();
         cboAddToEnterpriseApplication();
-        lblHtmlThereMayBeLegalConsiderationsWhenSharingServerJARFilesBeSureToCheckTheLicenseForYourServerToMakeSureYouCanDistributeServerJARFilesToOtherDevelopersHtml();
+        lblSharingJARLicenseRemark();
         btBack();
         btNext();
         btFinish();
         btCancel();
         btHelp();
-    }
-
-    /** Performs simple test of NewWebApplication
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        new NewWebProjectServerSettingsStepOperator().verify();
-        System.out.println("NewWebApplication verification finished.");
     }
 }
 

@@ -589,8 +589,16 @@ final class Central implements ControllerHandler {
         
         TopComponent[] tcs = getModeOpenedTopComponents(mode).toArray(new TopComponent[0]);
         
-        for(int i = 0; i < tcs.length; i++) {
-            model.addModeClosedTopComponent(mode, tcs[i]);
+        for (int i = 0; i < tcs.length; i++) {
+            if (PersistenceHandler.isTopComponentPersistentWhenClosed(tcs[i])) {
+                model.addModeClosedTopComponent(mode, tcs[i]);
+            } else {
+                if (tcs[i].getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+                    model.addModeClosedTopComponent(mode, tcs[i]);
+                } else {
+                    model.removeModeTopComponent(mode, tcs[i], null);
+                }
+            }
         }
         
         ModeImpl oldActive = getActiveMode();
@@ -1211,7 +1219,15 @@ final class Central implements ControllerHandler {
                     } else {
                         tc.putClientProperty(GROUP_SELECTED, null);
                     }
-                    model.addModeClosedTopComponent(mode, tc);
+                    if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
+                        model.addModeClosedTopComponent(mode, tc);
+                    } else {
+                        if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+                            model.addModeClosedTopComponent(mode, tc);
+                        } else {
+                            model.removeModeTopComponent(mode, tc, null);
+                        }
+                    }
                     closedTcs.add(tc);
                 }
             }
@@ -1904,7 +1920,15 @@ final class Central implements ControllerHandler {
             //an editor document is being closed so let's find the most recent editor to select
             recentTc = getRecentTopComponent( mode, tc );
         }
-        addModeClosedTopComponent(mode, tc);
+        if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
+            addModeClosedTopComponent(mode, tc);
+        } else {
+            if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+                addModeClosedTopComponent(mode, tc);
+            } else {
+                removeModeTopComponent(mode, tc);
+            }
+        }
         if( null != recentTc )
             recentTc.requestActive();
     }
