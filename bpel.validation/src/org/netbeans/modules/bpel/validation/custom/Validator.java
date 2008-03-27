@@ -82,6 +82,8 @@ import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.api.TerminationHandler;
+import org.netbeans.modules.bpel.model.api.StartCounterValue;
+import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
@@ -111,6 +113,9 @@ public final class Validator extends BpelValidator {
   @Override
   public void visit(ForEach forEach) {
 //out();
+    // # 124918
+    checkCounters(forEach);
+
 //out("forEach: " + forEach);
 //out("forEach.getCounterName: " + forEach.getCounterName());
     String counter = forEach.getCounterName();
@@ -144,6 +149,38 @@ public final class Validator extends BpelValidator {
       if (variable.equals(counter)) {
         addError("FIX_Branches_Cant_Use_Counter", branches, counter); // NOI18N
       }
+    }
+  }
+
+  private void checkCounters(ForEach forEach) {
+    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+
+    if (startCounterValue == null) {
+      return;
+    }
+    int startCounter;
+
+    try {
+      startCounter = Integer.parseInt(startCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+
+    if (finalCounterValue == null) {
+      return;
+    }
+    int finalCounter;
+
+    try {
+      finalCounter = Integer.parseInt(finalCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (finalCounter < startCounter) {
+      addError("FIX_Final_Start_Counters", forEach, "" + startCounter, "" + finalCounter); // NOI18N
     }
   }
 
