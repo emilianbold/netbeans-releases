@@ -214,48 +214,14 @@ public enum PHPTokenId implements TokenId {
     PHP_DECLARE(null, "keyword"), //NOI18N
     PHP_OBJECT_OPERATOR(null, "php"), //NOI18N
     PHP_SELF(null, "keyword"), //NOI18N
-    PHPDOC_VAR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SEE(null, "phpdockeyword"), //NOI18N
     PHP_COMMENT(null, "comment"), //NOI18N
     PHP_COMMENT_START(null, "comment"), //NOI18N
     PHP_COMMENT_END(null, "comment"), //NOI18N
     PHP_LINE_COMMENT(null, "comment"), //NOI18N
-    PHPDOC_COMMENT(null, "comment"), //NOI18N
     PHPDOC_COMMENT_START(null, "comment"), //NOI18N
     PHPDOC_COMMENT_END(null, "comment"), //NOI18N
-    PHPDOC_NAME(null, "phpdockeyword"), //NOI18N
-    PHPDOC_DESC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_TODO(null, "phpdockeyword"), //NOI18N
-    PHPDOC_LINK(null, "phpdockeyword"), //NOI18N
-    PHPDOC_EXAMPLE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_LICENSE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PACKAGE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_VERSION(null, "phpdockeyword"), //NOI18N
-    PHPDOC_ABSTRACT(null, "phpdockeyword"), //NOI18N
-    PHPDOC_INTERNAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_TUTORIAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_METHOD(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PROPERTY(null, "phpdockeyword"), //NOI18N
-    PHPDOC_USES(null, "phpdockeyword"), //NOI18N
-    PHPDOC_CATEGORY(null, "phpdockeyword"), //NOI18N
+    PHPDOC_COMMENT(null, "comment"), //NOI18N
     UNKNOWN_TOKEN(null, "error"), //NOI18N
-    PHPDOC_FINAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SINCE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_PARAM(null, "phpdockeyword"), //NOI18N
-    PHPDOC_MAGIC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_RETURN(null, "phpdockeyword"), //NOI18N
-    PHPDOC_AUTHOR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_ACCESS(null, "phpdockeyword"), //NOI18N
-    PHPDOC_IGNORE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_THROWS(null, "phpdockeyword"), //NOI18N
-    PHPDOC_STATIC(null, "phpdockeyword"), //NOI18N
-    PHPDOC_GLOBAL(null, "phpdockeyword"), //NOI18N
-    PHPDOC_SUBPACKAGE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_FILESOURCE(null, "phpdockeyword"), //NOI18N
-    PHPDOC_EXCEPTION(null, "phpdockeyword"), //NOI18N
-    PHPDOC_COPYRIGHT(null, "phpdockeyword"), //NOI18N
-    PHPDOC_STATICVAR(null, "phpdockeyword"), //NOI18N
-    PHPDOC_DEPRECATED(null, "phpdockeyword"), //NOI18N
     PHP_HEREDOC_TAG(null, "php"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
     PHP__FUNCTION__(null, "php"), //NOI18N
@@ -314,10 +280,12 @@ public enum PHPTokenId implements TokenId {
                 protected LanguageEmbedding<?> embedding(Token<PHPTokenId> token,
                     LanguagePath languagePath, InputAttributes inputAttributes) {
                     PHPTokenId id = token.id();
-
                     if (id == T_INLINE_HTML) {
                         return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                     } 
+                    else if (id == PHPDOC_COMMENT) {
+                        return LanguageEmbedding.create(PHPDocCommentTokenId.language(), 0, 0);
+                    }
 
                     return null; // No embedding
                 }

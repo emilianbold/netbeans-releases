@@ -153,6 +153,14 @@ public class NativeExecutor implements Runnable {
         return IOProvider.getDefault().getIO(tabName, true);
     }
     
+    public InputOutput getTab() {
+        return io;
+    }
+    
+    public String getTabeName() {
+        return tabName;
+    }
+    
     public void setExitValueOverride(String rcfile) {
         this.rcfile = rcfile;
     }
