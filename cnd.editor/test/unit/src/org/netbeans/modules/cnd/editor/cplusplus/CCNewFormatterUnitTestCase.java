@@ -3186,7 +3186,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n"
@@ -3222,7 +3222,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    int number;\n" +
                 "    char** cc;\n" +
                 "\n" +
-                "    ClassA() : cc({ \"A\", \"B\", \"C\", \"D\" }), number(2)\n" +
+                "    ClassA() : cc({\"A\", \"B\", \"C\", \"D\"}), number(2)\n" +
                 "    {\n" +
                 "    }\n" +
                 "} FAR ct_data;\n" +
@@ -4115,7 +4115,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "{ _M_impl->_M_remove_reference(); }\n"
                 );
         reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
+        assertDocumentText("Incorrect formatting GNU new line name",
                 "locale::~locale () throw ()\n" +
                 "{\n" +
                 "  _M_impl->_M_remove_reference ();\n" +
@@ -4134,7 +4134,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
+        assertDocumentText("Incorrect formatting GNU new line name",
                 "void\n" +
                 "__num_base::_S_format_float (const ios_base& __io, char* __fptr, char __mod)\n" +
                 "{\n" +
@@ -4153,7 +4153,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
+        assertDocumentText("Incorrect formatting GNU new line name",
                 "int\n" +
                 "f (int a1, int a2,\n" +
                 "   int a3)\n" +
@@ -4173,11 +4173,97 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
+        assertDocumentText("Incorrect formatting GNU new line name",
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
                 ": imp_ (0)\n" +
                 ", env_ (env)\n" +
                 "{\n" +
+                "}\n"
+                );
+    }
+    //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
+    public void testSpaceWithinBraces() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinBraces, true);
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting array init",
+                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
+                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testSpaceWithinBraces2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int a[] = {1,(1+2),(2+ 3)};\n" +
+                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
+                "int c[] = {  1,(1+2),(2+ 3)  \n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting array init",
+                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
+                "int c[] = {1, (1 + 2), (2 + 3)\n" +
+                "};\n"
+                );
+    }
+
+    public void testFunctionNameInNamespace() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "namespace {\n" +
+                "void outCustomersList() {\n" +
+                "return;\n" +
+                "}\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "namespace\n" +
+                "{\n" +
+                "\n" +
+                "  void\n" +
+                "  outCustomersList ()\n" +
+                "  {\n" +
+                "    return;\n" +
+                "  }\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#131286:Nondeterministic behavior of formatter
+    public void testIZ131286() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Nondeterministic behavior of formatter",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
                 "}\n"
                 );
     }

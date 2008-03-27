@@ -784,8 +784,8 @@ public class Registry implements PropertyContainer {
         return new ArrayList<Product>(dependents);
     }
     
-    private void validateInstallations(
-            ) throws InitializationException {
+    private void validateInstallations() throws InitializationException {
+        LogManager.logEntry("validating previous installations");
         for (Product product: getProducts()) {
             if (product.getStatus() == Status.INSTALLED) {
                 final String message = product.getLogic().validateInstallation();
@@ -793,8 +793,26 @@ public class Registry implements PropertyContainer {
                 if (message != null) {
                     final List<Product> inavoidableDependents =
                             getInavoidableDependents(product);
+                    LogManager.logIndent("Installation validation of " +  //NOI18N
+                            product.getDisplayName() +  //NOI18N
+                            " (" + product.getUid() + "/" +  //NOI18N
+                            product.getVersion() + "):");//NOI18N
+                    LogManager.log(message);
+                    if(!inavoidableDependents.isEmpty()) {
+                        LogManager.logIndent("Dependent Products: ");
+                        for(Product p : inavoidableDependents) {
+                            LogManager.log("-> " +  //NOI18N
+                            p.getDisplayName() +  //NOI18N
+                            " (" + p.getUid() + "/" +  //NOI18N
+                            p.getVersion() + ")");//NOI18N
+                        }
+                        LogManager.unindent();
+                    }
+                    LogManager.unindent();
                     
-                    boolean result = UiUtils.showYesNoDialog(
+                    
+                    boolean result = Boolean.getBoolean(REMOVE_CORRUPTED_PRODUCTS_SILENTLY_PROPERTY) || 
+                            UiUtils.showYesNoDialog(
                             ResourceUtils.getString(Registry.class,
                             ERROR_VALIDATION_TITLE_KEY),
                             ResourceUtils.getString(Registry.class,
@@ -818,6 +836,7 @@ public class Registry implements PropertyContainer {
                 }
             }
         }
+        LogManager.logExit("... validating installations finished");
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
@@ -1752,7 +1771,16 @@ public class Registry implements PropertyContainer {
     
     public static final String LAZY_LOAD_ICONS_PROPERTY =
             "nbi.product.lazy.load.icons";
-    
+    /**
+     * If this property is set to true then all products which 
+     * ProductConfigurationLogic.validateInstallation() invokation returned not-null message 
+     * will be removed (together with all dependent products) silently from the registry.
+     * Such removal do nothing with the product uninstallation.
+     * 
+     */
+    public static final String REMOVE_CORRUPTED_PRODUCTS_SILENTLY_PROPERTY =
+            "nbi.product.remove.corrupted.products.silently";//NOI18N
+            
     private static final String LOADING_LOCAL_REGISTRY_KEY =
             "R.loading.local.registry"; //NOI18N
     private static final String ERROR_LOADING_LOCAL_REGISTRY_TITLE_KEY =

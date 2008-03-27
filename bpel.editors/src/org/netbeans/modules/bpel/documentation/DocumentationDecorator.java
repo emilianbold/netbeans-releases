@@ -97,9 +97,13 @@ public final class DocumentationDecorator extends DecorationProvider
         new DocumentationButton((ExtensibleElements) entity, documentation);
       ComponentsDescriptor descriptor = new ComponentsDescriptor();
       descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
-      decoration = new Decoration(new Descriptor [] { descriptor });
+      decoration = new Decoration(descriptor);
       entity.setCookie(myDecorationKey, decoration);
     }
+    ComponentsDescriptor descriptor = (ComponentsDescriptor) decoration.getDescriptor();
+    DocumentationButton button = (DocumentationButton) descriptor.getComponent();
+    button.updateText(documentation);
+
     return decoration;
   }
 

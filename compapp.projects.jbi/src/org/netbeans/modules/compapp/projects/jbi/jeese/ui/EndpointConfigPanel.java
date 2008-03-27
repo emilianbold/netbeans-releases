@@ -136,74 +136,11 @@ public class EndpointConfigPanel extends javax.swing.JPanel {
     private String lblActivateJavaEEHttp = NbBundle.getMessage(EndpointConfigPanel.class, "LBL_TblCol_ActivateJavaEEHttpPort"); //NOI18N    
     
     private TableModel getProviderEndpointsTableModel(){
-        return new ProviderEndpointsTableModel(this.providerEps, new String[]{lblProviderEpt, lblActivateJavaEEHttp});
-        
-
-//                new javax.swing.table.DefaultTableModel(
-//            new Object [][] {
-//                {"Provides {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {"Consumes {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null}
-//            },
-//            new String [] {
-//                "Endpoint", "Activate Thru JBI", "Listern on default HTTP Port"
-//            }
-//        ) {
-//            Class[] types = new Class [] {
-//                java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class
-//            };
-//            boolean[] canEdit = new boolean [] {
-//                false, true, true
-//            };
-//
-//            public Class getColumnClass(int columnIndex) {
-//                return types [columnIndex];
-//            }
-//
-//            public boolean isCellEditable(int rowIndex, int columnIndex) {
-//                return canEdit [columnIndex];
-//            }
-//        };
+        return new ProviderEndpointsTableModel(this.providerEps, new String[]{lblProviderEpt, lblActivateJavaEEHttp});        
     }
 
     private TableModel getConsumerEndpointsTableModel(){
         return new ConsumerEndpointsTableModel(this.consumerEps, new String[] {lblconsumerEpt, lblActivateNMR});
-//            new Object [][] {
-//                {"Provides {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {"Consumes {svcNs.com}svc1/{intfcNs.com}Interface/Port", new Boolean(true), new Boolean(true)},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null},
-//                {null, null, null}
-//            },
-//            new String [] {
-//                "Endpoint", "Activate Thru JBI", "Listern on default HTTP Port"
-//            }
-//        ) {
-//            Class[] types = new Class [] {
-//                java.lang.String.class, java.lang.Boolean.class, java.lang.Boolean.class
-//            };
-//            boolean[] canEdit = new boolean [] {
-//                false, true, true
-//            };
-//
-//            public Class getColumnClass(int columnIndex) {
-//                return types [columnIndex];
-//            }
-//
-//            public boolean isCellEditable(int rowIndex, int columnIndex) {
-//                return canEdit [columnIndex];
-//            }
-//        };
     }
 
     public List<EndpointCfg> getEndpointCfgs(){

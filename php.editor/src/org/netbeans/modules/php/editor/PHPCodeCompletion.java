@@ -49,10 +49,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -69,7 +68,6 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
@@ -93,6 +91,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -106,6 +105,45 @@ public class PHPCodeCompletion implements Completable {
     };
     
     private boolean caseSensitive;
+    
+    private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
+        try {
+            TokenHierarchy th = TokenHierarchy.get(info.getDocument());
+            TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+            tokenSequence.move(caretOffset);
+            tokenSequence.moveNext();
+            
+            switch (tokenSequence.token().id()){
+                case T_INLINE_HTML:
+                    return CompletionContext.HTML;
+                case PHP_CONSTANT_ENCAPSED_STRING:
+                    return CompletionContext.STRING;
+                default:
+            }
+            
+            if (tokenSequence.movePrevious())
+            {
+                boolean moreTokens = true;
+                
+                if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+                    moreTokens = tokenSequence.movePrevious();
+                }
+                
+                if (moreTokens) {
+                    TokenId tokenId = tokenSequence.token().id();
+
+                    if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
+                        return CompletionContext.CLASS_NAME;
+                    }
+                }
+            }
+            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return CompletionContext.EXPRESSION;
+    }
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
@@ -113,44 +151,70 @@ public class PHPCodeCompletion implements Completable {
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
         result.getProgram();
-
+        
+        CompletionContext context = findCompletionContext(info, caretOffset);
+        
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
         request.result = result;
+        request.info = info;
+        request.prefix = prefix;
+        request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        
+        switch(context){
+            case EXPRESSION:
+                autoCompleteExpression(proposals, request);
+                break;
+            case HTML:
+                proposals.add(new KeywordItem("<?php", request)); //NOI18N
+                break;
+            case CLASS_NAME:
+                autoCompleteClassNames(proposals, request);
+                break;
+        }
+        
+        return proposals;
+    }
+    
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
+        for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+            proposals.add(new ClassItem(clazz, request));
+        }
+    }
 
+    private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
         // KEYWORDS
-
         for (String keyword : PHP_KEYWORDS) {
-            if (startsWith(keyword, prefix)) {
+            if (startsWith(keyword, request.prefix)) {
                 proposals.add(new KeywordItem(keyword, request));
             }
         }
 
         // FUNCTIONS
-        
-        PHPIndex index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
-        
-        for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
+        PHPIndex index = request.index;
+
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new FunctionItem(function, request));
         }
-        
+
         // CONSTANTS
-        
-        for (IndexedConstant constant : index.getConstants(result, prefix, NameKind.PREFIX)){
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new ConstantItem(constant, request));
         }
-        
-        // LOCAL VARIABLES
-        
-        proposals.addAll(getLocalVariableProposals(result.getProgram().getStatements(), request, prefix));
 
-        return proposals;
+        // LOCAL VARIABLES
+        proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+        
+        // CLASS NAMES
+        // TODO only show classes with static elements
+        autoCompleteClassNames(proposals, request);
     }
     
-    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request, String prefix){
+    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         
+        String prefix = request.prefix;
         String url = null;
         try {
             url = request.result.getFile().getFile().toURL().toExternalForm();
@@ -179,21 +243,22 @@ public class PHPCodeCompletion implements Completable {
                 
             if (statement instanceof Block) {
                 Block block = (Block) statement;
-                proposals.addAll(getLocalVariableProposals(block.getStatements(), request, prefix));
+                proposals.addAll(getLocalVariableProposals(block.getStatements(), request));
             } else if (statement instanceof IfStatement){
                 IfStatement ifStmt = (IfStatement)statement;
                 
                 if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request, prefix));
-                } else if (offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
-                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request, prefix));
+                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request));
+                } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
+                        && offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
+                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request));
                 }
             } else if (statement instanceof WhileStatement) {
                 WhileStatement whileStatement = (WhileStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(whileStatement.getBody()), request, prefix));
+                proposals.addAll(getLocalVariableProposals(Collections.singleton(whileStatement.getBody()), request));
             }  else if (statement instanceof DoStatement) {
                 DoStatement doStatement = (DoStatement) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton(doStatement.getBody()), request, prefix));
+                proposals.addAll(getLocalVariableProposals(Collections.singleton(doStatement.getBody()), request));
             }
             else if (statement instanceof FunctionDeclaration) {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
@@ -209,10 +274,10 @@ public class PHPCodeCompletion implements Completable {
                     }
                 }
                 
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)functionDeclaration.getBody()), request, prefix));
+                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)functionDeclaration.getBody()), request));
             } else if (statement instanceof ClassDeclaration) {
                 ClassDeclaration classDeclaration = (ClassDeclaration) statement;
-                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)classDeclaration.getBody()), request, prefix));
+                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)classDeclaration.getBody()), request));
             }
             
         }
@@ -425,6 +490,20 @@ public class PHPCodeCompletion implements Completable {
         }
     }
     
+    private class ClassItem extends PHPCompletionItem {
+        private IndexedConstant constant = null;
+
+        ClassItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+    }
+    
     private class VariableItem extends PHPCompletionItem {
         private IndexedConstant constant = null;
 
@@ -606,5 +685,8 @@ public class PHPCodeCompletion implements Completable {
         private HtmlFormatter formatter;
         private int anchor;
         private PHPParseResult result;
+        private CompilationInfo info;
+        private String prefix;
+        PHPIndex index;
     }
 }
