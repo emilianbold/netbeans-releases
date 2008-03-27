@@ -46,7 +46,8 @@ public class ProcessesTopComponent extends TopComponent {
     /**{@inheritDoc}*/
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProcessesTopComponent.class);
+        return new HelpCtx("org.netbeans.modules.bpel.debugger." + // NOI18N
+                "ui.process.BpelProcessTopComponent"); // NOI18N
     }
 
     @Override

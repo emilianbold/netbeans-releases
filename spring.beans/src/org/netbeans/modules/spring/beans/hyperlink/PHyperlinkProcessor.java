@@ -81,13 +81,13 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
 
-            final String className = new BeanClassFinder(env.getCurrentTag(), 
-                    env.getFile()).findImplementationClass();
+            final String className = new BeanClassFinder(env.getBeanAttributes(), 
+                    env.getFileObject()).findImplementationClass();
             if(className == null) {
                 return;
             }
             
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getFileObject());
             if(js == null) {
                 return;
             }
@@ -118,8 +118,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
         }
         
         if(env.getType().isAttributeHyperlink()) {
-            int start = env.getToken().getOffset();
-            return new int[] { start, start + env.getToken().getImage().length() };
+            return new int[] { env.getTokenStartOffset(), env.getTokenEndOffset() };
         }
         
         return null;

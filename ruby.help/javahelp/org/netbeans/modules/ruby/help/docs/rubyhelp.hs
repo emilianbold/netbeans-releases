@@ -20,4 +20,10 @@
 		<type>javax.help.SearchView</type>
 		<data engine="com.sun.java.help.search.DefaultSearchEngine">JavaHelpSearch</data>
 	</view>
+	<view>
+		<name>Index</name>
+		<label>Index</label>
+		<type>javax.help.IndexView</type>
+		<data>rubyindex.xml</data>
+	</view>
 </helpset>
