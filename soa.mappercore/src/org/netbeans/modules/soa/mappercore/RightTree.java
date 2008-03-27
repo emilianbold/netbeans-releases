@@ -189,7 +189,7 @@ public class RightTree extends MapperPanel implements
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
 
         if (model == null || context == null) {
@@ -1024,7 +1024,7 @@ public class RightTree extends MapperPanel implements
         public void actionPerformed(ActionEvent e) {
             RightTree tree = RightTree.this;
             MapperContext context = tree.getContext();
-            MapperModel model = tree.getMapperModel();
+            MapperModel model = tree.getMapper().getModel();
             if (context == null || model == null) { return; }
 
             TreePath treePath = tree.getSelectionModel().getSelectedPath();

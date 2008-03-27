@@ -156,10 +156,8 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         editorPane.addMouseListener(this);
 
         editorPane.addFocusListener(this);
+        updateText(text);
 
-        if (text != null) {
-          editorPane.setText(text);
-        }
         myActionListener = actionListener;
     }
 
@@ -227,6 +225,12 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         fillHTMLSpacer();
     }
     
+    public void updateText(String text) {
+      if (text != null) {
+        editorPane.setText(text);
+      }
+    }
+
     public void updateHTML() {
         if (html.length() == 0) {
             fillHTMLHeader();

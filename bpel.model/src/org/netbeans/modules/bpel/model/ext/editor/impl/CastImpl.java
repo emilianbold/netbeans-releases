@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
+import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
@@ -42,6 +43,9 @@ import org.w3c.dom.Element;
  * @version 1.0
  */
 public class CastImpl extends EditorEntityImpl implements Cast {
+
+    private static AtomicReference<Attribute[]> myAttributes =
+        new AtomicReference<Attribute[]>();
 
     CastImpl(EditorEntityFactory factory, BpelModelImpl model, Element e ) {
         super(factory, model, e);
@@ -98,7 +102,7 @@ public class CastImpl extends EditorEntityImpl implements Cast {
     public String getPath() {
         readLock();
         try {
-            return getAttribute(EditorAttributes.SOURCE);
+            return getAttribute(EditorAttributes.PATH);
         }
         finally {
             readUnlock();
@@ -130,9 +134,6 @@ public class CastImpl extends EditorEntityImpl implements Cast {
     public void removeType() {
         removeAttribute(EditorAttributes.TYPE);
     }
-
-    private static AtomicReference<Attribute[]> myAttributes =
-        new AtomicReference<Attribute[]>();
 
     private static class CastEntityUpdater implements EntityUpdater {
         private static EntityUpdater INSTANCE =
@@ -175,6 +176,13 @@ public class CastImpl extends EditorEntityImpl implements Cast {
                 }
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.soa.model.bpel20.api.references.ReferenceCollection#getReferences()
+     */
+    public Reference[] getReferences() {
+        return new Reference[] { getType()};
     }
 }
 
