@@ -122,8 +122,8 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                         Boolean jsr109 = jaxWsModel.getJsr109();
                         boolean isJsr109 = (jsr109==null?true:jsr109.booleanValue());
                         try {
-                            
-                            if (jaxws_build==null) {
+                            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+                            if (jaxws_build == null || extension == null) {
                                 // generate nbproject/jaxws-build.xml
                                 // add jaxws extension
                                 if (servicesLength+clientsLength > 0) {
