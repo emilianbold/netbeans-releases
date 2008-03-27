@@ -94,9 +94,12 @@
             </signed-url>
             <signed-url sig-id="Authorization" id="getLocation">
                 <sign id="authorization">
-                    <params>
-                        <param name="Bucket" type="string" required="true"/>
-                        <param name="Location" type="string" required="true"/>
+                   <params>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/?location&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="contentType" required="true"/>
                     </params>
                 </sign>
             </signed-url>
