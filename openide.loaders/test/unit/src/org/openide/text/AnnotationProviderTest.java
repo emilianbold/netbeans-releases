@@ -112,7 +112,7 @@ public class AnnotationProviderTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 0;
+        return 20000;
     }
     
     

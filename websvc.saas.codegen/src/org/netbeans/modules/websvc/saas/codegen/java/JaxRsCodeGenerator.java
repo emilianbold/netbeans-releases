@@ -119,6 +119,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     public WadlSaasBean getBean() {
         return (WadlSaasBean) bean;
     }
+    
+    public JavaSource getSaasServiceSource() {
+        return saasServiceJS;
+    }
 
     public FileObject getSaasServiceFolder() throws IOException {
         if (serviceFolder == null) {
@@ -407,7 +411,6 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
      *  Insert the Saas client call
      */
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             if (isInBlock) {

@@ -147,5 +147,18 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "    int leden;\n" +
                 "}\n");        
     }
+    
+    public void testGenerateEnumConstantJavadoc_124114() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "enum Zima {LEDEN, UNOR}\n",
+                
+                "package test;\n" +
+                "enum Zima {\n" +
+                "    /**\n" +
+                "     *\n" +
+                "     */\n" +
+                "    LEDEN, UNOR}\n");        
+    }
 
 }
