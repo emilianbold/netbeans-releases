@@ -1405,11 +1405,15 @@ public class CCFormatSupport extends ExtFormatSupport {
             }
             token = itm;
         }
-        if (token != null && tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath)) {
+        if (token != null && 
+            (tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath) ||
+             tokenEquals(token, CCTokenContext.DOT, tokenContextPath))) {
             TokenItem itm = findImportantToken(token, null, true, true);
             if (itm != null && tokenEquals(itm, CCTokenContext.LBRACE, tokenContextPath)) {
                 TokenItem startItem = findStatementStart(itm);
                 if (startItem != null && findToken(startItem, itm, CCTokenContext.ENUM, tokenContextPath, null, false) != null)
+                    return true;
+                if (startItem != null && findToken(startItem, itm, CCTokenContext.EQ, tokenContextPath, null, false) != null)
                     return true;
             }
         }
