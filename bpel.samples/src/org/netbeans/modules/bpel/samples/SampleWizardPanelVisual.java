@@ -42,6 +42,7 @@ package org.netbeans.modules.bpel.samples;
 
 import java.awt.GridBagConstraints;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -197,62 +198,84 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         }
     }
 
-
     public void addNotify() {
         super.addNotify();
-        //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
 
-    protected boolean valid( WizardDescriptor wizardDescriptor ) {
+    boolean valid(WizardDescriptor wizardDescriptor) {
+//System.out.println();
+        String projectName = projectNameTextField.getText();
+//System.out.println("projectName: " + projectName + " " + isValidName(projectName));
 
-        if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", //NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectName"));
-            return false; // Display name not specified
-        }
-
-        if (! isValidName(projectNameTextField.getText() )) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", //NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectName"));
-            return false; // Display name not specified
-        }
-        File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
-        if (!f.isDirectory()) {
-            String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        if (projectName.length() == 0
+                || projectName.indexOf('/')  >= 0 // NOI18N
+                || projectName.indexOf("\\") >= 0 // NOI18N
+                || projectName.indexOf(':')  >= 0 // NOI18N
+                || !isValidName(projectName)) {
+//System.out.println(" 1: " + projectName + " " + isValidName(projectName));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectName")); // NOI18N
             return false;
         }
-        final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
+        if (projectName.indexOf(' ')  >= 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectNameWithWhiteSpace")); // NOI18N
+            return false;
+        }
+        File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
 
-        File projLoc = destFolder;
+        if (getCanonicalFile(f) == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectLocation")); // NOI18N
+            return false;
+        }
+        final File destFolder = new File(createdFolderTextField.getText() ).getAbsoluteFile();
+
+        if (getCanonicalFile(destFolder) == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectName")); // NOI18N
+            return false;
+        }
+        File projLoc = FileUtil.normalizeFile(destFolder);
+
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderReadOnly"));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
         }
-
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
-
         File[] kids = destFolder.listFiles();
-        if ( destFolder.exists() && kids != null && kids.length > 0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderExists"));
+
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
         return true;
     }
 
-    protected void store( WizardDescriptor d ) {
+    private boolean isValidName(String fileName) {
+        try {
+            boolean bValid = true;
+            File tempFile =  new File(fileName);
+            String tempFileName ="00"+fileName;
+            File actualTempFile = File.createTempFile(tempFileName, null);
 
+            if (!FileUtil.normalizeFile(tempFile).equals(tempFile.getCanonicalFile())) {
+                bValid = false;
+            }
+            actualTempFile.delete();
+            actualTempFile = null;
+            tempFile = null;
+            return bValid;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    protected void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
@@ -289,9 +312,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         this.projectNameTextField.selectAll();
     }
 
-    protected void validate(WizardDescriptor d) throws WizardValidationException {
-        // nothing to validate
-    }
+    protected void validate(WizardDescriptor d) throws WizardValidationException {}
 
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
@@ -300,8 +321,6 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
     private javax.swing.JTextField projectNameTextField;
-
-    // Private methods ---------------------------------------------------------
 
     private static JFileChooser createChooser() {
         JFileChooser chooser = new JFileChooser();
@@ -317,7 +336,6 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }
-    // Implementation of DocumentListener --------------------------------------
 
     public void changedUpdate( DocumentEvent e ) {
         updateTexts( e );
@@ -341,30 +359,21 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     }
 
     private void updateTexts( DocumentEvent e ) {
-
         Document doc = e.getDocument();
 
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
-            // Change in the project name
-
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
-
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {
             createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-            //}
-
         }
-        myPanel.fireChangeEvent(); // Notify that the panel changed
+        myPanel.fireChangeEvent();
     }
 
-    static boolean isValidName(String fileName){
+    private File getCanonicalFile(File file) {
         try {
-            File tempFile = File.createTempFile(0+fileName, null);
-            tempFile.delete();
-            return true;
-        }catch (Exception e) {
-            return false;
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
         }
     }
 }
