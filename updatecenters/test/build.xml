@@ -49,8 +49,7 @@ made subject to such option by the copyright holder.
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-
-
+    <property name="xtest.attribs" value="install"/>
+    <!--property name="xtest.ide.use.classloader" value="org.netbeans.modules.autoupdate.services"/-->
 </project>
 
