@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,7 +67,9 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.modules.project.libraries.WritableLibraryProvider;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -224,9 +228,10 @@ public class LibrariesModel implements PropertyChangeListener {
             if (storage == this.writableProvider) {
                 this.writableProvider.removeLibrary (impl);
             } else {
+                assert impl instanceof LibraryImplementation2;
                 LibraryStorageArea area = getAreaOrNull(impl);
                 if (area != null) {
-                    LibraryAccessor.remove(area2Storage.get(area), impl);
+                    LibraryAccessor.remove(area2Storage.get(area), (LibraryImplementation2)impl);
                 } else {
                     throw new IOException("Cannot find storage for library: " + impl.getName()); // NOI18N
                 }
@@ -252,7 +257,16 @@ public class LibrariesModel implements PropertyChangeListener {
             } else {
                 LibraryStorageArea area = library2Area.get(orig);
                 if (area != null) {
-                    if (proxy.newContents != null) {
+                    if (proxy instanceof ProxyLibraryImplementation.ProxyLibraryImplementation2) {
+                        ProxyLibraryImplementation.ProxyLibraryImplementation2 proxy2 = 
+                                (ProxyLibraryImplementation.ProxyLibraryImplementation2)proxy;
+                        LibraryImplementation2 orig2 = proxy2.getOriginal2();
+                        if (proxy2.newURIContents != null) {
+                            for (Map.Entry<String,List<URI>> entry : proxy2.newURIContents.entrySet()) {
+                                orig2.setURIContent(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    } else if (proxy.newContents != null) {
                         for (Map.Entry<String,List<URL>> entry : proxy.newContents.entrySet()) {
                             orig.setContent(entry.getKey(), entry.getValue());
                         }
@@ -292,7 +306,7 @@ public class LibrariesModel implements PropertyChangeListener {
                 if (proxy != null) {
                     actualLibraries.add(proxy);
                 } else {
-                    actualLibraries.add(proxy = new ProxyLibraryImplementation(lib, this));
+                    actualLibraries.add(proxy = ProxyLibraryImplementation.createProxy(lib, this));
                 }
                 storageByLib.put(lib, storage);
                 LOG.log(Level.FINER, "computeLibraries: storage={0} lib={1} proxy={2}", new Object[] {storage, lib, proxy});
@@ -312,7 +326,7 @@ public class LibrariesModel implements PropertyChangeListener {
                 if (proxy != null) {
                     actualLibraries.add(proxy);
                 } else {
-                    actualLibraries.add(proxy = new ProxyLibraryImplementation(lib, this));
+                    actualLibraries.add(proxy = ProxyLibraryImplementation.createProxy(lib, this));
                 }
                 library2Area.put(lib, area);
                 LOG.log(Level.FINER, "computeLibraries: alp={0} area={1} lib={2} proxy={3}", new Object[] {alp, area, lib, proxy});
@@ -331,10 +345,10 @@ public class LibrariesModel implements PropertyChangeListener {
         }
     }
 
-    private static final class DummyArealLibrary implements LibraryImplementation {
+    private static final class DummyArealLibrary implements LibraryImplementation2 {
 
         private final String type, name;
-        final Map<String,List<URL>> contents = new HashMap<String,List<URL>>();
+        final Map<String,List<URI>> contents = new HashMap<String,List<URI>>();
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         public DummyArealLibrary(String type, String name) {
@@ -359,7 +373,11 @@ public class LibrariesModel implements PropertyChangeListener {
         }
 
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            List<URL> content = contents.get(volumeType);
+            return convertURIsToURLs(getURIContent(volumeType));
+        }
+        
+        public List<URI> getURIContent(String volumeType) throws IllegalArgumentException {
+            List<URI> content = contents.get(volumeType);
             if (content != null) {
                 return content; 
             } else {
@@ -388,6 +406,10 @@ public class LibrariesModel implements PropertyChangeListener {
         }
 
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
+            setURIContent(volumeType, convertURLsToURIs(path));
+        }
+
+        public void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException {
             contents.put(volumeType, path);
             pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);
         }
@@ -398,5 +420,26 @@ public class LibrariesModel implements PropertyChangeListener {
         }
 
     }
+
+    public static List<URL> convertURIsToURLs(List<URI> uris) {
+        List<URL> content = new ArrayList<URL>();
+        for (URI uri : uris) {
+            try {
+                content.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return content;
+    }
+
+    public static List<URI> convertURLsToURIs(List<URL> entry) {
+        List<URI> content = new ArrayList<URI>();
+        for (URL url : entry) {
+            content.add(URI.create(url.toExternalForm()));
+        }
+        return content;
+    }
+
 
 }

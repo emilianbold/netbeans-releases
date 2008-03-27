@@ -79,17 +79,17 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         preGenerate();
         
         //Create Authenticator classes
-        createAuthenticatorClass();
+        getAuthenticationGenerator().createAuthenticatorClass();
         
         //Create Authorization classes
-        createAuthorizationClasses();
+        getAuthenticationGenerator().createAuthorizationClasses();
   
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
                 
         //Modify Authenticator class
-        modifyAuthenticationClass(); 
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
         
         //execute this block before insertSaasServiceAccessCode() 
         setJaxbWrapper();
@@ -122,14 +122,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     
     protected void addJaxbLib() throws IOException {
         Util.addJaxbLib(getProject());
-    }
-    
-    /**
-     *  Create Authorization Frame
-     */
-    @Override
-    public void createAuthorizationClasses() throws IOException {
-        //No need to create auth frame class
     }
     
     @Override

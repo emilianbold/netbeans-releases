@@ -21,8 +21,10 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -36,35 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.ruby.platform;
 
-import java.io.File;
-import org.openide.modules.InstalledFileLocator;
+package org.netbeans.spi.project.libraries;
 
-public final class InstalledFileLocatorImpl extends InstalledFileLocator {
+/**
+ * Context class which is passed to library customizer (via <code>JComponent.setObject</code>).
+ * Do not extend or instantiate this class directly.
+ * 
+ * @since org.netbeans.modules.project.libraries/1 1.18
+ */
+public class LibraryCustomizerContext {
 
-    public InstalledFileLocatorImpl() {
+    private LibraryImplementation libraryImplementation;
+    private LibraryStorageArea libraryStorageArea;
+
+    public LibraryCustomizerContext(LibraryImplementation libraryImplementation, LibraryStorageArea libraryStorageArea) {
+        // prevent subclassing:
+        if (!getClass().getName().equals(LibraryCustomizerContext.class.getName()) &&
+            !getClass().getName().endsWith("LibraryCustomizerContextWrapper")) {
+            throw new IllegalStateException("LibraryCustomizerContext cannot be subclassed");
+        }
+        this.libraryImplementation = libraryImplementation;
+        this.libraryStorageArea = libraryStorageArea;
+    }
+    
+    /**
+     * Library implementation to be customized.
+     * 
+     * @return always non-null
+     */
+    public LibraryImplementation getLibraryImplementation() {
+        return libraryImplementation;
     }
 
-    public @Override File locate( String relativePath, String codeNameBase, boolean localized) {
-        if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
-            File rubydebugDir = RubyTestBase.getDirectory("rubydebug.dir", true);
-            File cd = new File(rubydebugDir, "classic-debug.rb");
-            if (!cd.isFile()) {
-                throw new RuntimeException("classic-debug found in " + rubydebugDir);
-            }
-            return cd;
-        } else if (relativePath.equals("jruby-1.1RC3")) {
-            return TestUtil.getXTestJRubyHome();
-        } else if (relativePath.equals("platform_info.rb")) {
-            String script = System.getProperty("xtest.platform_info.rb");
-            if (script == null) {
-                throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
-            }
-            return new File(script);
-        } else {
-            return null;
-        }
+    /**
+     * Returns <code>LibraryImplementation2</code> or null if underlying 
+     * library implementation does not implement it.
+     * 
+     * @return can be null
+     */
+    public LibraryImplementation2 getLibraryImplementation2() {
+        return libraryImplementation instanceof LibraryImplementation2 ? 
+            (LibraryImplementation2)libraryImplementation : null;
+    }
+
+    /**
+     * Area of library being customized.
+     * 
+     * @return can be null for global library
+     */
+    public LibraryStorageArea getLibraryStorageArea() {
+        return libraryStorageArea;
     }
     
 }
