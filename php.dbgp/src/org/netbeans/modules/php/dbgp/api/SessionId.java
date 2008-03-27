@@ -44,6 +44,8 @@ import java.io.File;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.dbgp.SessionProgress;
+import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -97,18 +99,22 @@ public class SessionId {
             computeBases();
         }
         notifyAll();
+        SessionProgress s = SessionProgress.forSessionId(this);
+        if (s != null) {
+            s.notifyConnectionFinished();
+        }        
     }
 
-    public synchronized String waitServerFile( int time ) {
-        if ( getFileUri() != null ) {
-            return getFileUri();
-        }
-        else {
-            if ( time == 0 ) {
-                return getFileUri();
+    public synchronized String waitServerFile( boolean  wait ) {
+        String retval = getFileUri();
+        if (  retval != null ) {
+            return retval;
+        } else {
+            if ( !wait ) {
+                return null;
             }
             try {
-                wait( time );
+                wait( );
             }
             catch (InterruptedException e) {
                 return getFileUri();

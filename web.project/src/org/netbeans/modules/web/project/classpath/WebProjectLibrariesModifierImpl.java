@@ -348,12 +348,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (toAdd == null) {
                                     toAdd = roots[i];
                                 }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                                final File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                filePaths[i] = filePath;
+                                filePaths[i] = f.getPath();
                             }
                             WarIncludesUiSupport.addJarFiles(filePaths, projectFolderFile, addModel);
                             int count = addModel.getRowCount();
@@ -387,12 +386,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (toAdd == null) {
                                     toAdd = roots[i];
                                 }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                                final File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));                                
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
                                 item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                                 if (resources.contains(item)) {
                                     resources.remove(item);
@@ -451,12 +449,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             if (toAdd == null) {
                                 toAdd = roots[i];
                             }
-                            String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                            final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                            File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;
