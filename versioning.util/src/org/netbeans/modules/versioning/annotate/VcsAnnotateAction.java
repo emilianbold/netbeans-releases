@@ -114,9 +114,9 @@ public class VcsAnnotateAction extends AbstractAction {
 
     private String cumputeActionName() {
         if (visible()) {
-            return "Hide Annotations";  // NOI18N
+            return NbBundle.getMessage(VcsAnnotateAction.class, "Action_HideAnnotations");  // NOI18N
         } else {
-            return "Show Annotations"; // NOI18N
+            return NbBundle.getMessage(VcsAnnotateAction.class, "Action_ShowAnnotations"); // NOI18N
         }
     }
 

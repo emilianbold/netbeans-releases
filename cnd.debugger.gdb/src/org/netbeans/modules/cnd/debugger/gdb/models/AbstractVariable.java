@@ -709,18 +709,18 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
-                        Object o = map.get(n);
-                        if (o instanceof String) {
-                            t = o.toString();
-                        } else if (o instanceof Map) {
-                            t = (String) ((Map) o).get("<typename>"); // NOI18N
-                        } else if (isNumber(v)) {
-                            t = "int"; // NOI18N - best guess (std::string drops an "int")
-                        } else {
-                            log.warning("Cannot determine field type for " + n); // NOI18N
-                            return null;
-                        }
-                        }
+                    Object o = map.get(n);
+                    if (o instanceof String) {
+                        t = o.toString();
+                    } else if (o instanceof Map) {
+                        t = (String) ((Map) o).get("<name>"); // NOI18N
+                    } else if (isNumber(v)) {
+                        t = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else {
+                        log.warning("Cannot determine field type for " + n); // NOI18N
+                        return null;
+                    }
+                }
                 return new AbstractField(parent, n, t, v);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim()); // NOI18N

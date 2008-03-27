@@ -889,7 +889,7 @@ public class JsAnalyzer implements StructureScanner {
 
             if (element.getType() != null && element.getType() != Node.UNKNOWN_TYPE) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(element.getType());
+                formatter.appendText(JsUtils.normalizeTypeString(element.getType()));
             }
 
             return formatter.getText();
