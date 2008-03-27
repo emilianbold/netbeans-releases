@@ -36,54 +36,32 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.visualweb.outline.api;
+
+import org.netbeans.modules.visualweb.outline.OutlinePanel;
+import org.openide.nodes.Node;
 
 /**
- * The AST root node for PHP program (meaning a PHP file).
- * The program holds array of statements such as Class, Function and evaluation statement.
- * The program also holds the PHP file comments.
- * 
+ *
+ * @author Peter Zavadsky
  */
-public class Program extends ASTNode {
-
-    private final ArrayList<Statement> statements = new ArrayList<Statement>();
+public final class OutlineSelector {
     
-    /**
-     * Comments array of the php program
-     */
-    private final ArrayList<Comment> comments = new ArrayList<Comment>();
+    private static final OutlineSelector INSTANCE = new OutlineSelector();
 
-    private Program(int start, int end, Statement[] statements, List commentsList) {
-        super(start, end);
-        for (Statement statement : statements) {
-            this.statements.add(statement);
-        }
-        for (Object comment : commentsList) {
-            this.comments.add((Comment) comment);
-        }
-
+    
+    private OutlineSelector() {
     }
-
-    public Program(int start, int end, List statements, List commentsList) {
-        this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]), commentsList);
+    
+    
+    public static OutlineSelector getDefault() {
+        return INSTANCE;
     }
-
-    public List<Comment> getComments() {
-            return comments;
+    
+    
+    public void selectNodes(Node[] nodes) {
+        OutlinePanel.getDefault().selectNodes(nodes);
     }
-    /**
-     * Retrieves the statement list of this program 
-     * @return statement parts of this program
-     */
-    public List<Statement> getStatements() {
-        return this.statements;
-    }
-
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
+    
 }
