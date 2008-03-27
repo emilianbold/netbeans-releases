@@ -114,6 +114,7 @@ public class SimplifiedJSPServlet {
     private String header = null;
     private StringBuilder scriptlets = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
+    // keep bean declarations separate to avoid duplicating the declaration, see #130745
     private String beanDeclarations = null; 
     private boolean processCalled = false;
     private String importStatements = null;
