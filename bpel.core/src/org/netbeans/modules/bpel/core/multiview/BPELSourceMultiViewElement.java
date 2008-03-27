@@ -458,7 +458,15 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                         return;
                     }
                     if (event.isLastInAtomic()) {
-                        selectElement(0);
+                        if (!SwingUtilities.isEventDispatchThread()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        selectElement(0);
+                                    }
+                                });
+                        } else {
+                            selectElement(0);
+                        }
                     }
                 }
 
@@ -579,7 +587,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         myBpelModelListener = null;
     }
 
+    // TODO m
     private void selectElement(int delay) {
+        assert SwingUtilities.isEventDispatchThread();
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }

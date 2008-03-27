@@ -24,7 +24,7 @@ METHOD     evaluate(xpathExpression, cont             Document
 METHOD     execCommand(aCommandName, aSho             Document
 METHOD     getElementById(id) : Element               Document
 METHOD     getElementsByName(name) : void             Document
-METHOD     getElementsByTagName(name) : A             Document
+METHOD     getElementsByTagName(name) : E             Document
 METHOD     getElementsByTagNameNS(namespa             Document
 METHOD     getFeature(String feature, Str             Node
 METHOD     getUserData(String key) : Obje             Node

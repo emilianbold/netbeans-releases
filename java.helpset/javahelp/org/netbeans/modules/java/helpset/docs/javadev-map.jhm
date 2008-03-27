@@ -324,6 +324,10 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
+<!-- New Libraries wizard-->
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="project/csh/proj_new_lib_wiz1.html" />
+    <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" url="project/csh/proj_new_lib_wiz2.html" />
+
     <!--Source Packages (and Test Packages node) - currently F1 here reverts to Projects window-->
     <mapID target="org.netbeans.spi.java.project.support.ui.PackageView" url="pending.html" />
     
@@ -384,6 +388,10 @@
 <!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
 <mapID target="gui.component-inspector" url="gui/csh/gui_inspector_window.html" />
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
+
+<!--Customize Code dialog box-->
+<mapID target="gui.codecustomizer" url="gui/csh/gui_customizecode_dialog.html" />
+
 
 <!--CSH for Binding dialog-->
 <mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_dialog.html" />

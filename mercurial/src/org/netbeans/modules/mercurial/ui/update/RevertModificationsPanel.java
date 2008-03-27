@@ -274,7 +274,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         bGettingRevisions = true;
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         Set<File> setRevertFiles = new HashSet<File>(Arrays.asList(revertFiles));        
-        messages = HgCommand.getLogMessages(repository.getAbsolutePath(), setRevertFiles, fetchRevisionLimit, logger);
+        messages = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setRevertFiles, fetchRevisionLimit, logger);
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.properties;
 
-import org.netbeans.modules.bpel.properties.Constants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -158,7 +157,7 @@ public final class ResolverUtility {
         if (bpelFo == null) {
             return null;
         }
-        Sources sources = safeGetSources(safeGetProject(bpelModel));
+        Sources sources = safeGetSources(Utils.safeGetProject(bpelModel));
         if (sources == null) {
             return null;
         }
@@ -318,15 +317,6 @@ public final class ResolverUtility {
     public static Sources safeGetSources(Project project) {
         if (project != null) {
             return ProjectUtils.getSources(project);
-        } else {
-            return null;
-        }
-    }
-    
-    public static Project safeGetProject(BpelModel bpelModel) {
-        FileObject fo = Util.getFileObjectByModel(bpelModel);
-        if (fo != null && fo.isValid()) {
-            return FileOwnerQuery.getOwner(fo);
         } else {
             return null;
         }

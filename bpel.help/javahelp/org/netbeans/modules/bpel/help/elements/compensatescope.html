@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
@@ -12,8 +12,13 @@
 <h2>Compensate Scope</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <!-- add to the Property Editor section -->
-<p>The Compensate Scope  activity can only be used within Catch,  CatchAll, Compensation Handler or Termination Handler elements.  Thus, before adding Compensate Scope, you should <a href="scope_add_fault_handler.html" title="Adding Fault Handlers">add a Fault Handler</a> and <a href="scope_add_catch.html">Catch</a> or <a href="scope_add_catch_all.html">Catch All</a> element, or <a href="add_compensation_handler.html">add a Compensation Handler</a>, or add a <a href="add_termination_handler.html">Termination Hadler</a> to the Process or Scope element. </p>
-<p><span lang="EN">The </span>Compensate Scope<span lang="EN"> enables to  compensate for one specified  Scope or Invoke element enclosed into the scope containing the handler with this Compensate Scope activity <span lang="EN">by </span> invoking the compensation handler of the Scope or Invoke element. </span></p>
+<p>The Compensate Scope  activity can only be used within Catch,  CatchAll, Compensation Handler or Termination Handler elements.  Before adding Compensate Scope element to the process, be certain to add one of the following to either  Process or Scope element : </p>
+<ul>
+  <li><a href="scope_add_fault_handler.html" title="Adding Fault Handlers"> A Fault Handler</a> and <a href="scope_add_catch.html">Catch</a> or <a href="scope_add_catch_all.html">Catch All</a> </li>
+  <li><a href="add_compensation_handler.html">A Compensation Handler</a> </li>
+  <li><a href="add_termination_handler.html">A Termination Hadler</a></li>
+</ul>
+<p><span lang="EN">The </span>Compensate Scope<span lang="EN"> activity enables  compensation for one specified  Scope or Invoke element enclosed into the scope that contains  the handler with the Compensate Scope activity <span lang="EN">by </span> invoking the compensation handler of the Scope or Invoke element. </span></p>
 <p><strong>To add a Compensate Scope element: </strong></p>
 <ol>
   <li>Open  the Design view of the process. </li>
@@ -25,7 +30,7 @@
       <li><strong>Target. </strong>From the drop-down list, select a scope or an invoke activity to be compensated. </li>
       <li><strong>Documentation.</strong> Optionally, write a comment on the activity. </li>
     </ul>
-	</li>
+  </li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
