@@ -172,7 +172,7 @@ public class TargetDBSchemaGenerator {
             //Table Being added is a child table
             String fk_col = lookup.getRootName() + "Id";
             if (!colmap.containsKey(fk_col)) {
-                //Check if see if colum is already generated using object.xml
+                //Check if see if colum is already generated using obect definition xml file
                 columns.append(fk_col + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
             }
         }
@@ -375,10 +375,10 @@ public class TargetDBSchemaGenerator {
     }
 
     /**
-     * EView Model object.xml is validated against all child tables containing FK column.
+     * EView Model obect definition xml file is validated against all child tables containing FK column.
      * All chld tables must contain ObjectId column for the parent to achieve join condition.
      * This is validated at schema generation level. If not found compliant, used is blocked to generate
-     * staging schema till proper object.xml is provided.
+     * staging schema till proper obect definition xml file is provided.
      */
     private void validateEviewModel() {
         String fkname = this.lookup.getRootName() + "Id";
@@ -405,7 +405,7 @@ public class TargetDBSchemaGenerator {
             }
         }
         if (!overallstatus) {
-            String errMsg = "Object.xml validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object.xml";
+            String errMsg = "object definition xml file validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object definition xml file";
             mLogger.infoNoloc(mLoc.t(errMsg));            
             //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
