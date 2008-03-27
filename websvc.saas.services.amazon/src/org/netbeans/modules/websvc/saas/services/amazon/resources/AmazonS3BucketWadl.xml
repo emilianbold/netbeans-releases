@@ -91,7 +91,7 @@
             <method name="GET" id="getLocation">
                 <request>
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
-                    <param name="location" type="xsd:string" style="query" required="true"/>
+                    <param fixed="" name="location" type="xsd:string" style="query" required="true"/>
                 </request>
                 <response>
                     <representation mediaType="application/xml"/>
