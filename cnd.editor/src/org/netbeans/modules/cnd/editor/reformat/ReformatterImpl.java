@@ -676,6 +676,7 @@ public class ReformatterImpl {
             }
             previous = current;
         }
+        //System.out.println("Reformatter have prepared "+diffs.getStorage().size()+" diffs");
         return diffs.getStorage();
     }
     
@@ -1131,8 +1132,9 @@ public class ReformatterImpl {
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        if (entry.isLikeToArrayInitialization()) {
-                            if (codeStyle.spaceWithinBraces() && !diff.replace.hasNewLine()) {
+                        if (entry.isLikeToArrayInitialization() &&
+                            !(ts.isFirstLineToken() || diff.replace.hasNewLine())) {
+                            if (codeStyle.spaceWithinBraces()) {
                                 diff.replace.replaceSpaces(1);
                             } else {
                                 diff.replace.replaceSpaces(0);

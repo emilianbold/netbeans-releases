@@ -113,8 +113,8 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
                             if (service.getWsdlUrl()!=null) fromWsdlServicesLength++;
                         }
                         try {
-                            
-                            if (jaxws_build==null) {
+                            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+                            if (jaxws_build == null || extension == null) {
                                 // generate nbproject/jaxws-build.xml
                                 // add jaxws extension
                                 if (servicesLength+clientsLength > 0) {
