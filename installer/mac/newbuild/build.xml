@@ -289,23 +289,33 @@ Microsystems, Inc. All Rights Reserved.
         <copy  todir="${resources.full.dir}">
             <fileset dir="${basedir}/dmg/Resources/" includes="*.html"/>
         </copy>
-        <ant target="copy-translated-files"/>
+       
         <condition property="nb.locales.nonzero.length">
-            <length string="${nb.locales}" when="greater" length="0"/>
+            <and>
+                <isset property="${nb.locales}"/>
+                <length string="${nb.locales}" when="greater" length="0"/>
+            </and>
         </condition>   
         <condition property="locales" value=",${nb.locales}" else="">
             <and>
                 <istrue value="${mlbuild}"/>
                 <istrue value="${nb.locales.nonzero.length}"/>
             </and>   
-        </condition>                   
+        </condition>
+        <echo message="locales are: ${locales}"/>        
+        
+        <condition property="do.copy.translated.files">
+            <istrue value="${mlbuild}"/>
+        </condition>        
+        <ant target="copy-translated-files"/> 
+        
         <for-each list="${locales}" separator="," property="locale">
             <ant target="build-lproj-dir"/>                           
-        </for-each>    
+        </for-each>            
         <delete dir="${resources.full.dir}"/>
     </target> 
   
-    <target name="copy-translated-files" if="mlbuild">    
+    <target name="copy-translated-files" if="do.copy.translated.files">    
         <copy todir="${resources.full.dir}">   
             <fileset dir="${basedir}/../translatedfiles/"/>
         </copy>
@@ -385,7 +395,7 @@ Microsystems, Inc. All Rights Reserved.
         </exec>                      
                   
         <condition property="ml.suffix" value="-ml" else="">
-            <equals arg1="${mlbuild}" arg2="true"/>
+            <istrue value="${mlbuild}"/>
         </condition>  
         
         <exec executable="sh" failonerror="yes">
