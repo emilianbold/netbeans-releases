@@ -104,8 +104,8 @@ final public class PersistenceHandler implements PersistenceObserver {
     }
     
     // XXX helper method
-    public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        return PersistenceManager.getDefault().isTopComponentPersistentWhenClosed(tc);
+    public static boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
+        return PersistenceManager.isTopComponentPersistentWhenClosed(tc);
     }
     
     public void load() {

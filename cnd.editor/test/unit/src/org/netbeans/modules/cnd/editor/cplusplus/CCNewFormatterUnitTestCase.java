@@ -4240,4 +4240,31 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+
+    // IZ#131286:Nondeterministic behavior of formatter
+    public void testIZ131286() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Nondeterministic behavior of formatter",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    s = (teststruct_t){\n" +
+                "        .a = 1,\n" +
+                "        .b = 2,\n" +
+                "        .c = 3,\n" +
+                "    };\n" +
+                "}\n"
+                );
+    }
 }

@@ -15,7 +15,7 @@ ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
 
 EMMA_DIR=${WORKSPACE}/../emma
 EMMA_SH="$EMMA_DIR/emma.sh"
-EMMA_TXT="$EMMA_DIR/emma_filter"
+EMMA_TXT="$EMMA_DIR/emma.txt"
 EMMA_JAR="$EMMA_DIR/emma.jar"
 
 EXTRACTED_DIR=$BASE_DIR/nbextracted
@@ -38,12 +38,14 @@ sed -i -e "s/^netbeans_default_options=/netbeans_default_options=\"--cp:p $\{NET
 BASENAME=${BUILD_DESC}-${BUILD_NUMBER}
 export DIST=${WORKSPACE}/dist/zip
 mkdir -p ${DIST}
+cd ${NB_EXTRACTED}
 expat='extra|testtools'
 for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf php; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
 find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/$BASENAME-nb6.0-etc.zip -@ || exit
+cd ${WORKSPACE}
 
 rm -rf ${EXTRACTED_DIR}
 
