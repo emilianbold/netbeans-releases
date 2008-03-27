@@ -19,10 +19,10 @@
 
 package org.netbeans.modules.bpel.mapper.tree;
 
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.tree.spi.DataObjectHolder;
 
 /**
  * The unified tree node for the MapperSwingTreeModel. This node 
@@ -31,7 +31,7 @@ import javax.swing.tree.TreePath;
  * 
  * @author nk160297
  */
-public final class MapperTreeNode<DataObject> {
+public final class MapperTreeNode<DataObject> implements DataObjectHolder<DataObject> {
     
     private DataObject mDataObject;
     private String mDisplayName; 

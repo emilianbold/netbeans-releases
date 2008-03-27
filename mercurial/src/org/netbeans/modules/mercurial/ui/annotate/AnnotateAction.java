@@ -193,6 +193,15 @@ public class AnnotateAction extends ContextAction {
                 if (log.getRevisionAsLong() < lowestRevisionNumber) {
                     lowestRevisionNumber = log.getRevisionAsLong();
                 }
+                if (annotation == null || log == null) {
+                    if (annotation == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: annotation {0} of {1} is null", new Object[] {i, annotations.length}); //NOI18N
+                    }
+                    if (log == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: log {0} of {1} is null", new Object [] {j, logs.length}); //NOI18N
+                    }
+                    continue;
+                }
                 if (annotation.getRevision().equals(log.getRevision())) {
                     annotation.setDate(log.getDate());
                     annotation.setCommitMessage(log.getMessage());

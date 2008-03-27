@@ -45,7 +45,7 @@ public class ProcessExecutionTopComponent extends TopComponent {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProcessExecutionTopComponent.class);
+        return new HelpCtx("orch_debug_windows_exec"); // NOI18N
     }
 
     @Override

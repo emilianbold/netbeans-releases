@@ -14,6 +14,5 @@
 		<tocitem text="Ruby Editor Shortcut Keys and Code Templates" target="nbruby_editor_shortcuts_codetemplates" />
 		<tocitem text="Using Database Servers With JRuby" target="nbruby_usedatabase" />
 		<tocitem text="Using Interactive Ruby (IRB)" target="nbruby_usingirb" />
-		<tocitem text="Ruby Platform Manager" target="org.netbeans.modules.ruby.platform.RubyPlatformCustomizer" />
 	</tocitem>
 </toc>

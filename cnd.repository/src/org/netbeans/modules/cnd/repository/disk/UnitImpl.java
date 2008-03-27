@@ -43,33 +43,35 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
-import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
+import org.netbeans.modules.cnd.repository.util.Pair;
 
 /**
- *
+ * Implements a repository unit
  * @author Nickolay Dalmatov
+ * @author Vladimir Kvashin
  */
 public class UnitImpl implements Unit {
     
     private Storage    singleFileStorage;
     private Storage    multyFileStorage;
     private String  unitName;
+    MemoryCache cache;
     
     public UnitImpl(final String unitName) throws IOException {
        assert unitName != null;
-       
        this.unitName = unitName;
        singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
        multyFileStorage = new MultyFileStorage(this.getName());
+       cache = new MemoryCache();
     }
     
-    protected Storage getStorage(Key key) {
+    private Storage getStorage(Key key) {
         assert key != null;
-        
+        assert getName().equals(key.getUnit().toString());
         if (key.getBehavior() == Key.Behavior.Default) {
             return singleFileStorage;
         } else {
@@ -79,50 +81,79 @@ public class UnitImpl implements Unit {
 
     public Persistent get(Key key) throws IOException {
         assert key != null;
-        return getStorage(key).get(key);
+        assert getName().equals(key.getUnit().toString());
+        Persistent data = cache.get(key);
+        if (data == null) {
+            data = getStorage(key).read(key);
+            if (data != null) {
+                // no syncronization here!!!
+                // the only possible collision here is lost of element, which is currently being deleted
+                // by processQueue - it will be reread
+                cache.put(key, data, false);
+            }
+        }
+        return data;
+    }
+    
+    public void putToCache(Key key, Persistent obj) {
+        assert key != null;
+        assert getName().equals(key.getUnit().toString());
+        cache.put(key, obj, true);
+    }
+    
+    public void hang(Key key, Persistent obj) {
+        assert key != null;
+        assert getName().equals(key.getUnit().toString());
+        cache.hang(key, obj);
+    }
+    
+    public Persistent tryGet(Key key) {
+        assert key != null;
+        assert getName().equals(key.getUnit().toString());
+        return cache.get(key);
     }
 
-    public void remove(Key key) throws IOException {
+    public void removePhysically(Key key) throws IOException {
         assert key != null;
+        assert getName().equals(key.getUnit().toString());
         getStorage(key).remove(key);
+    }
+    
+    public void removeFromCache(Key key) {
+        assert key != null;
+        assert getName().equals(key.getUnit().toString());
+        cache.remove(key);
     }
 
     public void close() throws IOException {
-        assert unitName != null;
-        assert unitName.equals(this.unitName);
-        
+        Collection<Pair<Key, Persistent>> hung = cache.clearHungObjects();
+        for( Pair<Key, Persistent> pair : hung ) {
+            putPhysically(pair.first, pair.second);
+        }
         singleFileStorage.close();
         multyFileStorage.close();
     }
 
-    public void write(Key key, Persistent object) {
+    public void putPhysically(Key key, Persistent object) throws IOException {
         assert key != null;
+        assert getName().equals(key.getUnit().toString());
         assert object != null;
-        try {
-            getStorage(key).write(key, object);
-        } catch (Exception ex) {
-            RepositoryListenersManager.getInstance().fireAnException(
-                    unitName, new RepositoryExceptionImpl(ex));
-        }
+        getStorage(key).write(key, object);
     }
 
-    public boolean defragment(long timeout) {
-        boolean needMoreTime = false;
-        try {
-            needMoreTime |= singleFileStorage.defragment(timeout);
-        } catch (Exception ex) {
-            RepositoryListenersManager.getInstance().fireAnException(
-                    unitName, new RepositoryExceptionImpl(ex));
-        }
-        return needMoreTime;
+    public boolean maintenance(long timeout) throws IOException {
+        return singleFileStorage.defragment(timeout);
     }
 
-    public int getFragmentationPercentage() throws IOException {
+    public int getMaintenanceWeight() throws IOException {
         return singleFileStorage.getFragmentationPercentage();
     }
 
     public String getName() {
         return unitName;
     }
-    
+
+    public void debugClear() {
+        cache.clearSoftRefs();
+    }
 }

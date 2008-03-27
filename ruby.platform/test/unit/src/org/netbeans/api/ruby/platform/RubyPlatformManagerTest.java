@@ -58,6 +58,14 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
+        RubyPlatform defPlatform = RubyPlatformManager.getDefaultPlatform();
+        assertNotNull("has default platform", defPlatform);
+        assertEquals("platform already present", defPlatform, RubyPlatformManager.addPlatform(defPlatform.getInterpreterFile()));
+        assertEquals("was not added twice", 1, RubyPlatformManager.getPlatforms().size());
+    }
+    
+    public void testAddingTheSamePlatformTwice() throws Exception {
+        assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         File defaultRubyHome = getTestRubyHome();
         assertEquals("right ruby home", defaultRubyHome, ruby.getHome());

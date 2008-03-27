@@ -58,12 +58,15 @@ public class HtmlEmbeddingModel implements EmbeddingModel {
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     static final String JSP_TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+    static final String PHP_TAG_MIME_TYPE = "text/x-php5"; // NOI18N
+    
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
     public HtmlEmbeddingModel() {
         sourceMimeTypes.add(JSP_MIME_TYPE);
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(JSP_TAG_MIME_TYPE);
+        sourceMimeTypes.add(PHP_TAG_MIME_TYPE);
     }
     
     public String getTargetMimeType() {

@@ -22,7 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.EventObject;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
@@ -34,7 +33,6 @@ import org.netbeans.modules.bpel.mapper.tree.TreeExpandedStateImpl;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -135,11 +133,12 @@ public class DesignContextControllerImpl implements DesignContextController {
     }
     
     private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
+        if (mBpelModelUpdateSourceRef == null) {
+            // Mapper is the default synchronization source
+            return mMapperTcContext.getMapper();
+        } else {
             return mBpelModelUpdateSourceRef.get();
         }
-        //
-        return null;
     }
     
     public synchronized BpelDesignContext getContext() {
