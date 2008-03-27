@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,77 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.updatecenters.install;
 
-import java.io.File;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.startup.Main;
-import org.netbeans.spi.autoupdate.UpdateItem;
+package org.netbeans.updatecenters;
 
 /**
  *
- * @author Jaromir Uhrik
+ * @author Jaromir.Uhrik@Sun.Com
  */
-public class TestUtils {
+public class CountsStruct {
+    private int newCount = 0;
+    private int installedCount = 0;
+    private int updatesCount = 0;
+    private int filteredCount = 0;
+    private int pendingCount = 0;
 
-    private static UpdateItem item = null;
-    private static ModuleManager mgr = null;
-
-    public static void setUserDir(String path) {
-        System.setProperty("netbeans.user", path);
+    public CountsStruct(){
+    
+    }
+    
+    public int getNewCount() {
+        return newCount;
+    }
+    public void incNewCount() {
+        newCount++;
+    }
+    public void decNewCount() {
+        newCount--;
     }
 
-    public static File getPlatformDir() {
-        return new File(System.getProperty("netbeans.home")); // NOI18N
+    public int getInstalledCount() {
+        return installedCount;
+    }
+    public void incInstalledCount(){
+        installedCount++;
+    }
+    public void decInstalledCount(){
+        installedCount--;
     }
 
-    public static void setPlatformDir(String path) {
-        System.setProperty("netbeans.home", path);
+    public int getUpdatesCount() {
+        return updatesCount;
+    }
+    public void incUpdatesCount(){
+        updatesCount++;
+    }
+    public void decUpdatesCount(){
+        updatesCount--;
     }
 
-    public static void testInit() {
-        mgr = Main.getModuleSystem().getManager();
-        assert mgr != null;
+    public int getFilteredCount() {
+        return filteredCount;
     }
+    public void incFilteredCount(){
+        filteredCount++;
+    }
+    public void decFilteredCount(){
+        filteredCount--;
+    }
+
+    public int getPendingCount() {
+        return pendingCount;
+    }
+    public void incPendingCount(){
+        pendingCount++;
+    }
+    public void decPendingCount(){
+        pendingCount--;
+    }
+            
 }
