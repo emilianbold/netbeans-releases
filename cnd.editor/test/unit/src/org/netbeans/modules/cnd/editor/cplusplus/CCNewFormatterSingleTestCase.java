@@ -69,53 +69,54 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
     }
 
 //    public void testIdentMultyConstructor5() {
-//        setDefaultsOptions();
+//        setDefaultsOptions("MySQL");
 //        setLoadDocumentText(
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
-//            ":Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "        & (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
-//            "                using_trans),\n" +
-//            "                data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "                db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "                error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "                    ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                        0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "                                thread_id(thd_arg->thread_id),\n" +
-//            "                                /* save the original thread id; we already know the server id */\n" +
-//            "                                slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "                                flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "                                sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "                                auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "                                auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
-//            "                        {\n" +
-//            "                            time_t end_time;\n" +
-//            "                        }\n"
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+//            "				 ulong query_length, bool using_trans,\n" +
+//            "				 bool suppress_use)\n" +
+//              ":Log_event(thd_arg,\n" +
+//            "	     ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "	      || (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+//            "	     using_trans),\n" +
+//            "   data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "   db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "   error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "              ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "               0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "   thread_id(thd_arg->thread_id),\n" +
+//            "   /* save the original thread id; we already know the server id */\n" +
+//            "   slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "   flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "   sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "   auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "   auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+//            "{\n" +
+//            "    time_t end_time;\n" +
+//            "}\n"
 //            );
 //        reformat();
 //        assertDocumentText("Incorrect identing multyline constructor",
-//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +
-//            "        ulong query_length, bool using_trans,\n" +
-//            "        bool suppress_use)\n" +
+//            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+//            "                                 ulong query_length, bool using_trans,\n" +
+//            "                                 bool suppress_use)\n" +
 //            ": Log_event(thd_arg,\n" +
-//            "        ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
-//            "        & (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
-//            "        using_trans),\n" +
-//            "        data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
-//            "        db(thd_arg->db), q_len((uint32) query_length),\n" +
-//            "        error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
-//            "            ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
-//            "                 0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
-//            "        thread_id(thd_arg->thread_id),\n" +
-//            "        /* save the original thread id; we already know the server id */\n" +
-//            "        slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
-//            "        flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
-//            "        sql_mode(thd_arg->variables.sql_mode),\n" +
-//            "        auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
-//            "        auto_increment_offset(thd_arg->variables.auto_increment_offset) {\n" +
-//            "    time_t end_time;\n" +
+//            "            ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+//            "            | (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+//            "            using_trans),\n" +
+//            "data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+//            "db(thd_arg->db), q_len((uint32) query_length),\n" +
+//            "error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+//            "           ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+//            "           0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+//            "thread_id(thd_arg->thread_id),\n" +
+//            "/* save the original thread id; we already know the server id */\n" +
+//            "slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+//            "flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+//            "sql_mode(thd_arg->variables.sql_mode),\n" +
+//            "auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+//            "auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+//            "{\n" +
+//            "  time_t end_time;\n" +
 //            "}\n"
 //        );
 //    }
@@ -156,45 +157,10 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
 //            "\n"
 //        );
 //    }
-//
+
 
 
 //What about []:
 //        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
 //
-    public void testSpaceWithinBraces() {
-        setDefaultsOptions();
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.spaceWithinBraces, true);
-        setLoadDocumentText(
-                "int a[] = {1,(1+2),(2+ 3)};\n" +
-                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
-                "int c[] = {  1,(1+2),(2+ 3)  \n" +
-                "};\n"
-                );
-        reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
-                "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
-                "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
-                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
-                "};\n"
-                );
-    }
-
-    public void testSpaceWithinBraces2() {
-        setDefaultsOptions();
-        setLoadDocumentText(
-                "int a[] = {1,(1+2),(2+ 3)};\n" +
-                "int b[] = {  1,(1+2),(2+ 3)  };\n" +
-                "int c[] = {  1,(1+2),(2+ 3)  \n" +
-                "};\n"
-                );
-        reformat();
-        assertDocumentText("Incorrect formatting GNU new line neme",
-                "int a[] = {1, (1 + 2), (2 + 3)};\n" +
-                "int b[] = {1, (1 + 2), (2 + 3)};\n" +
-                "int c[] = {1, (1 + 2), (2 + 3)\n" +
-                "};\n"
-                );
-    }
 }
