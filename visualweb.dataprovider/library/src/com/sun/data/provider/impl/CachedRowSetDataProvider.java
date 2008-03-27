@@ -1448,7 +1448,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                 try {
                     // Generate filename for serialized result set metadata
                     MetaDataSerializer mdSerializer = new MetaDataSerializer();
-                    String filename = mdSerializer.generateMetaDataName(generateFilename());                    
+                    String filename = mdSerializer.generateMetaDataName(mdSerializer.generateFilename(getCachedRowSet().getDataSourceName(), getCachedRowSet().getCommand()));                    
                     
                     // the filename path begins with NetBeans userdir which is underdetermined at runtime
                     if (filename.startsWith("null")){ // NOI18N
@@ -1712,25 +1712,5 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                 return null;
 
         }
-
-    }        
-    
-    private String generateFilename() throws NamingException {
-        int fixedDirLength = (System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata").length() + ".ser".length();  // NOI18N
-        String dataSourceName = getCachedRowSet().getDataSourceName();
-        if (dataSourceName == null) {
-            throw new NamingException(bundle.getString("NAME_NOT_FOUND")); 
-        }
-        dataSourceName = dataSourceName.replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
-        String commandName = getCachedRowSet().getCommand().replaceAll("\\n", ""); // NOI18N
-        commandName = commandName.replaceAll("\\r", "");  // NOI18N
-        commandName = commandName.replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
-        commandName = commandName.toLowerCase();
-        commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
-        commandName = commandName.replaceFirst("selectall", ""); // NOI18N  
-        if (fixedDirLength + (commandName + ".ser").length() > 200) {
-            commandName = commandName.substring(0, 200 - fixedDirLength);  // NOI18N
-        }
-        return dataSourceName + "_"  + "_" + commandName; // NOI18N
-    }
+    }                
 }
