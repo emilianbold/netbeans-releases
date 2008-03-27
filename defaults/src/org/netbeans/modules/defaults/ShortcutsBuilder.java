@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,15 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.xpath.ext.spi.validation;
 
-import java.util.List;
+
+package org.netbeans.modules.defaults;
+
+import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.03.24
+ * 
+ * @author S.Aubrecht
  */
-public interface XPathCastResolver {
+public class ShortcutsBuilder {
 
-  List<XPathCast> getXPathCasts();
+    private static final boolean isMac = Utilities.isMac();
+    
+    public static String buildMainProject( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
+        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
+        }
+    }
+    
+    public static String rebuildMainProject( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
+        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
+        }
+    }
+    
+    public static String compileSingle( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
+        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
+        }
+    }
+    
+    
 }

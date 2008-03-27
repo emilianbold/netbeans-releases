@@ -349,11 +349,11 @@ public class TestUtils {
         }
         if (location != null) {
             if (!absoluteLocation){
-                location=new JTextFieldOperator(po, 1).getText() + "/" + location;
+                location=new JTextFieldOperator(po, 2).getText() + "/" + location;
             }
-            new JTextFieldOperator(po,1).setText(location);
+            new JTextFieldOperator(po,2).setText(location);
         } else {
-            location = new JTextFieldOperator(po, 1).getText();
+            location = new JTextFieldOperator(po, 2).getText();
         }
         pathLastCreatedProject = location;
         

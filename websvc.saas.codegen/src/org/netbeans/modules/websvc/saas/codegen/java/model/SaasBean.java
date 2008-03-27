@@ -281,7 +281,7 @@ public abstract class SaasBean extends GenericResourceBean {
         this.authProfile = profile;
     }
     
-    protected Object getAuthUsingId(Authentication auth) {
+    protected Object getSignedUrl(Authentication auth) {
         return null;
     }
     
@@ -318,7 +318,7 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getSignedUrl() != null && auth2.getSignedUrl().size() > 0) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
             List<SignedUrl> signedUrlList = auth2.getSignedUrl();
-            SignedUrl signedUrl = (SignedUrl) getAuthUsingId(auth2);
+            SignedUrl signedUrl = (SignedUrl) getSignedUrl(auth2);
             if(signedUrl == null)
                 signedUrl = signedUrlList.get(0);
             SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
