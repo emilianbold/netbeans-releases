@@ -277,28 +277,34 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
 
     protected void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
-        String folder = createdFolderTextField.getText().trim();
 
-        d.putProperty( SampleWizardIterator.PROJDIR, new File( folder ));
-        d.putProperty(  SampleWizardIterator.NAME, name );
+        d.putProperty(SampleWizardIterator.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
+        d.putProperty(SampleWizardIterator.NAME, name);
+
+        File projectsDir = new File(this.projectLocationTextField.getText());
+
+        if (projectsDir.isDirectory()) {
+            ProjectChooser.setProjectsFolder (projectsDir);
+        }
     }
 
     protected void read(WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty(SampleWizardIterator.PROJDIR);
+        File projectLocation = (File) settings.getProperty(SampleWizardIterator.PROJECT_DIR);
+
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        } else {
+        }
+        else {
             projectLocation = projectLocation.getParentFile();
         }
-        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-
+        projectLocationTextField.setText(projectLocation.getAbsolutePath());
         String projectName = (String) settings.getProperty(SampleWizardIterator.NAME);
+
         if (projectName == null) {
             projectName = getDefaultProjectName();
-
             File file = new File(projectLocation, projectName);
             int index1 = 1;
+
             if(file.exists()) {
                 while(file.exists()) {
                     file = new File(projectLocation, projectName + String.valueOf(index1));
@@ -308,8 +314,8 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
             }
 
         }
-        this.projectNameTextField.setText(projectName);
-        this.projectNameTextField.selectAll();
+        projectNameTextField.setText(projectName);
+        projectNameTextField.selectAll();
     }
 
     protected void validate(WizardDescriptor d) throws WizardValidationException {}
