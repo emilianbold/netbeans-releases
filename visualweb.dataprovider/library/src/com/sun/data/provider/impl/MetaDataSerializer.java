@@ -46,8 +46,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.sql.ResultSetMetaData;
-import java.util.logging.Level;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
 
 /**
  *
@@ -55,7 +57,11 @@ import java.util.logging.Logger;
  */
 public class MetaDataSerializer {
     private static Logger LOGGER = Logger.getLogger(CachedRowSetDataProvider.class.getName());
-    
+    private static ResourceBundle bundle =
+      ResourceBundle.getBundle("com.sun.data.provider.impl.Bundle", //NOI18N
+                               Locale.getDefault(),
+                               MetaDataSerializer.class.getClassLoader());
+
     /**
      * Creates a new folder in the userdir and if needed and generates a new serialized filename
      * @param serFileName name of file used to generate an absolute filename
@@ -105,6 +111,24 @@ public class MetaDataSerializer {
             }
         }
 
+    }
+    
+    public String generateFilename(String dataSourceName, String command) throws NamingException {
+        int fixedDirLength = (System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata").length() + ".ser".length();  // NOI18N
+        if (dataSourceName == null) {
+            throw new NamingException(bundle.getString("NAME_NOT_FOUND")); 
+        }
+        dataSourceName = dataSourceName.replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
+        String commandName = command.replaceAll("\\n", ""); // NOI18N
+        commandName = commandName.replaceAll("\\r", "");  // NOI18N
+        commandName = commandName.replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
+        commandName = commandName.toLowerCase();
+        commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
+        commandName = commandName.replaceFirst("selectall", ""); // NOI18N  
+        if (fixedDirLength + (commandName + ".ser").length() > 200) {
+            commandName = commandName.substring(0, 200 - fixedDirLength);  // NOI18N
+        }
+        return dataSourceName + "_"  + "_" + commandName; // NOI18N
     }
 }
 
