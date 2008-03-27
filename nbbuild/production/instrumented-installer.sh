@@ -15,7 +15,7 @@ ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/*
 
 EMMA_DIR=${WORKSPACE}/../emma
 EMMA_SH="$EMMA_DIR/emma.sh"
-EMMA_TXT="$EMMA_DIR/emma_filter"
+EMMA_TXT="$EMMA_DIR/emma.txt"
 EMMA_JAR="$EMMA_DIR/emma.jar"
 
 EXTRACTED_DIR=$BASE_DIR/nbextracted
