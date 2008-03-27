@@ -108,7 +108,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamSt
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Login;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Login;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
@@ -130,10 +130,11 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.HttpBasicAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -308,7 +309,7 @@ public class Util {
      * fully-qualified class name.
      */
     public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
-        String classFile = fqClassName.replace('.', '/') + ".java"; // NOI18N
+        String classFile = fqClassName.replace('.', '/') + "."+Constants.JAVA_EXT; // NOI18N
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
         
         for (SourceGroup sourceGroup : sourceGroups) {
@@ -808,7 +809,7 @@ public class Util {
                 methodBody += "        javax.servlet.http.HttpSession session = request.getSession(true);\n";
                 methodBody += "        if ("+getVariableName(sessionKey.getSessionKeyName())+" != null) \n";
                 methodBody += "            return;\n";
-                methodBody += "        String "+tokenName+" = "+tokenMethodName+"("+getSessionKeyLoginArgumentsForWeb()+");\n";
+                methodBody += "        String "+tokenName+" = "+tokenMethodName+"("+getLoginArgumentsForWeb()+");\n";
 
                 methodBody += "        if ("+tokenName+" != null) {\n";
 
@@ -1155,13 +1156,14 @@ public class Util {
             JavaSource callbackJS, FileObject callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
-        if (authType == SaasAuthenticationType.SESSION_KEY) {
+        if (authType == SaasAuthenticationType.SESSION_KEY ||
+                authType == SaasAuthenticationType.HTTP_BASIC) {
             if(!isUseTemplates) {
-                String fileId = "Login";// NoI18n
+                String fileId = Util.upperFirstChar(Constants.LOGIN);// NoI18n
                 String methodName = "processRequest";// NoI18n
                 String authFileName = groupName + fileId;
                 loginJS = JavaSourceHelper.createJavaSource(
-                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + ".java",
+                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "."+Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
                 Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
                 if (files != null && files.size() > 0) {
@@ -1174,10 +1176,10 @@ public class Util {
                         "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
                 }
 
-                fileId = "Callback";// NOI18n
+                fileId = Util.upperFirstChar(Constants.CALLBACK);// NOI18n
                 authFileName = groupName + fileId;
                 callbackJS = JavaSourceHelper.createJavaSource(
-                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + ".java",
+                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "."+Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
                 files = new HashSet<FileObject>(callbackJS.getFileObjects());
                 if (files != null && files.size() > 0) {
@@ -1190,49 +1192,57 @@ public class Util {
                         "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
                 }
             } else {
-                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
-                UseTemplates useTemplates = sessionKey.getUseTemplates();
-                for(Template template: useTemplates.getTemplates()) {
-                    String id = template.getId();
-                    String type = template.getType()==null?"":template.getType();
-                    String templateUrl = template.getUrl();
-                    if(templateUrl == null || templateUrl.trim().equals(""))
-                        throw new IOException("Authentication template is empty.");
-                    
-                    String fileName = null;
-                    if(type.equals("login"))
-                        fileName = bean.getSaasName()+"Login";
-                    else if(type.equals("callback"))
-                        fileName = bean.getSaasName()+"Callback";
-                    else if(type.equals("auth"))
-                        continue;
-                    FileObject fObj = null;
-                    if(templateUrl.endsWith(".java")) {
-                        JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
-                                bean.getSaasServicePackageName(), fileName);
-                        Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
-                        if (files != null && files.size() > 0) {
-                            fObj = files.iterator().next();
-                        }
-                    } else {
-                        if(templateUrl.indexOf("/") != -1)
-                            fileName = bean.getSaasName()+
-                                    templateUrl.substring(templateUrl.lastIndexOf("/")+1);
-                        if(fileName != null) {
-                            fObj = targetFolder.getFileObject(fileName);
-                            if (fObj == null) {
-                                DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder, 
-                                        fileName);
-                                if(d != null)
-                                    fObj = d.getPrimaryFile();
+                UseTemplates useTemplates = null;
+                if(bean.getAuthentication() instanceof SessionKeyAuthentication) {
+                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
+                    useTemplates = sessionKey.getUseTemplates();
+                } else if(bean.getAuthentication() instanceof HttpBasicAuthentication) {
+                    HttpBasicAuthentication httpBasic = (HttpBasicAuthentication)bean.getAuthentication();
+                    useTemplates = httpBasic.getUseTemplates();
+                }
+                if(useTemplates != null) {
+                    for(Template template: useTemplates.getTemplates()) {
+                        String id = template.getId();
+                        String type = template.getType()==null?"":template.getType();
+                        String templateUrl = template.getUrl();
+                        if(templateUrl == null || templateUrl.trim().equals(""))
+                            throw new IOException("Authentication template is empty.");
+
+                        String fileName = null;
+                        if(type.equals(Constants.LOGIN))
+                            fileName = bean.getSaasName()+Util.upperFirstChar(Constants.LOGIN);
+                        else if(type.equals(Constants.CALLBACK))
+                            fileName = bean.getSaasName()+Util.upperFirstChar(Constants.CALLBACK);
+                        else if(type.equals(Constants.AUTH))
+                            continue;
+                        FileObject fObj = null;
+                        if(templateUrl.endsWith("."+Constants.JAVA_EXT)) {
+                            JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
+                                    bean.getSaasServicePackageName(), fileName);
+                            Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
+                            if (files != null && files.size() > 0) {
+                                fObj = files.iterator().next();
+                            }
+                        } else {
+                            if(templateUrl.indexOf("/") != -1)
+                                fileName = bean.getSaasName()+
+                                        templateUrl.substring(templateUrl.lastIndexOf("/")+1);
+                            if(fileName != null) {
+                                fObj = targetFolder.getFileObject(fileName);
+                                if (fObj == null) {
+                                    DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder, 
+                                            fileName);
+                                    if(d != null)
+                                        fObj = d.getPrimaryFile();
+                                }
                             }
                         }
-                    }
-                    if(fObj != null) {
-                        if(type.equals("login"))
-                            loginFile = fObj;
-                        else if(type.equals("callback"))
-                            callbackFile = fObj;
+                        if(fObj != null) {
+                            if(type.equals(Constants.LOGIN))
+                                loginFile = fObj;
+                            else if(type.equals(Constants.CALLBACK))
+                                callbackFile = fObj;
+                        }
                     }
                 }
             }
@@ -1320,7 +1330,7 @@ public class Util {
             methodBody += "            String "+tokenName+" = request.getParameter(\""+tokenId+"\");\n";
             methodBody += "            session.setAttribute(\""+groupName+"_"+tokenId+"\", "+tokenName+");\n";
 
-            methodBody += "            "+groupName+Constants.SERVICE_AUTHENTICATOR+".login("+getSessionKeyLoginArgumentsForWeb()+");\n";
+            methodBody += "            "+groupName+Constants.SERVICE_AUTHENTICATOR+".login("+getLoginArgumentsForWeb()+");\n";
             methodBody += "            String "+sessionKeyName+" = "+groupName+Constants.SERVICE_AUTHENTICATOR+"."+Util.getSessionKeyMethodName(name)+"();\n";
 
             methodBody += "            out.println(\"<html>\");\n";
@@ -1396,7 +1406,7 @@ public class Util {
         return params;
     }
     
-    public static String getSessionKeyLoginArgumentsForWeb() {
+    public static String getLoginArgumentsForWeb() {
         return getHeaderOrParameterUsage(getAuthenticatorMethodParametersForWeb());
     }
     

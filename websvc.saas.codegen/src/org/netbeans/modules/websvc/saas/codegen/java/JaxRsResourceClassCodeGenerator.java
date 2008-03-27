@@ -135,7 +135,8 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getAuthenticatorMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getAuthenticatorMethodParametersForWeb();
         else
             return super.getAuthenticatorMethodParameters();
@@ -143,7 +144,8 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getServiceMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getServiceMethodParametersForWeb(getBean());
         else
             return super.getServiceMethodParameters();
@@ -200,7 +202,7 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     }
 
     @Override
-    protected String getSessionKeyLoginArguments() {
-        return Util.getSessionKeyLoginArgumentsForWeb();
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
     }
 }

@@ -57,14 +57,15 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Login;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Method;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Token.Prompt;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Login;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Method;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
@@ -82,7 +83,7 @@ import org.openide.loaders.DataObject;
 public class JaxRsAuthenticationGenerator {
 
     private WadlSaasBean bean = null;
-    private String sessionKeyLoginArguments;
+    private String loginArgs;
     private FileObject serviceFolder;
     private Object saasAuthFile;
     private JavaSource saasAuthJS;
@@ -107,12 +108,12 @@ public class JaxRsAuthenticationGenerator {
         return project;
     }
     
-    public String getSessionKeyLoginArguments() {
-        return sessionKeyLoginArguments;
+    public String getLoginArguments() {
+        return loginArgs;
     }
     
-    public void setSessionKeyLoginArguments(String loginArgs) {
-        this.sessionKeyLoginArguments = loginArgs;
+    public void setLoginArguments(String loginArgs) {
+        this.loginArgs = loginArgs;
     }
     
     public List<ParameterInfo> getAuthenticatorMethodParameters() {
@@ -145,7 +146,7 @@ public class JaxRsAuthenticationGenerator {
             methodBody += "        String apiKey = " + getBean().getAuthenticatorClassName() + ".getApiKey();";
         } else if (authType == SaasAuthenticationType.SESSION_KEY) {
             SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) getBean().getAuthentication();
-            methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getSessionKeyLoginArguments() + ");\n";
+            methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
             List<ParameterInfo> signParams = sessionKey.getParameters();
             String paramStr = "";
 
@@ -167,6 +168,9 @@ public class JaxRsAuthenticationGenerator {
             paramStr += "        });\n";
             methodBody += paramStr;
 
+        } else if (authType == SaasAuthenticationType.HTTP_BASIC) {
+            HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) getBean().getAuthentication();
+            methodBody += "        " + getBean().getAuthenticatorClassName() + ".login(" + getLoginArguments() + ");\n";
         }
         return methodBody;
     }
@@ -177,10 +181,7 @@ public class JaxRsAuthenticationGenerator {
     public String getPostAuthenticationCode() {
         String methodBody = "";
         SaasAuthenticationType authType = getBean().getAuthenticationType();
-        if (authType == SaasAuthenticationType.HTTP_BASIC) {
-            methodBody += "        conn.setAuthenticator(new " +
-                    getBean().getSaasName() + Constants.SERVICE_AUTHENTICATOR + "());\n";
-        } else if (authType == SaasAuthenticationType.SIGNED_URL) {
+        if (authType == SaasAuthenticationType.SIGNED_URL) {
             SignedUrlAuthentication signedUrl = (SignedUrlAuthentication) getBean().getAuthentication();
             List<ParameterInfo> signParams = signedUrl.getParameters();
             if (signParams != null && signParams.size() > 0) {
@@ -225,7 +226,7 @@ public class JaxRsAuthenticationGenerator {
                 }
                 if (authTemplate != null) {
                     saasAuthJS = JavaSourceHelper.createJavaSource(
-                            authTemplate + Constants.SERVICE_AUTHENTICATOR + ".java",
+                            authTemplate + Constants.SERVICE_AUTHENTICATOR + "."+Constants.JAVA_EXT,
                             targetFolder, getBean().getSaasServicePackageName(), authFileName);// NOI18n
                     Set<FileObject> files = new HashSet<FileObject>(saasAuthJS.getFileObjects());
                     if (files != null && files.size() > 0) {
@@ -234,32 +235,40 @@ public class JaxRsAuthenticationGenerator {
                 }
             }
         } else {
-            SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
-            UseTemplates useTemplates = sessionKey.getUseTemplates();
-            for (Template template : useTemplates.getTemplates()) {
-                String id = template.getId();
-                String type = template.getType();
-                String templateUrl = template.getUrl();
+            UseTemplates useTemplates = null;
+            if(bean.getAuthentication() instanceof SessionKeyAuthentication) {
+                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+                useTemplates = sessionKey.getUseTemplates();
+            } else if(bean.getAuthentication() instanceof HttpBasicAuthentication) {
+                HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
+                useTemplates = httpBasic.getUseTemplates();
+            }
+            if(useTemplates != null) {
+                for (Template template : useTemplates.getTemplates()) {
+                    String id = template.getId();
+                    String type = template.getType();
+                    String templateUrl = template.getUrl();
 
-                String fileName = null;
-                if (type.equals("auth")) {
-                    fileName = getBean().getAuthenticatorClassName();
-                } else
-                    continue;
-                
-                if(templateUrl.endsWith(".java")) {
-                    JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
-                            getBean().getSaasServicePackageName(), fileName);
-                } else {
-                    if (templateUrl.indexOf("/") != -1) {
-                        fileName = getBean().getSaasName() +
-                                templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
-                    }
-                    if (fileName != null) {
-                        FileObject fobj = targetFolder.getFileObject(fileName);
-                        if (fobj == null) {
-                            Util.createDataObjectFromTemplate(templateUrl, targetFolder,
-                                    fileName);
+                    String fileName = null;
+                    if (type.equals(Constants.AUTH)) {
+                        fileName = getBean().getAuthenticatorClassName();
+                    } else
+                        continue;
+
+                    if(templateUrl.endsWith("."+Constants.JAVA_EXT)) {
+                        JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
+                                getBean().getSaasServicePackageName(), fileName);
+                    } else {
+                        if (templateUrl.indexOf("/") != -1) {
+                            fileName = getBean().getSaasName() +
+                                    templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
+                        }
+                        if (fileName != null) {
+                            FileObject fobj = targetFolder.getFileObject(fileName);
+                            if (fobj == null) {
+                                Util.createDataObjectFromTemplate(templateUrl, targetFolder,
+                                        fileName);
+                            }
                         }
                     }
                 }
@@ -355,7 +364,7 @@ public class JaxRsAuthenticationGenerator {
 
             //create login() method
             returnType = Constants.VOID;
-            methodName = "login";
+            methodName = Constants.LOGIN;
             comment = methodName + "\n";
             List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
             final String[] parameters = Util.getGetParamNames(filterParams);
