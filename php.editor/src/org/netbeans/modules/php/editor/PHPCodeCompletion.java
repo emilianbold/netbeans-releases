@@ -172,6 +172,10 @@ public class PHPCodeCompletion implements Completable {
             case CLASS_NAME:
                 autoCompleteClassNames(proposals, request);
                 break;
+            case STRING:
+                // LOCAL VARIABLES
+                proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+                break;
         }
         
         return proposals;
@@ -320,6 +324,10 @@ public class PHPCodeCompletion implements Completable {
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
         return null;
     }
+    
+    private static final boolean isPHPIdentifierPart(char c){
+        return Character.isJavaIdentifierPart(c) && c != '$';
+    }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
         try {
@@ -338,7 +346,7 @@ public class PHPCodeCompletion implements Completable {
                     if (lineOffset > 0) {
                         for (int i = lineOffset - 1; i >= 0; i--) {
                             char c = line.charAt(i);
-                            if (!Character.isJavaIdentifierPart(c)) {
+                            if (!isPHPIdentifierPart(c)) {
                                 break;
                             } else {
                                 start = i;
@@ -359,7 +367,7 @@ public class PHPCodeCompletion implements Completable {
                             for (int j = lineOffset; j < n; j++) {
                                 char d = line.charAt(j);
                                 // Try to accept Foo::Bar as well
-                                if (!Character.isJavaIdentifierPart(d)) {
+                                if (!isPHPIdentifierPart(d)) {
                                     break;
                                 } else {
                                     end = j + 1;
@@ -391,7 +399,7 @@ public class PHPCodeCompletion implements Completable {
                         // end of identifiers for example.
                         if (prefix.length() == 1) {
                             char c = prefix.charAt(0);
-                            if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
+                            if (!(isPHPIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
                                 return null;
                             }
                         } else {
@@ -400,7 +408,7 @@ public class PHPCodeCompletion implements Completable {
                                 char c = prefix.charAt(i);
                                 if (i == 0 && c == ':') {
                                     // : is okay at the begining of prefixes
-                                } else if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$')) {
+                                } else if (!(isPHPIdentifierPart(c) || c == '@' || c == '$')) {
                                     prefix = prefix.substring(i + 1);
                                     break;
                                 }
