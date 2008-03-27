@@ -31,10 +31,13 @@ import org.openide.ErrorManager;
  */
 public class BpelChangeProcessor implements GraphChangeProcessor {
 
+    private Object mChangeSource;
     private BpelModelUpdater mBpelModelUpdater;
     
-    public BpelChangeProcessor(BpelModelUpdater bpelModelUpdater) {
+    public BpelChangeProcessor(Object source, BpelModelUpdater bpelModelUpdater) {
         assert bpelModelUpdater != null;
+        assert source != null;
+        mChangeSource = source;
         mBpelModelUpdater = bpelModelUpdater;
     }
     
@@ -49,7 +52,7 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
                     mBpelModelUpdater.updateOnChanges(graphTreePath);
                     return null;
                 }
-            }, this);
+            }, mChangeSource);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -68,7 +71,7 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
                     }
                     return null;
                 }
-            }, this);
+            }, mChangeSource);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }

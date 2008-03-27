@@ -43,7 +43,7 @@ More at: http://del.icio.us/help/api/posts
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:posts"/>
                     </response>
                 </method>
             </resource>
@@ -63,7 +63,7 @@ More at: http://del.icio.us/help/api/posts
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:posts"/>
                     </response>
                 </method>
             </resource>
@@ -81,7 +81,7 @@ More at: http://del.icio.us/help/api/posts
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:posts"/>
                     </response>
                 </method>
             </resource>
@@ -98,7 +98,7 @@ More at: http://del.icio.us/help/api/posts
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:dates"/>
                     </response>
                 </method>
             </resource>
@@ -134,7 +134,7 @@ More at: http://del.icio.us/help/api/posts
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:result"/>
                     </response>
                 </method>
             </resource>
@@ -148,7 +148,7 @@ More at: http://del.icio.us/help/api/update.
                     </doc>
                     <request/>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:update"/>
                     </response>
                 </method>
             </resource>
@@ -165,7 +165,7 @@ More at: http://del.icio.us/help/api/posts.
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:result"/>
                     </response>
                 </method>
             </resource>
@@ -198,7 +198,7 @@ https://api.del.icio.us/help/api/tags.
                         </param>
                     </request>
                     <response>
-                        <representation mediaType="text/xml"/>
+                        <representation mediaType="text/xml" element="del:result"/>
                     </response>
                 </method>
             </resource>
@@ -211,7 +211,7 @@ https://api.del.icio.us/help/api/bundles.
                         </doc>
                         <request/>
                         <response>
-                            <representation mediaType="text/xml"/>
+                            <representation mediaType="text/xml" element="del:bundles"/>
                         </response>
                     </method>
                 </resource>
@@ -230,7 +230,7 @@ https://api.del.icio.us/help/api/bundles.
                             </param>
                         </request>
                         <response>
-                            <representation mediaType="text/xml"/>
+                            <representation mediaType="text/xml" element="del:result"/>
                         </response>
                     </method>
                 </resource>
@@ -245,7 +245,7 @@ Delete a bundle. See https://api.del.icio.us/help/api/bundles.
                             </param>
                         </request>
                         <response>
-                            <representation mediaType="text/xml"/>
+                            <representation mediaType="text/xml" element="del:result"/>
                         </response>
                     </method>
                 </resource>

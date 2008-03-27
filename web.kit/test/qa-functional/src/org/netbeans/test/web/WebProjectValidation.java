@@ -72,6 +72,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectSourcesStepOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -245,11 +246,11 @@ public class WebProjectValidation extends JellyTestCase {
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
-        nameStep.finish();
-        Timeouts timeouts = nameStep.getTimeouts().cloneThis();
-        nameStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        nameStep.waitClosed();
-        nameStep.setTimeouts(timeouts);
+        nameStep.next();
+        NewWebProjectSourcesStepOperator sharableStep =  new NewWebProjectSourcesStepOperator();
+        sharableStep.next();
+        NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
+        frameworkStep.finish();
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
@@ -510,7 +511,6 @@ public class WebProjectValidation extends JellyTestCase {
         editor.insert(runningViewServlet+"\n", 14, 1);
         editor.insert("<% " + jspCode + " %>\n" , 19, 9);
         sleep(5000);
-        PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen1.png");        
         editor.saveDocument();
         new Action("Run|Run File|Run \"page2.jsp\"",null).perform();
         waitBuildSuccessful();
@@ -527,7 +527,6 @@ public class WebProjectValidation extends JellyTestCase {
         editor.deleteLine(19);
         sleep(5000);        
         editor.save();
-        PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screen2.png");
         editor.close();
         servlet.close();
     }

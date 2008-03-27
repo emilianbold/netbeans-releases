@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,43 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project;
-
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+package org.netbeans.spi.project.libraries;
 
 /**
- * Provides attributes that can be used inside scripting templates.
- * <dl><dt><code>project.license</code></dt>
- * <dd>attribute containing license name.
- * The provider reads <code>project.license</code> property from build.properties
- * and returns it as the template attribute. In case the property is not available
- * the attribute is filled with <code>"default"</code> value.</dd>
- * </dl>
- *
- * @author Jan Pokorsky
+ * Context class which is passed to library customizer (via <code>JComponent.setObject</code>).
+ * Do not extend or instantiate this class directly.
+ * 
+ * @since org.netbeans.modules.project.libraries/1 1.18
  */
-final class WebTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
-    
-    private final AntProjectHelper helper;
-    
-    WebTemplateAttributesProvider(AntProjectHelper helper) {
-        this.helper = helper;
-    }
+public class LibraryCustomizerContext {
 
-    public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String license = props.getProperty("project.license"); // NOI18N
-        if (license == null) {
-            return null;
-        } else {
-            return Collections.singletonMap("project", Collections.singletonMap("license", license)); // NOI18N
+    private LibraryImplementation libraryImplementation;
+    private LibraryStorageArea libraryStorageArea;
+
+    public LibraryCustomizerContext(LibraryImplementation libraryImplementation, LibraryStorageArea libraryStorageArea) {
+        // prevent subclassing:
+        if (!getClass().getName().equals(LibraryCustomizerContext.class.getName()) &&
+            !getClass().getName().endsWith("LibraryCustomizerContextWrapper")) {
+            throw new IllegalStateException("LibraryCustomizerContext cannot be subclassed");
         }
+        this.libraryImplementation = libraryImplementation;
+        this.libraryStorageArea = libraryStorageArea;
+    }
+    
+    /**
+     * Library implementation to be customized.
+     * 
+     * @return always non-null
+     */
+    public LibraryImplementation getLibraryImplementation() {
+        return libraryImplementation;
     }
 
+    /**
+     * Returns <code>LibraryImplementation2</code> or null if underlying 
+     * library implementation does not implement it.
+     * 
+     * @return can be null
+     */
+    public LibraryImplementation2 getLibraryImplementation2() {
+        return libraryImplementation instanceof LibraryImplementation2 ? 
+            (LibraryImplementation2)libraryImplementation : null;
+    }
+
+    /**
+     * Area of library being customized.
+     * 
+     * @return can be null for global library
+     */
+    public LibraryStorageArea getLibraryStorageArea() {
+        return libraryStorageArea;
+    }
+    
 }

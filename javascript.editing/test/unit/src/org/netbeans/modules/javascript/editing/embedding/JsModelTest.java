@@ -179,4 +179,8 @@ public class JsModelTest extends JsTestBase {
     public void testYuiSample() throws Exception {
         checkJavaScript(this, "testfiles/embedding/yuisample.html");
     }
+
+    public void testConvertScript() throws Exception {
+        checkJavaScript(this, "testfiles/embedding/convertscript.html");
+    }
 }
