@@ -123,10 +123,10 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
             public boolean published = false;
 
             public void publish(LogRecord record) {
-if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) {
-System.err.println("XXX="+record.getMessage());
-  org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
-}
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
             }
 
             public void flush() {
