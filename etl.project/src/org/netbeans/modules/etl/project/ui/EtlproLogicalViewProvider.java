@@ -275,7 +275,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, nbBundle3.substring(15), null), // NOI18N
                         null,
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, nbBundle4.substring(15), null), // NOI18N
-                        ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5.substring(15), null), // NOI18N
+                        //ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, nbBundle5.substring(15), null), // NOI18N
+						SystemAction.get(MasterIndexAction.class),
                         ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_BULK_LOADER,nbBundle10.substring(15), null), // NOI18N
                         null,
                         SystemAction.get(NewFlatfileDatabaseWizardAction.class),
