@@ -217,6 +217,6 @@ function checkChoiceUpgradeAction() {
     <choice id="php" title="php-title" description="php-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.php"></pkg-ref>
     </choice>
-    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">file:./Contents/Packages/php.pkg</pkg-ref>
 </installer-gui-script>
