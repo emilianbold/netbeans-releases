@@ -403,7 +403,7 @@ TestSupport.prototype = {
             var pname = paths[i];
             if(pname == '')
                 continue;
-            currPath += '/'+pname;
+            currPath += '/'+pname+'/';
             var ndx = 0;
             var jsmethod = "ts.doShowContent('"+currPath+"')";
             for(var j=0;j<ts.allcat.length;j++) {
@@ -1120,7 +1120,8 @@ TestSupport.prototype = {
     }
 }
 
-function WADLParser() {    
+function WADLParser() {
+  this.wadlResources = [];
 }
 
 WADLParser.prototype = {
@@ -1291,33 +1292,77 @@ WADLParser.prototype = {
         }
         return cName;
     },
-
+    
     evaluateWADLUpdate : function (uri, content) {
-        
-        function nsResolver(prefix) {
-            var ns = {
-                'xmlns' : 'http://research.sun.com/wadl/2006/10'
-            };
-            return ns[prefix] || null;
-        }
-
-        var xmlDoc = ts.xhr.loadXml(content);
-        var iterator = xmlDoc.evaluate('//xmlns:resource', xmlDoc, nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null );
-
         var str = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root>';
         try {
-          var thisNode = iterator.iterateNext();
-          thisNode = iterator.iterateNext();
-          while (thisNode) {
-            str += '<node uri="'+baseURL+ts.getPath(thisNode, '')+'"/>';
-            thisNode = iterator.iterateNext();
-          }	
-          str += '</root>';
+          var resources = this.getAllResourcesFromWadl(content);
+          if(resources != null) {
+              for (i=0;i<resources.length;i++) {
+                str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
+                thisNode = iterator.iterateNext();
+              }
+          }
         }
         catch (e) {
           dump( 'Error: Document tree modified during iteration ' + e );
         }
+        str += '</root>';
         return str;
+    },
+    
+        /*
+        <?xml version="1.0" encoding="UTF-8"?>
+           <application xmlns="http://research.sun.com/wadl/2006/10">
+               <resources base="http://localhost:8080/NewCustomerDB/resources/">
+                   <resource path="/discountCodes/"> 
+        */
+    getAllResourcesFromWadl : function (content) {
+        try {
+            if(content.indexOf("<?xml ") != -1) {
+                var doc2 = ts.xhr.loadXml(content);
+                if(doc2 != null && doc2.documentElement.nodeName == 'parsererror')
+                    return null;
+                container=doc2.documentElement;
+                if(container == null || container.nodeName == 'html')
+                    return null;
+            }
+            if(container != null)
+                return this.findResourcesFromWadl(container);
+        } catch(e) {
+            ts.debug('getAllResourcesFromWadl() err name: [' + e.name + '] message: [' + e.message+"]");
+        }
+
+        return null;
+    },
+    
+    findResourcesFromWadl : function (container) {
+        this.wadlResources = [];
+        this.findResourcesFromWadlRecursively(container);
+        return this.wadlResources;
+    },
+
+    findResourcesFromWadlRecursively : function (refChild) {
+        if(refChild == null)
+            return;
+        var subChilds = refChild.childNodes;
+        if(subChilds == null || subChilds.length == 0)
+            return;
+        var j = 0;
+        for(j=0;j<subChilds.length;j++) {
+            var subChild = subChilds[j];            
+            if(subChild.nodeValue == null) {//DOM Elements only
+                if(subChild.nodeName == 'resource' &&
+                    subChild.attributes != null && subChild.attributes.length > 0 && 
+                      subChild.attributes.getNamedItem('path') != null) {
+                    this.wadlResources.push(subChild);
+                }
+                if(subChild.nodeName == 'resource' ||
+                    subChild.nodeName == 'resources') {
+                  this.findResourcesFromWadlRecursively(subChild);
+                }
+            }
+        }
     },
     
     showCategory : function (category){

@@ -126,7 +126,13 @@ public final class ClasspathInfo {
     }
     
     public String toString() {
-        return "ClasspathInfo boot:[" + cachedBootClassPath + "],compile:[" + cachedCompileClassPath + "],src:[" + srcClassPath + "]," + "out:["+outputClassPath+"]";  //NOI18N
+        return String.format("ClasspathInfo boot: %s, compile: %s, src: %s, internal boot: %s, internal compile: %s, internal out: %s", //NOI18N
+                bootClassPath,
+                compileClassPath,
+                srcClassPath,
+                cachedBootClassPath,
+                cachedCompileClassPath,
+                outputClassPath);        
     }
     
     // Factory methods ---------------------------------------------------------

@@ -116,14 +116,24 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
     }
 
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {
+        return handleRoots (convertURLsToURIs(classPathRoots), getClassPathProperty(sourceGroup, type), REMOVE, true);
+    }
+
+    @Override
+    protected boolean removeRoots(final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), REMOVE, true);
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {        
+        return handleRoots (convertURLsToURIs(classPathRoots), getClassPathProperty(sourceGroup, type), ADD, true);
+    }
+    
+    @Override
+    protected boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {        
         return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), ADD, true);
     }
     
-    public boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final int operation, final boolean performHeuristics) throws IOException {
+    public boolean handleRoots (final URI[] classPathRoots, final String classPathProperty, final int operation, final boolean performHeuristics) throws IOException {
         assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
         assert classPathProperty != null;
         try {
@@ -139,11 +149,11 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 if (performHeuristics) {
                                     f = J2SEProjectClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], project.getAntProjectHelper());
                                 } else {
-                                    URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
+                                    URI toAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
                                     if (toAdd == null) {
                                         toAdd = classPathRoots[i];
                                     }
-                                    f =  LibrariesSupport.convertURLToFilePath(toAdd);
+                                    f =  LibrariesSupport.convertURIToFilePath(toAdd);
                                 }
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null );
                                 if (operation == ADD && !resources.contains(item)) {

@@ -359,5 +359,34 @@ public class StructureAnalyzerTest extends RubyTestBase {
         assertFalse("not equals", oneParamA.equals(oneParamB));
         assertEquals("same hashCode - we consider just arity", oneParamA.hashCode(), oneParamB.hashCode());
     }
+    
+    public void testRubyStructureItemEqualsAndHashCodeForOptionalParams() throws Exception { // #131134
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("two methods", 2, structures.size());
+        StructureItem first = structures.get(0);
+        StructureItem second = structures.get(1);
+        assertFalse("not equals", first.equals(second));
+        assertFalse("not same hashCode (first: " + first.hashCode() + ", second: " + second.hashCode() + ')',
+                first.hashCode() == second.hashCode());
+    }
+
+    public void testRubyStructureItemNotEqualsStaticVsInstance() throws Exception { // #115782
+        CompilationInfo info = getInfo("testfiles/testRubyStructureItemNotEqualsStaticVsInstance.rb");
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+
+        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        assertEquals("one class", 1, structures.size());
+        StructureItem clazz = structures.get(0);
+        assertEquals("Foo class", ElementKind.CLASS, clazz.getKind());
+        List<?extends StructureItem> clazzChildrens = clazz.getNestedItems();
+        assertEquals("two methods", 2, clazzChildrens.size());
+        StructureItem first = clazzChildrens.get(0);
+        StructureItem second = clazzChildrens.get(1);
+        assertFalse("not equals", second.equals(first));
+        assertEquals("same hashCode", first.hashCode(), second.hashCode());
+    }
 
 }
