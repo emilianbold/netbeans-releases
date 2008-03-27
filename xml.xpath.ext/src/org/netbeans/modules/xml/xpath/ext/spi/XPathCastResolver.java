@@ -38,63 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.xpath.ext.spi;
 
-package org.netbeans.modules.ant.debugger;
-
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
-
+import java.util.List;
 
 /**
- * Debugger Annotation class.
- *
- * @author   Jan Jancura
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.03.24
  */
-public class DebuggerAnnotation extends Annotation {
+public interface XPathCastResolver {
 
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
-    /** Annotation type constant. */
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
-
-    private Annotatable annotatable;
-    private String      type;
-    
-    
-    public DebuggerAnnotation (String type, Annotatable annotatable) {
-        this.type = type;
-        this.annotatable = annotatable;
-        attach (annotatable);
-    }
-    
-    public String getAnnotationType () {
-        return type;
-    }
-    
-    public String getShortDescription () {
-        if (type == CURRENT_LINE_ANNOTATION_TYPE)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        else
-        if (type == CURRENT_LINE_ANNOTATION_TYPE2)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2"); // NOI18N
-        else
-        if (type == CURRENT_LINE_PART_ANNOTATION_TYPE)
-            return NbBundle.getMessage
-                    (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        else
-        if (type == CALL_STACK_FRAME_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CALLSITE"); // NOI18N
-        return null;
-    }
+  List<XPathCast> getXPathCasts();
 }

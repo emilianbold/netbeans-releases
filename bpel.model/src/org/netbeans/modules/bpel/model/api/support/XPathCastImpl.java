@@ -38,15 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.xpath.ext.spi.validation;
+package org.netbeans.modules.bpel.model.api.support;
 
-import java.util.List;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.03.24
+ * @version 2008.03.27
  */
-public interface XPathCastResolver {
+public class XPathCastImpl implements XPathCast {
+  
+  public XPathCastImpl(Cast cast) {
+    myType = getType(cast);
+    myPath = cast.getPath();
+  }
 
-  List<XPathCast> getXPathCasts();
+  public String getPath() {
+    return myPath;
+  }
+
+  public GlobalType getType() {
+    return myType;
+  }
+
+  private GlobalType getType(Cast cast) {
+    SchemaReference<GlobalType> ref = cast.getType();
+//System.out.println();
+//System.out.println("---: " + ref);
+
+    if (ref == null) {
+      return null;
+    }
+//System.out.println("   : " + ref.get());
+    return ref.get();
+  }
+
+  private String myPath;
+  private GlobalType myType;
 }
