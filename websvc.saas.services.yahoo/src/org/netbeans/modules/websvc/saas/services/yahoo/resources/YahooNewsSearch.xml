@@ -67,15 +67,6 @@
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="newsSearch" href="#search">
-            <documentation>
-                The Yahoo News Search service provides online searching of news
-                stories from around the world.
-            </documentation>
-        </method>
-    </methods>
-    -->
+    <methods/>
     
 </saas-services>
