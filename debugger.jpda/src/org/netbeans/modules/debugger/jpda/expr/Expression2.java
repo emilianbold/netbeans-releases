@@ -88,7 +88,7 @@ public class Expression2 {
         }
         String replacedExpr = replaceSpecialVar(expr, "return", replace_return); // NOI18N
         replacedExpr = replaceSpecialVar(replacedExpr, "class", replace_class); // NOI18N
-        return new Expression2(expr, language, replace_return, replace_class);
+        return new Expression2(replacedExpr, language, replace_return, replace_class);
     }
     
     private static String replaceSpecialVar(String expr, String var, String replace_var) {

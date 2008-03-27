@@ -66,11 +66,11 @@ public abstract class ClasspathInfoAccessor {
         return INSTANCE;
     }
 
-    public static synchronized void setINSTANCE(ClasspathInfoAccessor aINSTANCE) {
+    public static void setINSTANCE(ClasspathInfoAccessor aINSTANCE) {
         INSTANCE = aINSTANCE;
     }
 
-    private static ClasspathInfoAccessor INSTANCE;
+    private static volatile ClasspathInfoAccessor INSTANCE;
        
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
     
