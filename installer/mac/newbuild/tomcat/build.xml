@@ -11,7 +11,7 @@
     
     <target name="get-bits">
         <echo message="Downloading Tomcat from ${tomcat_location}" />
-        <get src="${binary_cache_host}/${tomcat_location}" dest="./build/tomcat_image.zip" usetimestamp="true"/>
+        <get src="${tomcat_location}" dest="./build/tomcat_image.zip" usetimestamp="true"/>
     </target>
     
     <target name="unzip" depends="get-bits">

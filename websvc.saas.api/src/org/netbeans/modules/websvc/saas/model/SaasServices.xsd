@@ -102,7 +102,15 @@
             <xsd:element name="authentication" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:choice>
-                        <xsd:element name="http-basic"/>
+                        <xsd:element name="http-basic">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="authenticator" type="saas:Authenticator" minOccurs="1" maxOccurs="1"/>
+                                </xsd:sequence>
+                                <xsd:attribute name="username" type="xsd:string" use="required"/>
+                                <xsd:attribute name="password" type="xsd:string" use="required"/>
+                            </xsd:complexType>
+                        </xsd:element>
                         <xsd:element name="api-key">
                             <xsd:complexType>
                                 <xsd:attribute name="id" type="xsd:string"/>

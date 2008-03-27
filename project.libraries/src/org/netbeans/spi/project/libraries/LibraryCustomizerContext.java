@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,15 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.xpath.ext.spi.validation;
 
-import java.util.List;
+package org.netbeans.spi.project.libraries;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.03.24
+ * Context class which is passed to library customizer (via <code>JComponent.setObject</code>).
+ * Do not extend or instantiate this class directly.
+ * 
+ * @since org.netbeans.modules.project.libraries/1 1.18
  */
-public interface XPathCastResolver {
+public class LibraryCustomizerContext {
 
-  List<XPathCast> getXPathCasts();
+    private LibraryImplementation libraryImplementation;
+    private LibraryStorageArea libraryStorageArea;
+
+    public LibraryCustomizerContext(LibraryImplementation libraryImplementation, LibraryStorageArea libraryStorageArea) {
+        // prevent subclassing:
+        if (!getClass().getName().equals(LibraryCustomizerContext.class.getName()) &&
+            !getClass().getName().endsWith("LibraryCustomizerContextWrapper")) {
+            throw new IllegalStateException("LibraryCustomizerContext cannot be subclassed");
+        }
+        this.libraryImplementation = libraryImplementation;
+        this.libraryStorageArea = libraryStorageArea;
+    }
+    
+    /**
+     * Library implementation to be customized.
+     * 
+     * @return always non-null
+     */
+    public LibraryImplementation getLibraryImplementation() {
+        return libraryImplementation;
+    }
+
+    /**
+     * Returns <code>LibraryImplementation2</code> or null if underlying 
+     * library implementation does not implement it.
+     * 
+     * @return can be null
+     */
+    public LibraryImplementation2 getLibraryImplementation2() {
+        return libraryImplementation instanceof LibraryImplementation2 ? 
+            (LibraryImplementation2)libraryImplementation : null;
+    }
+
+    /**
+     * Area of library being customized.
+     * 
+     * @return can be null for global library
+     */
+    public LibraryStorageArea getLibraryStorageArea() {
+        return libraryStorageArea;
+    }
+    
 }
