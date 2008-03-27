@@ -132,6 +132,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
+import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
@@ -140,6 +141,8 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
+import org.netbeans.modules.xml.xam.Model.State;
 
 public final class Utils {
 
@@ -173,7 +176,7 @@ public final class Utils {
       return checkXPathExpression(element, null);
     }
 
-    public static SchemaComponent checkXPathExpression(ContentElement element, PathValidationContext context) {
+    public static SchemaComponent checkXPathExpression(ContentElement element, XPathValidationContext context) {
         String content = element.getContent();
         
         if (content == null) {
@@ -192,7 +195,7 @@ public final class Utils {
         return checkExpression(expressionLang, content, element, context);
     }
 
-    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final PathValidationContext context) {
+    private static SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element, final XPathValidationContext context) {
         boolean isXPathExpr = exprLang == null || BpelXPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
 
         if ( !isXPathExpr) {
@@ -200,9 +203,11 @@ public final class Utils {
         }
         XPathModelHelper helper= XPathModelHelper.getInstance();
         XPathModel model = helper.newXPathModel();
-        context.setXPathModel(model);
-        model.setValidationContext(context);
 
+        if (context != null) {
+          context.setXPathModel(model);
+          model.setValidationContext(context);
+        }
         ExNamespaceContext nsContext = ((BpelEntity) element).getNamespaceContext();
         model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
 
@@ -216,18 +221,35 @@ public final class Utils {
             }
 
             public Collection<SchemaModel> getVisibleModels() {
-                context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
+                if (context != null) {
+                  context.addResultItem(Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
+                }
                 return null;
             }
 
-            public boolean isSchemaVisible(String schemaNamespaceUri) {
-                return context.isSchemaImported(schemaNamespaceUri);
+            public boolean isSchemaVisible(String soughtNamspace) {
+                assert soughtNamspace != null;
+                //
+                BpelModel model = ((BpelEntity) element).getBpelModel();
+                if (model.getState() == State.VALID) {
+                    for (Import anImport : model.getProcess().getImports()) {
+                        if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
+                            if (soughtNamspace.equals(anImport.getNamespace())) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                //
+                return false;
             }
         });
         model.setXPathCastResolver(createXPathCastResolver(element));
 
         if (BpelXPathModelFactory.isSplitable(exprText)) {
-            context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
+            if (context != null) {
+              context.addResultItem(exprText, Validator.ResultType.ERROR, NbBundle.getMessage(Utils.class, "INCOMPLETE_XPATH")); // NOI18N
+            }
             String[] partsArr = BpelXPathModelFactory.split(exprText);
 
             for (String anExprText : partsArr) {
@@ -371,10 +393,9 @@ public final class Utils {
             return null;
         }
         String[] splited = new String[2];
-        splitQName( value , splited );
+        splitQName(value, splited);
+        String uri = entity.getNamespaceContext().getNamespaceURI(splited[0]);
 
-        NamespaceContext context = entity.getNamespaceContext();
-        String uri = context.getNamespaceURI(splited[0]);
         if (uri == null) {
             return null;
         }
