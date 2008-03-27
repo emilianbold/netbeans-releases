@@ -126,7 +126,7 @@ public class __NAME__ {
             }
         } else {
             session.setAttribute("flickr_return_url", request.getRequestURI());
-            response.sendRedirect("FlickrPhotoServiceLogin");
+            response.sendRedirect(request.getContextPath() + "/FlickrPhotoServiceLogin");
         }
     }
 

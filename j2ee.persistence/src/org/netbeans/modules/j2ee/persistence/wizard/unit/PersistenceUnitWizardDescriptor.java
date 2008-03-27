@@ -51,8 +51,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -76,7 +76,8 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     
     public PersistenceUnitWizardDescriptor(Project project) {
         this.project = project;
-        this.isContainerManaged = Util.isSupportedJavaEEVersion(project);
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+        this.isContainerManaged = Util.isSupportedJavaEEVersion(project) && providerSupplier != null && providerSupplier.supportsDefaultProvider();
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {

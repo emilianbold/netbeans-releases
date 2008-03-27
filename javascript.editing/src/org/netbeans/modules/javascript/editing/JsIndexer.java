@@ -127,7 +127,7 @@ public class JsIndexer implements Indexer {
     static final String FIELD_CLASS = "clz"; //NOI18N
     
     public String getIndexVersion() {
-        return "6.112"; // NOI18N
+        return "6.113"; // NOI18N
     }
 
     public String getIndexerName() {

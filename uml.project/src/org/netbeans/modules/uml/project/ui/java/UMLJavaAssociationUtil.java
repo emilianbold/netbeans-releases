@@ -47,6 +47,10 @@
 
 package org.netbeans.modules.uml.project.ui.java;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.netbeans.modules.uml.project.AssociatedSourceProvider;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -146,8 +150,48 @@ public class UMLJavaAssociationUtil {
       }
       return null;
    }
+
 	
- 
+   public static List<Project> getAllAssociatedUMLProjects(DataObject dObj)
+   {  
+      Project currentJavaProj =
+               FileOwnerQuery.getOwner(dObj.getPrimaryFile());
+      return getAllAssociatedUMLProjects(currentJavaProj);   
+   }
+	
+
+   /**
+    * Retrieve all UML projects that are associated with a specified 
+    * project.
+    */
+   public static List<Project> getAllAssociatedUMLProjects(Project project)
+   {
+      ArrayList<Project> retVal = new ArrayList<Project>();
+      Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
+      for (int i = 0; i < allProjects.length; i++)
+      {
+         AssociatedSourceProvider asp = (AssociatedSourceProvider)
+         allProjects[i].getLookup().lookup(AssociatedSourceProvider.class);
+         if ( asp != null )
+         {
+            Project codeGenProj = asp.getCodeGenTargetProject();            
+            if(project == codeGenProj)
+            {
+               retVal.add(allProjects[i]);
+            } 
+            else 
+            {
+               Project umlJavaProj = asp.getAssociatedSourceProject();           
+               if(project == umlJavaProj)
+               {
+                  retVal.add(allProjects[i]);
+               }
+            }            
+         }
+      }
+      return retVal;
+   }
+
 	
 	// For a given jmi.javamodel.JavaClass this will determine which 
 	// embarcadero i type it would be associated with
