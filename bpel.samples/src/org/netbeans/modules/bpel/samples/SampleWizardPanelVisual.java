@@ -227,7 +227,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
-        final File destFolder = new File(createdFolderTextField.getText() ).getAbsoluteFile();
+        final File destFolder = new File(createdFolderTextField.getText()).getAbsoluteFile();
 
         if (getCanonicalFile(destFolder) == null) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectName")); // NOI18N
@@ -364,14 +364,21 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         }
     }
 
-    private void updateTexts( DocumentEvent e ) {
+    private void updateTexts(DocumentEvent e) {
         Document doc = e.getDocument();
 
-        if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
+        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
-            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-        }
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            }
+            else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
+        }                
         myPanel.fireChangeEvent();
     }
 
