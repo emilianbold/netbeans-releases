@@ -336,58 +336,9 @@ public final class Utils {
         return null;
       }
 //out("     7");
-      return new MyXPathCastResolver(allCasts);
+      return new XPathCastResolverImpl(allCasts);
     }
 
-    // --------------------------------------------------------------------
-    private static class MyXPathCastResolver implements XPathCastResolver {
-      public MyXPathCastResolver(List<Cast> casts) {
-        myXPathCasts = new ArrayList<XPathCast>();
-
-        for (Cast cast : casts) {
-          myXPathCasts.add(new MyXPathCast(cast));
-        }
-      }
-
-      public List<XPathCast> getXPathCasts() {
-        return myXPathCasts;
-      }
-
-      private List<XPathCast> myXPathCasts;
-    }
-
-    // ----------------------------------------------------
-    private static class MyXPathCast implements XPathCast {
-      
-      public MyXPathCast(Cast cast) {
-        myType = getType(cast);
-        myPath = cast.getPath();
-      }
-
-      public String getPath() {
-        return myPath;
-      }
-
-      public GlobalType getType() {
-        return myType;
-      }
-
-      private GlobalType getType(Cast cast) {
-        SchemaReference<GlobalType> ref = cast.getType();
-    //System.out.println();
-    //System.out.println("---: " + ref);
-
-        if (ref == null) {
-          return null;
-        }
-    //System.out.println("   : " + ref.get());
-        return ref.get();
-      }
-
-      private String myPath;
-      private GlobalType myType;
-    }
-    
     public static QName getQName(String value, BpelEntity entity ) {
         if (value == null) {
             return null;
