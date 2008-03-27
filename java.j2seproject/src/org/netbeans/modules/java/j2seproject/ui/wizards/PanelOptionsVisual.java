@@ -215,7 +215,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                         .add(19, 19, 19)
                         .add(lblLibFolder)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(txtLibFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
+                        .add(txtLibFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(btnLibFolder))
             .add(layout.createSequentialGroup()
@@ -224,9 +224,9 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             .add(layout.createSequentialGroup()
                 .add(createMainCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
+                .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(64, Short.MAX_VALUE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(lblHint))
         );
         layout.setVerticalGroup(

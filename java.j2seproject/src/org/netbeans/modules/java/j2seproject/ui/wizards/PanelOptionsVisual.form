@@ -30,7 +30,7 @@
                       <EmptySpace min="19" pref="19" max="19" attributes="0"/>
                       <Component id="lblLibFolder" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="txtLibFolder" pref="406" max="32767" attributes="0"/>
+                      <Component id="txtLibFolder" pref="354" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -43,10 +43,10 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="createMainCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="mainClassTextField" pref="495" max="32767" attributes="0"/>
+              <Component id="mainClassTextField" pref="443" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="64" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Component id="lblHint" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
