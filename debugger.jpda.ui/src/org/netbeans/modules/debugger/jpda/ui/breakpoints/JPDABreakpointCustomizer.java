@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.beans.Customizer;
 
 import javax.swing.JComponent;
@@ -71,7 +73,12 @@ public class JPDABreakpointCustomizer extends JPanel implements Customizer, Cont
     
     private void init(JPDABreakpoint b) {
         c = BreakpointsActionsProvider.getCustomizerComponent(b);
-        add(c);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        add(c, gbc);
     }
 
     public boolean ok() {
