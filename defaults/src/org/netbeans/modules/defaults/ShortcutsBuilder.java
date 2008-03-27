@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,62 +37,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.beans.Customizer;
+package org.netbeans.modules.defaults;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-
-import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsActionsProvider;
-import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
- *
- * @author martin
+ * 
+ * @author S.Aubrecht
  */
-public class JPDABreakpointCustomizer extends JPanel implements Customizer, Controller {
-    
-    private JPDABreakpoint b;
-    private JComponent c;
-    
-    public JPDABreakpointCustomizer() {
-    }
+public class ShortcutsBuilder {
 
-    public void setObject(Object bean) {
-        if (!(bean instanceof JPDABreakpoint)) {
-            throw new IllegalArgumentException(bean.toString());
+    private static final boolean isMac = Utilities.isMac();
+    
+    public static String buildMainProject( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
+        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
         }
-        this.b = (JPDABreakpoint) bean;
-        init(b);
     }
     
-    private void init(JPDABreakpoint b) {
-        c = BreakpointsActionsProvider.getCustomizerComponent(b);
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        add(c, gbc);
+    public static String rebuildMainProject( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
+        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
+        }
     }
-
-    public boolean ok() {
-        return ((Controller) c).ok();
+    
+    public static String compileSingle( FileObject origFile ) {
+        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
+        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
+            return isMac ? "" : actionPath; //NOI18N
+        } else {
+            return isMac ? actionPath : ""; //NOI18N
+        }
     }
-
-    public boolean cancel() {
-        return ((Controller) c).cancel();
-    }
-
+    
+    
 }
