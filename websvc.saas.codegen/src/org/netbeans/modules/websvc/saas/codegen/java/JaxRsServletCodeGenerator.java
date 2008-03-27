@@ -63,34 +63,11 @@ import org.openide.filesystems.FileObject;
  * @author ayubskhan
  */
 public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
-
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     
     public JaxRsServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, new WadlSaasBean(m, true));
         getBean().setIsDropTargetWeb(true);
-    }
-    
-    /**
-     *  Create Authorization Frame
-     */
-    @Override
-    public void createAuthorizationClasses() throws IOException {
-        List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
-        final String[] parameters = getGetParamNames(filterParams);
-        final Object[] paramTypes = getGetParamTypes(filterParams);
-        Util.createSessionKeyAuthorizationClassesForWeb(
-            getBean(), getProject(),
-            getBean().getSaasName(), getBean().getSaasServicePackageName(), 
-            getSaasServiceFolder(), 
-            loginJS, loginFile, 
-            callbackJS, callbackFile,
-            parameters, paramTypes, getBean().isUseTemplates()
-        );
     }
     
     @Override
@@ -128,7 +105,8 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getAuthenticatorMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getAuthenticatorMethodParametersForWeb();
         else
             return super.getAuthenticatorMethodParameters();
@@ -136,32 +114,16 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getServiceMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getServiceMethodParametersForWeb(getBean());
         else
             return super.getServiceMethodParameters();
     }
     
     @Override
-    protected String getLoginBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
-    }
-    
-    @Override
-    protected String getTokenBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyTokenBodyForWeb(bean, groupName, paramVariableName,
-                saasServicePkgName);
-    }
-    
-    @Override
-    protected String getSessionKeyLoginArguments() {
-        return Util.getSessionKeyLoginArgumentsForWeb();
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
     }
     
     @Override
@@ -197,7 +159,8 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     protected void addImportsToSaasService() throws IOException {
         super.addImportsToSaasService();
         
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY) {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC) {
             List<String> imports = new ArrayList<String>();
             imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
             imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
