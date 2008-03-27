@@ -44,6 +44,9 @@ import java.io.File;
 import java.util.StringTokenizer;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import net.java.hulp.i18n.Logger;
 
 public class ChooseLocationDialog extends javax.swing.JDialog {
 
@@ -260,6 +263,13 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         while (tokenizer.hasMoreTokens()) {
             fileName = tokenizer.nextToken();
         }
+        String extn = ".xml";        
+        if (!(fileName.toLowerCase().endsWith(extn))) {
+            String errMsg = "Choose a valid xml file.";
+            mLogger.infoNoloc(mLoc.t(errMsg));
+            JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         str = str.replace(fileName, "");
         setObjectDefinition(str);
         setDBName(dbNameTextField.getText());
@@ -321,6 +331,9 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         }
     }
     private String fileName = null;
+    private static transient final Logger mLogger = Logger.getLogger(ChooseLocationDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton cancelButton;

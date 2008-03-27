@@ -62,8 +62,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import net.java.hulp.i18n.Logger;
 import org.axiondb.AxionException;
 import org.axiondb.io.AxionFileSystem;
@@ -172,7 +170,7 @@ public class TargetDBSchemaGenerator {
             //Table Being added is a child table
             String fk_col = lookup.getRootName() + "Id";
             if (!colmap.containsKey(fk_col)) {
-                //Check if see if colum is already generated using obect definition xml file
+                //Check if see if colum is already generated using object definition xml file
                 columns.append(fk_col + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
             }
         }
@@ -375,10 +373,10 @@ public class TargetDBSchemaGenerator {
     }
 
     /**
-     * EView Model obect definition xml file is validated against all child tables containing FK column.
+     * EView Model object definition xml file is validated against all child tables containing FK column.
      * All chld tables must contain ObjectId column for the parent to achieve join condition.
      * This is validated at schema generation level. If not found compliant, used is blocked to generate
-     * staging schema till proper obect definition xml file is provided.
+     * staging schema till proper object definition xml file is provided.
      */
     private void validateEviewModel() {
         String fkname = this.lookup.getRootName() + "Id";
@@ -406,7 +404,8 @@ public class TargetDBSchemaGenerator {
         }
         if (!overallstatus) {
             String errMsg = "object definition xml file validation failed!.\nGenerate [ " + fkname + " ] field in all the child objects and re-run schema generator with the valid object definition xml file";
-            mLogger.infoNoloc(mLoc.t(errMsg));            
+            mLogger.infoNoloc(mLoc.t(errMsg));    
+            System.out.println(errMsg);
             //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

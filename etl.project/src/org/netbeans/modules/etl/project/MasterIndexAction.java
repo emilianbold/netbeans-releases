@@ -84,6 +84,7 @@ public class MasterIndexAction  extends CallableSystemAction {
     @Override
     public void performAction() {
         mLogger.infoNoloc(mLoc.t("eTLeView Design Time - Query Builder [START] ...\n"));
+        System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
         dialog.setVisible(true);
         if ((dialog.getDBLocation()) != null && (dialog.getDBName()) != null && (dialog.getObjectDefinition()) != null) {
