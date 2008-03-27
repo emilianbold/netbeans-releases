@@ -185,9 +185,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         private NbiCheckBox gfCheckbox;
         private NbiCheckBox tomcatCheckbox;
+        private NbiCheckBox mysqlCheckbox;
+
         private Product glassfishProduct;
         private Product tomcatProduct;
-        
+        private Product mysqlProduct;
+
         private NbiLabel runtimesToRemove;
         
         public NbPreInstallSummaryPanelSwingUi(
@@ -226,7 +229,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 downloadSize += product.getDownloadSize();
                 
                 try {
-                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")) {
+                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         nbBasePresent = product.getUid().equals("nb-base") ? true : nbBasePresent;
                     } else {
                         if (product.getUid().startsWith("nb-")) {
@@ -287,7 +290,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             // add top-level components like nb-base, glassfish, tomcat, jdk
             for (Product product: registry.getProductsToInstall()) {
                 try {
-                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")) {
+                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk") || product.getUid().equals("mysql")) {
                         String property = panel.getProperty(
                                 product.getUid().equals("nb-base") ?
                                     INSTALLATION_FOLDER_NETBEANS_PROPERTY :
@@ -652,7 +655,47 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                 }
                             }
                         }
-                        
+                       for(final Product mysql : Registry.getInstance().getProducts("mysql")) {
+                            if(mysql.getStatus() == Status.INSTALLED)    {
+                                    mysqlProduct = mysql;
+                                    mysqlCheckbox = new NbiCheckBox();
+                                    mysqlCheckbox.setText(mysqlProduct.getDisplayName());
+                                    mysqlCheckbox.setBorder(new EmptyBorder(0,0,0,0));                                    
+                                    if(runtimesToRemove==null) {
+				        runtimesToRemove = new NbiLabel();
+                                        runtimesToRemove.setText(StringUtils.format(runtimesToRemoveText,
+                                                product.getLogic().getSystemDisplayName()));
+                                    
+                                        add(runtimesToRemove, new GridBagConstraints(
+                                                0, index++,                        // x, y
+                                                1, 1,                             // width, height
+                                                1.0, 0.0,                         // weight-x, weight-y
+                                                GridBagConstraints.PAGE_START,    // anchor
+                                                GridBagConstraints.HORIZONTAL,    // fill
+                                                new Insets(0, 11, 0, 11),         // padding
+                                                0, 0));                           // padx, pady - ???
+				    }
+				    mysqlCheckbox.addActionListener(new ActionListener() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            if(mysqlCheckbox.isSelected()) {
+                                                mysqlProduct.setStatus(Status.TO_BE_UNINSTALLED);
+                                            } else {
+                                                mysqlProduct.setStatus(Status.INSTALLED);
+                                            }
+                                        }
+                                    });
+                                    add(mysqlCheckbox, new GridBagConstraints(
+                                            0, index++,                        // x, y
+                                            1, 1,                             // width, height
+                                            1.0, 0.0,                         // weight-x, weight-y
+                                            GridBagConstraints.PAGE_START,    // anchor
+                                            GridBagConstraints.HORIZONTAL,    // fill
+                                            new Insets(0, 20, 0, 11),         // padding
+                                            0, 0));                           // padx, pady - ???
+                                    break;
+                                }
+                            }
+
                     } catch (IOException e) {
                         LogManager.log(e);
                     }  catch (InitializationException e) {
@@ -723,6 +766,16 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
                 tomcatProduct.setStatus(Status.TO_BE_UNINSTALLED);
             }
+            if(mysqlProduct!=null &&
+                    mysqlProduct.getStatus()==Status.TO_BE_UNINSTALLED) {
+                mysqlProduct.setStatus(Status.INSTALLED);
+                List <Product> others = Registry.getInstance().getInavoidableDependents(mysqlProduct);
+                for(Product pr : others) {
+                    pr.setStatus(Status.TO_BE_UNINSTALLED);
+                }
+                mysqlProduct.setStatus(Status.TO_BE_UNINSTALLED);
+            }
+
             super.evaluateNextButtonClick();
         }
         

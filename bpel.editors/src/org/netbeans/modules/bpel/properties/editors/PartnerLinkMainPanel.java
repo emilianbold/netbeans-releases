@@ -55,6 +55,7 @@ import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
@@ -1317,7 +1318,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     // vlv
     private String getRelativeName(FileObject file) {
         BpelModel bpelModel = myEditor.getLookup().lookup(BpelModel.class);
-        Project modelProject = ResolverUtility.safeGetProject(bpelModel);
+        Project modelProject = Utils.safeGetProject(bpelModel);
         String relativePath = ResolverUtility.safeGetRelativePath(file, modelProject);
         String name = relativePath != null ? relativePath : file.getPath();
         

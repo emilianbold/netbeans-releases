@@ -408,6 +408,23 @@ public class JsModel {
                 // Emit the block verbatim
                 int sourceStart = ts.offset();
                 String text = htmlToken.text().toString();
+                
+                // Make sure it doesn't start with <!--, if it does, remove it
+                // (this is a mechanism used in files to gracefully handle older browsers)
+                int start = 0;
+                for (; start < text.length(); start++) {
+                    char c = text.charAt(start);
+                    if (!Character.isWhitespace(c)) {
+                        break;
+                    }
+                }
+                if (start < text.length() && text.startsWith("<!--", start)) {
+                    int lineEnd = text.indexOf('\n', start);
+                    if (lineEnd != -1) {
+                        text = text.substring(lineEnd+1);
+                    }
+                }
+
                 int sourceEnd = sourceStart + text.length();
                 int generatedStart = buffer.length();
                 buffer.append(text);
@@ -418,6 +435,9 @@ public class JsModel {
             } else if (htmlId == HTMLTokenId.TAG_OPEN) {
                 String text = htmlToken.text().toString();
 
+                // TODO - if we see a <script src="someurl"> block that also
+                // has a nonempty body, warn - the body will be ignored!!
+                // (This should be a quickfix)
                 if ("script".equals(text)) {
                     // Look for "<script src=" and if found, locate any includes.
                     // Quit when I find TAG_CLOSE or run out of tokens
@@ -431,6 +451,9 @@ public class JsModel {
                     while (ets.moveNext()) {
                         Token<? extends HTMLTokenId> t = ets.token();
                         TokenId id = t.id();
+                        // TODO - if we see a DEFER attribute here record that somehow
+                        // such that I can have a quickfix look to make sure you don't try
+                        // to mess with the document!
                         if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                             break;
                         } else if (foundSrc || foundType) {

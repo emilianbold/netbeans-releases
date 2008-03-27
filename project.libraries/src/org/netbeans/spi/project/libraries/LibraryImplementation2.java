@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,43 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject;
+package org.netbeans.spi.project.libraries;
 
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import java.net.URI;
+import java.util.List;
 
 /**
- * Provides attributes that can be used inside scripting templates.
- * <dl><dt><code>project.license</code></dt>
- * <dd>attribute containing license name.
- * The provider reads <code>project.license</code> property from build.properties
- * and returns it as the template attribute. In case the property is not available
- * the attribute is filled with <code>"default"</code> value.</dd>
- * </dl>
- *
- * @author Jan Pokorsky
+ * Library enhancement allowing setting/getting library content as URI list.
+ * Useful for example for storing relative library entries.
+ * 
+ * @since org.netbeans.modules.project.libraries/1 1.18
  */
-final class J2SETemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
-    
-    private final AntProjectHelper helper;
-    
-    J2SETemplateAttributesProvider(AntProjectHelper helper) {
-        this.helper = helper;
-    }
+public interface LibraryImplementation2 extends LibraryImplementation {
 
-    public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String license = props.getProperty("project.license"); // NOI18N
-        if (license == null) {
-            return null;
-        } else {
-            return Collections.singletonMap("project", Collections.singletonMap("license", license)); // NOI18N
-        }
-    }
+    /**
+     * Returns List of resources contained in the given volume.
+     * The returned list is unmodifiable. To change the content of
+     * the given volume use setContent method.
+     * @param volumeType the type of volume for which the content should be returned.
+     * @return list of resource URIs (never null)
+     * @throws IllegalArgumentException if the library does not support given type of volume
+     */
+    List<URI> getURIContent(String volumeType) throws IllegalArgumentException;
+
+    /**
+     * Sets content of given volume
+     * @param volumeType the type of volume for which the content should be set
+     * @param path the list of resource URIs
+     * @throws IllegalArgumentException if the library does not support given volumeType
+     */
+    void setURIContent(String volumeType, List<URI> path) throws IllegalArgumentException;
 
 }
