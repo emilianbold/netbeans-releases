@@ -424,8 +424,8 @@ public final class RubyPlatformManager {
         return getPlatformsInternal().iterator();
     }
 
-    private static Info computeInfo(final File interpreter) {
-        if (TEST_RUBY_PROPS != null) { // tests
+    static Info computeInfo(final File interpreter) {
+        if (TEST_RUBY_PROPS != null && !RubyPlatformManager.getDefaultPlatform().getInterpreterFile().equals(interpreter)) { // tests
             return new Info(TEST_RUBY_PROPS);
         }
         Info info = null;
