@@ -177,7 +177,7 @@ final class JavadocCompletionUtils {
      * @return javadoc token sequence or null.
      */
     static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
-        if (e == null)
+        if (e == null || javac.getElementUtilities().isSynthetic(e))
             return null;
         
         Tree tree = javac.getTrees().getTree(e);
@@ -190,10 +190,16 @@ final class JavadocCompletionUtils {
             return null;
         }
         s.move(elementStartOffset);
-        while (s.movePrevious() && IGNORE_TOKES.contains(s.token().id()))
-            ;
-        if (s.token().id() != JavaTokenId.JAVADOC_COMMENT)
+        Token<JavaTokenId> token = null;
+        while (s.movePrevious()) {
+            token = s.token();
+            if (!IGNORE_TOKES.contains(token.id())) {
+                break;
+            }
+        }
+        if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
             return null;
+        }
         
         return s.embedded(JavadocTokenId.language());
     }
