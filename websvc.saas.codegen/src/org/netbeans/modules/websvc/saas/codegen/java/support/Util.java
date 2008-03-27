@@ -664,8 +664,8 @@ public class Util {
         return project.getProjectDirectory().getFileObject(BUILD_XML_PATH);
     }
     
-    public static DataObject createDataObjectFromTemplate(final String template, 
-            final FileObject targetFolder, final String targetName) throws IOException {
+    public static DataObject createDataObjectFromTemplate(String template,
+            FileObject targetFolder, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
         
@@ -733,6 +733,12 @@ public class Util {
         return false;
     }
     
+    public static void checkScanning() throws IOException {
+        if (Util.isScanningInProgress(true)) {
+            throw new IOException(SCANNING_IN_PROGRESS);
+        }
+    }
+
     public static void checkScanning(boolean showMessage) throws IOException {
         if (isScanningInProgress(showMessage)) {
             throw new IOException(SCANNING_IN_PROGRESS);
