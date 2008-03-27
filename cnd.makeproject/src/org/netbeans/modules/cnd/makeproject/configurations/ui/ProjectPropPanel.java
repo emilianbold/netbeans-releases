@@ -51,20 +51,17 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements ActionListener {
 
@@ -84,11 +81,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
         
-        this.originalEncoding = getPreferences().get("CND_ENCODING", null);
-        if (originalEncoding == null) {
-            Charset enc = FileEncodingQuery.getDefaultEncoding();
-            originalEncoding = enc.name();
-        }
+        originalEncoding = makeConfigurationDescriptor.getSourceEncoding();
 //        if (originalEncoding != null) {
 //            try {
 //                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
@@ -96,23 +89,19 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
 //                //When the encoding is not supported by JVM do not set it as default
 //            }
 //        }
-        if (this.originalEncoding == null) {
-            this.originalEncoding = Charset.defaultCharset().name();
+        if (originalEncoding == null) {
+            originalEncoding = Charset.defaultCharset().name();
         }
         
-        this.encoding.setModel(new EncodingModel(this.originalEncoding));
-        this.encoding.setRenderer(new EncodingRenderer());
+        encoding.setModel(new EncodingModel(this.originalEncoding));
+        encoding.setRenderer(new EncodingRenderer());
         
 
-        this.encoding.addActionListener(new ActionListener () {
+        encoding.addActionListener(new ActionListener () {
             public void actionPerformed(ActionEvent arg0) {
                 handleEncodingChange();
             }            
         });
-    }
-    
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(ProjectPropPanel.class);
     }
     
     private void handleEncodingChange () {
@@ -124,7 +113,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
             else {
                 encName = originalEncoding;
             }
-            getPreferences().put("CND_ENCODING", encName);
+            makeConfigurationDescriptor.setSourceEncoding(encName);
     }
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {

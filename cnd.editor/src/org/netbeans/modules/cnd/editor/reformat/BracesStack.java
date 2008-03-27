@@ -63,6 +63,7 @@ class BracesStack {
     int lastKRstart = -1;
     boolean isDoWhile = false;
     boolean isLabel = false;
+    int lastStatementParen = -1;
 
     BracesStack(CodeStyle codeStyle) {
         this.codeStyle = codeStyle;
@@ -76,6 +77,7 @@ class BracesStack {
         clone.lastKRstart = lastKRstart;
         clone.parenDepth = parenDepth;
         clone.isDoWhile = isDoWhile;
+        clone.lastStatementParen = lastStatementParen;
         clone.isLabel = isLabel;
         for(int i = 0; i < stack.size(); i++){
             clone.stack.add(stack.get(i));
@@ -89,6 +91,7 @@ class BracesStack {
         lastKRstart = clone.lastKRstart;
         parenDepth = clone.parenDepth;
         isDoWhile = clone.isDoWhile;
+        lastStatementParen = clone.lastStatementParen;
         isLabel = clone.isLabel;
         stack.clear();
         for(int i = 0; i < clone.stack.size(); i++){
@@ -103,6 +106,10 @@ class BracesStack {
         int statementIndent = codeStyle.indentSize();
         if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
             statementIndent = codeStyle.indentSize()/2;
+        }
+        int switchIndent = codeStyle.indentSize();
+        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+            switchIndent = codeStyle.indentSize()/2;
         }
         if (prevEntry != null){
             prevIndent = prevEntry.getIndent();
@@ -138,13 +145,16 @@ class BracesStack {
                 newEntry.setIndent(prevIndent + statementIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
+            case CATCH: //("catch", "keyword-directive"), //C++
             case DO: //("do", "keyword-directive"),
             case TRY: //("try", "keyword-directive"), // C++
-            case CATCH: //("catch", "keyword-directive"), //C++
             case FOR: //("for", "keyword-directive"),
             case ASM: //("asm", "keyword-directive"), // gcc and C++
-            case SWITCH: //("switch", "keyword-directive"),
                 newEntry.setIndent(prevIndent + statementIndent);
+                newEntry.setSelfIndent(prevIndent);
+                break;
+            case SWITCH: //("switch", "keyword-directive"),
+                newEntry.setIndent(prevIndent + switchIndent);
                 newEntry.setSelfIndent(prevIndent);
                 break;
             case LBRACE:
@@ -153,17 +163,17 @@ class BracesStack {
                 if (kind != null) {
                     switch (kind) {
                         case SWITCH: //("switch", "keyword-directive"),
-                            if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
                                 if (codeStyle.indentCasesFromSwitch()) {
                                     newEntry.setIndent(prevIndent + codeStyle.indentSize());
                                     newEntry.setSelfIndent(prevIndent);
                                     break;
                                 }
-                                newEntry.setIndent(prevIndent+statementIndent);
+                                newEntry.setIndent(prevIndent+switchIndent);
                                 newEntry.setSelfIndent(prevIndent);
                             } else {
                                 if (codeStyle.indentCasesFromSwitch()) {
-                                    newEntry.setIndent(prevIndent + statementIndent);
+                                    newEntry.setIndent(prevIndent + switchIndent);
                                     newEntry.setSelfIndent(prevSelfIndent);
                                     break;
                                 }
@@ -223,15 +233,15 @@ class BracesStack {
                     newEntry.setSelfIndent(prevIndent);
                 } else {
                     if (prevEntry != null && prevEntry.getImportantKind() == SWITCH) {
-                        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
-                            newEntry.setIndent(prevIndent + statementIndent);
+                        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
+                            newEntry.setIndent(prevIndent + switchIndent);
                             newEntry.setSelfIndent(prevIndent);
                         } else {
                             if (codeStyle.indentCasesFromSwitch()) {
-                                newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + statementIndent);
-                                newEntry.setSelfIndent(prevSelfIndent + statementIndent);
+                                newEntry.setIndent(prevSelfIndent + codeStyle.indentSize() + switchIndent);
+                                newEntry.setSelfIndent(prevSelfIndent + switchIndent);
                             } else {
-                                newEntry.setIndent(prevSelfIndent + statementIndent);
+                                newEntry.setIndent(prevSelfIndent + switchIndent);
                                 newEntry.setSelfIndent(prevSelfIndent);
                             }
                         }
@@ -369,9 +379,16 @@ class BracesStack {
                     }
                     break;
                 }
-                case ELSE: //("else", "keyword-directive"),
                 case TRY: //("try", "keyword-directive"), // C++
                 case CATCH: //("catch", "keyword-directive"), //C++
+                    if (next != null && next.id() == CATCH) {
+                        if (i > 0) {
+                            stack.setSize(i);
+                            return;
+                        }
+                    }
+                    break;
+                case ELSE: //("else", "keyword-directive"),
                 case SWITCH: //("switch", "keyword-directive"),
                 case FOR: //("for", "keyword-directive"),
                 case ASM: //("asm", "keyword-directive"), // gcc and C++

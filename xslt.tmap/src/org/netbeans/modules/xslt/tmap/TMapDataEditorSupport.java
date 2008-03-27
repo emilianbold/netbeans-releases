@@ -65,6 +65,8 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
+import org.openide.cookies.SaveCookie;
+import org.openide.util.UserCancelException;
 
 /**
  * @author Vitaly Bychkov
@@ -304,6 +306,31 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
     }
     
     /*
+     * Update presence of SaveCookie on first keystroke.
+     */
+    @Override
+    protected boolean notifyModified() {
+        boolean notify = super.notifyModified();
+        if (!notify) {
+            return false;
+        }
+        
+        TMapDataObject dObj = getEnv().getTMapDataObject();
+        if (dObj.getCookie(SaveCookie.class) == null) {
+            dObj.addSaveCookie(new SaveCookie() {
+                public void save() throws java.io.IOException {
+                    try {
+                        saveDocument();
+                    } catch(UserCancelException e) {
+                        //just ignore
+                    }
+                }
+            });
+        }
+        return true;
+    }
+
+    /*
      * This method is redefined for marking big TopCompenent as modified (
      * asterik (*) needs to be appended to name of bpel file ). Without this
      * overriding file will be marked as modified only when source multiview is
@@ -388,14 +415,14 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         super.initializeCloneableEditor(editor);
         // Force the title to update so the * left over from when the
         // modified data object was discarded is removed from the title.
-        if (!getEnv().getTMapDataObject().isModified()) {
+//        if (!getEnv().getTMapDataObject().isModified()) {
             // Update later to avoid an infinite loop.
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     updateTitles();
                 }
             });
-        }
+//        }
 
         // TODO a
 //        /*

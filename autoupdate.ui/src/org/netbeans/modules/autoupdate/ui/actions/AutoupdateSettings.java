@@ -45,10 +45,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.filesystems.FileObject;
@@ -74,6 +76,11 @@ public class AutoupdateSettings {
     public static final int EVERY_MONTH = 4;
     public static final int NEVER = 5;
     public static final int CUSTOM_CHECK_INTERVAL = 6;
+    private static final String EXPIRATION_RECORD = "expiration";
+    private static final String CURRENT_VERSION = "6.1";
+    private static final String [] SUPPORTED_VERSIONS = {
+        "6.1"
+    };
     
     private static final String [][] KNOWN = {
         {"EVERY_STARTUP", "0"},
@@ -90,6 +97,7 @@ public class AutoupdateSettings {
     }
     
     public static String getIdeIdentity () {
+        expirationCheck ();
         if (tempIdeIdentity instanceof String) {
             return tempIdeIdentity;
         }
@@ -226,5 +234,22 @@ public class AutoupdateSettings {
         }
         return period;
     }
+    
+    private static void expirationCheck () {
+        Preferences p = getPreferences ();
+        String exp = p.get (EXPIRATION_RECORD, null); 
+        if (exp == null || ! Arrays.asList (SUPPORTED_VERSIONS).contains (exp)) {
+            try {
+                p.removeNode ();
+                err.log (Level.FINE, "Don't import preferences for version " + exp);
+            } catch (BackingStoreException ex) {
+                err.log (Level.INFO, ex.getLocalizedMessage (), ex);
+            }
+        } else {
+            err.log (Level.FINEST, "Import preferences for version " + exp);
+        }
+        getPreferences ().put (EXPIRATION_RECORD, CURRENT_VERSION);
+    }
+
     
 }

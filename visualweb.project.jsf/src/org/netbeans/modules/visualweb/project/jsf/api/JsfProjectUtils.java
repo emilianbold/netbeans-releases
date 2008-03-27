@@ -129,6 +129,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -1946,4 +1947,14 @@ public class JsfProjectUtils {
         return LibraryManager.getDefault();
     }
     
+    public static String[] getJ2eeClasspathEntries(Project project) {
+        WebPropertyEvaluator webPropertyEvaluator = (WebPropertyEvaluator)project.getLookup().lookup(WebPropertyEvaluator.class);
+        if(webPropertyEvaluator != null) {
+            String property = webPropertyEvaluator.evaluator().getProperty("j2ee.platform.classpath");    //NOI18N
+            if (property != null) {
+                return PropertyUtils.tokenizePath(property);
+            }
+        }
+        return new String[0];
+    }
 }

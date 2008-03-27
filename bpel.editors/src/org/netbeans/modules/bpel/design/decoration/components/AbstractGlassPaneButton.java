@@ -40,7 +40,11 @@ import org.netbeans.modules.bpel.design.OverlayPanel;
 /**
  * @author aa160298
  */
-public class AbstractGlassPaneButton extends JToggleButton implements ActionListener, HierarchyListener, DecorationComponent {
+public class AbstractGlassPaneButton extends JToggleButton implements 
+        ActionListener, 
+        HierarchyListener, 
+        DecorationComponent 
+{
     
     public AbstractGlassPaneButton(Icon icon) {
       this(icon, null, false, null);
@@ -60,7 +64,13 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         setFocusable(false);
         
         updatePreferredSize();
+        
+        addHierarchyListener(this);
         myGlassPane.addHierarchyListener(this);
+    }
+
+    public void updateText(String text) {
+      myGlassPane.updateText(text);
     }
 
     protected void updatePreferredSize() {
@@ -87,6 +97,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         getDesignView().getOverlayView().add(myGlassPane);
         updateGlassPaneBounds();
         myGlassPane.scrollRectToVisible(new Rectangle(0, 0, myGlassPane.getWidth(), myGlassPane.getHeight()));
+        myGlassPane.requestFocus();
     }
     
     protected void addTitle(Icon icon, String text, Color color) {
@@ -124,11 +135,13 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
     
     private void updateGlassPaneBounds() {
         DesignView designView = getDesignView();
-        Point coords = SwingUtilities.convertPoint(this, getWidth() + 1, getHeight() / 2, designView);
+        OverlayPanel overlayPanel = designView.getOverlayView();
+        Point coords = SwingUtilities.convertPoint(this, getWidth() + 1, 
+                getHeight() / 2, overlayPanel);
         Dimension size = myGlassPane.getPreferredSize();
         myGlassPane.setBounds(coords.x, coords.y, size.width, size.height);
-        designView.revalidate();
-        designView.repaint();
+        overlayPanel.revalidate();
+        overlayPanel.repaint();
     }
     
     public void hierarchyChanged(HierarchyEvent e) {

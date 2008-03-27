@@ -55,6 +55,41 @@ public class ContextDetector extends ExtendedTokenSequence {
         this.braces = braces;
     }
 
+    /*package local*/ boolean isQuestionColumn(){
+        int index = index();
+        try {
+            int depth = 0;
+            while(movePrevious()) {
+                if (braces.lastStatementStart >= index()){
+                    return false;
+                }
+                switch (token().id()) {
+                    case RPAREN:
+                        depth++;
+                        break;
+                    case LPAREN:
+                        depth--;
+                        if (depth < 0) {
+                            return false;
+                        }
+                        break;
+                    case QUESTION:
+                        if (depth == 0) {
+                            return true;
+                        }
+                    case LBRACE:
+                    case RBRACE:
+                    case SEMICOLON:
+                        return false;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
     /*package local*/ boolean isLikeTemplate(Token<CppTokenId> current){
         int index = index();
         try {
@@ -296,6 +331,65 @@ public class ContextDetector extends ExtendedTokenSequence {
                         return OperatorKind.SEPARATOR;
                 }
             }
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                switch(previous.id()){
+                    case EQ: //("=", "operator"),
+                    case PLUSEQ: //("+=", "operator"),
+                    case MINUSEQ: //("-=", "operator"),
+                    case STAREQ: //("*=", "operator"),
+                    case SLASHEQ: //("/=", "operator"),
+                    case AMPEQ: //("&=", "operator"),
+                    case BAREQ: //("|=", "operator"),
+                    case CARETEQ: //("^=", "operator"),
+                    case PERCENTEQ: //("%=", "operator"),
+                    case LTLTEQ: //("<<=", "operator"),
+                    case GTGTEQ: //(">>=", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case LT: //("<", "operator"),
+                    case EQEQ: //("==", "operator"),
+                    case LTEQ: //("<=", "operator"),
+                    case GTEQ: //(">=", "operator"),
+                    case NOTEQ: //("!=","operator"),
+                    case AMPAMP: //("&&", "operator"),
+                    case BARBAR: //("||", "operator"),
+                    case SLASH: //("/", "operator"),
+                    case BAR: //("|", "operator"),
+                    case PERCENT: //("%", "operator"),
+                    case LTLT: //("<<", "operator"),
+                    case GTGT: //(">>", "operator"),
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    case GT: //(">", "operator"),
+                        switch(current.id()){
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                                return OperatorKind.SEPARATOR;
+                        }
+                        break;
+                }
+            }
             if (NUMBER_CATEGORY.equals(prevCategory) ||
                 LITERAL_CATEGORY.equals(prevCategory) ||
                 CHAR_CATEGORY.equals(prevCategory) ||
@@ -346,7 +440,22 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
             if (previous.id() == RPAREN || previous.id() == RBRACKET){
                 if (next.id() == IDENTIFIER) {
-                     return OperatorKind.BINARY;
+                    if (isPreviousStatementParen()) {
+                        switch(current.id()){
+                            case STAR:
+                            case AMP:
+                                return OperatorKind.TYPE_MODIFIER;
+                            case PLUS:
+                            case MINUS:
+                                return OperatorKind.UNARY;
+                            case GT:
+                            case LT:
+                            default:
+                                return OperatorKind.SEPARATOR;
+                        }
+                    } else {
+                        return OperatorKind.BINARY;
+                    }
                 }
             }
             if (previous.id() == IDENTIFIER){
@@ -390,6 +499,8 @@ public class ContextDetector extends ExtendedTokenSequence {
                         case AMP:
                             if (braces.isDeclarationLevel()) {
                                 return OperatorKind.TYPE_MODIFIER;
+                            } else if (isLikeForDeclaration()) {
+                                return OperatorKind.TYPE_MODIFIER;
                             } else if (isLikeExpession()) {
                                 return OperatorKind.BINARY;
                             }
@@ -413,6 +524,112 @@ public class ContextDetector extends ExtendedTokenSequence {
             }
         }
         return OperatorKind.SEPARATOR;
+    }
+    
+    private boolean isPreviousStatementParen(){
+        int index = index();
+        try {
+            while(movePrevious()){
+                switch (token().id()) {
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        return isStatementParen();
+                }
+            }
+            return true;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
+    private boolean isLikeForDeclaration(){
+        StackEntry entry = braces.peek();
+        if (entry == null || entry.getKind() != FOR){
+            return false;
+        }
+        int index = index();
+        int level = 1;
+        try {
+            while (movePrevious()) {
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        break;
+                    case FOR:
+                        if (level == 0) {
+                            return true;
+                        }
+                        return false;
+                    case SEMICOLON:
+                    case EQ:
+                        return false;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        } finally {
+            moveIndex(index);
+            moveNext();
+        }
+    }
+    
+    private boolean isStatementParen(){
+        if (token().id() == RPAREN){
+            int level = 1;
+            while(movePrevious()){
+                switch (token().id()) {
+                    case RPAREN:
+                        level++;
+                        break;
+                    case LPAREN:
+                        level--;
+                        if (level == 0){
+                            Token<CppTokenId> previous = lookPreviousImportant();
+                            if (previous != null) {
+                                switch (previous.id()) {
+                                    case FOR:
+                                    case IF:
+                                    case WHILE:
+                                    case CATCH:
+                                    case SWITCH:
+                                        return true;
+                                    default:
+                                        while(movePrevious()){
+                                            switch (token().id()) {
+                                                case WHITESPACE:
+                                                case ESCAPED_WHITESPACE:
+                                                case NEW_LINE:
+                                                case LINE_COMMENT:
+                                                case BLOCK_COMMENT:
+                                                case DOXYGEN_COMMENT:
+                                                case PREPROCESSOR_DIRECTIVE:
+                                                    break;
+                                                default:
+                                                    return index() == braces.lastStatementStart;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            return false;
+                        }
+                        break;
+                }
+            }
+        }
+        return false;
     }
     
     private boolean isLikeExpession(){

@@ -42,19 +42,22 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,10 +66,19 @@ import org.openide.filesystems.FileObject;
  * @author nam
  */
 public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
-
+    
+    private JavaSource loginJS;
+    private FileObject loginFile;
+    private JavaSource callbackJS;
+    private FileObject callbackFile;
+    
     public JaxRsResourceClassCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        super(targetComponent, targetFile, new WadlSaasBean(m, true));
+        getBean().setOutputWrapperName(
+                getBean().getSaasName()+
+                AbstractGenerator.CONVERTER_SUFFIX);
+        getBean().setName(getBean().getSaasName()+getBean().getName());
     }
     
     @Override
@@ -75,25 +87,42 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
 
         preGenerate();
         
-        createAuthenticatorClass();
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
+        
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
         
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
    
         //Modify Authenticator class
-        modifyAuthenticationClass(); 
-
-        FileObject outputWrapperFO = generateJaxbOutputWrapper();
-        if (outputWrapperFO != null) {
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
+    
+        FileObject outputWrapperFO = null;
+        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+        if(!repTypesFromWadl.isEmpty()) {
+            /*outputWrapperFO = SourceGroupSupport.getFileObjectFromClassName(
+                    getBean().getGroupName()+"."+getBean().getDisplayName()+
+                    "."+repTypesFromWadl.get(0).getLocalPart(), getProject());*/
+            getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
+            getBean().setOutputWrapperPackageName(getBean().getGroupName()+"."+getBean().getDisplayName());
+            String uriTemplate = Util.lowerFirstChar(getBean().getName());
+            if(uriTemplate.endsWith(AbstractGenerator.RESOURCE_SUFFIX))
+                uriTemplate = uriTemplate.substring(0, uriTemplate.length()-8);
+            getBean().setUriTemplate(uriTemplate);
+        } else {
+            outputWrapperFO = generateJaxbOutputWrapper();
             setJaxbOutputWrapperSource(JavaSource.forFileObject(outputWrapperFO));
         }
         generateSaasServiceResourceClass();
         addSubresourceLocator();
-        addImportsToWrapperResource();
-        FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
+        FileObject refConverterFO = getOrCreateGenericRefConverter().
+                getFileObjects().iterator().next();
         modifyTargetConverter();
-        FileObject[] result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO, outputWrapperFO};
+        FileObject[] result = new FileObject[]{getTargetFile(), 
+            getWrapperResourceFile(), refConverterFO, outputWrapperFO};
         if (outputWrapperFO == null) {
             result = new FileObject[]{getTargetFile(), getWrapperResourceFile(), refConverterFO};
         }
@@ -102,32 +131,60 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
         finishProgressReporting();
 
         return new HashSet<FileObject>(Arrays.asList(result));
+    }    
+    
+    @Override
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getAuthenticatorMethodParametersForWeb();
+        else
+            return super.getAuthenticatorMethodParameters();
     }
-
+    
+    @Override
+    protected List<ParameterInfo> getServiceMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getServiceMethodParametersForWeb(getBean());
+        else
+            return super.getServiceMethodParameters();
+    }
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
-        String paramDecl = "";
-        String converterName = getConverterName();
+        String indent = "        ";
+        String indent2 = "             ";
         
-        //Evaluate query parameters
-        List<ParameterInfo> filterParams = getBean().filterParametersByAuth(bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-        paramUse += getHeaderOrParameterUsage(filterParams);
-        paramDecl += getHeaderOrParameterDeclaration(filterParams);
-
-        if(paramUse.endsWith(", "))
-            paramUse = paramUse.substring(0, paramUse.length()-2);
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        filterParams = super.getServiceMethodParameters();
         
-        String methodBody = "";
-        methodBody += "        " + converterName + " converter = new " + converterName + "();\n";
-        methodBody += "        try {\n";
-        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "             converter.setString(result);\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             throw new WebApplicationException(ex);\n";
-        methodBody += "        }\n";
-        methodBody += "        return converter;\n";
-        
+        String resultClass = getBean().getOutputWrapperName();
+            String methodBody = "";
+            methodBody += indent+resultClass+" resultObj = null;\n";
+            methodBody += indent+"try {\n";
+            methodBody += indent2+REST_CONNECTION_PACKAGE+"."+REST_RESPONSE+" result = " + 
+                    getBean().getSaasServiceName() + "." + 
+                    getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        if(getBean().getHttpMethod() == HttpMethodType.GET) {
+            if(getBean().canGenerateJAXBUnmarshaller()) {
+                methodBody += indent2+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
+            } else {
+                methodBody += indent2+"resultObj = new "+resultClass+"();\n";
+                methodBody += indent2+"resultObj.setString(result.getDataAsString());\n";
+            }
+        } else {
+            methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result);\n";
+        }
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"throw new WebApplicationException(ex);\n";
+        methodBody += indent+"}\n";
+        if(getBean().getHttpMethod() == HttpMethodType.GET)
+            methodBody += "        return resultObj;\n";
+            
         return methodBody;
     }
     
@@ -137,12 +194,15 @@ public class JaxRsResourceClassCodeGenerator extends JaxRsCodeGenerator {
     
     @Override
     protected void addImportsToWrapperResource() throws IOException {
-        ModificationResult result = getWrapperResourceSource().runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] {getSaasServicePackageName()+"."+getSaasServiceName()});
-            }
-        });
-        result.commit();
+        List<String> imports = new ArrayList<String>();
+        imports.add(getBean().getSaasServicePackageName()+"."+getBean().getSaasServiceName());
+        imports.add(REST_CONNECTION_PACKAGE+"."+REST_RESPONSE);
+        imports.add(InputStream.class.getName());
+        Util.addImportsToSource(getWrapperResourceSource(), imports);
+    }
+
+    @Override
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
     }
 }

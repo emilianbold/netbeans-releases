@@ -40,14 +40,13 @@
 package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextImpl;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -56,25 +55,21 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 /**
  * Copied from CND ToolTipAnnotation
  * @author eu155513
  */
-public class DisToolTipAnnotation extends Annotation {
+public class DisToolTipAnnotation extends Annotation implements Runnable {
+    
+    private Part lp;
+    private EditorCookie ec;
     
     public String getShortDescription() {
         Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
-            return null;
-        }
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (currentEngine == null) {
-            return null;
-        }
-        GdbDebugger debugger = currentEngine.lookupFirst(null, GdbDebugger.class);
-        if (debugger == null) {
             return null;
         }
         Part lp = (Part) getAttachedAnnotatable();
@@ -90,26 +85,45 @@ public class DisToolTipAnnotation extends Annotation {
         if (ec == null) {
             return null;
         }
-
-        try {
-            StyledDocument doc = ec.openDocument();
-            JEditorPane ep = getCurrentEditor();
-            if (ep == null) {
-                return null;
-            }
-            String register = getRegister(doc, ep, NbDocument.findLineOffset(doc,
-                    lp.getLine().getLineNumber()) + lp.getColumn());
-            if (register == null) {
-                return null;
-            }
-            RegisterValuesProvider.RegisterValue value = dis.getRegisterValues().get(register);
-            if (value != null) {
-                return value.getValue();
-            }
-        } catch (IOException e) {
-            // do nothing
-        }
+        
+        this.lp = lp;
+        this.ec = ec;
+        RequestProcessor.getDefault ().post (this);
         return null;
+    }
+    
+    public void run() {
+        if (lp == null || ec == null) {
+            return;
+        }
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return;
+        }                    
+        JEditorPane ep = getCurrentEditor();
+        if (ep == null) {
+            return;
+        }
+        
+        String register = getRegister(doc, ep, NbDocument.findLineOffset(doc, 
+                lp.getLine().getLineNumber()) + lp.getColumn());
+        
+        if (register == null) {
+            return;
+        }
+        
+        String toolTipText = null;
+        
+        Collection<RegisterValue> regValues = (Collection<RegisterValue>)GdbContext.getInstance().getProperty(GdbContext.PROP_REGISTERS);
+        for (RegisterValue value : regValues) {
+            if (value.getName().equals(register)) {
+                toolTipText = value.getValue();
+            }
+        }
+        
+        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }
 
     public String getAnnotationType () {
@@ -167,13 +181,13 @@ public class DisToolTipAnnotation extends Annotation {
         EditorCookie e = getCurrentEditorCookie();
         if (e == null) {
             return null;
-        }
+                    }
         JEditorPane[] op = EditorContextImpl.getOpenedPanes(e);
         if ((op == null) || (op.length < 1)) {
             return null;
-        }
+            }
         return op[0];
-    }
+        }
     
     /** 
      * Returns current editor component instance.

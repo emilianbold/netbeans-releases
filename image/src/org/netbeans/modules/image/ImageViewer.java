@@ -530,7 +530,12 @@ public class ImageViewer extends CloneableTopComponent {
     private boolean discard () {
         return storedObject == null;
     }
-    
+
+    protected boolean closeLast() {
+        ((ImageOpenSupport)storedObject.getCookie(ImageOpenSupport.class)).lastClosed();
+        return true;
+    }
+
     /** Serialize this top component. Serializes its data object in addition
      * to common superclass behaviour.
      * @param out the stream to serialize to

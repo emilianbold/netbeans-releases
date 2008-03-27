@@ -247,6 +247,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         
         addNodeListener(new NodeAdapter() {
         
+            @Override
             public void nodeDestroyed(NodeEvent ev) {
                 if (wsdlmodel != null && wsdlmodel.get() != null) {
                     //remove the xml element listener when node is destroyed

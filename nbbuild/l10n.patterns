@@ -1,0 +1,23 @@
+**/*.jar:**/Bundle*.properties
+**/*.jar:**/*.gif
+**/*.jar:**/*.html
+**/*.jar:**/*.png 
+**/*.jar:**/*.css
+**/*.jar:**/docs/**/*.gif
+**/*.jar:**/docs/**/*.hs
+**/*.jar:**/docs/**/*.html
+**/*.jar:**/docs/**/*.jhm
+**/*.jar:**/docs/**/*.jpeg
+**/*.jar:**/docs/**/*.jpg
+**/*.jar:**/docs/**/*.png 
+**/*.jar:**/docs/**/*.toc
+**/*.jar:**/docs/**/*.xml
+**/*.jar:**/*.url
+exclude **/webui-jsf.jar:
+exclude **/webui-jsf_*.jar:
+exclude **/webui-jsf-suntheme*.jar:
+exclude **/Info/info.xml:
+exclude **/lucene-core-*.jar:
+exclude **/javac-api-nb-*.jar:
+exclude **/javac-impl-nb-*.jar:
+exclude php1/**:

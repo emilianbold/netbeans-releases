@@ -110,9 +110,9 @@ import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
-import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
+import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
@@ -160,6 +160,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ObjectTranslation           threadsTranslation;
     private ObjectTranslation           localsTranslation;
     private ExpressionPool              expressionPool;
+    private ThreadsCache                threadsCache;
 
     private StackFrame      altCSF = null;  //PATCH 48174
 
@@ -964,6 +965,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //            }
 //        }
         
+        synchronized (this) {
+            if (threadsCache != null) {
+                threadsCache.setVirtualMachine(vm);
+            }
+        }
+        
         setState (STATE_RUNNING);
         synchronized (this) {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
@@ -1259,18 +1266,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    public JPDAThreadGroup[] getTopLevelThreadGroups() {
-        VirtualMachine vm;
-        synchronized (this) {
-            vm = virtualMachine;
+    public synchronized ThreadsCache getThreadsCache() {
+        if (threadsCache == null) {
+            threadsCache = new ThreadsCache(this);
         }
-        if (vm == null) {
+        return threadsCache;
+    }
+    
+    public JPDAThreadGroup[] getTopLevelThreadGroups() {
+        ThreadsCache tc = getThreadsCache();
+        if (tc == null) {
             return new JPDAThreadGroup[0];
         }
-        List groupList;
-        synchronized (LOCK) {
-            groupList = vm.topLevelThreadGroups();
-        }
+        List<ThreadGroupReference> groupList = tc.getTopLevelThreadGroups();
         JPDAThreadGroup[] groups = new JPDAThreadGroup[groupList.size()];
         for (int i = 0; i < groups.length; i++) {
             groups[i] = getThreadGroup((ThreadGroupReference) groupList.get(i));

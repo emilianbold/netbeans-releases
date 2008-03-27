@@ -44,11 +44,11 @@ public class MessageIcon2D extends Icon2D {
     private static final Shape SHAPE;
     
     static {
-        GeneralPath gp = new GeneralPath(new Rectangle2D.Float(-7, -5, 14, 10));
-        gp.moveTo(-7, -5);
-        gp.lineTo(0, 1);
-        gp.lineTo(7, -5);
+        GeneralPath p = new GeneralPath(new Rectangle2D.Float(-7, -4, 14, 8));
+        p.moveTo(-6.5f, -3.5f);
+        p.lineTo(0, 1);
+        p.lineTo(6.5f, -3.5f);
         
-        SHAPE = gp;
+        SHAPE = p;
     }
 }

@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -92,12 +94,24 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
     private String lastChangedproperty;
     private Map<CodeStyle.Language, String> defaultStyles = new HashMap<CodeStyle.Language, String>();
     private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences = new HashMap<CodeStyle.Language, Map<String, PreviewPreferences>>();
-    private PropertySheet holder = new PropertySheet();
+    private PropertySheet holder;
 
 
     EditorPropertySheet(EditorOptionsPanelController topControler) {
         this.topControler = topControler;
         initComponents();
+
+        holder = new PropertySheet();
+        holder.setOpaque(false);
+        holder.setDescriptionAreaVisible(false);
+        GridBagConstraints fillConstraints = new GridBagConstraints();
+        fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        fillConstraints.weightx = 1.0;
+        fillConstraints.weighty = 1.0;
+        categoryPanel.add(holder, fillConstraints);
+        
         manageStyles.setMinimumSize(new Dimension(126,26));
         setName("Tab_Name"); // NOI18N (used as a bundle key)
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
@@ -171,6 +185,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         styleComboBox.setSelectedIndex(index);
         EntryWrapper entry = (EntryWrapper)styleComboBox.getSelectedItem();
         initSheets(entry.preferences);
+        currentProfile = entry.name;
+        defaultStyles.put(currentLanguage, currentProfile);
         styleComboBox.addActionListener(this);
         repaintPreview();
     }
@@ -195,6 +211,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentNamespace));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.indentCasesFromSwitch));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.absoluteLabelIndent));
         sheet.put(set);
         
 	set = new Sheet.Set();
@@ -204,6 +221,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceNamespace));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceClass));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
+	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceSwitch));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
         
@@ -214,12 +232,17 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineMethodParams));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineCallArgs));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineArrayInit));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineFor));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineIfCondition));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineWhileCondition));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.alignMultilineParen));
         sheet.put(set);
 
         set = new Sheet.Set();
 	set.setName("NewLine"); // NOI18N
 	set.setDisplayName(getString("LBL_NewLine")); // NOI18N
 	set.setShortDescription(getString("HINT_NewLine")); // NOI18N
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineFunctionDefinitionName));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineCatch));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineElse));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.newLineWhile));
@@ -245,6 +268,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeIfParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeSwitchParen));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeWhileParen));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.spaceBeforeKeywordParen));
         sheet.put(set);
         
         set = new Sheet.Set();
@@ -323,22 +347,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.addLeadingStarInComment));
         sheet.put(set);
 
-        categoryPanel.setVisible(false);
-        categoryPanel.removeAll();
-        holder.removeNotify();
+        if (TRACE && lastSheetPreferences != null) {
+            //Because NPE in PropertySheet in 586 line: Arrays.asList(nodes)
+            Logger.getLogger(PropertySheet.class.getName()).setLevel(Level.FINE);
+        }
         DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
         holder.setNodes(dummyNodes);
-        GridBagConstraints fillConstraints = new GridBagConstraints();
-        fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        fillConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        fillConstraints.weightx = 1.0;
-        fillConstraints.weighty = 1.0;
-        categoryPanel.add(holder, fillConstraints);
-        categoryPanel.validate();
-        categoryPanel.repaint();
-        categoryPanel.setVisible(true);
     
         preferences.addPreferenceChangeListener(this);
         lastSheetPreferences = preferences;
@@ -399,11 +414,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
     
     void cancel() {
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
 
     // Change in the combo
@@ -586,6 +603,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jLabel2, gridBagConstraints);
 
+        languagesComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
+        languagesComboBox.setPreferredSize(new java.awt.Dimension(100, 22));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -595,8 +614,10 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(300);
+        jSplitPane1.setOpaque(false);
 
         oprionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        oprionsPanel.setOpaque(false);
         oprionsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(styleComboBox);
@@ -614,12 +635,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         oprionsPanel.add(styleComboBox, gridBagConstraints);
 
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        categoryPanel.setOpaque(false);
         categoryPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -640,13 +662,14 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
         oprionsPanel.add(manageStyles, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(oprionsPanel);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        previewPanel.setOpaque(false);
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setViewportView(previewPane);

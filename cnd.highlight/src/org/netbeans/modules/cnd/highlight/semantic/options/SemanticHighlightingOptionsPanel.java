@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.highlight.semantic.options;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,6 +60,9 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         if (!SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
             cbClassFields.setVisible(false);
             cbFunctionNames.setVisible(false);
+        }
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
         }
     }
 
@@ -133,8 +137,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbSysMacro = new javax.swing.JCheckBox();
 
         cbKeepMarks.setText(getString("KeepMarks"));
+        cbKeepMarks.setOpaque(false);
 
         cbMarkOccurrences.setText(getString("EnableMarkOccurrences"));
+        cbMarkOccurrences.setOpaque(false);
         cbMarkOccurrences.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbMarkOccurrencesActionPerformed(evt);
@@ -142,6 +148,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         });
 
         cbMacros.setText(getString("EnableMacros"));
+        cbMacros.setOpaque(false);
         cbMacros.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbMacrosActionPerformed(evt);
@@ -149,10 +156,13 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         });
 
         cbClassFields.setText(getString("ShowClassFields"));
+        cbClassFields.setOpaque(false);
 
         cbFunctionNames.setText(getString("ShowFunctionNames"));
+        cbFunctionNames.setOpaque(false);
 
         cbSysMacro.setText(getString("DifferSystemMacros"));
+        cbSysMacro.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

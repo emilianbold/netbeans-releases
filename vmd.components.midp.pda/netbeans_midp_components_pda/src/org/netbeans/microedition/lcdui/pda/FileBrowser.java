@@ -291,7 +291,7 @@ public class FileBrowser extends List implements CommandListener {
     }
 
     private void doDismiss() {
-        selectedURL = "file:///" + currDirName + SEP_STR + currFile;
+        selectedURL = "file:///" + currDirName + currFile;
         CommandListener commandListener = getCommandListener();
         if (commandListener != null) {
             commandListener.commandAction(SELECT_FILE_COMMAND, this);

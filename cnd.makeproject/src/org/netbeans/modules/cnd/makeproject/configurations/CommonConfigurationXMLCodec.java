@@ -70,6 +70,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 
 /**
  * Change History:
+ * V45 - 01.12-08
+ *  Encoding
+ * V44 - 3.08.08 - NB 6.1
+ *   ???
  * V43 - 3.06.08 - NB 6.1
  *   Storing compiler flavor as name|flavor
  * V42 - 2.26.08 - NB 6.1
@@ -108,7 +112,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 44;
+    public final static int CURRENT_VERSION = 45;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -126,6 +130,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
@@ -244,6 +249,7 @@ public abstract class CommonConfigurationXMLCodec
 	    if (publicLocation) {
 		writeLogicalFolders(xes);
                 writeSourceRoots(xes);
+                writeSourceEncoding(xes);
 	    }
 	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
 	    if (!publicLocation) {
@@ -381,6 +387,10 @@ public abstract class CommonConfigurationXMLCodec
             }
             xes.elementClose(SOURCE_ROOT_LIST_ELEMENT);
         }
+    }
+    
+    private void writeSourceEncoding(XMLEncoderStream xes) {
+        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
     }
     
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {

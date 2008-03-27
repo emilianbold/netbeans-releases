@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.mysql.Installation.Command;
 import org.openide.util.lookup.Lookups;
 
@@ -55,6 +57,9 @@ import org.openide.util.lookup.Lookups;
  * @author David Van Couvering
  */
 public class InstallationSupport {    
+    private static Logger LOGGER = 
+            Logger.getLogger(InstallationSupport.class.getName());
+    
     private static ArrayList<Installation> INSTALLATIONS = null;
     
     private static final String INSTALLATION_PROVIDER_PATH = 
@@ -94,7 +99,9 @@ public class InstallationSupport {
     /**
      * See if we can detect the paths to the various admin tools
      * 
-     * @return a valid installation if detected, null otherwise
+     * @return a valid installation if detected, null otherwise.  Returns the
+     *      first installation found, so if there are multiple installations
+     *      the other ones available will not be detected.
      */
     public static Installation detectInstallation() {
         List<Installation> installations = InstallationSupport.getInstallations();
@@ -102,43 +109,16 @@ public class InstallationSupport {
         for ( Iterator it = installations.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
             
-            if ( isInstalled(installation) ) {
+            LOGGER.log(Level.INFO, "Looking for MySQL installation " + 
+                    installation.getStartCommand()[0] + 
+                    installation.getStartCommand()[1]);
+            
+            if ( installation.isInstalled() ) {
+                LOGGER.log(Level.INFO, "Installation is installed");
                 return installation;
             }
         }
         
         return null;
-    }
-    
-    /**
-     * Given a path to a command, see if we can find an known installation
-     * that has that command. 
-     * 
-     * @param command The full path to the command
-     * @param cmdType The type of command
-     * @return An installation if found, null otherwise
-     */
-    public static Installation findInstallationByCommand(
-            String command, Command cmdType) {
-        for ( Installation installation : getInstallations() ) {
-            Installation adjustedInstallation = 
-                    installation.getInstallation(command, cmdType);
-            
-            if ( adjustedInstallation != null ) {
-                return adjustedInstallation;
-            }
-        }
-        
-        return null;
-    }
-    
-    private static boolean isInstalled(Installation installation) {
-        if ( ! installation.isValidOnCurrentOS()) {
-            return false;
-        }
-        
-        // Not much of an installation if it doesn't have a start command...
-        String[] startCommand = installation.getStartCommand();
-        return new File(startCommand[0]).exists();
-    }
+    }        
 }

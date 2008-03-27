@@ -48,13 +48,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 /**
  * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenServletFile extends WebPerformanceTestCase {
+public class OpenServletFile extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -95,9 +95,9 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
     
     public void testOpeningServletFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
        //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
@@ -107,10 +107,8 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
     
     public void testOpeningJavaFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
         fileName = "Main.java";
@@ -142,6 +140,8 @@ public class OpenServletFile extends WebPerformanceTestCase {
         }
         log("------------------------- after popup invocation ------------");
         try {
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        setJavaEditorCaretFilteringOn();
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {

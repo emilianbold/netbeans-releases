@@ -221,6 +221,9 @@ public class RulesManager {
 
     /** Public only for testing infrastructure. Others should not touch!! */
     public static final String[] KNOWN_STRICT_ERROR_KEYS = new String[] {
+        // NetBeans custom rule
+        "msg.trailing.comma", // NOI18N
+
         "msg.bad.octal.literal", // NOI18N
         "msg.reserved.keyword", // NOI18N
         "msg.dup.parms", // NOI18N

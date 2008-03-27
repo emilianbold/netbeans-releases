@@ -105,6 +105,23 @@ is the proper place.
 
     <changes>
 
+        <change id="Adding.thick.line.caret">
+            <summary>Adding Thick Line Caret</summary>
+            <version major="1" minor="23"/>
+            <date day="20" month="3" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+                <p>Adding several fields related to Thick Line Caret contributed
+                by barty (barth2k at yahoo dot com):</p>
+                <ul>
+                    <li><code>BaseCaret.THICK_LINE_CARET</code></li>
+                    <li><code>SettingsNames.THICK_CARET_WIDTH</code></li>
+                    <li><code>SettingsDefaults.defaultThickCaretWidth</code></li>
+                </ul>
+            </description>
+        </change>
+        
         <change id="DrawContext.and.DrawGraphics.enhanced">
             <summary>Adding methods to DrawContext and DrawGraphics</summary>
             <version major="1" minor="22"/>

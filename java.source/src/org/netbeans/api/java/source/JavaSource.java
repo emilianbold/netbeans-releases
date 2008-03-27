@@ -2009,7 +2009,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     private static void handleAddRequest (final Request nr) {
         assert nr != null;
-        requests.add (nr);
+        //Issue #102073 - removed running task which is readded is not performed
+        synchronized (INTERNAL_LOCK) {            
+            toRemove.remove(nr.task);
+            requests.add (nr);
+        }
         JavaSource.Request request = currentRequest.getTaskToCancel(nr.priority);
         try {
             if (request != null) {

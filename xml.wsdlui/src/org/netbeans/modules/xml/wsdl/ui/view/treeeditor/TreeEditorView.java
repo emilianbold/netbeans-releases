@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -62,6 +61,7 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -237,5 +237,24 @@ public class TreeEditorView extends JPanel
         explorerManager.removePropertyChangeListener(this);
         removeAll();
         btv = null;
+    }
+    
+    public void refreshNodes() {
+        Node rootNode = explorerManager.getRootContext();
+        DefinitionsNode dNode = rootNode.getLookup().lookup(DefinitionsNode.class);
+        refreshNodes(rootNode);
+    }
+    
+    private void refreshNodes(Node node) {
+        ExtensibilityElementNode rNode = node.getLookup().lookup(ExtensibilityElementNode.class);
+        if (rNode != null) {
+            rNode.refresh();
+        }
+        Children children = node.getChildren();
+        if (children != null) {
+            for (Node child : children.getNodes()) {
+                refreshNodes(child);
+            }
+        }
     }
 }

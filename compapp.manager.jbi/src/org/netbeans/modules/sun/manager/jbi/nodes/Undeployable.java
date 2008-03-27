@@ -48,14 +48,14 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
  */
 public interface Undeployable {
 
-    public boolean canUndeploy();
+    public boolean canUndeploy(boolean force);
     
     /**
      * Undeploy the undeployable.
      * 
      * @param force     whether forcefull undeployment is requested
      * 
-     * @return <code>true</code> if undeployment was successful; 
+     * @return <code>true</code> if undeployment is successful; 
      *         <code>false</code> if the undeployment is cancelled or failed.
      */
     public boolean undeploy(boolean force);

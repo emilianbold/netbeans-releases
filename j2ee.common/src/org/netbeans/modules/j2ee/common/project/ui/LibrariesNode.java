@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -332,11 +333,11 @@ public final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
-                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties)};
+                            helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, libUpdaterProperties, refHelper)};
                         break;
                 }
             }
@@ -402,7 +403,6 @@ public final class LibrariesNode extends AbstractNode {
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
-                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -708,20 +708,29 @@ public final class LibrariesNode extends AbstractNode {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
-                    if (fileFilter.accept(fl)) {
-                        URL u = LibrariesSupport.convertFilePathToURL(filePaths[i]);
-                        u = FileUtil.getArchiveRoot(u);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (fo != null && fileFilter.accept(fl)) {
+                        URI u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                        if (FileUtil.isArchiveFile(fo)) {
+                            u = LibrariesSupport.getArchiveRoot(u);
+                        } else if (!u.toString().endsWith("/")) { // NOI18N
+                            try {
+                                u = new URI(u.toString() + "/"); // NOI18N
+                            } catch (URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
                         Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                         ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
                         if (modifierImpl != null) {
                             //sort of hack, in this case we don't want the classpath modifier to perform
                             // the heuristics it normally does, as the user explitly defined how the jar/folder
                             //shall be referenced.
-                            SourceGroup[] grps = modifierImpl.getExtensibleSourceGroups();
-                            modifierImpl.addRoots(new URL[]{u}, grps[0], ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
+                            modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
                         } else {
                             //fallback to call that will perform heuristics and eventually override user preferences..
-                            ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
+                            ProjectClassPathModifier.addRoots(new URI[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                         }
                     }
                 } catch (IOException ioe) {
@@ -730,6 +739,16 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+    }
+    
+    private static SourceGroup findSourceGroup(FileObject fo, ClassPathModifier modifierImpl) {
+        SourceGroup[]sgs = modifierImpl.getExtensibleSourceGroups();
+        for (SourceGroup sg : sgs) {
+            if ((fo == sg.getRootFolder() || FileUtil.isParentOf(sg.getRootFolder(),fo)) && sg.contains(fo)) {
+                return sg;
+            }
+        }
+        throw new AssertionError("Cannot find source group for '"+fo+"' in "+Arrays.asList(sgs)); // NOI18N
     }
 
     private static class SimpleFileFilter extends FileFilter {

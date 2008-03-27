@@ -151,6 +151,11 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         return methodBody;
     }
     
+    
+    @Override
+    protected void addImportsToWrapperResource() throws IOException {
+    }
+    
     public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")

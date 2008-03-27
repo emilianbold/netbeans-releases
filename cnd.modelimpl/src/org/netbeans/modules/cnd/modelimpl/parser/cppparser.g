@@ -1468,7 +1468,8 @@ declaration_specifiers
                         {if (statementTrace>=1) 
                                 printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());
                         }                        
-                        LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 		
+                        LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
+		|	LITERAL_typename
 		|	LITERAL_friend	{fd=true;}
 		|	literal_stdcall
                 |      { LT(1).getText().equals(LITERAL___global_ext) == true}? ID 
@@ -1486,7 +1487,7 @@ declaration_specifiers
 
 
                         (options {greedy=true;} :type_attribute_specification)?
-		|	LITERAL_typename	{td=true;}	direct_declarator 
+//		|	LITERAL_typename	{td=true;}	direct_declarator 
                 |       literal_typeof LPAREN typeof_param RPAREN
                                  
 		)                
@@ -1769,7 +1770,7 @@ restrict_declarator
 		(ptr_operator)=> ptr_operator // AMPERSAND or STAR
 		restrict_declarator
 	|	
-		(LITERAL___restrict!)? direct_declarator
+		(literal_restrict!)? direct_declarator
         ;
 
 direct_declarator
@@ -2169,7 +2170,7 @@ type_name // aka type_id
  */
 abstract_declarator
 	:	//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-		ptr_operator (LITERAL___restrict!)? abstract_declarator 
+		ptr_operator (literal_restrict!)? abstract_declarator 
 	|	
 		LPAREN abstract_declarator RPAREN
 		(abstract_declarator_suffix)*
@@ -3423,3 +3424,6 @@ literal_volatile : LITERAL_volatile|LITERAL___volatile|LITERAL___volatile__;
 
 protected
 literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
+
+protected
+literal_restrict : LITERAL_restrict | LITERAL___restrict;

@@ -214,7 +214,7 @@ public final class JSPPaletteUtilities {
                             String methodName = executableElement.getSimpleName().toString();
                             if (executableElement.getModifiers().contains(Modifier.PUBLIC) && match(methodName, prefix)) {
                                 String propName = extractPropName(methodName, prefix);
-                                if (!propName.equals("")) {
+                                if (propName != null) {
                                     result.add(propName);
                                 }
                             }
@@ -223,15 +223,18 @@ public final class JSPPaletteUtilities {
                 }
 
                 private String extractPropName(String methodName, String[] prefix) {
-                    String res = "";
                     for (int i = 0; i < prefix.length; i++) {
                         String string = prefix[i];
                         if (methodName.startsWith(string)) {
-                            res = methodName.substring(string.length()).toLowerCase();
-                            break;
+                            // only first character to lower case
+                            String res = methodName.substring(string.length());
+                            if (res.length() > 0) {
+                                return Character.toLowerCase(res.charAt(0)) +
+                                        res.substring(1);
+                            }
                         }
                     }
-                    return res;
+                    return null;
                 }
 
                 private boolean match(String methodName, String[] prefix) {

@@ -330,7 +330,11 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         }
 
         public void fatalError(SAXParseException exception) throws SAXException {
-
+            if (exception.getMessage().contains("Invalid encoding")) { // NOI18N
+                // ok, go on, we want to continue parsing anyway
+                return;
+            }
+            
             // it may be caused by wrong user XML documents, notify only in debug mode
             // also see #16484 if the error message makes no sense
             Logger emgr = Logger.getLogger("org.netbeans.core.filesystems.XMLMIMEComponent"); // NOI18N

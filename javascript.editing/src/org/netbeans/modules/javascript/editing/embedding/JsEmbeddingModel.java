@@ -46,7 +46,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  *
@@ -58,6 +58,8 @@ public class JsEmbeddingModel implements EmbeddingModel {
     static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N 
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
     public JsEmbeddingModel() {
@@ -65,10 +67,11 @@ public class JsEmbeddingModel implements EmbeddingModel {
         sourceMimeTypes.add(TAG_MIME_TYPE);
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(HTML_MIME_TYPE);
+        sourceMimeTypes.add(PHP_MIME_TYPE);
     }
     
     public String getTargetMimeType() {
-        return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 
     public Set<String> getSourceMimeTypes() {

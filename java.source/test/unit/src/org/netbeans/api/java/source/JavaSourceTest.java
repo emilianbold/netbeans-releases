@@ -86,7 +86,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -175,7 +174,7 @@ public class JavaSourceTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite(JavaSourceTest.class);        
 //        TestSuite suite = new NbTestSuite ();
-//        suite.addTest(new JavaSourceTest("testIndexCancel"));
+//        suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         return suite;
     }
     
@@ -1357,7 +1356,7 @@ public class JavaSourceTest extends NbTestCase {
         }
     }
     
-    public void DISABLEDtestRegisterSameTask() throws Exception {        
+    public void testRegisterSameTask() throws Exception {        
         final FileObject testFile1 = createTestFile("Test1");
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();

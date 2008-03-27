@@ -155,3 +155,15 @@ org.netbeans.modules.ruby.rhtml.editor.RhtmlKit
 #org.netbeans.modules.web.core.syntax.JSPKit
 #org.netbeans.modules.xml.text.syntax.DTDKit
 #org.netbeans.modules.xml.text.syntax.XMLKit
+
+# Mobility
+org.netbeans.modules.mobility.project.security.KeyStoreRepository
+org.netbeans.modules.mobility.project.security.KeyStoreRepositoryWarmUp
+org.netbeans.modules.mobility.project.security.KeyStoreRepository$KeyStoreBean
+java.security.KeyStore
+java.security.KeyStoreSpi
+sun.security.provider.JavaKeyStore
+sun.security.provider.JavaKeyStore$JKS
+sun.security.provider.JavaKeyStore$KeyEntry
+org.netbeans.modules.mobility.project.security.KeyStoreRepository$KeyStoreBean$KeyAliasBean
+sun.security.provider.JavaKeyStore$TrustedCertEntry

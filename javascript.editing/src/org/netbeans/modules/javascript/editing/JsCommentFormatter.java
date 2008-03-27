@@ -56,10 +56,12 @@ public class JsCommentFormatter {
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
     private static final String THROWS_TAG = "@throws"; //NOI18N
+    private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     
     private final TokenSequence<? extends JsCommentTokenId> ts;
     private final StringBuilder summary;
     private String returnTag;
+    private String deprecation;
     private final List<String> params;
     private final List<String> exceptions;
     // flag to see if this is already formatted comment with all html stuff
@@ -76,6 +78,24 @@ public class JsCommentFormatter {
             sb.append(line);
             sb.append("\n"); // NOI18N
         }
+        // Determine whether this is preformatted MDC content or should get
+        // normal jsdoc rendering
+        boolean haveJsTag = false;
+        boolean haveMDC = false;
+        for (int i = 0, n = comments.size(); i < n; i++) {
+            String s = comments.get(i);
+            if (s.indexOf("MDC:Copyrights") != -1) { // NOI18N
+                haveMDC = true;
+                break; // We know that it must be preformatted
+            } else if (s.indexOf('@') != -1) {
+                haveJsTag = true;
+            }
+        }
+        if (haveMDC) {
+            formattedComment = true;
+        } else if (!haveJsTag) {
+            formattedComment = true;
+        }
         sb.deleteCharAt(sb.length() - 1);
         TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
         this.ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
@@ -87,17 +107,33 @@ public class JsCommentFormatter {
         
     }
 
-    public void setFormattedComment(boolean formattedComment) {
-        this.formattedComment = formattedComment;
-    }
-
     String toHtml() {
         StringBuilder sb = new StringBuilder();
         
         if (!formattedComment && summary.length() > 0) {
-            sb.append("<b>Summary</b><blockquote>").append(summary).append("</blockquote>"); //NOI18N
+            String summaryText = summary.toString().trim();
+            if (summaryText.length() > 0) {
+                sb.append("<b>Summary</b><blockquote>").append(summaryText).append("</blockquote>"); //NOI18N
+            }
         } else {
             sb.append(summary);
+        }
+
+        if (deprecation != null) {
+            boolean hasDescription = deprecation.trim().length() > 0;
+            sb.append("<b");
+            if (!hasDescription) {
+                sb.append(" style=\"background:#ffcccc\"");
+            }
+            sb.append(">Deprecated</b>");
+            sb.append("<blockquote");
+            if (hasDescription) {
+                sb.append(" style=\"background:#ffcccc\">");
+                sb.append(deprecation);
+            } else {
+                sb.append(">");
+            }
+            sb.append("</blockquote>"); //NOI18N
         }
         
         if (params.size() > 0) {
@@ -170,7 +206,8 @@ public class JsCommentFormatter {
             returnTag = tag.substring(RETURN_TAG.length()).trim();
         } else if (tag.startsWith(THROWS_TAG)) {
             exceptions.add(tag.substring(THROWS_TAG.length()).trim());
+        } else if (tag.startsWith(DEPRECATED_TAG)) {
+            deprecation = tag.substring(DEPRECATED_TAG.length()).trim();
         }
     }
-    
 }

@@ -93,9 +93,11 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
     }
     
     private boolean doHandleTransfer(final JTextComponent targetComponent) {
-        FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+        final FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
         Method m = method.getWadlMethod();
+        if(m == null)
+            Exceptions.printStackTrace(new IOException("Wadl method not found"));
         final String displayName = m.getName();
         
         targetFO = getTargetFile(targetComponent);
@@ -152,6 +154,11 @@ public class JaxRsEditorDrop implements ActiveEditorDrop {
                     } catch(IOException ex) {//ignore
                     }
                 } catch (Exception ioe) {
+                    if(ioe.getMessage().equals(Constants.UNSUPPORTED_DROP)) {
+                        Util.showUnsupportedDropMessage(new Object[] {
+                            targetSource.getNameExt(), "Java Client"});
+                        return;
+                    }
                     errors.add(ioe);
                 } finally {
                     dialog.close();

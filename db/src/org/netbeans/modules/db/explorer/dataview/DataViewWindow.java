@@ -86,6 +86,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.openide.DialogDisplayer;
@@ -113,26 +114,27 @@ public class DataViewWindow extends TopComponent {
     private JComboBox rcmdscombo;
     private JLabel status;
     private ResourceBundle bundle;
-    private Node node;
+    private DatabaseNodeInfo info;
     private JPopupMenu tablePopupMenu;
     static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
-        node = info.getNode();
+        this.info = info;
 
         bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewWindowA11yDesc")); //NOI18N
 
-        Node tempNode = node;
-        while(!(tempNode instanceof ConnectionNode))
-            tempNode = tempNode.getParentNode();
+        DatabaseNodeInfo tempInfo = info;
+        while(!(tempInfo instanceof ConnectionNodeInfo))
+            tempInfo = tempInfo.getParent();
 
-        String title = tempNode.getDisplayName();
+        String title = tempInfo.getDisplayName();
         int idx = title.indexOf(" ["); //NOI18N
         title = title.substring(0, idx);
         setName(title);
-        setToolTipText(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
+        setToolTipText(bundle.getString("CommandEditorTitle") + " " + 
+                tempInfo.getDisplayName()); //NOI18N
 
         GridBagLayout layout = new GridBagLayout();
         GridBagConstraints con = new GridBagConstraints ();
@@ -812,17 +814,22 @@ public class DataViewWindow extends TopComponent {
                 rs.close();               
                 //fireTableChanged(null);
             } else {
-                if (command.toLowerCase().startsWith("delete") || command.toLowerCase().startsWith("insert") || command.toLowerCase().startsWith("update")) //NOI18N
+                if (command.toLowerCase().startsWith("delete") || 
+                        command.toLowerCase().startsWith("insert") || 
+                        command.toLowerCase().startsWith("update")) //NOI18N
                     stat.executeUpdate(command);
                 else {
                     stat.execute(command);
 
                     //refresh DBExplorer nodes
-                    while (!(node instanceof ConnectionNode))
-                        node = node.getParentNode();
-                    Enumeration nodes = node.getChildren().nodes();
-                    while (nodes.hasMoreElements())
-                        ((DatabaseNodeInfo)((Node)nodes.nextElement()).getCookie(DatabaseNodeInfo.class)).refreshChildren();
+                    while (!(info instanceof ConnectionNodeInfo)) {
+                        info = info.getParent();
+                    }
+                    
+                    Vector<DatabaseNodeInfo> children = info.getChildren();
+                    for (DatabaseNodeInfo child : children ) {
+                        child.refreshChildren();
+                    }
                 }
             }
             status.setText(bundle.getString("CommandExecuted")); //NOI18N

@@ -37,6 +37,7 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -136,7 +137,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
     }
     
     private JPanel createPalette() {
-        return new Palette(mMapper).getPanel();
+        return new Palette(mMapper).getPanel(false);
     }
     
     /**
@@ -156,8 +157,11 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         // Look for the tree node
         TreeModel leftTreeModel = mMapperModel.getLeftTreeModel();
         assert leftTreeModel instanceof MapperSwingTreeModel;
-        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
-                findFirstNode(finderList);
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                (MapperSwingTreeModel)leftTreeModel);
+        TreePath schemaContextPath = fProcessor.findFirstNode(finderList);
+//        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
+//                findFirstNode(finderList);
         //
         // Show context path
         if (schemaContextPath != null) {
@@ -210,21 +214,18 @@ public class PredicateEditor extends EditorLifeCycleAdapter
                         }
                     }
                     //
-                    if (unconnectedGraphs > 0) {
-                        if (notEmptyGraphs.size() == unconnectedGraphs) {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
-                        } else {
-                            addReasonKey(Severity.WARNING, 
-                                    "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
-                        }
+                    if (notEmptyGraphs.size() == unconnectedGraphs) {
+                        addReasonKey(Severity.ERROR,
+                                "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
+                    } else if (unconnectedGraphs > 0) {
+                        addReasonKey(Severity.WARNING,
+                                "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
                     }
                     if (incompleteGraphs > 0) {
                         addReasonKey(Severity.WARNING, 
                                 "WARN_THERE_ARE_INCOMPLETE_GRAPHS"); //NOI18N
                     }
                 }
-                
             };
         }
         return mValidator;

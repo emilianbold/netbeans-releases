@@ -44,15 +44,11 @@ import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -74,14 +70,21 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
     @Override
     protected void preGenerate() throws IOException {
         createRestConnectionFile(getProject());
+        
+        //add JAXB Classes, etc, if available
+        if(getBean().getMethod().getSaas().getLibraryJars().size() > 0)
+            Util.addClientJars(getBean(), getProject(), null);
+        
         getTargetFolder().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 try {
-                    List<String> libs = getBean().getArtifactLibs();
+                    /*
+                      Already taken care by Util.addClientJars()
+                     List<String> libs = getBean().getArtifactLibs(); 
                     for(String lib: libs) {
                         //TODO - Fix the copyFile method
                         copyFile(lib, FileUtil.toFile(getTargetFolder()));
-                    }
+                    }*/
                     List<String> templates = getBean().getArtifactTemplates();
                     for(String template: templates) {
                         Util.createDataObjectFromTemplate(template, getTargetFolder(), null);

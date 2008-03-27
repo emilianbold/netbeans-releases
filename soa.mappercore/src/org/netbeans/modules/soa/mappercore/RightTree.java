@@ -189,7 +189,7 @@ public class RightTree extends MapperPanel implements
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
 
         if (model == null || context == null) {
@@ -457,6 +457,17 @@ public class RightTree extends MapperPanel implements
         Graph graph = node.getGraph();
 
         boolean hasEdge = (graph != null && graph.hasOutgoingLinks());
+        Link link = null;
+        for (int i = graph.getLinkCount() - 1; i >= 0; i--) {
+          if (graph.getLink(i).getTarget() instanceof Graph) {
+              link = graph.getLink(i);
+          }  
+        }
+        
+        if (link != null) {
+            hasEdge = getCanvas().getRendererContext().paintLink(node.getTreePath(), link);
+        }
+        
         boolean hasChildEdges = false;
 
         if (leaf) {
@@ -1013,7 +1024,7 @@ public class RightTree extends MapperPanel implements
         public void actionPerformed(ActionEvent e) {
             RightTree tree = RightTree.this;
             MapperContext context = tree.getContext();
-            MapperModel model = tree.getMapperModel();
+            MapperModel model = tree.getMapper().getModel();
             if (context == null || model == null) { return; }
 
             TreePath treePath = tree.getSelectionModel().getSelectedPath();

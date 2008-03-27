@@ -58,7 +58,7 @@
                
     <wsdl:portType name="MyPortTypeClient">
         <wsdl:operation name="operationA">
-            <wsdl:input  message="tns:requestMessageClient"/>
+            <wsdl:input message="tns:requestMessageClient"/>
             <wsdl:output message="tns:responseMessageClient"/>
         </wsdl:operation>
     </wsdl:portType>

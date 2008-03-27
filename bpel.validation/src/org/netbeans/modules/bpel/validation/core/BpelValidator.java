@@ -102,4 +102,14 @@ public abstract class BpelValidator extends CoreValidator {
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {
     return activity != null && activity.getCreateInstance() == TBoolean.YES;
   }
+
+  protected final CreateInstanceActivity getCreateInstanceActivity(Component component) {
+    if (component instanceof CreateInstanceActivity) {
+      return (CreateInstanceActivity) component;
+    }
+    if (component.getParent() instanceof CreateInstanceActivity) {
+      return (CreateInstanceActivity) component.getParent();
+    }
+    return null;
+  }
 }

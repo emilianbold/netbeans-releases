@@ -133,6 +133,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) {
             return;
         } else if (node instanceof GdbWatchVariable) {
+            customize((GdbWatchVariable) node);
             return;
         }
         throw new UnknownTypeException(node);

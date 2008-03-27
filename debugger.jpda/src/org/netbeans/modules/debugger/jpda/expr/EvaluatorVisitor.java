@@ -156,9 +156,11 @@ import javax.lang.model.type.TypeMirror;
 
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -172,8 +174,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
     
     private Type newArrayType;
+    private Expression2 expression;
     
-    public EvaluatorVisitor() {
+    public EvaluatorVisitor(Expression2 expression) {
+        this.expression = expression;
     }
 
     @Override
@@ -606,6 +610,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static ReferenceType getClassType(Tree tree, TypeMirror type, EvaluationContext evaluationContext) {
         String className = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) type).asElement());
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         List<ReferenceType> classes = vm.classesByName(className);
         if (classes.size() == 0) {
             Assert2.error(tree, "unknownType", className);
@@ -680,7 +685,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitAssignment(AssignmentTree arg0, EvaluationContext evaluationContext) {
         Mirror var = arg0.getVariable().accept(this, evaluationContext);
         Mirror exp = arg0.getExpression().accept(this, evaluationContext);
-        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         Value value = (Value) exp;
         setToMirror(arg0.getVariable(), value, evaluationContext);
         return value;
@@ -691,6 +695,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror var = arg0.getVariable().accept(this, evaluationContext);
         Mirror exp = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
         if (var instanceof BooleanValue) {
             boolean v = ((BooleanValue) var).value();
@@ -828,6 +833,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         Mirror left = arg0.getLeftOperand().accept(this, evaluationContext);
         Mirror right = arg0.getRightOperand().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
         if (left instanceof ObjectReference) {
             left = unboxIfCan(arg0, (ObjectReference) left, evaluationContext);
@@ -1131,6 +1137,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private Mirror getIdentifierByName(IdentifierTree arg0, EvaluationContext evaluationContext) {
         String name = arg0.getName().toString();
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         List<ReferenceType> classes = vm.classesByName(name);
         if (classes.size() > 0) {
             return classes.get(0);
@@ -1167,6 +1174,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         try {
             LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
             if (lv == null) {
+                ObjectReference thiz = evaluationContext.getFrame().thisObject();
+                if (thiz != null) {
+                    Field outer = thiz.referenceType().fieldByName("val$"+name);
+                    if (outer != null) {
+                        Value val = thiz.getValue(outer);
+                        evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                        return val;
+                    }
+                }
                 Assert2.error(arg0, "unknownVariable", name);
             }
             evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1178,6 +1194,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitIdentifier(IdentifierTree arg0, EvaluationContext evaluationContext) {
+        String identifier = arg0.getName().toString();
+        // class special variable
+        if (expression.classReplaced().equals(identifier)) {
+            ReferenceType refType = evaluationContext.getFrame().location().declaringType();
+            JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
+            return ((JDIVariable) classType.classObject()).getJDIValue();
+        }
+        
+        // return special variable
+        if (expression.returnReplaced().equals(identifier)) {
+            ThreadReference tr = evaluationContext.getFrame().thread();
+            JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
+            JDIVariable returnVar = (JDIVariable) thread.getReturnVariable();
+            if (returnVar != null) {
+                return returnVar.getJDIValue();
+            } else {
+                return null;
+            }
+        }
+
         TreePath currentPath = getCurrentPath();
         Element elm = null;
         if (currentPath != null) {
@@ -1198,6 +1234,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+                if (vm == null) return null;
                 List<ReferenceType> classes = vm.classesByName(className);
                 if (classes.size() > 0) {
                     return classes.get(0);
@@ -1266,6 +1303,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
                     if (lv == null) {
+                        ObjectReference thiz = evaluationContext.getFrame().thisObject();
+                        if (thiz != null) {
+                            Field outer = thiz.referenceType().fieldByName("val$"+varName);
+                            if (outer != null) {
+                                Value val = thiz.getValue(outer);
+                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                return val;
+                            }
+                        }
                         Assert2.error(arg0, "unknownVariable", varName);
                     }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1280,6 +1326,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 try {
                     LocalVariable lv = frame.visibleVariableByName(paramName);
                     if (lv == null) {
+                        ObjectReference thiz = frame.thisObject();
+                        if (thiz != null) {
+                            Field outer = thiz.referenceType().fieldByName("val$"+paramName);
+                            if (outer != null) {
+                                Value val = thiz.getValue(outer);
+                                evaluationContext.getVariables().put(arg0, new VariableInfo(outer, thiz));
+                                return val;
+                            }
+                        }
                         Assert2.error(arg0, "unknownVariable", paramName);
                     }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
@@ -1339,7 +1394,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (object.referenceType().equals(type)) {
             return object;
         }
-        Field outerRef = object.referenceType().fieldByName("this$0");
+        Field outerRef = null;
+        for (int i = 0; i < 9; i++) {
+            outerRef = object.referenceType().fieldByName("this$"+i);
+            if (outerRef != null) break;
+        }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
         return findEnclosedObject(object, type);
@@ -1360,8 +1419,18 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitArrayAccess(ArrayAccessTree arg0, EvaluationContext evaluationContext) {
         Mirror array = arg0.getExpression().accept(this, evaluationContext);
+        if (array == null) {
+            Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
+        }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
-        return ((ArrayReference) array).getValue(((PrimitiveValue) index).intValue());
+        if (!(index instanceof PrimitiveValue)) {
+            Assert2.error(arg0, "arraySizeBadType", index);
+        }
+        int i = ((PrimitiveValue) index).intValue();
+        if (i >= ((ArrayReference) array).length()) {
+            Assert2.error(arg0, "arrayIndexOutOfBounds", array, i);
+        }
+        return ((ArrayReference) array).getValue(i);
     }
 
     @Override
@@ -1373,6 +1442,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     @Override
     public Mirror visitLiteral(LiteralTree arg0, EvaluationContext evaluationContext) {
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         Object value = arg0.getValue();
         if (value instanceof Boolean) {
             return vm.mirrorOf(((Boolean) value).booleanValue());
@@ -1697,6 +1767,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         ReferenceType enumType = getClassType(arg0, ve.asType(), evaluationContext);
         Method valueOfMethod = enumType.methodsByName("valueOf").get(0);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         StringReference constantNameRef = vm.mirrorOf(constantName);
         Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
                      Collections.singletonList((Value) constantNameRef), evaluationContext);
@@ -1765,6 +1836,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             // try class
             VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+            if (vm == null) return null;
             List<ReferenceType> classes = vm.classesByName(name);
             if (classes.size() == 0) {
                 Assert2.error(arg0, "unknownType", name);
@@ -1844,6 +1916,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+                if (vm == null) return null;
                 List<ReferenceType> classes = vm.classesByName(className);
                 if (classes.size() == 0) {
                     Assert2.error(arg0, "unknownType", className);
@@ -1926,6 +1999,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             Assert2.assertNotAssignable(type, BooleanType.class, arg0, "castFromBooleanRequired", primValue, type);
             VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+            if (vm == null) return null;
             if (type instanceof ByteType) {
                 return vm.mirrorOf(primValue.byteValue());
             } else if (type instanceof CharType) {
@@ -1952,6 +2026,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitPrimitiveType(PrimitiveTypeTree arg0, EvaluationContext evaluationContext) {
         TypeKind type = arg0.getPrimitiveTypeKind();
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         switch(type) {
             case BOOLEAN:
                 return vm.mirrorOf(true).type();
@@ -1984,6 +2059,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitInstanceOf(InstanceOfTree arg0, EvaluationContext evaluationContext) {
         Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         if (expression == null) return vm.mirrorOf(false);
         Assert2.assertAssignable(expression, ObjectReference.class, arg0, "instanceOfLeftOperandNotAReference", expression);
 
@@ -1997,6 +2073,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     public Mirror visitUnary(UnaryTree arg0, EvaluationContext evaluationContext) {
         Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) return null;
         Tree.Kind kind = arg0.getKind();
         if (expression instanceof BooleanValue) {
             boolean v = ((BooleanValue) expression).value();

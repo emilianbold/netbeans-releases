@@ -582,10 +582,13 @@ public class RetoucheUtils {
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
             Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
-            if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+            FileObject ownerRoot = null;
+            if (fo != null) {
+                p = FileOwnerQuery.getOwner(fo);
+                ownerRoot = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            }
+            if (p != null && ownerRoot != null) {
+                URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
                 if (dependencies) {
                     dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
                 } else {

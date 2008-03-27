@@ -170,6 +170,8 @@ public class ActionsTest extends TestBase {
             "compile.single",
             "copy",
             "delete",
+            /* Fix for IZ#107597*/
+            "deploy",
             "javadoc",
             "move",
             "rebuild",
@@ -228,8 +230,9 @@ public class ActionsTest extends TestBase {
             null,
             (String) SystemAction.get(FindAction.class).getValue(Action.NAME),
             null,
-            (String) SystemAction.get(ToolsAction.class).getValue(Action.NAME),
-            null,
+            /* Fix for IZ#107597
+             * (String) SystemAction.get(ToolsAction.class).getValue(Action.NAME),
+            null,*/
             (String) CommonProjectActions.customizeProjectAction().getValue(Action.NAME)),
             findActionLabels(actions));
         Action javadocAction = actions[8];

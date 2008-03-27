@@ -42,6 +42,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
+import javax.swing.JOptionPane;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -890,8 +891,13 @@ public class HgCommand {
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
     }
+
     public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
          return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, -1, logger);
     }
 
     public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
@@ -923,7 +929,6 @@ public class HgCommand {
                     files != null ? new ArrayList<File>(files) : null,
                     fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(list, messages);
-            
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1670,8 +1675,33 @@ public class HgCommand {
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
 
+            List<String> saveCommand = null;
+            if(Utilities.isWindows()) {
+                saveCommand = new ArrayList<String>(command);
+            }
             for(File f: commitFiles){
                 command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
+            }
+            if(Utilities.isWindows()) {   
+                // Count size of command
+                int size = 0;
+                for (String line : command) {
+                    size += line.length();
+                }
+                int maxSize = 32767; // Assume CreateProcess is used
+                if (size > maxSize) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_QUERY")); // NOI18N
+                    descriptor.setTitle(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
+                    descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                    descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                    Object res = DialogDisplayer.getDefault().notify(descriptor)
+;
+                    if (res == NotifyDescriptor.NO_OPTION) {
+                        return;
+                    }
+                    command = saveCommand;
+                }
             }
             List<String> list = exec(command);
             

@@ -41,30 +41,40 @@
 
 package org.netbeans.modules.websvc.saas.codegen.java.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.websvc.saas.codegen.java.AbstractGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
-import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Login;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Logout;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.HttpBasic;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator.Login;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator.Logout;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator.Token;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
+import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output.Media;
 import org.netbeans.modules.websvc.saas.model.jaxb.Params;
 import org.netbeans.modules.websvc.saas.model.jaxb.Params.Param;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication;
+import org.netbeans.modules.websvc.saas.model.jaxb.Authenticator;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey.Token.Frame;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SignedUrl;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType.Template;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
 
 /**
  *
@@ -83,11 +93,21 @@ public abstract class SaasBean extends GenericResourceBean {
     private SaasAuthenticationType authType;
     private SaasBean.SaasAuthentication auth;
     private String authProfile;
+    private boolean isDropTargetWeb = false;
 
-    public SaasBean(String name, String packageName, String uriTemplate, MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
+    public SaasBean(String name, String packageName, String uriTemplate, 
+            MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
     }
-
+    
+    public boolean isDropTargetWeb() {
+        return isDropTargetWeb;
+    }
+    
+    public void setIsDropTargetWeb(boolean isDropTargetWeb) {
+        this.isDropTargetWeb = isDropTargetWeb;
+    }
+    
     protected void setInputParameters(List<ParameterInfo> inputParams) {
         this.inputParams = inputParams;
     }
@@ -112,6 +132,16 @@ public abstract class SaasBean extends GenericResourceBean {
             }
         }
         return headerParams;
+    }
+    
+    @Override
+    public String[] getUriParams() {
+        List<String> uriParams = new ArrayList<String>();
+
+        for (ParameterInfo param : getTemplateParameters()) {
+            uriParams.add(param.getName());
+        }
+        return uriParams.toArray(new String[0]);
     }
     
     public List<ParameterInfo> getTemplateParameters() {
@@ -158,6 +188,10 @@ public abstract class SaasBean extends GenericResourceBean {
         }
         return outputWrapperName;
     }
+    
+    public void setOutputWrapperName(String outputWrapperName) {
+        this.outputWrapperName = outputWrapperName;
+    }
 
     public String getOutputWrapperPackageName() {
         return wrapperPackageName;
@@ -194,6 +228,7 @@ public abstract class SaasBean extends GenericResourceBean {
         this.resourceTemplate = template;
     }
     
+    @Override
     public SaasAuthenticationType getAuthenticationType() {
         return authType;
     }
@@ -203,6 +238,7 @@ public abstract class SaasBean extends GenericResourceBean {
     }
     
     
+    @Override
     public SaasAuthentication getAuthentication() {
         return auth;
     }
@@ -216,9 +252,11 @@ public abstract class SaasBean extends GenericResourceBean {
         return this.authProfile;
     }
 
-    private  SaasBean.SessionKeyAuthentication.Method createSessionKeyMethod(Method method, SaasBean.SessionKeyAuthentication sessionKeyAuth) {
+    private  SaasBean.SessionKeyAuthentication.UseGenerator.Method createSessionKeyUseGeneratorMethod(
+            Method method, SaasBean.SessionKeyAuthentication.UseGenerator useGenerator) {
         if (method != null) {
-            SaasBean.SessionKeyAuthentication.Method skMethod = sessionKeyAuth.createMethod();
+            SaasBean.SessionKeyAuthentication.UseGenerator.Method skMethod = 
+                    useGenerator.createMethod();
             skMethod.setId(method.getId());
             skMethod.setName(method.getName());
             skMethod.setHref(method.getHref());
@@ -243,15 +281,34 @@ public abstract class SaasBean extends GenericResourceBean {
         this.authProfile = profile;
     }
     
-    protected Object getAuthUsingId(Authentication auth) {
+    protected Object getSignedUrl(Authentication auth) {
         return null;
     }
     
-    public void findAuthentication(SaasMethod m) {
+    public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
+        if(auth2 == null) {
+            throw new IOException("Element saas-services/service-metadata/authentication " +
+                    "missing in saas service xml for: "+getName());
+        }
         if(auth2.getHttpBasic() != null) {
+            HttpBasic httpBasic = auth2.getHttpBasic();
             setAuthenticationType(SaasAuthenticationType.HTTP_BASIC);
-            setAuthentication(new HttpBasicAuthentication());
+            HttpBasicAuthentication httpBasicAuth = new HttpBasicAuthentication(
+                    httpBasic.getUsername(),
+                    httpBasic.getPassword());
+            setAuthentication(httpBasicAuth);
+            SaasBean.SaasAuthentication.UseGenerator skUseGenerator = 
+                    httpBasicAuth.createUseGenerator();
+            SaasBean.SaasAuthentication.UseTemplates skUseTemplates = 
+                    httpBasicAuth.createUseTemplates();
+            if(findUseGenerator(m, httpBasic.getAuthenticator(), skUseGenerator)) {
+                httpBasicAuth.setUseGenerator(skUseGenerator);
+            } else if(findUseTemplates(m, httpBasic.getAuthenticator(), skUseTemplates)) {
+                httpBasicAuth.setUseTemplates(skUseTemplates);
+            } else {
+                throw new IOException("authentication element has no use-generator or use-templates children.");
+            }
         } else if(auth2.getCustom() != null) {
             setAuthenticationType(SaasAuthenticationType.CUSTOM);
             setAuthentication(new CustomAuthentication());
@@ -261,7 +318,7 @@ public abstract class SaasBean extends GenericResourceBean {
         } else if(auth2.getSignedUrl() != null && auth2.getSignedUrl().size() > 0) {
             setAuthenticationType(SaasAuthenticationType.SIGNED_URL);
             List<SignedUrl> signedUrlList = auth2.getSignedUrl();
-            SignedUrl signedUrl = (SignedUrl) getAuthUsingId(auth2);
+            SignedUrl signedUrl = (SignedUrl) getSignedUrl(auth2);
             if(signedUrl == null)
                 signedUrl = signedUrlList.get(0);
             SignedUrlAuthentication signedUrlAuth = new SignedUrlAuthentication();
@@ -282,13 +339,9 @@ public abstract class SaasBean extends GenericResourceBean {
             SessionKey sessionKey = auth2.getSessionKey();
             setAuthenticationType(SaasAuthenticationType.SESSION_KEY);
             SessionKeyAuthentication sessionKeyAuth = new SessionKeyAuthentication(
-                    sessionKey.getApiId());
-            if(sessionKey.getSessionId() != null) {
-                sessionKeyAuth.setSessionKeyName(sessionKey.getSessionId());
-            }
-            if(sessionKey.getSigId() != null) {
-                sessionKeyAuth.setSigKeyName(sessionKey.getSigId());
-            }
+                    sessionKey.getApiId(), 
+                    sessionKey.getSessionId(),
+                    sessionKey.getSigId());
             setAuthentication(sessionKeyAuth);
             Sign sign = sessionKey.getSign();
             if (sign != null) {
@@ -299,37 +352,140 @@ public abstract class SaasBean extends GenericResourceBean {
                     sessionKeyAuth.setParameters(signParams);
                 }
             }
-            Login login = sessionKey.getLogin();
-            if(login != null) {
-                SaasBean.SessionKeyAuthentication.Login skLogin = sessionKeyAuth.createLogin();
-                sessionKeyAuth.setLogin(skLogin);
-                sign = login.getSign();
-                skLogin.setParameters(findSignParameters(sign));
-                skLogin.setMethod(createSessionKeyMethod(login.getMethod(), sessionKeyAuth));
+            SaasBean.SaasAuthentication.UseGenerator skUseGenerator = 
+                    sessionKeyAuth.createUseGenerator();
+            SaasBean.SaasAuthentication.UseTemplates skUseTemplates = 
+                    sessionKeyAuth.createUseTemplates();
+            if(findUseGenerator(m, sessionKey.getAuthenticator(), skUseGenerator)) {
+                sessionKeyAuth.setUseGenerator(skUseGenerator);
+            } else if(findUseTemplates(m, sessionKey.getAuthenticator(), skUseTemplates)) {
+                sessionKeyAuth.setUseTemplates(skUseTemplates);
+            } else {
+                throw new IOException("authentication element has no use-generator or use-templates children.");
             }
-            Token token = sessionKey.getToken();
-            if(token != null) {
-                SaasBean.SessionKeyAuthentication.Token skToken = sessionKeyAuth.createToken();
-                sessionKeyAuth.setToken(skToken);
-                sign = token.getSign();
-                skToken.setParameters(findSignParameters(sign));
-                skToken.setMethod(createSessionKeyMethod(token.getMethod(), sessionKeyAuth));
-                
-                Frame frame = token.getFrame();
-                if(frame != null) {
-                    SaasBean.SessionKeyAuthentication.Token.Frame skFrame = skToken.createFrame();
-                    skToken.setFrame(skFrame);
-                    sign = frame.getSign();
-                    skFrame.setParameters(findSignParameters(sign));
-                    skFrame.setUrl(frame.getUrl());
-                }
-            }
-            Logout logout = sessionKey.getLogout();
         } else {
             setAuthenticationType(SaasAuthenticationType.PLAIN);
         }
         if(auth2.getProfile() != null)
             setAuthenticationProfile(auth2.getProfile());
+    }
+    
+    private boolean findUseGenerator(SaasMethod m, Authenticator authenticator,
+            SaasBean.SaasAuthentication.UseGenerator skUseGenerator) throws IOException {
+        if(authenticator == null)
+            throw new IOException("No authentication element inside sessionkey element in saas-metadata.");
+        if(authenticator.getUseGenerator() != null) {
+            UseGenerator useGenerator = authenticator.getUseGenerator();
+            
+            Sign sign = null;
+            Login login = useGenerator.getLogin();
+            if(login != null) {
+                SaasBean.SessionKeyAuthentication.UseGenerator.Login skLogin = skUseGenerator.createLogin();
+                skUseGenerator.setLogin(skLogin);
+                sign = login.getSign();
+                if(sign != null) {
+                    skLogin.setSignId(sign.getId());
+                    skLogin.setParameters(findSignParameters(sign));
+                }
+                skLogin.setMethod(createSessionKeyUseGeneratorMethod(
+                        login.getMethod(), skUseGenerator));
+            }
+            Token token = useGenerator.getToken();
+            if(token != null) {
+                SaasBean.SessionKeyAuthentication.UseGenerator.Token skToken = skUseGenerator.createToken(token.getId());
+                skUseGenerator.setToken(skToken);
+                sign = token.getSign();
+                if(sign != null) {
+                    skToken.setSignId(sign.getId());
+                    skToken.setParameters(findSignParameters(sign));
+                }
+                skToken.setMethod(createSessionKeyUseGeneratorMethod(
+                        token.getMethod(), skUseGenerator));
+
+                Token.Prompt prompt = token.getPrompt();
+                if(prompt != null) {
+                    SaasBean.SessionKeyAuthentication.UseGenerator.Token.Prompt skPrompt = skToken.createPrompt();
+                    skToken.setPrompt(skPrompt);
+                    sign = prompt.getSign();
+                    if(sign != null) {
+                        skPrompt.setSignId(sign.getId());
+                        skPrompt.setParameters(findSignParameters(sign));
+                    }
+                    skPrompt.setDesktopUrl(prompt.getDesktop().getUrl());
+                    skPrompt.setWebUrl(prompt.getWeb().getUrl());
+                }
+            }
+            Logout logout = useGenerator.getLogout();
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean findUseTemplates(SaasMethod m, Authenticator authenticator,
+            SaasBean.SessionKeyAuthentication.UseTemplates skUseTemplates) throws IOException {
+        if(authenticator == null)
+            throw new IOException("No authentication element inside sessionkey element in saas-metadata.");
+        if(authenticator.getUseTemplates() != null) {
+            UseTemplates useTemplates = authenticator.getUseTemplates();
+            List<Template> templates = null;
+            if(!isDropTargetWeb() && useTemplates.getDesktop() != null && 
+                    useTemplates.getDesktop().getTemplate() != null) {
+                templates = useTemplates.getDesktop().getTemplate();
+            } else if(isDropTargetWeb() && useTemplates.getWeb() != null && useTemplates.getWeb().getTemplate() != null) {
+                templates = useTemplates.getWeb().getTemplate();
+            }
+            if(templates == null || templates.isEmpty())
+                throw new IOException(Constants.UNSUPPORTED_DROP);
+            List<SaasBean.SessionKeyAuthentication.UseTemplates.Template> templateNames = 
+                    new ArrayList<SaasBean.SessionKeyAuthentication.UseTemplates.Template>();
+            Map<String, String> artifactsMap = getArtifactTemplates(m);
+            for(Template t:templates) {
+                if(t.getHref() != null && !t.getHref().equals("")) {
+                    String artifactUrl = artifactsMap.get(t.getHref());
+                    if(artifactUrl != null)
+                        templateNames.add(skUseTemplates.createTemplate(
+                            t.getHref(), t.getType(), artifactUrl));
+                }
+            }
+            skUseTemplates.setTemplates(templateNames);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isUseTemplates() {
+        return (getAuthenticationType() == SaasAuthenticationType.SESSION_KEY &&
+                ((SessionKeyAuthentication)this.getAuthentication()).getUseTemplates() != null) ||
+                    (getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC &&
+                        ((HttpBasicAuthentication)this.getAuthentication()).getUseTemplates() != null);
+    }
+    
+    private Map<String, String> getArtifactTemplates(SaasMethod m) throws IOException {
+        Map<String, String> map = new HashMap<String, String>();
+        CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
+        if(codegen != null) {
+            List<Artifacts> artifactsList = codegen.getArtifacts();
+            if(artifactsList != null) {
+                for(Artifacts artifacts: artifactsList) {
+                    List<Artifact> artifactList = artifacts.getArtifact();
+                    if(artifactList != null) {
+                        for(Artifact artifact: artifactList) {
+                            String id = artifact.getId();
+                            String type = artifact.getType();
+                            if(type == null)
+                                throw new IOException("saas-metadata/code-gen/artifacts/artifact/@type value is null.");
+                            String artifactUrl = artifact.getUrl();
+                            if(artifactUrl == null)
+                                throw new IOException("saas-metadata/code-gen/artifacts/artifact/@url value is null.");
+                            if(type.equals(CustomSaasBean.ARTIFACT_TYPE_TEMPLATE)) {
+                                map.put(id, artifactUrl);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return map;
     }
 
     public void findSaasParams(List<ParameterInfo> paramInfos, List<Param> params) {
@@ -357,14 +513,16 @@ public abstract class SaasBean extends GenericResourceBean {
                 schemaType = schemaType.substring(index+1);
             }
             
-            if(schemaType.equals("string")) {     //NOI18N
+            if(schemaType.equalsIgnoreCase("string")) {     //NOI18N
                 return String.class;
-            } else if(schemaType.equals("int")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("int")) {       //NOI18N
                 return Integer.class;
-            } else if(schemaType.equals("date")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("date")) {       //NOI18N
                 return Date.class;
-            } else if(schemaType.equals("time")) {       //NOI18N
+            } else if(schemaType.equalsIgnoreCase("time")) {       //NOI18N
                 return Time.class;
+            } else if(schemaType.equalsIgnoreCase("httpMethod")) {       //NOI18N
+                return HttpMethodType.class;
             }
         }
         
@@ -390,11 +548,288 @@ public abstract class SaasBean extends GenericResourceBean {
     public class SaasAuthentication {
         public SaasAuthentication() {
         }
+
+        public UseGenerator createUseGenerator() {
+            return new UseGenerator();
+        }
+        
+        public UseTemplates createUseTemplates() {
+            return new UseTemplates();
+        }
+    
+        public class UseGenerator {
+        
+            private Login login;
+            private Token token;
+            private Logout logout;
+            
+            public UseGenerator() {
+                
+            }
+
+            public Login getLogin() {
+                return login;
+            }
+
+            public void setLogin(Login login) {
+                this.login = login;
+            }
+
+            public Token getToken() {
+                return token;
+            }
+
+            public void setToken(Token token) {
+                this.token = token;
+            }
+
+            public Logout getLogout() {
+                return logout;
+            }
+
+            public void setLogout(Logout logout) {
+                this.logout = logout;
+            }
+
+            public Login createLogin() {
+                return new Login();
+            }
+
+            public Token createToken(String id) {
+                return new Token(id);
+            }
+
+            public Logout createLogout() {
+                return new Logout();
+            }
+
+            public Method createMethod() {
+                return new Method();
+            }
+
+            public class Login {
+
+                List<ParameterInfo> params = Collections.emptyList();
+                Method method;
+                String signId;
+
+                public Login() {
+                }
+
+                public String getSignId() {
+                    return signId;
+                }
+
+                public void setSignId(String signId) {
+                    this.signId = signId;
+                }
+
+                public List<ParameterInfo> getParameters() {
+                    return params;
+                }
+
+                public void setParameters(List<ParameterInfo> params) {
+                    this.params = params;
+                }
+
+                public Method getMethod() {
+                    return method;
+                }
+
+                public void setMethod(Method method) {
+                    this.method = method;
+                }
+            }
+
+            public class Token extends Login {
+
+                private String id;
+                private Prompt prompt;
+
+                public Token(String id) { 
+                    this.id = id;
+                }
+
+                public String getId() {
+                    return id;
+                }
+
+                public Prompt getPrompt() {
+                    return prompt;
+                }
+
+                public void setPrompt(Prompt prompt) {
+                    this.prompt = prompt;
+                }
+
+                private Prompt createPrompt() {
+                    return new Prompt();
+                }
+
+                public class Prompt {
+
+                    private String deskTopUrl;
+                    private String webUrl;
+                    List<ParameterInfo> params = Collections.emptyList();
+                    private String signId;
+
+                    public Prompt() {    
+                    }
+
+                    public String getSignId() {
+                        return signId;
+                    }
+
+                    public void setSignId(String signId) {
+                        this.signId = signId;
+                    }
+
+                    public List<ParameterInfo> getParameters() {
+                        return params;
+                    }
+
+                    public void setParameters(List<ParameterInfo> params) {
+                        this.params = params;
+                    }
+
+                    public String getDesktopUrl() {
+                        return deskTopUrl;
+                    }
+
+                    public void setDesktopUrl(String deskTopUrl) {
+                        this.deskTopUrl = deskTopUrl;
+                    }
+
+                    public String getWebUrl() {
+                        return webUrl;
+                    }
+
+                    public void setWebUrl(String webUrl) {
+                        this.webUrl = webUrl;
+                    }
+                }
+            }
+
+            public class Logout extends Login {
+                public Logout() {
+                }
+            }
+
+            public class Method {
+
+                String id;
+                String name;
+                String href;
+
+                public Method() {  
+                }
+
+                public String getId() {
+                    return id;
+                }
+
+                public void setId(String id) {
+                    this.id = id;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public String getHref() {
+                    return href;
+                }
+
+                public void setHref(String href) {
+                    this.href = href;
+                }
+            }
+        }
+        
+        public class UseTemplates {
+        
+            private List<Template> templates = Collections.emptyList();
+            
+            public UseTemplates() {
+            }
+            
+            public List<Template> getTemplates() {
+                return templates;
+            }
+
+            public void setTemplates(List<Template> templates) {
+                this.templates = templates;
+            }
+            
+            public Template createTemplate(String id, String type, String url) {
+                return new Template(id, type, url);
+            }
+            
+            public class Template {
+
+                private String id;
+                private String type;
+                private String url;
+
+                public Template(String id, String type, String url) {
+                    this.id = id;
+                    this.type = type;
+                    this.url = url;
+                }
+
+                public String getId() {
+                    return id;
+                }
+
+                public String getType() {
+                    return type;
+                }
+                
+                public String getUrl() {
+                    return url;
+                }
+            }
+        }
     }
     
     public class HttpBasicAuthentication extends SaasAuthentication {
-        public HttpBasicAuthentication() {
-            
+        private String username;
+        private String password;
+
+        private UseTemplates useTemplates;
+        private UseGenerator useGenerator;
+
+        public HttpBasicAuthentication(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+        
+        public String getUserNameId() {
+            return username;
+        }
+        
+        public String getPasswordId() {
+            return password;
+        }
+        
+        public UseTemplates getUseTemplates() {
+            return useTemplates;
+        }
+        
+        public void setUseTemplates(UseTemplates useTemplates) {
+            this.useTemplates = useTemplates;
+        }
+        
+        public UseGenerator getUseGenerator() {
+            return useGenerator;
+        }
+        
+        public void setUseGenerator(UseGenerator useGenerator) {
+            this.useGenerator = useGenerator;
         }
     }
     
@@ -433,19 +868,21 @@ public abstract class SaasBean extends GenericResourceBean {
             this.params = params;
         }
     }
-    
+
     public class SessionKeyAuthentication extends SaasAuthentication {
         
         private String apiId;
         private String sessionId;
         private String sig;
-        List<ParameterInfo> params = Collections.emptyList();
-        private SaasBean.SessionKeyAuthentication.Login login;
-        private SaasBean.SessionKeyAuthentication.Token token;
-        private SaasBean.SessionKeyAuthentication.Logout logout;
+        private List<ParameterInfo> params = Collections.emptyList();
+        private UseTemplates useTemplates;
+        private UseGenerator useGenerator;
 
-        public SessionKeyAuthentication(String apiId) {
+        public SessionKeyAuthentication(String apiId,
+                String sessionId, String sig) {
             this.apiId = apiId;
+            this.sessionId = sessionId;
+            this.sig = sig;
         }
         
         public String getApiKeyName() {
@@ -456,16 +893,8 @@ public abstract class SaasBean extends GenericResourceBean {
             return sessionId;
         }
 
-        public void setSessionKeyName(String sessionId) {
-            this.sessionId = sessionId;
-        }
-
         public String getSigKeyName() {
             return sig;
-        }
-        
-        public void setSigKeyName(String sig) {
-            this.sig = sig;
         }
         
         public List<ParameterInfo> getParameters() {
@@ -475,154 +904,21 @@ public abstract class SaasBean extends GenericResourceBean {
         public void setParameters(List<ParameterInfo> params) {
             this.params = params;
         }
-            
-        public Login getLogin() {
-            return login;
+        
+        public UseTemplates getUseTemplates() {
+            return useTemplates;
         }
         
-        public void setLogin(Login login) {
-            this.login = login;
+        public void setUseTemplates(UseTemplates useTemplates) {
+            this.useTemplates = useTemplates;
         }
         
-        public Token getToken() {
-            return token;
+        public UseGenerator getUseGenerator() {
+            return useGenerator;
         }
         
-        public void setToken(Token token) {
-            this.token = token;
-        }
-        
-        public Logout getLogout() {
-            return logout;
-        }
-        
-        public void setLogout(Logout logout) {
-            this.logout = logout;
-        }
-        
-        public Login createLogin() {
-            return new Login();
-        }
-        
-        public Token createToken() {
-            return new Token();
-        }
-        
-        public Logout createLogout() {
-            return new Logout();
-        }
-        
-        public Method createMethod() {
-            return new Method();
-        }
-        
-        public class Login {
-        
-            List<ParameterInfo> params = Collections.emptyList();
-            Method method;
-            
-            public Login() {
-            }
-            
-            public List<ParameterInfo> getParameters() {
-                return params;
-            }
-
-            public void setParameters(List<ParameterInfo> params) {
-                this.params = params;
-            }
-            
-            public Method getMethod() {
-                return method;
-            }
-
-            public void setMethod(Method method) {
-                this.method = method;
-            }
-        }
-        
-        public class Token extends Login {
-
-            private Frame frame;
-
-            public Token() {    
-            }
-
-            public Frame getFrame() {
-                return frame;
-            }
-
-            public void setFrame(Frame frame) {
-                this.frame = frame;
-            }
-            
-            private Frame createFrame() {
-                return new Frame();
-            }
-            
-            public class Frame {
-
-                private String url;
-                List<ParameterInfo> params = Collections.emptyList();
-
-                public Frame() {    
-                }
-
-                public String getUrl() {
-                    return url;
-                }
-
-                public void setUrl(String url) {
-                    this.url = url;
-                }
-
-                public List<ParameterInfo> getParameters() {
-                    return params;
-                }
-
-                public void setParameters(List<ParameterInfo> params) {
-                    this.params = params;
-                }
-            }
-        }
-        
-        public class Logout extends Login {
-            public Logout() {
-            }
-        }
-        
-        public class Method {
-        
-            String id;
-            String name;
-            String href;
-            
-            public Method() {  
-            }
-            
-            public String getId() {
-                return id;
-            }
-
-            public void setId(String id) {
-                this.id = id;
-            }
-            
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-            
-            public String getHref() {
-                return href;
-            }
-
-            public void setHref(String href) {
-                this.href = href;
-            }
+        public void setUseGenerator(UseGenerator useGenerator) {
+            this.useGenerator = useGenerator;
         }
     }
     
@@ -630,5 +926,5 @@ public abstract class SaasBean extends GenericResourceBean {
         public CustomAuthentication() {
         }
     }
-
+   
 }

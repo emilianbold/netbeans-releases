@@ -267,7 +267,8 @@ public class ServerInstance implements Node.Cookie {
 
 
     public String getHost() {
-        return OPTIONS.getHost();
+        return Utils.isEmpty(OPTIONS.getHost()) ?  
+            MySQLOptions.getDefaultHost() : OPTIONS.getHost();
     }
 
     public void setHost(String host) {
@@ -503,13 +504,13 @@ public class ServerInstance implements Node.Cookie {
     
     public synchronized void disconnect() {
         adminConn.disconnect();
+        setState(State.DISCONNECTED);
         
         try {
             this.refreshDatabaseList();
         } catch ( DatabaseException dbe ) {
             LOGGER.log(Level.FINE, null, dbe);
         }
-        setState(State.DISCONNECTED);
     }
     
     /**
@@ -572,6 +573,9 @@ public class ServerInstance implements Node.Cookie {
                         LOGGER.log(Level.INFO, message);
                         progress.finish();
                     }
+                 } catch ( Throwable t ) {
+                     LOGGER.log(Level.INFO, null, t);
+                     progress.finish();
                  }
              };
          });
@@ -814,11 +818,11 @@ public class ServerInstance implements Node.Cookie {
             String outputLabel) throws DatabaseException {
         
         if ( Utilities.isMac() && command.endsWith(".app") ) {  // NOI18N
-            // TODO - find a way to run .app files.  This feels like a hack
-            String[] pieces = command.split("/"); // NOI18N
-            String base = pieces[pieces.length - 1];
-            base = base.replace(".app", ""); // NOI18N
-            command = command + "/Contents/MacOS/" + base; // NOI18N
+            // The command is actually the first argument, with /usr/bin/open
+            // as the actual command.  Put the .app file path in quotes to 
+            // deal with spaces in the path.
+            args = "\"" + command + "\" " + args; // NOI18N
+            command = "/usr/bin/open"; // NOI18N     
         }
         try {
             NbProcessDescriptor desc = new NbProcessDescriptor(command, args);

@@ -486,7 +486,7 @@ made subject to such option by the copyright holder.
 			<attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_sum_outputParm1"/>
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_sum_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_sum_outputparam1"/>
-			<attr name="ToolbarCategory" intvalue="17"/>
+			<attr name="ToolbarCategory" intvalue="15"/>
 		</operator>
 		<operator name="average">
 			<attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
@@ -503,7 +503,7 @@ made subject to such option by the copyright holder.
 			<attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_avg_outputParm1"/>
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_avg_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_avg_outputparam1"/>
-			<attr name="ToolbarCategory" intvalue="17"/>
+			<attr name="ToolbarCategory" intvalue="15"/>
 		</operator>
 		<operator name="minimum">
 			<attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
@@ -520,7 +520,7 @@ made subject to such option by the copyright holder.
 			<attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_min_outputParm1"/>
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_min_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_min_outputparam1"/>
-			<attr name="ToolbarCategory" intvalue="17"/>
+			<attr name="ToolbarCategory" intvalue="15"/>
 		</operator>
 		<operator name="maximum">
 			<attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
@@ -537,7 +537,7 @@ made subject to such option by the copyright holder.
 			<attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_max_outputParm1"/>
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_max_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_max_outputparam1"/>
-			<attr name="ToolbarCategory" intvalue="17"/>
+			<attr name="ToolbarCategory" intvalue="15"/>
 		</operator>
 	</category>
 	<category name="Comparison">

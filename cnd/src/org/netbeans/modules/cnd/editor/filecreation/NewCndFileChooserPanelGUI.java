@@ -370,7 +370,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPanel1.add(cbExtension, gridBagConstraints);
         cbExtension.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewCndFileChooserPanelGUI.class, "AD_ExtensionTextField")); // NOI18N
 
@@ -406,7 +406,7 @@ class NewCndFileChooserPanelGUI extends javax.swing.JPanel implements ActionList
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 0);
         add(locationComboBox, gridBagConstraints);
         locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewCndFileChooserPanelGUI.class).getString("AD_locationComboBox")); // NOI18N
 

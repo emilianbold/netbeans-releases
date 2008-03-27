@@ -58,11 +58,8 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
-import javax.swing.text.Document;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -310,6 +307,8 @@ public class FormEditor {
 	formModel.getCodeStructure().setFormJavaSource(formJavaSource);
 	
         openForms.put(formModel, this);
+
+        Logger.getLogger("TIMER").log(Level.FINE, "FormModel", new Object[] { formDataObject.getPrimaryFile(), formModel}); // NOI18N
 
         // Force initialization of Auto Set Component Name.
         // It cannot be initialized in constructor of FormModel,

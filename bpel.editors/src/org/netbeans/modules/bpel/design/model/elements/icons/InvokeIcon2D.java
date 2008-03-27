@@ -46,10 +46,10 @@ public class InvokeIcon2D extends Icon2D {
     private static final Shape SHAPE;
 
     static {
-        GeneralPath p = new GeneralPath(new Rectangle2D.Float(-12, -6, 24, 12));
-        p.moveTo(-12, -6);
+        GeneralPath p = new GeneralPath(new Rectangle2D.Float(-7, -4, 14, 8));
+        p.moveTo(-6.5f, -3.5f);
         p.lineTo(0, 1);
-        p.lineTo(12, -6);
+        p.lineTo(6.5f, -3.5f);
         SHAPE = p;
     }
 }

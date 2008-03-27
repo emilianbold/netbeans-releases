@@ -285,19 +285,21 @@ public class ExtendedTokenSequence {
                     }
                 }
                 CppTokenId id = ts.token().id();
-                if (id == NEW_LINE){
-                    return true;
-                } else if ( id == LINE_COMMENT){
-                    // skip
-                } else if (ts.token().id() != WHITESPACE){
-                    return false;
-                }
-                if (diff != null){
-                    if (diff.after != null){
-                        if (diff.after.hasNewLine()) {
+                switch (id){
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                        if (ts.token().text().toString().indexOf('\n')>=0) {
                             return true;
                         }
-                    }
+                        break;
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                        return true;
+                    case WHITESPACE:
+                        break;
+                    default:
+                        return false;
                 }
             }
         } finally {
@@ -468,19 +470,28 @@ public class ExtendedTokenSequence {
     }
 
     /*package local*/ int openParenIndent(int parenDepth) {
+        return openBraceIndent(parenDepth, LPAREN, RPAREN);
+    }
+
+    /*package local*/ int openBraceIndent(int braceDepth) {
+        return openBraceIndent(braceDepth, LBRACE, RBRACE);
+    }
+
+    private int openBraceIndent(int braceDepth, CppTokenId open, CppTokenId close) {
         int index = ts.index();
         try {
             while(true) {
                 if (!ts.movePrevious()){
                     return -1;
                 }
-                if (ts.token().id() == LPAREN){
-                    parenDepth--;
-                    if (parenDepth == 0){
-                        return getTokenPosition()+1;
+                if (ts.token().id() == open){
+                    braceDepth--;
+                    if (braceDepth == 0){
+                        ts.moveNext();
+                        return getTokenPosition();
                     }
-                } else if (ts.token().id() == RPAREN){
-                    parenDepth++;
+                } else if (ts.token().id() == close){
+                    braceDepth++;
                 }
             }
         } finally {
@@ -630,7 +641,8 @@ public class ExtendedTokenSequence {
                     buf.insert(start, text);
                 }
             }
-            return buf.toString();
+            return buf.toString().replaceAll("\n", "\\\\n\n"); //NOI18N
+            //return buf.toString();
         } finally {
             ts.moveIndex(index);
             ts.moveNext();
