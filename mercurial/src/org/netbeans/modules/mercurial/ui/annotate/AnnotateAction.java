@@ -174,7 +174,7 @@ public class AnnotateAction extends ContextAction {
         HgLogMessage [] logs;
         Set<File> setFile = new HashSet<File>();
         setFile.add(file);
-        logs = HgCommand.getLogMessages(repository.getAbsolutePath(), setFile, progress.getLogger());
+        logs = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setFile, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }

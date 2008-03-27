@@ -96,7 +96,13 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     String toName = ((Named) toType).getName();
 //out("    to name: " + fromName);
 
-    if (fromName != null && fromName.equals(toName)) {
+    if (fromName == null || toName == null) {
+      return;
+    }
+    if (fromName.equals(toName)) {
+      return;
+    }
+    if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
       return;
     }
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
