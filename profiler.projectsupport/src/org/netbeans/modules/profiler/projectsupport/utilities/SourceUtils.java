@@ -40,6 +40,7 @@
 
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -86,7 +87,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -453,10 +458,63 @@ public final class SourceUtils {
     }
 
     /**
+     * Tests
+     * @param fo
+     * @param annotationName
+     * @return
+     */
+    public static boolean hasAnnotation(final FileObject fo, final String annotationName) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean result = new AtomicBoolean(false);
+        
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return false;
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                public void cancel() {
+                    // do nothing
+                }
+
+                public void run(final CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+
+                    TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
+                        @Override
+                        public Void visitAnnotation(AnnotationTree annTree, Void p) {
+                            if (result.get()) return null;
+                            
+                            TypeMirror tm = controller.getTrees().getTypeMirror(getCurrentPath());
+                            if (tm != null) {
+                                TypeElement annType = (TypeElement)controller.getTypes().asElement(tm);
+                                if (annType != null) {
+                                    result.set(result.get() || annotationName.equals(ElementUtilities.getBinaryName(annType)));
+                                }
+                            }
+                            return null;
+                        }
+                    };
+                    scanner.scan(controller.getCompilationUnit(), null);
+
+                    latch.countDown();
+                }
+            }, true);
+            latch.await();
+            return result.get();
+        } catch (IOException e) {
+            ProfilerLogger.log(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return false;
+    }
+    
+    /**
      * Check if given FileObject represents a java class which extends or implements all the provided classes or interfaces
      *
      * @param fo        a FileObject representing Java source/class file
      * @param classNames array of classnames, fully qualified using . as package separator
+     * @param allRequired whether all interfaces/classes must be implemented/extended (TRUE) or any of them (FALSE)
      * @return true if the class in the FileObject is a subclass of the specified class
      */
     public static boolean isInstanceOf(final FileObject fo, final String[] classNames, final boolean allRequired) {
@@ -696,7 +754,7 @@ public final class SourceUtils {
     }
 
     public static boolean isTest(FileObject fo) {
-        return isJavaFile(fo) && isInstanceOf(fo, TEST_CLASSES, false); // NOI18N
+        return isJavaFile(fo) && (hasAnnotation(fo, "org.junit.Test") || isInstanceOf(fo, TEST_CLASSES, false)); // NOI18N
     }
 
     public static String getToplevelClassName(FileObject profiledClassFile) {
