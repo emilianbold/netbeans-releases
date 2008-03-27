@@ -46,7 +46,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -56,6 +55,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -112,10 +113,18 @@ import org.openide.windows.WindowManager;
 public class SchemaEditorSupport extends DataEditorSupport
         implements SchemaModelCookie, OpenCookie, EditCookie,
         EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie {
-    /** Used for managing the prepareTask listener. */
+    
+    private static final Logger logger = Logger.getLogger(SchemaEditorSupport.class.getName());
+    
+    /**
+     * Used for managing the prepareTask listener.
+     */
     private transient Task prepareTask2;
-    /** Ignore the upcoming call to updateTitles() due to changes being
-     * made to the document which cannot otherwise be ignored. */
+    
+    /**
+     * Ignore the upcoming call to updateTitles() due to changes being
+     * made to the document which cannot otherwise be ignored.
+     */
     private transient boolean ignoreUpdateTitles;
     private transient SchemaModel model;
     
@@ -418,6 +427,7 @@ public class SchemaEditorSupport extends DataEditorSupport
         }
     }
 
+    @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream in,
             EditorKit kit) throws IOException, BadLocationException {
         // Detect the encoding to get optimized reader if UTF-8.
@@ -425,14 +435,21 @@ public class SchemaEditorSupport extends DataEditorSupport
         if (enc == null) {
             enc = "UTF8"; // NOI18N
         }
+        Reader reader = null;
         try {
-            Reader reader = new InputStreamReader(in, enc);
+            reader = EncodingUtil.getUnicodeReader(in, enc);
             kit.read(reader, doc, 0);
         } catch (CharConversionException cce) {
+            logger.log(Level.WARNING, cce.getMessage());
         } catch (UnsupportedEncodingException uee) {
+            logger.log(Level.WARNING, uee.getMessage());
+        } finally {
+            if(reader != null)
+                reader.close();
         }
     }
     
+    @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit,
             OutputStream out) throws IOException, BadLocationException {
         // Detect the encoding, using UTF8 if the encoding is not set.

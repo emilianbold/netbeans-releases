@@ -48,7 +48,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,18 +63,14 @@ public class HelloWorldSampleWizardIterator extends SampleWizardIterator {
         return new HelloWorldSampleWizardIterator();
     }
     
-    protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(HelloWorldSampleWizardIterator.class, "MSG_NameAndLocation"),
-        };
-    }
-    
+    @Override
     protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new HelloWorldSampleWizardPanel(),
         };
     }
     
+    @Override
     public Set instantiate() throws IOException {
         setProjectConfigNamespace(null);
         Set resultSet = super.instantiate();
@@ -103,7 +98,5 @@ public class HelloWorldSampleWizardIterator extends SampleWizardIterator {
         
         ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
         return resultSet;
-    }
-
-    
+    }    
 }

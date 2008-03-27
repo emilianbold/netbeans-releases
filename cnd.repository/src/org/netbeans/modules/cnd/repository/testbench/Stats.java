@@ -78,6 +78,8 @@ public class Stats {
     public static final boolean writeStatistics = getBoolean("cnd.repository.write.stat", false); //NOI18N
     
     public static final boolean multyFileStatistics = getBoolean("cnd.repository.mf.stat", false); //NOI18N
+
+    public static final boolean memoryCacheHitStatistics = getBoolean("cnd.repository.mem.cache.stat", false); //NOI18N
     
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
     public static final int maintenanceInterval = getInteger("cnd.repository.queue.maintenance", 500); //NOI18N

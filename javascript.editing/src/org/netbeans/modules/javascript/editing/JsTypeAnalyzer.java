@@ -297,7 +297,7 @@ public class JsTypeAnalyzer {
                 } else if (grandChild.getType() == Token.NAME) {
                     String name = grandChild.getString();
                     //String lhs = types.get(name);
-                    String lhs = getType(name);
+                    String lhs = getTypeInternal(name);
                     if (lhs == null) {
                         lhs = FunctionCache.INSTANCE.getType(name, index);
                         if (lhs == null) {
@@ -337,7 +337,7 @@ public class JsTypeAnalyzer {
         }
         case Token.NAME: {
             //String name = node.getString();
-            return getType(node.getString());
+            return getTypeInternal(node.getString());
             //return types.get(name);
         }
         case Token.GETPROP: {
@@ -385,7 +385,13 @@ public class JsTypeAnalyzer {
     public String getType(Node node) {
         init();
         
-        return expressionType(node);
+        String type = expressionType(node);
+
+        if (type != null && type.startsWith("Array<")) { // NOI18N
+            return "Array"; // NOI18N
+        }
+        
+        return type;
     }
     
     private void init() {
@@ -401,10 +407,8 @@ public class JsTypeAnalyzer {
         }
     }
 
-    /** Return the type of the given symbol */
-    public String getType(String symbol) {
-        init();
-
+    /** Like getType(), but doesn't strip off array type parameters etc. */
+    private String getTypeInternal(String symbol) {
         String type = types.get(symbol);
     
         if (type == null) {
@@ -419,6 +423,16 @@ public class JsTypeAnalyzer {
 //                type = index.getType(symbol);
             }
         }
+        
+        return type;
+    }
+
+    /** Return the type of the given symbol */
+    public String getType(String symbol) {
+        init();
+
+        String type = getTypeInternal(symbol);
+
         // We keep track of the types contained within Arrays
         // internally (and probably hashes as well, TODO)
         // such that we can do the right thing when you operate
