@@ -279,7 +279,7 @@ public class PhpProjectProperties {
     }
 
     // XXX remove this method
-    public EditableProperties load() {
+    private EditableProperties load() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
 
             public Host run() {

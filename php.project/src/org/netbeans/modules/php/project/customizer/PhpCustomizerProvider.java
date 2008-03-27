@@ -106,7 +106,6 @@ public class PhpCustomizerProvider implements CustomizerProvider, ProjectWithHos
                     getProject(), null);
             // load PhpProjectProperties here to do it once inside 
             // 'ProjectManager.mutex().readAccess'
-            uiProperties.load();
             init( uiProperties );
 
             OptionListener listener = new OptionListener( uiProperties );
