@@ -4180,7 +4180,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
-            if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
+            if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
+                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                return new Env(offset, prefix, controller, orig, sourcePositions, null);
+            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
                 controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
