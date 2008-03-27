@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.gsfret.source.usages;
 
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -101,6 +102,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -142,6 +144,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 //    private static final boolean CLOSE_INDICES = Boolean.getBoolean("gsf.closeindices");
     
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    static boolean haveIndexed = false;
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
@@ -150,6 +153,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
+    // TODO - make delay configurable?
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
     
     private static RepositoryUpdater instance;
@@ -897,6 +901,13 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             RepositoryUpdater.this.noSubmited--;
                             if (RepositoryUpdater.this.noSubmited == 0) {
                                 RepositoryUpdater.this.notifyAll();
+                                
+                                if (PREINDEXING) {
+                                    if (haveIndexed) {
+                                        LifecycleManager.getDefault().saveAll();
+                                        LifecycleManager.getDefault().exit();
+                                    }
+                                }
                             }
                         }
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
@@ -1020,9 +1031,12 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 final URL rootURL = it.next();
                 try {
                     it.remove();
+                    String urlString = rootURL.toExternalForm();
                     for (IndexerEntry entry : getIndexers()) {
                         Language language = entry.getLanguage();
-                        final ClassIndexImpl ci = ClassIndexManager.get(language).createUsagesQuery(rootURL,false);                                        
+                        if (entry.indexer.acceptQueryPath(urlString)) {
+                            final ClassIndexImpl ci = ClassIndexManager.get(language).createUsagesQuery(rootURL,false);                                        
+                        }
                     }
                     RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
 //                    long startT = System.currentTimeMillis();
@@ -1077,6 +1091,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     Index.preindex(language, rootURL);
                                 }
                             }
+                            haveIndexed = true;
                         }
                     }
                 } catch (Throwable e) {
@@ -1193,8 +1208,13 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 Map<Language,Map<String,String>> timeStamps = new HashMap<Language,Map<String,String>>();
 
                 boolean invalidIndex = false;
+                String rootString = root.toExternalForm();
                 for (IndexerEntry entry : getIndexers()) {
                     Language language = entry.getLanguage();
+                    if (!entry.indexer.acceptQueryPath(rootString)) {
+                        continue;
+                    }
+
                     ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
                     assert uqImpl != null;
                     SourceAnalyser sa = uqImpl.getSourceAnalyser();
@@ -1304,7 +1324,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1RC2");
+                        int rubyIndex = path.indexOf("jruby-1.1RC3");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }
@@ -1369,8 +1389,14 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
             boolean scan = (entry == null || entry.includes(fo));
             String sourceLevel = scan ? SourceLevelQuery.getSourceLevel(fo) : null;
-            for (Language language : languages) {
+            String rootString = root.toExternalForm();
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
+        for (Language language : languages) {
+            if (language.getIndexer() != null && !language.getIndexer().acceptQueryPath(rootString)) {
+                // TODO - shouldn't I also skip this for-iteration if indexer is null?
+                continue;
+            }
+            
             final ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
             if (uqImpl != null) {
                 uqImpl.setDirty(null);
@@ -1451,6 +1477,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             // getApplicableIndexers() since I don't have the mime type for 
             // deleted files (and asking for it just returns content/unknown)
             if (language.getIndexer() == null) {
+                continue;
+            }
+            if (!language.getIndexer().acceptQueryPath(root.toExternalForm())) {
                 continue;
             }
             final ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
@@ -1866,6 +1895,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 continue;
                             }
 
+                            if (!entry.indexer.acceptQueryPath(root.toExternalForm())) {
+                                continue;
+                            }
                             language = entry.getLanguage();
                             if (timeStamps != null) {
                                 Map<String,String> ts = timeStamps.get(language);
@@ -2005,25 +2037,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         }
                         active = null;
                         state  = 0;
-                    } catch (Exception a) {
-                        //coupling error
-                        //TODO: check if the source sig file ~ the source java file:
-                        //couplingAbort(a, active);
-                        if (PREINDEXING) {
-                            Exceptions.printStackTrace(a);
-                            System.exit(0);
-                        }                        
-                        if (jt != null) {
-                            jt.finish();
-                        }
-                        jt = null;
-                        listener.cleanDiagnostics();
-                        active = null;
-                        state = 0;
                     } catch (Throwable t) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
     BUG_LOGGER.log(Level.FINE, "CompilerWorker *** caught exception 4 " , t);
 }
+                        if (PREINDEXING) {
+                            Exceptions.attachMessage(t, "Parsing " + active.getFile().getPath());
+                            Exceptions.printStackTrace(t);
+                            Toolkit.getDefaultToolkit().beep();
+                            //System.exit(-1);
+                        }                        
                         if (t instanceof ThreadDeath) {
                             throw (ThreadDeath) t;
                         }

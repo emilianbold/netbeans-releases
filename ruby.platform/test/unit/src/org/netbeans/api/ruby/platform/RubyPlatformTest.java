@@ -118,7 +118,7 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC2)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC3)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
     }
@@ -132,6 +132,13 @@ public class RubyPlatformTest extends RubyTestBase {
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
+    }
+    
+    public void testHasFastDebuggerInstalledExactness() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
+        installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
+        assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
     }
     
     public void testFireGemsChanged() throws Exception {

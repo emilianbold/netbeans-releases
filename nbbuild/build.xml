@@ -1319,7 +1319,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
     <mkdir dir="build"/>
-    <property name="l10n.kit" file="build/l10n.zip"/>
+    <property name="l10n.kit" location="build/l10n.zip"/>
+    <property name="nbms.location" location="nbms"/>
     <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
   </target>
 
@@ -1334,7 +1335,19 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </ducf>
     </target>
 
-  <target name="clean-external">
+  <target name="-cleanall" depends="init-module-list,init-tasks">
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+    <cleanall topdir=".." 
+              modules="${allmodules}" 
+              targetname="clean"
+              resolvedependencies="${resolve.clean.dependencies}"
+              deptargetprefix="all-"
+              failonerror="${stop.when.clean.error}" />
+  </target>
+
+  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+
+  <target name="-clean-external">
     <subant target="clean">
       <fileset dir="..">
         <include name="*/external/build.xml"/>
@@ -1344,7 +1357,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
-  <target name="-real-clean" depends="clean,clean-external">
+  <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
       <fileset dir=".">
@@ -1357,10 +1370,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
     <delete dir="build/antclasses"/>
-  </target>
-
-  <target name="ant-clean">
-    <delete file="nbantext.jar"/>
   </target>
 
   <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
@@ -1486,21 +1495,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <property name="xtest.debug.address" value="${jpda.address}" />
         <property name="xtest.debug.pause" value="false" />
     </ant>
-  </target>
-
-  <target name="cleanall" depends="init-module-list,init-tasks">
-    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
-    <cleanall topdir=".." 
-              modules="${allmodules}" 
-              targetname="clean"
-              resolvedependencies="${resolve.clean.dependencies}"
-              deptargetprefix="all-"
-              failonerror="${stop.when.clean.error}" />
-  </target>
-
-  <target name="clean" depends="cleanall,localclean"
-          description="Clean out (almost) all build products.">
-    <echo message="Run `ant hg-clean' if desired."/>
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">

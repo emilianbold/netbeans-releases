@@ -39,15 +39,17 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -61,11 +63,26 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,9 +90,43 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS, STRING};
 
-    private final static String[] PHP_KEYWORDS = {"do", "for", "function", "if", "while"};
+    private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if",
+        "include()", "include_once()", "isset()", "list()", "new",
+        "print()", "require()", "require_once()", "return()", "static",
+        "switch", "unset()", "use", "var", "while",
+        "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
+        "interface", "implements", "extends", "public", "private",
+        "protected", "abstract", "clone", "try", "catch", "throw"
+    };
+    
     private boolean caseSensitive;
+    
+    private static CompletionContext findCompletionContext(CompilationInfo info, int caretOffset){
+        try {
+            TokenHierarchy th = TokenHierarchy.get(info.getDocument());
+            TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
+            tokenSequence.move(caretOffset);
+            tokenSequence.moveNext();
+            
+            switch (tokenSequence.token().id()){
+                case T_INLINE_HTML:
+                    return CompletionContext.HTML;
+                case PHP_CONSTANT_ENCAPSED_STRING:
+                    return CompletionContext.STRING;
+                default:
+                    return CompletionContext.EXPRESSION;
+            }
+            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return null;
+    }
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
         this.caseSensitive = caseSensitive;
@@ -83,29 +134,155 @@ public class PHPCodeCompletion implements Completable {
 
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
         result.getProgram();
+        
+        CompletionContext context = findCompletionContext(info, caretOffset);
 
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
+        request.formatter = formatter;
+        request.result = result;
+        request.info = info;
+        request.prefix = prefix;
+        
+        switch(context){
+            case EXPRESSION:
+                autoCompleteExpression(proposals, request);
+                break;
+            case HTML:
+                proposals.add(new KeywordItem("<?php", request));
+                break;
+        }
+        
+        return proposals;
+    }
+
+    private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
+
 
         // KEYWORDS
-
         for (String keyword : PHP_KEYWORDS) {
-            if (startsWith(keyword, prefix)) {
+            if (startsWith(keyword, request.prefix)) {
                 proposals.add(new KeywordItem(keyword, request));
             }
         }
 
         // FUNCTIONS
-        
-        PHPIndex index = PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE));
-        
-        for (IndexedFunction function : index.getFunctions(result, prefix, NameKind.PREFIX)){
+        PHPIndex index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+
+        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new FunctionItem(function, request));
         }
 
+        // CONSTANTS
+        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, NameKind.PREFIX)) {
+            proposals.add(new ConstantItem(constant, request));
+        }
+
+        // LOCAL VARIABLES
+        proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+    }
+    
+    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
+        Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
+        String prefix = request.prefix;
+        String url = null;
+        try {
+            url = request.result.getFile().getFile().toURL().toExternalForm();
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        for (Statement statement : statementList){
+            if (statement.getStartOffset() > request.anchor){
+                break; // no need to analyze statements after caret offset
+            }
+            
+            if (statement instanceof ExpressionStatement){
+                String varName = extractVariableNameFromExpression(statement);
+                
+                if (varName != null && varName.startsWith(prefix)) {
+                    IndexedConstant ic = new IndexedConstant(varName, null,
+                            null, url, null, 0, ElementKind.VARIABLE);
+
+                    CompletionProposal proposal = new VariableItem(ic, request);
+                    proposals.add(proposal);
+                }
+            } else if (!offsetWithinStatement(request.anchor, statement)){
+                continue;
+            }
+                
+            if (statement instanceof Block) {
+                Block block = (Block) statement;
+                proposals.addAll(getLocalVariableProposals(block.getStatements(), request));
+            } else if (statement instanceof IfStatement){
+                IfStatement ifStmt = (IfStatement)statement;
+                
+                if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
+                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request));
+                } else if (offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
+                    proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request));
+                }
+            } else if (statement instanceof WhileStatement) {
+                WhileStatement whileStatement = (WhileStatement) statement;
+                proposals.addAll(getLocalVariableProposals(Collections.singleton(whileStatement.getBody()), request));
+            }  else if (statement instanceof DoStatement) {
+                DoStatement doStatement = (DoStatement) statement;
+                proposals.addAll(getLocalVariableProposals(Collections.singleton(doStatement.getBody()), request));
+            }
+            else if (statement instanceof FunctionDeclaration) {
+                FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
+
+                for (FormalParameter param : functionDeclaration.getFormalParameters()) {
+                    if (param.getParameterName() instanceof Variable) {
+                        String varName = extractVariableName((Variable) param.getParameterName());
+                        IndexedConstant ic = new IndexedConstant(varName, null,
+                                null, url, null, 0, ElementKind.VARIABLE);
+
+                        CompletionProposal proposal = new VariableItem(ic, request);
+                        proposals.add(proposal);
+                    }
+                }
+                
+                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)functionDeclaration.getBody()), request));
+            } else if (statement instanceof ClassDeclaration) {
+                ClassDeclaration classDeclaration = (ClassDeclaration) statement;
+                proposals.addAll(getLocalVariableProposals(Collections.singleton((Statement)classDeclaration.getBody()), request));
+            }
+            
+        }
+        
         return proposals;
     }
+    
+    private static boolean offsetWithinStatement(int offset, Statement statement){
+        return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
+    }
 
+    private static String extractVariableNameFromExpression(Statement statement) {
+        Expression expr = ((ExpressionStatement) statement).getExpression();
+
+        if (expr instanceof Assignment) {
+            VariableBase variableBase = ((Assignment) expr).getLeftHandSide();
+
+            if (variableBase instanceof Variable) {
+                Variable var = (Variable) variableBase;
+                return extractVariableName(var);
+            }
+        }
+        
+        return null;
+    }
+    
+    private static String extractVariableName(Variable var){
+        if (var.getName() instanceof Identifier) {
+            Identifier id = (Identifier) var.getName();
+            return "$" + id.getName();
+        }
+
+        return null;
+    }
+        
     public String document(CompilationInfo info, ElementHandle element) {
         return null;
     }
@@ -241,11 +418,11 @@ public class PHPCodeCompletion implements Completable {
     }
 
     private class KeywordItem extends PHPCompletionItem {
-
-        private String keyword;
+        private String description = null;
+        private String keyword = null;
 
         KeywordItem(String keyword, CompletionRequest request) {
-            super(request);
+            super(null, request);
             this.keyword = keyword;
         }
 
@@ -258,34 +435,126 @@ public class PHPCodeCompletion implements Completable {
         public ElementKind getKind() {
             return ElementKind.KEYWORD;
         }
+        
+        @Override
+        public String getRhsHtml() {
+            if (description != null) {
+                return description;
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private class ConstantItem extends PHPCompletionItem {
+        private IndexedConstant constant = null;
+
+        ConstantItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.GLOBAL;
+        }
+    }
+    
+    private class VariableItem extends PHPCompletionItem {
+        private IndexedConstant constant = null;
+
+        VariableItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
     }
     
     private class FunctionItem extends PHPCompletionItem {
 
-        private IndexedFunction function;
-
         FunctionItem(IndexedFunction function, CompletionRequest request) {
-            super(request);
-            this.function = function;
+            super(function, request);
         }
-
-        @Override
-        public String getName() {
-            return function.getName();
+        
+        public IndexedFunction getFunction(){
+            return (IndexedFunction)getElement();
         }
 
         @Override
         public ElementKind getKind() {
             return ElementKind.METHOD;
         }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName() + "(" + getParamsStr() + ")";
+        }
+        
+        @Override public String getLhsHtml() {
+            ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+//            boolean emphasize = true; //!function.isInherited();
+//            if (emphasize) {
+//                formatter.emphasis(true);
+//            }
+            formatter.name(kind, true);
+            formatter.appendText(getName());
+            formatter.name(kind, false);
+            
+//            if (strike) {
+//                formatter.deprecated(false);
+//            }
+//            
+            formatter.appendHtml("("); // NOI18N
+            formatter.parameters(true);
+            formatter.appendText(getParamsStr());
+            formatter.parameters(false);
+            formatter.appendHtml(")"); // NOI18N
+
+//            if (getFunction().getType() != null && 
+//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
+//                formatter.appendHtml(" : ");
+//                formatter.appendText(getFunction().getType());
+//            }
+            
+            return formatter.getText();
+        }
+        
+        private String getParamsStr(){
+            StringBuilder builder = new StringBuilder();
+            Collection<String> parameters = getFunction().getParameters();
+            
+            if ((parameters != null) && (parameters.size() > 0)) {
+                Iterator<String> it = parameters.iterator();
+
+                while (it.hasNext()) { // && tIt.hasNext()) {
+                    String param = it.next();
+                    builder.append("$" + param);
+
+                    if (it.hasNext()) {
+                        builder.append(", "); // NOI18N
+                    }
+                }
+            }
+            
+            return builder.toString();
+        }
     }
 
     private static class PHPCompletionItem implements CompletionProposal {
 
         protected final CompletionRequest request;
+        private final ElementHandle element;
 
-        PHPCompletionItem(CompletionRequest request) {
+        PHPCompletionItem(ElementHandle element, CompletionRequest request) {
             this.request = request;
+            this.element = element;
         }
 
         public int getAnchorOffset() {
@@ -293,11 +562,11 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public ElementHandle getElement() {
-            return null;
+            return element;
         }
 
         public String getName() {
-            return null;
+            return element.getName();
         }
 
         public String getInsertPrefix() {
@@ -309,11 +578,10 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getLhsHtml() {
-            return getName();
-        }
-
-        public String getRhsHtml() {
-            return null;
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
         }
 
         public ElementKind getKind() {
@@ -341,12 +609,39 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String[] getParamListDelimiters() {
+            return new String[] { "(", ")" }; // NOI18N
+        }
+        
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            
+            if (element.getIn() != null) {
+                formatter.appendText(element.getIn());
+                return formatter.getText();
+            } else if (element instanceof IndexedElement) {
+                IndexedElement ie = (IndexedElement)element;
+                String filename = ie.getFilenameUrl();
+                if (filename != null) {
+                    int index = filename.lastIndexOf('/');
+                    if (index != -1) {
+                        filename = filename.substring(index + 1);
+                    }
+
+                    formatter.appendText(filename);
+                    return formatter.getText();
+                }
+            }
+            
             return null;
         }
     }
 
     private static class CompletionRequest {
-
+        private HtmlFormatter formatter;
         private int anchor;
+        private PHPParseResult result;
+        private CompilationInfo info;
+        private String prefix;
     }
 }

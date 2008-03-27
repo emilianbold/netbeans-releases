@@ -21,8 +21,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jComboBoxTarget" alignment="0" pref="314" max="32767" attributes="0"/>
-                  <Component id="librariesLocation" alignment="0" pref="314" max="32767" attributes="2"/>
+                  <Component id="jComboBoxTarget" alignment="0" pref="326" max="32767" attributes="0"/>
+                  <Component id="librariesLocation" alignment="0" pref="326" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -30,9 +30,9 @@
                   <Component id="jButton1" alignment="1" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabelErrorMessage" alignment="0" pref="544" max="32767" attributes="0"/>
-          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="544" max="32767" attributes="0"/>
-          <Component id="jTabbedPane1" alignment="0" pref="544" max="32767" attributes="0"/>
+          <Component id="jLabelErrorMessage" alignment="0" pref="546" max="32767" attributes="0"/>
+          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="546" max="32767" attributes="0"/>
+          <Component id="jTabbedPane1" alignment="0" pref="546" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

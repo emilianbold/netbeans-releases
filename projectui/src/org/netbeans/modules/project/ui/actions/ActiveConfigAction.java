@@ -171,7 +171,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             listeningToCombo = true;
         }
     }
-
+    
     private synchronized void activeConfigurationSelected(ProjectConfiguration cfg) {
         LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
         if (pcp != null && cfg != null && !cfg.equals(getActiveConfiguration(pcp))) {
@@ -182,7 +182,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             }
         }
     }
-
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ActiveConfigAction.class);
     }

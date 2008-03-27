@@ -56,6 +56,7 @@ import com.sun.rave.designtime.impl.BasicCustomizer2;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,6 +70,7 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -148,6 +150,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
             metadata = VisualSQLEditorMetaDataImpl.getDataSourceCache(dsName);
         } catch (java.sql.SQLException e) {
             // JDTODO
+        } catch (NamingException ne) {
+            Exceptions.printStackTrace(ne);
         }
         
         // Get the DatabaseConnection, to be passed to the Visual SQL Editor
@@ -164,17 +168,28 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
                     dbconn = dbconns[i];
                     break;
                 }
-            }
+            }             
         } catch (NamingException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SQLException sqe) {
+            Exceptions.printStackTrace(sqe);
         }
-        
-        String command = (String)srcBean.getProperty("command").getValue();
-        VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
-        
-        vse.addPropertyChangeListener(vseListener);
-        Component retComp = vse.open();
-        if (retComp instanceof TopComponent) {
-            queryEditors.put(srcBean, new QBPair((TopComponent)retComp, vse));
+
+        Component retComp = null;
+        try {
+            if (dbconn == null) {
+                throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dsName);
+            }
+            String command = (String) srcBean.getProperty("command").getValue();
+            VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
+            
+            vse.addPropertyChangeListener(vseListener);
+            retComp = vse.open();
+            if (retComp instanceof TopComponent) {
+                queryEditors.put(srcBean, new QBPair((TopComponent) retComp, vse));
+            }
+        } catch (NamingException ne) {
+            Exceptions.printStackTrace(ne);
         }
         
         return retComp ;
@@ -190,13 +205,12 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
      * context.  Copied from SqlStatementImpl
      */
     private DesignTimeDataSource lookupDataSource( String dataSourceName )
-        throws NamingException 
+        throws NamingException, SQLException 
     {
         String dsName ;
         if ( dataSourceName == null ) {
             // we should never be here, but just in case ...
-            NamingException ne = new NamingException("Data Source Name is required:  none provided." ) ; // NOI18N
-            throw ne ;
+            throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName) ; // NOI18N
         }
         
         javax.naming.Context ctx = new javax.naming.InitialContext();
@@ -207,6 +221,9 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         }
         
         DesignTimeDataSource ds = (DesignTimeDataSource) ctx.lookup( dsName );
+        if (ds == null) {
+            throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dataSourceName); //NOI18N
+        }
         return ds ;
     }
     

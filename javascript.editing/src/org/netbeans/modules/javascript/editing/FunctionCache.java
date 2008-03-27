@@ -41,9 +41,6 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.NameKind;
 
 /**
  * Cache which performs type lookup etc. for functions

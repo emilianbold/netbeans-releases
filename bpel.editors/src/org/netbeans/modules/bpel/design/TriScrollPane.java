@@ -138,52 +138,7 @@ public class TriScrollPane extends JScrollPane {
         int rightWidth = (!rightVisible) ? 0
                 : rightComponent.getPreferredSize().width;
         
-        System.out.println("LW=" + leftWidth);
-        System.out.println("RW=" + rightWidth);
-//
-//        JScrollBar vsb = getVerticalScrollBar();
-//        JScrollBar hsb = getHorizontalScrollBar();
-//
-//        Rectangle viewportBounds = getViewport().getBounds();
-//        
-//        if (handToolPanel != null) {
-//            handToolPanel.setBounds(viewportBounds.x, viewportBounds.y, 
-//                    leftWidth + viewportBounds.width + rightWidth,
-//                    viewportBounds.height);
-//        }
-//        
-//        if (overlayPanel != null) {
-//            overlayPanel.setBounds(viewportBounds.x, viewportBounds.y, 
-//                    leftWidth + viewportBounds.width + rightWidth,
-//                    viewportBounds.height);
-//        }
-//        
-//        
-//        Rectangle vsbBounds = (vsb.isVisible()) ? vsb.getBounds() : null;
-//        Rectangle hsbBounds = (hsb.isVisible()) ? hsb.getBounds() : null;
-//
-//        int vsbOffset = leftWidth + rightWidth;
-//
-//        if (leftWidth != 0) {
-//            viewportBounds.x += leftWidth;
-//            viewport.setBounds(viewportBounds);
-//        }
-//
-//        if (vsbOffset != 0) {
-//            if (vsbBounds != null) {
-//                vsbBounds.x += vsbOffset;
-//                vsb.setBounds(vsbBounds);
-//            }
-//
-//            if (hsbBounds != null) {
-//                hsbBounds.width += vsbOffset;
-//                hsb.setBounds(hsbBounds);
-//            }
-//        }
-
         Rectangle viewportBounds = getViewport().getBounds();
-        
-        System.out.println("viewportBounds=" + viewportBounds);
         
         if (leftVisible) {
             leftComponent.setVisible(true);
@@ -205,9 +160,6 @@ public class TriScrollPane extends JScrollPane {
         if (handToolPanel != null) {
             handToolPanel.setBounds(viewportBounds);
         }
-
-        System.out.println("LB=" + leftComponent.getBounds());
-        System.out.println("RB=" + rightComponent.getBounds());
     }
 
     public JComponent getComponent(Point pt) {

@@ -355,14 +355,28 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        String rt = getTypeInfo().getResolvedType(this);
-        int pos1 = rt.indexOf('{');
-        int pos2 = rt.indexOf('}');
+        int pos1, pos2;
+        
+        String info = getTypeInfo().getResolvedType(this);
+        pos1 = info.indexOf('{');
+        pos2 = info.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
-            String enum_values = rt.substring(pos1 + 1, pos2);
+            String enum_values = info.substring(pos1 + 1, pos2);
             for (String frag : enum_values.split(", ")) { // NOI18N
                 if (value.equals(frag)) {
                     return value;
+                }
+            }
+        } else {
+            info = getTypeInfo().getDetailedType(this);
+            pos1 = info.indexOf('{');
+            pos2 = info.indexOf('}');
+            if (pos1 > 0 && pos2 > 0) {
+                String enum_values = info.substring(pos1 + 1, pos2);
+                for (String frag : enum_values.split(", ")) { // NOI18N
+                    if (value.equals(frag)) {
+                        return value;
+                    }
                 }
             }
         }
@@ -422,7 +436,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 return true;
             }
-        } else if (value != null && value.length() > 0 && value.charAt(0) == '{') {
+        } else if (value != null && value.length() > 0 &&
+                (value.charAt(0) == '{' || value.charAt(value.length() - 1) == '}')) {
             return true;
         }
         return false;
@@ -583,11 +598,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
-                    if (map.isEmpty()) {
+                    if (map.isEmpty() && v.charAt(0) != '{') {
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
                     } else if (v.length() > 0) {
-                        String val = v.substring(1, v.length() - 1);
+                        int pos = v.indexOf('{');
+                        assert pos != -1;
+                        String val = v.substring(pos + 1, v.length() - 1);
                         int start = 0;
                         int end = GdbUtils.findNextComma(val, 0);
                         while (end != -1) {
@@ -606,7 +623,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     }
     
     private void createChildrenForPointer(String t, String v) {
-        addField(new AbstractField(this, '*' + getName(), t, v));
+            addField(new AbstractField(this, '*' + getName(), t, v));
     }
     
     private void createChildrenForMultiPointer(String t) {
@@ -676,6 +693,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     n = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
                     t = info.substring(1, pos - 2).trim();
                     v = info.substring(pos + 1).trim();
+                    if (t.length() == 0) {
+                        // I think this is handling a gdb bug. Its hard to say because the exact response
+                        // from gdb isn't well documented. In any case, this is triggered when the value
+                        // of a superclass is an empty string (<> = {...}). Since we've parsed the super
+                        // class already, I'm assuming single inheritance and taking the super from the map.
+                        t = (String) map.get("<super1>"); // NOI18N
+                    }
                     if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
@@ -685,18 +709,18 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     if (n.startsWith("_vptr")) { // NOI18N
                         return null;
                     }
-                        Object o = map.get(n);
-                        if (o instanceof String) {
-                            t = o.toString();
-                        } else if (o instanceof Map) {
-                            t = (String) ((Map) o).get("<typename>"); // NOI18N
-                        } else if (isNumber(v)) {
-                            t = "int"; // NOI18N - best guess (std::string drops an "int")
-                        } else {
-                            log.warning("Cannot determine field type for " + n); // NOI18N
-                            return null;
-                        }
-                        }
+                    Object o = map.get(n);
+                    if (o instanceof String) {
+                        t = o.toString();
+                    } else if (o instanceof Map) {
+                        t = (String) ((Map) o).get("<name>"); // NOI18N
+                    } else if (isNumber(v)) {
+                        t = "int"; // NOI18N - best guess (std::string drops an "int")
+                    } else {
+                        log.warning("Cannot determine field type for " + n); // NOI18N
+                        return null;
+                    }
+                }
                 return new AbstractField(parent, n, t, v);
             } else if (info.trim().equals("<No data fields>")) { // NOI18N
                 return new AbstractField(parent, "", "", info.trim()); // NOI18N
@@ -705,7 +729,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return null;
     }
     
-    private void parseCharArray(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArray(AbstractVariable var, String basename, String type, int size, String value) {
         String frag;
         int idx = 0;
         int pos;
@@ -728,6 +752,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     idx = value.length(); // stop iterating...
                 }
                 parseCharArrayFragment(var, basename, type, frag);
+                if (var.fields.length < size && idx >= value.length()) {
+                    var.addField(new AbstractField(var, basename + "[" + (size - 1) + "]", // NOI18N
+                            type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
+                }
                 if (truncated) {
                     String high;
                     try {
@@ -868,8 +896,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         } catch (Exception ex) {
             size = 0;
         }
-        if (t.equals("char")) { // NOI18N
-            parseCharArray(this, getName(), type, value);
+        if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
+            parseCharArray(this, getName(), type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
             for (int i = 0; i < size && vstart != -1; i++) {

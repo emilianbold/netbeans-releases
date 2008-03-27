@@ -150,16 +150,7 @@ public class CloneWSDLPortAction extends NodeAction {
                 String wRoot = wPath.substring(wPath.indexOf(JBI_SU_JAR_DIR) + JBI_SU_JAR_DIR.length() + 1).replace('\\', '/');
                 String wProj = wRoot.substring(0, wRoot.indexOf('/'));
                 wRoot = wRoot.substring(wRoot.indexOf('/') + 1);  // NOI18N
-
-                /*
-                  rPath  E:\a2k7\nb61\t0225\CompositeApp6\src\jbiasa\localhost_9080
-                 */
-                String rPath = srcPath + "/"+JBI_SOURCE_DIR+"/";  // NOI18N
-                int wIndex = wRoot.indexOf(wFile.getName());
-                if (wIndex > 0) {
-                    rPath = rPath +  wRoot.substring(0, wIndex).replace('\\', '/');  // NOI18N
-                }
-                //System.out.println("src: "+rPath+"\nWsdl: "+wPath+"\nwRoot: "+wRoot);
+                // System.out.println("wProj: "+wProj+"\nwPath: "+wPath+"\nwRoot: "+wRoot);
 
                 // todo: need to use the target cataglog when copying..
                 // IZ#128869, xml retriever can not utitlize the remote catalog...
@@ -169,23 +160,21 @@ public class CloneWSDLPortAction extends NodeAction {
                 // String oPath = fo.getPath();
 
                 // Copy remote resouces to local
-                File dstDir = new File(srcPath + "/"+JBI_SOURCE_DIR);  // NOI18N
+                File dstDir = new File(srcPath + "/"+JBI_SOURCE_DIR+"/"+wProj);  // NOI18N
                 File srcDir = new File(srcPath + "/"+JBI_SU_JAR_DIR+"/"+wProj);  // NOI18N
                 copyDirectory(srcDir, dstDir);
 
                 // Merge remote catalog with the local one
                 File dstCat = new File(projPath + "/catalog.xml");  // NOI18N
                 File srcCat = new File(srcPath + "/"+JBI_SU_JAR_DIR+"/META-INF/"+wProj + "/catalog.xml");  // NOI18N
-                mergeCatalog(srcCat, dstCat);
+                mergeCatalog(srcCat, dstCat, wProj);
 
                 // Update casa port wsdl link
-                String oPath = rPath+"/"+wFile.getName();  // NOI18N
                 String oHref = cp.getLink().getHref();
-                String href = "../" + oPath.substring(oPath.indexOf(JBI_SOURCE_DIR))  // NOI18N
-                            + oHref.substring(oHref.indexOf('#'));  // NOI18N
+                String href = oHref.replaceFirst(JBI_SU_JAR_DIR, JBI_SOURCE_DIR);
                 model.setEndpointLink(cp, href);
                 // todo: search and replace all WSDL ports.. ???
-                // System.out.println("Link: "+ cp.getLink().getHref());
+                //System.out.println("Link: "+ cp.getLink().getHref());
             }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
@@ -231,7 +220,7 @@ public class CloneWSDLPortAction extends NodeAction {
      * @param srcCat  remote catalog
      * @param dstCat  project catalog
      */
-    private void mergeCatalog(File srcCat, File dstCat) {
+    private void mergeCatalog(File srcCat, File dstCat, String wsdlProj) {
         if (!srcCat.exists()) {
             return;
         }
@@ -242,7 +231,7 @@ public class CloneWSDLPortAction extends NodeAction {
 
             // filter and convert URI...
             String prefix = "..";  // NOI18N
-            String newfix = "src/jbiasa"; // NOI18N
+            String newfix = "src/jbiasa/"+wsdlProj; // NOI18N
             NodeList systemNodes = srcDoc.getElementsByTagName("system"); // NOI18N
             for (int i = 0; i < systemNodes.getLength(); i++) {
                 Element systemNode = (Element) systemNodes.item(i);

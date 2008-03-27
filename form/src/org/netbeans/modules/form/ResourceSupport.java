@@ -252,7 +252,7 @@ public class ResourceSupport {
         }
 
         if (prevValue instanceof I18nValue) {
-            if (getI18nService() != null) {
+            if (!isEditorSwitchingValue(newValue) && getI18nService() != null) {
                 newValue = i18nService.changeValue((I18nValue)prevValue, value.toString());
             }
         }
@@ -1476,6 +1476,24 @@ public class ResourceSupport {
                || value instanceof java.awt.Font
                || value instanceof org.netbeans.modules.form.editors.IconEditor.NbImageIcon
                || value instanceof java.awt.Color;
+    }
+
+    /**
+     * Does the value means the user wants to explicitly switch from i18n editor
+     * to basic editor? See issue 130136.
+     * @param value the value being set to property
+     * @return true if the property editor should be switched to the basic editor
+     *         of the property - instead of trying to update existing i18n value
+     */
+    private boolean isEditorSwitchingValue(Object value) {
+        if (value instanceof FormProperty.ValueWithEditor) {
+            //    && !isI18nAutoMode() - maybe in auto mode we should keep i18n?
+            FormProperty.ValueWithEditor vwe = (FormProperty.ValueWithEditor) value;
+            if (vwe.getEditorSetByUser()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

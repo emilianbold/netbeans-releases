@@ -228,7 +228,8 @@ public abstract class PropertyUtils {
             String attrType,
             String attributeName,
             String displayName,
-            String description) {
+            String description,
+            String provider) {
 
         if (attrType == null) {
             System.err.println("Unsupported property type for " + attributeName);
@@ -246,7 +247,8 @@ public abstract class PropertyUtils {
                     attrType,
                     attributeName,
                     displayName,
-                    description);
+                    description,
+                    provider);
 
             assert property != null;
             propertySet.put(property);

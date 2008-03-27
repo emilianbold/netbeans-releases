@@ -82,6 +82,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -242,6 +243,79 @@ public final class GeneratorUtilities {
         return createMethod(method, (DeclaredType)clazz.asType());
     }
 
+    /**Create a new method tree for the given method element. The method will be created as if it were member of {@link asMemberOf} type
+     * (see also {@link Types#asMemberOf(javax.lang.model.type.DeclaredType,javax.lang.model.element.Element)}).
+     * The new method will have an empty body.
+     * 
+     * @param asMemberOf create the method as if it were member of this type
+     * @param method method to create
+     * @return a newly created method
+     * @see Types#asMemberOf(javax.lang.model.type.DeclaredType,javax.lang.model.element.Element)
+     * @since 0.34
+     */
+    public MethodTree createMethod(DeclaredType asMemberOf, ExecutableElement method) {
+        TreeMaker make = copy.getTreeMaker();
+        Set<Modifier> mods = method.getModifiers();
+        Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
+        flags.remove(Modifier.ABSTRACT);
+        flags.remove(Modifier.NATIVE);
+
+        ExecutableType et = (ExecutableType) method.asType();
+        try {
+            et = (ExecutableType) copy.getTypes().asMemberOf(asMemberOf, method);
+        } catch (IllegalArgumentException iae) {
+        }
+        List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
+        for (TypeVariable typeVariable : et.getTypeVariables()) {
+            List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
+            TypeMirror bound = typeVariable.getUpperBound();
+            if (bound.getKind() != TypeKind.NULL) {
+                if (bound.getKind() == TypeKind.DECLARED) {
+                    ClassSymbol boundSymbol = (ClassSymbol) ((DeclaredType) bound).asElement();
+                    if (boundSymbol.getSimpleName().length() == 0 && (boundSymbol.flags() & Flags.COMPOUND) != 0) {
+                        bounds.add((ExpressionTree) make.Type(boundSymbol.getSuperclass()));
+                        for (Type iface : boundSymbol.getInterfaces()) {
+                            bounds.add((ExpressionTree) make.Type(iface));
+                        }
+                    } else if (!boundSymbol.getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
+                        //if the bound is java.lang.Object, do not generate the extends clause:
+
+                        bounds.add((ExpressionTree) make.Type(bound));
+                    }
+                } else {
+                    bounds.add((ExpressionTree) make.Type(bound));
+                }
+            }
+            typeParams.add(make.TypeParameter(typeVariable.asElement().getSimpleName(), bounds));
+        }
+
+        Tree returnType = make.Type(et.getReturnType());
+
+        List<VariableTree> params = new ArrayList<VariableTree>();
+        boolean isVarArgs = method.isVarArgs();
+        Iterator<? extends VariableElement> formArgNames = method.getParameters().iterator();
+        Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        while (formArgNames.hasNext() && formArgTypes.hasNext()) {
+            VariableElement formArgName = formArgNames.next();
+            TypeMirror formArgType = formArgTypes.next();
+            if (isVarArgs && !formArgNames.hasNext()) {
+                parameterModifiers = make.Modifiers(1L << 34,
+                        Collections.<AnnotationTree>emptyList());
+            }
+            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
+        }
+
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+        for (TypeMirror tm : et.getThrownTypes()) {
+            throwsList.add((ExpressionTree) make.Type(tm));
+        }
+
+        ModifiersTree mt = make.Modifiers(flags, Collections.<AnnotationTree>emptyList());
+
+        return make.Method(mt, method.getSimpleName(), returnType, typeParams, params, throwsList, "{}", null);
+    }
+    
     /**
      * Creates a class constructor.
      * 
@@ -428,60 +502,9 @@ public final class GeneratorUtilities {
     
     private MethodTree createMethod(ExecutableElement element, DeclaredType type) {
         TreeMaker make = copy.getTreeMaker();
-        Set<Modifier> mods = element.getModifiers();
-        Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
-        boolean isAbstract = flags.remove(Modifier.ABSTRACT);
-        flags.remove(Modifier.NATIVE);
-        
-        ExecutableType et = (ExecutableType)element.asType();
-        try {
-            et = (ExecutableType)copy.getTypes().asMemberOf(type, element);
-        } catch (IllegalArgumentException iae) {}
-        List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
-        for (TypeVariable typeVariable : et.getTypeVariables()) {
-            List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
-            TypeMirror bound = typeVariable.getUpperBound();
-            if (bound.getKind() != TypeKind.NULL) {
-                if (bound.getKind() == TypeKind.DECLARED) {
-                    ClassSymbol boundSymbol = (ClassSymbol)((DeclaredType)bound).asElement();
-                    if (boundSymbol.getSimpleName().length() == 0 && (boundSymbol.flags() & Flags.COMPOUND) != 0) {
-                        bounds.add((ExpressionTree)make.Type(boundSymbol.getSuperclass()));
-                        for (Type iface : boundSymbol.getInterfaces()) {
-                            bounds.add((ExpressionTree)make.Type(iface));
-                        }
-                    } else if (!boundSymbol.getQualifiedName().contentEquals("java.lang.Object")) { //NOI18N
-                        //if the bound is java.lang.Object, do not generate the extends clause:
-                        bounds.add((ExpressionTree)make.Type(bound));
-                    }
-                } else {
-                    bounds.add((ExpressionTree)make.Type(bound));
-                }
-            }
-            typeParams.add(make.TypeParameter(typeVariable.asElement().getSimpleName(), bounds));
-        }
-
-        Tree returnType = make.Type(et.getReturnType());
-
-        List<VariableTree> params = new ArrayList<VariableTree>();        
-        boolean isVarArgs = element.isVarArgs();
-        Iterator<? extends VariableElement> formArgNames = element.getParameters().iterator();
-        Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
-        while (formArgNames.hasNext() && formArgTypes.hasNext()) {
-            VariableElement formArgName = formArgNames.next();
-            TypeMirror formArgType = formArgTypes.next();
-            if (isVarArgs && !formArgNames.hasNext())
-                parameterModifiers = make.Modifiers(1L<<34, Collections.<AnnotationTree>emptyList());
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
-        }
-
-        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
-        for (TypeMirror tm : et.getThrownTypes()) {
-            throwsList.add((ExpressionTree)make.Type(tm));
-        }
+        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
         
         BlockTree body;
-        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
         if (isAbstract) {
             List<StatementTree> blockStatements = new ArrayList<StatementTree>();
             TypeElement uoe = copy.getElements().getTypeElement("java.lang.UnsupportedOperationException"); //NOI18N
@@ -502,23 +525,26 @@ public final class GeneratorUtilities {
             body = make.Block(Collections.singletonList(statement), false);
         }
 
+        MethodTree prototype = createMethod(type, element);
+        ModifiersTree mt = prototype.getModifiers();
+        
         //add @Override annotation:
         SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
         SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
 
         if (thisFOVersion.compareTo(version15) >= 0) {
             boolean generate = true;
-            
+
             if (thisFOVersion.compareTo(version15) == 0) {
                 generate = !element.getEnclosingElement().getKind().isInterface();
             }
-            
+
             if (generate) {
-                annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
+               mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
             }
         }
-        
-        return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
+
+        return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
     }
     
     private static class ClassMemberComparator {

@@ -45,22 +45,32 @@ import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
- *
+ * The lazy implementation of the collection 
+ * backed by the collection of UIDs.
+ * 
+ * It uses two template parameters: Tuid and Tfact.
+ * The idea behind that is that often we use 
+ * interface type (e.g. CsmFile) UID, 
+ * while implementation knows that all the instances are 
+ * of implementation type (e.g. FileImpl).
+ * So Tuid is an interface (CsmFile) type, 
+ * while Tfact is implementation (FileImpl) type.
+ *  
  * @author Alexander Simon
  */
-public class LazyCsmCollection<T> implements Collection<T> {
-    private Collection<CsmUID<T>> uids;
+public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
+    private Collection<CsmUID<Tuid>> uids;
     boolean allowNullsAndSkip;
-    public LazyCsmCollection(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip){
+    public LazyCsmCollection(Collection<CsmUID<Tuid>> uids, boolean allowNullsAndSkip){
         this.uids = uids;
         this.allowNullsAndSkip = allowNullsAndSkip;
     }
 
-    private T convertToObject(CsmUID uid){
-        return (T) UIDCsmConverter.UIDtoCsmObject(uid);
+    private Tfact convertToObject(CsmUID uid){
+        return (Tfact) UIDCsmConverter.UIDtoCsmObject(uid);
     }
 
-    private CsmUID<T> convertToUID(T object){
+    private CsmUID<Tuid> convertToUID(Tfact object){
         return ((CsmIdentifiable)object).getUID();
     }
 
@@ -73,9 +83,9 @@ public class LazyCsmCollection<T> implements Collection<T> {
     }
 
     public boolean contains(Object o) {
-        Iterator<T> it = iterator();
+        Iterator<Tfact> it = iterator();
         while(it.hasNext()){
-            T object = it.next();
+            Tfact object = it.next();
             if (o == object || 
                 o != null && o.equals(object)){
                 return true;
@@ -84,13 +94,13 @@ public class LazyCsmCollection<T> implements Collection<T> {
         return false;
     }
 
-    public Iterator<T> iterator() {
-        return allowNullsAndSkip ? new MySafeIterator<T>() : new MyIterator();
+    public Iterator<Tfact> iterator() {
+        return allowNullsAndSkip ? new MySafeIterator<Tfact>() : new MyIterator();
     }
 
     public Object[] toArray() {
 	Object[] result = new Object[size()];
-	Iterator<T> e = iterator();
+	Iterator<Tfact> e = iterator();
 	for (int i=0; e.hasNext(); i++)
 	    result[i] = e.next();
 	return result;
@@ -111,12 +121,12 @@ public class LazyCsmCollection<T> implements Collection<T> {
         return a;
     }
 
-    public boolean add(T o) {
+    public boolean add(Tfact o) {
         return uids.add(convertToUID(o));
     }
 
     public boolean remove(Object o) {
-        return uids.remove(convertToUID((T)o));
+        return uids.remove(convertToUID((Tfact)o));
     }
 
     public boolean containsAll(Collection<?> c) {
@@ -127,9 +137,9 @@ public class LazyCsmCollection<T> implements Collection<T> {
 	return true;
     }
 
-    public boolean addAll(Collection<? extends T> c) {
+    public boolean addAll(Collection<? extends Tfact> c) {
 	boolean modified = false;
-	Iterator<? extends T> it = c.iterator();
+	Iterator<? extends Tfact> it = c.iterator();
 	while (it.hasNext()) {
 	    if (add(it.next()))
 		modified = true;
@@ -151,7 +161,7 @@ public class LazyCsmCollection<T> implements Collection<T> {
 
     public boolean retainAll(Collection<?> c) {
 	boolean modified = false;
-	Iterator<T> it = iterator();
+	Iterator<Tfact> it = iterator();
 	while (it.hasNext()) {
 	    if (!c.contains(it.next())) {
 		it.remove();
@@ -170,10 +180,10 @@ public class LazyCsmCollection<T> implements Collection<T> {
 	StringBuffer buf = new StringBuffer();
 	buf.append("["); // NOI18N
 
-        Iterator<T> it = iterator();
+        Iterator<Tfact> it = iterator();
         boolean hasNext = it.hasNext();
         while (hasNext) {
-            T o = it.next();
+            Tfact o = it.next();
             buf.append(o == this ? "(this Collection)" : String.valueOf(o));  // NOI18N
             hasNext = it.hasNext();
             if (hasNext)

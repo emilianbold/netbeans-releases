@@ -76,7 +76,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
                                             = "MSG_ErrDebuggerRunOnFolder";// NOI18N
 
     private static final int WAIT_INIT_SESSION 
-                                            = 20000;
+                                            = 5000;
 
     private static final String XDEBUG_COOKIE 
                                             = "XDEBUG_SESSION_START";// NOI18N
@@ -241,7 +241,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         Runnable runnable = new Runnable() {
 
             public void run() {
-                if (sessionId.waitServerFile(WAIT_INIT_SESSION) == null) {
+                if (sessionId.waitServerFile(true) == null) {
                     /*
                      * This could happen as result of previous error:
                      * no php files was called as result of starting debugging
@@ -316,9 +316,10 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
             clonedCommand.setActionFiles(new FileObject[] { startFO });
             clonedCommand.run();
 
-            String serverFileUri = sessionId.waitServerFile(WAIT_INIT_SESSION);
+            long started = System.currentTimeMillis();
+            String serverFileUri = sessionId.waitServerFile(true);
             if (serverFileUri == null) {
-                notifyError( startFO , WAIT_INIT_SESSION/1000 );
+                notifyError( startFO , ((int)(System.currentTimeMillis() - started)/1000));
                 return;
             }
 

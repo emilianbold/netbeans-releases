@@ -69,4 +69,8 @@ public class KeywordElement extends JsElement {
     public ElementKind getKind() {
         return kind;
     }
+
+    public String getFqn() {
+        return name;
+    }
 }
