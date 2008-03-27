@@ -1921,12 +1921,12 @@ final class Central implements ControllerHandler {
             recentTc = getRecentTopComponent( mode, tc );
         }
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
-            model.addModeClosedTopComponent(mode, tc);
+            addModeClosedTopComponent(mode, tc);
         } else {
             if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
-                model.addModeClosedTopComponent(mode, tc);
+                addModeClosedTopComponent(mode, tc);
             } else {
-                model.removeModeTopComponent(mode, tc, null);
+                removeModeTopComponent(mode, tc);
             }
         }
         if( null != recentTc )
