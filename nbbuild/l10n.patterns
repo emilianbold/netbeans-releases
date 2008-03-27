@@ -13,8 +13,8 @@
 **/*.jar:**/docs/**/*.toc
 **/*.jar:**/docs/**/*.xml
 **/*.jar:**/*.url
-exclude **/jason-*.jar
-exclude **/jsf-extensions-*.jar
+exclude **/jason-*.jar:
+exclude **/jsf-extensions-*.jar:
 exclude **/tidy-mod.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
