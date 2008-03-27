@@ -52,6 +52,33 @@ public class PlaceHolderManager implements DnDTool {
         return placeHolders.isEmpty();
     }
 
+    public PlaceHolder getCurrentPlaceholder(){
+        return this.currentPlaceHolder;
+    }
+    
+    public void setCurrentPlaceholder(PlaceHolder newPlaceHolder){
+        
+        //Do not allow to set currentPlaceholder form other view.
+        if (!placeHolders.contains(newPlaceHolder)){
+            newPlaceHolder = null;
+        }
+        
+        PlaceHolder oldPlaceHolder = getCurrentPlaceholder();
+
+        if (oldPlaceHolder != newPlaceHolder) {
+            if (oldPlaceHolder != null) {
+                oldPlaceHolder.dragExit();
+            }
+
+            if (newPlaceHolder != null) {
+                newPlaceHolder.dragEnter();
+            }
+
+            currentPlaceHolder = newPlaceHolder;
+            getDiagramView().repaint();
+        }
+    }
+    
     public void clear() {
         if (!isEmpty()) {
             placeHolders.clear();
@@ -150,21 +177,8 @@ public class PlaceHolderManager implements DnDTool {
             return;
         }
 
-        PlaceHolder newCurrentPlaceHolder = findPlaceholder(mp.x, mp.y);
-        PlaceHolder oldCurrentPlaceHolder = currentPlaceHolder;
-
-        if (oldCurrentPlaceHolder != newCurrentPlaceHolder) {
-            if (oldCurrentPlaceHolder != null) {
-                oldCurrentPlaceHolder.dragExit();
-            }
-
-            if (newCurrentPlaceHolder != null) {
-                newCurrentPlaceHolder.dragEnter();
-            }
-
-            currentPlaceHolder = newCurrentPlaceHolder;
-            getDiagramView().repaint();
-        }
+        PlaceHolder newPlaceHolder = findPlaceholder(mp.x, mp.y);
+        setCurrentPlaceholder(newPlaceHolder);
     }
 
     public boolean isValidLocation() {

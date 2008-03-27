@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/NBProjects/main/ruby.help/javahelp/org/netbeans/modules/ruby/help/docs">
+		<directory title="C:/newclone/main/ruby.help/javahelp/org/netbeans/modules/ruby/help/docs">
 			<directory title="images">
 				<file title="circle1.gif"/>
 				<file title="circle2.gif"/>

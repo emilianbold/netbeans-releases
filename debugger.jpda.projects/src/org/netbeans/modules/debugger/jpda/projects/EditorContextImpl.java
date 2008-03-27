@@ -95,6 +95,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -136,6 +137,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.Annotation;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -285,11 +287,15 @@ public class EditorContextImpl extends EditorContext {
         Line l =  LineTranslations.getTranslations().getLine (
             url, 
             lineNumber, 
-            timeStamp
+            (timeStamp instanceof JPDABreakpoint) ? null : timeStamp
         );
         if (l == null) return null;
-        DebuggerAnnotation annotation =
-            new DebuggerAnnotation (annotationType, l);
+        Annotation annotation;
+        if (timeStamp instanceof JPDABreakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
+        } else {
+            annotation = new DebuggerAnnotation (annotationType, l);
+        }
         annotationToURL.put (annotation, url);
         
         return annotation;
@@ -351,14 +357,14 @@ public class EditorContextImpl extends EditorContext {
         if (a instanceof Collection) {
             Collection annotations = ((Collection) a);
             for (Iterator it = annotations.iterator(); it.hasNext(); ) {
-                removeAnnotation((DebuggerAnnotation) it.next());
+                removeAnnotation((Annotation) it.next());
             }
         } else {
-            removeAnnotation((DebuggerAnnotation) a);
+            removeAnnotation((Annotation) a);
         }
     }
     
-    private void removeAnnotation(DebuggerAnnotation annotation) {
+    private void removeAnnotation(Annotation annotation) {
         annotation.detach ();
         annotationToURL.remove (annotation);
     }
@@ -387,12 +393,17 @@ public class EditorContextImpl extends EditorContext {
             int line = ((Integer) urlLine[1]).intValue();
             return LineTranslations.getTranslations().getOriginalLineNumber(url, line, timeStamp);
         }*/
-        DebuggerAnnotation a = (DebuggerAnnotation) annotation;
+        Line line;
+        if (annotation instanceof DebuggerBreakpointAnnotation) {
+            line = ((DebuggerBreakpointAnnotation) annotation).getLine();
+        } else {
+            line = ((DebuggerAnnotation) annotation).getLine();
+        }
         if (timeStamp == null) 
-            return a.getLine ().getLineNumber () + 1;
-        String url = (String) annotationToURL.get (a);
+            return line.getLineNumber () + 1;
+        String url = (String) annotationToURL.get (annotation);
         Line.Set lineSet = LineTranslations.getTranslations().getLineSet (url, timeStamp);
-        return lineSet.getOriginalLineNumber (a.getLine ()) + 1;
+        return lineSet.getOriginalLineNumber (line) + 1;
     }
     
     /**

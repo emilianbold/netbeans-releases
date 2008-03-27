@@ -20,11 +20,8 @@ public abstract class DesignModeAction extends DesignViewAction {
     }
 
     @Override
-        public boolean isEnabled() {
-        DesignView view = getDesignView();
-        DiagramModel model = view == null ? null : view.getModel();
-        return super.isEnabled() && view != null && model != null &&
-                !model.isReadOnly() && 
-                view.isDesignMode();
+    public boolean isEnabled() {
+        return super.isEnabled() && 
+               !getDesignView().getCopyPasteHandler().isActive();
     }
 }

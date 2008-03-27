@@ -134,25 +134,16 @@ public class GenericResourceGenerator extends AbstractGenerator {
         return new HashSet<FileObject>(source.getFileObjects());
     }
   
-    private void addInputParamFields(JavaSource source, final List<ParameterInfo> params) throws IOException {
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                
-                List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
-                for(ParameterInfo p: params) {
-                    String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
-                            getParameterName(p, true, true, true));
-                    if(!signMap.containsKey(sign)) {
-                        filterParams.add(p);
-                    }
-                }
-                
-                JavaSourceHelper.addFields(copy, getParamNames(filterParams),
-                        getParamTypeNames(filterParams), getParamValues(filterParams));
+    private void addInputParamFields(JavaSource source, final List<ParameterInfo> params) throws IOException {          
+        List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
+        for(ParameterInfo p: params) {
+            String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
+                    getParameterName(p, true, true, true));
+            if(!signMap.containsKey(sign)) {
+                filterParams.add(p);
             }
-        });
-        result.commit();
+        }
+        Util.addInputParamFields(source, filterParams);
     }
     
      private void addConstructorWithInputParams(JavaSource source, final List<ParameterInfo> params) throws IOException {
@@ -169,14 +160,14 @@ public class GenericResourceGenerator extends AbstractGenerator {
                             "}\n";    //NOI18N
                 }
                 
-                String sign = JavaSourceHelper.createMethodSignature("", getParamTypeNames(params));
+                String sign = JavaSourceHelper.createMethodSignature("", Util.getParamTypeNames(params));
                 if(signMap.containsKey(sign)) {
                     return;
                 }
         
                 ClassTree modifiedTree = JavaSourceHelper.addConstructor(copy, tree,
                         Constants.PUBLIC,
-                        getParamNames(params), getParamTypeNames(params),
+                        Util.getParamNames(params), Util.getParamTypeNames(params),
                         body, null);
                 
                 copy.rewrite(tree, modifiedTree);
@@ -470,14 +461,14 @@ public class GenericResourceGenerator extends AbstractGenerator {
     private String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
         params.addAll(Arrays.asList(bean.getUriParams()));
-        params.addAll(Arrays.asList(getParamNames(queryParams)));
+        params.addAll(Arrays.asList(Util.getParamNames(queryParams)));
         return params.toArray(new String[params.size()]);
     }
     
     private String[] getGetParamTypes(List<ParameterInfo> queryParams) {
         ArrayList<String> types = new ArrayList<String>();
         types.addAll(Arrays.asList(getUriParamTypes()));
-        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
+        types.addAll(Arrays.asList(Util.getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
     
@@ -587,43 +578,6 @@ public class GenericResourceGenerator extends AbstractGenerator {
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return sb.toString();
     }
-    
-      private String[] getParamNames(List<ParameterInfo> params) {
-        List<String> results = new ArrayList<String>();
-        
-        for (ParameterInfo param : params) {
-            results.add(getParameterName(param, true, true, true));
-        }
-        
-        return results.toArray(new String[results.size()]);
-    }
-    
-    private String[] getParamTypeNames(List<ParameterInfo> params) {
-        List<String> results = new ArrayList<String>();
-        
-        for (ParameterInfo param : params) {
-            results.add(param.getTypeName());
-        }
-        
-        return results.toArray(new String[results.size()]);
-    }
-    
-    private Object[] getParamValues(List<ParameterInfo> params) {
-        List<Object> results = new ArrayList<Object>();
-        
-        for (ParameterInfo param : params) {
-            Object defaultValue = null;
-            
-            if (param.getStyle() != ParamStyle.QUERY) {
-                defaultValue = param.getDefaultValue();
-            }
-            
-            results.add(defaultValue);
-        }
-        
-        return results.toArray(new Object[results.size()]);
-    }
-    
     
     protected String getParameterName(ParameterInfo param) {
         return param.getName();

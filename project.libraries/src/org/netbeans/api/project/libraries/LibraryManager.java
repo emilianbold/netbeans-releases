@@ -45,9 +45,12 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,7 @@ import org.netbeans.modules.project.libraries.WritableLibraryProvider;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -276,6 +280,44 @@ public final class LibraryManager {
             }
             Lookup.getDefault().lookup(WritableLibraryProvider.class).addLibrary(impl);
         } else {
+            Map<String,List<URI>> cont = new HashMap<String,List<URI>>();
+            for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
+                cont.put(entry.getKey(), LibrariesModel.convertURLsToURIs(entry.getValue()));
+            }
+            impl = LibraryAccessor.createLibrary(alp, type, name, area, cont);
+        }
+        return new Library(impl, this);
+    }
+
+    /**
+     * Creates a new library definition and adds it to the list.
+     * @param type the type of library, as in {@link LibraryTypeProvider#getLibraryType} or {@link LibraryImplementation#getType}
+     * @param name the identifying name of the new library (must not duplicate a name already in use by a library in this manager)
+     * @param contents the initial contents of the library's volumes, as a map from volume type to volume content
+     * @return a newly created library
+     * @throws IOException if the new definition could not be stored
+     * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
+     *                                  or if a library of the same name already exists in this manager
+     * @see ArealLibraryProvider#createLibrary
+     * @since org.netbeans.modules.project.libraries/1 1.18
+     */
+    public Library createURILibrary(String type, String name, Map<String,List<URI>> contents) throws IOException {
+        if (getLibrary(name) != null) {
+            throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
+        }
+        LibraryImplementation impl;
+        if (area == null) {
+            LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(type);
+            if (ltp == null) {
+                throw new IllegalArgumentException("Trying to add a library of unknown type: " + type); // NOI18N
+            }
+            impl = ltp.createLibrary();
+            impl.setName(name);
+            for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
+                impl.setContent(entry.getKey(), LibrariesModel.convertURIsToURLs(entry.getValue()));
+            }
+            Lookup.getDefault().lookup(WritableLibraryProvider.class).addLibrary(impl);
+        } else {
             impl = LibraryAccessor.createLibrary(alp, type, name, area, contents);
         }
         return new Library(impl, this);
@@ -296,7 +338,8 @@ public final class LibraryManager {
             assert providers.size() == 1;
             providers.iterator().next().removeLibrary(library.getLibraryImplementation());
         } else {
-            LibraryAccessor.remove(alp, library.getLibraryImplementation());
+            assert library.getLibraryImplementation() instanceof LibraryImplementation2;
+            LibraryAccessor.remove(alp, (LibraryImplementation2)library.getLibraryImplementation());
         }
     }
 
@@ -318,7 +361,6 @@ public final class LibraryManager {
         assert listener != null;
         this.listeners.removePropertyChangeListener (listener);
     }
-
 
     private synchronized void resetCache () {
         this.cache = null;

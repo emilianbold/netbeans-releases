@@ -107,7 +107,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
             final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
             final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
-
+            
             AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
                 public void visit(AstNode node) {
@@ -128,7 +128,14 @@ public class HtmlStructureScanner implements StructureScanner {
                     }
                 }
             };
-            AstNodeUtils.visitChildren(root, foldsSearch);
+            
+            //the document is touched during the ast tree visiting, we need to lock it
+            doc.readLock();
+            try {
+                AstNodeUtils.visitChildren(root, foldsSearch);
+            } finally {
+                doc.readUnlock();
+            }
             folds.put("codeblocks", foldRange);
 
             return folds;
