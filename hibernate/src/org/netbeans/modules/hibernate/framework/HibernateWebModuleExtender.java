@@ -185,12 +185,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                     Exceptions.printStackTrace(ex);
                 }
                 
-            } else {
-                // There's no default hibernate configuration file.
-                // Clear the fields and disable the panel.
-                configPanel.setSessionName("");
-                configPanel.setDialect("");                
-            }
+            } 
             configPanel.disable();
         }
     }
