@@ -38,17 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.xpath.ext.spi.validation;
+package org.netbeans.modules.xml.xpath.ext.spi;
 
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import java.util.List;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.03.24
  */
-public interface XPathCast {
+public interface XPathCastResolver {
 
-  String getPath();
-  GlobalType getType();
+  List<XPathCast> getXPathCasts();
 }
