@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * Represents the input stream provider for APTDriver
@@ -52,5 +52,5 @@ import java.io.InputStream;
 public interface APTFileBuffer {
     public File getFile();
 
-    public InputStream getInputStream() throws IOException;    
+    public Reader getReader() throws IOException;    
 }

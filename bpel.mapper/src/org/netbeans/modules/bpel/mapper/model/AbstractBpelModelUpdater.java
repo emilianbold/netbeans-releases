@@ -40,7 +40,7 @@ import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.bpel.model.api.support.Roles;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -144,7 +144,7 @@ public class AbstractBpelModelUpdater {
             GraphInfoCollector graphInfo) {
         //
         XPathModel xPathModel = 
-                XPathModelFactory.create((BpelEntity)contentHolder);
+                BpelXPathModelFactory.create((BpelEntity)contentHolder);
         //
         XPathExprList exprList = buildXPathExprList(xPathModel, graphInfo);
         
@@ -535,7 +535,7 @@ public class AbstractBpelModelUpdater {
                     if (isFirst) {
                         isFirst = false;
                     } else {
-                        sb.append(XPathModelFactory.XPATH_EXPR_DELIMITER);
+                        sb.append(BpelXPathModelFactory.XPATH_EXPR_DELIMITER);
                     }
                     //
                     sb.append(exprString);
@@ -545,6 +545,6 @@ public class AbstractBpelModelUpdater {
         }
         
     }
-    
+
 }
     

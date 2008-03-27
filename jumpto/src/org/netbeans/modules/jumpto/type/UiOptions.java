@@ -72,7 +72,7 @@ final class UiOptions {
         }
         
         public static int getHeight() {
-            return getNode().getInt(HEIGHT, 460);
+            return getNode().getInt(HEIGHT, -1);
         }
         
         public static void setHeight( int height ) {
@@ -80,7 +80,7 @@ final class UiOptions {
         }
         
         public static int getWidth() {
-            return getNode().getInt(WIDTH, 680);
+            return getNode().getInt(WIDTH, -1);
         }
          
         public static void setWidth( int width ) {
