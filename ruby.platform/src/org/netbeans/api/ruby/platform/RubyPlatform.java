@@ -804,8 +804,8 @@ public final class RubyPlatform {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
             info.jversion = "1.1RC3"; // NOI18N
-            info.patchlevel = "5512"; // NOI18N
-            info.releaseDate = "2008-01-12"; // NOI18N
+            info.patchlevel = "6255"; // NOI18N
+            info.releaseDate = "2008-03-27"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
                     "jruby-1.1RC3", "org.netbeans.modules.ruby.platform", false);  // NOI18N
@@ -837,7 +837,7 @@ public final class RubyPlatform {
             return "JRuby".equals(kind); // NOI18N
         }
 
-        public void setGemHome(String gemHome) {
+        public final void setGemHome(String gemHome) {
             this.gemHome = gemHome == null ? null : new File(gemHome).getAbsolutePath();
         }
         
@@ -885,5 +885,38 @@ public final class RubyPlatform {
             return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() + "]"; // NOI18N
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Info other = (Info) obj;
+            if (this.kind != other.kind && (this.kind == null || !this.kind.equals(other.kind))) {
+                return false;
+            }
+            if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+                return false;
+            }
+            if (this.patchlevel != other.patchlevel && (this.patchlevel == null || !this.patchlevel.equals(other.patchlevel))) {
+                return false;
+            }
+            if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 83 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+            hash = 83 * hash + (this.version != null ? this.version.hashCode() : 0);
+            hash = 83 * hash + (this.patchlevel != null ? this.patchlevel.hashCode() : 0);
+            hash = 83 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+            return hash;
+        }
     }
 }

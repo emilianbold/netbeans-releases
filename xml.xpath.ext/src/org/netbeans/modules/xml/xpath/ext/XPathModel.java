@@ -24,7 +24,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
-import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 
 /**
