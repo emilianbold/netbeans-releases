@@ -664,7 +664,7 @@ public class Util {
         return project.getProjectDirectory().getFileObject(BUILD_XML_PATH);
     }
     
-    public static DataObject createDataObjectFromTemplate(String template, 
+    public static DataObject createDataObjectFromTemplate(String template,
             FileObject targetFolder, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
@@ -673,8 +673,13 @@ public class Util {
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        FileObject targetFO = targetFolder.getFileObject(targetName, templateFO.getExt());
-
+        
+        //Check if already exists
+        String fileName = targetName;
+        if(fileName == null) {
+            fileName = templateFO.getName();
+        }
+        FileObject targetFO = targetFolder.getFileObject(fileName, templateFO.getExt());
         if (targetFO != null) {
             return DataFolder.find(targetFO);
         }
@@ -727,15 +732,15 @@ public class Util {
         }
         return false;
     }
-
+    
     public static void checkScanning() throws IOException {
         if (Util.isScanningInProgress(true)) {
             throw new IOException(SCANNING_IN_PROGRESS);
         }
     }
-    
+
     public static void checkScanning(boolean showMessage) throws IOException {
-        if (Util.isScanningInProgress(showMessage)) {
+        if (isScanningInProgress(showMessage)) {
             throw new IOException(SCANNING_IN_PROGRESS);
         }
     }

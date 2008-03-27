@@ -18,9 +18,13 @@
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import org.netbeans.modules.bpel.design.actions.DesignModeAction;
 import org.netbeans.modules.bpel.design.actions.PasteModeAction;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
@@ -94,7 +98,20 @@ public class CopyPasteHandler {
         ArrayList<PlaceHolder> placeholders = new ArrayList<PlaceHolder>();
         
         for (PlaceHolderManager m: managers){
-            placeholders.addAll(m.getPlaceHolders());
+            
+            List<PlaceHolder> viewPhs = m.getPlaceHolders();
+            Collections.sort(viewPhs, new Comparator<PlaceHolder>() {
+
+                public int compare(PlaceHolder o1, PlaceHolder o2) {
+                    Rectangle r1 = o1.getShape().getBounds();
+                    Rectangle r2 = o2.getShape().getBounds();
+                    return ((r1.x * r1.x) + (r1.y * r1.y)) - 
+                           ((r2.x * r2.x) + (r2.y * r2.y));  
+                    
+                }
+            });
+            
+            placeholders.addAll(viewPhs);
         }
         
         if (placeholders.isEmpty()){
@@ -119,10 +136,10 @@ public class CopyPasteHandler {
         }
         
         currentPlaceholder = next;
-        
-        
-        
-        
+        currentPlaceholder
+                .getOwnerPattern()
+                .getView()
+                .scrollPlaceholderToView(currentPlaceholder);
         
     }
     class PasteAction extends PasteModeAction {
@@ -170,10 +187,25 @@ public class CopyPasteHandler {
             if (!isEnabled()) {
                 return;
             }
-            enterPasteMode(designView.getSelectionModel().getSelectedPattern());
+            
+            enterPasteMode(getPatternCopy(designView.getSelectionModel().getSelectedPattern()));
             
         }
+        private Pattern getPatternCopy(Pattern pattern) {
+            if (pattern == null) {
+                return null;
+            }
+            Pattern copiedPattern = null;
+            BpelEntity entity = pattern.getOMReference();
+            if (entity == null) {
+                return null;
+            }
 
+            copiedPattern = designView.getModel().createPattern(entity.cut());
+            
+            
+            return copiedPattern;
+        }
 
     }
     public class CopyAction extends DesignModeAction {

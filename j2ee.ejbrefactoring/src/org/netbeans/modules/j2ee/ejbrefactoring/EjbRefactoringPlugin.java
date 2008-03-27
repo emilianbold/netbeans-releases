@@ -48,11 +48,11 @@ public class EjbRefactoringPlugin implements RefactoringPlugin{
     }
     
     public Problem preCheck() {
-        return new Problem(false, message);
+        return null;
     }
     
     public Problem checkParameters() {
-        return null;
+        return new Problem(false, message);
     }
     
     public Problem fastCheckParameters() {

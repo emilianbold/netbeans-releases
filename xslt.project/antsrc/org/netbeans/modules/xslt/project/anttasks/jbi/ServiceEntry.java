@@ -39,6 +39,9 @@ public class ServiceEntry {
     private QName mPartnerLinkNameQname = null;
     private QName mPortNameQname = null;
     
+    private String mDisplayName;
+    private String mProcessName;
+    private String mFilePath;
     
     /**
      * Constructor
@@ -48,7 +51,7 @@ public class ServiceEntry {
      * @param portNameNS Namespace URI of the portname
      * @param rolename  role name
      */
-    public ServiceEntry(String partnerLinkName, String portName, String partnerLinkNS, String portNameNS, String roleName, String partnerLinkNSPrefix, String portNameNSPrefix, QName partnerLinkNameQname, QName portNameQname) {
+    public ServiceEntry(String partnerLinkName, String portName, String partnerLinkNS, String portNameNS, String roleName, String partnerLinkNSPrefix, String portNameNSPrefix, QName partnerLinkNameQname, QName portNameQname, String displayName, String processName, String filePath) {
         mPartnerLinkName = partnerLinkName;
         mPortName = portName;
         mPartnerLinkNS = partnerLinkNS;
@@ -59,6 +62,10 @@ public class ServiceEntry {
         
         mPartnerLinkNameQname = partnerLinkNameQname;
         mPortNameQname = portNameQname;
+        
+        mDisplayName = displayName;
+        mProcessName = processName;
+        mFilePath = filePath;
     }
     
 
@@ -124,6 +131,19 @@ public class ServiceEntry {
     public String getPortNameNamespacePrefix() {
         return mPortNameNSPrefix;
     }    
+    
+    public String getDisplayName() {
+        return mDisplayName;
+    }
+    
+    public String getProcessName() {
+        return mProcessName;
+    }
+    
+    public String getFilePath() {
+        return mFilePath;
+    }
+    
     public boolean equals(Object obj) {
         if (! (obj instanceof ServiceEntry)) {
             return false;
