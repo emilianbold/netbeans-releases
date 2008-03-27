@@ -65,8 +65,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -132,6 +134,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAu
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Token;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
@@ -1698,5 +1701,107 @@ public class Util {
             defaultValue = p.getDefaultValue();
         }
         return defaultValue;
+    }
+    
+    /*
+     * Generates something like 
+    String apiKey = FacebookAuthenticator.getApiKey();
+    String sessionKey = FacebookAuthenticator.getSessionKey();
+    String method = "facebook.friends.get";
+    String v = "1.0";
+    String callId = String.valueOf(System.currentTimeMillis());
+     */
+    public static String getSignParamDeclaration(WadlSaasBean bean, 
+            List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
+        String paramStr = "";
+        for(ParameterInfo p:signParams) {
+            String[] pIds = Util.getParamIds(p, bean.getSaasName(), 
+                    bean.isDropTargetWeb());
+            if(pIds != null) {//process special case
+                paramStr += "        String "+ getVariableName(pIds[0]) +" = "+ pIds[1] +";\n";
+                continue;
+            }
+            if (isContains(p, filterParams)) {
+                continue;
+            }
+            
+            paramStr += "        String " + getVariableName(p.getName()) + " = ";
+            if (p.getFixed() != null) {
+                paramStr += "\"" + p.getFixed() + "\";\n";
+            } else if (p.getType() == Date.class) {
+                paramStr += "conn.getDate();\n";
+            } else if (p.getType() == Time.class) {
+                paramStr += "String.valueOf(System.currentTimeMillis());\n";
+            } else if (p.getType() == HttpMethodType.class) {
+                paramStr += "\"" + bean.getHttpMethod().value() + "\";\n";
+            } else if (p.isRequired()) {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "\"\";\n";
+                }
+            } else {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "null;\n";
+                }
+            }
+        }
+        paramStr += "\n";
+        return paramStr;
+    }
+
+    public static boolean isContains(ParameterInfo pInfo, List<ParameterInfo> params) {
+        String name = getVariableName(pInfo.getName());
+        for (ParameterInfo p : params) {
+            if (name.equals(getVariableName(p.getName()))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static String getQuotedValue(String value) {
+        String normalized = value;
+        if (normalized.startsWith("\"")) {
+            normalized = normalized.substring(1);
+        } else if (normalized.endsWith("\"")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return "\"" + normalized + "\"";
+    }
+
+    public static String[] getGetParamNames(List<ParameterInfo> queryParams) {
+        ArrayList<String> params = new ArrayList<String>();
+        params.addAll(Arrays.asList(getParamNames(queryParams)));
+        return params.toArray(new String[params.size()]);
+    }
+    
+    public static String[] getGetParamTypes(List<ParameterInfo> queryParams) {
+        ArrayList<String> types = new ArrayList<String>();
+        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
+        return types.toArray(new String[types.size()]);
+    }
+
+    public static void addInputParamFields(JavaSource source, 
+            final List<ParameterInfo> params, 
+            final javax.lang.model.element.Modifier[] modifier) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                List<ParameterInfo> addList = new ArrayList<ParameterInfo>();
+                for (ParameterInfo p : params) {
+                    if (JavaSourceHelper.getField(copy, getParameterName(p, true, true, true)) == null) {
+                        addList.add(p);
+                    }
+                }
+                JavaSourceHelper.addFields(copy, getParamNames(addList),
+                        getParamTypeNames(addList), getParamValues(addList), modifier);
+            }
+        });
+        result.commit();
     }
 }

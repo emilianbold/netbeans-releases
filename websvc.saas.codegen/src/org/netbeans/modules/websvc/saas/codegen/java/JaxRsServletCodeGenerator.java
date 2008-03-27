@@ -63,34 +63,11 @@ import org.openide.filesystems.FileObject;
  * @author ayubskhan
  */
 public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
-
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     
     public JaxRsServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, new WadlSaasBean(m, true));
         getBean().setIsDropTargetWeb(true);
-    }
-    
-    /**
-     *  Create Authorization Frame
-     */
-    @Override
-    public void createAuthorizationClasses() throws IOException {
-        List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
-        final String[] parameters = getGetParamNames(filterParams);
-        final Object[] paramTypes = getGetParamTypes(filterParams);
-        Util.createSessionKeyAuthorizationClassesForWeb(
-            getBean(), getProject(),
-            getBean().getSaasName(), getBean().getSaasServicePackageName(), 
-            getSaasServiceFolder(), 
-            loginJS, loginFile, 
-            callbackJS, callbackFile,
-            parameters, paramTypes, getBean().isUseTemplates()
-        );
     }
     
     @Override
@@ -140,23 +117,6 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
             return Util.getServiceMethodParametersForWeb(getBean());
         else
             return super.getServiceMethodParameters();
-    }
-    
-    @Override
-    protected String getLoginBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
-    }
-    
-    @Override
-    protected String getTokenBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyTokenBodyForWeb(bean, groupName, paramVariableName,
-                saasServicePkgName);
     }
     
     @Override
