@@ -50,7 +50,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -61,12 +60,12 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
+import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -129,7 +128,6 @@ import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -138,6 +136,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -425,6 +424,7 @@ public final class WebProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -468,8 +468,8 @@ public final class WebProject implements Project, AntProjectListener {
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
-            QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING),
-            new WebTemplateAttributesProvider(this.helper),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
