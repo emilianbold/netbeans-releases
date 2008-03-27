@@ -34,19 +34,20 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 
 /**
  * This object is intended to allow to an XPath model to resolve BPEL variables.
  * 
  * @author nk160297
  */
-public class BpelVariableResolver implements VariableResolver<XPathBpelVariable> {
+class BpelVariableResolver implements VariableResolver<XPathBpelVariable> {
 
-    private PathValidationContext myVContext;
     private BpelEntity mBpelEntity;
     private VisibilityScope mVisScope;
+    private XPathValidationContext myVContext;
     
-    public BpelVariableResolver(PathValidationContext context, BpelEntity bpelEntity) {
+    public BpelVariableResolver(XPathValidationContext context, BpelEntity bpelEntity) {
         myVContext = context;
         mBpelEntity = bpelEntity;
     }

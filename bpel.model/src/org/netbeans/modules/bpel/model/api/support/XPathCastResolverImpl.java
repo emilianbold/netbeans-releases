@@ -38,63 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.model.api.support;
 
-package org.netbeans.modules.ant.debugger;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
-import org.openide.util.NbBundle;
-
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
- * Debugger Annotation class.
- *
- * @author   Jan Jancura
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.03.27
  */
-public class DebuggerAnnotation extends Annotation {
+public class XPathCastResolverImpl implements XPathCastResolver {
+  public XPathCastResolverImpl(List<Cast> casts) {
+    myXPathCasts = new ArrayList<XPathCast>();
 
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
-    /** Annotation type constant. */
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
+    for (Cast cast : casts) {
+      myXPathCasts.add(new XPathCastImpl(cast));
+    }
+  }
 
-    private Annotatable annotatable;
-    private String      type;
-    
-    
-    public DebuggerAnnotation (String type, Annotatable annotatable) {
-        this.type = type;
-        this.annotatable = annotatable;
-        attach (annotatable);
-    }
-    
-    public String getAnnotationType () {
-        return type;
-    }
-    
-    public String getShortDescription () {
-        if (type == CURRENT_LINE_ANNOTATION_TYPE)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        else
-        if (type == CURRENT_LINE_ANNOTATION_TYPE2)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2"); // NOI18N
-        else
-        if (type == CURRENT_LINE_PART_ANNOTATION_TYPE)
-            return NbBundle.getMessage
-                    (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        else
-        if (type == CALL_STACK_FRAME_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CALLSITE"); // NOI18N
-        return null;
-    }
+  public List<XPathCast> getXPathCasts() {
+    return myXPathCasts;
+  }
+
+  private List<XPathCast> myXPathCasts;
 }

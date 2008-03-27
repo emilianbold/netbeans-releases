@@ -880,7 +880,7 @@ public class AstRenderer {
     }
     
     public static boolean isQualifier(int tokenType) {
-        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType);
+        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType) || (tokenType == CPPTokenTypes.LITERAL_typename);
     }
     
     public static boolean isCVQualifier(int tokenType) {
