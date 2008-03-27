@@ -46,9 +46,19 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author tomslot
  */
 public class IndexedConstant extends IndexedElement {
+    private String typeName;
+    
     public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
             String attributes, int flags, ElementKind kind){
         super(name, in, index, fileUrl, attributes, flags, kind);
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
 }

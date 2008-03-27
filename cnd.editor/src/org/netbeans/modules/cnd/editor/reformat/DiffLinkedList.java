@@ -62,6 +62,10 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
         while(it.hasNext()) {
             Diff diff = it.next();
             if (diff.getStartOffset()<=start) {
+                if (diff.getStartOffset() == start &&
+                    diff.getEndOffset() == end) {
+                    it.remove();
+                }
                 break;
             }
             res++;

@@ -174,7 +174,7 @@ public class AnnotateAction extends ContextAction {
         HgLogMessage [] logs;
         Set<File> setFile = new HashSet<File>();
         setFile.add(file);
-        logs = HgCommand.getLogMessages(repository.getAbsolutePath(), setFile, progress.getLogger());
+        logs = HgCommand.getLogMessagesNoFileInfo(repository.getAbsolutePath(), setFile, progress.getLogger());
         if (progress.isCanceled()) {
             return;
         }
@@ -192,6 +192,15 @@ public class AnnotateAction extends ContextAction {
                 HgLogMessage log = logs[j];
                 if (log.getRevisionAsLong() < lowestRevisionNumber) {
                     lowestRevisionNumber = log.getRevisionAsLong();
+                }
+                if (annotation == null || log == null) {
+                    if (annotation == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: annotation {0} of {1} is null", new Object[] {i, annotations.length}); //NOI18N
+                    }
+                    if (log == null) {
+                        Mercurial.LOG.log(Level.WARNING, "AnnotateAction: log {0} of {1} is null", new Object [] {j, logs.length}); //NOI18N
+                    }
+                    continue;
                 }
                 if (annotation.getRevision().equals(log.getRevision())) {
                     annotation.setDate(log.getDate());

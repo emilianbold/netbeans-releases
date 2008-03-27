@@ -48,16 +48,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.xml.namespace.QName;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * Code generator for Accessing Saas services.
@@ -84,18 +79,31 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         preGenerate();
         
         //Create Authenticator classes
-        createAuthenticatorClass();
+        getAuthenticationGenerator().createAuthenticatorClass();
         
         //Create Authorization classes
-        createAuthorizationClasses();
+        getAuthenticationGenerator().createAuthorizationClasses();
   
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
                 
         //Modify Authenticator class
-        modifyAuthenticationClass(); 
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
         
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        //No need to check scanning, since we are not locking document
+        //Util.checkScanning();
+        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+    
+    private void setJaxbWrapper() {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if(!repTypesFromWadl.isEmpty()) {
             getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
@@ -103,13 +111,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
                     (getBean().getGroupName()+"."+
                         getBean().getDisplayName()).toLowerCase());
         }
-        
-        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
-        addImportsToTargetFile();
-        
-        finishProgressReporting();
-
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
     @Override 
@@ -121,14 +122,6 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     
     protected void addJaxbLib() throws IOException {
         Util.addJaxbLib(getProject());
-    }
-    
-    /**
-     *  Create Authorization Frame
-     */
-    @Override
-    public void createAuthorizationClasses() throws IOException {
-        //No need to create auth frame class
     }
     
     @Override
@@ -147,17 +140,12 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         methodBody += paramDecl + "\n";
         methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET) {
-            if(getBean().canGenerateJAXBUnmarshaller()) {
-                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += indent2+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
-            } else {
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result);\n";
-        }
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
         methodBody += indent+"} catch (Exception ex) {\n";
         methodBody += indent2+"ex.printStackTrace();\n";
         methodBody += indent+"}\n";

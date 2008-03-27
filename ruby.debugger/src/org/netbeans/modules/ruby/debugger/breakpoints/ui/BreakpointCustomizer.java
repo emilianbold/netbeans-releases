@@ -41,26 +41,29 @@
 package org.netbeans.modules.ruby.debugger.breakpoints.ui;
 
 import java.awt.Dialog;
+import java.beans.Customizer;
 import java.io.File;
 import javax.swing.JPanel;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public final class BreakpointCustomizer extends JPanel {
+public final class BreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    public BreakpointCustomizer(final RubyBreakpoint bp) {
+    private RubyBreakpoint bp;
+    
+    public BreakpointCustomizer() {
         initComponents();
-        fileValue.setText(bp.getFilePath());
-        lineValue.setText("" + bp.getLineNumber());
     }
 
     public static void customize(RubyBreakpoint bp) {
-        BreakpointCustomizer customizer = new BreakpointCustomizer(bp);
+        BreakpointCustomizer customizer = new BreakpointCustomizer();
+        customizer.setObject(bp);
         DialogDescriptor descriptor = new DialogDescriptor(customizer,
                 NbBundle.getMessage(BreakpointCustomizer.class, "BreakpointCustomizer.title"));
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -80,6 +83,37 @@ public final class BreakpointCustomizer extends JPanel {
         }
     }
 
+    public void setObject(Object bean) {
+        if (!(bean instanceof RubyBreakpoint)) {
+            throw new IllegalArgumentException(bean.toString());
+        }
+        RubyBreakpoint bp = (RubyBreakpoint) bean;
+        this.bp = bp;
+        fileValue.setText(bp.getFilePath());
+        lineValue.setText("" + bp.getLineNumber());
+    }
+
+    public boolean ok() {
+        try {
+            int line = Integer.valueOf(lineValue.getText()) - 1; // need 0-based
+            String file = fileValue.getText();
+            if (!new File(file).isFile()) {
+                Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.file.not.found", file);
+                return false;
+            } else {
+                bp.setLine(EditorUtil.getLine(file, line));
+                return true;
+            }
+        } catch (NumberFormatException nfe) {
+            Util.notifyLocalized(BreakpointCustomizer.class, "BreakpointCustomizer.invalid.number", lineValue.getText());
+            return false;
+        }
+    }
+
+    public boolean cancel() {
+        return true;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
