@@ -150,6 +150,57 @@ public class JsTypeAnalyzer {
         this.doc = doc;
         this.fileObject = fileObject;
     }
+    
+    /**
+     * Determine if the given expression depends on local variables.
+     * If it does not, we can skip tracking variables through the functon
+     * and only compute the current expression.
+     */
+    private boolean dependsOnLocals() {
+        // Find current expression
+        Node n = target;
+        Node prev = null;
+        while (n != null) {
+            int type = n.getType();
+            if (type == Token.EXPR_RESULT ||
+                type == Token.EXPR_VOID ||
+                type == Token.CALL ||
+                type == Token.FUNCTION) {
+                break;
+            }
+            
+            prev = n;
+            n = n.getParentNode();
+        }
+        
+        if (n == null) {
+            n = prev;
+        }
+        
+        // See if the tree contain any local-variable references
+        return hasLocalRefs(n, n.getParentNode());
+    }
+    
+    private boolean hasLocalRefs(Node n, Node p) {
+        if (n.getType() == Token.NAME) {
+            if (p == null) {
+                return true;
+            } else if (p.getType() != Token.GETPROP) {
+                return true;
+            }
+        }
+        
+        if (root.hasChildren()) {
+            for (Node child = n.getFirstChild(); child != null; child = child.getNext()) {
+                boolean result = hasLocalRefs(child, n);
+                if (result) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
 
     /**
      * Analyze the given code block down to the given offset. The {@link #getType}
@@ -383,7 +434,9 @@ public class JsTypeAnalyzer {
     
     /** Return the type of the given expression node */
     public String getType(Node node) {
-        init();
+        if (dependsOnLocals()) {
+            init();
+        }
         
         String type = expressionType(node);
 
@@ -409,7 +462,11 @@ public class JsTypeAnalyzer {
 
     /** Like getType(), but doesn't strip off array type parameters etc. */
     private String getTypeInternal(String symbol) {
-        String type = types.get(symbol);
+        String type = null;
+        
+        if (types != null) {
+            type = types.get(symbol);
+        }
     
         if (type == null) {
             // Look for builtins
