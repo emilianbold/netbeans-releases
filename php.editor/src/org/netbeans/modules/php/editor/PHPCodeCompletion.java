@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -90,7 +91,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS, STRING};
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -118,14 +119,30 @@ public class PHPCodeCompletion implements Completable {
                 case PHP_CONSTANT_ENCAPSED_STRING:
                     return CompletionContext.STRING;
                 default:
-                    return CompletionContext.EXPRESSION;
+            }
+            
+            if (tokenSequence.movePrevious())
+            {
+                boolean moreTokens = true;
+                
+                if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+                    moreTokens = tokenSequence.movePrevious();
+                }
+                
+                if (moreTokens) {
+                    TokenId tokenId = tokenSequence.token().id();
+
+                    if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
+                        return CompletionContext.CLASS_NAME;
+                    }
+                }
             }
             
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         
-        return null;
+        return CompletionContext.EXPRESSION;
     }
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
@@ -136,29 +153,37 @@ public class PHPCodeCompletion implements Completable {
         result.getProgram();
         
         CompletionContext context = findCompletionContext(info, caretOffset);
-
+        
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
         request.result = result;
         request.info = info;
         request.prefix = prefix;
+        request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
         
         switch(context){
             case EXPRESSION:
                 autoCompleteExpression(proposals, request);
                 break;
             case HTML:
-                proposals.add(new KeywordItem("<?php", request));
+                proposals.add(new KeywordItem("<?php", request)); //NOI18N
+                break;
+            case CLASS_NAME:
+                autoCompleteClassNames(proposals, request);
                 break;
         }
         
         return proposals;
     }
+    
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
+        for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+            proposals.add(new ClassItem(clazz, request));
+        }
+    }
 
     private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
-
-
         // KEYWORDS
         for (String keyword : PHP_KEYWORDS) {
             if (startsWith(keyword, request.prefix)) {
@@ -167,7 +192,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         // FUNCTIONS
-        PHPIndex index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new FunctionItem(function, request));
@@ -180,6 +205,10 @@ public class PHPCodeCompletion implements Completable {
 
         // LOCAL VARIABLES
         proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+        
+        // CLASS NAMES
+        // TODO only show classes with static elements
+        autoCompleteClassNames(proposals, request);
     }
     
     private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
@@ -460,6 +489,20 @@ public class PHPCodeCompletion implements Completable {
         }
     }
     
+    private class ClassItem extends PHPCompletionItem {
+        private IndexedConstant constant = null;
+
+        ClassItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+    }
+    
     private class VariableItem extends PHPCompletionItem {
         private IndexedConstant constant = null;
 
@@ -643,5 +686,6 @@ public class PHPCodeCompletion implements Completable {
         private PHPParseResult result;
         private CompilationInfo info;
         private String prefix;
+        PHPIndex index;
     }
 }
