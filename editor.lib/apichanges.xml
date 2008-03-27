@@ -105,8 +105,8 @@ is the proper place.
 
     <changes>
 
-        <change id="Adding.think.line.caret">
-            <summary>Adding Think Line Caret</summary>
+        <change id="Adding.thick.line.caret">
+            <summary>Adding Thick Line Caret</summary>
             <version major="1" minor="23"/>
             <date day="20" month="3" year="2008"/>
             <author login="vstejskal"/>

@@ -878,6 +878,7 @@ public class ReformatterImpl {
                 }
                 newLine(previous, current, CodeStyle.BracePlacement.SAME_LINE,
                         concurent || codeStyle.spaceBeforeArrayInitLeftBrace(), 0);
+                spaceAfter(current, codeStyle.spaceWithinBraces());
             }
         } else {
             // TODO add options for block spaces 
@@ -1130,7 +1131,15 @@ public class ReformatterImpl {
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        diff.replace.replaceSpaces(indent); // NOI18N
+                        if (entry.isLikeToArrayInitialization()) {
+                            if (codeStyle.spaceWithinBraces() && !diff.replace.hasNewLine()) {
+                                diff.replace.replaceSpaces(1);
+                            } else {
+                                diff.replace.replaceSpaces(0);
+                            }
+                        } else {
+                            diff.replace.replaceSpaces(indent);
+                        }
                     } else {
                         diff.replace.replaceSpaces(0); // NOI18N
                     }
@@ -1143,6 +1152,8 @@ public class ReformatterImpl {
                         } else {
                             if (!entry.isLikeToArrayInitialization()) {
                                 ts.addBeforeCurrent(1, indent);
+                            } else {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
                     }
@@ -1157,8 +1168,9 @@ public class ReformatterImpl {
                         if (braces.parenDepth <= 0) {
                             ts.replacePrevious(previous, 1, indent);
                         } else {
-                            //it a array?
-                            // do nothing
+                            if (entry.isLikeToArrayInitialization()) {
+                                spaceBefore(previous, codeStyle.spaceWithinBraces());
+                            }
                         }
                     }
                 } else if (previous.id() == NEW_LINE ||
@@ -1168,6 +1180,8 @@ public class ReformatterImpl {
                 } else {
                     if (!entry.isLikeToArrayInitialization()) {
                         ts.addBeforeCurrent(1, indent);
+                    } else {
+                        spaceBefore(previous, codeStyle.spaceWithinBraces());
                     }
                 }
             }

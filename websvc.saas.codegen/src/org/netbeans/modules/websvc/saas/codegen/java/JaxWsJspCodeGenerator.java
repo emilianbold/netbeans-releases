@@ -64,7 +64,6 @@ public class JaxWsJspCodeGenerator extends JaxWsServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             code = "\n<%\n"; // NOI18n

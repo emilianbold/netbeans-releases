@@ -59,7 +59,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -368,6 +371,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         if (createPUButton.isVisible()) {
             wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
             return false;
+        }
+        
+        SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+        if (groups.length > 0) {
+            ClassPath compileCP = ClassPath.getClassPath(groups[0].getRootFolder(), ClassPath.COMPILE);
+            if (compileCP.findResource("javax/persistence/Entity.class") == null) { // NOI18N
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceProvider"));
+                return false;
+            }
         }
 
         if (!entityClosure.isModelReady()) {

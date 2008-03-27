@@ -122,7 +122,7 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
 
     public void mouseReleased(MouseEvent e) {
         reset();
-        if (e.isPopupTrigger()) {
+        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
             showPopupMenu(e);
         }
     }
@@ -168,12 +168,8 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
         Mapper mapper = getMapper();
         MapperNode node = mapper.getNodeAt(y);
         if (node != null && e.getClickCount() == 2) {
-            if (node.isLeaf()) {
-                return;
-            } else if (node.isCollapsed()) {
-                mapper.expandNode(node);
-            } else {
-                mapper.collapseNode(node);
+            if (!node.isLeaf()) {
+                mapper.setExpandedState(node.getTreePath(), node.isCollapsed());
             }
         }
     }
@@ -181,7 +177,8 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     
     private void showPopupMenu(MouseEvent event) {
         MapperContext context = getMapper().getContext();
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
+        
         if (context == null || model == null) {
             return;
         }
