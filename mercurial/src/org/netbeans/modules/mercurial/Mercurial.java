@@ -59,6 +59,7 @@ import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Utilities;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -142,6 +143,14 @@ public class Mercurial {
                         break;
                      } 
                  } 
+            }
+        }else if (Utilities.isWindows()) { // NOI18N
+            String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath ();
+            if (defaultPath == null || defaultPath.length() == 0) {
+                String path = HgUtils.findInUserPath(HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE);
+                if (path != null && !path.equals("")) { // NOI18N
+                    HgModuleConfig.getDefault().setExecutableBinaryPath (path); // NOI18N
+                } 
             }
         }
     }
