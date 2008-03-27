@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -90,7 +91,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS, STRING};
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -118,14 +119,30 @@ public class PHPCodeCompletion implements Completable {
                 case PHP_CONSTANT_ENCAPSED_STRING:
                     return CompletionContext.STRING;
                 default:
-                    return CompletionContext.EXPRESSION;
+            }
+            
+            if (tokenSequence.movePrevious())
+            {
+                boolean moreTokens = true;
+                
+                if (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+                    moreTokens = tokenSequence.movePrevious();
+                }
+                
+                if (moreTokens) {
+                    TokenId tokenId = tokenSequence.token().id();
+
+                    if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
+                        return CompletionContext.CLASS_NAME;
+                    }
+                }
             }
             
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         
-        return null;
+        return CompletionContext.EXPRESSION;
     }
 
     public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
@@ -136,29 +153,41 @@ public class PHPCodeCompletion implements Completable {
         result.getProgram();
         
         CompletionContext context = findCompletionContext(info, caretOffset);
-
+        
         CompletionRequest request = new CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
         request.result = result;
         request.info = info;
         request.prefix = prefix;
+        request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
         
         switch(context){
             case EXPRESSION:
                 autoCompleteExpression(proposals, request);
                 break;
             case HTML:
-                proposals.add(new KeywordItem("<?php", request));
+                proposals.add(new KeywordItem("<?php", request)); //NOI18N
+                break;
+            case CLASS_NAME:
+                autoCompleteClassNames(proposals, request);
+                break;
+            case STRING:
+                // LOCAL VARIABLES
+                proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
                 break;
         }
         
         return proposals;
     }
+    
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
+        for (IndexedConstant clazz : request.index.getClasses(request.result, request.prefix, NameKind.PREFIX)) {
+            proposals.add(new ClassItem(clazz, request));
+        }
+    }
 
     private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
-
-
         // KEYWORDS
         for (String keyword : PHP_KEYWORDS) {
             if (startsWith(keyword, request.prefix)) {
@@ -167,7 +196,7 @@ public class PHPCodeCompletion implements Completable {
         }
 
         // FUNCTIONS
-        PHPIndex index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+        PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, NameKind.PREFIX)) {
             proposals.add(new FunctionItem(function, request));
@@ -180,6 +209,10 @@ public class PHPCodeCompletion implements Completable {
 
         // LOCAL VARIABLES
         proposals.addAll(getLocalVariableProposals(request.result.getProgram().getStatements(), request));
+        
+        // CLASS NAMES
+        // TODO only show classes with static elements
+        autoCompleteClassNames(proposals, request);
     }
     
     private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
@@ -220,7 +253,8 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
                     proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request));
-                } else if (offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
+                } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
+                        && offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
                     proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request));
                 }
             } else if (statement instanceof WhileStatement) {
@@ -290,6 +324,10 @@ public class PHPCodeCompletion implements Completable {
     public ElementHandle resolveLink(String link, ElementHandle originalHandle) {
         return null;
     }
+    
+    private static final boolean isPHPIdentifierPart(char c){
+        return Character.isJavaIdentifierPart(c) && c != '$';
+    }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
         try {
@@ -308,7 +346,7 @@ public class PHPCodeCompletion implements Completable {
                     if (lineOffset > 0) {
                         for (int i = lineOffset - 1; i >= 0; i--) {
                             char c = line.charAt(i);
-                            if (!Character.isJavaIdentifierPart(c)) {
+                            if (!isPHPIdentifierPart(c)) {
                                 break;
                             } else {
                                 start = i;
@@ -329,7 +367,7 @@ public class PHPCodeCompletion implements Completable {
                             for (int j = lineOffset; j < n; j++) {
                                 char d = line.charAt(j);
                                 // Try to accept Foo::Bar as well
-                                if (!Character.isJavaIdentifierPart(d)) {
+                                if (!isPHPIdentifierPart(d)) {
                                     break;
                                 } else {
                                     end = j + 1;
@@ -361,7 +399,7 @@ public class PHPCodeCompletion implements Completable {
                         // end of identifiers for example.
                         if (prefix.length() == 1) {
                             char c = prefix.charAt(0);
-                            if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
+                            if (!(isPHPIdentifierPart(c) || c == '@' || c == '$' || c == ':')) {
                                 return null;
                             }
                         } else {
@@ -370,7 +408,7 @@ public class PHPCodeCompletion implements Completable {
                                 char c = prefix.charAt(i);
                                 if (i == 0 && c == ':') {
                                     // : is okay at the begining of prefixes
-                                } else if (!(Character.isJavaIdentifierPart(c) || c == '@' || c == '$')) {
+                                } else if (!(isPHPIdentifierPart(c) || c == '@' || c == '$')) {
                                     prefix = prefix.substring(i + 1);
                                     break;
                                 }
@@ -457,6 +495,20 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public ElementKind getKind() {
             return ElementKind.GLOBAL;
+        }
+    }
+    
+    private class ClassItem extends PHPCompletionItem {
+        private IndexedConstant constant = null;
+
+        ClassItem(IndexedConstant constant, CompletionRequest request) {
+            super(constant, request);
+            this.constant = constant;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
         }
     }
     
@@ -643,5 +695,6 @@ public class PHPCodeCompletion implements Completable {
         private PHPParseResult result;
         private CompilationInfo info;
         private String prefix;
+        PHPIndex index;
     }
 }

@@ -38,15 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.xpath.ext.spi.validation;
+package org.netbeans.modules.bpel.model.api.support;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2008.03.24
+ * @version 2008.03.27
  */
-public interface XPathCastResolver {
+public class XPathCastResolverImpl implements XPathCastResolver {
+  public XPathCastResolverImpl(List<Cast> casts) {
+    myXPathCasts = new ArrayList<XPathCast>();
 
-  List<XPathCast> getXPathCasts();
+    for (Cast cast : casts) {
+      myXPathCasts.add(new XPathCastImpl(cast));
+    }
+  }
+
+  public List<XPathCast> getXPathCasts() {
+    return myXPathCasts;
+  }
+
+  private List<XPathCast> myXPathCasts;
 }

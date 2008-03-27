@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <condition property="j2ee.appserver.path" value="E:\\space\\Sun\\SDK">
             <os family="windows"/>
         </condition>
-        <condition property="j2ee.appserver.path" value="/space/SDK">
+        <condition property="j2ee.appserver.path" value="/space/Sun/SDK">
             <os family="unix"/>
         </condition>
         <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>

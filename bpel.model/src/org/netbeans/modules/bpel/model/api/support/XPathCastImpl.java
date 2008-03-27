@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,49 +38,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * PluginDesignTimeConstants.java
- * 
- * Created on Oct 8, 2007, 3:59:03 PM
- * 
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+package org.netbeans.modules.bpel.model.api.support;
 
-package org.netbeans.modules.masterindex.plugin.util;
-
-import java.io.File;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
- *
- * @author Manish Bharani
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.03.27
  */
-public class PluginDTConstants {
+public class XPathCastImpl implements XPathCast {
+  
+  public XPathCastImpl(Cast cast) {
+    myType = getType(cast);
+    myPath = cast.getPath();
+  }
 
-    // File System Constants
-    public static final String USER_DIR = System.getProperty("user.dir");
-    public static final String PS = ":"; //Path Separator
-    public static final String fs = System.getProperty("file.separator"); //File Separator
-    public static File EVIEW_CONFIG_FILE = null;
-    
-    //Axion Database Constants
-    public static final String AXION_KEY_TABLE = "AXION_KEYS";
-    public static final String DB_DRIVER = "org.axiondb.jdbc.AxionDriver";
-    public static final String URI_PRIFIX = "jdbc" + PS +  "axiondb";
-    public static final String AXION_DB_VERSION = ".VER";
-    
-    //Query Manager Specific Constants
-    public static final String QueryManagerTablePrefix = "SBYN_";
-    public static final String QualifiedPathPrefix = "Enterprise.SystemObject.";
-    
-    //Default Columns Constants
-    public static final String datatype = "string";
-    public static final int datasize = 32;
-    public static final boolean isRequired = true;
-    public static final boolean isUpdatable = false;    
-    
-    public PluginDTConstants(){
-        
+  public String getPath() {
+    return myPath;
+  }
+
+  public GlobalType getType() {
+    return myType;
+  }
+
+  private GlobalType getType(Cast cast) {
+    SchemaReference<GlobalType> ref = cast.getType();
+//System.out.println();
+//System.out.println("---: " + ref);
+
+    if (ref == null) {
+      return null;
     }
-    
+//System.out.println("   : " + ref.get());
+    return ref.get();
+  }
+
+  private String myPath;
+  private GlobalType myType;
 }
