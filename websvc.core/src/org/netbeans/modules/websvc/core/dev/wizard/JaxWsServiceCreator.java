@@ -257,20 +257,23 @@ public class JaxWsServiceCreator implements ServiceCreator {
         dobj = DataObject.find(createdFile);
         final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel != null) {
-            ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
-            String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
-            Service service = jaxWsModel.addService(wsName, serviceImplPath);
-            ProjectManager.mutex().writeAccess(new Runnable() {
+            
+            ClassPath classPath = getClassPathForFile( projectInfo.getProject(), createdFile);
+                if (classPath != null) {
+                String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
+                Service service = jaxWsModel.addService(wsName, serviceImplPath);
+                ProjectManager.mutex().writeAccess(new Runnable() {
 
-                public void run() {
-                    try {
-                        jaxWsModel.write();
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                    public void run() {
+                        try {
+                            jaxWsModel.write();
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
                     }
-                }
-            });
-            JaxWsUtils.openFileInEditor(dobj, service);
+                });
+            }
+            JaxWsUtils.openFileInEditor(dobj);
         }
 
         return createdFile;
@@ -409,25 +412,27 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 dobj.setValid(false);
                 dobj = DataObject.find(createdFile);
 
-                ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
-                String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
-                generateDelegateMethods(createdFile, ejbRef);
+                ClassPath classPath = getClassPathForFile(projectInfo.getProject(), createdFile);
+                if (classPath != null) {
+                    String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
+                    generateDelegateMethods(createdFile, ejbRef);
 
-                final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
-                if (jaxWsModel != null) {
-                    Service service = jaxWsModel.addService(wsName, serviceImplPath);
-                    ProjectManager.mutex().writeAccess(new Runnable() {
+                    final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
+                    if (jaxWsModel != null) {
+                        jaxWsModel.addService(wsName, serviceImplPath);
+                        ProjectManager.mutex().writeAccess(new Runnable() {
 
-                        public void run() {
-                            try {
-                                jaxWsModel.write();
-                            } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
+                            public void run() {
+                                try {
+                                    jaxWsModel.write();
+                                } catch (IOException ex) {
+                                    ErrorManager.getDefault().notify(ex);
+                                }
                             }
-                        }
-                    });
-                    JaxWsUtils.openFileInEditor(dobj, service);
+                        });
+                    }
                 }
+                JaxWsUtils.openFileInEditor(dobj);
             }
         }
     }
@@ -632,5 +637,16 @@ public class JaxWsServiceCreator implements ServiceCreator {
             }
             return newName;
         }
+    }
+    
+    private ClassPath getClassPathForFile(Project project, FileObject file) {
+        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup srcGroup: srcGroups) {
+            FileObject srcRoot = srcGroup.getRootFolder();
+            if (FileUtil.isParentOf(srcRoot, file)) {
+                return ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
+            }
+        }
+        return null;
     }
 }
