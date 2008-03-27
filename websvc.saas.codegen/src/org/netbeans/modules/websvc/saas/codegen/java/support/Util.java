@@ -784,6 +784,16 @@ public class Util {
         return filterParams;
     }
 
+    
+    public static ParameterInfo findParameter(List<ParameterInfo> params, String paramName) {
+        for (ParameterInfo p : params) {
+            if (p.getName().equals(paramName))
+                return p;
+        }
+        
+        return null;
+    }
+    
     public static String createSessionKeyLoginBodyForWeb(WadlSaasBean bean,
             String groupName, String paramVariableName) throws IOException {
         String methodBody = "";
@@ -1134,10 +1144,12 @@ public class Util {
                 paramVal = "";
             }
         } else if (param.getStyle() == ParamStyle.HEADER) {
-            if (param.getDefaultValue() != null) {
+            if (param.isFixed()) {
+                paramVal = param.getFixed();
+            } else if (param.getDefaultValue() != null) {
                 paramVal = param.getDefaultValue().toString();
-            } else {
-                paramVal = getParameterName(param).toLowerCase();
+            } else { 
+                paramVal = "";
             }
         } else {
             if (param.isFixed()) {
