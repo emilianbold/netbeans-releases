@@ -87,7 +87,7 @@ class MapperNode implements GraphListener {
     private Mapper getMapper() { return mapper; }
     private RightTree getRightTree() { return mapper.getRightTree(); }
 
-    private MapperModel getModel() { return mapper.getModel(); }
+    private MapperModel getModel() { return mapper.getFilteredModel(); }
 
     MapperNode getParent() { return parent; }
     
@@ -330,7 +330,7 @@ class MapperNode implements GraphListener {
 
 
     void updateChildren() {
-        MapperModel model = mapper.getModel();
+        MapperModel model = mapper.getFilteredModel();
         
         List<MapperNode> oldChildren = Collections.emptyList();
         if (children != null) oldChildren = children;
@@ -478,7 +478,8 @@ class MapperNode implements GraphListener {
         Dimension labelSize = getLabelSize();
 
         int w = labelSize.width;
-        int h = Math.max(getGraphHeight(), labelSize.height + 4) + 1;
+        int h = (getParent() == null) ? 0 
+                : Math.max(getGraphHeight(), labelSize.height + 4) + 1;
 
         int indent = mapper.getTotalIndent();
 
@@ -545,7 +546,7 @@ class MapperNode implements GraphListener {
         return isGraphExpanded();
     }
     
-  //////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
     private boolean isVisible() {
         if (this == getMapper().getRoot()) return true;
         if (getParent().isCollapsed()) return false;

@@ -323,7 +323,7 @@ public class StartActionProviderImpl  implements StartActionProvider
                 if (!isStopped.get() && sessionSocket != null) {
                     DebugSession session = 
                         new DebugSession( sessionSocket );
-                    RequestProcessor.getDefault().post( session );
+                    session.start();
                     setupCurrentSession( session );
                 }
             }
