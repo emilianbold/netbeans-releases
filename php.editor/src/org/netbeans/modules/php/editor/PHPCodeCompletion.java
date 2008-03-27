@@ -249,7 +249,8 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (offsetWithinStatement(request.anchor, ifStmt.getTrueStatement())) {
                     proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getTrueStatement()), request));
-                } else if (offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
+                } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
+                        && offsetWithinStatement(request.anchor, ifStmt.getFalseStatement())) {
                     proposals.addAll(getLocalVariableProposals(Collections.singleton(ifStmt.getFalseStatement()), request));
                 }
             } else if (statement instanceof WhileStatement) {
