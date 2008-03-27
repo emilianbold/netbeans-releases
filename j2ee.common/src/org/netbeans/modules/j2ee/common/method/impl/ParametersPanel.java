@@ -142,6 +142,8 @@ public final class ParametersPanel extends javax.swing.JPanel {
             }
         ));
         jScrollPane1.setViewportView(table);
+        table.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ACSN_ParametersTab")); // NOI18N
+        table.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ACSD_ParametersTab")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
