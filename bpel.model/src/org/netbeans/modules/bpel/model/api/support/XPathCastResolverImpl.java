@@ -38,47 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.model.api.support;
 
-package org.netbeans.modules.java.source.usages;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.tools.JavaFileManager;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
- *
- * @author Tomas Zezula
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.03.27
  */
-public abstract class ClasspathInfoAccessor {
+public class XPathCastResolverImpl implements XPathCastResolver {
+  public XPathCastResolverImpl(List<Cast> casts) {
+    myXPathCasts = new ArrayList<XPathCast>();
 
-    public static synchronized ClasspathInfoAccessor getINSTANCE() {
-        if (INSTANCE == null) {
-            try {
-                Class.forName(ClasspathInfo.class.getName(), true, ClasspathInfo.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(cnfe);
-            }
-        }
-        
-        return INSTANCE;
+    for (Cast cast : casts) {
+      myXPathCasts.add(new XPathCastImpl(cast));
     }
+  }
 
-    public static void setINSTANCE(ClasspathInfoAccessor aINSTANCE) {
-        INSTANCE = aINSTANCE;
-    }
+  public List<XPathCast> getXPathCasts() {
+    return myXPathCasts;
+  }
 
-    private static volatile ClasspathInfoAccessor INSTANCE;
-       
-    public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
-    
-    public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
-    
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes);
-    
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                          boolean backgroundCompilation, boolean ignoreExcludes);   
-    
+  private List<XPathCast> myXPathCasts;
 }

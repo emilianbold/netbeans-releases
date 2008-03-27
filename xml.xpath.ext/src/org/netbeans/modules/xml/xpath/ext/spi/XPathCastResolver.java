@@ -38,47 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.xpath.ext.spi;
 
-package org.netbeans.modules.java.source.usages;
-
-import javax.tools.JavaFileManager;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
+import java.util.List;
 
 /**
- *
- * @author Tomas Zezula
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.03.24
  */
-public abstract class ClasspathInfoAccessor {
+public interface XPathCastResolver {
 
-    public static synchronized ClasspathInfoAccessor getINSTANCE() {
-        if (INSTANCE == null) {
-            try {
-                Class.forName(ClasspathInfo.class.getName(), true, ClasspathInfo.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(cnfe);
-            }
-        }
-        
-        return INSTANCE;
-    }
-
-    public static void setINSTANCE(ClasspathInfoAccessor aINSTANCE) {
-        INSTANCE = aINSTANCE;
-    }
-
-    private static volatile ClasspathInfoAccessor INSTANCE;
-       
-    public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
-    
-    public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
-    
-    public abstract ClasspathInfo create (FileObject fo, JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes);
-    
-    public abstract ClasspathInfo create (ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath, JavaFileFilterImplementation filter,
-                                          boolean backgroundCompilation, boolean ignoreExcludes);   
-    
+  List<XPathCast> getXPathCasts();
 }
