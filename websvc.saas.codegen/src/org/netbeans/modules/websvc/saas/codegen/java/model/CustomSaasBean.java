@@ -74,6 +74,8 @@ public class CustomSaasBean extends SaasBean {
     
         this.m = m;
         
+        setHttpMethod(HttpMethodType.GET);
+        
         if(m.getHref() != null)
             setResourceClassTemplate(m.getHref());
         

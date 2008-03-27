@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
@@ -58,7 +58,7 @@ public class LocationPathBuilder {
 
         public XPathLocationPath build() {
             try {
-                XPathModel model = XPathModelFactory.create(mContextEntity);
+                XPathModel model = BpelXPathModelFactory.create(mContextEntity);
                 //
                 XPathSchemaContext sContext = 
                         new SimpleSchemaContext(mSchemaContextComp);

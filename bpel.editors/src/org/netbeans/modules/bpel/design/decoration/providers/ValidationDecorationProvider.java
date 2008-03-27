@@ -80,6 +80,8 @@ public class ValidationDecorationProvider extends DecorationProvider
     public void release(){
         // Removed validation listener.
         getDesignView().getValidationController().removeValidationListener(this);
+        list_key = null;
+        decoration_key = null;
         
     }
     public Decoration getDecoration(BpelEntity entity){

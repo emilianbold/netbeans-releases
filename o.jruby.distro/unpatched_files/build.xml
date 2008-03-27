@@ -31,6 +31,7 @@
     <exclude unless="bsf.present" name="org/jruby/javasupport/bsf/**/*.java"/>
     <exclude unless="jdk1.4+" name="**/XmlAstMarshal.java"/>
     <exclude unless="jdk1.4+" name="**/AstPersistenceDelegates.java"/>
+    <exclude unless="sun-misc-signal" name="**/SunSignalFacade.java"/>
   </patternset>
 
   <patternset id="ruby.src.pattern">
@@ -55,10 +56,19 @@
     <condition property="ruby.home" value="${env.RUBY_HOME}">
       <not><isset property="ruby.home"/></not>
     </condition>
+    <property name="rdoc.archive" value="docs/rdocs.tar.gz"/>
+    <uptodate property="docsNotNeeded" srcfile="${rdoc.archive}" targetfile="${basedir}/share/ri"/>
+  </target>
+  
+  <target name="extract-rdocs" depends="init" unless="docsNotNeeded">
+  <!-- Modified for NetBeans builds: we don't want to include rdocs and ri from rdocs.tar.gz; the IDE
+     doesn't need them and it just bloats our download size.
+      <untar src="${rdoc.archive}" dest="${basedir}" compression="gzip"/>
+  -->
   </target>
 
   <!-- Creates the directories needed for building -->
-  <target name="prepare" depends="init">
+  <target name="prepare" depends="extract-rdocs">
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${jruby.classes.dir}"/>
@@ -97,6 +107,8 @@
   <!-- Checks if specific libs and versions are avaiable -->
   <target name="check-for-optional-packages" if="jdk1.5+"
           depends="check-for-optional-java4-packages">
+    <available property="sun-misc-signal"
+               classname="sun.misc.Signal"/>
   </target>
 
   <!-- Builds the Ant tasks that we need later on in the build -->
@@ -167,7 +179,7 @@
 
   <target name="jar-jruby" unless="jar-up-to-date">
       <antcall target="generate-method-classes" inheritall="true"/>
-      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-0.7.jar"/>
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
       <jarjar destfile="${lib.dir}/jruby.jar">
         <fileset dir="${jruby.classes.dir}">
           <exclude name="org/jruby/util/ant/**/*.class"/>
@@ -190,7 +202,7 @@
   </target>
 
   <path id="lib.classpath">
-    <pathelement location="${build.lib.dir}/retroweaver-rt-2.0.4.jar"/>
+    <pathelement location="${build.lib.dir}/retroweaver-rt-2.0.5.jar"/>
     <pathelement location="${build.lib.dir}/backport-util-concurrent.jar"/>
     <pathelement location="/usr/java/j2sdk1.4.2_16/jre/lib/rt.jar" />
     <pathelement location="${lib.dir}/bsf.jar" />
@@ -198,12 +210,21 @@
 
   <target name="jar-1.4" depends="jar-jruby">
     <copy file="${lib.dir}/jruby.jar" tofile="${lib.dir}/jruby1.5.jar"/>
-    <retro inputjar="${lib.dir}/jruby1.5.jar" outputjar="${lib.dir}/jruby.jar" target="1.4" failonerror="true" verify="true">
+    <retro inputjar="${lib.dir}/jruby1.5.jar" outputjar="${lib.dir}/jruby-weaved.jar" target="1.4" failonerror="true" verify="true">
       <classpath>
         <path refid="lib.classpath"/>
-        <pathelement location="${lib.dir}/jruby.jar" />
+        <pathelement location="${lib.dir}/jruby-weaved.jar" />
       </classpath>
     </retro>
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
+      <jarjar destfile="${lib.dir}/jruby.jar">
+        <zipfileset src="${lib.dir}/jruby-weaved.jar"/>
+        <zipfileset src="${build.lib.dir}/retroweaver-rt-2.0.5.jar"/>
+        <zipfileset src="${build.lib.dir}/backport-util-concurrent.jar"/>
+        <rule pattern="edu.emory.mathcs.backport.**" result="jruby.backport.@1"/>
+        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+      </jarjar>
+    <delete file="${lib.dir}/jruby-weaved.jar"/>
     <delete file="${lib.dir}/jruby1.5.jar"/>
   </target>
 
@@ -221,7 +242,7 @@
     <target name="jar-complete" depends="generate-method-classes" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
       <property name="mainclass" value="org.jruby.Main"/>
       <property name="filename" value="jruby-complete.jar"/>
-      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-0.7.jar"/>
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
       <jarjar destfile="${lib.dir}/${filename}">
         <fileset dir="${jruby.classes.dir}">
           <exclude name="org/jruby/util/ant/**/*.class"/>
@@ -381,8 +402,9 @@
     instrument,
     run-junit-compiled,
     run-junit-compiled-1.9,
+    test-security-manager,
     coverage-report"
-  	description="Runs unit tests.">
+    description="Runs unit tests.">
   </target>
 
   <target name="test-compiled" depends="copy-test-files,run-junit-compiled,run-junit-precompiled"/>
@@ -395,6 +417,7 @@
   <target name="test-all" depends="
       copy-test-files,
       instrument,
+      test-security-manager,
       run-junit-interpreted,
       run-junit-compiled,
       run-junit-precompiled,
@@ -411,6 +434,51 @@
       compile-stdlib,
       coverage-report"
 	  description="Runs unit tests in all modes."/>
+
+  <target name="weave-tests" description="weave the test classes">
+    <retro srcdir="${test.classes.dir}" target="1.4" failonerror="true" verify="true">
+      <classpath>
+        <path refid="lib.classpath"/>
+        <pathelement location="${lib.dir}/jruby.jar" />
+        <pathelement location="${build.lib.dir}/junit.jar" />
+        <pathelement location="${build.lib.dir}/asm-3.0.jar" />
+        <pathelement location="${test.classes.dir}" />
+      </classpath>
+    </retro>
+  </target>
+ 
+  <target name="test-1.4" depends="
+    copy-test-files,
+    jar-1.4,
+    weave-tests,
+    instrument,
+    run-junit-compiled,
+    run-junit-compiled-1.9,
+    coverage-report"
+  	description="Runs unit tests with weaved jruby classes.">
+  </target>
+
+  <target name="test-all-1.4" depends="
+      copy-test-files,
+      jar-1.4,
+      weave-tests,
+      instrument,
+      run-junit-interpreted,
+      run-junit-compiled,
+      run-junit-precompiled,
+      run-junit-interpreted-1.9,
+      run-junit-compiled-1.9,
+      run-junit-precompiled-1.9,
+      run-junit-reflected-interpreted,
+      run-junit-reflected-compiled,
+      run-junit-reflected-precompiled,
+      run-junit-compiled-threadpool,
+      run-junit-precompiled-threadpool,
+      run-junit-interpreted-threadpool,
+      run-junit-object-persistence,
+      compile-stdlib,
+      coverage-report"
+	  description="Runs unit tests in all modes with weaved jruby classes."/>
 
   <!-- All junit permutations for 1.8 and 1.9 support -->
   <target name="run-junit-interpreted"><run-junit-1.8/></target>
@@ -432,7 +500,10 @@
   
   <path id="test.class.path">
     <pathelement location="${jruby.instrumented.classes.dir}" />
-    <path refid="build.classpath"/>
+    <fileset dir="${build.lib.dir}" includes="*.jar">
+      <exclude name="joni.jar"/>
+    </fileset>
+    <pathelement path="${lib.dir}/bsf.jar"/>
     <pathelement path="${java.class.path}"/>
     <pathelement path="${lib.dir}/jruby.jar"/>
     <pathelement location="${test.classes.dir}"/>
@@ -454,11 +525,10 @@
       <echo message="compile=@{compile.mode}, jit.threshold=@{jit.threshold}, jit.max=@{jit.max}, objectspace=@{objectspace.enabled} threadpool=@{thread.pooling} reflection=@{reflection} version=@{jruby.version}"/>
       <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${build.lib.dir}/junit.jar"/>
 
-      <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="1200000">
+      <junit jvm="${jruby.test.jvm}" fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="1200000">
 	<classpath refid="test.class.path"/>
       
 	<sysproperty key="java.awt.headless" value="true"/>
-	<sysproperty key="jruby.base" value="${basedir}"/>
 	<sysproperty key="jruby.home" value="${basedir}"/>
 	<sysproperty key="jruby.lib" value="${lib.dir}"/>
 	<sysproperty key="jruby.compile.mode" value="@{compile.mode}"/>
@@ -467,7 +537,7 @@
 	<sysproperty key="jruby.compat.version" value="@{jruby.version}"/>
 	<sysproperty key="jruby.objectspace.enabled" value="@{objectspace.enabled}"/>
 	<sysproperty key="jruby.runtime.threadlocal" value="@{threadlocal}"/>
-	<sysproperty key="jruby.thread.pooling" value="@{thread.pooling}"/>
+	<sysproperty key="jruby.thread.pool.enabled" value="@{thread.pooling}"/>
 	<sysproperty key="jruby.reflection" value="@{reflection}"/>
 	<sysproperty key="jruby.jit.logging.verbose" value="true"/>
 	<sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
@@ -503,6 +573,7 @@
 	  <test name="org.jruby.test.ScriptTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.BFTSTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.JRubyTestSuite" todir="${test.results.dir}" unless="test"/>
+	  <test name="org.jruby.test.DubyTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.MRITestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubiconTestSuite" todir="${test.results.dir}" unless="test"/>
 	  <test name="org.jruby.test.RubyTestTestSuite" todir="${test.results.dir}" unless="test"/>
@@ -537,6 +608,17 @@
 	<test name="org.jruby.test.ObjectPersistenceTestSuite" todir="${test.results.dir}" unless="test"/>
       </junit-tests>
     </run-junit>
+  </target>
+
+  <target name="test-security-manager">
+    <java classname="org.jruby.Main" fork="true" failonerror="true">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      <sysproperty key="java.security.manager" value=""/>
+      <sysproperty key="java.security.policy" value="file:test/restricted.policy"/>
+      <arg value="-e"/>
+      <arg value="puts 'Restricted policy looks ok'"/>
+    </java>
   </target>
 
   <target name="detect-stable-specs-need-update">
@@ -644,10 +726,31 @@
       <sysproperty key="jruby.home" value="${basedir}"/>
       <sysproperty key="jruby.launch.inproc" value="false"/>
       
-      <arg value="bin/ci"/>
-      <arg value="-t"/><arg value="${basedir}/bin/jruby"/>
-      <arg value="-c"/>
-      <arg value="-E"/><arg value="${basedir}/test/spec_excludes"/>
+      <arg line="bin/mspec tag"/>
+      <arg line="-t ${basedir}/bin/jruby"/>
+      <arg line="--add fails --fail"/>
+      <arg line="-X ${basedir}/test/spec_excludes"/>
+      <arg value="spec/ruby/1.8"/>
+    </java>
+  </target>
+
+  <target name="spec-show-excludes" depends="prepare"
+    description="Prints out all currently excluded rubyspecs.">
+
+    <available property="mspec-available"
+      file="${build.dir}/rubyspec/code/bin/mspec"/>
+    <fail unless="mspec-available"
+      message="No rubyspecs found. Download them via 'ant spec'."/>
+
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${build.dir}/rubyspec/code">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.launch.inproc" value="false"/>
+      <arg line="bin/mspec"/>
+      <arg line="-t ${basedir}/bin/jruby"/>
+      <arg line="-f s -g fails --dry-run"/>
+      <arg line="-X ${basedir}/test/spec_excludes"/>
       <arg value="spec/ruby/1.8"/>
     </java>
   </target>
@@ -678,10 +781,10 @@
 	<sysproperty key="jruby.jit.threshold" value="@{jit.threshold}"/>
 	<sysproperty key="jruby.jit.max" value="@{jit.max}"/>
 	<sysproperty key="jruby.objectspace.enabled" value="@{objectspace.enabled}"/>
-	<sysproperty key="jruby.thread.pooling" value="@{thread.pooling}"/>
+	<sysproperty key="jruby.thread.pool.enabled" value="@{thread.pooling}"/>
 	<sysproperty key="jruby.reflection" value="@{reflection}"/>
       
-	<arg value="bin/ci"/>
+	<arg line="bin/mspec ci"/>
 	<arg value="-t"/><arg value="${basedir}/bin/jruby"/>
 	<arg line="-T -J-ea"/>
 	<arg value="-f"/><arg value="m"/>
@@ -699,7 +802,7 @@
     <sequential>
       <run-specs compile.mode="@{compile.mode}" jit.threshold="@{jit.threshold}">
 	<extra-args>
-	  <arg value="-E"/><arg value="${basedir}/test/spec_excludes"/>
+	  <arg value="-X"/><arg value="${basedir}/test/spec_excludes"/>
 	</extra-args>
       </run-specs>
     </sequential>
@@ -739,6 +842,8 @@
   <patternset id="dist.bindir.files">
     <include name="bin/*jruby*"/>
     <include name="bin/*gem*"/>
+    <include name="bin/*ri*"/>
+    <include name="bin/*rdoc*"/>
     <include name="bin/*jirb*"/>
     <include name="bin/generate_yaml_index.rb"/>
     <include name="bin/testrb"/>
@@ -758,6 +863,7 @@
     <include name="docs/**"/>
     <include name="COPYING*"/>
     <include name="README"/>
+    <include name="share/**"/>
     <exclude name="lib/ruby/**"/>
   </patternset>
 
@@ -766,7 +872,7 @@
     <exclude name="lib/emma.jar"/>
     <exclude name="lib/emma_ant.jar"/>
     <exclude name="lib/junit.jar"/>
-    <exclude name="lib/jarjar-0.7.jar"/>
+    <exclude name="lib/jarjar-1.0rc7.jar"/>
   </patternset>
 
   <patternset id="dist.src.files">
@@ -901,7 +1007,7 @@
   </target>
 
   <target name="clean" depends="init" description="Cleans almost everything, leaves downloaded specs">
-    <delete includeemptydirs="true">
+    <delete includeemptydirs="true" quiet="true">
         <fileset dir="${build.dir}" excludes="rubyspec**"/>
     </delete>
     <delete dir="${dist.dir}"/>
@@ -938,7 +1044,7 @@
       source="${javac.version}" target="${javac.version}"
       deprecation="true" encoding="UTF-8" />
     <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask"
-      classpath="${build.lib.dir}/jarjar-0.7.jar"/>
+      classpath="${build.lib.dir}/jarjar-1.0rc7.jar"/>
     <jarjar destfile="${nailgun.home}/jruby-nailgun.jar">
       <fileset dir="${jruby.classes.dir}">
         <exclude name="org/jruby/util/ant/**/*.class"/>

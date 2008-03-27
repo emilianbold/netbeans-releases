@@ -447,7 +447,7 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     
     private void doDestroy() throws IOException {
         LiveUnit liveUnit = (LiveUnit) liveBean.getDesignContext();
-        UndoEvent undoEvent = liveUnit.getModel().writeLock("destroy"); // TODO I18N
+        UndoEvent undoEvent = liveUnit.getModel().writeLock(NbBundle.getMessage(DesignBeanNode.class, "DeleteBean")); // TODO I18N
         try {
             liveUnit.deleteBean(liveBean);
         } finally {

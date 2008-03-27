@@ -79,7 +79,6 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             code += "\n<%@ page import=\""+AbstractGenerator.REST_CONNECTION_PACKAGE+

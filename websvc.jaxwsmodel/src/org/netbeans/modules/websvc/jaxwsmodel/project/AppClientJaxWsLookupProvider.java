@@ -89,10 +89,13 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
                     if (ext != null) {
                         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
                         try {
-                            if (jaxws_build==null && jaxWsModel.getClients().length>0) {
-                                // generate nbproject/jaxws-build.xml
-                                // add jaxws extension
-                                addJaxWsExtension(prj, JAX_WS_STYLESHEET_RESOURCE, ext);
+                            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+                            if (jaxws_build==null || extension == null) {
+                                if (jaxWsModel.getClients().length > 0) {
+                                    // generate nbproject/jaxws-build.xml
+                                    // add jaxws extension
+                                    addJaxWsExtension(prj, JAX_WS_STYLESHEET_RESOURCE, ext);
+                                }
                             } else if (jaxWsModel.getClients().length==0) {
                                 // remove nbproject/jaxws-build.xml
                                 // remove the jaxws extension

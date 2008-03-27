@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import javax.ws.rs.GET;
 import javax.ws.rs.WebApplicationException;
-
+import org.netbeans.saas.RestResponse;
 
 /**
  * GoogleMap Resource
@@ -100,7 +100,8 @@ public class GoogleMapResource {
                 {"key", key}
             };
             RestConnection cl = new RestConnection(GEOCODE_URL, params);
-            String codeStr = cl.get();
+            RestResponse response = cl.get();
+            String codeStr = response.getDataAsString();
             return new GeoCode(codeStr);
         }
     }
