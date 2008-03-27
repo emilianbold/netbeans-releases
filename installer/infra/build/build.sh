@@ -171,6 +171,7 @@ run() {
             \"-Dnb.files.prefix=${NB_FILES_PREFIX}\" \
             \"-Dnb.locales=${LOCALES}\" \
             \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
+            \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
@@ -250,6 +251,7 @@ fi
 if [ 1 == "$ML_BUILD" ] ; then
 	setNetBeansBuildsHost $ML_BUILD
 	NB_BUILD_TYPE=ml
+        GF_BUILD_TYPE=ml
 	OUTPUT_DIR=${OUTPUT_DIR}/${NB_BUILD_TYPE}
 	run $*
 fi
