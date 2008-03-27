@@ -37,56 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.breakpoints;
+package org.netbeans.modules.profiler.spi;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.beans.Customizer;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-
-import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsActionsProvider;
-import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.api.project.Project;
 
 /**
  *
- * @author martin
+ * @author Jaroslav Bachorik
  */
-public class JPDABreakpointCustomizer extends JPanel implements Customizer, Controller {
-    
-    private JPDABreakpoint b;
-    private JComponent c;
-    
-    public JPDABreakpointCustomizer() {
-    }
-
-    public void setObject(Object bean) {
-        if (!(bean instanceof JPDABreakpoint)) {
-            throw new IllegalArgumentException(bean.toString());
-        }
-        this.b = (JPDABreakpoint) bean;
-        init(b);
-    }
-    
-    private void init(JPDABreakpoint b) {
-        c = BreakpointsActionsProvider.getCustomizerComponent(b);
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        add(c, gbc);
-    }
-
-    public boolean ok() {
-        return ((Controller) c).ok();
-    }
-
-    public boolean cancel() {
-        return ((Controller) c).cancel();
-    }
-
+public interface GoToSourceProvider {
+    public boolean openSource(Project project, String className, String methodName, String signature);
 }

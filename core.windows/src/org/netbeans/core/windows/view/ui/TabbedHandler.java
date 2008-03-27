@@ -67,6 +67,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.AWTEventListener;
+import java.util.logging.Logger;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
 import org.netbeans.core.windows.view.ui.slides.SlideBarActionEvent;
 import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
@@ -314,11 +315,12 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             tae.consume();
             if (TabbedContainer.COMMAND_CLOSE == cmd) { //== test is safe here
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
-                if (tc == null) {
-                    throw new IllegalStateException ("Component to be closed " +
-                        "is null at index " + tae.getTabIndex());
+                if (tc != null) {
+                    modeView.getController().userClosedTopComponent(modeView, tc);
+                } else {
+                    Logger.getLogger(TabbedHandler.class.getName()).warning(
+                        "TopComponent to be closed is null at index " + tae.getTabIndex());
                 }
-                modeView.getController().userClosedTopComponent(modeView, tc);
             } else if (TabbedContainer.COMMAND_POPUP_REQUEST == cmd) {
                 handlePopupMenuShowing(tae.getMouseEvent(), tae.getTabIndex());
             } else if (TabbedContainer.COMMAND_MAXIMIZE == cmd) {
