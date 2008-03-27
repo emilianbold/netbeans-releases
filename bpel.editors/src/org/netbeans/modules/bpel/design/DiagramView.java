@@ -177,6 +177,17 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     //    public void scrollToFocusVisible(Pattern pattern) {
 //        scrollRectToVisible(getFocusAreaBounds(pattern));
 //    }
+    public void scrollPlaceholderToView(PlaceHolder ph) {
+        
+        if (ph == null) {
+            return;
+        }
+        Rectangle r = ph.getShape().getBounds();
+      
+        scrollRectToVisible(r);
+
+    }
+
     public void scrollPatternToView(Pattern pattern) {
         if (pattern == null) {
             return;
