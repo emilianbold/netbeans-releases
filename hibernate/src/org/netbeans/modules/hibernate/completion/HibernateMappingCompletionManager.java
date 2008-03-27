@@ -231,6 +231,9 @@ public final class HibernateMappingCompletionManager {
     }
 
     public void completeAttributeValues(CompletionResultSet resultSet, CompletionContext context) {
+        if(context.getTag() == null)
+            return;
+        
         String tagName = context.getTag().getNodeName();
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
