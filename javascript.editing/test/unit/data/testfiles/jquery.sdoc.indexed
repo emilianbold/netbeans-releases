@@ -70,7 +70,7 @@ Indexed:
   base : focus;jQuery;focus;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;c787;;jQuery;
   base : focus;jQuery;focus;|DOCUMENTED|FUNCTION|DOC_ONLY|;fn;0;c892;;jQuery;
   base : get;jQuery.jQuery;get;|DOCUMENTED|FUNCTION|DOC_ONLY|;url,data,callback;0;125da;;XMLHttpRequest;
-  base : get;jQuery;get;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;1318;;Array;
+  base : get;jQuery;get;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;1318;;Array<Element>;
   base : get;jQuery;get;|DOCUMENTED|FUNCTION|DOC_ONLY|;index;0;14de;;Element;
   base : getjson;jQuery.jQuery;getJSON;|DOCUMENTED|FUNCTION|DOC_ONLY|;url,data,callback;0;12928;;XMLHttpRequest;
   base : getscript;jQuery.jQuery;getScript;|DOCUMENTED|FUNCTION|DOC_ONLY|;url,callback;0;12ca9;;XMLHttpRequest;
@@ -128,7 +128,7 @@ Indexed:
   base : prependto;jQuery;prependTo;|DOCUMENTED|FUNCTION|DOC_ONLY|;content;0;6a8b;;jQuery;
   base : prev;jQuery;prev;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;56c6;;jQuery;
   base : prevall;jQuery;prevAll;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;589a;;jQuery;
-  base : queue;jQuery;queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;116cd;;Array;
+  base : queue;jQuery;queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;116cd;;Array<Function>;
   base : queue;jQuery;queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;callback;0;117c0;;jQuery;
   base : queue;jQuery;queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;queue;0;11937;;jQuery;
   base : ready;jQuery;ready;|DOCUMENTED|FUNCTION|DOC_ONLY|;fn;0;94e5;;jQuery;
@@ -232,7 +232,7 @@ Indexed:
   fqn : jquery.find;;jQuery.find;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;4e12;;jQuery;
   fqn : jquery.focus;;jQuery.focus;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;c787;;jQuery;
   fqn : jquery.focus;;jQuery.focus;|DOCUMENTED|FUNCTION|DOC_ONLY|;fn;0;c892;;jQuery;
-  fqn : jquery.get;;jQuery.get;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;1318;;Array;
+  fqn : jquery.get;;jQuery.get;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;1318;;Array<Element>;
   fqn : jquery.get;;jQuery.get;|DOCUMENTED|FUNCTION|DOC_ONLY|;index;0;14de;;Element;
   fqn : jquery.hasclass;;jQuery.hasClass;|DOCUMENTED|FUNCTION|DOC_ONLY|;class;0;38ad;;Boolean;
   fqn : jquery.height;;jQuery.height;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;8ec3;;Integer;
@@ -306,7 +306,7 @@ Indexed:
   fqn : jquery.prependto;;jQuery.prependTo;|DOCUMENTED|FUNCTION|DOC_ONLY|;content;0;6a8b;;jQuery;
   fqn : jquery.prev;;jQuery.prev;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;56c6;;jQuery;
   fqn : jquery.prevall;;jQuery.prevAll;|DOCUMENTED|FUNCTION|DOC_ONLY|;expr;0;589a;;jQuery;
-  fqn : jquery.queue;;jQuery.queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;116cd;;Array;
+  fqn : jquery.queue;;jQuery.queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;;0;116cd;;Array<Function>;
   fqn : jquery.queue;;jQuery.queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;callback;0;117c0;;jQuery;
   fqn : jquery.queue;;jQuery.queue;|DOCUMENTED|FUNCTION|DOC_ONLY|;queue;0;11937;;jQuery;
   fqn : jquery.ready;;jQuery.ready;|DOCUMENTED|FUNCTION|DOC_ONLY|;fn;0;94e5;;jQuery;
