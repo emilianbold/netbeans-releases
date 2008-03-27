@@ -156,9 +156,11 @@ import javax.lang.model.type.TypeMirror;
 
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -172,8 +174,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
     
     private Type newArrayType;
+    private Expression2 expression;
     
-    public EvaluatorVisitor() {
+    public EvaluatorVisitor(Expression2 expression) {
+        this.expression = expression;
     }
 
     @Override
@@ -1190,6 +1194,26 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitIdentifier(IdentifierTree arg0, EvaluationContext evaluationContext) {
+        String identifier = arg0.getName().toString();
+        // class special variable
+        if (expression.classReplaced().equals(identifier)) {
+            ReferenceType refType = evaluationContext.getFrame().location().declaringType();
+            JPDAClassType classType = evaluationContext.getDebugger().getClassType(refType);
+            return ((JDIVariable) classType.classObject()).getJDIValue();
+        }
+        
+        // return special variable
+        if (expression.returnReplaced().equals(identifier)) {
+            ThreadReference tr = evaluationContext.getFrame().thread();
+            JPDAThreadImpl thread = (JPDAThreadImpl) evaluationContext.getDebugger().getThread(tr);
+            JDIVariable returnVar = (JDIVariable) thread.getReturnVariable();
+            if (returnVar != null) {
+                return returnVar.getJDIValue();
+            } else {
+                return null;
+            }
+        }
+
         TreePath currentPath = getCurrentPath();
         Element elm = null;
         if (currentPath != null) {
