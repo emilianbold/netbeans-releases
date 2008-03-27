@@ -119,6 +119,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     public WadlSaasBean getBean() {
         return (WadlSaasBean) bean;
     }
+    
+    public JavaSource getSaasServiceSource() {
+        return saasServiceJS;
+    }
 
     public FileObject getSaasServiceFolder() throws IOException {
         if (serviceFolder == null) {

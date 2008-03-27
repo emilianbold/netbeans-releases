@@ -687,8 +687,10 @@ Nothing.
        attributes from
        <code>org.openide.loaders.CreateFromTemplateAttributesProvider</code>s
        registered in project lookups.
-       It provides
-       <a href="#property-project.license">project.license</a> attribute for file templates using scripting support.
+       It provides the
+       <a href="#property-project.license">project.license</a> and
+       <a href="#property-project.encoding">project.encoding</a> 
+       attributes for file templates using scripting support.
      </api>
   </p>
    <p>
@@ -697,6 +699,12 @@ Nothing.
        <a href="#lookup-org.openide.loaders.CreateFromTemplateAttributesProvider">templates</a>.
        It is used to import license templates.
        The <code>default</code> is used if the attribute was not found in any
+       project lookup.
+     </api>
+     <api group="property" name="project.encoding" type="export" category="official">
+       <code>project.encoding</code> attribute contains the project encoding as <code>String</code> for newly created
+       <a href="#lookup-org.openide.loaders.CreateFromTemplateAttributesProvider">templates</a>.
+       The encoding of the parent folder of the new file is used if the attribute was not found in any
        project lookup.
      </api>
    </p>

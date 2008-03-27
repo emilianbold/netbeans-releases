@@ -49,19 +49,27 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
-    public static final String HTTP_SERVLET_REQUEST_CLASS = "javax.servlet.http.HttpServletRequest";
+    public static final String JAVA_ANNOTATION_PACKAGE = "javax.annotation."; //NOI18N
     
-    public static final String HTTP_SERVLET_RESPONSE_CLASS = "javax.servlet.http.HttpServletResponse";
+    public static final String JAVA_ANNOTATION_RESOURCE = "Resource"; //NOI18N
     
-    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";
+    public static final String HTTP_SERVLET_PACKAGE = "javax.servlet.http.";       //NOI18N
     
-    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";
+    public static final String HTTP_SERVLET_REQUEST_CLASS = "HttpServletRequest";//NOI18N
     
-    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String HTTP_SERVLET_RESPONSE_CLASS = "HttpServletResponse";//NOI18N
     
-    public static final String PUT_POST_CONTENT = "content";
+    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";//NOI18N
     
-    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";
+    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";//NOI18N
+    
+    public static final String HTTP_RESOURCE_ANNOTATION = "Resource";     //NOI18N
+    
+    public static final String CONTENT_TYPE = "Content-Type";//NOI18N
+    
+    public static final String PUT_POST_CONTENT = "content";//NOI18N
+    
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";//NOI18N
     
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     

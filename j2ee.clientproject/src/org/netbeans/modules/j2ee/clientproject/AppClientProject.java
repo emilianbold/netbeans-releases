@@ -119,6 +119,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -297,6 +298,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -318,7 +320,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
             buildExtender,
