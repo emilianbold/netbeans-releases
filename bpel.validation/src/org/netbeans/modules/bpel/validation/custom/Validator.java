@@ -116,6 +116,9 @@ public final class Validator extends BpelValidator {
     // # 124918
     checkCounters(forEach);
 
+    // # 125001
+    checkNegativeCounter(forEach);
+
 //out("forEach: " + forEach);
 //out("forEach.getCounterName: " + forEach.getCounterName());
     String counter = forEach.getCounterName();
@@ -181,6 +184,65 @@ public final class Validator extends BpelValidator {
     }
     if (finalCounter < startCounter) {
       addError("FIX_Final_Start_Counters", forEach, "" + startCounter, "" + finalCounter); // NOI18N
+    }
+  }
+
+  private void checkNegativeCounter(ForEach forEach) {
+    // start
+    StartCounterValue startCounterValue = forEach.getStartCounterValue();
+
+    if (startCounterValue == null) {
+      return;
+    }
+    int startCounter;
+
+    try {
+      startCounter = Integer.parseInt(startCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (startCounter < 0) {
+      addError("FIX_Negative_Start_Counter", startCounterValue, "" + startCounter); // NOI18N
+    }
+    // final
+    FinalCounterValue finalCounterValue = forEach.getFinalCounterValue();
+
+    if (finalCounterValue == null) {
+      return;
+    }
+    int finalCounter;
+
+    try {
+      finalCounter = Integer.parseInt(finalCounterValue.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (finalCounter < 0) {
+      addError("FIX_Negative_Final_Counter", finalCounterValue, "" + finalCounter); // NOI18N
+    }
+    // completion
+    CompletionCondition completionCondition = forEach.getCompletionCondition();
+
+    if (completionCondition == null) {
+      return;
+    }
+    Branches branches = completionCondition.getBranches();
+
+    if (branches == null) {
+      return;
+    }
+    int completionCounter;
+
+    try {
+      completionCounter = Integer.parseInt(branches.getContent());
+    }
+    catch (NumberFormatException e) {
+      return;
+    }
+    if (completionCounter < 0) {
+      addError("FIX_Negative_Completion_Counter", branches, "" + completionCounter); // NOI18N
     }
   }
 
