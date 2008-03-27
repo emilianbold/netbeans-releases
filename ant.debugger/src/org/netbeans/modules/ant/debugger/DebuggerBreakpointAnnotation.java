@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.ant.debugger;
 
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.ant.debugger.breakpoints.AntBreakpoint;
+import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.openide.text.Annotatable;
-import org.openide.text.Annotation;
-import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 
@@ -52,26 +53,26 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
-public class DebuggerAnnotation extends Annotation {
+public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
 
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
+    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
-    /** Annotation type constant. */
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
+    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint"; // NOI18N
 
     private Annotatable annotatable;
     private String      type;
+    private AntBreakpoint breakpoint;
     
     
-    public DebuggerAnnotation (String type, Annotatable annotatable) {
+    public DebuggerBreakpointAnnotation (String type, AntBreakpoint b) {
         this.type = type;
-        this.annotatable = annotatable;
+        this.annotatable = b.getLine ();
+        this.breakpoint = b;
         attach (annotatable);
     }
     
@@ -80,21 +81,26 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription () {
-        if (type == CURRENT_LINE_ANNOTATION_TYPE)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
+        if (type == BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
+                ("TOOLTIP_BREAKPOINT"); // NOI18N
+        else 
+        if (type == DISABLED_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
+                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
+        else 
+        if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
+                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
         else
-        if (type == CURRENT_LINE_ANNOTATION_TYPE2)
-            return NbBundle.getMessage 
-                (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC_2"); // NOI18N
-        else
-        if (type == CURRENT_LINE_PART_ANNOTATION_TYPE)
-            return NbBundle.getMessage
-                    (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
-        else
-        if (type == CALL_STACK_FRAME_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CALLSITE"); // NOI18N
+        if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerBreakpointAnnotation.class).getString 
+                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
         return null;
+    }
+
+    @Override
+    public Breakpoint getBreakpoint() {
+        return breakpoint;
     }
 }
