@@ -479,17 +479,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
-        if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
-                    openFileInEditor(dobj, serv);
-                }
-            }
-        }
+        openFileInEditor(dobj);
     }
 
-    public static void openFileInEditor(DataObject dobj, Service service) {
+    public static void openFileInEditor(DataObject dobj) {
 
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
         if (openCookie != null) {
@@ -510,28 +503,6 @@ public class JaxWsUtils {
         }
     }
 
-    // Retouche
-    //    private static String createBody(Type type) {
-    //        String initVal;
-    //
-    //        if (type instanceof PrimitiveType) {
-    //            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
-    //            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
-    //                initVal = "false"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
-    //                initVal = "'\\0'"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
-    //                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
-    //            } else {
-    //                initVal = "0"; // NOI18N
-    //            }
-    //        } else if (type instanceof ClassDefinition) {
-    //            initVal = "null"; // NOI18N
-    //        } else {
-    //            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
-    //        }
-    //        return "return ".concat(initVal).concat(";"); // NOI18N
-    //    }
     public static String getPackageName(String fullyQualifiedName) {
         String packageName = "";
         int index = fullyQualifiedName.lastIndexOf(".");

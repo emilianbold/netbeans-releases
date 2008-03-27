@@ -344,12 +344,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
-            Map<String, Object> values = new HashMap<String, Object>();
-            // This is needed, because all XML files have a virtual charset that
-            // detects the encoding of the file, and createFromTemplate() uses the
-            // name of that charset (ALWAYS "UTF-8") as the encoding value.
-            values.put("encoding", FileEncodingQuery.getEncoding(targetDO.getPrimaryFile()).name()); // NOI18N
-            return templateDO.createFromTemplate(targetDO, fileName, values).getPrimaryFile();
+            return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
         }
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {

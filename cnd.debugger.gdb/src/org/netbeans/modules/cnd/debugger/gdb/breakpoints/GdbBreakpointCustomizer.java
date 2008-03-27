@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.beans.Customizer;
 
 import javax.swing.JComponent;
@@ -69,7 +71,12 @@ public class GdbBreakpointCustomizer extends JPanel implements Customizer, Contr
     
     private void init(GdbBreakpoint b) {
         c = BreakpointsActionsProvider.getCustomizerComponent(b);
-        add(c);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        add(c, gbc);
     }
 
     public boolean ok() {

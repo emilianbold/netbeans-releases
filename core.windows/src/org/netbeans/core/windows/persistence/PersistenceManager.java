@@ -409,7 +409,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     // XXX helper method
-    public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
+    public static boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
         int persistenceType = persistenceType(tc);
         if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
             return true;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.ui.actions;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,11 +59,13 @@ import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter.Popup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -98,7 +101,7 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
         }
     }
     
-    private class BreakpointAwareAction implements Action {
+    private class BreakpointAwareAction implements Action, Popup {
         
         private BreakpointAnnotation ann;
         
@@ -106,6 +109,10 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
             this.ann = ann;
         }
 
+        public JMenuItem getPopupPresenter() {
+            return new Actions.MenuItem (this, false);
+        }
+    
         public Object getValue(String key) {
             return BreakpointCustomizeAction.this.getValue(key);
         }
@@ -237,7 +244,7 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
             dialogPtr[0] = d;
             d.setVisible (true);
         }
-    
+
     }
 
 }
