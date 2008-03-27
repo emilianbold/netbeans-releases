@@ -303,18 +303,28 @@ public class WadlSaasBean extends SaasBean {
     }
     
     @Override
-    protected Object getAuthUsingId(Authentication auth) {
+    protected Object getSignedUrl(Authentication auth) {
+        Object signedUrl = null;
         if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
-            Resource[] rArray = m.getResourcePath();
-            if (rArray == null || rArray.length == 0) {
-                return null;
-            }
-            String id = rArray[rArray.length-1].getId();
-            if(id != null && !id.trim().equals("")) {
-                for(SignedUrl s: auth.getSignedUrl()) {
-                    if(id.equals(s.getId()))
-                        return s;
+            String id = m.getWadlMethod().getId();
+            signedUrl = getSignedUrlById(auth, id);
+            if(signedUrl == null) {
+                Resource[] rArray = m.getResourcePath();
+                if (rArray == null || rArray.length == 0) {
+                    return null;
                 }
+                id = rArray[rArray.length-1].getId();
+                signedUrl = getSignedUrlById(auth, id);
+            }
+        }
+        return signedUrl;
+    }
+    
+    private Object getSignedUrlById(Authentication auth, String id) {
+        if(id != null && !id.trim().equals("")) {
+            for(SignedUrl s: auth.getSignedUrl()) {
+                if(id.equals(s.getId()))
+                    return s;
             }
         }
         return null;

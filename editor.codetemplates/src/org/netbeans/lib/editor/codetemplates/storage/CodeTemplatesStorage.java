@@ -406,8 +406,7 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
                 String code = codeTemplate.getParametrizedText();
                 if (code.length() > 0) {
                     Element codeElement = doc.createElement(E_CODE);
-                    codeElement.appendChild(doc.createCDATASection(
-                        CharacterConversions.lineFeedToLineSeparator(code)));
+                    codeElement.appendChild(doc.createCDATASection(code)); // No EOL translations, see #130095.
                     element.appendChild(codeElement);
                 }
 
@@ -415,8 +414,7 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
                 String description = codeTemplate.getDescription();
                 if (description != null && description.length() > 0) {
                     Element descriptionElement = doc.createElement(E_DESCRIPTION);
-                    descriptionElement.appendChild(doc.createCDATASection(
-                        CharacterConversions.lineFeedToLineSeparator(description)));
+                    descriptionElement.appendChild(doc.createCDATASection(description)); // No EOL translations, see #130095.
                     element.appendChild(descriptionElement);
                 }
             }

@@ -49,6 +49,13 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
+    public static final String AUTH = "auth"; //NOI18N
+
+    public static final String LOGIN = "login"; //NOI18N
+    
+    public static final String CALLBACK = "callback"; //NOI18N
+
+    
     public static final String JAVA_ANNOTATION_PACKAGE = "javax.annotation."; //NOI18N
     
     public static final String JAVA_ANNOTATION_RESOURCE = "Resource"; //NOI18N

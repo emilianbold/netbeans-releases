@@ -28,7 +28,7 @@
 
     <!-- The method elements are used to specified a subset of important operations
          in cases where the wsdl contains a large number of operations. -->
-    <!-- TODO -->     
+    <!-- TODO    
     <methods>
         <method name="GoogleAdSenseForContent" serviceName="AdSenseForContentServiceService"
                 portName="AdSenseForContentService" operationName="generateAdCode">
@@ -37,6 +37,8 @@
             </documentation>
         </method>
     </methods>
-        
+    -->
+    
+    <methods/>
     
 </saas-services>
