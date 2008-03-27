@@ -17,6 +17,7 @@
 package org.netbeans.modules.xml.xpath.ext.spi.validation;
 
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 /**
@@ -36,7 +37,11 @@ public interface XPathValidationContext {
      * The first argument can be null. 
      * It usually means that there are exception while parsing the expression.
      */  
-    void addResultItem(XPathExpression expr, ResultType resultType, 
-             XPathProblem problem, Object... values);
-    
+    void addResultItem(XPathExpression expr, ResultType resultType, XPathProblem problem, Object... values);
+
+    void addResultItem(ResultType resultType, String str, Object... values);
+
+    void addResultItem(String exprText, ResultType resultType, String str, Object... values);
+
+    void setXPathModel(XPathModel model);
 }

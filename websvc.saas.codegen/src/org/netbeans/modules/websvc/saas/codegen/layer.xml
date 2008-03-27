@@ -26,8 +26,17 @@
             <file name="apikey.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/apikey.properties">
                 <attr name="position" intvalue="70"/>
             </file>
-            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/HttpBasicAuthenticator.template">
+            <file name="HttpBasicAuthenticator.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicAuthenticator.template">
                 <attr name="position" intvalue="80"/>
+            </file>
+            <file name="HttpBasicLogin.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicLogin.template">
+                <attr name="position" intvalue="82"/>
+            </file>
+            <file name="HttpBasicCallback.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/web/HttpBasicCalback.template">
+                <attr name="position" intvalue="84"/>
+            </file>
+            <file name="HttpBasicAuthenticatorDesktop.java" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/desktop/HttpBasicAuthenticator.template">
+                <attr name="position" intvalue="86"/>
             </file>
             <file name="httpbasic.properties" url="/org/netbeans/modules/websvc/saas/codegen/java/resources/httpbasic.properties">
                 <attr name="position" intvalue="90"/>

@@ -40,6 +40,8 @@ public class MapperLayout implements LayoutManager {
     private JComponent leftDivider;
     private JComponent rightDivider;
     
+    private JComponent toolBar;
+    
     
     public void addLayoutComponent(String name, Component comp) {
         if (LEFT_SCROLL.equals(name)) {
@@ -52,6 +54,8 @@ public class MapperLayout implements LayoutManager {
             leftDivider = (JComponent) comp;
         } else if (RIGHT_DIVIDER.equals(name)) {
             rightDivider = (JComponent) comp;
+        } else if (TOOL_BAR.equals(name)) {
+            toolBar = (JComponent) comp;
         }
     }
     
@@ -83,12 +87,23 @@ public class MapperLayout implements LayoutManager {
                     ? rightScroll.getMinimumSize()
                     : rightScroll.getPreferredSize();
             
-            int w = insets.left + leftSize.width + DIVIDER_WIDTH 
-                    + centerSize.width + DIVIDER_WIDTH + rightSize.width
-                    + insets.right;
+            int w = leftSize.width + DIVIDER_WIDTH + centerSize.width 
+                    + DIVIDER_WIDTH + rightSize.width;
                     
-            int h = insets.top + insets.bottom + Math.max(centerSize.height, 
-                    Math.max(leftSize.height, rightSize.height));
+            int h = Math.max(centerSize.height, Math.max(leftSize.height, 
+                    rightSize.height));
+            
+            if (toolBar != null) {
+                Dimension toolBarSize = (minimum) 
+                        ? toolBar.getMinimumSize()
+                        : toolBar.getPreferredSize();
+                
+                w = Math.max(w, toolBarSize.width);
+                h += toolBarSize.height;
+            }
+
+            w += insets.left + insets.right;
+            h += insets.top + insets.bottom;
             
             return new Dimension(w, h);
         }
@@ -141,6 +156,16 @@ public class MapperLayout implements LayoutManager {
             int y = insets.top;
             h -= insets.top + insets.bottom;
             
+            if (toolBar != null) {
+                int toolBarHeight = toolBar.getPreferredSize().height;
+                
+                toolBar.setBounds(insets.left, y, 
+                        w - insets.right - insets.left, toolBarHeight);
+                
+                y += toolBarHeight;
+                h -= toolBarHeight;
+            }
+            
             // (x1 - x2) - left
             // (x3 - x4) - center
             // (x5 - x6) - right
@@ -175,6 +200,7 @@ public class MapperLayout implements LayoutManager {
     }
     
     
+    public static final String TOOL_BAR = "TOOL_BAR";
     public static final String LEFT_SCROLL = "LEFT_SCROLL";
     public static final String RIGHT_SCROLL = "RIGHT_SCROLL";
     public static final String CENTER_SCROLL = "CENTER_SCROLL";

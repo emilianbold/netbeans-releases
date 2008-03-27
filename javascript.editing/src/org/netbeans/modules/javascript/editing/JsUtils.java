@@ -552,4 +552,30 @@ public class JsUtils {
             return s.substring(0, length - 3) + "...";
         }
     }
+    
+    /**
+     * Convert the display string used for types internally to something
+     * suitable. For example, Array<String> is shown as String[].
+     */
+    public static String normalizeTypeString(String s) {
+       if (s.indexOf("Array<") != -1) { // NOI18N
+           String[] types = s.split("\\|"); // NOI18N
+           StringBuilder sb = new StringBuilder();
+           for (String t : types) {
+               if (sb.length() > 0) {
+                   sb.append("|"); // NOI18N
+               }
+               if (t.startsWith("Array<") && t.endsWith(">")) { // NOI18N
+                   sb.append(t.substring(6, t.length()-1));
+                   sb.append("[]"); // NOI18N
+               } else {
+                   sb.append(t);
+               }
+           }
+           
+           return sb.toString();
+       } 
+       
+       return s;
+    }
 }

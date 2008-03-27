@@ -41,7 +41,7 @@ package org.netbeans.spi.project.libraries.support;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,53 +62,62 @@ public class LibrariesSupportTest extends NbTestCase {
     /**
      * Test of convertFilePathToURL method, of class LibrariesSupport.
      */
-    public void testConvertFilePathToURL() {
-        String path = "/aa/bb/c c.ext".replace('/', File.separatorChar);
-        URL u = LibrariesSupport.convertFilePathToURL(path);
-        assertEquals("file:/aa/bb/c%20c.ext", u.toExternalForm());
+    public void testConvertFilePathToURI() throws Exception {
+        String path = getWorkDirPath()+"/aa/bb/c c.ext".replace('/', File.separatorChar);
+        URI u = LibrariesSupport.convertFilePathToURI(path);
+        assertEquals(FileUtil.normalizeFile(new File(path)).toURI(), u);
         path = "../zz/re l.ext".replace('/', File.separatorChar);
-        u = LibrariesSupport.convertFilePathToURL(path);
-        assertEquals("file:../zz/re%20l.ext", u.toExternalForm());
+        u = LibrariesSupport.convertFilePathToURI(path);
+        assertEquals("../zz/re%20l.ext", u.toString());
     }
 
     /**
      * Test of convertURLToFilePath method, of class LibrariesSupport.
      */
-    public void testConvertURLToFilePath() throws MalformedURLException{
-        URL u = new URL("file:/aa/bb/c%20c.ext");
-        String path = LibrariesSupport.convertURLToFilePath(u);
-        assertEquals("/aa/bb/c c.ext".replace('/', File.separatorChar), path);
-        u = new URL("file:../zz/re%20l.ext");
-        path = LibrariesSupport.convertURLToFilePath(u);
+    public void testConvertURIToFilePath() throws Exception{
+        URI u = getWorkDir().toURI();
+        String path = LibrariesSupport.convertURIToFilePath(u);
+        assertEquals(getWorkDir().getPath(), path);
+        u = new URI(null, null, "../zz/re l.ext", null);
+        path = LibrariesSupport.convertURIToFilePath(u);
         assertEquals("../zz/re l.ext".replace('/', File.separatorChar), path);
-    }
-
-    /**
-     * Test of isAbsoluteURL method, of class LibrariesSupport.
-     */
-    public void testIsAbsoluteURL() throws MalformedURLException{
-        URL u = new URL("file", null, "/test/absolute");
-        assertTrue(u.toExternalForm(), LibrariesSupport.isAbsoluteURL(u));
-        u = new URL("file", null, "../relative");
-        assertFalse(u.toExternalForm(), LibrariesSupport.isAbsoluteURL(u));
     }
 
     /**
      * Test of resolveLibraryEntryFileObject method, of class LibrariesSupport.
      */
-    public void testResolveLibraryEntry() throws Exception {
+    public void testResolveLibraryEntryFileObject() throws Exception {
         File f = new File(this.getWorkDir(), "knihovna.properties");
         File f2 = new File(this.getWorkDir(), "bertie.jar");
         f.createNewFile();
         f2.createNewFile();
         FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(
                 f.toURI().toURL(), 
-                new URL("file", null, "bertie.jar"));
+                new URI(null, null, "bertie.jar", null));
         assertEquals(f2.getPath(), FileUtil.toFile(fo).getPath());
         fo = LibrariesSupport.resolveLibraryEntryFileObject(
                 null, 
-                f2.toURI().toURL());
+                f2.toURI());
         assertEquals(f2.getPath(), FileUtil.toFile(fo).getPath());
+    }
+
+    public void testResolveLibraryEntryURI() throws Exception {
+        File f = new File(this.getWorkDir(), "knihovna.properties");
+        File f2 = new File(this.getWorkDir(), "ber tie.jar");
+        f.createNewFile();
+        f2.createNewFile();
+        URI u = LibrariesSupport.resolveLibraryEntryURI(
+                f.toURI().toURL(), 
+                new URI(null, null, "ber tie.jar", null));
+        assertEquals(new File(f.getParentFile(), f2.getName()).toURI(), u);
+        u = LibrariesSupport.resolveLibraryEntryURI(
+                f.toURI().toURL(), 
+                f2.toURI());
+        assertEquals(f2.toURI(), u);
+        u = LibrariesSupport.resolveLibraryEntryURI(
+                f.toURI().toURL(), 
+                new URI(null, null, "ber tie.jar!/main/ja va", null));
+        assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
     }
 
 }

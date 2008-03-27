@@ -42,11 +42,15 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
 
 /**
  * Test for freeform template attributes provider, currently providing only
@@ -64,9 +68,21 @@ public class FreeformTemplateAttributesProviderTest extends TestBase {
         FileObject projdir = egdirFO.getFileObject("simplewithlicense");
         Project simpleWithLicense = ProjectManager.getDefault().findProject(projdir);
         CreateFromTemplateAttributesProvider provider = simpleWithLicense.getLookup().lookup(CreateFromTemplateAttributesProvider.class);
-        Map expResult = Collections.singletonMap("project", Collections.singletonMap("license", "cddl-netbeans-sun"));;
-        Map result = provider.attributesFor(null, null, null);
-        assertEquals(expResult, result);
+        SourceGroup[] groups = ProjectUtils.getSources(simpleWithLicense).getSourceGroups("java"); // JavaProjectConstants.SOURCES_TYPE_JAVA
+        for (SourceGroup group : groups) {
+            FileObject root = group.getRootFolder();
+            Map result = provider.attributesFor(null, DataFolder.findFolder(root), null);
+            assertEquals(1, result.size());
+            Map values = (Map)result.get("project");
+            if (root.getName().equals("src")) {
+                Map<String, String> expected = new HashMap<String, String>();
+                expected.put("license", "cddl-netbeans-sun");
+                expected.put("encoding", "UTF-8");
+                assertEquals(expected, values);
+            } else {
+                assertEquals(Collections.singletonMap("license", "cddl-netbeans-sun"), values);
+            }
+        }
     }
     
 }
