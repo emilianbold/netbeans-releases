@@ -165,7 +165,7 @@ public class HgProperties implements ListSelectionListener {
                         String hgPropertyName = hgPropertiesNodes[i].getName();
                         String hgPropertyValue = hgPropertiesNodes[i].getValue();
                         boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
-                        if (bPropChanged && hgPropertyValue.trim().length() > 0 ) {
+                        if (bPropChanged && hgPropertyValue.trim().length() >= 0 ) {
                             HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
                         }
                     }

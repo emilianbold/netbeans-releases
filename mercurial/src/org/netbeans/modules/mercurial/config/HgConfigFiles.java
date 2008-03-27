@@ -320,13 +320,16 @@ public class HgConfigFiles {
         String filePath = getUserConfigPath() + fileName;
         File file = FileUtil.normalizeFile(new File(filePath));
         File tmpFile = HgUtils.fixPathsInIniFileOnWindows(file);
-        if (tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-            file.delete();
-            tmpFile.renameTo(file);
-        }
         Ini system = null;
         try {            
-            system = tmpFile != null? new Ini(new FileReader(tmpFile)): null;
+            if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
+                file.delete();
+                boolean bRenamed = tmpFile.renameTo(file);
+                system = bRenamed? new Ini(new FileReader(tmpFile)): null;
+            } else {
+                system = new Ini(new FileReader(file));
+            }
+
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
@@ -342,8 +345,12 @@ public class HgConfigFiles {
         try {
             File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
             File tmp2File = HgUtils.fixPathsInIniFileOnWindows(gFile);
-            tmp2File.deleteOnExit();
-            global = new Ini(new FileReader(tmp2File));   // NOI18N
+            if (Utilities.isWindows() && tmp2File != null) {
+                tmp2File.deleteOnExit();
+                global = new Ini(new FileReader(tmp2File));   // NOI18N
+            } else {
+                global = new Ini(new FileReader(gFile));   // NOI18N            
+            }
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {

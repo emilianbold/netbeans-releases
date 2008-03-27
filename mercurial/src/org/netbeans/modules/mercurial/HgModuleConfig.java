@@ -206,7 +206,7 @@ public class HgModuleConfig {
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (Exception ex) {
-                return userName;
+                hostName = "localhost"; //NOI18N
             }
             userName = userId + "@" + hostName + ".zzz"; // NOI18N
         }

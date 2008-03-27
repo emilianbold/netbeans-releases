@@ -275,7 +275,7 @@ public class HgUtils {
      * @return File processed tmpFile 
      */
     public static File fixPathsInIniFileOnWindows(File iniFile) {
-        if(!Utilities.isWindows()) return iniFile;
+        if(!Utilities.isWindows()) return null;
         
         File tmpFile = null;
         BufferedReader br = null;
