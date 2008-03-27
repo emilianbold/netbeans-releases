@@ -22,7 +22,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.options.CommandLinePreferences;
 import org.netbeans.modules.php.project.options.PhpOptionsCategory;
 import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
@@ -60,7 +59,7 @@ public class CustomizerCommandLine extends javax.swing.JPanel {
 
         loadDefaultInterpreterPath();
 
-        String path = uiProperties.getProperty(PhpProject.COMMAND_PATH);
+        String path = uiProperties.getProperty(PhpProjectProperties.COMMAND_PATH);
         if (path == null) {
             myDefaultRadio.setSelected(true);
         } else {
@@ -128,11 +127,11 @@ public class CustomizerCommandLine extends javax.swing.JPanel {
         mySpecialRadio.setSelected(true);
         interpreterPathIsValid();
         String path = myInterpreterPath.getText();
-        getProperties().setProperty(PhpProject.COMMAND_PATH, path);
+        getProperties().setProperty(PhpProjectProperties.COMMAND_PATH, path);
     }
 
     private void useDefaultInterpreterPath() {
-        getProperties().remove(PhpProject.COMMAND_PATH);
+        getProperties().remove(PhpProjectProperties.COMMAND_PATH);
     }
 
     boolean interpreterPathIsValid() {

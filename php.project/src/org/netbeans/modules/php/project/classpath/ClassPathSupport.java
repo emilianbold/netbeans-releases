@@ -46,7 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -58,7 +58,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 public class ClassPathSupport {
 
     private static final Set<String> WELL_KNOWN_PATHS = new HashSet<String>(Arrays.asList(
-            "${" + PhpProject.GLOBAL_INCLUDE_PATH + "}"));
+            "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"));
 
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper referenceHelper;

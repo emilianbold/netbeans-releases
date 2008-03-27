@@ -52,7 +52,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -113,7 +112,7 @@ class CustomizerSources extends JPanel {
             else {
                 encName = myOriginalEncoding;
             }
-            getProperties().setProperty(PhpProject.SOURCE_ENCODING, encName);
+            getProperties().setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
     }
 
     private void load(PhpProjectProperties uiProperties) {
@@ -135,7 +134,7 @@ class CustomizerSources extends JPanel {
     }
     private void setEncoding(PhpProjectProperties properties) {
         Charset select = Charset.defaultCharset();
-        myOriginalEncoding = properties.getProperty(PhpProject.SOURCE_ENCODING);
+        myOriginalEncoding = properties.getProperty(PhpProjectProperties.SOURCE_ENCODING);
         
         if (myOriginalEncoding != null) {
             if (myEncoding.getModel() instanceof EncodingModel) {
@@ -205,7 +204,7 @@ class CustomizerSources extends JPanel {
         if (sourceFolder != null) {
             FileObject fileObject = getProperties().getProject().getHelper().resolveFileObject(sourceFolder);
             if (fileObject != null && fileObject.isValid()) {
-                getProperties().setProperty(PhpProject.SRC, sourceFolder);
+                getProperties().setProperty(PhpProjectProperties.SRC, sourceFolder);
             }
         }
 

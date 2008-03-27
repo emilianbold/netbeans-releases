@@ -54,8 +54,8 @@ import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -109,7 +109,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private FileObject[] getPrimarySrcPath() {
         List<FileObject> roots = new ArrayList<FileObject>();
-        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(PhpProjectProperties.SOURCES_TYPE_PHP);
         for (SourceGroup sg : sourceGroups) {
             roots.add(sg.getRootFolder());
         }

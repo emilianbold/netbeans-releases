@@ -53,6 +53,7 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.customizer.PhpCustomizerProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -83,43 +84,6 @@ import org.w3c.dom.Text;
  */
 public class PhpProject implements Project, AntProjectListener {
     
-    protected static String SRC_              = "src.";               // NOI18N
-    
-    protected static String _DIR              = "dir";                // NOI18N
-    
-    public static String SRC                = SRC_ + _DIR;
-    
-    public static String SRC_DIR            = "${" + SRC + "}";     // NOI18N
-    
-    public static String TMP_FILE_POSTFIX   = "~";     // NOI18N
-    
-    public static final String PROVIDER_ID  = "provider.id";        // NOI18N
-    
-    public static final String VERSION      = "version";            // NOI18N
-    
-    public static final String COMMAND_PATH = "command.path";       // NOI18N
-    
-    private static final String NAME        
-            = PhpProjectSharedConstants.PHP_PROJECT_NAME; // NOI18N
-    
-    public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
-    
-    public static final String SOURCE_LBL  = "LBL_Node_Sources";   // NOI18N
-
-    public static final String SOURCES_TYPE_PHP 
-            = PhpProjectSharedConstants.SOURCES_TYPE_PHP;
-    
-    public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
-    public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
-    public static final String URL = "url"; // NOI18N
-    public static final String INCLUDE_PATH = "include.path"; // NOI18N
-    // XXX will be replaced with global ide include path
-    public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
-
-    private static final Icon PROJECT_ICON = 
-        new ImageIcon(Utilities.loadImage( 
-                ResourceMarker.getLocation()+ResourceMarker.PROJECT_ICON ));
-
     PhpProject( AntProjectHelper helper ) {
         myHelper = helper;
         AuxiliaryConfiguration configuration = 
@@ -183,7 +147,7 @@ public class PhpProject implements Project, AntProjectListener {
                     public String run() {
                         Element data = getHelper().getPrimaryConfigurationData(true);
                         NodeList nl = data.getElementsByTagNameNS(
-                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, NAME);
+                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME);
                         if (nl.getLength() == 1) {
                             nl = nl.item(0).getChildNodes();
                             if (nl.getLength() == 1
@@ -206,7 +170,7 @@ public class PhpProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
                 NodeList nl = data.getElementsByTagNameNS(
-                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, NAME ); 
+                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME ); 
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -218,7 +182,7 @@ public class PhpProject implements Project, AntProjectListener {
                 else {
                     nameEl = data.getOwnerDocument().createElementNS(
                             PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                            NAME ); 
+                            PhpProjectProperties.NAME ); 
                     data.insertBefore(nameEl, /* OK if null */data
                             .getChildNodes().item(0));
                 }
@@ -258,7 +222,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpLogicalViewProvider( this , provider ),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery( getEvaluator(), 
-                    new String[] { SRC_DIR } , new String[] {} ),
+                    new String[] { PhpProjectProperties.SRC_DIR } , new String[] {} ),
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
@@ -293,7 +257,7 @@ public class PhpProject implements Project, AntProjectListener {
          * @see org.netbeans.api.project.ProjectInformation#getIcon()
          */
         public Icon getIcon() {
-            return PROJECT_ICON;
+            return PhpProjectProperties.PROJECT_ICON;
         }
 
         /* (non-Javadoc)

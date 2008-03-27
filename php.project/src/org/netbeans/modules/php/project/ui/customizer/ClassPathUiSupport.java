@@ -220,7 +220,7 @@ public final class ClassPathUiSupport {
         private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
         static {
             // XXX will be replaced with the ide include path
-            WELL_KNOWN_PATHS_NAMES.put(PhpProject.GLOBAL_INCLUDE_PATH,
+            WELL_KNOWN_PATHS_NAMES.put(PhpProjectProperties.GLOBAL_INCLUDE_PATH,
                     NbBundle.getMessage(ClassPathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));
         };
 

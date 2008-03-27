@@ -104,7 +104,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     return;
                 }
                 encName = enc.name();
-                properties.setProperty(PhpProject.SOURCE_ENCODING, encName);
+                properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
             }
         });
         localServerController.addChangeListener(new ChangeListener() {
@@ -135,7 +135,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private void initEncoding() {
         encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProject.SOURCE_ENCODING)));
+        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING)));
     }
 
     private LocalServer initSources() {
@@ -147,7 +147,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.getProperty(PhpProject.SRC);
+        String src = evaluator.getProperty(PhpProjectProperties.SRC);
         File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src);
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
@@ -158,11 +158,11 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     }
 
     private boolean initCopyFiles() {
-        return Boolean.valueOf(evaluator.getProperty(PhpProject.COPY_SRC_FILES));
+        return Boolean.valueOf(evaluator.getProperty(PhpProjectProperties.COPY_SRC_FILES));
     }
 
     private void initUrl() {
-        urlTextField.setText(evaluator.getProperty(PhpProject.URL));
+        urlTextField.setText(evaluator.getProperty(PhpProjectProperties.URL));
     }
 
     public String getWebFolderName() {
@@ -209,10 +209,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProject.SRC, srcPath);
-        properties.setProperty(PhpProject.COPY_SRC_FILES, String.valueOf(isCopyFiles));
-        properties.setProperty(PhpProject.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
-        properties.setProperty(PhpProject.URL, urlTextField.getText());
+        properties.setProperty(PhpProjectProperties.SRC, srcPath);
+        properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles));
+        properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
+        properties.setProperty(PhpProjectProperties.URL, urlTextField.getText());
     }
 
     private File getSrcDir() {
