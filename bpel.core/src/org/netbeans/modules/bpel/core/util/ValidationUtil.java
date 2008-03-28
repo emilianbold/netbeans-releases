@@ -168,12 +168,29 @@ public final class ValidationUtil {
     
     private static int getColumn(Component component) {
       AbstractDocument doc = getAbstractDocument(component);
+
+      if (doc == null) {
+        return -1;
+      }
       int position = findPosition((AbstractDocumentModel) component.getModel(), ((AbstractDocumentComponent) component).getPeer());
       return findColumn(doc, position);
     }
     
     private static AbstractDocument getAbstractDocument(Component component) {
-      return (AbstractDocument) component.getModel().getModelSource().getLookup().lookup(AbstractDocument.class);
+      if (component == null) {
+        return null;
+      }
+      Model model = component.getModel();
+
+      if (model == null) {
+        return null;
+      }
+      ModelSource source = model.getModelSource();
+
+      if (source == null) {
+        return null;
+      }
+      return (AbstractDocument) source.getLookup().lookup(AbstractDocument.class);
     }
 
     private static int findColumn(AbstractDocument doc, int argInt) {

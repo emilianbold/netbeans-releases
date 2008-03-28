@@ -141,7 +141,7 @@ import java_cup.runtime.*;
 		int leftPosition = getTokenStartPosition();
 		Comment comment = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
 		commentList.add(comment);
-                System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()));
+                System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
 	}	
 	
 	public void setUseAspTagsAsPhp(boolean useAspTagsAsPhp) {
@@ -174,29 +174,24 @@ import java_cup.runtime.*;
     }
     
     private void handleCommentStart() {
-		commentStartPosition = getTokenStartPosition();
-                System.out.println("######handleLineCommentStart posstion: " + commentStartPosition + " yychar: " + yychar + " yyline: " + yyline + " yycolumn: " + yycolumn);
-	}
+        commentStartPosition = getTokenStartPosition();
+    }
 	
-	private void handleLineCommentEnd() {
+    private void handleLineCommentEnd() {
          addComment(Comment.Type.TYPE_SINGLE_LINE);
-         System.out.println("######handleLineCommentEnd");
     }
     
     private void handleMultilineCommentEnd() {
     	addComment(Comment.Type.TYPE_MULTILINE);
-        System.out.println("######handleMultilineCommnetEnd");
     }
 
     private void handlePHPDocEnd() {
-		addComment(Comment.Type.TYPE_PHPDOC);
-                System.out.println("######handlePHPDocEND");
+        addComment(Comment.Type.TYPE_PHPDOC);
     }
     
     private void handleVarComment() {
     	commentStartPosition = zzStartRead;
     	addComment(Comment.Type.TYPE_MULTILINE);
-        System.out.println("######handleVarCommnet");
     }
         
     private Symbol createFullSymbol(int symbolNumber) {

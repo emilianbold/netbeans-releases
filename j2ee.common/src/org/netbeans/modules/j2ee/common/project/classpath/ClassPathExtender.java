@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.common.project.classpath;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.openide.filesystems.FileObject;
@@ -50,6 +51,7 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.openide.util.Exceptions;
 
 @Deprecated
 @SuppressWarnings("deprecation")
@@ -85,11 +87,17 @@ public final class ClassPathExtender implements org.netbeans.spi.java.project.cl
                 archiveFiles[i] = FileUtil.getArchiveRoot(archiveFile);
             }           
         }
-        URL[] archiveFileURLs = new URL[archiveFiles.length];
+        URI[] archiveFileURIs = new URI[archiveFiles.length];
         for (int i = 0; i < archiveFiles.length; i++) {
-            archiveFileURLs[i] = archiveFiles[i].getURL();
+            try {
+                archiveFileURIs[i] = archiveFiles[i].getURL().toURI();
+            } catch (URISyntaxException ex) {
+                IOException ioe = new IOException();
+                ioe.initCause(ex);
+                throw ioe;
+            }
         }        
-        return this.delegate.handleRoots(archiveFileURLs, classPathId, projectXMLElementName, ClassPathModifier.ADD);
+        return this.delegate.handleRoots(archiveFileURIs, classPathId, projectXMLElementName, ClassPathModifier.ADD);
     }
     
     // TODO: AB: AntArtifactItem should not be in LibrariesChooser

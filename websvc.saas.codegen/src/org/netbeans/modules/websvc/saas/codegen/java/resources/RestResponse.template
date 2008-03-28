@@ -9,7 +9,9 @@
 
 package Templates.Classes;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.logging.Level;
@@ -38,7 +40,18 @@ public class RestResponse {
         os = new ByteArrayOutputStream();
     }
     
-    void setContentType(String contentType) {
+    public RestResponse(byte[] bytes) throws IOException {
+        this();
+
+        byte[] buffer = new byte[1024];
+        int count = 0;
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        while ((count = bis.read(buffer)) != -1) {
+            write(buffer, 0, count);
+        }
+    }
+
+    public void setContentType(String contentType) {
         this.contentType = contentType;
     }
     
@@ -46,11 +59,11 @@ public class RestResponse {
         return contentType;
     }
 
-    void setContentEncoding(String contentEncoding) {
+    public void setContentEncoding(String contentEncoding) {
         this.contentEncoding = contentEncoding;
     }
     
-    void setResponseMessage(String msg) {
+    public void setResponseMessage(String msg) {
         this.responseMsg = msg;
     }
     
@@ -58,7 +71,7 @@ public class RestResponse {
         return responseMsg;
     }
     
-    void setResponseCode(int code) {
+    public void setResponseCode(int code) {
         this.responseCode = code;
     }
     
@@ -66,7 +79,7 @@ public class RestResponse {
         return responseCode;
     }
     
-    void setLastModified(long lastModified) {
+    public void setLastModified(long lastModified) {
         this.lastModified = lastModified;
     }
     
@@ -74,7 +87,7 @@ public class RestResponse {
         return lastModified;
     }
     
-    void write(byte[] bytes, int start, int length) {
+    public void write(byte[] bytes, int start, int length) {
         os.write(bytes, start, length);
     }
     
