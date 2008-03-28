@@ -276,23 +276,6 @@ final class MatchingObject implements PropertyChangeListener {
     
     /**
      */
-    void setSubnodeSelected(int index,
-                            boolean selected,
-                            ResultModel resultModel) {
-        if (selectedMatches == null) {
-            if (selected == this.selected) {
-                return;
-            }
-            selectedMatches = new boolean[resultModel.getDetailsCount(this)];
-            Arrays.fill(selectedMatches, this.selected);
-        }
-        
-        assert (index >= 0) && (index < selectedMatches.length);
-        selectedMatches[index] = selected;
-    }
-    
-    /**
-     */
     boolean isSubnodeSelected(int index) {
         assert (selectedMatches == null)
                || ((index >= 0) && (index < selectedMatches.length));
