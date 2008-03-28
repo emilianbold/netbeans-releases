@@ -453,6 +453,7 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(ignoreEmptyFunctionBody,true);
 
         //LUNIX_PROFILE
         Map<String,Object> lunix = new HashMap<String,Object>();

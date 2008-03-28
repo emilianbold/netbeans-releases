@@ -36,38 +36,47 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+
+package org.netbeans.modules.php.editor.parser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.util.Date;
+import java_cup.runtime.Symbol;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  *
- * @author petr
+ * @author Petr Pisl
  */
-public abstract class ASTNode {
-
-    final private int startOffset;
-    final private int endOffset;
-    private ASTNode parent = null;
+public class ParserPerformanceTest extends NbTestCase {
     
-    public ASTNode(int start, int end) {
-        this.startOffset = start;
-        this.endOffset = end;
+    public ParserPerformanceTest(String testName) {
+        super(testName);
+    }            
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
-    public final int getStartOffset() {
-        return startOffset;
-    }
-
-    public final int getEndOffset() {
-        return endOffset;
-    }
-
-    protected void setParent(ASTNode node) {
-        parent = node;
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
     
-    public ASTNode getParent() {
-        return parent;
+    // the current time is around 700 ms
+    public void testBigFile() throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/Subs.php");
+        assertTrue(testFile.exists());
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Date start = new Date();
+        Symbol root = parser.parse();
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Parsing of big files takes: " + time);
+        assertTrue(time < 1000);
     }
-    
-    public abstract void accept(Visitor visitor);
 }
