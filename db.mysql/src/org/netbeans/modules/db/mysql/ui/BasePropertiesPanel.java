@@ -156,18 +156,23 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         setAutoscrolls(true);
 
         jLabel1.setLabelFor(txtHost);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel1.text")); // NOI18N
 
         jLabel2.setLabelFor(txtPort);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setLabelFor(txtUser);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel3.text")); // NOI18N
 
         jLabel4.setLabelFor(txtPassword);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.jLabel4.text")); // NOI18N
 
-        chkSavePassword.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkSavePassword, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.text")); // NOI18N
+        chkSavePassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chkSavePasswordActionPerformed(evt);
+            }
+        });
 
         txtHost.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtHost.text")); // NOI18N
         txtHost.addActionListener(new java.awt.event.ActionListener() {
@@ -181,7 +186,7 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         txtUser.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtUser.text")); // NOI18N
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.messageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.messageLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -252,6 +257,10 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
 private void txtHostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHostActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_txtHostActionPerformed
+
+private void chkSavePasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkSavePasswordActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_chkSavePasswordActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
