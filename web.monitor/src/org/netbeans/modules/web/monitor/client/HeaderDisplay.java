@@ -113,7 +113,7 @@ public class HeaderDisplay extends DataDisplay {
 	    headerTable = new DisplayTable(params, true);
             headerTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersTableA11yName"));
             headerTable.setToolTipText(NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
-	    hLabel = createSortButtonLabel(msg, headerTable, NbBundle.getBundle(HeaderDisplay.class).getString("MON_HTTP_Headers_Mnemonic").charAt(0), NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersA11yDesc"));
+	    hLabel = createSortButtonLabel(msg, headerTable, NbBundle.getBundle(HeaderDisplay.class).getString("ACS_MON_HTTP_HeadersA11yDesc"));
 	}
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,

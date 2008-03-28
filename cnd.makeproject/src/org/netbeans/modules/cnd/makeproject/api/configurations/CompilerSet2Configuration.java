@@ -168,7 +168,9 @@ public class CompilerSet2Configuration {
     
     // Clone and assign
     public void assign(CompilerSet2Configuration conf) {
-        setDirty(getValue() != conf.getValue());
+        String oldName = getCompilerSetName().getValue();
+        String newName = conf.getCompilerSetName().getValue();
+        setDirty(newName != null && !newName.equals(oldName));
 //        setMakeConfiguration(conf.getMakeConfiguration());
         setValue(conf.getCompilerSetName().getValue());
     }

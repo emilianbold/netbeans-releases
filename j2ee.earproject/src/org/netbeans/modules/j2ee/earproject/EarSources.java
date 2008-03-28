@@ -63,6 +63,7 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SourcesHelper sourcesHelper;
+    private boolean externalRootsRegistered;
 
     EarSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
@@ -88,9 +89,13 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
         String configFilesLabel = org.openide.util.NbBundle.getMessage(EarSources.class, "LBL_Node_ConfigBase"); //NOI18N
         sourcesHelper.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
         // XXX add build dir too?
+        externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                if (!externalRootsRegistered) {
+                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    externalRootsRegistered = true;
+                }
             }
         });
         return sourcesHelper.createSources();

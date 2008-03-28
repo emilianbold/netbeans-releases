@@ -1,6 +1,6 @@
-diff -r -u jruby-1.1RC2/src/org/jruby/common/IRubyWarnings.java jruby-1.1RC2/src/org/jruby/common/IRubyWarnings.java
---- jruby-1.1RC2/src/org/jruby/common/IRubyWarnings.java	2008-02-16 13:41:00.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/common/IRubyWarnings.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/common/IRubyWarnings.java jruby-1.1RC3/src/org/jruby/common/IRubyWarnings.java
+--- jruby-1.1RC3/src/org/jruby/common/IRubyWarnings.java	2008-02-16 13:41:00.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/common/IRubyWarnings.java	2008-03-05 17:23:40.000000000 -0700
 @@ -83,6 +83,11 @@
          TOO_MANY_ARGUMENTS("TOO_MANY_ARGUMENTS"),
          UNDEFINING_BAD("UNDEFINING_BAD"),
@@ -13,11 +13,11 @@ diff -r -u jruby-1.1RC2/src/org/jruby/common/IRubyWarnings.java jruby-1.1RC2/src
          VOID_VALUE_EXPRESSION("VOID_VALUE_EXPRESSION");
          
          private String id;
-Only in jruby-1.1RC2/src/org/jruby/javasupport: bsf
-Only in jruby-1.1RC2/src/org/jruby: jruby.properties
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/ByteListLexerSource.java jruby-1.1RC2/src/org/jruby/lexer/yacc/ByteListLexerSource.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/ByteListLexerSource.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/ByteListLexerSource.java	2008-03-05 17:23:40.000000000 -0700
+Only in jruby-1.1RC3/src/org/jruby/javasupport: bsf
+Only in jruby-1.1RC3/src/org/jruby: jruby.properties
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/ByteListLexerSource.java jruby-1.1RC3/src/org/jruby/lexer/yacc/ByteListLexerSource.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/ByteListLexerSource.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/ByteListLexerSource.java	2008-03-05 17:23:40.000000000 -0700
 @@ -190,4 +190,26 @@
              return null;
          }
@@ -45,9 +45,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/ByteListLexerSource.java jruby-
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.1RC2/src/org/jruby/lexer/yacc/HeredocTerm.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/HeredocTerm.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/HeredocTerm.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.1RC3/src/org/jruby/lexer/yacc/HeredocTerm.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/HeredocTerm.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/HeredocTerm.java	2008-03-05 17:23:40.000000000 -0700
 @@ -70,10 +70,25 @@
  
          if (src.peek(RubyYaccLexer.EOF)) syntaxError(src);
@@ -263,9 +263,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.1RC2/s
 +
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/InputStreamLexerSource.java jruby-1.1RC2/src/org/jruby/lexer/yacc/InputStreamLexerSource.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/InputStreamLexerSource.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/InputStreamLexerSource.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/InputStreamLexerSource.java jruby-1.1RC3/src/org/jruby/lexer/yacc/InputStreamLexerSource.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/InputStreamLexerSource.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/InputStreamLexerSource.java	2008-03-05 17:23:40.000000000 -0700
 @@ -264,4 +264,29 @@
          
          return list;
@@ -296,9 +296,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/InputStreamLexerSource.java jru
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.1RC2/src/org/jruby/lexer/yacc/LexerSource.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/LexerSource.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/LexerSource.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.1RC3/src/org/jruby/lexer/yacc/LexerSource.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/LexerSource.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/LexerSource.java	2008-03-05 17:23:40.000000000 -0700
 @@ -182,4 +182,28 @@
      public abstract boolean peek(int c) throws IOException;
      public abstract boolean lastWasBeginOfLine();
@@ -328,9 +328,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.1RC2/s
 +//    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.1RC2/src/org/jruby/lexer/yacc/RubyYaccLexer.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.1RC3/src/org/jruby/lexer/yacc/RubyYaccLexer.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2008-03-05 17:23:40.000000000 -0700
 @@ -164,7 +164,43 @@
      
      public enum LexState {
@@ -882,9 +882,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.1RC2
 +    
 +// END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.1RC2/src/org/jruby/lexer/yacc/StrTerm.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/StrTerm.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/StrTerm.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.1RC3/src/org/jruby/lexer/yacc/StrTerm.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/StrTerm.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/StrTerm.java	2008-03-05 17:23:40.000000000 -0700
 @@ -29,4 +29,46 @@
  
  public abstract class StrTerm {
@@ -932,9 +932,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.1RC2/src/o
 +    public abstract void setMutableState(Object o);
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.1RC2/src/org/jruby/lexer/yacc/StringTerm.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/StringTerm.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/StringTerm.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.1RC3/src/org/jruby/lexer/yacc/StringTerm.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/StringTerm.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/StringTerm.java	2008-03-05 17:23:40.000000000 -0700
 @@ -73,8 +73,20 @@
              spaceSeen = true;
          }
@@ -1279,9 +1279,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.1RC2/sr
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/SyntaxException.java jruby-1.1RC2/src/org/jruby/lexer/yacc/SyntaxException.java
---- jruby-1.1RC2/src/org/jruby/lexer/yacc/SyntaxException.java	2008-02-16 13:40:10.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/lexer/yacc/SyntaxException.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/lexer/yacc/SyntaxException.java jruby-1.1RC3/src/org/jruby/lexer/yacc/SyntaxException.java
+--- jruby-1.1RC3/src/org/jruby/lexer/yacc/SyntaxException.java	2008-02-16 13:40:10.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/lexer/yacc/SyntaxException.java	2008-03-05 17:23:40.000000000 -0700
 @@ -70,8 +70,18 @@
      public SyntaxException(PID id, ISourcePosition position, String message, Object... data) {
          super(message);
@@ -1301,9 +1301,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/lexer/yacc/SyntaxException.java jruby-1.1R
  
      public ISourcePosition getPosition() {
          return position;
-diff -r -u jruby-1.1RC2/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.1RC2/src/org/jruby/libraries/RbConfigLibrary.java
---- jruby-1.1RC2/src/org/jruby/libraries/RbConfigLibrary.java	2008-02-16 13:41:06.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/libraries/RbConfigLibrary.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.1RC3/src/org/jruby/libraries/RbConfigLibrary.java
+--- jruby-1.1RC3/src/org/jruby/libraries/RbConfigLibrary.java	2008-02-16 13:41:06.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/libraries/RbConfigLibrary.java	2008-03-05 17:23:40.000000000 -0700
 @@ -99,9 +99,15 @@
          setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
          
@@ -1322,9 +1322,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.1RC
              Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
              jarMatcher.find();
              if (jarMatcher.matches()) {
-diff -r -u jruby-1.1RC2/src/org/jruby/parser/Tokens.java jruby-1.1RC2/src/org/jruby/parser/Tokens.java
---- jruby-1.1RC2/src/org/jruby/parser/Tokens.java	2008-02-16 13:40:20.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/parser/Tokens.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/parser/Tokens.java jruby-1.1RC3/src/org/jruby/parser/Tokens.java
+--- jruby-1.1RC3/src/org/jruby/parser/Tokens.java	2008-02-16 13:40:20.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/parser/Tokens.java	2008-03-05 17:23:40.000000000 -0700
 @@ -153,6 +153,16 @@
      int tRCURLY     = DefaultRubyParser.tRCURLY;
      int tPIPE       = DefaultRubyParser.tPIPE;
@@ -1342,9 +1342,9 @@ diff -r -u jruby-1.1RC2/src/org/jruby/parser/Tokens.java jruby-1.1RC2/src/org/jr
      String[] operators = {"+@", "-@", "**", "<=>", "==", "===", "!=", ">=", "<=", "&&",
                            "||", "=~", "!~", "..", "...", "[]", "[]=", "<<", ">>", "::"};
  }
-diff -r -u jruby-1.1RC2/src/org/jruby/runtime/Constants.java jruby-1.1RC2/src/org/jruby/runtime/Constants.java
---- jruby-1.1RC2/src/org/jruby/runtime/Constants.java	2008-02-16 13:39:38.000000000 -0700
-+++ jruby-1.1RC2/src/org/jruby/runtime/Constants.java	2008-03-05 17:23:40.000000000 -0700
+diff -r -u jruby-1.1RC3/src/org/jruby/runtime/Constants.java jruby-1.1RC3/src/org/jruby/runtime/Constants.java
+--- jruby-1.1RC3/src/org/jruby/runtime/Constants.java	2008-02-16 13:39:38.000000000 -0700
++++ jruby-1.1RC3/src/org/jruby/runtime/Constants.java	2008-03-05 17:23:40.000000000 -0700
 @@ -56,7 +56,13 @@
  
      static {

@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.editor.TokenItem;
-
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
@@ -51,7 +49,6 @@ public abstract class HyperlinkProcessor {
     public abstract void process(HyperlinkEnv env);
     
     public int[] getSpan(HyperlinkEnv env) {
-        TokenItem item = env.getToken();
-        return new int[] { item.getOffset() + 1, item.getOffset() + item.getImage().length() - 1 };
+        return new int[] { env.getTokenStartOffset() + 1, env.getTokenEndOffset() - 1 };
     }
 }

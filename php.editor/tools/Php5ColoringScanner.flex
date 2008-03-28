@@ -44,7 +44,6 @@ import org.netbeans.modules.php.editor.PHPVersion;
 
 %public
 %class PHP5ColoringLexer
-%implements PHPScanner
 %type PHPTokenId
 %function nextToken
 %unicode
@@ -228,13 +227,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 %%
 
-<YYINITIAL>(([^<]|"<"[^?%s<])+)|"<s"|"<" {
+<YYINITIAL>(([^<]|"<"[^?%(script)<])+)|"<script"|"<" {
     return PHPTokenId.T_INLINE_HTML;
 }
 
-<YYINITIAL>"<?"|"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
-    if (short_tags_allowed || yylength()>2) { /* yyleng>2 means it's not <? but <script> */
-        yybegin(ST_PHP_IN_SCRIPTING);
+<YYINITIAL>"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
+    pushState(ST_PHP_IN_SCRIPTING);
+    return PHPTokenId.T_INLINE_HTML;
+}
+
+<YYINITIAL>"<?" {
+    if (short_tags_allowed ) {
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -247,7 +252,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
         || (text.charAt(1)=='?' && short_tags_allowed)) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.T_OPEN_TAG_WITH_ECHO;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -258,7 +264,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <YYINITIAL>"<%" {
     if (asp_tags) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -268,7 +275,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <YYINITIAL>"<?php" {
-    yybegin(ST_PHP_IN_SCRIPTING);
+    pushState(ST_PHP_IN_SCRIPTING);
+    //yybegin(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_OPENTAG;
     //return createSymbol(ASTSymbol.T_OPEN_TAG);
 }
@@ -606,6 +614,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"{" {
+    pushState(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CURLY_OPEN;
 }
 
@@ -615,8 +624,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"}" {
-    if (!stack.isEmpty()) {
-        popState();
+             //  if (!stack.isEmpty()) {
+            
+            //we are pushing state when we enter the PHP code,
+            //so we need to ensure we do not pop the top most state
+            if(stack.size() > 1) {
+                popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
 }
@@ -815,11 +828,20 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();
+        yybegin(YYINITIAL);
+        stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
+}
+
+<ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"</script>"{WHITESPACE}? {
+        popState();
+	return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	return  PHPTokenId.UNKNOWN_TOKEN;
@@ -827,6 +849,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_LINE_COMMENT>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	String text = yytext();
@@ -905,7 +929,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_END_HEREDOC>{ANY_CHAR} {
     heredoc=null;
     heredoc_len=0;
-    yybegin(ST_PHP_IN_SCRIPTING);
+    (ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 

@@ -180,7 +180,7 @@ public class EditorContextBridge {
             url,
             lineNumber,
             annotationType,
-            null
+            b
         );
     }
 
@@ -265,7 +265,7 @@ public class EditorContextBridge {
         List annotations = new ArrayList(URLs.length);
         for (int i = 0; i < URLs.length; i++) {
             if (lineNumbers[i] >= 1) {
-                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, null);
+                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, b);
                 if (annotation != null) {
                     annotations.add(annotation);
                 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
@@ -61,34 +63,11 @@ import org.openide.filesystems.FileObject;
  * @author ayubskhan
  */
 public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
-
-    private JavaSource loginJS;
-    private FileObject loginFile;
-    private JavaSource callbackJS;
-    private FileObject callbackFile;
     
     public JaxRsServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, new WadlSaasBean(m, true));
         getBean().setIsDropTargetWeb(true);
-    }
-    
-    /**
-     *  Create Authorization Frame
-     */
-    @Override
-    public void createAuthorizationClasses() throws IOException {
-        List<ParameterInfo> filterParams = getAuthenticatorMethodParameters();
-        final String[] parameters = getGetParamNames(filterParams);
-        final Object[] paramTypes = getGetParamTypes(filterParams);
-        Util.createSessionKeyAuthorizationClassesForWeb(
-            getBean(), getProject(),
-            getBean().getSaasName(), getBean().getSaasServicePackageName(), 
-            getSaasServiceFolder(), 
-            loginJS, loginFile, 
-            callbackJS, callbackFile,
-            parameters, paramTypes, getBean().isUseTemplates()
-        );
     }
     
     @Override
@@ -112,21 +91,12 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
         methodBody += paramDecl + "\n";
         methodBody +=indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += indent2+"response.setContentType(\"application/xml\");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET) {
-            if(getBean().canGenerateJAXBUnmarshaller()) {
-                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += indent2+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
-                methodBody += indent2+"out.println(resultObj.toString());\n";
-            } else {
-                methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
-                methodBody += indent2+"out.println(result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += indent2+"System.out.println(\"The SaasService returned: \"+result);\n";
-            methodBody += indent2+"out.println(result);\n";
-        }
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
         methodBody += indent+"} catch (Exception ex) {\n";
         methodBody += indent2+"ex.printStackTrace();\n";
         methodBody += indent+"}\n";
@@ -135,7 +105,8 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getAuthenticatorMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getAuthenticatorMethodParametersForWeb();
         else
             return super.getAuthenticatorMethodParameters();
@@ -143,34 +114,57 @@ public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
     
     @Override
     protected List<ParameterInfo> getServiceMethodParameters() {
-        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY)
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
             return Util.getServiceMethodParametersForWeb(getBean());
         else
             return super.getServiceMethodParameters();
     }
     
     @Override
-    protected String getLoginBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyLoginBodyForWeb(bean, groupName, paramVariableName);
-    }
-    
-    @Override
-    protected String getTokenBody(WadlSaasBean bean, 
-            String groupName, String paramVariableName, String saasServicePkgName) throws IOException {
-        if(getBean().getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
-            return null;
-        return Util.createSessionKeyTokenBodyForWeb(bean, groupName, paramVariableName,
-                saasServicePkgName);
-    }
-    
-    @Override
-    protected String getSessionKeyLoginArguments() {
-        return Util.getSessionKeyLoginArgumentsForWeb();
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
     }
     
     @Override
     protected void addJaxbLib() throws IOException {}
+    
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+        super.addImportsToTargetFile();
+        if(getDropFileType() == Constants.DropFileType.RESOURCE) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.JAVA_ANNOTATION_PACKAGE+Constants.JAVA_ANNOTATION_RESOURCE);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getTargetSource(), imports);
+            
+            //Also add injection member variables
+            Map<String, String> fieldsMap = new HashMap<String, String>();
+            JavaSourceHelper.getAvailableFieldSignature(getTargetSource(), fieldsMap);
+            String[] annotations = new String[] { Constants.JAVA_ANNOTATION_RESOURCE };
+            Object[] annotationAttrs = new Object[] {null};
+            List<ParameterInfo> injectionParams = Util.getAuthenticatorMethodParametersForWeb();
+            for(ParameterInfo p: injectionParams) {
+                String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
+                    getParameterName(p, true, true, true));
+                if(!fieldsMap.containsKey(sign)) {
+                    Util.addInputParamField(getTargetSource(), p, annotations, annotationAttrs);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addImportsToSaasService() throws IOException {
+        super.addImportsToSaasService();
+        
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getSaasServiceSource(), imports);
+        }
+    }
 }

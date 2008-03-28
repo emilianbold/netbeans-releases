@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <installer-gui-script minSpecVersion="1.0">
-    <title>@TITLE@</title>
-    <welcome file="Welcome.txt"></welcome>
+    <title>netbeans-Title</title>
+    <welcome file="Welcome.html"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
     <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
@@ -86,7 +86,7 @@ function checkSystemversion() {
 	if(!result) {
 		my.result.type = 'Fatal';
 		my.result.title = '';
-		my.result.message = '';
+		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION');
 	}
 	return result;
 }
@@ -210,14 +210,14 @@ function checkChoiceUpgradeAction() {
             <line choice="cpp"></line>           
         </line>           
     </choices-outline>
-    <choice id="netbeans" title="@NB_TITLE@" description="NetBeans IDE" start_selected="true" start_enabled="true" start_visible="true"></choice>
-    <choice id="baseide" title="Base IDE" description="Core components of an integrated development environment." start_selected="true" start_enabled="false" start_visible="true">
+    <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
+    <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="org.netbeans.ide"></pkg-ref>
-    </choice>  
-    <choice id="cpp" title="C/C++" description="Tools for developing C and C++ applications. Includes project templates, support for existing projects, advanced editor, debug support, and makefile wizard for configuration management." start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+    </choice> 
+    <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.cpp"></pkg-ref>
-    </choice>   
-    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Admin" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
+    </choice> 
+    <pkg-ref id="org.netbeans.ide" version="6.1.0.6.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">file:./Contents/Packages/cpp.pkg</pkg-ref>   
 
 </installer-gui-script>
