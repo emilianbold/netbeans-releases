@@ -827,7 +827,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
-        popState();
+        //popState();
+        yybegin(YYINITIAL);
+        stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
 }
 
@@ -838,6 +840,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	return  PHPTokenId.UNKNOWN_TOKEN;
@@ -845,6 +849,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_LINE_COMMENT>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	String text = yytext();
@@ -923,7 +929,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_END_HEREDOC>{ANY_CHAR} {
     heredoc=null;
     heredoc_len=0;
-    yybegin(ST_PHP_IN_SCRIPTING);
+    (ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 

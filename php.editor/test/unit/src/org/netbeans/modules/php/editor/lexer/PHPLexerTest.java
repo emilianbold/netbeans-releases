@@ -249,6 +249,12 @@ public class PHPLexerTest extends TestCase {
         PHPLexerUtils.next(ts, PHPTokenId.WHITESPACE, " ");
         PHPLexerUtils.next(ts, PHPTokenId.PHP_CLOSETAG, "?>");
     }
+    
+    public void testInlineHtml() {
+        TokenSequence<?> ts = PHPLexerUtils.seqForText("<html>\n    <head>\n        <title></title>\n    </head>\n    <body>\n        <?php\n          \n        ?>\n    </body>\n</html>", PHPTokenId.language());
+        PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
+        
+    }
 
        
     
