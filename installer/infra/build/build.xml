@@ -2112,9 +2112,12 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-javatoolsbundle-bundles" depends="init-jtb-bundles" if="do.build.jtb">
 	<!-- Java Tools Bundle installer -->
+        <set property="jtb.bundles.prefix" value="java-tools-bundle-update5"/>
+        <set property="jtb.dmg.name"       value="Java EE 5 Tools Bundle Update 5"/>
+
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-windows.exe">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2134,7 +2137,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-linux.sh">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2154,7 +2157,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-solaris-x86.sh">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2174,7 +2177,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-solaris-sparc.sh">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2194,7 +2197,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.zip">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2214,7 +2217,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.zip">
+                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.zip">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
@@ -2233,19 +2236,19 @@ jarsigner.storepass=${jarsigner.storepass}
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
         <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-x86.dmg"/>
-            <param name="dmg.name" value="Java EE 5 Tools Bundle Update 5"/>
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.dmg"/>
+            <param name="dmg.name" value="${jtb.dmg.name}"/>
         </antcall>
         <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/java-tools-bundle-update4-macosx-ppc.dmg"/>
-            <param name="dmg.name" value="Java EE 5 Tools Bundle Update 5"/>
+            <param name="zip.file"  value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.zip"/>
+            <param name="dmg.file" value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.dmg"/>
+            <param name="dmg.name" value="${jtb.dmg.name}"/>
         </antcall>       
 
         <delete>
             <fileset dir="${nb.bundles.output.dir}">
-		<include name="java-tools-bundle-update4-macosx*zip"/>
+		<include name="${jtb.bundles.prefix}-macosx*zip"/>
             </fileset>
         </delete>
     </target>

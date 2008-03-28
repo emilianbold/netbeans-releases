@@ -537,10 +537,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public void requestFocus() {
         super.requestFocus();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            customComponent.requestFocus();
-        } else if (pane != null) {
-            pane.requestFocus();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                customComponent.requestFocus();
+            } else {
+                pane.requestFocus();
+            }
         }
     }
 
@@ -550,10 +552,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            return customComponent.requestFocusInWindow();
-        } else if (pane != null) {
-            return pane.requestFocusInWindow();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                return customComponent.requestFocusInWindow();
+            } else {
+                return pane.requestFocusInWindow();
+            }
         }
 
         return false;
