@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <application 
+    xmlns:ym="urn:yahoo:trafficdataresponse"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
-    
-    <grammars/>
+    <grammars>
+        <include href="TrafficDataResponse.xsd"/>
+        <!--<include href="NewsSearchError.xsd"/>-->
+    </grammars>
     <resources base="http://local.yahooapis.com/MapsService/V1">	
                 <resource path="trafficData">
             <method name="GET" id="trafficData">
@@ -102,6 +105,7 @@
                     </param>
                 </request>
                 <response>
+                    <representation mediaType="application/xml" element="ym:ResultSet"/>
                 </response>
                 
             </method>

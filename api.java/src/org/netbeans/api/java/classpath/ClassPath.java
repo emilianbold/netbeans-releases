@@ -717,7 +717,7 @@ public final class ClassPath {
 
         /**
          * Check whether a file is included in this entry.
-         * @param resource a path relative to @{link #getURL} (must be terminted with <samp>/</samp> if a non-root folder)
+         * @param resource a path relative to @{link #getURL} (must be terminated with <samp>/</samp> if a non-root folder)
          * @return true if it is {@link FilteringPathResourceImplementation#includes included}
          * @since org.netbeans.api.java/1 1.13
          */
@@ -760,7 +760,11 @@ public final class ClassPath {
             }
             String path = FileUtil.getRelativePath(r, file);
             if (path == null) {
-                throw new IllegalArgumentException(file + " not in " + r);
+                if (!file.isValid()) {
+                    //#130998:IllegalArgumentException when switching tabs
+                    return false;
+                }
+                throw new IllegalArgumentException(file + " not in " + r + " (valid: "+r.isValid()+")");
             }
             if (file.isFolder()) {
                 path += "/"; // NOI18N

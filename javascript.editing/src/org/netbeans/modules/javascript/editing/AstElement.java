@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 public class AstElement extends JsElement {
     public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
+    public static final Set<Modifier> PRIVATE = EnumSet.of(Modifier.PRIVATE);
 
     protected List<AstElement> children;
     protected Node node;
@@ -118,10 +119,6 @@ public class AstElement extends JsElement {
         return fqn;
     }
     
-    void setDocProps(Map<String,String> docProps) {
-        this.docProps = docProps;
-    }
-
     public String getName() {
         if (name == null) {
             if (fqn != null) {
@@ -190,6 +187,9 @@ public class AstElement extends JsElement {
     public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             boolean deprecated = false, priv = false, constructor = false;
+            if (getName().startsWith("_")) {
+                priv = true;
+            }
             if (docProps != null) {
                 if (docProps.containsKey("@deprecated")) { // NOI18N
                     deprecated = true;
@@ -217,6 +217,8 @@ public class AstElement extends JsElement {
                 } else {
                     modifiers = NONE;
                 }
+            } else if (priv) {
+                modifiers = PRIVATE;
             } else {
                 modifiers = NONE;
             }
@@ -233,10 +235,6 @@ public class AstElement extends JsElement {
             modifiers = EnumSet.copyOf(modifiers);
             modifiers.add(Modifier.STATIC);
         }
-    }
-    
-    void setModifiers(Set<Modifier> modifiers) {
-        this.modifiers = modifiers;
     }
     
     private void initDocProps(CompilationInfo info) {
@@ -259,7 +257,7 @@ public class AstElement extends JsElement {
     }
     
     public static AstElement createElement(CompilationInfo info, Node node, String name, String in, AnalysisResult result) {
-        assert node.element == null : node; // Don't expect to be called multiple times on the same element
+        assert node.element == null : node + " in " + info.getText(); // Don't expect to be called multiple times on the same element
         AstElement js = AstElement.getElement(info, node);
 
         if ("Element.Methods".equals(in)) { // NOI18N

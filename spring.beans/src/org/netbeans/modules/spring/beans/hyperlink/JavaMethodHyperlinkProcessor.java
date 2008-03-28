@@ -63,11 +63,11 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
     }
     
     public void process(HyperlinkEnv env) {
-        String className = new BeanClassFinder(env.getCurrentTag(), env.getDocument()).findImplementationClass();
+        String className = new BeanClassFinder(env.getBeanAttributes(), env.getFileObject()).findImplementationClass();
         if(className == null) {
             return;
         }
-        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className, env.getValueString(), argCount,
+        SpringXMLConfigEditorUtils.openMethodInEditor(env.getFileObject(), className, env.getValueString(), argCount,
                             publicFlag, staticFlag);
     }
 }

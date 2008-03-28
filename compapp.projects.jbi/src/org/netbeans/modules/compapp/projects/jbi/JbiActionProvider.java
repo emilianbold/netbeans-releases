@@ -61,16 +61,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.awt.Dialog;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -309,6 +306,15 @@ public class JbiActionProvider implements ActionProvider {
 
                     saveCasaChanges(project);
 
+                    // call WSIT Java Callback Project...
+                    String cbProjects = callWSITJavaCallbackProject(project);
+                    if (cbProjects != null) {
+                        if (p == null) {
+                            p = new Properties();
+                        }
+                        p.setProperty("WsitCallbackProjects", cbProjects);
+                    }
+
                     if (!validateSubProjects()) {
                         return;
                     }
@@ -446,6 +452,34 @@ public class JbiActionProvider implements ActionProvider {
 
         return true;
     }
+
+    private String callWSITJavaCallbackProject(JbiProject project) {
+        // process cass and check for Java callback project setting...
+        List<String> cbProjects = CasaHelper.getWsitCallbackProjects(project);
+        String projects = null;
+        boolean first = true;
+        for (String pLoc : cbProjects) {
+            // System.out.println("Invoke building: "+pLoc);
+            File buildxml = new File(pLoc+"/build.xml"); // NOI18N
+            FileObject bfo = FileUtil.toFileObject(buildxml);
+            String[] targets = new String[] { "compile" }; // NOI18N
+            Properties p = null;
+            try {
+                ExecutorTask executorTask = ActionUtils.runTarget(bfo, targets, p);
+                if (!first) {
+                    projects += ";"+pLoc;  // NOI18N
+                } else {
+                    first = false;
+                    projects = pLoc;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return projects;
+    }
+
 
     private void saveCasaChanges(JbiProject project) {
         // Save casa

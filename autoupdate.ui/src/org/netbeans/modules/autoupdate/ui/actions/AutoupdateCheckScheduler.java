@@ -177,8 +177,8 @@ public class AutoupdateCheckScheduler {
         }
     };
     
-    public static void runCheckAvailableUpdates () {
-        RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+    public static void runCheckAvailableUpdates (int delay) {
+        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
     }
     
     public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {

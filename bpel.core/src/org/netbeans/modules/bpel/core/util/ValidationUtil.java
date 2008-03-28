@@ -22,21 +22,31 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import javax.xml.namespace.QName;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import javax.swing.text.StyledDocument;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
-import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -110,7 +120,7 @@ public final class ValidationUtil {
       else {
         number = item.getLineNumber() - 1;
       }
-  //System.out.println("  number: " + number);
+//System.out.println("  number: " + number);
 
       if (number < 1) {
         return null;
@@ -132,9 +142,145 @@ public final class ValidationUtil {
       if (cookie == null) {
         return null;
       }
+      Line line = cookie.getLineSet().getCurrent(number);
+
+      if (line == null) {
+        return null;
+      }
       return cookie.getLineSet().getCurrent(number);
     }
     
+    public static Line.Part getLinePart(ResultItem item) {
+      Line line = getLine(item);
+
+      if (line == null) {
+        return null;
+      }
+      int column = getColumn(item.getComponents());
+
+      if (column == -1) {
+        column = 0;
+      }
+      int length = line.getText().length() - column;
+
+      return line.createPart(column, length);
+    }
+    
+    private static int getColumn(Component component) {
+      AbstractDocument doc = getAbstractDocument(component);
+
+      if (doc == null) {
+        return -1;
+      }
+      int position = findPosition((AbstractDocumentModel) component.getModel(), ((AbstractDocumentComponent) component).getPeer());
+      return findColumn(doc, position);
+    }
+    
+    private static AbstractDocument getAbstractDocument(Component component) {
+      if (component == null) {
+        return null;
+      }
+      Model model = component.getModel();
+
+      if (model == null) {
+        return null;
+      }
+      ModelSource source = model.getModelSource();
+
+      if (source == null) {
+        return null;
+      }
+      return (AbstractDocument) source.getLookup().lookup(AbstractDocument.class);
+    }
+
+    private static int findColumn(AbstractDocument doc, int argInt) {
+      javax.swing.text.Element paragraphsParent = findLineRootElement(doc);
+      int indx = paragraphsParent.getElementIndex(argInt);
+      return argInt - paragraphsParent.getElement(indx).getStartOffset();
+    }
+
+    private static javax.swing.text.Element findLineRootElement(AbstractDocument doc) {
+      javax.swing.text.Element element = doc.getParagraphElement(0).getParentElement();
+
+      if (element == null) {
+        element = doc.getDefaultRootElement();
+      }
+      return element;
+    }
+
+    private static int findPosition(AbstractDocumentModel model, Node node) {
+      Element root = ((DocumentComponent) model.getRootComponent()).getPeer();
+      javax.swing.text.Document doc = model.getBaseDocument();
+
+      try {
+        String buf = doc.getText(0, doc.getLength());
+      
+        if (node instanceof Element) {
+          return findPosition((Element) node, buf, root, getRootElementPosition(buf, root));
+        }
+      }
+      catch (BadLocationException e) {}
+
+      return -1;
+    }
+
+    private static int getRootElementPosition(String buf, Element root) {
+      NodeList children = root.getOwnerDocument().getChildNodes();
+      int pos = 0;
+
+      for (int i = 0; i < children.getLength(); i++) {
+        Node n = children.item(i);
+
+        if (n != root) {
+          String s = n.getNodeValue();
+        
+          if (s != null) {
+            pos += s.length();
+          }
+        }
+        else {
+          break;
+        }
+      }
+      return buf.indexOf(root.getTagName(), pos);
+    }
+
+    private static int findPosition(Element target, String buf, Element base, Integer fromPos) {
+      if (target == base) {
+        return fromPos;
+      }
+      NodeList children = base.getChildNodes();
+
+      for (int i = 0; i < children.getLength(); i++) {
+        Node node = children.item(i);
+
+        if ( !(node instanceof Element)) {
+          String s = node.getNodeValue();
+
+          if (s == null) {
+            s = node.getTextContent();
+          }
+          if (s != null) {
+            fromPos += s.length();
+          }
+          continue;
+        }
+        Element current = (Element) children.item(i);
+        String tag = "<" + current.getTagName();
+        fromPos = buf.indexOf(tag, fromPos);
+
+        if (current == target) {
+          return fromPos;
+        }
+        int found = findPosition(target, buf, current, fromPos);
+
+        if (found > -1) {
+          return found;
+        }
+      }
+      return -1;
+    }
+
     private static int getLineNumber(DocumentComponent entity) {
       if (entity == null) {
         return -1;

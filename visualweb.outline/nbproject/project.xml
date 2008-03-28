@@ -157,7 +157,10 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <package>org.netbeans.modules.visualweb.outline.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

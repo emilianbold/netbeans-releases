@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.cnd.repository.sfs;
 
+import org.netbeans.modules.cnd.repository.test.TestObject;
+import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 
@@ -94,7 +95,7 @@ public class DefragmentationTest extends NbTestCase {
 	assertTrue(dfs.getFragmentationPercentage() > 50);
 	System.out.printf("--- Before defragmentation\n");
 	dfs.dumpSummary(System.out);
-	dfs.maintenance(0);
+	dfs.defragment(0);
 	System.out.printf("--- After defragmentation\n");
 	dfs.dumpSummary(System.out);
 	assertTrue(dfs.getFragmentationPercentage() == 0);
@@ -104,7 +105,7 @@ public class DefragmentationTest extends NbTestCase {
 	DoubleFileStorage dfs = createAndFillStorage();
 	assertTrue(dfs.getFragmentationPercentage() > 50);
 	long timeToDefragment = System.currentTimeMillis();
-	dfs.maintenance(0);
+	dfs.defragment(0);
 	timeToDefragment = System.currentTimeMillis() - timeToDefragment;
 	System.err.printf("Full defragmentation took %d ms\n", timeToDefragment);
 	
@@ -114,7 +115,7 @@ public class DefragmentationTest extends NbTestCase {
 	
 	for (int i = 0; i < count; i++) {
 	    int oldFragmentation = dfs.getFragmentationPercentage();
-	    dfs.maintenance(slice);
+	    dfs.defragment(slice);
 	    int newFragmentation = dfs.getFragmentationPercentage();
 	    System.err.printf("Partial defragmentation %4d: %d -> %d\n", i, oldFragmentation, newFragmentation);
 	    if( newFragmentation == 0 ) {

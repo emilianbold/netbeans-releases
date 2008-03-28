@@ -303,7 +303,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 new ResourceDojoComponents(r, rdjDir).generate();
                 new ResourceJmakiComponent(r, restDir).generate();
                 File dir = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST);
-                dir.mkdirs();
+                FileUtil.createFolder(dir);
                 new ResourceJmakiTemplate(r, FileUtil.toFileObject(dir)).generate();
             }
         }
@@ -642,9 +642,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 }
                 final File entryFile = new File(targetFolder, entry.getName());
                 if(entry.isDirectory()) {
-                    if(!entryFile.exists() && !entryFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
-                                entryFile.getName() + ".  Terminating archive installation.");
+                    if(!entryFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(entryFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
+                                    entryFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                 } else {
                     if(entryFile.exists() && overwrite) {
@@ -654,9 +658,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         }
                     }
                     File parentFile = entryFile.getParentFile();
-                    if(!parentFile.exists() && !parentFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
+                    if(!parentFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(parentFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
                                 parentFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                     targetFS.runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {

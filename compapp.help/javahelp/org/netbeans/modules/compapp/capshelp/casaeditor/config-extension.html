@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Endpoint Property: ConfigExtension</title>
+</head>
+<body>
+<h2>Creating Endpoint Configuration Extensions</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The endpoint ConfigExtension property allows you to associate a user-defined 
+  name with an endpoint's connectivity parameters. These connectivity parameters 
+  are normally defined in the binding component's WSDL service extensibility elements. 
+</p>
+<p>The ConfigExtension is used with the binding component <a href="../jbinode/app-configuration.html" title="Dynamically Configuring Endpoint Connection Properties">Application Configuration</a>
+  property. The binding component Application Configuration property allows you to define 
+  the values of the connection properties for that binding protocol, and associate these 
+  properties with a named endpoint ConfigExtension. When the project's service assembly
+  is shutdown and restarted the values defined by the Application Configuration property
+  are applied to the named endpoint connection properties.</p>
+<p>You can dynamically change an endpoint's connection properties by modifying 
+  the property values for the named ConfigExtension from the Application Configuration 
+  property editor, and restarting the project's Service Assembly. You can also 
+  change the endpoint properties by specifying the name of another saved Application 
+  Configuration properties set, in the ConfigExtension name property. </p>
+
+<p><b>To create a named configuration extension:</b></p>
+<ol>
+  <li>Open CASA editor and build your project to display your composite application's 
+    components.</li>
+  <li>In the WSDL Ports section of the CASA window, right-click the appropriate 
+    endpoint (consume or provide) and select Properties from the pop-up menu. 
+    The endpoint's Properties editor appears.</li>
+  <li>In the Properties editor, click the ConfigExtension name property ellipsis 
+    (...) button. The name dialog box appears.</li>
+  <li>Enter the name you want to associate with endpoint configuration properties, 
+    and click OK.</li>
+  <li>In the Services window, go to the Binding Components directory under the 
+    JBI node, right-click the binding component used by your application, and 
+    select Properties. </li>
+  <li>In the binding components property sheet, click the Application Configuration 
+    property ellipsis (...) button. The Application Configuration dialog box appears.</li>
+  <li>Enter the name of the ConfigExtension, and define the values for the connection 
+    parameters.</li>
+  <li>Once the Application Configuration property values have been defined, shutdown 
+    and restart the project's Service Assembly.</li>
+</ol>
+<p>&nbsp;</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../jbinode/caps_jbi_node.html" title="JBI Node (Under Services/Servers)">JBI Node (Under Services/Servers)</a></dd>
+  <dd><a href="../jbinode/app-variables.html" title="Application Variables Property">Application Variables Property</a></dd>
+  <dd><a href="../jbinode/app-configuration.html" title="Dynamically Configuring Endpoint Connection Properties">Application Configuration Property</a></dd>
+</dl>
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

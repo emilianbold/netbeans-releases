@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -74,7 +75,7 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
                 return cache;
             }
         }
-        String enc = eval.getProperty(PhpProject.SOURCE_ENCODING);
+        String enc = eval.getProperty(PhpProjectProperties.SOURCE_ENCODING);
         synchronized (this) {
             if (cache == null) {
                 try {
@@ -92,7 +93,7 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
    
     public void propertyChange(PropertyChangeEvent event) {        
         String propName = event.getPropertyName();
-        if (propName == null || propName.equals(PhpProject.SOURCE_ENCODING)) {
+        if (propName == null || propName.equals(PhpProjectProperties.SOURCE_ENCODING)) {
             synchronized (this) {
                 cache = null;
             }

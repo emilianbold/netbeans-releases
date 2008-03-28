@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeListener;
@@ -48,11 +51,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -63,7 +68,9 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,7 +81,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     private WizardDescriptor wizard;
     private Project project;
     private JTextComponent packageComboBoxEditor;
-//    private ChangeSupport changeSupport = new ChangeSupport(this);
+    private ChangeSupport changeSupport = new ChangeSupport(this);
     
     /** Creates new form CrudSetupPanel */
     public PersistenceClientSetupPanelVisual(WizardDescriptor wizard) {
@@ -84,6 +91,17 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         packageComboBoxEditor = ((JTextComponent)packageComboBox.getEditor().getEditorComponent());
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
         packageComboBoxDocument.addDocumentListener(this);
+        jsfFolder.addKeyListener(new KeyListener(){
+            public void keyPressed(KeyEvent e) {
+                changeSupport.fireChange();
+            }            
+            public void keyReleased(KeyEvent e) {
+                changeSupport.fireChange();
+            } 
+            public void keyTyped(KeyEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
     
     /** This method is called from within the constructor to
@@ -247,7 +265,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     // End of variables declaration//GEN-END:variables
     
     public void addChangeListener(ChangeListener listener) {
-//        changeSupport.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
     }
     
     boolean valid(WizardDescriptor wizard) {
@@ -281,7 +299,47 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //            return false;
 //        }
 //        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
-        return true;
+        
+            ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
+            ClassLoader cl = cp.getClassLoader(true);
+            try {
+                Class.forName("javax.transaction.UserTransaction", false, cl);
+            }
+            catch (ClassNotFoundException cnfe) {
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                return false;
+            }
+        
+            Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
+            SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            FileObject pagesRootFolder = sgWeb[0].getRootFolder();
+            File pagesRootFolderAsFile = FileUtil.toFile(pagesRootFolder);
+            String jsfFolderText = jsfFolder.getText();
+            try {
+                String canonPath = new File(pagesRootFolderAsFile, jsfFolderText).getCanonicalPath();
+            }
+            catch (IOException ioe) {
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JsfTargetChooser_InvalidJsfFolder"));
+                return false;
+            }
+        
+            String packageName = getPackage();
+            if (packageName.trim().equals("")) { // NOI18N
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
+                return false;
+            }
+
+            if (!JavaIdentifiers.isValidPackageName(packageName)) {
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
+                return false;
+            }
+
+            if (!SourceGroups.isFolderWritable(getLocationValue(), packageName)) {
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
+                return false;
+            }
+            wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+            return true;
     }
     
     public SourceGroup getLocationValue() {
@@ -333,20 +391,19 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     
     void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.JSF_FOLDER, jsfFolder.getText());
-         String pkg = getPackage();
-         settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, pkg);
-         try {
-             FileObject fo = getLocationValue().getRootFolder();
-             String pkgSlashes = pkg.replace('.', '/');
-             FileObject targetFolder = fo.getFileObject(pkgSlashes);
-             if (targetFolder == null) {
-//                 targetFolder = fo.createFolder(pkg);
+        String pkg = getPackage();
+        settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, pkg);
+        try {
+            FileObject fo = getLocationValue().getRootFolder();
+            String pkgSlashes = pkg.replace('.', '/');
+            FileObject targetFolder = fo.getFileObject(pkgSlashes);
+            if (targetFolder == null) {
                 targetFolder = FileUtil.createFolder(fo, pkgSlashes);
-             }
-             Templates.setTargetFolder(settings, targetFolder);
-         } catch (IOException ex) {
-             Exceptions.printStackTrace(ex);
-         }
+            }
+            Templates.setTargetFolder(settings, targetFolder);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void updateSourceGroupPackages() {
@@ -360,15 +417,15 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     }
     
     public void insertUpdate(DocumentEvent e) {
-//        changeSupport.fireChange();
+        changeSupport.fireChange();
     }
 
     public void removeUpdate(DocumentEvent e) {
-//        changeSupport.fireChange();
+        changeSupport.fireChange();
     }
 
     public void changedUpdate(DocumentEvent e) {
-//        changeSupport.fireChange();
+        changeSupport.fireChange();
     }
     
 }

@@ -313,8 +313,8 @@ public class DesignerMultiViewElement extends TopComponent
         // not sure that we need to add undo manager each time when 
         // component is activated, but calling method addUndoManager() more
         // than once is not a problem.
-//        addUndoManager();
-        myDesignView.getView().requestFocusInWindow();
+        addUndoManager();
+        myDesignView.requestFocusInWindow();
         myDesignView.getModel().setActivated();
         
         // push NodeAction.Listener update context state
@@ -377,7 +377,7 @@ public class DesignerMultiViewElement extends TopComponent
         if (myDesignView != null) {
             myDesignView.setVisible(true);
         }
-////        addUndoManager();
+        addUndoManager();
         //
         updateBpelTcGroupVisibility(true);
 

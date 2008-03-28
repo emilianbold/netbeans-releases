@@ -47,4 +47,10 @@ package org.netbeans.modules.gsf.api;
  */
 public interface IndexDocumentFactory {
     IndexDocument createDocument(int initialPairs);
+    /** Create a document corresponding to a specific URL. You usually don't want
+     * to use this. This is for advanced usage, such as sdoc mapping in JavaScript
+     * where we want to trigger indexing of related .sdoc files when a source document
+     * is indexed.
+     */
+    IndexDocument createDocument(int initialPairs, String urlOverride);
 }

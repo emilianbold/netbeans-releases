@@ -43,23 +43,27 @@ package org.netbeans.modules.php.rt.providers.impl.actions;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.rt.providers.impl.AbstractCommandProvider;
 import org.netbeans.modules.php.rt.providers.impl.AbstractProvider;
 import org.netbeans.modules.php.rt.providers.impl.HostImpl;
 import org.netbeans.modules.php.rt.spi.providers.Command;
+import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.ActionsDialogs;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.netbeans.modules.php.rt.utils.ServerActionsPreferences;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -70,6 +74,8 @@ import org.openide.util.NbBundle;
  *
  */
 public class RunCommand extends AbstractCommand implements Command, Cloneable {
+    //keep synchronized with org.netbeans.modules.php.project.PhpProject
+    private static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N    
     private static final String LBL_RUN_WITHOUT_UPLOAD_TITLE 
             = "LBL_RunWithoutUpload_Title"; // NOI18N
 
@@ -134,9 +140,16 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         }
         
         String serverBaseUrl = getServerBaseUrl(host);
+        boolean uploadEnabled = true;
         
-        boolean proceed = uploadFiles();
-        if (!proceed){
+        if ("defaultHost".equals(host.getId())) {//NOI18N
+            String copySrcFiles = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(COPY_SRC_FILES);    
+            if (copySrcFiles != null && copySrcFiles.trim().length() > 0) {
+                uploadEnabled = Boolean.parseBoolean(copySrcFiles);
+            }            
+        }
+        
+        if (uploadEnabled && !uploadFiles()){
             return;
         }
         if (getFileObjects() == null) {
@@ -302,7 +315,7 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         return ActionsDialogs.userConfirmYesNo(title, msg);
     }
     
-    private boolean isUploadBeforeRun(){
+    private boolean isUploadBeforeRun(){        
         boolean upload = ServerActionsPreferences.getInstance()
                 .getUploadBeforeRun();
         if (upload){
@@ -317,9 +330,14 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         notifyMsg(LBL_UPLOAD_WAS_INTERRUPTED, uploadCommand.getLabel(), getLabel());
     }
     
-    private UploadFilesCommand getUploadCommand() {
-        Command[] commands = getProvider().getCommandProvider()
-                .getCommands(getProject());
+    private UploadFilesCommand getUploadCommand() {        
+        CommandProvider provider = getProvider().getCommandProvider();        
+        List<Command> commands = new ArrayList<Command>();
+        commands.addAll(Arrays.asList(provider.getCommands(getProject())));        
+        if (provider instanceof AbstractCommandProvider) {
+            commands.addAll(Arrays.asList(((AbstractCommandProvider)provider).getAdditionalCommands(getProject())));
+        }
+                        
         Command uploadCommand = null;
         for (Command command : commands) {
             String id = command.getId();

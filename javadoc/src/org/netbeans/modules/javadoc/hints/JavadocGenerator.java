@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import java.util.Map;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -53,6 +54,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -61,6 +69,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 public final class JavadocGenerator {
     
     private final SourceVersion srcVersion;
+    private String author = System.getProperty("user.name"); // NOI18N
     
     /** Creates a new instance of JavadocGenerator */
     public JavadocGenerator(SourceVersion version) {
@@ -74,12 +83,12 @@ public final class JavadocGenerator {
                 );
         
         if (clazz.getNestingKind() == NestingKind.TOP_LEVEL) {
-            builder.append("@author " + System.getProperty("user.name") + "\n"); // NOI18N
+            builder.append("@author " + author + "\n"); // NOI18N
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0) {
             for (TypeParameterElement param : clazz.getTypeParameters()) {
-                builder.append("@param " + param.getSimpleName().toString() + " \n"); // NOI18N
+                builder.append("@param <" + param.getSimpleName().toString() + "> \n"); // NOI18N
             }
         }
         
@@ -98,6 +107,10 @@ public final class JavadocGenerator {
                 "/**\n" + // NOI18N
                 "\n" // NOI18N
                 );
+        
+        for (TypeParameterElement param : method.getTypeParameters()) {
+            builder.append("@param <").append(param.getSimpleName().toString()).append("> \n"); // NOI18N
+        }
         
         for (VariableElement param : method.getParameters()) {
             builder.append("@param ").append(param.getSimpleName().toString()).append(" \n"); // NOI18N
@@ -170,6 +183,36 @@ public final class JavadocGenerator {
     
     public String generateInheritComment() {
         return "/** {@inheritDoc} */"; //NOI18N
+    }
+    
+    /**
+     * Updates settings used by this generator. It should be called outside locks.
+     * @param file a file where the generated content will be added
+     */
+    public void updateSettings(FileObject file) {
+        DataObject dobj = null;
+        DataFolder folder = null;
+        try {
+            dobj = DataObject.find(file);
+            folder = dobj.getFolder();
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (dobj == null || folder == null) {
+            return;
+        }
+        for (CreateFromTemplateAttributesProvider provider
+                : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+            Map<String, ?> attrs = provider.attributesFor(dobj, folder, "XXX"); // NOI18N
+            if (attrs == null) {
+                continue;
+            }
+            Object aName = attrs.get("user"); // NOI18N
+            if (aName != null) {
+                author = aName.toString();
+                break;
+            }
+        }
     }
     
 }

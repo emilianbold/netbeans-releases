@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
@@ -388,6 +389,34 @@ public class PHPIndex {
         
         return constants;
     }
+    
+    public Collection<IndexedConstant> getClasses(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CLASS, name, kind, result, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+                    int firstSemicolon = signature.indexOf(";");
+                    String className = signature.substring(0, firstSemicolon);
+
+                    IndexedConstant constant = new IndexedConstant(className, null,
+                            this, map.getPersistentUrl(), null, 0, ElementKind.CLASS);
+
+                    constants.add(constant);
+                }
+            }
+        }
+        
+        return constants;
+    }
 
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
 //        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
@@ -691,8 +720,12 @@ public class PHPIndex {
      * from the current file.
      */
     public boolean isReachable(PHPParseResult result, String url) {
+        String processedFileURL = null;
+        
         try {
-            if (url.equals(result.getFile().getFileObject().getURL().toExternalForm())){
+            processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+            
+            if (url.equals(processedFileURL)){
                 return true;
             }
         } catch (FileStateInvalidException ex) {
@@ -717,10 +750,12 @@ public class PHPIndex {
         for (String includeInQuotes : includes){
             // start of provisional code
             //TODO: a more sophisticated check here,
-            // currently only basic, same dir includes are support
             String incl = dequote(includeInQuotes);
+            assert processedFileURL.startsWith("file:");
+            String processedFileAbsPath = processedFileURL.substring("file:".length());
+            String includeURL = resolveRelativeURL(processedFileAbsPath, incl);
             
-            if (url.endsWith(incl)){
+            if (url.equals("file:" + includeURL)){
                 return true;
             }
             
@@ -735,5 +770,63 @@ public class PHPIndex {
         assert string.startsWith("\"") || string.startsWith("'");
         assert string.endsWith("\"") || string.endsWith("'");
         return string.substring(1, string.length() - 1);
+    }
+    
+    // copied from JspUtils
+    /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
+    *  @param relativeTo url to which the relative URL is related. Treated as directory iff
+    *    ends with '/'
+    *  @param url the relative URL by RFC 2396
+    *  @exception IllegalArgumentException if url is not absolute and relativeTo 
+    * can not be related to, or if url is intended to be a directory
+    */
+    static String resolveRelativeURL(String relativeTo, String url) {
+        //System.out.println("- resolving " + url + " relative to " + relativeTo);
+        String result;
+        if (url.startsWith("/")) { // NOI18N
+            result = "/"; // NOI18N
+            url = url.substring(1);
+        }
+        else {
+            // canonize relativeTo
+            if ((relativeTo == null) || (!relativeTo.startsWith("/"))) // NOI18N
+                throw new IllegalArgumentException();
+            relativeTo = resolveRelativeURL(null, relativeTo);
+            int lastSlash = relativeTo.lastIndexOf('/');
+            if (lastSlash == -1)
+                throw new IllegalArgumentException();
+            result = relativeTo.substring(0, lastSlash + 1);
+        }
+
+        // now url does not start with '/' and result starts with '/' and ends with '/'
+        StringTokenizer st = new StringTokenizer(url, "/", true); // NOI18N
+        while(st.hasMoreTokens()) {
+            String tok = st.nextToken();
+            //System.out.println("token : \"" + tok + "\""); // NOI18N
+            if (tok.equals("/")) { // NOI18N
+                if (!result.endsWith("/")) // NOI18N
+                    result = result + "/"; // NOI18N
+            }
+            else
+                if (tok.equals("")) // NOI18N
+                    ;  // do nohing
+                else
+                    if (tok.equals(".")) // NOI18N
+                        ;  // do nohing
+                    else
+                        if (tok.equals("..")) { // NOI18N
+                            String withoutSlash = result.substring(0, result.length() - 1);
+                            int ls = withoutSlash.lastIndexOf("/"); // NOI18N
+                            if (ls != -1)
+                                result = withoutSlash.substring(0, ls + 1);
+                        }
+                        else {
+                            // some file
+                            result = result + tok;
+                        }
+            //System.out.println("result : " + result); // NOI18N
+        }
+        //System.out.println("- resolved to " + result);
+        return result;
     }
 }

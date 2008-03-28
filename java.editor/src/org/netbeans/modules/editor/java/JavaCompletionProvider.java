@@ -1164,13 +1164,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 ExecutableElement enclMethod = env.getScope().getEnclosingMethod();
                 if (enclMethod != null && enclMethod.getKind() == ElementKind.CONSTRUCTOR) {
                     String prefix = env.getPrefix();
-                    if (THIS_KEYWORD.equals(prefix)) {
+                    if (Utilities.startsWith(THIS_KEYWORD, prefix)) {
                         Element element = enclMethod.getEnclosingElement();
-                        addMembers(env, element.asType(), element, EnumSet.of(CONSTRUCTOR), null, false, false);
-                    } else if (SUPER_KEYWORD.equals(prefix)) {
+                        addThisOrSuperConstructor(env, element.asType(), element, THIS_KEYWORD, enclMethod);
+                    }
+                    if (Utilities.startsWith(SUPER_KEYWORD, prefix)) {
                         Element element = enclMethod.getEnclosingElement();
                         element = ((DeclaredType)((TypeElement)element).getSuperclass()).asElement();
-                        addMembers(env, element.asType(), element, EnumSet.of(CONSTRUCTOR), null, false, false);
+                        addThisOrSuperConstructor(env, element.asType(), element, SUPER_KEYWORD, enclMethod);
                     }
                 }
             } else if (last.getKind() == Tree.Kind.TRY) {
@@ -2507,18 +2508,29 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
             final boolean[] ctorSeen = {false};
-            TypeElement enclClass = scope.getEnclosingClass();
+            final TypeElement enclClass = scope.getEnclosingClass();
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case FIELD:
-                            return Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
-                                    (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+                            if (!Utilities.startsWith(e.getSimpleName().toString(), prefix))
+                                return false;
+                            if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)) {
+                                boolean b = false;
+                                TypeElement cls = enclClass;                                
+                                while(cls != null) {
+                                    if (cls == elem)
+                                        return isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types);
+                                    Element outer = cls.getEnclosingElement();
+                                    cls = !cls.getModifiers().contains(STATIC) && outer.getKind().isClass() ? (TypeElement)outer : null;
+                                }
+                                return false;
+                            }
+                            return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                     tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) && 
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                    (isStatic || !e.getSimpleName().contentEquals(THIS_KEYWORD)) &&
                                     ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD));
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
@@ -2560,7 +2572,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOCAL_VARIABLE:
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
-                        if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name)) {
+                        if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
                             results.add(JavaCompletionItem.createKeywordItem(name, null, anchorOffset, false));
                         } else {
                             TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
@@ -2589,6 +2601,32 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private void addThisOrSuperConstructor(final Env env, final TypeMirror type, final Element elem, final String name, final ExecutableElement toExclude) throws IOException {
+            final CompilationController controller = env.getController();
+            final Elements elements = controller.getElements();
+            final Types types = controller.getTypes();
+            final TreeUtilities tu = controller.getTreeUtilities();
+            final Scope scope = env.getScope();
+            final boolean[] ctorSeen = {false};
+            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                public boolean accept(Element e, TypeMirror t) {
+                    switch (e.getKind()) {
+                        case CONSTRUCTOR:
+                            ctorSeen[0] = true;
+                            return toExclude != e && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+                                    (tu.isAccessible(scope, e, t) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE)));
+                    }
+                    return false;
+                }
+            };
+            for(Element e : controller.getElementUtilities().getMembers(type, acceptor)) {
+                if (e.getKind() == CONSTRUCTOR) {
+                    ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                    results.add(JavaCompletionItem.createThisOrSuperConstructorItem((ExecutableElement)e, et, anchorOffset, elements.isDeprecated(e), name));
+                }
+            }
+        }
+
         private void addEnumConstants(Env env, TypeElement elem) {
             String prefix = env.getPrefix();
             Elements elements = env.getController().getElements();
@@ -4142,7 +4180,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
-            if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
+            if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
+                controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
+                return new Env(offset, prefix, controller, orig, sourcePositions, null);
+            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
                 controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);

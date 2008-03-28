@@ -42,11 +42,11 @@
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 
 <type
-  name="bpel-validation-annotation"
-  description_key="LBL_bpel_validation_annotation"
-  localizing_bundle="org.netbeans.modules.bpel.core.resources.Bundle"
-  glyph="nbresloc:/org/netbeans/modules/bpel/design/decoration/resources/error.png"
-  waveunderline="#FF00FF"
-  visible="true"
-  type="linepart"
+    name="bpel-validation-annotation"
+    description_key="LBL_bpel_validation_annotation"
+    localizing_bundle="org.netbeans.modules.bpel.core.resources.Bundle"
+    glyph="nbresloc:/org/netbeans/modules/bpel/design/decoration/resources/error.png"
+    waveunderline="#FF00FF"
+    type="linepart"
+    visible="true"
 />

@@ -298,7 +298,7 @@ public final class JsfForm implements ActiveEditorDrop {
         return false;
     }
     
-    static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
+    public static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? guessField(controller, method) : method;
         if (element != null) {
             if (isAnnotatedWith(element, "javax.persistence.GeneratedValue")) { // NOI18N
@@ -423,9 +423,9 @@ public final class JsfForm implements ActiveEditorDrop {
         if ("DATE".equals(temporal)) {
             return "MM/dd/yyyy";
         } else if ("TIME".equals(temporal)) {
-            return "hh:mm:ss";
+            return "HH:mm:ss";
         } else {
-            return "MM/dd/yyyy, hh:mm:ss";
+            return "MM/dd/yyyy HH:mm:ss";
         }
     }
     
@@ -489,8 +489,8 @@ public final class JsfForm implements ActiveEditorDrop {
         }
         String simpleRelType = JSFClientGenerator.simpleClassName(relType); //just "Pavilion"
         String relatedController = JSFClientGenerator.fieldFromClassName(simpleRelType);
-        boolean columnNullable = isColumnNullable(controller, method, fieldAccess);
-        String requiredMessage = columnNullable ? null : "The " + propName + " field is required.";
+        boolean fieldOptionalAndNullable = isFieldOptionalAndNullable(controller, method, fieldAccess);
+        String requiredMessage = fieldOptionalAndNullable ? null : "The " + propName + " field is required.";
 
         if ( (formType == FORM_TYPE_NEW && 
                 ( isId &&  isGenerated) ) || 
@@ -528,11 +528,11 @@ public final class JsfForm implements ActiveEditorDrop {
             Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == REL_NONE) || 
-                ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) ) || 
-                (formType == FORM_TYPE_NEW && isReadOnly(controller.getTypes(), method)) ) {
+                ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) && isRelationship != REL_TO_MANY ) || 
+                (formType == FORM_TYPE_NEW && isReadOnly(controller.getTypes(), method) && isRelationship != REL_TO_MANY) ) {
             //non editable
             String temporal = ( isRelationship == REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
-            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\" #'{'{1}.{2}}\" title=\"{0}\" ";
+            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
@@ -540,14 +540,14 @@ public final class JsfForm implements ActiveEditorDrop {
             //editable
             String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
-            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
             //combo box for editing toOne relationships
-            String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+            String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{3}\" ";
             template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n";
             Object[] args = new Object [] {name, variable, propName, requiredMessage, relatedController};
@@ -562,41 +562,64 @@ public final class JsfForm implements ActiveEditorDrop {
         }
     }
     
-    public static boolean isColumnNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
+    public static boolean isFieldOptionalAndNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
+        boolean isFieldOptional = true;
+        Boolean isFieldNullable = null;
+        Element fieldElement = fieldAccess ? guessField(controller, method) : method;
+        String[] fieldAnnotationFqns = {"javax.persistence.ManyToOne", "javax.persistence.OneToOne", "javax.persistence.Basic"};
+        Boolean isFieldOptionalBoolean = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "optional");
+        if (isFieldOptionalBoolean != null) {
+            isFieldOptional = isFieldOptionalBoolean.booleanValue();
+        }
+        if (!isFieldOptional) {
+            return false;
+        }
+        //field is optional
+        fieldAnnotationFqns = new String[]{"javax.persistence.Column", "javax.persistence.JoinColumn"};
+        isFieldNullable = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "nullable");
+        if (isFieldNullable != null) {
+            return isFieldNullable.booleanValue();
+        }
+        //new ballgame
         boolean result = true;
-        Element columnElement = fieldAccess ? guessField(controller, method) : method;
-        String[] columnAnnotationFqns = {"javax.persistence.Column", "javax.persistence.JoinColumn", "javax.persistence.JoinColumns"};
-        for (int i = 0; i < columnAnnotationFqns.length; i++) {
-            String columnAnnotationFqn = columnAnnotationFqns[i];
-            AnnotationMirror columnAnnotation = findAnnotation(columnElement, columnAnnotationFqn); //NOI18N
-            if (columnAnnotation != null) {  
-                if (i < columnAnnotationFqns.length - 1) {  //columnAnnotation is a javax.persistence.Column or javax.persistence.JoinColumn
-                    String columnNullableValue = findAnnotationValueAsString(columnAnnotation, "nullable"); //NOI18N
-                    if (columnNullableValue != null) {
-                        result = Boolean.parseBoolean(columnNullableValue);
+        AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, "javax.persistence.JoinColumns"); //NOI18N
+        if (fieldAnnotation != null) {
+            //all joinColumn annotations must indicate nullable = false to return a false result
+            List<AnnotationMirror> joinColumnAnnotations = JsfForm.findNestedAnnotations(fieldAnnotation, "javax.persistence.JoinColumn");
+            for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
+                String columnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
+                if (columnNullableValue != null) {
+                    result = Boolean.parseBoolean(columnNullableValue);
+                    if (result) {
+                        break;  //one of the joinColumn annotations is nullable, so return true
                     }
-                    break;
                 }
-                else {  //columnAnnotation is a javax.persistence.JoinColumns
-                    //all joinColumn annotations must indicate nullable = false to return a false result
-                    List<AnnotationMirror> joinColumnAnnotations = JsfForm.findNestedAnnotations(columnAnnotation, "javax.persistence.JoinColumn"); 
-                    for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
-                        String columnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
-                        if (columnNullableValue != null) {
-                            result = Boolean.parseBoolean(columnNullableValue);
-                            if (result) {
-                                break;  //one of the joinColumn annotations is nullable, so return true
-                            }
-                        }
-                        else {
-                            result = true;
-                            break;  //one of the joinColumn annotations is nullable, so return true
-                        }
-                    }
+                else {
+                    result = true;
+                    break;  //one of the joinColumn annotations is nullable, so return true
                 }
             }
         }
         return result;
+    }
+    
+    private static Boolean findAnnotationValueAsBoolean(Element fieldElement, String[] fieldAnnotationFqns, String annotationKey) {
+        Boolean isFieldXable = null;
+        for (int i = 0; i < fieldAnnotationFqns.length; i++) {
+            String fieldAnnotationFqn = fieldAnnotationFqns[i];
+            AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, fieldAnnotationFqn); //NOI18N
+            if (fieldAnnotation != null) {  
+                String annotationValueString = findAnnotationValueAsString(fieldAnnotation, annotationKey); //NOI18N
+                if (annotationValueString != null) {
+                    isFieldXable = Boolean.valueOf(annotationValueString);
+                }
+                else {
+                    isFieldXable = Boolean.TRUE;
+                }
+                break;
+            }
+        }
+        return isFieldXable;
     }
     
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
@@ -615,31 +638,17 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
-                        ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
-                        int otherSideMultiplicity = REL_TO_ONE;
-                        if (otherSide != null) {
-                            TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
-                            boolean isRelFieldAccess = isFieldAccess(relClass);
-                            otherSideMultiplicity = isRelationship(controller, otherSide, isRelFieldAccess);
-                        }
-
                         Types types = controller.getTypes();                        
                         TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
                         TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
-                        
                         if (typeElement != null) {
-                            boolean relatedIsFieldAccess = isFieldAccess(typeElement);
-                            String getterName = getIdGetter(controller, relatedIsFieldAccess, typeElement).getSimpleName().toString();
-                            String relatedIdProperty = JSFClientGenerator.getPropNameFromMethod(getterName);
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
-                            String detailManagedBean = bean.getSimpleName().toString();
                             stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No " + name + " Items Found)\"/>\n");
                             stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"item\" \n");
                             stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
-                            String removeItems = "remove" + methodName.substring(3);
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
                                     + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"

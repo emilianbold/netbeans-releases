@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/amazonbucket"
+            xmlns:tns="http://xml.netbeans.org/schema/amazonbucket"
+            elementFormDefault="qualified">
+    <xsd:element name="ListBucketResult">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Name"/>
+                <xsd:element name="Prefix"/>
+                <xsd:element name="Marker"/>
+                <xsd:element name="MaxKeys"/>
+                <xsd:element name="IsTruncated"/>
+                <xsd:element name="Contents">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="Key"/>
+                            <xsd:element name="LastModified"/>
+                            <xsd:element name="ETag"/>
+                            <xsd:element name="Size"/>
+                            <xsd:element name="StorageClass"/>
+                            <xsd:element name="Owner">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="ID"/>
+                                        <xsd:element name="DisplayName"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="Contents">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="Key"/>
+                            <xsd:element name="LastModified"/>
+                            <xsd:element name="ETag"/>
+                            <xsd:element name="Size"/>
+                            <xsd:element name="StorageClass"/>
+                            <xsd:element name="Owner">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="ID"/>
+                                        <xsd:element name="DisplayName"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

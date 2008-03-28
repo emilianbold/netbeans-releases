@@ -2651,6 +2651,10 @@ return null;
                 do {
                     Object property;
 
+                    // <netbeans>
+                    int trailingCommaOffset = getStartOffset();
+                    // </netbeans>
+                            
                     if (!first)
                         decompiler.addToken(Token.COMMA);
                     else
@@ -2723,6 +2727,25 @@ return null;
 
                       case Token.RC:
                         // trailing comma is OK.
+                        // <netbeans>
+                        // ...but not on all browsers - IE for example doesn't like it
+                        if (compilerEnv.isStrictMode()) {
+//                            addStrictWarning("msg.trailing.comma", ""
+//                                    // <netbeans> - pass in additional parameters for the error
+//                                    , Integer.valueOf(trailingCommaOffset)
+//                                    // </netbeans>
+//                                    );
+                            String message = ScriptRuntime.getMessage0("msg.trailing.comma");
+                            errorReporter.warning(message, sourceURI, ts.getLineno(),
+                                                  ts.getLine(), trailingCommaOffset/*ts.getOffset()*/
+                                                // <netbeans>
+                                                , "msg.trailing.comma", Integer.valueOf(trailingCommaOffset)
+                                                // </netbeans>
+                                                  );
+                            
+                        }
+                        // </netbeans>
+                          
                         break commaloop;
                     default:
                         reportError("msg.bad.prop");

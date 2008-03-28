@@ -32,11 +32,12 @@ import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.predicates.SyntheticPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -80,6 +81,9 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         // Create a new predicate and populate it
         mPred = new SyntheticPredicate(mSContext, null);
         recalculatePredicates();
+        if (mPred.getPredicates().length == 0) {
+            return;
+        }
         //
         // Add the new predicate to the PredicateManager
         BpelMapperModel mapperModel = getMapperModel();
@@ -91,13 +95,10 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         }
         //
         MapperTreeModel sourceModel = treeModel.getSourceModel();
-        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
-                findExtensionModel(sourceModel, VariableTreeModel.class);
-        if (varTreeModel != null) {
-            PredicateManager predManager = varTreeModel.getPredicateManager();
-            if (predManager != null) {
-                predManager.addPredicate(itr, mPred);
-            }
+        PredicateManager predManager = PredicateManager.
+                getPredicateManager(sourceModel);
+        if (predManager != null) {
+            predManager.addPredicate(itr, mPred);
         }
         //
         // Update tree
@@ -108,7 +109,8 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         treeModel.insertChild(parentPath, childIndex + 1, mPred);
         //
         // Set selection to the added predicate item
-        TreePath newPredPath = treeModel.findChildByDataObj(parentPath, mPred);
+        TreeFinderProcessor findProc = new TreeFinderProcessor(treeModel);
+        TreePath newPredPath = findProc.findChildByDataObj(parentPath, mPred);
         if (mInLeftTree) {
             LeftTree leftTree = mMapperTcContext.getMapper().getLeftTree();
             leftTree.setSelectionPath(newPredPath);
@@ -143,12 +145,12 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
     }
     
     public void deletePredicate() {
-        BpelMapperModel mapperModel = getMapperModel();
+        BpelMapperModel mModel = getMapperModel();
         MapperSwingTreeModel treeModel = null;
         if (mInLeftTree) {
-            treeModel = mapperModel.getLeftTreeModel();
+            treeModel = mModel.getLeftTreeModel();
         } else {
-            treeModel = mapperModel.getRightTreeModel();
+            treeModel = mModel.getRightTreeModel();
         }
         MapperTreeModel sourceModel = treeModel.getSourceModel();
         //
@@ -165,7 +167,6 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         }
         //
         // Update BPEL model
-        BpelMapperModel mModel = getMapperModel();
         if (mInLeftTree) {
             List<TreePath> dependentGraphs = mModel.getDependentGraphs(mPred);
             for (TreePath graphPath : dependentGraphs) {
@@ -221,7 +222,8 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         //
-        XPathExprList xPathExprList = buildXPathExprList(xPathModel, graphInfo);
+        XPathExprList xPathExprList = 
+                buildXPathExprList(xPathModel, graphInfo, null);
         //
         XPathExpression expr = xPathExprList.getConnectedExpression();
         if (expr != null) {
@@ -263,7 +265,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
             return null;
         }
         //
-        XPathModel xPathModel = XPathModelFactory.create(bpelEntity);
+        XPathModel xPathModel = BpelXPathModelFactory.create(bpelEntity);
         xPathModel.setSchemaContext(mSContext);
         //
         return xPathModel;

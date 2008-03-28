@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @XmlRootElement(name = "discountCode")

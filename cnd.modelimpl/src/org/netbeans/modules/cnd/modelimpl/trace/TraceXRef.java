@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -89,8 +90,12 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 
 /**
@@ -234,7 +239,7 @@ public class TraceXRef extends TraceModel {
         return false;
     }
     
-    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter printOut, CsmProgressListener callback) {
+    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter printOut, OutputWriter printErr, CsmProgressListener callback) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
         Collection<CsmFile> allFiles = csmPrj.getAllFiles();
@@ -245,7 +250,7 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, bag, printOut);
+            analyzeFile(file, bag, printOut, printErr);
         }
         if (callback != null) {
             callback.projectParsingFinished(csmPrj);
@@ -326,26 +331,28 @@ public class TraceXRef extends TraceModel {
         }          
     };  
 
-    private static void analyzeFile(CsmFile file, XRefResultSet bag, PrintWriter out) {
+    private static void analyzeFile(CsmFile file, XRefResultSet bag, PrintWriter out, OutputWriter printErr) {
         long time = System.currentTimeMillis();
-        visitDeclarations(file.getDeclarations(), bag, out);
+        visitDeclarations(file.getDeclarations(), bag, out, printErr);
         time = System.currentTimeMillis() - time;
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
     }
     
-    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, XRefResultSet bag, PrintWriter printOut) {
+    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, XRefResultSet bag, 
+            PrintWriter printOut, OutputWriter printErr) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                handleFunctionDefinition((CsmFunctionDefinition)decl, bag, printOut);
+                handleFunctionDefinition((CsmFunctionDefinition)decl, bag, printOut, printErr);
             } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), bag, printOut);
+                visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), bag, printOut, printErr);
             } else if (CsmKindUtilities.isClass(decl)) {
-                visitDeclarations(((CsmClass)decl).getMembers(), bag, printOut);
+                visitDeclarations(((CsmClass)decl).getMembers(), bag, printOut, printErr);
             }
         }
     }
     
-    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final XRefResultSet bag, final PrintWriter printOut) {
+    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final XRefResultSet bag, 
+            final PrintWriter printOut, final OutputWriter printErr) {
         final CsmScope scope = fun.getBody();
         if (scope != null) {
             final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun, printOut);
@@ -356,7 +363,7 @@ public class TraceXRef extends TraceModel {
                     scope, 
                     new CsmFileReferences.Visitor() {
                         public void visit(CsmReference ref) {
-                            XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, ref, funContext, printOut);
+                            XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, ref, funContext, printOut, printErr);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
                             }
@@ -368,11 +375,17 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, PrintWriter printOut) {
+    private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, 
+            PrintWriter printOut, OutputWriter printErr) {
         XRefResultSet.ContextEntry entry;
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
+            try {
+                printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true); // NOI18N
+            } catch (IOException ioe) {
+                // skip it
+            }
         } else {
             CsmReferenceKind kind = ref.getKind();
             if (kind == CsmReferenceKind.DIRECT_USAGE) { 
@@ -960,4 +973,23 @@ public class TraceXRef extends TraceModel {
             return buf.toString();
         }
     }
+    
+    private final static class RefLink implements OutputListener {
+        private final CsmReference ref;
+        RefLink(CsmReference ref) {
+            this.ref = ref;
+        }
+        
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+            CsmUtilities.openSource(ref);
+        }
+
+        public void outputLineCleared(OutputEvent ev) {
+        }
+        
+    }
+            
 }
