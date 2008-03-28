@@ -367,7 +367,8 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
     {
         startTest( );
 
-        // TODO
+        // TODO : Add elements using design.
+        // TODO : Invoke Refresh and check elements disappeared.
 
         endTest( );
     }
@@ -376,7 +377,8 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
     {
         startTest( );
 
-        // TODO
+        // TODO : Add elements using design.
+        // TODO : Invoke Regenerate and check there is new classes.
 
         endTest( );
     }
@@ -393,7 +395,7 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
     public void CodeCompletion2( ) {
         startTest();
 
-        CodeCompletion2Internal( );
+        CodeCompletion2Internal( JAXB_PACKAGE_NAME );
 
         endTest();
     }
