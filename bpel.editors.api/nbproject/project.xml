@@ -167,12 +167,11 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
+                <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
-                <friend>org.netbeans.modules.bpel.validation</friend>
-                <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <package>org.netbeans.modules.bpel.editors.api</package>
                 <package>org.netbeans.modules.bpel.editors.api.diagram</package>
                 <package>org.netbeans.modules.bpel.editors.api.nodes</package>

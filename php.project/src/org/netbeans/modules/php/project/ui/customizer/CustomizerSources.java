@@ -193,8 +193,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
 
         // url
-        boolean validUrl = Utils.isValidUrl(urlTextField.getText());
-        if (!validUrl) {
+        String url = urlTextField.getText();
+        if (!Utils.isValidUrl(url)) {
             err = NbBundle.getMessage(CustomizerSources.class, "MSG_InvalidUrl");
             category.setErrorMessage(err);
             category.setValid(false);
@@ -212,7 +212,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         properties.setProperty(PhpProjectProperties.SRC, srcPath);
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles));
         properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
-        properties.setProperty(PhpProjectProperties.URL, urlTextField.getText());
+        properties.setProperty(PhpProjectProperties.URL, url);
     }
 
     private File getSrcDir() {
