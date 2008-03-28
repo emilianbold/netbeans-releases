@@ -370,11 +370,13 @@ public class WhereUsedExplorer extends JPanel implements ExplorerManager.Provide
     // Column interface implementation
     ///////////////////////////////////////////////////////////
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        treeView.removePropertyChangeListener(listener);
+        if(treeView != null)
+            treeView.removePropertyChangeListener(listener);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        treeView.addPropertyChangeListener(listener);
+        if(treeView != null)
+            treeView.addPropertyChangeListener(listener);
     }
     
     public String getTitle() {
@@ -385,8 +387,7 @@ public class WhereUsedExplorer extends JPanel implements ExplorerManager.Provide
         return this;
     }
     
-    public boolean requestFocusInWindow() {
-        
+    public boolean requestFocusInWindow() {        
         return treeView.requestFocusInWindow();
     }
     

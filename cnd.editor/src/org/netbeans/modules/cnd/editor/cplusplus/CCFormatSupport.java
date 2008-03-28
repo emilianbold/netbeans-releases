@@ -950,6 +950,11 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Indent one level
                                     indent = getTokenIndent(rpmt) + getRightIndent();
                                     break;
+                                case CCTokenContext.IDENTIFIER_ID:
+                                    if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                                        indent = getTokenIndent(t);
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -958,13 +963,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                         }
                         break;
 
+                    case CCTokenContext.IDENTIFIER_ID:
+                        if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                            indent = getTokenIndent(t);
+                            break;
+                        }
+                        indent = computeStatementIndent(t);
+                        break;
+                        
                     case CCTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        // else continue to default
-                        //nobreak
+                        indent = computeStatementIndent(t);
+                        break;
                     default:
                         indent = computeStatementIndent(t);
                         break;
