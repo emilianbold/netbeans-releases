@@ -5,22 +5,23 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars/>
-    <resources base="http://twitter.com"> 
-	<resource path="statuses">
-	    <resource path="public_timeline.{format}">
+    <resources base="http://twitter.com">
+        <resource path="statuses">
+            <resource path="public_timeline.{format}">
                 <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
-		<method name="GET" id="getPublicTimeline">
-		    <doc xml:lang="en">
+                <method name="GET" id="getPublicTimeline">
+                    <doc xml:lang="en">
 			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
                         This method doesn't require authentication. 
-                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation. 
-		    </doc>
-		    <request>
-			<param name="since_id" type="xsd:integer" style="query" required="false">
-			    <doc xml:lang="en">Returns only public statuses with an ID greater than (that is, more recent than) the specified ID.</doc>
-			</param>
-		    </request>
-		    <response>
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+                        <param name="since_id" type="xsd:integer" style="query" required="false">
+                            <doc xml:lang="en">Returns only public statuses with an ID greater than (that is, more recent than) the specified ID.
+                            </doc>
+                        </param>
+                    </request>
+                    <response>
 			<!--
 			    Twitter does not provide a set of predefined errors,
 			    anything with HTTP status code != 200 is an error.
@@ -29,32 +30,236 @@
 			    faults, error code is equal to status and error message
 			    to the whole response body.
 			-->
-		    </response>
-                    
-		</method>
-	    </resource> 
-	</resource>
-	
-	<resource path="direct_messages.{format}">
+                    </response>
+                </method>
+            </resource>
+            <resource path="friends_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getFriendsTimeline">
+                    <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                    </response>
+                </method>
+            </resource>
+            <resource path="friends_timeline">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="getFriendsTimelineById">
+                        <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                        </doc>
+                        <request>
+                            <param name="since" type="xsd:string" style="query" required="false"/>
+                            <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                            <param name="page" type="xsd:integer" style="query" required="false"/>
+                        </request>
+                        <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="user_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getUserTimeline">
+                    <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+                        <param name="since" type="xsd:string" style="query" required="false"/>
+                        <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                    </response>
+                </method>
+            </resource>
+            <resource path="user_timeline">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="getUserTimelineById">
+                        <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                        </doc>
+                        <request>
+                            <param name="since" type="xsd:string" style="query" required="false"/>
+                            <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                            <param name="page" type="xsd:integer" style="query" required="false"/>
+                        </request>
+                        <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="show">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="showStatusById">
+                        <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                        </doc>
+                        <request>
+                        </request>
+                        <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+             <resource path="destroy">
+                <resource path="{id}.{format}">
+                    <param name="id" type="xsd:string" style="template" required="true"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                    <method name="GET" id="showStatusById">
+                        <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                        </doc>
+                        <request>
+                        </request>
+                        <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                        </response>
+                    </method>
+                </resource>
+            </resource>
+            <resource path="replies.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="GET" id="getReplies">
+                    <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+                        <param name="page" type="xsd:integer" style="query" required="false"/>
+                    </request>
+                    <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                    </response>
+                </method>
+            </resource>
+            <resource path="update.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
+                <method name="POST" id="updateStatus">
+                    <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+                        <param name="status" type="xsd:string" style="query" required="true"/>
+                    </request>
+                    <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+                    </response>
+                </method>
+            </resource>
+        </resource>
+        <resource path="direct_messages.{format}">
             <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
-	    <method name="GET" id="getDirectMessages">
-		<doc xml:lang="en">
+            <method name="GET" id="getDirectMessages">
+                <doc xml:lang="en">
 		    Returns a list of the 20 most recent direct messages sent to the authenticating user.  
                     The XML and JSON versions include detailed information about the sending and recipient users.
                     This method requires HTTP Basic Authentication as described at 
                     http://en.wikipedia.org/wiki/Basic_authentication_scheme.
                     For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
-		</doc>
-		<request>
-		</request>
-		<response/>
-		
-	    </method>
-	</resource>
-	
-	<resource path="direct_messages">
-	    <resource path="new.{format}">
-		<method name="POST" id="sendDirectMessage">
+                </doc>
+                <request>
+                    <param name="since" type="xsd:string" style="query" required="false"/>
+                    <param name="since_id" type="xsd:integer" style="query" required="false"/>
+                    <param name="page" type="xsd:integer" style="query" required="false"/>
+                </request>
+                <response/>
+            </method>
+        </resource>
+        <resource path="direct_messages">
+            <resource path="new.{format}">
+                <method name="POST" id="sendDirectMessage">
                     <doc xml:lang="en">
                         Sends a new, direct message to the specified user from the authenticating user.
                         This method requires HTTP Basic Authentication, described at 
@@ -65,23 +270,22 @@
                         http://groups.google.com/group/twitter-development-talk/web/api-documentation.
                     </doc>
                     <request>
-			   <param name="user" type="xsd:string" style="query" required="true">
-                                <doc xml:lang="en">
+                        <param name="user" type="xsd:string" style="query" required="true">
+                            <doc xml:lang="en">
                                     The ID or screen name of the recipient user.
-                                </doc>
-                            </param>
-			    <param name="text" type="xsd:string" style="query" required="true">
-                                <doc xml:lang="en">
+                            </doc>
+                        </param>
+                        <param name="text" type="xsd:string" style="query" required="true">
+                            <doc xml:lang="en">
                                     The text of your direct message.  Be sure to URL encode it
                                     as necessary (as described at http://en.wikipedia.org/wiki/Percent_encoding) 
                                     and keep the length under 140 characters.
-                                </doc>
-                            </param>
-		    </request>
-		    <response/>
-		</method>
-	    </resource>
-	</resource>	
+                            </doc>
+                        </param>
+                    </request>
+                    <response/>
+                </method>
+            </resource>
+        </resource>
     </resources>
-    
 </application>
