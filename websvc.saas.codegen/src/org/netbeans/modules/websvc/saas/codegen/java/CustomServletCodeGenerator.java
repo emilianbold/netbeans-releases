@@ -89,4 +89,18 @@ public class CustomServletCodeGenerator extends CustomJavaClientCodeGenerator {
         methodBody += indent+"}\n";
         return methodBody;
     }
+    
+    @Override
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getAuthenticatorMethodParametersForWeb();
+        else
+            return super.getAuthenticatorMethodParameters();
+    }
+    
+    @Override
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
+    }
 }

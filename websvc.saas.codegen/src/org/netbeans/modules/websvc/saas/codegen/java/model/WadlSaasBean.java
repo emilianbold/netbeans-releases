@@ -103,14 +103,6 @@ public class WadlSaasBean extends SaasBean {
         return serviceMethodName;
     }
     
-    public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getSaasName());
-    }
-    
-    public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getSaasName());
-    }
-    
     private void init() throws IOException { 
         setResourceClassTemplate(RESOURCE_TEMPLATE);
         setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
