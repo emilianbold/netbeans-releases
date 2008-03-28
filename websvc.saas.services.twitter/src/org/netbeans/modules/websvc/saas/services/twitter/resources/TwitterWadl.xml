@@ -8,6 +8,7 @@
     <resources base="http://twitter.com"> 
 	<resource path="statuses">
 	    <resource path="public_timeline.{format}">
+                <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
 		<method name="GET" id="getPublicTimeline">
 		    <doc xml:lang="en">
 			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
@@ -35,6 +36,7 @@
 	</resource>
 	
 	<resource path="direct_messages.{format}">
+            <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
 	    <method name="GET" id="getDirectMessages">
 		<doc xml:lang="en">
 		    Returns a list of the 20 most recent direct messages sent to the authenticating user.  
