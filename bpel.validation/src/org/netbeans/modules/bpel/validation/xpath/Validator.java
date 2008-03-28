@@ -46,6 +46,7 @@ import org.netbeans.modules.bpel.model.api.Condition;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
+import org.netbeans.modules.bpel.model.api.DurationExpression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.From;
@@ -257,19 +258,21 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   
   @Override
   public void visit(For fo) {
-      checkXPath(fo);
+    checkXPath(fo);
+    checkDuration(fo);
+  }
+  
+  @Override
+  public void visit(RepeatEvery repeatEvery) {
+    checkXPath(repeatEvery);
+    checkDuration(repeatEvery);
   }
   
   @Override
   public void visit(Query query) {
       checkXPath(query);
   }
-  
-  @Override
-  public void visit(RepeatEvery repeatEvery) {
-      checkXPath(repeatEvery);
-  }
-  
+
   @Override
   public void visit(StartCounterValue counter) {
       checkXPath(counter);
@@ -277,6 +280,10 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 
   private SchemaComponent checkXPath(ContentElement element) {
     return Utils.checkXPathExpression(element, new PathValidationContext(this, this, element));
+  }
+
+  // # 117689
+  private void checkDuration(DurationExpression duration) {
   }
   
   private static void out() {
