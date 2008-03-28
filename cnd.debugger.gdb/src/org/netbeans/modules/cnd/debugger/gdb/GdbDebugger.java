@@ -1787,6 +1787,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public String evaluate(String expression) {
+        // IZ:131315 (gdb may not be initialized yet)
+        if (gdb == null) {
+            return null;
+        }
         CommandBuffer cb = new CommandBuffer(gdb);
         
         if (expression.indexOf('(') != -1) {

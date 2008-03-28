@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.ruby.hints;
 
-import org.netbeans.modules.ruby.hints.HintTestBase;
-
 public class ConvertIfToUnlessTest extends HintTestBase {
     public ConvertIfToUnlessTest(String testName) {
         super(testName);
@@ -49,7 +47,6 @@ public class ConvertIfToUnlessTest extends HintTestBase {
     public void testNoHint1() throws Exception {
         findHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", null);
     }
-
 
     public void testNoHint2() throws Exception {
         findHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", 
@@ -187,6 +184,16 @@ public class ConvertIfToUnlessTest extends HintTestBase {
     public void testFix11() throws Exception {
         applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
                 "^x != 14", "Change if into an unless statement and reverse condition logic");
+    }
+
+    public void testFix12() throws Exception {
+        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif2.rb", 
+                "if (final_^path", "Change unless into an if statement and reverse condition logic");
+    }
+
+    public void testFix13() throws Exception {
+        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif2.rb", 
+                "if (no^t params[:recipients].empty?)", "Change unless into an if statement and reverse condition logic");
     }
     
 //    public void testNoPositives() throws Exception {

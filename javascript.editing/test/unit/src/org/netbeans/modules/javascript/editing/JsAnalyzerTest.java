@@ -239,7 +239,7 @@ public class JsAnalyzerTest extends JsTestBase {
     }
 
     public void testAnalysis4() throws Exception {
-        checkStructure("testfiles/dojo.js.uncompressed.js");
+        checkStructure("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testAnalysis5() throws Exception {
@@ -374,7 +374,7 @@ public class JsAnalyzerTest extends JsTestBase {
     }
 
     public void testFolds4() throws Exception {
-        checkFolds("testfiles/dojo.js.uncompressed.js");
+        checkFolds("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testFolds5() throws Exception {

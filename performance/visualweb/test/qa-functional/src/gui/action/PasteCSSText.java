@@ -116,6 +116,7 @@ public class PasteCSSText  extends  org.netbeans.performance.test.utilities.Perf
         return null;
     }
     
+    @Override
     public void close() {
         log("::close");
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);

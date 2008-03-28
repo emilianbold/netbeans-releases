@@ -93,7 +93,9 @@ public class ActionsList {
             InstanceCookie ic = dob.getLookup().lookup(InstanceCookie.class);
             if (ic != null) {
                 try {
-                    toAdd = ic.instanceCreate();
+                    if (!isSeparator(ic)) {
+                        toAdd = ic.instanceCreate();
+                    }
                 } catch (Exception e) {
                     LOG.log(Level.WARNING, "Can't instantiate object", e); //NOI18N
                     continue;
@@ -131,5 +133,10 @@ public class ActionsList {
     
     private static boolean isSeparator(Object o) {
         return o == null || o instanceof JSeparator;
+    }
+    
+    private static boolean isSeparator(InstanceCookie o) throws Exception {
+        return (o instanceof InstanceCookie.Of && ((InstanceCookie.Of) o).instanceOf(JSeparator.class))
+            || JSeparator.class.isAssignableFrom(o.instanceClass());
     }
 }

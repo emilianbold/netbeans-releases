@@ -579,6 +579,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
     /** Updates the name and tooltip of this top component according to associated data object. */
     private void updateName() {
+        // DataObject check
+        if (! m_svgDataObject.isValid())
+            return;
         // update name
         String name = m_svgDataObject.getNodeDelegate().getDisplayName();
         setName(name);

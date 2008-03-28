@@ -55,7 +55,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author Peter Liu
+ * @author __USER__
  */
 @Entity
 @Table(name = "DISCOUNT_CODE")
