@@ -171,7 +171,7 @@
                     <param name="id" type="xsd:string" style="template" required="true"/>
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
                     <param name="format" type="xsd:string" style="template" required="true" default="xml"/>
-                    <method name="GET" id="showStatusById">
+                    <method name="GET" id="destroyStatusById">
                         <doc xml:lang="en">
 			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
                         This method doesn't require authentication. 
