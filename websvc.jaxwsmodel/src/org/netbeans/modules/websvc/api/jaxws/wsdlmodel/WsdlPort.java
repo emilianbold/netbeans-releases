@@ -54,8 +54,8 @@ import java.util.List;
 public class WsdlPort {
     public static final String STYLE_DOCUMENT="document"; //NOI18N
     public static final String STYLE_RPC="rpc"; //NOI18N
-    public static final String SOAP_VERSION_11="http://schemas.xmlsoap.org/wsdl/soap/http"; //NOI18N
-    public static final String SOAP_VERSION_12="http://www.w3.org/2003/05/soap/bindings/HTTP/"; //NOI18N
+    public static final String SOAP_VERSION_11="http://schemas.xmlsoap.org/wsdl/soap/"; //NOI18N
+    public static final String SOAP_VERSION_12="http://schemas.xmlsoap.org/wsdl/soap12/"; //NOI18N
     
     private Port port;
     private String soapVersion = SOAP_VERSION_11;

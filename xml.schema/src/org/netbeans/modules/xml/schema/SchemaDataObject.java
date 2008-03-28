@@ -62,6 +62,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
@@ -103,6 +104,12 @@ public final class SchemaDataObject extends MultiDataObject {
         set.add(new SchemaValidateXMLCookie(this));
         // ViewComponentCookie implementation
         set.add(new SchemaMultiViewSupport(this));
+        //enable "Save As"
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                schemaEditorSupport.saveAs( folder, fileName );
+            }
+        });                
     }
 
     @Override

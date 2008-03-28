@@ -51,9 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -184,7 +182,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     
     final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
-    final boolean NEW_INITIALIZE = !Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize"); // NOI18N
+    
+    final boolean newInitialize() {
+        if (Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize")) { // NOI18N
+            return false;
+        }
+        return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
+    }
 
     class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
@@ -198,7 +202,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             this.tmp = tmp;
             this.tmpComp = initLoading();
             new Timer(1000, this).start();
-            if (NEW_INITIALIZE) {
+            if (newInitialize()) {
                 task = CloneableEditorSupport.RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY + 2);
                 task.schedule(0);
@@ -234,13 +238,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             switch (phase++) {
             case 0: 
                 initNonVisual();
-                if (NEW_INITIALIZE) {
+                if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
                     break;
                 }
             case 1:
                 initVisual();
-                if (NEW_INITIALIZE) {
+                if (newInitialize()) {
                     task.schedule(1000);
                     break;
                 }
@@ -295,7 +299,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 notifyAll();
             }
             
-            if (k instanceof Callable) {
+            if (newInitialize() && k instanceof Callable) {
                 try {
                     ((Callable) k).call();
                 } catch (Exception e) {
@@ -365,10 +369,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return;
             }
             
-            // the following two shall be done out of AWT:
             initCustomEditor();
-            initDecoration();
-            
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
             } else { // not custom editor
@@ -379,6 +380,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
             }
 
+            initDecoration();
             if (customToolbar != null) {
                 Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
                 customToolbar.setBorder(b);

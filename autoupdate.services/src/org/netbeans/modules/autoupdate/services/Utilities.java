@@ -42,6 +42,10 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -56,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +75,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -85,6 +91,7 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
@@ -94,6 +101,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -118,7 +126,9 @@ public class Utilities {
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
     
-    
+    private static final String USER_KS_KEY = "userKS";
+    private static final String USER_KS_FILE_NAME = "user.ks";
+    private static final String KS_USER_PASSWORD = "open4user";
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
     private static ModuleManager mgr = null;
@@ -898,13 +908,17 @@ public class Utilities {
                 is.close ();
             }
         } catch (SAXException saxe) {
-            getLogger ().log (Level.WARNING, null, saxe);
+            getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
         } catch (IOException ioe) {
-            getLogger ().log (Level.WARNING, null, ioe);
+            getLogger ().log (Level.INFO, "IOException when reading " + moduleUpdateTracking, ioe);
+            return null;
         }
 
         assert document.getDocumentElement () != null : "File " + moduleUpdateTracking + " must contain <module> element.";
+        if (document.getDocumentElement () == null) {
+            return null;
+        }
         return getModuleElement (document.getDocumentElement ());
     }
     
@@ -1066,7 +1080,7 @@ public class Utilities {
         if (org.openide.util.Utilities.isWindows ()) {
             FileWriter fw = null;
             try {
-                fw = new FileWriter (f);
+                fw = new FileWriter (f, true);
             } catch (IOException ioe) {
                 // just check of write permission
                 getLogger ().log (Level.FINE, f + " has no write permission", ioe);
@@ -1086,4 +1100,133 @@ public class Utilities {
             return f.canWrite ();
         }
     }
+    
+    public static KeyStore loadKeyStore () {
+        String fileName = getPreferences ().get (USER_KS_KEY, null);
+        if (fileName == null) {
+            return null;
+        } else {
+            InputStream is = null;
+            KeyStore ks = null;
+            try {
+                File f = new File (getCacheDirectory (), fileName);
+                assert f.exists () : f + " exists.";
+                is = new BufferedInputStream (new FileInputStream (f));
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (is, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            return ks;
+        }
+    }
+    
+    private static void storeKeyStore (KeyStore ks) {
+        OutputStream os = null;
+        try {
+            File f = new File (getCacheDirectory (), USER_KS_FILE_NAME);
+            os = new BufferedOutputStream (new FileOutputStream (f));
+            ks.store (os, KS_USER_PASSWORD.toCharArray ());
+            getPreferences ().put (USER_KS_KEY, USER_KS_FILE_NAME);
+        } catch (KeyStoreException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (IOException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (NoSuchAlgorithmException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+        } catch (CertificateException ex) {
+            getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            } finally {
+                try {
+                    if (os != null) {
+                        os.close ();
+                    }
+                } catch (IOException ex) {
+                    getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+    }
+    
+    public static void addCertificates (Collection<Certificate> certs) {
+        KeyStore ks = loadKeyStore ();
+        if (ks == null) {
+            try {
+                ks = KeyStore.getInstance (KeyStore.getDefaultType ());
+                ks.load (null, KS_USER_PASSWORD.toCharArray ());
+            } catch (IOException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (NoSuchAlgorithmException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (CertificateException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+                return ;
+            }
+        }
+
+        for (Certificate c : certs) {
+            
+            try {
+                // don't add certificate twice
+                if (ks.getCertificateAlias (c) != null) {
+                    continue;
+                }
+
+                // Find free alias name
+                String alias = null;
+                for (int i = 0; i < 9999; i++) {
+                    alias = "genAlias" + i; // NOI18N
+                    if (! ks.containsAlias (alias)) {
+                        break;
+                    }
+                }
+                if (alias == null) {
+                    getLogger ().log (Level.INFO, "Too many certificates with " + c);
+                }
+
+                ks.setCertificateEntry (alias, c);
+            } catch (KeyStoreException ex) {
+                getLogger ().log (Level.INFO, ex.getLocalizedMessage (), ex);
+            }
+            
+        }
+        
+        storeKeyStore (ks);
+    }
+
+    private static File getCacheDirectory () {
+        File cacheDir = null;
+        String userDir = System.getProperty ("netbeans.user"); // NOI18N
+        if (userDir != null) {
+            cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
+        } else {
+            File dir = FileUtil.toFile (Repository.getDefault ().getDefaultFileSystem ().getRoot());
+            cacheDir = new File (dir, "catalogcache"); // NOI18N
+        }
+        cacheDir.mkdirs();
+        return cacheDir;
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.root ().node ("/org/netbeans/modules/autoupdate"); // NOI18N
+    }    
+    
 }

@@ -31,7 +31,22 @@
 <ul><li><b>Java Platform:</b> Specifies the target Java platform against which all
 	source files are compiled and run. Available Java platforms are those that have been registered in the 
 	<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_platform_manager.html">Java Platform Manager</a>.</li>
-	
+<p><b>Libraries Folder. </b>To make it easier to 
+<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">share libraries</a> among different 
+users and projects, you can set a folder to hold those libraries (or references to 
+those libraries). You can create a new folder or specify an existing folder that 
+already contains copies of the libraries on which your project depends. 
+</p>
+<p>To specify the folder, click Browse. If there is already a libraries folder, a 
+file chooser opens. Within the file chooser, you can select a folder for your libraries. 
+You can also configure whether each library is referenced with a relative path or 
+an absolute path. If there is not a libraries folder, the New Libraries wizard opens. 
+In the New Libraries wizard, you set a libraries folder and then specify how to reference 
+each library. The simplest case is to have the libraries copied to that folder. 
+You can also refer to the libraries in their existing location 
+(with a relative path or an absolute path). If you have specified an existing folder, 
+you also have the option of using copies of libraries that are already in that folder 
+instead of the copies that are contained in the IDE's Library Manager.</p>	
 	<li><b>Compile.</b><br>
 	<b>Compile Tests.</b><br>
 	<b>Run Tests.</b> Specifies entries that are on each of the classpaths. 

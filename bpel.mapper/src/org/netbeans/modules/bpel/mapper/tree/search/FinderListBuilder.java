@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.XPathPredicate;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
@@ -41,6 +42,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.openide.util.NbBundle;
@@ -72,6 +74,10 @@ public class FinderListBuilder {
                     PartFinder partFinder = new PartFinder(part);
                     finderList.add(partFinder);
                 }
+            } else if (context instanceof CastSchemaContext) {
+                CastSchemaContext castContext = (CastSchemaContext)context;
+                TypeCast typeCast = new TypeCast(castContext.getTypeCast());
+                result.add(typeCast);
             } else {
                 SchemaComponent sComp = XPathSchemaContext.Utilities.
                         getSchemaComp(context);
@@ -145,15 +151,23 @@ public class FinderListBuilder {
                 // the step
                 return Collections.EMPTY_LIST;
             }
-            SchemaComponent stepSchemaComp = 
-                    XPathSchemaContext.Utilities.getSchemaComp(sContext);
-            if (stepSchemaComp == null) {
-                return Collections.EMPTY_LIST;
-            }
             //
             XPathPredicateExpression[] predArr = step.getPredicates();
             if (predArr == null || predArr.length == 0) {
-                result.add(stepSchemaComp);
+                //
+                if (sContext instanceof CastSchemaContext) {
+                    CastSchemaContext castContext = (CastSchemaContext)sContext;
+                    TypeCast typeCast = new TypeCast(castContext.getTypeCast());
+                    result.add(typeCast);
+                } else {
+                    SchemaComponent stepSchemaComp = 
+                            XPathSchemaContext.Utilities.getSchemaComp(sContext);
+                    if (stepSchemaComp == null) {
+                        return Collections.EMPTY_LIST;
+                    }
+                    //
+                    result.add(stepSchemaComp);
+                }
             } else {
                 AbstractPredicate pred = new XPathPredicate(step);
                 result.add(pred);

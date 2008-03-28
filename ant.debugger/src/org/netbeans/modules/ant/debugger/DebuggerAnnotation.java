@@ -55,32 +55,15 @@ import org.openide.util.NbBundle;
 public class DebuggerAnnotation extends Annotation {
 
     /** Annotation type constant. */
-    public static final String BREAKPOINT_ANNOTATION_TYPE =
-        new String ("Breakpoint");
+    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
     /** Annotation type constant. */
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =
-        new String ("DisabledBreakpoint");
+    public static final String CURRENT_LINE_ANNOTATION_TYPE2 = "CurrentPC2";
     /** Annotation type constant. */
-    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("CondBreakpoint");
+    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE = "CurrentPCLinePart";
     /** Annotation type constant. */
-    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("DisabledCondBreakpoint");
+    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE =
-        new String ("CurrentPC");
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE2 =
-        new String ("CurrentPC2");
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE =
-        new String ("CurrentPCLinePart");
-    /** Annotation type constant. */
-    public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 =
-        new String ("CurrentPC2LinePart");
-    /** Annotation type constant. */
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =
-        new String ("CallSite");
+    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
 
     private Annotatable annotatable;
     private String      type;
@@ -97,22 +80,6 @@ public class DebuggerAnnotation extends Annotation {
     }
     
     public String getShortDescription () {
-        if (type == BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_BREAKPOINT"); // NOI18N
-        else 
-        if (type == DISABLED_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_BREAKPOINT"); // NOI18N
-        else 
-        if (type == CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
-        if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE)
-            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
-                ("TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT"); // NOI18N
-        else
         if (type == CURRENT_LINE_ANNOTATION_TYPE)
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
