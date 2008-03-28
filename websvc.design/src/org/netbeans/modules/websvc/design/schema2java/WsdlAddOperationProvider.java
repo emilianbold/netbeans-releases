@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.websvc.design.schema2java;
 
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -50,11 +50,12 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddOperationActionProvider;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class JaxWsAddOperationProvider implements AddOperationActionProvider {
+public class WsdlAddOperationProvider implements AddOperationActionProvider {
     
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fileObject);
@@ -62,7 +63,7 @@ public class JaxWsAddOperationProvider implements AddOperationActionProvider {
             String packageName = getPackageName(fileObject);
             if (packageName != null) {
                 Service service = getService(support, packageName);
-                if (service != null && service.getWsdlUrl() == null) return new JaxWsAddOperation(fileObject);
+                if (service != null && service.getWsdlUrl() != null) return new AddOperationAction(service, fileObject);
             }
         }
         return null;
