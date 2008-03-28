@@ -76,7 +76,7 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
 
     private DesignView designView;
     private DragSource dragSource;
-    private boolean active = false;
+
     
     private String status;
     
@@ -146,7 +146,7 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
     }
     
     public void clear() {
-        active = false;
+
         setStatus(null);
         for (DiagramView view : views) {
             view.getPlaceholderManager().clear();
@@ -187,7 +187,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
                 if (clicked == selected || clicked.isNestedIn(selected)) {
                     //start a move tool
                     if (!getDesignView().getModel().isReadOnly()) {
-                        active = true;
                         dge.startDrag(DragSource.DefaultMoveDrop,
                                 new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB),
                                 new Point(0, 0),
@@ -270,6 +269,7 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
                 for (DiagramView view : views) {
                     view.getPlaceholderManager().init(pattern);
                 }
+                
 
                 dtde.acceptDrag(DnDConstants.ACTION_MOVE);
             }
@@ -289,10 +289,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
         if (tr.isDataFlavorSupported(flowDataFlavor)) {
             //FIXME tool = getFlowLinkTool();
         } else {
-            if (active) {
-
-
-
 
                 DiagramView view = (DiagramView) dtde.getDropTargetContext().getComponent();
                 if (view != null) {
@@ -303,7 +299,7 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
                     tool.move(mp);
                 }
 
-            }
+
         }
 
 

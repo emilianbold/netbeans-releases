@@ -33,6 +33,13 @@
 				<include name="jruby-src-${jruby_src_version}.zip"/>
 			</fileset>
 		</unzip>
+        <!-- JRuby now seems to ship with ri and rdocs pre-expanded in the lib directory! Nuke these -->
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/share/ri"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.1/rdoc"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rake-0.8.1/ri"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.3/rdoc"/>
+        <delete dir="${unpatched_source}/jruby-${jruby_src_version}/lib/ruby/gems/1.8/doc/rspec-1.1.3/ri"/>
+
         <!-- Patch build.xml to modify gem behavior: install locally -->
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
             <fileset dir="unpatched_files" />

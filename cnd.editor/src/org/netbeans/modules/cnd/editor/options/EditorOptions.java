@@ -120,6 +120,9 @@ public class EditorOptions {
      */
     public static final String newLineBeforeBraceDeclaration = "newLineBeforeBraceDeclaration"; //NOI18N
     public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.SAME_LINE.name();
+    public static final String ignoreEmptyFunctionBody = "ignoreEmptyFunctionBody"; //NOI18N
+    public static final boolean ignoreEmptyFunctionBodyDefault = false;
+    
     /**
      * Whether insert extra new-line before the compound bracket or not.
      * Values: java.lang.Boolean instances
@@ -319,6 +322,7 @@ public class EditorOptions {
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
         defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(ignoreEmptyFunctionBody,ignoreEmptyFunctionBodyDefault);
         defaults.put(newLineBeforeBraceSwitch,newLineBeforeBraceSwitchDefault);
         defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
         //MultilineAlignment

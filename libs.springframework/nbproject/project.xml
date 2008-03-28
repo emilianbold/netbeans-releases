@@ -44,14 +44,6 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
             <code-name-base>org.netbeans.libs.springframework</code-name-base>
             <module-dependencies/>
             <public-packages/>
-            <class-path-extension>
-                <runtime-relative-path>ext/spring/spring-2.5.jar</runtime-relative-path>
-                <binary-origin>external/spring-2.5.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/spring/commons-logging-1.1.jar</runtime-relative-path>
-                <binary-origin>external/commons-logging-1.1.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

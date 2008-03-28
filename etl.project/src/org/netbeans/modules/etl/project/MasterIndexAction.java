@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,7 +54,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.masterindex.plugin.TargetDBSchemaGenerator;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
@@ -67,7 +67,7 @@ public class MasterIndexAction  extends CallableSystemAction {
     private static String USER_DIR = System.getProperty("user.dir");
     private static String fs = System.getProperty("file.separator");
     private static String CONFIG_DIR = USER_DIR + fs + "src" + fs + "com" + fs + "stc" + fs + "eindex" + fs + "config";
-    private static String OBJECTDEF = "object.xml";
+    private static String OBJECTDEF = null;//"object.xml";
     private static String QUERY_FILE_PATH = CONFIG_DIR + fs + "query.txt";
     private static String QNAME_PREFXI = "Enterprise.SystemObject";
     Element docroot = null;
@@ -84,13 +84,16 @@ public class MasterIndexAction  extends CallableSystemAction {
     
     @Override
     public void performAction() {
-        mLogger.infoNoloc(mLoc.t("eTLeView Design Time - Query Builder [START] ...\n"));
+        mLogger.infoNoloc(mLoc.t("Generating Schema ... "));
+        //System.out.println("eTLeView Design Time - Query Builder [START] ...\n");
         ChooseLocationDialog dialog = new ChooseLocationDialog(new JFrame(), true);
         dialog.setVisible(true);
         if ((dialog.getDBLocation()) != null && (dialog.getDBName()) != null && (dialog.getObjectDefinition()) != null) {
             TargetDBSchemaGenerator dbgen = TargetDBSchemaGenerator.getTargetDBSchemaGenerator();
             objDefn = dialog.getObjectDefinition();
-            boolean fileIsValid = dbgen.setEViewConfigFilePath(dialog.getObjectDefinition(), "object.xml");//("C:/temp/eviewconfig", "objectdef.xml");
+            String fileName = dialog.getFileName();
+            OBJECTDEF = fileName;
+            boolean fileIsValid = dbgen.setEViewConfigFilePath(dialog.getObjectDefinition(), fileName);//("C:/temp/eviewconfig", "objectdef.xml");
             if (fileIsValid) {
                 File file = new File(dialog.getDBLocation());
                 if (!file.exists()) {
@@ -98,10 +101,13 @@ public class MasterIndexAction  extends CallableSystemAction {
                 }
                 dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
             }
-            System.out.println("\neTLeView Design Time - Query Builder [END].");
-            mLogger.infoNoloc(mLoc.t("\neTLeView Design Time - Query Builder [END]."));
+            String msg = "Generated the Schema Successfully";
+            mLogger.infoNoloc(mLoc.t(msg));            
+            //JOptionPane.showMessageDialog(new JFrame(), msg, "Generate Schema", JOptionPane.INFORMATION_MESSAGE);
         }else{
-            mLogger.infoNoloc(mLoc.t("The dialog is cancelled or any one of the fields are empty"));
+            String errMsg = "The dialog is cancelled or any one of the fields are empty";
+            mLogger.infoNoloc(mLoc.t(errMsg));
+            //JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
