@@ -44,38 +44,71 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.openide.ErrorManager;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.03.27
  */
 public class XPathCastImpl implements XPathCast {
-  
-  public XPathCastImpl(Cast cast) {
-    myType = getType(cast);
-    myPath = cast.getPath();
-  }
 
-  public String getPath() {
-    return myPath;
-  }
+    public static XPathExpression getExpression(Cast cast) {
+        String pathText = cast.getPath();
+        XPathModel xPathModel = BpelXPathModelFactory.create(cast);
+        XPathExpression xPathExpr = null;
+        try {
+            xPathExpr = xPathModel.parseExpression(pathText);
+        } catch (XPathException ex) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unresolved XPath: " + pathText); //NOI18N
 
-  public GlobalType getType() {
-    return myType;
-  }
+        }
+        return xPathExpr;
+    }
 
-  private GlobalType getType(Cast cast) {
-    SchemaReference<GlobalType> ref = cast.getType();
+    public XPathCastImpl(Cast cast) {
+        mCast = cast;
+        mCastTo = getType(cast);
+        myPathText = cast.getPath();
+    }
+
+    public String getPathText() {
+        return myPathText;
+    }
+
+    public GlobalType getCastTo() {
+        return mCastTo;
+    }
+
+    public XPathExpression getPath() {
+        if (mXPathExpression == null) {
+            mXPathExpression = getExpression(mCast);
+        }
+        return mXPathExpression;
+    }
+
+    private GlobalType getType(Cast cast) {
+        SchemaReference<GlobalType> ref = cast.getType();
 //System.out.println();
 //System.out.println("---: " + ref);
 
-    if (ref == null) {
-      return null;
-    }
+        if (ref == null) {
+            return null;
+        }
 //System.out.println("   : " + ref.get());
-    return ref.get();
-  }
+        return ref.get();
+    }
 
-  private String myPath;
-  private GlobalType myType;
+    @Override
+    public String toString() {
+        return "(" + mCastTo.toString() + ")" + mXPathExpression.getExpressionString();
+    }
+    
+    private Cast mCast;
+    private String myPathText;
+    private GlobalType mCastTo;
+    private XPathExpression mXPathExpression;
 }

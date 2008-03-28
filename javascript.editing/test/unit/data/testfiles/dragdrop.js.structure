@@ -50,7 +50,7 @@ options:CLASS:[]:ESCAPED{options}:
   treeTag:PROPERTY:[]:ESCAPED{treeTag}:
   zindex:PROPERTY:[]:ESCAPED{zindex} : ESCAPED{Number}:
 Draggables:CLASS:[]:ESCAPED{Draggables}:
-  _cacheObserverCallbacks:METHOD:[]:ESCAPED{_cacheObserverCallbacks} : ESCAPED{void}:
+  _cacheObserverCallbacks:METHOD:[PRIVATE]:ESCAPED{_cacheObserverCallbacks} : ESCAPED{void}:
   activate:METHOD:[]:ESCAPED{activate}(PARAMETERS{ESCAPED{draggable}}) : ESCAPED{void}:
   addObserver:METHOD:[]:ESCAPED{addObserver}(PARAMETERS{ESCAPED{observer}}) : ESCAPED{void}:
   deactivate:METHOD:[]:ESCAPED{deactivate} : ESCAPED{void}:
@@ -65,7 +65,7 @@ Draggables:CLASS:[]:ESCAPED{Draggables}:
   updateDrag:METHOD:[]:ESCAPED{updateDrag}(PARAMETERS{ESCAPED{event}}) : ESCAPED{void}:
 Draggable:CLASS:[]:ESCAPED{Draggable}:
   Draggable:CONSTRUCTOR:[]:ESCAPED{Draggable}:
-  _getWindowScroll:METHOD:[]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
+  _getWindowScroll:METHOD:[PRIVATE]:ESCAPED{_getWindowScroll}(PARAMETERS{ESCAPED{w}}):
   currentDelta:METHOD:[]:ESCAPED{currentDelta} : ESCAPED{Array}:
   delta:PROPERTY:[]:ESCAPED{delta}:
   destroy:METHOD:[]:ESCAPED{destroy} : ESCAPED{void}:
@@ -94,10 +94,10 @@ SortableObserver:CLASS:[]:ESCAPED{SortableObserver}:
   onEnd:METHOD:[]:ESCAPED{onEnd} : ESCAPED{void}:
   onStart:METHOD:[]:ESCAPED{onStart} : ESCAPED{void}:
 Sortable:CLASS:[]:ESCAPED{Sortable}:
-  _constructIndex:METHOD:[]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}):
-  _findChildrenElement:METHOD:[]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}):
-  _findRootElement:METHOD:[]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}):
-  _tree:METHOD:[]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}):
+  _constructIndex:METHOD:[PRIVATE]:ESCAPED{_constructIndex}(PARAMETERS{ESCAPED{node}}):
+  _findChildrenElement:METHOD:[PRIVATE]:ESCAPED{_findChildrenElement}(PARAMETERS{ESCAPED{element}, ESCAPED{containerTag}}):
+  _findRootElement:METHOD:[PRIVATE]:ESCAPED{_findRootElement}(PARAMETERS{ESCAPED{element}}):
+  _tree:METHOD:[PRIVATE]:ESCAPED{_tree}(PARAMETERS{ESCAPED{element}, ESCAPED{options}, ESCAPED{parent}}):
   create:METHOD:[]:ESCAPED{create}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   destroy:METHOD:[]:ESCAPED{destroy}(PARAMETERS{ESCAPED{element}}) : ESCAPED{void}:
   findElements:METHOD:[]:ESCAPED{findElements}(PARAMETERS{ESCAPED{element}, ESCAPED{options}}):

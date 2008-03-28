@@ -70,9 +70,11 @@ import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -238,6 +240,8 @@ public class PHPCodeCompletion implements Completable {
                     IndexedConstant ic = new IndexedConstant(varName, null,
                             null, url, null, 0, ElementKind.VARIABLE);
 
+                    String varType = extractVariableTypeFromExpression(statement);
+                    ic.setTypeName(varType);
                     CompletionProposal proposal = new VariableItem(ic, request);
                     proposals.add(proposal);
                 }
@@ -272,6 +276,10 @@ public class PHPCodeCompletion implements Completable {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         IndexedConstant ic = new IndexedConstant(varName, null,
                                 null, url, null, 0, ElementKind.VARIABLE);
+                        
+                        if (param.getParameterType() != null) {
+                            ic.setTypeName(param.getParameterType().getName());
+                        }
 
                         CompletionProposal proposal = new VariableItem(ic, request);
                         proposals.add(proposal);
@@ -302,6 +310,28 @@ public class PHPCodeCompletion implements Completable {
             if (variableBase instanceof Variable) {
                 Variable var = (Variable) variableBase;
                 return extractVariableName(var);
+            }
+        }
+        
+        return null;
+    }
+    
+    private static String extractVariableTypeFromExpression(Statement statement) {
+        Expression expr = ((ExpressionStatement) statement).getExpression();
+
+        if (expr instanceof Assignment) {
+            Expression rightSideExpression = ((Assignment) expr).getRightHandSide();
+
+            if (rightSideExpression instanceof ClassInstanceCreation) {
+                ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
+                Expression className = classInstanceCreation.getClassName().getName();
+                
+                if (className instanceof Identifier) {
+                    Identifier identifier = (Identifier) className;
+                    return identifier.getName();
+                }
+            } else if (rightSideExpression instanceof ArrayCreation){
+                return "array"; //NOI18N
             }
         }
         
@@ -518,6 +548,24 @@ public class PHPCodeCompletion implements Completable {
         VariableItem(IndexedConstant constant, CompletionRequest request) {
             super(constant, request);
             this.constant = constant;
+        }
+        
+        @Override public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            String typeName = constant.getTypeName();
+            formatter.reset();
+            if (typeName == null) {
+                typeName = "?"; //NOI18N
+            }
+            formatter.type(true);
+            formatter.appendText(typeName);
+            formatter.type(false);
+            formatter.appendText(" "); //NOI18N
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            
+            return formatter.getText();
         }
 
         @Override

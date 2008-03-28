@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.bpel.mapper.logging.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
-import org.netbeans.modules.bpel.mapper.logging.tree.LoggingTreeItem;
 import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -40,8 +42,6 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.LogLevel;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.Link;
-import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  * 
@@ -184,7 +184,9 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
         }
         //
         // Populate 
-        populateContentHolder(bpelExpr, graphInfo);
+        Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+        populateContentHolder(bpelExpr, graphInfo, typeCastCollector);
+        registerTypeCasts(extensibleElement, typeCastCollector, true);
     }
 
     // todo m
