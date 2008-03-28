@@ -56,6 +56,11 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 /**
  * Test of opening files.
  *
@@ -100,9 +105,31 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+        class PhaseHandler extends Handler {
+            
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
     
     public void testOpeningJava(){
-        WAIT_AFTER_OPEN = 4000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
@@ -115,7 +142,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void testOpeningSessionBean(){
-        WAIT_AFTER_OPEN = 4000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
@@ -128,7 +155,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
 
     public void testOpeningEntityBean(){
-        WAIT_AFTER_OPEN = 4000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
@@ -141,7 +168,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void testOpeningEjbJarXml(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
@@ -154,7 +181,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void testOpeningSunEjbJarXml(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-EJBModule";
@@ -167,7 +194,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
 
     public void testOpeningApplicationXml(){
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
@@ -180,7 +207,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
     
     public void testOpeningSunApplicationXml(){
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         //MEASURE_PAINT_NUMBER = 1;
         setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
@@ -208,12 +235,14 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
     }
 
     public void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         //repaintManager().setOnlyEditor(false);
         repaintManager().resetRegionFilters();   
         EditorOperator.closeDiscardAll();
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         this.openNode = new Node(new ProjectRootNode(tree, fileProject), filePath);

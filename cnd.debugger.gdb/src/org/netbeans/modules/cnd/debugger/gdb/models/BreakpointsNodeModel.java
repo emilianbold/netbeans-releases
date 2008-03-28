@@ -63,15 +63,15 @@ public class BreakpointsNodeModel implements NodeModel {
     public static final String BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
     public static final String DISABLED_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint"; // NOI18N
     public static final String LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint"; // NOI18N
     public static final String DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint"; // NOI18N
     public static final String LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint"; // NOI18N
     public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint"; // NOI18N
     
 
     private Vector listeners = new Vector();
