@@ -40,7 +40,7 @@
 package org.netbeans.modules.db.mysql.installations;
 
 import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.util.Utilities;
 
 /**

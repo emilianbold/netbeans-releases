@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql;
+package org.netbeans.modules.db.mysql.util;
 
+import org.netbeans.modules.db.mysql.*;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -207,7 +208,7 @@ public class DatabaseUtils {
      * 
      * @param conn the connection to close
      */
-    static void closeConnection(Connection conn) {
+    public static void closeConnection(Connection conn) {
         try {
             if ( conn != null ) {
                 conn.close();
@@ -284,7 +285,7 @@ public class DatabaseUtils {
         return url.toString();
     }
 
-    static boolean ensureConnected(DatabaseConnection dbconn) {
+    public static boolean ensureConnected(DatabaseConnection dbconn) {
         try {
             Connection conn = dbconn.getJDBCConnection();
             if ( conn == null || conn.isClosed() ) {
