@@ -20,7 +20,7 @@
     <!-- GlassFish properties   -->   
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
     <property name="glassfish.version" value="v2ur2"/>
-    <property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-v2ur2-b02.jar"/>  
+    <property name="glassfish_location" value="${gf_builds_host}/java/re/glassfish/9.1_02/promoted/fcs/latest/images/mac/glassfish-image-SNAPSHOT.jar"/>  
     <property name="glassfish_location_ml" value="${gf_builds_host}/java/re/glassfish/9.1_01/promoted/fcs/b09d/l10n/mac/glassfish-image-v2ur1-b09d-darwin-ml.jar"/>  
     
     <!-- Open ESB Properties-->    
