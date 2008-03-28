@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
         <pathelement location="${xtest.home}/../nbbuild/build/public-package-jars/org-netbeans-modules-projectapi.jar"/>
+        <pathelement location="${xtest.home}/../xml.schema/test/lib/tests-qa-functional.jar"/>
     </path>    
 <!--
     <pathconvert property="cp" refid="cp.extra" targetos="unix"/>
