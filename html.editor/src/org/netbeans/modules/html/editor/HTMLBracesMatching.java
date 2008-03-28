@@ -53,12 +53,10 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsfret.source.SourceAccessor;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
@@ -99,11 +97,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
             return null;
         }
         TokenHierarchy th = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence> tsl = th.embeddedTokenSequences(context.getSearchOffset(), false);
+        List<TokenSequence> tsl = th.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
         for (TokenSequence ts : tsl) {
             if (ts.language() == HTMLTokenId.language()) {
                 ts.move(context.getSearchOffset());
-                if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
+                //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
+                if(ts.moveNext()) {
                     if (context.isSearchingBackward() && ts.offset() + ts.token().length() < context.getSearchOffset()) {
                         //check whether the searched position doesn't overlap the token boundaries 
                         return null;
@@ -192,6 +191,14 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     return null;
                 }
                 AstNode root = result.root();
+                
+                System.out.println(root);
+                System.out.println("---------");
+                for(SyntaxElement se : result.elementsList()) {
+                    System.out.println(se);
+                }
+                
+                
                 int searched =  result.getTranslatedSource() == null 
                         ? context.getSearchOffset() 
                         : result.getTranslatedSource().getAstOffset(context.getSearchOffset());
@@ -240,7 +247,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
         if(source == null) {
             return match;
         } else {
-            return new int[]{source.getLexicalOffset(match[0]), source.getLexicalOffset(match[1])};
+            return new int[]{source.getLexicalOffset(match[0]), source.getLexicalOffset(match[1] - 1) + 1};
         }
     }
             
