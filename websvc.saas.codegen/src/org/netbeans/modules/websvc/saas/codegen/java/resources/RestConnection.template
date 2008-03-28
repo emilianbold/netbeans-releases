@@ -86,6 +86,10 @@ public class RestConnection {
         return connect(headers, null);
     }
 
+    public RestResponse put(String[][] headers) throws IOException {
+        return put(headers, (InputStream) null);
+    }
+    
     public RestResponse put(String data) throws IOException {
         return put(null, data);
     }

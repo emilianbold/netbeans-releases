@@ -65,7 +65,7 @@
         </code-gen>
         <!-- http-basic, api-key, custom -->
         <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="key"/>
+            <api-key id="apiKey"/>
         </authentication>
     </saas-metadata>
 
