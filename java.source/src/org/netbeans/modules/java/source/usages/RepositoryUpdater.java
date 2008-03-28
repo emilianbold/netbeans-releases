@@ -1851,7 +1851,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     clean = true;
                 }
                 
-                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
+                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false)), true);
 
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     if (ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true)) {
@@ -2171,6 +2171,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
                         JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
+                        }
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         Iterable<? extends TypeElement> classes = jt.enter();
@@ -2812,7 +2815,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         if (jt == null) {
                             jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
-                            LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
+                            }
                         }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         if (listener.lowMemory.getAndSet(false)) {
@@ -2930,7 +2935,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         URI u = active.toUri();
                         for (Iterator<Diagnostic> it = listener.errors.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(d.toString());
+                            }
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();
@@ -2939,7 +2946,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         for (Iterator<Diagnostic> it = listener.warnings.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine(d.toString());
+                            }
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();

@@ -451,7 +451,7 @@ final class Analyzer {
                     Position[] poss = createPositions(throwTree);
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", fqn), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, fqn, index, file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, throwTree.toString(), index, file, spec)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {

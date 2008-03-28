@@ -46,7 +46,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
-import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -88,10 +87,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -116,7 +113,6 @@ import javax.lang.model.util.Types;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.utilities.OutputParameter;
@@ -1454,7 +1450,7 @@ public final class SourceUtils {
     /**
      * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
      */
-    private static JavaSource getSources(Project project) {
+    public static JavaSource getSources(Project project) {
         if (project == null) {
             return getSources((FileObject[]) null);
         } else {
@@ -1538,7 +1534,7 @@ public final class SourceUtils {
      * @param signature The VM signature of the method
      * @return Returns an ExecutableElement representing the method or null
      */
-    private static ExecutableElement resolveMethodByName(TypeElement parentClass, String methodName, String signature) {
+    public static ExecutableElement resolveMethodByName(TypeElement parentClass, String methodName, String signature) {
         // TODO: static initializer
         if ((parentClass == null) || (methodName == null) || (signature == null)) {
             return null;

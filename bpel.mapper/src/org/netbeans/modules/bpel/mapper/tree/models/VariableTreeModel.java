@@ -242,7 +242,7 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         sSchemaSearcher.lookForSubcomponents(parent);
         List<SchemaComponent> childrenComp = sSchemaSearcher.getFound();
         //
-        if (mPredManager == null && mSStepManager == null) {
+        if (mPredManager == null && mSStepManager == null && mCastManager == null) {
             return childrenComp;
         }
         //
@@ -256,14 +256,22 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
                 allChildren.addAll(step);
             }
         }
-        if (mPredManager != null) {
-            for (SchemaComponent sComp : childrenComp) {
-                allChildren.add(sComp);
-                //
+        //
+        for (SchemaComponent sComp : childrenComp) {
+            allChildren.add(sComp);
+            //
+            if (mPredManager != null) {
                 // Look for the corresponding predicated nodes.
                 List<AbstractPredicate> predicates = 
                         mPredManager.getPredicates(dataObjectPathItr, sComp);
                 allChildren.addAll(predicates);
+            }
+            //
+            if (mCastManager != null) {
+                // Look for the corresponding cast nodes.
+                List<AbstractTypeCast> typeCast = 
+                        mCastManager.getTypeCast(dataObjectPathItr, sComp);
+                allChildren.addAll(typeCast);
             }
         }
         //
@@ -279,7 +287,8 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
                 node instanceof Attribute ||
                 node instanceof Part || 
                 node instanceof AbstractPredicate ||
-                node instanceof LocationStep) {
+                node instanceof LocationStep || 
+                node instanceof AbstractTypeCast) {
             return Boolean.TRUE;
         }
         //

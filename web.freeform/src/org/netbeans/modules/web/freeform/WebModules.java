@@ -350,10 +350,13 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
                 Set<FileObject> all = new HashSet<FileObject>();
                 FileObject[] javaRoots = null;
                 for (int i = 0; i < sourcesFOs.length; i++) {
-                    javaRoots = ClassPath.getClassPath(sourcesFOs[i], type).getRoots();
-                    for (int j = 0; j < javaRoots.length; j++) {
-                        if (!all.contains(javaRoots[j])) {
-                            all.add(javaRoots[j]);
+                    ClassPath cp = ClassPath.getClassPath(sourcesFOs[i], type);
+                    if (cp != null) {
+                        javaRoots = cp.getRoots();
+                        for (int j = 0; j < javaRoots.length; j++) {
+                            if (!all.contains(javaRoots[j])) {
+                                all.add(javaRoots[j]);
+                            }
                         }
                     }
                 }
