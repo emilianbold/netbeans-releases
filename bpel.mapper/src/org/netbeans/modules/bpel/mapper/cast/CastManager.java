@@ -199,6 +199,7 @@ public class CastManager {
         //
         boolean isEqualFound = false;
         for (Cast cast : castArr) {
+            //
             if (cast.getSource() == Source.TO && mInLeftMapperTree || 
                     cast.getSource() != Source.TO && !mInLeftMapperTree) {
                 // Skip casts with oposit source
@@ -233,6 +234,13 @@ public class CastManager {
         for (AbstractTypeCast typeCast : newTypeCasts) {
             boolean isEqualFound = false;
             for (Cast cast : castArr) {
+                //
+                if (cast.getSource() == Source.TO && mInLeftMapperTree || 
+                        cast.getSource() != Source.TO && !mInLeftMapperTree) {
+                    // Skip casts with oposit source
+                    continue;
+                } 
+                //
                 TypeCast varTypeCast = TypeCast.convert(cast);
                 if (varTypeCast != null) {
                     if (varTypeCast.equals(typeCast)) {
@@ -275,6 +283,13 @@ public class CastManager {
                 break;
             }
         }
+    }
+    
+    @Override
+    public String toString() {
+        return " inLeftTree:" + mInLeftMapperTree + 
+                "  TypeCastCount: " + mCashedCastList.size() + 
+                "  ||  " + super.toString(); 
     }
     
     /**
