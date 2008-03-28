@@ -61,8 +61,9 @@ public class ArrayAccess extends Variable {
     public ArrayAccess(int start, int end, VariableBase variableName, Expression index, ArrayAccess.Type arrayType) {
         super(start, end, variableName);
 
-        this.index = index;
+        variableName.setParent(this);
         index.setParent(index);
+        this.index = index;
         this.arrayType = arrayType;
     }
 
