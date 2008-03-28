@@ -41,14 +41,14 @@
 package org.netbeans.modules.xml.xpath.ext.spi;
 
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.03.24
  */
 public interface XPathCast {
-
-  String getPath();
-  GlobalType getType();
+    XPathExpression getPath();
+    String getPathText();
+    GlobalType getCastTo();
 }

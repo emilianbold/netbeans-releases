@@ -631,13 +631,14 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         String fullname = getFullName(false);
         String t2 = t.substring(0, t.length() - 1);
         int max_fields = t2.startsWith("char *") ? 20 : 10; // NOI18N
+        int maxIndexLog = log10(max_fields-1);
         
         while (max_fields-- > 0) {
             String v = getDebugger().requestValue(fullname + '[' + i + ']');
             if (v == null || v.length() < 1 || v.endsWith("0x0")) { // NOI18N
                 return;
             }
-            addField(new AbstractField(this, getName() + '[' + i++ + ']', t2, v));
+            addField(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i++), t2, v));
         }
     }
     
@@ -735,6 +736,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         int pos;
         boolean truncated = false;
         
+        int maxIndexLog = log10(size-1);
+        
         while (idx < value.length()) {
             if (value.substring(idx).startsWith("\\\"")) { // NOI18N
                 pos = value.indexOf("\\\",", idx); // NOI18N
@@ -751,9 +754,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                     }
                     idx = value.length(); // stop iterating...
                 }
-                parseCharArrayFragment(var, basename, type, frag);
+                parseCharArrayFragment(var, basename, type, maxIndexLog, frag);
                 if (var.fields.length < size && idx >= value.length()) {
-                    var.addField(new AbstractField(var, basename + "[" + (size - 1) + "]", // NOI18N
+                    var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, size-1),
                             type.substring(0, type.indexOf('[')).trim(), "\'\\000\'")); // NOI18N
                 }
                 if (truncated) {
@@ -765,8 +768,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                         high = "..."; // NOI18N
                     }
                     
-                    var.addField(new AbstractField(var, basename +
-                            "[" + var.fields.length + "-" + high + "]", // NOI18N
+                    var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, var.fields.length, "-" + high), // NOI18N
                             "", "...")); // NOI18N
                 }
             } else if (value.charAt(idx) == ' ' || value.charAt(idx) == ',') {
@@ -778,13 +780,13 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 } else {
                     frag = value.substring(idx);
                 }
-                parseRepeatArrayFragment(var, basename, type, frag);
+                parseRepeatArrayFragment(var, basename, type, maxIndexLog, frag);
                 idx += frag.length();
             }
         }
     }
     
-    private void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, String value) {
+    private void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int count;
         int idx = var.fields.length;
@@ -800,11 +802,11 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
         
         while (--count >=0) {
-            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", t, val)); // NOI18N
+            var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, idx++), t, val));
         }  
     }
     
-    private void parseCharArrayFragment(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArrayFragment(AbstractVariable var, String basename, String type, int maxIndexLog, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int idx = 0;
         value = value.replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...
@@ -857,7 +859,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else {
                 val = value.substring(vstart, idx);
             }
-            var.addField(new AbstractField(var, basename + "[" + fcount++ + "]", // NOI18N
+            var.addField(new AbstractField(var, basename + getIndexStr(maxIndexLog, fcount++),
                 t, '\'' + val + '\''));
         }
     }
@@ -900,16 +902,48 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             parseCharArray(this, getName(), type, size, value);
         } else {
             value = value.substring(1, value.length() - 1);
+            int maxIndexLog = log10(size-1);
             for (int i = 0; i < size && vstart != -1; i++) {
                 if (value.charAt(vstart) == '{') {
                     vend = GdbUtils.findNextComma(value, GdbUtils.findMatchingCurly(value, vstart));
                 } else {
                     vend = GdbUtils.findNextComma(value, vstart);
                 }
-                addField(new AbstractField(this, getName() + "[" + i + "]", t, // NOI18N
+                addField(new AbstractField(this, getName() + getIndexStr(maxIndexLog, i), t,
                         vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
                 vstart = GdbUtils.firstNonWhite(value, vend + 1);
             }
+        }
+    }
+    
+    private static String getIndexStr(int maxIndexLog, int index) {
+        return getIndexStr(maxIndexLog, index, ""); // NOI18N
+    }
+    
+    private static String getIndexStr(int maxIndexLog, int index, String postfix) {
+        int num0 = maxIndexLog - log10(index);
+        String data = index + postfix;
+        if (num0 > 0) {
+            data = zeros(num0) + data;
+        }
+        return "[" + data + "]"; // NOI18N
+    }
+    
+    private static int log10(int n) {
+        int l = 1;
+        while ((n = n / 10) > 0) l++;
+        return l;
+    }
+    
+    private static final String ZEROS = "            "; // NOI18N
+    
+    static String zeros(int n) {
+        if (n < ZEROS.length()) {
+            return ZEROS.substring(0, n);
+        } else {
+            String z = ZEROS;
+            while (z.length() < n) z += " "; // NOI18N
+            return z;
         }
     }
     

@@ -51,6 +51,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -298,6 +299,16 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //            return false;
 //        }
 //        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
+        
+            ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
+            ClassLoader cl = cp.getClassLoader(true);
+            try {
+                Class.forName("javax.transaction.UserTransaction", false, cl);
+            }
+            catch (ClassNotFoundException cnfe) {
+                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                return false;
+            }
         
             Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
             SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
