@@ -74,8 +74,6 @@ public class WadlSaasBean extends SaasBean {
     public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
-    private String groupName;
-    private String displayName;
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
@@ -83,7 +81,7 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        super(m.getSaas(), Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
@@ -97,27 +95,6 @@ public class WadlSaasBean extends SaasBean {
         return m;
     }
     
-    public String getGroupName() {
-        return groupName;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public String getSaasName() {
-        return getGroupName()+getDisplayName();
-    }
-    
-    public String getSaasServiceName() {
-        return getGroupName()+getDisplayName()/*+"Service"*/;
-    }
-    
-    public String getSaasServicePackageName() {
-        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
-                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
-    }
-    
     public String getSaasServiceMethodName() {
         if(serviceMethodName == null) {
             serviceMethodName = Util.deriveMethodName(getMethod().getName());
@@ -126,21 +103,8 @@ public class WadlSaasBean extends SaasBean {
         return serviceMethodName;
     }
     
-    public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getSaasName());
-    }
-    
-    public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getSaasName());
-    }
-    
     private void init() throws IOException { 
         setResourceClassTemplate(RESOURCE_TEMPLATE);
-        SaasGroup g = getMethod().getSaas().getParentGroup();
-        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
-            g = getMethod().getSaas().getTopLevelGroup();
-        this.groupName = Util.normailizeName(g.getName());
-        this.displayName = Util.normailizeName(getMethod().getSaas().getDisplayName());
         setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
         findAuthentication(m);
         initUrl();
@@ -303,18 +267,28 @@ public class WadlSaasBean extends SaasBean {
     }
     
     @Override
-    protected Object getAuthUsingId(Authentication auth) {
+    protected Object getSignedUrl(Authentication auth) {
+        Object signedUrl = null;
         if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
-            Resource[] rArray = m.getResourcePath();
-            if (rArray == null || rArray.length == 0) {
-                return null;
-            }
-            String id = rArray[rArray.length-1].getId();
-            if(id != null && !id.trim().equals("")) {
-                for(SignedUrl s: auth.getSignedUrl()) {
-                    if(id.equals(s.getId()))
-                        return s;
+            String id = m.getWadlMethod().getId();
+            signedUrl = getSignedUrlById(auth, id);
+            if(signedUrl == null) {
+                Resource[] rArray = m.getResourcePath();
+                if (rArray == null || rArray.length == 0) {
+                    return null;
                 }
+                id = rArray[rArray.length-1].getId();
+                signedUrl = getSignedUrlById(auth, id);
+            }
+        }
+        return signedUrl;
+    }
+    
+    private Object getSignedUrlById(Authentication auth, String id) {
+        if(id != null && !id.trim().equals("")) {
+            for(SignedUrl s: auth.getSignedUrl()) {
+                if(id.equals(s.getId()))
+                    return s;
             }
         }
         return null;

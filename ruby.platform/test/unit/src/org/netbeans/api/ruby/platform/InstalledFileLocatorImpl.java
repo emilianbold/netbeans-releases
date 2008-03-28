@@ -54,7 +54,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 throw new RuntimeException("classic-debug found in " + rubydebugDir);
             }
             return cd;
-        } else if (relativePath.equals("jruby-1.1RC2")) {
+        } else if (relativePath.equals("jruby-1.1RC3")) {
             return TestUtil.getXTestJRubyHome();
         } else if (relativePath.equals("platform_info.rb")) {
             String script = System.getProperty("xtest.platform_info.rb");

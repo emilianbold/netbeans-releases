@@ -61,6 +61,7 @@ public interface PhpProjectSharedConstants {
      */
     public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
 
+    //keep synchronized with org.netbeans.modules.php.dbgp.api.SessionId
     public static final String PHP_PROJECT_NAME = "name"; // NOI18N
 
 }

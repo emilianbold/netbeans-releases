@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 public interface Storage {
 
     /** Gets an element from the storage */
-    public Persistent get(Key key) throws IOException;
+    public Persistent read(Key key) throws IOException;
     
     /** Removes and element from the storage */
     public void remove(Key key) throws IOException;

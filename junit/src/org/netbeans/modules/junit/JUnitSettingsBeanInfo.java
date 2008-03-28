@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.awt.Image;
 import java.beans.*;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -262,15 +263,28 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
         
         public GeneratorsPropEditor() {
             super(JUnitSettings.DEFAULT_GENERATOR);
-            put(NbBundle.getMessage(JUnitSettings.class,
-                                    "LBL_JUnit3_generator"),            //NOI18N
+            put(removeMnemonicAmpersand(
+                    NbBundle.getMessage(JUnitSettings.class,
+                                    "LBL_JUnit3_generator")),           //NOI18N
                 JUnitSettings.JUNIT3_GENERATOR);
-            put(NbBundle.getMessage(JUnitSettings.class,
-                                    "LBL_JUnit4_generator"),            //NOI18N
+            put(removeMnemonicAmpersand(
+                    NbBundle.getMessage(JUnitSettings.class,
+                                    "LBL_JUnit4_generator")),           //NOI18N
                 JUnitSettings.JUNIT4_GENERATOR);
             put(NbBundle.getMessage(JUnitSettings.class,
                                     "LBL_JUnit_generator_ask_user"),    //NOI18N
                 JUnitSettings.JUNIT_GENERATOR_ASK_USER);
+        }
+
+        private static String removeMnemonicAmpersand(final String text) {
+            int ampIndex = Mnemonics.findMnemonicAmpersand(text);
+            if (ampIndex == -1) {
+                return text;
+            }
+            
+            return (ampIndex == 0)
+                   ? text.substring(1)
+                   : new StringBuilder(text).deleteCharAt(ampIndex).toString();
         }
         
     }

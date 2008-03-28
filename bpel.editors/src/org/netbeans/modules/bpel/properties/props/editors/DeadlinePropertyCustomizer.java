@@ -44,13 +44,12 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.bpel.editors.api.utils.TimeEventUtil;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
 /**
- *
  * @author nk160297
  */
 public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
@@ -157,12 +156,7 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        if (value.startsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(1, value.length());
-        }
-        if (value.endsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(0, value.length() - 1);
-        }
+        value = DurationUtil.removeQuotes(value);
         //
         parseUntil(value);
         revalidate(true);
@@ -171,7 +165,7 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
     public void propertyChange(PropertyChangeEvent event) {
         if (PropertyEnv.PROP_STATE.equals(event.getPropertyName()) &&
                 event.getNewValue() == PropertyEnv.STATE_VALID) {
-            String currText = TimeEventUtil.QUOTE + getContent() + TimeEventUtil.QUOTE;
+            String currText = DurationUtil.addQuotes(getContent());
             try {
                 myPropertyEditor.setAsText(currText);
             } catch (PropertyVetoError ex) {
@@ -213,17 +207,17 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         dateFormat.setLenient(false);
         
         return dateFormat.parse(
-                value.replace(TimeEventUtil.T_DELIM.charAt(0), ' '));
+                value.replace(DurationUtil.T_DELIM.charAt(0), ' '));
     }
     
     private String getContent() {
-        return TimeEventUtil.getContent(false,
-                TimeEventUtil.parseInt(fldYear.getText()),
-                TimeEventUtil.parseInt(fldMonth.getText()),
-                TimeEventUtil.parseInt(fldDay.getText()),
-                TimeEventUtil.parseInt(fldHour.getText()),
-                TimeEventUtil.parseInt(fldMinute.getText()),
-                TimeEventUtil.parseInt(fldSecond.getText()));
+        return DurationUtil.getContent(false,
+                DurationUtil.parseInt(fldYear.getText()),
+                DurationUtil.parseInt(fldMonth.getText()),
+                DurationUtil.parseInt(fldDay.getText()),
+                DurationUtil.parseInt(fldHour.getText()),
+                DurationUtil.parseInt(fldMinute.getText()),
+                DurationUtil.parseDouble(fldSecond.getText()));
     }
     
     public Validator createValidator() {
@@ -237,7 +231,7 @@ public class DeadlinePropertyCustomizer extends ValidablePropertyCustomizer
         }
         
         public void doFastValidation() {
-            String param = TimeEventUtil.getParseText(
+            String param = DurationUtil.getParseUntil(
                     fldYear.getText().trim(),
                     fldMonth.getText().trim(),
                     fldDay.getText().trim(),

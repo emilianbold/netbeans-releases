@@ -239,6 +239,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     
     private void stopHere(final RubyDebugEvent suspensionEvent) {
         rubySession.suspend(suspensionEvent.getRubyThread(), contextProvider);
+        setEnabled(ActionsManager.ACTION_STEP_OUT, rubySession.getFrames().length != 1);
     }
 
 }

@@ -74,6 +74,15 @@
       <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
       <tocitem text="Activating and Deactivating a Plugin" target="configure.enable.module" />
     </tocitem>
+    
+    <tocitem text="JavaScript Files" target="javascript.intro">
+        <tocitem text="Basic Features" target="js.basics" />
+        <tocitem text="Code Completion" target="js.code.completion"/>
+        <tocitem text="Refactoring" target="js.refactoring" />
+        <tocitem text="Quick Fixes and Semantic Checks" target="js.quickfixes" />
+        <tocitem text="Browser Compatibility" target="js.browser.compatibility" />
+        <tocitem text="Cross-File Navigation" target="js.function.jump" />        
+    </tocitem>
   
      <tocitem text="XML Documents" >
       <tocitem text="About Editing XML Documents" target="xml_about" />

@@ -70,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -305,15 +306,14 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null)
             return;
-        // a library customizer needs to know location of sharable library in order to
-        // relativize paths. that's why object implementing both LibraryImplementation
-        // and LibraryStorageArea is passed to JComponent here:
+        LibraryCustomizerContextWrapper customizerContext;
         LibraryStorageArea area = nodes[0].getLookup().lookup(LibraryStorageArea.class);
         if (area != null && area != LibrariesModel.GLOBAL_AREA) {
-            impl = new LibraryImplementationWrapper(impl, area);
+            customizerContext = new LibraryCustomizerContextWrapper(impl, area);
             File f = new File(URI.create(area.getLocation().toExternalForm()));
             this.libraryLocation.setText(f.getPath());
         } else {
+            customizerContext = new LibraryCustomizerContextWrapper(impl, null);
             this.libraryLocation.setText(NbBundle.getMessage(LibrariesCustomizer.class,"LABEL_Global_Libraries"));
         }
 
@@ -321,7 +321,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         for (int i=0; i< volumeTypes.length; i++) {
             Customizer c = provider.getCustomizer (volumeTypes[i]);
             if (c instanceof JComponent) {
-                c.setObject (impl);
+                c.setObject (customizerContext);
                 JComponent component = (JComponent) c;
                 component.setEnabled (editable);
                 String tabName = component.getName();
@@ -822,67 +822,60 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private Node buildTree() {
         return new AbstractNode(new TypeChildren(libraryStorageArea));
     }
-
-    private static class LibraryImplementationWrapper implements LibraryImplementation, LibraryStorageArea {
+    
+    /**
+     * This is backward compatible wrapper which can be passed to libraries customizer
+     * via JComponent.setObject and which provides to customizer both LibraryImplementation
+     * (old contract) and LibraryCustomizerContext (new contract).
+     */
+    private static class LibraryCustomizerContextWrapper extends LibraryCustomizerContext implements LibraryImplementation {
         
-        private LibraryImplementation lib;
-        private LibraryStorageArea area;
-        
-        public LibraryImplementationWrapper(LibraryImplementation lib, LibraryStorageArea area) {
-            this.lib =  lib;
-            this.area = area;
+        public LibraryCustomizerContextWrapper(LibraryImplementation lib, LibraryStorageArea area) {
+            super(lib, area);
         }
 
         public String getType() {
-            return lib.getType();
+            return getLibraryImplementation().getType();
         }
 
         public String getName() {
-            return lib.getName();
+            return getLibraryImplementation().getName();
         }
 
         public String getDescription() {
-            return lib.getDescription();
+            return getLibraryImplementation().getDescription();
         }
 
         public String getLocalizingBundle() {
-            return lib.getLocalizingBundle();
+            return getLibraryImplementation().getLocalizingBundle();
         }
 
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            return lib.getContent(volumeType);
+            return getLibraryImplementation().getContent(volumeType);
         }
 
         public void setName(String name) {
-            lib.setName(name);
+            getLibraryImplementation().setName(name);
         }
 
         public void setDescription(String text) {
-            lib.setDescription(text);
+            getLibraryImplementation().setDescription(text);
         }
 
         public void setLocalizingBundle(String resourceName) {
-            lib.setLocalizingBundle(resourceName);
+            getLibraryImplementation().setLocalizingBundle(resourceName);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
-            lib.addPropertyChangeListener(l);
+            getLibraryImplementation().addPropertyChangeListener(l);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            lib.removePropertyChangeListener(l);
+            getLibraryImplementation().removePropertyChangeListener(l);
         }
 
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
-            lib.setContent(volumeType, path);
-        }
-
-        public URL getLocation() {
-            return area.getLocation();
-        }
-
-        public String getDisplayName() {
-            return area.getDisplayName();
+            getLibraryImplementation().setContent(volumeType, path);
         }
     }
     

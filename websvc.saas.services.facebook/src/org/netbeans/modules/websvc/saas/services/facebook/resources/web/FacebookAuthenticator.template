@@ -129,7 +129,7 @@ public class __NAME__ {
             }
         } else {
             session.setAttribute("facebook_return_url", request.getRequestURI());
-            response.sendRedirect("FacebookSocialNetworkingServiceLogin");
+            response.sendRedirect(request.getContextPath() + "/FacebookSocialNetworkingServiceLogin");
         }
     }
 

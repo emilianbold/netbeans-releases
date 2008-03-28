@@ -67,11 +67,14 @@
         </authentication>
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="DNSLookup" serviceName="DNS"
                 portName="DNSSoap" operationName="DNSLookup">
             <documentation>Delivers the IP address when given the name of a Web server</documentation>
         </method>
     </methods>
+    -->
     
+    <methods/>
 </saas-services>

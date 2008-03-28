@@ -80,11 +80,13 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.ListModel;
-
 //import org.netbeans.modules.bpel.project.BpelproProject;
 import org.netbeans.api.project.ProjectInformation;
-
 import java.lang.reflect.Method;
+import org.netbeans.test.xml.schema.lib.util.Helpers;
+import javax.swing.JList;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
+import java.awt.Point;
 
 /**
  *
@@ -99,6 +101,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "AddProjectReference",
         "DeleteProjectReference",
         "AddSampleSchema",
+
         "ImportReferencedSchema",
 
         "RenameSampleSchema",
@@ -222,10 +225,40 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         );
 
       // Check was it opened or no
-      if( null == new EditorOperator( "purchaseOrder.xsd" ) )
+      EditorOperator eoSchemaEditor = new EditorOperator( "purchaseOrder.xsd" );
+      if( null == eoSchemaEditor )
       {
         fail( "purchaseOrder.xsd was not opened after double click." );
       }
+
+      // Switch to schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( "purchaseOrder.xsd" );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Referenced Schemas" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add / Import...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add|Import..." );
+
+      // Get import dialog
+      JDialogOperator jImport = new JDialogOperator( "Add Import" );
+
+      // Import required files
+        // TODO
+
+      // Close
+      JButtonOperator jOk = new JButtonOperator( jImport, "Cancel" ); // TODO : OK
+      jOk.push( );
 
       endTest( );
     }
