@@ -100,6 +100,7 @@ public final class DurationUtil {
         if (t == -1 || k < t) {
           return throwException("FIX_Months", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
         }
+        months = 0;
       }
       else {
         wasDesignator = true;

@@ -42,16 +42,16 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 
 /**
- * Code generator for REST services Authentication
+ * Code generator for Custom service Authentication
  *
  * @author ayubskhan
  */
-public class JaxRsAuthenticationGenerator extends SaasAuthenticationGenerator {
+public class CustomAuthenticationGenerator extends SaasAuthenticationGenerator {
 
-    public JaxRsAuthenticationGenerator(WadlSaasBean bean,
+    public CustomAuthenticationGenerator(CustomSaasBean bean,
             Project project) throws IOException {
         super(bean, project);
     }
