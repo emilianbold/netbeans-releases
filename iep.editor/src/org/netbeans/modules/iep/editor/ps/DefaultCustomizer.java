@@ -121,7 +121,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // by createPropertyPanel()
             IEPModel model = getOperatorComponent().getModel();
             
-            mSelectPanel = new SelectPanel(model, mComponent);
+            mSelectPanel = createSelectPanel(model, mComponent);
             
             ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
             mSelectPanel.addAttributeDropNotificationListener(listener);
@@ -250,6 +250,9 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         }
     }
     
+    protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
+    	return new SelectPanel(model, component);
+    }
     protected JPanel createPropertyPanel() throws Exception {
         JPanel pane = new JPanel();
         String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.DETAILS");

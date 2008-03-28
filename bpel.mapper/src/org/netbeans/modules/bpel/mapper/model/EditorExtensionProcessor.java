@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bpel.mapper.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
@@ -88,33 +90,51 @@ public class EditorExtensionProcessor {
         //
         for (Object obj : foundObjList) {
             if (obj instanceof Variable) {
-                processChildrenEditorExt((Variable)obj);
+                List<Cast> castList = getCastList((Variable)obj);
+                registerCasts(castList);
             }
         }
     }
     
-    public void processChildrenEditorExt(BpelEntity bpelEntity) {
-        List<Editor> editorList = bpelEntity.getChildren(Editor.class);
-        for (Editor editorExt : editorList) {
-            process(editorExt);
+    public boolean registerCasts(List<Cast> castList) {
+        boolean anyRegistered = false;
+        //
+        for (Cast cast : castList) {
+            Source source = cast.getSource();
+            boolean useLeftTree = (source != Source.TO);
+            CastManager castManager = getCastManager(useLeftTree);
+            if (castManager != null) {
+                if(castManager.addTypeCast(cast)) {
+                    anyRegistered = true;
+                }
+            }
         }
+        //
+        return anyRegistered;
     }
     
-    public void process(Editor editorExt) {
+    public List<Cast> getCastList(BpelEntity bpelEntity) {
+        List<Cast> result = new ArrayList<Cast>();
+        List<Editor> editorList = bpelEntity.getChildren(Editor.class);
+        for (Editor editorExt : editorList) {
+            List<Cast> castList = getCastList(editorExt);
+            if (castList != null) {
+                result.addAll(castList);
+            }
+        }
+        return result;
+    }
+    
+    public List<Cast> getCastList(Editor editorExt) {
         Casts casts = editorExt.getCasts();
         if (casts != null) {
             Cast[] castArr = casts.getCasts();
             if (castArr.length > 0) {
-                for (Cast cast : castArr) {
-                    Source source = cast.getSource();
-                    boolean useLeftTree = (source != Source.TO);
-                    CastManager castManager = getCastManager(useLeftTree);
-                    if (castManager != null) {
-                        castManager.addTypeCast(cast);
-                    }
-                }
+                return Arrays.asList(castArr);
             }
         }
+        //
+        return null;
     }
     
     public CastManager getCastManager(boolean forLeftTree) {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
@@ -40,6 +41,7 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
@@ -88,12 +90,14 @@ public class CopyFromProcessor {
         return mCopyFromForm;
     }
     
-    public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel) {
+    public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel, 
+            List<Cast> castList) {
+        //
         assert mCopy.getFrom() != null;
         //
         switch (getCopyFromForm()) {
         case EXPRESSION:
-            mFactory.populateGraph(graph, leftTreeModel, mCopy, mCopy.getFrom());
+            mFactory.populateGraph(graph, leftTreeModel, mCopy, mCopy.getFrom(), castList);
             break;
         case LITERAL:
             FromChild literal = mCopy.getFrom().getFromChild(); // literal
