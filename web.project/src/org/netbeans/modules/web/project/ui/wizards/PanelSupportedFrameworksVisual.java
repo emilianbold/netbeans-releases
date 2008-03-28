@@ -369,6 +369,9 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     
     public void tableChanged(TableModelEvent e) {
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
+        if (jTableFrameworks.getSelectedRow() == -1) {
+            return;
+        }
         FrameworkModelItem item = model.getItem(jTableFrameworks.getSelectedRow());
         WebFrameworkProvider framework = item.getFramework();
         setConfigPanel(framework, item);
@@ -376,6 +379,9 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
+        if (jTableFrameworks.getSelectedRow() == -1) {
+            return;
+        }
         FrameworkModelItem item = model.getItem(jTableFrameworks.getSelectedRow());
         WebFrameworkProvider framework = item.getFramework();
         setConfigPanel(framework, item);

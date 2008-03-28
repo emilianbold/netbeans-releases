@@ -1702,7 +1702,8 @@ public class PHP5ColoringLexer  {
           }
         case 142: break;
         case 40: 
-          { popState();
+          { yybegin(YYINITIAL);
+              stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
           }
         case 143: break;
@@ -2149,6 +2150,8 @@ public class PHP5ColoringLexer  {
         case 235: break;
         case 36: 
           { if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();    
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	return  PHPTokenId.UNKNOWN_TOKEN;
@@ -2172,6 +2175,8 @@ public class PHP5ColoringLexer  {
         case 240: break;
         case 53: 
           { if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();    
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	String text = yytext();

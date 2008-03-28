@@ -42,10 +42,19 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -56,15 +65,50 @@ import org.openide.filesystems.FileSystem;
  * @author Ayub Khan
  */
 public class CustomCodeGenerator extends SaasCodeGenerator {
+    private DropFileType dropFileType;
+    private FileObject serviceFolder;
+    private CustomAuthenticationGenerator authGen;
 
     public CustomCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, CustomSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new CustomSaasBean(m));
+        this(targetComponent, targetFile, new CustomSaasBean(m));
+    }
+
+    public CustomCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, CustomSaasBean bean) throws IOException {
+        super(targetComponent, targetFile, bean);
+
+        this.authGen = new CustomAuthenticationGenerator(bean, getProject());
+        this.authGen.setLoginArguments(getLoginArguments());
+        this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
+        this.authGen.setSaasServiceFolder(getSaasServiceFolder());
+
     }
 
     @Override
     public CustomSaasBean getBean() {
         return (CustomSaasBean) bean;
+    }
+
+    public CustomAuthenticationGenerator getAuthenticationGenerator() {
+        return authGen;
+    }
+    
+    public DropFileType getDropFileType() {
+        return dropFileType;
+    }
+
+    void setDropFileType(DropFileType dropFileType) {
+        this.dropFileType = dropFileType;
+    }
+
+    public FileObject getSaasServiceFolder() throws IOException {
+        if (serviceFolder == null) {
+            SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(getProject());
+            serviceFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],
+                    getBean().getSaasServicePackageName(), true);
+        }
+        return serviceFolder;
     }
     
     @Override
@@ -85,9 +129,11 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
                         //TODO - Fix the copyFile method
                         copyFile(lib, FileUtil.toFile(getTargetFolder()));
                     }*/
-                    List<String> templates = getBean().getArtifactTemplates();
-                    for(String template: templates) {
-                        Util.createDataObjectFromTemplate(template, getTargetFolder(), null);
+                    Map<String, String> templates = getBean().getArtifactTemplates();
+                    for(Map.Entry e: templates.entrySet()) {
+                        String id = (String) e.getKey();
+                        String template = (String) e.getValue();
+                        Util.createDataObjectFromTemplate(template, getSaasServiceFolder(), id);
                     }
                 } finally {
                 }
@@ -108,5 +154,86 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
         }
         
         return "return execute(" + paramStr + ")";
+    }
+    
+    protected List<ParameterInfo> getServiceMethodParameters() {
+        List<ParameterInfo> params = getBean().filterParametersByAuth(getBean().filterParameters(
+                new ParamFilter[]{ParamFilter.FIXED}));
+        HttpMethodType httpMethod = getBean().getHttpMethod();
+        
+        if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            
+            ParameterInfo contentTypeParam = Util.findParameter(getBean().getInputParameters(), Constants.CONTENT_TYPE);
+            Class contentType = InputStream.class;
+            
+            if (contentTypeParam == null) {
+                params.add(new ParameterInfo(Constants.CONTENT_TYPE, String.class));
+            } else {
+                if (!contentTypeParam.isFixed() && !params.contains(contentTypeParam)) {
+                    params.add(contentTypeParam);
+                } else {
+                    String value = Util.findParamValue(contentTypeParam);
+                    if (value.equals("text/plain") || value.equals("application/xml") ||
+                            value.equals("text/xml")) {     //NOI18N
+                        contentType = String.class;
+                    }
+                }
+            }
+            params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
+        }
+        return params;
+    }
+    
+
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params,
+            String indent) {
+        if (indent == null) {
+            indent = " ";
+        }
+        String paramDecl = "";
+        for (ParameterInfo param : params) {
+            String name = getVariableName(param.getName());
+            String paramVal = Util.findParamValue(param);
+            if (param.getType() != String.class) {
+                paramDecl += indent + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
+            } else {
+                if (paramVal != null) {
+                    paramDecl += indent + "String " + name + " = \"" + paramVal + "\";\n";
+                } else {
+                    paramDecl += indent + "String " + name + " = null;\n";
+                }
+            }
+        }
+        return paramDecl;
+    }
+
+    protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
+        String indent = "                 ";
+        return getHeaderOrParameterDeclaration(params, indent);
+    }
+    
+    public static List<ParameterInfo> getAuthenticatorMethodParametersForWeb() {
+        List<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_REQUEST_VARIABLE, Object.class,
+                Constants.HTTP_SERVLET_REQUEST_CLASS));
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_RESPONSE_VARIABLE, Object.class,
+                Constants.HTTP_SERVLET_RESPONSE_CLASS));
+        return params;
+    }
+
+    public static List<ParameterInfo> getServiceMethodParametersForWeb(CustomSaasBean bean) {
+        List<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        params.addAll(getAuthenticatorMethodParametersForWeb());
+        params.addAll(bean.filterParametersByAuth(bean.filterParameters(
+                new ParamFilter[]{ParamFilter.FIXED})));
+        return params;
+    }
+    
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        return Collections.emptyList();
+    }
+
+    protected String getLoginArguments() {
+        return "";
     }
 }

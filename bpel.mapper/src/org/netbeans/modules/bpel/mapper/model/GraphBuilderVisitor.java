@@ -131,6 +131,11 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
         // It seems they are not supported in the BPEL
         // It can be used by predicates, but they will be shown 
         // in a separate view and will have separate loading code.
+        //
+        // TODO: 
+        // In can be necessary if the Variable-Part-Query for of 
+        // an assign->copy is used. Now it isn't supported by the runtime
+        // But later it can be necessary to support. 
     }
 
     @Override
