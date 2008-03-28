@@ -56,18 +56,20 @@ public class Program extends ASTNode {
      */
     private final ArrayList<Comment> comments = new ArrayList<Comment>();
 
-    private Program(int start, int end, Statement[] statements, List commentsList) {
+    private Program(int start, int end, Statement[] statements, List<Comment> commentsList) {
         super(start, end);
         for (Statement statement : statements) {
+            statement.setParent(this);
             this.statements.add(statement);
         }
-        for (Object comment : commentsList) {
+        for (Comment comment : commentsList) {
+            comment.setParent(this);
             this.comments.add((Comment) comment);
         }
 
     }
 
-    public Program(int start, int end, List statements, List commentsList) {
+    public Program(int start, int end, List statements, List<Comment> commentsList) {
         this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]), commentsList);
     }
 

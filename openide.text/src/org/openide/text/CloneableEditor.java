@@ -291,20 +291,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             
-            EditorKit k; 
-            synchronized (this) {
-                k = support.cesKit();
-                doc = support.getDocument();
-                kit = k;
-                notifyAll();
-            }
-            
+            EditorKit k = support.cesKit();
             if (newInitialize() && k instanceof Callable) {
                 try {
                     ((Callable) k).call();
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
+            }
+            
+            synchronized (this) {
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
             }
         }
         
