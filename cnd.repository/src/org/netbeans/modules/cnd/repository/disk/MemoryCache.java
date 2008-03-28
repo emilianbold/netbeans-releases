@@ -52,7 +52,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.Filter;
 import org.netbeans.modules.cnd.repository.util.Pair;
 
 /**
@@ -74,14 +73,12 @@ public class MemoryCache {
     private Lock refQueueLock;
     private ReferenceQueue refQueue;
     
-    private static final int DEFAULT_CACHE_CAPACITY = 77165;
-    
     // Cache statistics
     private int readCnt = 0;
     private int readHitCnt = 0;
     
     public MemoryCache() {
-        cache = new ConcurrentHashMap<Key, Object>(DEFAULT_CACHE_CAPACITY);
+        cache = new ConcurrentHashMap<Key, Object>(1024);
         refQueueLock = new ReentrantLock();
         refQueue = new ReferenceQueue();
     }
@@ -147,16 +144,16 @@ public class MemoryCache {
         }
     }
     
-    public Collection<Pair<Key, Persistent>> clearHungObjects(Filter<Key> filter) {
+    public Collection<Pair<Key, Persistent>> clearHungObjects(/*Filter<Key> filter*/) {
         processQueue();
         Collection<Pair<Key, Persistent>> result = new ArrayList<Pair<Key, Persistent>>();
         for( Iterator<Map.Entry<Key, Object>> iter = cache.entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry<Key, Object> entry = iter.next();
             if( entry.getValue() instanceof Persistent ) {
-                if( filter.accept(entry.getKey()) ) {
+                //if( filter.accept(entry.getKey()) ) {
                     result.add(new Pair(entry.getKey(), (Persistent) entry.getValue()));
                     iter.remove();
-                }
+                //}
             }
         }
         return result;

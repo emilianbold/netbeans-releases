@@ -41,12 +41,15 @@ public class ProcessesTopComponent extends TopComponent {
         setIcon (Utilities.loadImage (
           "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
           "resources/image/process.gif")); // NOI18N
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
     /**{@inheritDoc}*/
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ProcessesTopComponent.class);
+        return new HelpCtx("org.netbeans.modules.bpel.debugger." + // NOI18N
+                "ui.process.BpelProcessTopComponent"); // NOI18N
     }
 
     @Override

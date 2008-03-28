@@ -62,14 +62,11 @@
         </group>
 
         <authentication profile="SaaSServices/Yahoo/profile.properties">
-            <api-key id="dev_id"/>
+            <api-key id="appid"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getTrafficData" href="#yahoo.trafficData"/>
-    </methods>
-    -->
+    <methods/>
+ 
 </saas-services>

@@ -126,7 +126,9 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 	protected FontColorTreeTable m_Properties = null;
 	protected JCheckBox m_AdvancedCheck = null;
 	protected JButton m_ApplyButton = null;
-	
+        protected JLabel diagramTypeLabel = null;
+        protected JSplitPane splitPane = null;
+
 	protected TreeTableModel model = null;
 	protected String m_SetectedDiagramType = "";
 	protected String m_SelectedEngine = "";
@@ -172,7 +174,7 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		getContentPane().setLayout(new BorderLayout());
 		//JPanel uiPanel = new JPanel();
 		//uiPanel.setLayout(new BorderLayout());
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPane.setDividerLocation(260);
 		
 		JPanel diagramPanel = new JPanel();
@@ -200,7 +202,7 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 		m_EngineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		diagramPanel.add(scrollPane, BorderLayout.CENTER);
 		Box diagramSelectionBox = Box.createHorizontalBox();
-		JLabel diagramTypeLabel = new JLabel(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_SHOWTYPESON")));
+		diagramTypeLabel = new JLabel(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_SHOWTYPESON")));
 		DrawingPropertyResource.setMnemonic(diagramTypeLabel, DrawingPropertyResource.getString("IDS_SHOWTYPESON"));
 		m_DiagramSelection = new JComboBox();
 		diagramTypeLabel.setLabelFor(m_DiagramSelection);
@@ -405,7 +407,23 @@ public abstract class BasicColorsAndFontsDialog extends JCenterDialog
 			addStandardDrawEngines(IDiagramKind.DK_USECASE_DIAGRAM, false);
 			//addStandardDrawEngines(IDiagramKind.DK_ENTITY_DIAGRAM, true);
 		}
-
+                
+                if (m_DiagramSelection != null 
+                    && diagramTypeLabel != null
+                    && splitPane != null) 
+                {
+                    int prefferedLeftWidth = Math.min(
+                                 Math.max(m_DiagramSelection.getPreferredSize().width
+                                          + diagramTypeLabel.getPreferredSize().width
+                                          + 30, 
+                                          260), 
+                                 500);
+                    if (prefferedLeftWidth != 260) 
+                    {
+                        setSize(600 + Math.max(prefferedLeftWidth - 260, 0), 400);
+                        splitPane.setDividerLocation(prefferedLeftWidth);
+                    }
+                }
 		return true;  // return TRUE unless you set the focus to a control
 	}
 

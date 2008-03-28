@@ -1643,8 +1643,13 @@ public class PHP5ColoringLexer  {
           }
         case 133: break;
         case 14: 
-          { if (!stack.isEmpty()) {
-        popState();
+          { 
+          //  if (!stack.isEmpty()) {
+            
+            //we are pushing state when we enter the PHP code,
+            //so we need to ensure we do not pop the top most state
+            if(stack.size() > 1) {
+                popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
           }
@@ -1697,7 +1702,8 @@ public class PHP5ColoringLexer  {
           }
         case 142: break;
         case 40: 
-          { popState();
+          { yybegin(YYINITIAL);
+              stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
           }
         case 143: break;
@@ -2144,6 +2150,8 @@ public class PHP5ColoringLexer  {
         case 235: break;
         case 36: 
           { if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();    
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	return  PHPTokenId.UNKNOWN_TOKEN;
@@ -2167,6 +2175,8 @@ public class PHP5ColoringLexer  {
         case 240: break;
         case 53: 
           { if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();    
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	String text = yytext();
@@ -2190,7 +2200,9 @@ public class PHP5ColoringLexer  {
           }
         case 244: break;
         case 13: 
-          { return PHPTokenId.PHP_CURLY_OPEN;
+          { 
+              pushState(ST_PHP_IN_SCRIPTING);
+              return PHPTokenId.PHP_CURLY_OPEN;
           }
         case 245: break;
         case 61: 

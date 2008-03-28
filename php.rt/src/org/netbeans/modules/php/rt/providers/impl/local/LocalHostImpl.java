@@ -42,6 +42,7 @@ package org.netbeans.modules.php.rt.providers.impl.local;
 
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.rt.providers.impl.AbstractProvider;
 import org.netbeans.modules.php.rt.providers.impl.HostImpl;
 import org.openide.util.NbBundle;
 
@@ -63,12 +64,12 @@ public class LocalHostImpl extends HostImpl {
 
     private static Logger LOGGER = Logger.getLogger(LocalHostImpl.class.getName());
     
-    public LocalHostImpl( String name, LocalServerProvider provider ){
+    public LocalHostImpl( String name, AbstractProvider<LocalHostImpl> provider ){
         super(name, provider);
     }
     
     public LocalHostImpl(String name, String domain, String port, String baseDir, 
-            LocalServerProvider provider) 
+            AbstractProvider<LocalHostImpl> provider) 
     {
         super(name, domain, port, baseDir, provider);
     }
