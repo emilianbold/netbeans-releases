@@ -86,7 +86,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private CallStackFrame lastFrame = null;
     private boolean withSource = true;
     private boolean opened = false;
     private boolean opening = false;
@@ -301,12 +300,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return;
         }
         // reload disassembler if needed
-        // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
-        if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+        if (force || getAddressLine(frame.getAddr()) == -1) {
             String filename = frame.getFileName();
             if (filename != null && filename.length() > 0) {
                 debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
@@ -314,7 +312,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 // if filename is not known - just disassemble using address
                 debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
-            lastFrame = frame;
         }
     }
     
