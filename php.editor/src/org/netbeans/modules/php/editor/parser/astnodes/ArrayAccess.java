@@ -62,6 +62,7 @@ public class ArrayAccess extends Variable {
         super(start, end, variableName);
 
         this.index = index;
+        index.setParent(index);
         this.arrayType = arrayType;
     }
 

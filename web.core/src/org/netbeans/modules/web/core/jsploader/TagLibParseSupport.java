@@ -164,14 +164,14 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     }
 
     /** Sets the dirty flag - if the document was modified after last parsing. */
-    void setDocumentDirty(boolean b) {
+    public void setDocumentDirty(boolean b) {
         //synchronized (parseResultLock) {
             documentDirty = b;
         //}
     }
 
     /** Tests the documentDirty flag. */
-    boolean isDocumentDirty() {
+    public boolean isDocumentDirty() {
         return documentDirty;
     }
 
@@ -179,7 +179,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     * and parsing is not running yet.
       @return parsing task so caller may listen on its completion.
     */
-    Task autoParse() {
+    public Task autoParse() {
         //do not parse if it is not necessary
         //this is the BaseJspEditorSupport optimalization since the autoParse causes the webmodule
         //to be reparsed even if it has already been reparsed.

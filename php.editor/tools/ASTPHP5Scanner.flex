@@ -141,7 +141,7 @@ import java_cup.runtime.*;
 		int leftPosition = getTokenStartPosition();
 		Comment comment = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
 		commentList.add(comment);
-                System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
+                //System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
 	}	
 	
 	public void setUseAspTagsAsPhp(boolean useAspTagsAsPhp) {
@@ -222,7 +222,7 @@ import java_cup.runtime.*;
 		commentList.add(phpDocBlock);
 		reset(zzReader, documentorLexer.getBuffer(), documentorLexer.getParamenters());*/
                 
-                System.out.println("#######ParsePHPDoc()");
+                //System.out.println("#######ParsePHPDoc()");
 		//return true;
                 return false;
 	}
