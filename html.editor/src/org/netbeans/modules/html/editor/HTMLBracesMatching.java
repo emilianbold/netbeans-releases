@@ -192,13 +192,6 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 }
                 AstNode root = result.root();
                 
-                System.out.println(root);
-                System.out.println("---------");
-                for(SyntaxElement se : result.elementsList()) {
-                    System.out.println(se);
-                }
-                
-                
                 int searched =  result.getTranslatedSource() == null 
                         ? context.getSearchOffset() 
                         : result.getTranslatedSource().getAstOffset(context.getSearchOffset());
