@@ -531,6 +531,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate);
         
         for (ErrorDescription e : errorsToUpdate) {
+            //TODO: #115340: e can be for an unknown reason null:
+            if (e == null) {
+                continue;
+            }
+            
             LazyFixList l = e.getFixes();
 
             if (l.probablyContainsFixes() && !l.isComputed()) {
