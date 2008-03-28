@@ -51,6 +51,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.options.ProjectActionsPreferences;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.ActionsDialogs;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -294,7 +295,7 @@ class ImportCommand extends AbstractCommand implements Cancellable {
     private File getTmpFile(File to) {
         File parentFolder = to.getParentFile();
         File toTmp = new File(parentFolder, 
-                System.currentTimeMillis() + to.getName() + PhpProject.TMP_FILE_POSTFIX);
+                System.currentTimeMillis() + to.getName() + PhpProjectProperties.TMP_FILE_POSTFIX);
         return toTmp;
     }
 

@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -422,7 +423,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          */
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
-            if (property.startsWith(PhpProject.SRC_) && property.endsWith(PhpProject._DIR)) {
+            if (property.startsWith(PhpProjectProperties.SRC_) && property.endsWith(PhpProjectProperties._DIR)) {
                 createNodes();
             }
         }
@@ -926,7 +927,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         
         private boolean isNotTemporaryFile(DataObject object){
                 String name = object.getPrimaryFile().getNameExt();
-                return !name.endsWith(PhpProject.TMP_FILE_POSTFIX);
+                return !name.endsWith(PhpProjectProperties.TMP_FILE_POSTFIX);
         }
         
         private final File PROJECT_XML = getProject().getHelper()

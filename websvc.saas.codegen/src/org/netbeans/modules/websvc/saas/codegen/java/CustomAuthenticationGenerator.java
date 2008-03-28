@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -38,66 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.editors.api.utils;
+package org.netbeans.modules.websvc.saas.codegen.java;
 
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.11.27
+ * Code generator for Custom service Authentication
+ *
+ * @author ayubskhan
  */
-public class Duration {
-  public Duration(
-    boolean hasMinus,
-    int years,
-    int months,
-    int days,
-    int hours,
-    int minutes,
-    double seconds
-  ) {
-    myHasMinus = hasMinus;
-    myYears = years;
-    myMonths = months;
-    myDays = days;
-    myHours = hours;
-    myMinutes = minutes;
-    mySeconds = seconds;
-  }
+public class CustomAuthenticationGenerator extends SaasAuthenticationGenerator {
 
-  public boolean hasMinus() {
-    return myHasMinus;
-  }
+    public CustomAuthenticationGenerator(CustomSaasBean bean,
+            Project project) throws IOException {
+        super(bean, project);
+    }
 
-  public int getYears() {
-    return myYears;
-  }
-
-  public int getMonths() {
-    return myMonths;
-  }
-
-  public int getDays() {
-    return myDays;
-  }
-
-  public int getHours() {
-    return myHours;
-  }
-
-  public int getMinutes() {
-    return myMinutes;
-  }
-
-  public double getSeconds() {
-    return mySeconds;
-  }
-
-  private boolean myHasMinus;
-  private int myYears;
-  private int myMonths;
-  private int myDays;
-  private int myHours;
-  private int myMinutes;
-  private double mySeconds;
 }

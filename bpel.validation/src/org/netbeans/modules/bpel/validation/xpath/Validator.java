@@ -73,6 +73,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+import org.netbeans.modules.soa.ui.util.Duration;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -238,22 +240,22 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 
   @Override
   public void visit(Branches branches) {
-      checkXPath(branches);
+    checkXPath(branches);
   }
 
   @Override
   public void visit(Condition condition) {
-      checkXPath(condition);
+    checkXPath(condition);
   }
   
   @Override
   public void visit(DeadlineExpression deadline) {
-      checkXPath(deadline);
+    checkXPath(deadline);
   }
   
   @Override
   public void visit(FinalCounterValue counter) {
-      checkXPath(counter);
+    checkXPath(counter);
   }
   
   @Override
@@ -266,16 +268,42 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   public void visit(RepeatEvery repeatEvery) {
     checkXPath(repeatEvery);
     checkDuration(repeatEvery);
+    // # 117688
+    checkNegative(repeatEvery);
+  }
+
+  private void checkNegative(RepeatEvery repeatEvery) {
+    String value = repeatEvery.getContent();
+
+    try {
+      Duration duration = DurationUtil.parseDuration(value, true);
+
+      if (duration.hasMinus() || isZero(duration)) {
+        addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
+      }
+    }
+    catch (IllegalArgumentException e) {}
+  }
+
+  private boolean isZero(Duration duration) {
+//out("duration: " + duration);
+    return
+      duration.getYears() == 0 &&
+      duration.getMonths() == 0 &&
+      duration.getDays() == 0 &&
+      duration.getHours() == 0 &&
+      duration.getMinutes() == 0 &&
+      duration.getSeconds() == 0.0;
   }
   
   @Override
   public void visit(Query query) {
-      checkXPath(query);
+    checkXPath(query);
   }
 
   @Override
   public void visit(StartCounterValue counter) {
-      checkXPath(counter);
+    checkXPath(counter);
   }
 
   private SchemaComponent checkXPath(ContentElement element) {
@@ -284,6 +312,14 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 
   // # 117689
   private void checkDuration(DurationExpression duration) {
+    String value = duration.getContent();
+
+    try {
+      DurationUtil.parseDuration(value, true);
+    }
+    catch (IllegalArgumentException e) {
+      addError("FIX_Duration", duration, e.getMessage()); // NOI18N
+    }
   }
   
   private static void out() {
