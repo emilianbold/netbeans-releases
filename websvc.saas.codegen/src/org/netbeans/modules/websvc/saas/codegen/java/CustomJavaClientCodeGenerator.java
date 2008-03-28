@@ -49,14 +49,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
@@ -78,6 +72,15 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
 
         preGenerate();
 
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
+        
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
+                
+        //Modify Authenticator class
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
+        
         //execute this block before insertSaasServiceAccessCode() 
         setJaxbWrapper();
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
@@ -129,6 +132,7 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
     protected void addImportsToTargetFile() throws IOException {
         List<String> imports = new ArrayList<String>();
         imports.add(getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName());
+        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getAuthenticatorClassName());
         imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
         Util.addImportsToSource(getTargetSource(), imports);
     }
@@ -143,10 +147,15 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
         String indent = "        ";
         String indent2 = "             ";
         List<ParameterInfo> filterParams = getServiceMethodParameters();
-        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        paramUse += Util.getHeaderOrParameterUsage(getBean().getInputParameters());
         paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
         
         String methodBody = indent+"try {\n";
+        
+        //Insert authentication code before invoking custom service
+        methodBody += "             " +
+                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
+        
         methodBody += paramDecl + "\n";
         methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";

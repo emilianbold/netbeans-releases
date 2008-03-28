@@ -53,7 +53,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * REST Web Service
  *
- * @author Peter Liu
+ * @author __USER__
  */
 
 @Path("/helloWorld")
