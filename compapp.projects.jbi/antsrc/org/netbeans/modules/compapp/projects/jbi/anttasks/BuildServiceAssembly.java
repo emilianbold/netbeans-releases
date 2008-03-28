@@ -485,10 +485,16 @@ public class BuildServiceAssembly extends Task {
                 URI realUri = new URI(uri);
                 
                 if (realUri.getScheme() == null) {
-                    uri = "../" + sesuName + "/META-INF/" + uri;
+                    if (new File(catalogFile.getParentFile(), 
+                            "../" + sesuName + "/META-INF/" + uri).exists()) {
+                        uri = "../" + sesuName + "/META-INF/" + uri;
+                    } else {
+                        uri = sesuName + "/META-INF/" + uri;
+                    }
                     
                     // correct the URI (get rid of "META-INF/../")
                     uri = uri.replace("/META-INF/..", "");
+                    
                     
                     systemNode.setAttribute("uri", uri);
                 }
