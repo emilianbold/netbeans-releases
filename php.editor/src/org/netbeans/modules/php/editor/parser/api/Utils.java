@@ -36,76 +36,37 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+
+package org.netbeans.modules.php.editor.parser.api;
+
+import java.util.List;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
- * Represents an assignment statement.
- * <pre>e.g.<pre> $a = 5,
- * $a += 5,
- * $a .= $b,
+ *
+ * @author Petr Pisl
  */
-public class Assignment extends Expression {
-
-    public enum Type {
-        EQUAL, // '='
-        PLUS_EQUAL, // '+='
-        MINUS_EQUAL, // '-='
-    	MUL_EQUAL, // '*='
-    	DIV_EQUAL, // '/='
-    	CONCAT_EQUAL, // '.='
-    	MOD_EQUAL, // '%='
-    	AND_EQUAL, // '&='
-    	OR_EQUAL, // '|='
-    	XOR_EQUAL, // '^='
-    	SL_EQUAL, // '<<='
-    	SR_EQUAL // '>>='
-    }
+public class Utils {
     
-    private VariableBase leftHandSide;
-    private Assignment.Type operator;
-    private Expression rightHandSide;
-
-    public Assignment(int start, int end, VariableBase leftHandSide, Assignment.Type operator, Expression rightHandSide) {
-        super(start, end);
-        if (leftHandSide == null || rightHandSide == null) {
-            throw new IllegalArgumentException();
+    /**
+     * 
+     * @param root a Program node, where to look for the comment
+     * @param node  a Node for which a commen you want to find. 
+     * @return appropriate comment or null, if the comment doesn't exists.
+     */
+    public static Comment getCommentForNode(Program root, ASTNode node) {
+        List<Comment> comments = root.getComments();
+        
+        if (node.getEndOffset() < root.getEndOffset()) {
+            for (Comment comm : comments) {
+                if (comm.getEndOffset() + 1 == node.getStartOffset()) {
+                    return comm;
+                }
+            }
         }
-        this.leftHandSide = leftHandSide;
-        this.operator = operator;
-        this.rightHandSide = rightHandSide;
-        leftHandSide.setParent(this);
-        rightHandSide.setParent(this);
-    }
-
-    /**
-     * Returns the operator of this assignment expression.
-     * 
-     * @return the assignment operator
-     */
-    public Assignment.Type getOperator() {
-        return this.operator;
-    }
-
-    /**
-     * Returns the left hand side of this assignment expression.
-     * 
-     * @return the left hand side node
-     */
-    public VariableBase getLeftHandSide() {
-        return this.leftHandSide;
-    }
-
-    /**
-     * Returns the right hand side of this assignment expression.
-     * 
-     * @return the right hand side node
-     */
-    public Expression getRightHandSide() {
-        return this.rightHandSide;
-    }
-    
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+        
+        return null;
     }
 }

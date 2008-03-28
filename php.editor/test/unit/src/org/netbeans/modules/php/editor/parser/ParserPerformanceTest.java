@@ -36,76 +36,47 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+
+package org.netbeans.modules.php.editor.parser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.util.Date;
+import java_cup.runtime.Symbol;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
- * Represents an assignment statement.
- * <pre>e.g.<pre> $a = 5,
- * $a += 5,
- * $a .= $b,
+ *
+ * @author Petr Pisl
  */
-public class Assignment extends Expression {
-
-    public enum Type {
-        EQUAL, // '='
-        PLUS_EQUAL, // '+='
-        MINUS_EQUAL, // '-='
-    	MUL_EQUAL, // '*='
-    	DIV_EQUAL, // '/='
-    	CONCAT_EQUAL, // '.='
-    	MOD_EQUAL, // '%='
-    	AND_EQUAL, // '&='
-    	OR_EQUAL, // '|='
-    	XOR_EQUAL, // '^='
-    	SL_EQUAL, // '<<='
-    	SR_EQUAL // '>>='
-    }
+public class ParserPerformanceTest extends NbTestCase {
     
-    private VariableBase leftHandSide;
-    private Assignment.Type operator;
-    private Expression rightHandSide;
+    public ParserPerformanceTest(String testName) {
+        super(testName);
+    }            
 
-    public Assignment(int start, int end, VariableBase leftHandSide, Assignment.Type operator, Expression rightHandSide) {
-        super(start, end);
-        if (leftHandSide == null || rightHandSide == null) {
-            throw new IllegalArgumentException();
-        }
-        this.leftHandSide = leftHandSide;
-        this.operator = operator;
-        this.rightHandSide = rightHandSide;
-        leftHandSide.setParent(this);
-        rightHandSide.setParent(this);
-    }
-
-    /**
-     * Returns the operator of this assignment expression.
-     * 
-     * @return the assignment operator
-     */
-    public Assignment.Type getOperator() {
-        return this.operator;
-    }
-
-    /**
-     * Returns the left hand side of this assignment expression.
-     * 
-     * @return the left hand side node
-     */
-    public VariableBase getLeftHandSide() {
-        return this.leftHandSide;
-    }
-
-    /**
-     * Returns the right hand side of this assignment expression.
-     * 
-     * @return the right hand side node
-     */
-    public Expression getRightHandSide() {
-        return this.rightHandSide;
-    }
-    
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    // the current time is around 700 ms
+    public void testBigFile() throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/Subs.php");
+        assertTrue(testFile.exists());
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Date start = new Date();
+        Symbol root = parser.parse();
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Parsing of big files takes: " + time);
+        assertTrue(time < 1000);
     }
 }

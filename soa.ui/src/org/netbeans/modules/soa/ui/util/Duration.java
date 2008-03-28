@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.editors.api.utils;
+package org.netbeans.modules.soa.ui.util;
 
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -91,6 +91,11 @@ public class Duration {
 
   public double getSeconds() {
     return mySeconds;
+  }
+
+  @Override
+  public String toString() {
+    return myYears + " " + myMonths + " " + myDays + " " + myHours + " " + myMinutes + " " + mySeconds; // NOI18N
   }
 
   private boolean myHasMinus;
