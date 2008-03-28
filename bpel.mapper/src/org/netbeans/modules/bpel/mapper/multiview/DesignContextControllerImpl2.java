@@ -264,7 +264,12 @@ public class DesignContextControllerImpl2
     }
 
     private synchronized void initContext() {
-        setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+        BpelDesignContext context = BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel);
+        if (context == null && myBpelModel != null) {
+            context = BpelDesignContextFactory.getInstance().
+                    getProcessContext(myBpelModel, mMapperTcContext.getTopComponent().getLookup());
+        }
+        setContext(context);
         myMapperStateManager = new MapperStateManager(mMapperTcContext);
     }
 
@@ -379,6 +384,13 @@ public class DesignContextControllerImpl2
 
     private void reloadMapperImpl() {
         if (mContext == null) {
+            Mapper mapper = mMapperTcContext != null ? mMapperTcContext.getMapper() : null;
+            if ( mapper != null) {
+                MapperModel mapperModel = mapper.getModel();
+                if (mapperModel == null) {
+                    showMapperIsEmpty();
+                }
+            }
             return;
         }
         //
@@ -436,6 +448,10 @@ public class DesignContextControllerImpl2
 
     private void showModelIsInvalid() {
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class, "LBL_Invalid_BpelModel")); // NOI18N
+    }
+
+    private void showMapperIsEmpty() {
+        disableMapper(NbBundle.getMessage(MapperMultiviewElement.class, "LBL_EmptyMapperContext")); // NOI18N
     }
 
     private void showUnsupportedEntity(BpelDesignContext context) {

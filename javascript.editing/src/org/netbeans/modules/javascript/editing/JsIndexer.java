@@ -126,6 +126,9 @@ public class JsIndexer implements Indexer {
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
     
+    private FileObject cachedFo;
+    private boolean cachedIndexable;
+    
     public String getIndexVersion() {
         return "6.113"; // NOI18N
     }
@@ -157,19 +160,27 @@ public class JsIndexer implements Indexer {
             // other stuff
             if (name.equals("utilities.js")) {
                 String relative = file.getRelativePath();
-                if (relative.indexOf("yui") != -1) { // NOI18N
+                if (relative != null && relative.indexOf("yui") != -1) { // NOI18N
                     return false;
                 }
             }
             
             // Avoid double-indexing files that have multiple versions - e.g. foo.js and foo-min.js
             // or foo.uncompressed
-            if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) {
+            if (name.endsWith("min.js") && name.length() > 6 && !Character.isLetter(name.charAt(name.length()-7))) { // NOI18N
                 // See if we have a corresponding "un-min'ed" version in the same directory;
                 // if so, skip it
                 // Subtrack out the -min part
-                name = name.substring(0, name.length()-7) + ".js"; // NOI18N
-                if (new File(file.getFile().getParentFile(), name).exists()) {
+                name = name.substring(0, name.length()-7); // NOI18N
+                if (file.getFileObject().getParent().getFileObject(name, "js") != null) { // NOI18N
+                    return false;
+                }
+            } else if (name.endsWith("-debug.js")) { // NOI18N
+                // See if we have a corresponding "un-min'ed" version in the same directory;
+                // if so, skip it
+                // Subtrack out the -min part
+                name = name.substring(0, name.length()-9); // NOI18N
+                if (file.getFileObject().getParent().getFileObject(name, "js") != null) { // NOI18N
                     return false;
                 }
             } else {
@@ -181,29 +192,42 @@ public class JsIndexer implements Indexer {
                 // (Perhaps hardcode the list). It would be good if we could check multiple of the loadpath directories
                 // too, not just the same directory since there's a good likelihood (with the library manager) you
                 // have these in different dirs.
-                if (name.endsWith(".js") && !name.endsWith(".uncompressed.js") && !name.endsWith("-debug.js")) { // NOI18N
-                    File parent = file.getFile().getParentFile();
+                FileObject parent = file.getFileObject().getParent();
+                if (!name.endsWith(".uncompressed.js")) { // NOI18N
                     String base = name.substring(0, name.length()-3);
-                    if (new File(parent, base + ".uncompressed.js").exists()) { // NOI18N
-                        return false;
-                    } else if (new File(parent, base + "-debug.js").exists()) { // NOI18N
+                    if (parent.getFileObject(base + ".uncompressed", "js") != null) { // NOI18N
                         return false;
                     }
                 }
+                
+                // From here on, no per-file information is checked; these apply to all files in the
+                // same directory (e.g. all files in javascript are skipped if there is a corresponding
+                // sibling javascript_uncompressed, and similarly, if there is an everything.sdoc file,
+                // all the files are skipped in the directory.
+                if (parent == cachedFo) {
+                    return cachedIndexable;
+                }
+                cachedFo = parent;
+                if (parent.getFileObject("everything", "sdoc") != null) {
+                    cachedIndexable = false;
+                    return false;
+                }
+                for (int i = 0; i <= 3 && parent != null; i++, parent = parent.getParent()) {
+                    if (parent.getName().equals("javascript")) { // NOI18N
+                        // Webui has a convention where they place the uncompressed files in a parallel directory
+                        FileObject grandParent = parent.getParent();
+                        if (grandParent != null) {
+                            if (grandParent.getFileObject("javascript_uncompressed") != null) { // NOI18N
+                                cachedIndexable = false;
+                                return false;
+                            }
+                        }
+                        break;
+                    }
+                }
+                cachedIndexable = true;
             }
             
-            // Skip Gem versions; Rails copies these files into the project anyway! Don't want
-            // duplicate entries.
-            if (PREINDEXING) {
-                try {
-                    //if (file.getRelativePath().startsWith("action_view")) {
-                    if (file.getFileObject().getURL().toExternalForm().indexOf("/gems/") != -1) {
-                        return false;
-                    }
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
             return true;
         } else if (extension.equals("sdoc")) {
             // sdoc indexing
@@ -303,7 +327,10 @@ public class JsIndexer implements Indexer {
             }
             
             if (url.endsWith(".js")) {
-                indexRelatedScriptDocs();
+                boolean done = indexRelatedScriptDocs();
+                if (done) {
+                    return;
+                }
             }
 
             IndexDocument document = factory.createDocument(40); // TODO - measure!
@@ -768,7 +795,7 @@ public class JsIndexer implements Indexer {
             }
         }
         
-        private void indexRelatedScriptDocs() {
+        private boolean indexRelatedScriptDocs() {
             // (1) If it's a simple library like JQuery, use the assocaited file, else
             // (2) If it's a YUI file, use the associated file in sdoc, else
             // (3) If it's a YUI "collections" file, use the associated set of files (I must iterate)
@@ -792,6 +819,10 @@ public class JsIndexer implements Indexer {
             int begin = url.lastIndexOf('/');
             if (url.startsWith("jquery-", begin+1)) { // NOI18N
                 indexScriptDoc("jquery.sdoc", false); // NOI18N
+                return true;
+            } else if (url.startsWith("dojo.js", begin+1)) { // NOI18N
+                indexScriptDoc("dojo.sdoc", false); // NOI18N
+                return true;
             } else if (url.startsWith("yahoo.js", begin+1) || // NOI18N
                     url.startsWith("yahoo-debug.js", begin+1) || // NOI18N
                     url.startsWith("yahoo-min.js", begin+1)) { // NOI18N
@@ -803,6 +834,7 @@ public class JsIndexer implements Indexer {
                     // Index all the YUI stuff
                     indexScriptDoc("yui", true);
                 }
+                return true;
             } else {
                 // TODO - do something smarter here based on which "collection" files
                 // you're using which pull in many individual files...
@@ -810,8 +842,11 @@ public class JsIndexer implements Indexer {
                 int yuiIndex = url.indexOf("/yui/build/"); // NOI18N
                 if (yuiIndex != -1) {
                     indexScriptDoc("yui/" + url.substring(yuiIndex+"/yui/build/".length()), false);
+                    return true;
                 }
             }
+            
+            return false;
         }
 
         /**
@@ -840,7 +875,9 @@ public class JsIndexer implements Indexer {
                 if (sdocsRootUrl == null) {
                     File sdocs = InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip",  // NOI18N
                             "org-netbeans-modules-javascript-editing.jar", false); // NOI18N
-                    if (sdocs.exists()) {
+                    if (sdocs == null) {
+                        sdocsRootUrl = "";
+                    } else if (sdocs.exists()) {
                         try {
                             String s = sdocs.toURI().toURL().toExternalForm() + "!/sdocs"; // NOI18N
                             URL u = new URL("jar:" + s);// NOI18N

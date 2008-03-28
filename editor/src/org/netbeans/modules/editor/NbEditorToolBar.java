@@ -131,7 +131,7 @@ import org.openide.util.lookup.ProxyLookup;
      */
     private static final MouseListener sharedMouseListener
         = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
+            public @Override void mouseEntered(MouseEvent evt) {
                 Object src = evt.getSource();
                 
                 if (src instanceof AbstractButton) {
@@ -143,7 +143,7 @@ import org.openide.util.lookup.ProxyLookup;
                 }
             }
             
-            public void mouseExited(MouseEvent evt) {
+            public @Override void mouseExited(MouseEvent evt) {
                 Object src = evt.getSource();
                 if (src instanceof AbstractButton)
                 {
@@ -217,7 +217,7 @@ import org.openide.util.lookup.ProxyLookup;
        module install/uninstall */
     private void installModulesInstallationListener(){
         moduleRegListener = new FileChangeAdapter() {
-            public void fileChanged(FileEvent fe){
+            public @Override void fileChanged(FileEvent fe){
                 //some module installed/uninstalled. Refresh toolbar content
                 Runnable r = new Runnable() {
                         public void run() {
@@ -239,7 +239,7 @@ import org.openide.util.lookup.ProxyLookup;
         }
     }
     
-    public String getUIClassID() {
+    public @Override String getUIClassID() {
         //For GTK and Aqua look and feels, we provide a custom toolbar UI -
         //but we cannot override this globally or it will cause problems for
         //the form editor & other things
@@ -250,23 +250,25 @@ import org.openide.util.lookup.ProxyLookup;
         }
     }
     
-    public String getName() {
+    public @Override String getName() {
         //Required for Aqua L&F toolbar UI
         return "editorToolbar"; // NOI18N
     }
     
-    public void setUI(ToolBarUI ui){
+    public @Override void setUI(ToolBarUI ui){
         addListener = false;
         super.setUI(ui);
         addListener = true;
     }
     
+    @Override
     public synchronized void addMouseListener(MouseListener l){
         if (addListener){
             super.addMouseListener(l);
         }
     }
     
+    @Override
     public synchronized void addMouseMotionListener(MouseMotionListener l){
         if (addListener){
             super.addMouseMotionListener(l);
@@ -471,7 +473,7 @@ import org.openide.util.lookup.ProxyLookup;
         }
         
         for(Object item : items) {
-            if (item instanceof JSeparator) {
+            if (item == null || item instanceof JSeparator) {
                 addSeparator();
                 continue;
             }
@@ -640,10 +642,10 @@ import org.openide.util.lookup.ProxyLookup;
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         JTextComponent comp = getComponent();
         if (editorActionName != null && comp != null) {
-            TextUI ui = comp.getUI();
+            TextUI textUI = comp.getUI();
             Keymap km = comp.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(comp);
+            if (textUI != null && km != null) {
+                EditorKit kit = textUI.getEditorKit(comp);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {

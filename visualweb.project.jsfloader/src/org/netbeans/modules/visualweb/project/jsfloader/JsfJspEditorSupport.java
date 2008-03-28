@@ -44,6 +44,11 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 
 
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.visualweb.palette.api.CodeClipPaletteActions;
 import java.io.InputStream;
 import java.io.IOException;
@@ -58,6 +63,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.DialogDisplayer;
@@ -76,6 +82,8 @@ import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -102,6 +110,12 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     private String encoding;
     private static final String defaultEncoding = "UTF-8"; // NOI18N
     
+    private static final int AUTO_PARSING_DELAY = 2000;//ms
+    
+    /** Timer which countdowns the auto-reparsing time. */
+    private Timer timer;
+    
+    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -118,8 +132,74 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         super(obj, new Environment(obj));
         encoding = null;
         setMIMEType("text/x-jsp"); // NOI18N
+        initialize();
     }
 
+         private void initialize() {
+        // initialize timer
+        timer = new Timer(0, new java.awt.event.ActionListener() {
+
+             public void actionPerformed(java.awt.event.ActionEvent e) {
+                 final TagLibParseCookie sup = (TagLibParseCookie) getDataObject().getCookie(TagLibParseCookie.class);
+                 if (sup != null) {
+                     sup.autoParse().addTaskListener(new TaskListener() {
+
+                         public void taskFinished(Task t) {
+
+                             if (sup.isDocumentDirty()) {
+                                 restartTimer(false);
+                             }
+                         }
+                     });
+                 }
+             }
+         });
+        timer.setInitialDelay(AUTO_PARSING_DELAY);
+        timer.setRepeats(false);
+        
+        // create document listener
+        final DocumentListener docListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { change(e); }
+            public void changedUpdate(DocumentEvent e) { }
+            public void removeUpdate(DocumentEvent e) { change(e); }
+            
+            private void change(DocumentEvent e) {
+                restartTimer(false);
+                TagLibParseCookie sup = (TagLibParseCookie)getDataObject().getCookie(TagLibParseCookie.class);
+                if (sup != null) {
+                    sup.setDocumentDirty(true);
+                }
+            }
+        };
+        
+        // add change listener
+        addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent evt) {
+                if (isDocumentLoaded()) {
+                    if (getDocument() != null) {
+                        getDocument().addDocumentListener(docListener);
+                    }
+                }
+            }
+        });
+    
+    }
+    
+     /** Restart the timer which starts the parser after the specified delay.
+     * @param onlyIfRunning Restarts the timer only if it is already running
+     */
+    private void restartTimer(boolean onlyIfRunning) {
+        if (onlyIfRunning && !timer.isRunning()){
+            return;
+        }
+            
+        
+        int delay = AUTO_PARSING_DELAY;
+        if (delay > 0) {
+            timer.setInitialDelay(delay);
+            timer.restart();
+        }
+    }
 
     public void openDesigner() {
         JsfJavaEditorSupport jsfJavaEditorSupport = getJsfJavaEditorSupport(false);

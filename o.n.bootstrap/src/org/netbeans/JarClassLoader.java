@@ -701,7 +701,7 @@ public class JarClassLoader extends ProxyClassLoader {
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {
-                String replace = u.toExternalForm().replaceAll("nbjcl", "jar");
+                String replace = u.toExternalForm().replaceAll("nbjcl:", "jar:");
                 
                 if (archive.isActive()) {
                     LOGGER.log(Level.WARNING, "Cannot find {0} in current sources", jar);

@@ -59,18 +59,18 @@
         </group>
         <code-gen>
             <artifacts targets="servlet,resource">
-                <artifact id="GoogleMap" type="template"
+                <artifact id="GoogleMapService" type="template"
                     url="Templates/SaaSServices/GoogleMapResource.java"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->
         <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="key"/>
+            <api-key id="apiKey"/>
         </authentication>
     </saas-metadata>
 
     <methods>
-        <method name="getGoogleMap" href="GoogleMap">      
+        <method name="getGoogleMap" href="GoogleMapService">      
             <input>
                 <params>
                     <param name="apiKey" type="string"/>

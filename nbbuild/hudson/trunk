@@ -91,7 +91,7 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
             (
                 echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
                 echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-                echo; cat $report
+                echo; tail -n 200 $report
             ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
         done
     fi
@@ -107,7 +107,7 @@ if [ -f $sigtest_jar ]; then
         (
             echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
             echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
-            echo; cat $sigtest_gen.log
+            echo; tail -n 200 $sigtest_gen.log
         ) | mail -s "`basename $report` - cannot generate sigtest golden files in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
 
         cat >$sigtest_gen.xml <<KONEC
