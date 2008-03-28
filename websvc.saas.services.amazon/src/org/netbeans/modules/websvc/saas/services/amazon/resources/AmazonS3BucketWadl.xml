@@ -44,8 +44,12 @@
              xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
              xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
              ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
-             xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>
+             xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:bucket="urn:amazons3:amazons3bucket"
+     >
+    <grammars>
+        <include href="AmazonS3Bucket.xsd"/>
+    </grammars>
     <resources base="http://">
         <!--
             API documentation:
@@ -61,7 +65,7 @@
                     <param name="Authorization" type="xsd:string" style="header" required="true"/>
                 </request>
                 <response>
-                    <representation mediaType="application/xml"/>
+                    <representation mediaType="application/xml" element="bucket:ListBucketResult"/>
                 </response>
             </method>
             <method name="PUT" id="createBucket">
