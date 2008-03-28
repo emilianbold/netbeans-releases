@@ -68,7 +68,7 @@ FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$
         b [12:41/301-12:46/306]  TYPE: int TEXT=int  [12:41/301-12:44/304]  INIT: null  SCOPE: call_op 
     RETURNS int TEXT=int  [12:1/261-12:4/264]
 VARIABLE all_ops [14:1/310-14:40/349]  TYPE: OP[] TEXT=OP[]  [14:1/310-14:3/312]  INIT: text='{'  SCOPE: $Global$ 
-VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354]  INIT: text='{'  SCOPE: $Global$ 
+VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:7/357]  INIT: text='{'  SCOPE: $Global$ 
 FUNCTION f0 [19:1/409-19:18/426] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f0(int,int)
@@ -175,7 +175,7 @@ FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$
         b [12:41/301-12:46/306]  TYPE: int TEXT=int  [12:41/301-12:44/304]  INIT: null  SCOPE: call_op 
     RETURNS int TEXT=int  [12:1/261-12:4/264]
 VARIABLE all_ops [14:1/310-14:40/349]  TYPE: OP[] TEXT=OP[]  [14:1/310-14:3/312]  INIT: text='{'  SCOPE: $Global$ 
-VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354]  INIT: text='{'  SCOPE: $Global$ 
+VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:7/357]  INIT: text='{'  SCOPE: $Global$ 
 FUNCTION f0 [19:1/409-19:18/426] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f0(int,int)
