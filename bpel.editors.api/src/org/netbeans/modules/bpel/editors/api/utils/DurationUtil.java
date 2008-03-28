@@ -38,12 +38,29 @@ public final class DurationUtil {
     int hours = 0;
     int minutes = 0;
     double seconds = 0.0;
-
+//out("1");
+    if (value == null || value.length() == 0) {
+      return throwException("FIX_Empty_Value", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+    }
+//out("2");
+    if (!value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+      return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
+    }
+    if (value.length() == 1 && value.startsWith(QUOTE)) {
+      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+    }
+    if (value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+    }
+    if (!value.startsWith(QUOTE) && value.endsWith(QUOTE)) {
+      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+    }
     value = removeQuotes(value);
 
-    if (value == null || value.length() == 0) {
-      return throwException("Value is empty.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+    if (value.length() == 0) {
+      return throwException("FIX_Empty_Value", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
+//out("3");
     int k;
     boolean wasDesignator = false;
     boolean wasDesignatorT = false;
@@ -55,7 +72,7 @@ public final class DurationUtil {
     }
     // P
     if (value.charAt(0) != P_DELIM.charAt(0)) {
-      return throwException("There is no 'P' symbol.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      return throwException("FIX_P_symbol", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
     value = value.substring(1);
 
@@ -67,21 +84,27 @@ public final class DurationUtil {
       years = parseInt(value.substring(0, k));
        
       if (years < 0) {
-        return throwException("Error in years.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        return throwException("FIX_Year", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
       value = value.substring(k + 1);
     }
     // months 
     k = value.indexOf(M_DELIM);
+    int t = value.indexOf(T_DELIM);
+//out("4");
     
     if (k != -1) {
-      wasDesignator = true;
       months = parseInt(value.substring(0, k));
-        
+
       if (months < 0) {
-        return throwException("Error in months.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        if (t == -1 || k < t) {
+          return throwException("FIX_Months", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        }
       }
-      value = value.substring(k + 1);
+      else {
+        wasDesignator = true;
+        value = value.substring(k + 1);
+      }
     }
     // days 
     k = value.indexOf(D_DELIM);
@@ -91,16 +114,20 @@ public final class DurationUtil {
       days = parseInt(value.substring(0, k));
         
       if (days < 0) {
-        return throwException("Error in days.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        return throwException("FIX_Days", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
       value = value.substring(k + 1);
     }
     if (value.length() == 0) {
+      if ( !wasDesignator) {
+        return throwException("FIX_Designator", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      }
       return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
     }
+//out("T: " + value);
     // T
     if (value.charAt(0) != T_DELIM.charAt(0)) {
-      return throwException("Symbol 'T' is expected.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      return throwException("FIX_T_symbol", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
     value = value.substring(1);
 
@@ -113,7 +140,7 @@ public final class DurationUtil {
       hours = parseInt(value.substring(0, k));
         
       if (hours < 0) {
-        return throwException("Error in hours.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        return throwException("FIX_Hours", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
       value = value.substring(k + 1);
     }
@@ -126,7 +153,7 @@ public final class DurationUtil {
       minutes = parseInt(value.substring(0, k));
         
       if (minutes < 0) {
-        return throwException("Error in minutes.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        return throwException("FIX_Minutes", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
       value = value.substring(k + 1);
     }
@@ -139,21 +166,33 @@ public final class DurationUtil {
       seconds = parseDouble(value.substring(0, k));
         
       if (seconds < 0) {
-        return throwException("Error in seconds.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+        return throwException("FIX_Seconds", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
       }
       value = value.substring(k + 1);
     }
     if ( !wasDesignatorT) {
-      return throwException("The designator 'T' must be absent if and only if all of the time items are absent.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      return throwException("FIX_Absent_T_symbol", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
     if ( !wasDesignator) {
-      return throwException("At least one number and its designator must be present.", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      return throwException("FIX_Designator", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
-//out("CREATE DURATION: " + seconds);
-    return throwException(null, false, hasMinus, years, months, days, hours, minutes, seconds);
+//out("6: " + years + " " + months + " " + days + " " + hours + " " + minutes + " " + seconds);
+    return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static Duration throwException(String message, boolean throwException, 
+  private static Duration throwException(String key, boolean throwException, 
+    boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
+  {
+    return throwExceptionMsg(i18n(DurationUtil.class, key), throwException, hasMinus, years, months, days, hours, minutes, seconds);
+  }
+
+  private static Duration throwException(String key, String param, boolean throwException, 
+    boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
+  {
+    return throwExceptionMsg(i18n(DurationUtil.class, key, param), throwException, hasMinus, years, months, days, hours, minutes, seconds);
+  }
+
+  private static Duration throwExceptionMsg(String message, boolean throwException, 
     boolean hasMinus,
     int years,
     int months,
@@ -162,7 +201,7 @@ public final class DurationUtil {
     int minutes,
     double seconds)
   {
-//if (message != null) out("EXCEPTION: " + message);
+//out("ERROR: " + message);
     if (throwException) {
       throw new IllegalArgumentException(message);
     }
@@ -177,10 +216,10 @@ public final class DurationUtil {
     if (value == null) {
       return null;
     }
-    if (value.startsWith(DurationUtil.QUOTE)) {
+    if (value.startsWith(QUOTE)) {
       value = value.substring(1);
     }
-    if (value.endsWith(DurationUtil.QUOTE)) {
+    if (value.endsWith(QUOTE)) {
       value = value.substring(0, value.length() - 1);
     }
     return value;
