@@ -57,7 +57,8 @@ import org.openide.util.NbBundle;
  * @author David
  */
 public class PropertiesDialog  {
-    private static Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final String HELP_CTX = PropertiesDialog.class.getName();
     
     public enum Tab { BASIC, ADMIN };
     
@@ -132,7 +133,7 @@ public class PropertiesDialog  {
         DialogDescriptor descriptor = new DialogDescriptor(
                 tabbedPane, 
                 getMessage("PropertiesDialog.Title"));
-        descriptor.setHelpCtx(new HelpCtx("MySQL properties"));
+        descriptor.setHelpCtx(new HelpCtx(HELP_CTX));
         
         basePanel.setDialogDescriptor(descriptor);
         adminPanel.setDialogDescriptor(descriptor);
@@ -176,11 +177,10 @@ public class PropertiesDialog  {
 
         ServerNodeProvider provider = ServerNodeProvider.getDefault();
         if ( ! provider.isRegistered() ) {
+            // setRegistered will connect the server
             provider.setRegistered(true);
             
-        }
-        
-        if ( needsReconnect ) {
+        } else if ( needsReconnect ) {
             server.connectAsync();
         }
     }

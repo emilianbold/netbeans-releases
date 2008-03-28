@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.swing.text.Position;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegion;
 
 /**
  * Implementation of the code template parameter.
@@ -96,9 +96,7 @@ public final class CodeTemplateParameterImpl {
     
     private Map<String, String> hintsUnmodifiable;
     
-    private SyncDocumentRegion region;
-    
-    private MutablePositionRegion positionRegion;
+    private TextRegion<CodeTemplateParameterImpl> textRegion;
     
     private boolean editable;
     
@@ -110,6 +108,8 @@ public final class CodeTemplateParameterImpl {
         this.handler = handler; // handler may be null for completion item parsing
         this.parametrizedTextStartOffset = parametrizedTextOffset;
         this.parameter = CodeTemplateSpiPackageAccessor.get().createParameter(this);
+        textRegion = new TextRegion<CodeTemplateParameterImpl>(); // zero bounds for now
+        textRegion.setClientInfo(this);
         parseParameterContent(parametrizedText);
     }
     
@@ -129,32 +129,35 @@ public final class CodeTemplateParameterImpl {
     }
     
     public String getValue() {
-        return isSlave() ? master.getValue()
+        return isSlave()
+                ? master.getValue()
                 : ((handler != null && handler.isInserted()) ? handler.getDocParameterValue(this) : value);
     }
-    
-    public void setValue(String newValue, boolean fromAPI) {
+
+    /**
+     * Set value from parameter's API.
+     * 
+     * @param newValue new value of the parameter.
+     */
+    public void setValue(String newValue) {
         if (isSlave()) {
             throw new IllegalStateException("Cannot set value for slave parameter"); // NOI18N
         }
         if (newValue == null) {
             throw new NullPointerException("newValue cannot be null"); // NOI18N
         }
-        if (!newValue.equals(value)) {
-            if (fromAPI) {
-                if (!handler.isReleased()) {
-                    if (handler.isInserted()) { // already inserted in the document
-                        handler.setDocParameterValue(this, newValue);
-                    } else { // not yet inserted => set the default value
-                        this.value = newValue;
-                    }
-                }
-                
-            } else { // change not from api
+
+        // handler assumed to be non-null
+        if (!handler.isReleased()) {
+            if (handler.isInserted()) {
+                // Includes parameter update notification
+                handler.setDocMasterParameterValue(this, newValue);
+                return;
+            } else { // not inserted yet
                 this.value = newValue;
+                handler.resetCachedInsertText();
+                // Do not notify parameter change when not inserted in document
             }
-            
-            handler.resetCachedInsertText();
         }
     }
     
@@ -193,24 +196,17 @@ public final class CodeTemplateParameterImpl {
             if (!handler.isInserted()) {
                 handler.checkInsertTextBuilt();
             }
-            return (positionRegion != null)
-                    ? positionRegion.getStartOffset() - handler.getInsertOffset()
-                    : 0;
-        } else { // handler is null
-            return (positionRegion != null) ? positionRegion.getStartOffset() : 0;
+            return textRegion.startOffset() - handler.getInsertOffset();
         }
+        return textRegion.startOffset();
     }
 
     void resetPositions(Position startPosition, Position endPosition) {
-        if (positionRegion == null) {
-            positionRegion = new MutablePositionRegion(startPosition, endPosition);
-        } else {
-            positionRegion.reset(startPosition, endPosition);
-        }
+        textRegion.updateBounds(startPosition, endPosition);
     }
-
-    public MutablePositionRegion getPositionRegion() {
-        return positionRegion;
+    
+    public TextRegion textRegion() {
+        return textRegion;
     }
 
     public Map<String, String> getHints() {
@@ -227,14 +223,6 @@ public final class CodeTemplateParameterImpl {
     
     public boolean isSlave() {
         return (master != null);
-    }
-    
-    SyncDocumentRegion getRegion() {
-        return region;
-    }
-    
-    void setRegion(SyncDocumentRegion region) {
-        this.region = region;
     }
     
     /**
@@ -275,7 +263,6 @@ public final class CodeTemplateParameterImpl {
     private void parseParameterContent(String parametrizedText) {
         int index = parametrizedTextStartOffset + 2;
         String hintName = null;
-        String hintValue = null;
         boolean afterEquals = false;
         int nameStartIndex = -1;
         boolean insideStringLiteral = false;
@@ -441,23 +428,23 @@ public final class CodeTemplateParameterImpl {
                     break;
                     
                 case 'u': // Unicode sequence
-                    int value = 0;
+                    int val = 0;
                     for (int i = 0; i < 4; i++) {
                         if (index < text.length()) {
                             char ch = text.charAt(index);
                             if (ch >= '0' && ch <= '9') {
-                                value = (value << 4) + (ch - '0');
+                                val = (val << 4) + (ch - '0');
                             } else if (ch >= 'a' && ch <= 'f') {
-                                value = (value << 4) + 10 + (ch - 'a');
+                                val = (val << 4) + 10 + (ch - 'a');
                             } else if (ch >= 'A' && ch <= 'F') {
-                                value = (value << 4) + 10 + (ch - 'F');
+                                val = (val << 4) + 10 + (ch - 'F');
                             } else { // invalid char
                                 break;
                             }
                         }
                         index++;
                     }
-                    output.append(value);
+                    output.append(val);
                     break;
                     
                 default: // not known char => append '\'
@@ -482,6 +469,7 @@ public final class CodeTemplateParameterImpl {
         this.master = master;
     }
     
+    @Override
     public String toString() {
         return "name=" + getName() + ", slave=" + isSlave() // NOI18N
             + ", value=" + getValue(); // NOI18N

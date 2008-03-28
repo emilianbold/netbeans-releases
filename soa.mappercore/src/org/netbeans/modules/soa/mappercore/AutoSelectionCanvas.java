@@ -70,6 +70,7 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         List<Link> links = canvas.getSelectionModel().getSelectedLinks();
         Graph graph = canvas.getSelectionModel().getSelectedGraph();
         TreePath treePath = canvas.getSelectionModel().getSelectedPath();
+        if (treePath == null) return;
         //Change link
         if (links != null && links.size() > 0) {
             Link link = links.get(0);

@@ -106,6 +106,7 @@ class UploadFilesCommandImpl extends UploadFilesCommand {
         try {
 
             String context = getContext();
+            context = (context == null) ? "" : context;
 
             String path = getPath(host, context);
 

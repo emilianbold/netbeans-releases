@@ -177,9 +177,9 @@
 	<mapID target="cnd.optionsDialog" url="CandC++ProjectBasics/CandC++Options.html"/>
 	<mapID target="ProjectPropsArchiverGeneral" url="WorkingWithCandC++Projects/ProjectPropsArchiverGeneral.html"/>
 	<mapID target="ArchiverOptions" url="CandC++ProjectBasics/ArchiverOptions.html"/>
-	<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages-null" url="EditingSourceFiles/UsagesWindow.html"/>
+	<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages" url="EditingSourceFiles/UsagesWindow.html"/>
 	<mapID target="FindingUsages" url="EditingSourceFiles/FindingUsages.html"/>
-	<mapID target="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages" url="EditingSourceFiles/FindUsagesDialog.html"/>
+	<mapID target="org.netbeans.modules.cnd.refactoring.ui.WhereUsedQueryUI" url="EditingSourceFiles/FindUsagesDialog.html"/>
 	<mapID target="CandC++ThreadsWindow" url="CandC++ProjectBasics/CandC++ThreadsWindow.html"/>
 	<mapID target="Threads" url="CandC++ProjectBasics/Threads.html"/>
 	<mapID target="collapse" url="images/collapse.png"/>

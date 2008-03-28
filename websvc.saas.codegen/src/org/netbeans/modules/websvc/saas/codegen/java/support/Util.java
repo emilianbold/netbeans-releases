@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.java.support;
 
 import com.sun.source.tree.ClassTree;
@@ -65,8 +64,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -106,7 +107,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamSt
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.ApiKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Login;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Login;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SignedUrlAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
@@ -125,12 +126,15 @@ import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SessionKeyAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.HttpBasicAuthentication;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
@@ -154,10 +158,10 @@ public class Util {
     public static final String SCANNING_IN_PROGRESS = "ScanningInProgress";//NOI18N
     private static final String BUILD_XML_PATH = "build.xml"; // NOI18N
     private static final String JAXB_LIB = "jaxb21";     //NOI18N
-    
+
     /*
      * Check if the primary file of d is a REST Resource
-     */ 
+     */
     public static boolean isRestJavaFile(DataObject d) {
         try {
             if (!isJava(d)) {
@@ -201,7 +205,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public static boolean isJsp(DataObject d) {
         if (d != null && "jsp".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
@@ -209,7 +213,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public static boolean isJava(DataObject d) {
         if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
         {
@@ -227,7 +231,7 @@ public class Util {
             label.setText(newLabel);
         }
     }
-    
+
     /*
      * Hides a JLabel and the component that it is designated to labelFor, if any
      */
@@ -241,7 +245,7 @@ public class Util {
             }
         }
     }
-    
+
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
@@ -255,7 +259,7 @@ public class Util {
             }
         }
     }
-    
+
     /*
      *  Recursively finds a JLabel that has labelText in comp
      */
@@ -274,7 +278,7 @@ public class Util {
         }
         return null;
     }
-    
+
     /**
      * Returns the simple class for the passed fully-qualified class name.
      */
@@ -286,7 +290,7 @@ public class Util {
             return fqClassName;
         }
     }
-    
+
     /**
      * Returns the package name of the passed fully-qualified class name.
      */
@@ -298,15 +302,15 @@ public class Util {
             return ""; // NOI18N
         }
     }
-    
+
     /**
      * Returns the SourceGroup of the passesd project which contains the
      * fully-qualified class name.
      */
     public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
-        String classFile = fqClassName.replace('.', '/') + ".java"; // NOI18N
+        String classFile = fqClassName.replace('.', '/') + "." + Constants.JAVA_EXT; // NOI18N
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        
+
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject classFO = sourceGroup.getRootFolder().getFileObject(classFile);
             if (classFO != null) {
@@ -326,7 +330,7 @@ public class Util {
         sb.setCharAt(0, Character.toLowerCase(name.charAt(0)));
         return sb.toString();
     }
-    
+
     public static String upperFirstChar(String name) {
         if (name.length() == 0) {
             return name;
@@ -335,7 +339,7 @@ public class Util {
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return sb.toString();
     }
-    
+
     public static String deriveResourceClassName(String resourceName) {
         return upperFirstChar(resourceName) + JaxRsCodeGenerator.RESOURCE_SUFFIX;
     }
@@ -374,7 +378,7 @@ public class Util {
     public static String deriveContainerClassName(String resourceName) {
         return deriveResourceClassName(Inflector.getInstance().pluralize((resourceName)));
     }
-    
+
     public static String singularize(String name) {
         // get around inflector bug:  'address' -> 'addres'
         if (name.endsWith("ss")) {
@@ -385,31 +389,31 @@ public class Util {
         }
         return Inflector.getInstance().singularize(name);
     }
-    
+
     public static String pluralize(String name) {
         return Inflector.getInstance().pluralize(singularize(name));
     }
 
     public static String[] ensureTypes(String[] types) {
         if (types == null || types.length == 0 || types[0].length() == 0) {
-            types = new String[] { String.class.getName() };
+            types = new String[]{String.class.getName()                    };
         }
         return types;
     }
-    
+
     public static SourceGroup[] getSourceGroups(Project project) {
         SourceGroup[] sourceGroups = null;
 
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] docRoot = sources.getSourceGroups(TYPE_DOC_ROOT);
         SourceGroup[] srcRoots = SourceGroupSupport.getJavaSourceGroups(project);
-            
+
         if (docRoot != null && srcRoots != null) {
             sourceGroups = new SourceGroup[docRoot.length + srcRoots.length];
             System.arraycopy(docRoot, 0, sourceGroups, 0, docRoot.length);
             System.arraycopy(srcRoots, 0, sourceGroups, docRoot.length, srcRoots.length);
         }
-            
+
         if (sourceGroups == null || sourceGroups.length == 0) {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
@@ -417,10 +421,10 @@ public class Util {
     }
     private static Map<String, Class> primitiveTypes;
     private static HashSet<String> keywords;
-    
-    public static Class getType(Project project, String typeName) {    
+
+    public static Class getType(Project project, String typeName) {
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
-        
+
         for (ClassPath cp : classPaths) {
             try {
                 Class ret = Util.getPrimitiveType(typeName);
@@ -439,9 +443,9 @@ public class Util {
                 //Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
-        return null; 
+        return null;
     }
-    
+
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
@@ -464,11 +468,11 @@ public class Util {
         }
         return primitiveTypes.get(typeName);
     }
-    
+
     public static boolean isKeyword(String name) {
         if (keywords == null) {
             keywords = new HashSet<String>();
-            
+
             keywords.add("abstract");
             keywords.add("assert");
             keywords.add("boolean");
@@ -520,10 +524,10 @@ public class Util {
             keywords.add("volatile");
             keywords.add("while");
         }
-        
+
         return keywords.contains(name);
     }
-    
+
     public static Class getGenericRawType(String typeName, ClassLoader loader) {
         int i = typeName.indexOf('<');
         if (i < 1) {
@@ -537,12 +541,12 @@ public class Util {
             return null;
         }
     }
-    
+
     public static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.endsWith(".")) {
             return false;
         }
-        
+
         String[] segments = packageName.split("\\.");
         for (String s : segments) {
             if (!Utilities.isJavaIdentifier(s)) {
@@ -551,53 +555,54 @@ public class Util {
         }
         return true;
     }
-    
+
     public static String stripPackageName(String name) {
         int index = name.lastIndexOf(".");          //NOI18N
-        
+
         if (index > 0) {
             return name.substring(index + 1);
         }
         return name;
     }
-    
+
     public static Collection<String> sortKeys(Collection<String> keys) {
         Collection<String> sortedKeys = new TreeSet<String>(
                 new Comparator<String>() {
 
-            public int compare(String str1, String str2) {
-                return str1.compareTo(str2);
-            }
-        });
-        
+                    public int compare(String str1, String str2) {
+                        return str1.compareTo(str2);
+                    }
+                });
+
         sortedKeys.addAll(keys);
         return sortedKeys;
     }
-    
+
     public static void showMethod(FileObject source, String methodName) throws IOException {
         try {
-            DataObject dataObj = DataObject.find(source);      
+            DataObject dataObj = DataObject.find(source);
             if (!isJava(dataObj)) {
                 return;
             }
             JavaSource javaSource = JavaSource.forFileObject(source);
-            
+
             // Force a save to make sure to make sure the line position in
             // the editor is in sync with the java source.
             SaveCookie sc = (SaveCookie) dataObj.getCookie(SaveCookie.class);
-     
+
             if (sc != null) {
                 sc.save();
             }
-            
+
             LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
-            
+
             if (lc != null) {
                 Util.checkScanning(false);
                 final long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
                 final Line line = lc.getLineSet().getOriginal((int) position[0]);
-                
+
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         line.show(Line.SHOW_SHOW, (int) position[1]);
                     }
@@ -610,7 +615,7 @@ public class Util {
                 de.printStackTrace();
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
-        }    
+        }
     }
 
     public static Method getValueOfMethod(Class type) {
@@ -624,7 +629,7 @@ public class Util {
             return null;
         }
     }
-    
+
     public static Constructor getConstructorWithStringParam(Class type) {
         try {
             return type.getConstructor(String.class);
@@ -632,13 +637,13 @@ public class Util {
             return null;
         }
     }
-    
+
     /** Finds all projects in given lookup. If the command is not null it will check 
      * whther given command is enabled on all projects. If and only if all projects
      * have the command supported it will return array including the project. If there
      * is one project with the command disabled it will return empty array.
      */
-    public static Project[] getProjectsFromLookup(Lookup lookup) {    
+    public static Project[] getProjectsFromLookup(Lookup lookup) {
         Set<Project> result = new HashSet<Project>();
         for (Project p : lookup.lookupAll(Project.class)) {
             result.add(p);
@@ -658,25 +663,30 @@ public class Util {
     public static FileObject findBuildXml(Project project) {
         return project.getProjectDirectory().getFileObject(BUILD_XML_PATH);
     }
-    
-    public static DataObject createDataObjectFromTemplate(String template, 
+
+    public static DataObject createDataObjectFromTemplate(String template,
             FileObject targetFolder, String targetName) throws IOException {
         assert template != null;
         assert targetFolder != null;
-        
+
         FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
         FileObject templateFO = defaultFS.findResource(template);
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        FileObject targetFO = targetFolder.getFileObject(targetName, templateFO.getExt());
 
+        //Check if already exists
+        String fileName = targetName;
+        if (fileName == null) {
+            fileName = templateFO.getName();
+        }
+        FileObject targetFO = targetFolder.getFileObject(fileName, templateFO.getExt());
         if (targetFO != null) {
             return DataFolder.find(targetFO);
         }
 
         return templateDO.createFromTemplate(dataFolder, targetName);
     }
- 
+
     public static String deriveResourceName(final String name) {
         String resourceName = Inflector.getInstance().camelize(normailizeName(name) + GenericResourceBean.RESOURCE_SUFFIX);
         return resourceName.substring(0, 1).toUpperCase() + resourceName.substring(1);
@@ -685,19 +695,19 @@ public class Util {
     public static String deriveMethodName(final String name) {
         return Inflector.getInstance().camelize(normailizeName(name), true);
     }
-    
+
     public static String deriveUriTemplate(final String name) {
         return Inflector.getInstance().camelize(normailizeName(name), true) + "/"; //NOI18N
     }
-    
+
     public static MimeType[] deriveMimeTypes(JaxwsOperationInfo[] operations) {
-        if (String.class.getName().equals(operations[operations.length-1].getOperation().getReturnTypeName())) {
-            return new MimeType[] { MimeType.HTML };
+        if (String.class.getName().equals(operations[operations.length - 1].getOperation().getReturnTypeName())) {
+            return new MimeType[]{MimeType.HTML                    };
         } else {
-            return new MimeType[] { MimeType.XML };//TODO  MimeType.JSON };
+            return new MimeType[]{MimeType.XML                    };//TODO  MimeType.JSON };
         }
     }
-    
+
     public static String normailizeName(final String name) {
         //String normalized = name;
         //normalized = normalized.replaceAll("\\p{Punct}", "_");
@@ -711,7 +721,7 @@ public class Util {
             Thread.sleep(2000);
             if (SourceUtils.isScanInProgress()) {
                 if (showMessage) {
-                    String message = NbBundle.getMessage(AbstractGenerator.class, 
+                    String message = NbBundle.getMessage(AbstractGenerator.class,
                             "MSG_ScanningInProgress"); // NOI18N
                     NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(desc);
@@ -728,13 +738,13 @@ public class Util {
             throw new IOException(SCANNING_IN_PROGRESS);
         }
     }
-    
+
     public static void checkScanning(boolean showMessage) throws IOException {
-        if (Util.isScanningInProgress(showMessage)) {
+        if (isScanningInProgress(showMessage)) {
             throw new IOException(SCANNING_IN_PROGRESS);
         }
     }
-    
+
     public static List<ParameterInfo> filterParametersByAuth(SaasAuthenticationType authType,
             SaasAuthentication auth, List<ParameterInfo> params) {
         List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
@@ -749,7 +759,7 @@ public class Util {
                     SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) auth;
                     if (param.getName().equals(sessionKey.getApiKeyName()) ||
                             param.getName().equals(sessionKey.getSessionKeyName()) ||
-                                param.getName().equals(sessionKey.getSigKeyName())) {
+                            param.getName().equals(sessionKey.getSigKeyName())) {
                         continue;
                     }
                 } else if (authType == SaasAuthenticationType.SIGNED_URL) {
@@ -763,7 +773,7 @@ public class Util {
         }
         return filterParams;
     }
-    
+
     public static List<ParameterInfo> filterParameters(List<ParameterInfo> params, ParamFilter[] filters) {
         List<ParameterInfo> filterParams = new ArrayList<ParameterInfo>();
         if (params != null) {
@@ -778,93 +788,107 @@ public class Util {
         }
         return filterParams;
     }
-    
-    public static String createSessionKeyLoginBodyForWeb(WadlSaasBean bean, 
+
+    public static ParameterInfo findParameter(List<ParameterInfo> params, String paramName) {
+        for (ParameterInfo p : params) {
+            if (p.getName().equals(paramName)) {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    public static String createSessionKeyLoginBodyForWeb(SaasBean bean,
             String groupName, String paramVariableName) throws IOException {
         String methodBody = "";
-        if (bean.getAuthenticationType() != SaasAuthenticationType.SESSION_KEY)
+        if (bean.getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
             return null;
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
+        }
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
         UseGenerator useGenerator = sessionKey.getUseGenerator();
-        if(useGenerator != null) {
+        if (useGenerator != null) {
             Login login = useGenerator.getLogin();
-            if(login != null) {
+            if (login != null) {
                 String methodName = null;
                 SessionKeyAuthentication.UseGenerator.Method method = login.getMethod();
-                if(method != null) {
+                if (method != null) {
                     methodName = method.getHref();
-                    if(methodName == null)
+                    if (methodName == null) {
                         return methodBody;
-                    else
-                        methodName = methodName.startsWith("#")?methodName.substring(1):methodName;
+                    } else {
+                        methodName = methodName.startsWith("#") ? methodName.substring(1) : methodName;
+                    }
                 }
                 String tokenName = getTokenName(useGenerator);
                 String tokenMethodName = getTokenMethodName(useGenerator);
                 methodBody += "    try {\n";
                 methodBody += "        javax.servlet.http.HttpSession session = request.getSession(true);\n";
-                methodBody += "        if ("+getVariableName(sessionKey.getSessionKeyName())+" != null) \n";
+                methodBody += "        if (" + getVariableName(sessionKey.getSessionKeyName()) + " != null) \n";
                 methodBody += "            return;\n";
-                methodBody += "        String "+tokenName+" = "+tokenMethodName+"("+getSessionKeyLoginArgumentsForWeb()+");\n";
+                methodBody += "        String " + tokenName + " = " + tokenMethodName + "(" + getLoginArgumentsForWeb() + ");\n";
 
-                methodBody += "        if ("+tokenName+" != null) {\n";
+                methodBody += "        if (" + tokenName + " != null) {\n";
 
-                methodBody += "           session.removeAttribute(\""+groupName+"_auth_token\");\n";
+                methodBody += "           session.removeAttribute(\"" + groupName + "_auth_token\");\n";
                 Map<String, String> tokenMap = new HashMap<String, String>();
                 methodBody += getLoginBody(login, bean, groupName, tokenMap);
                 for (Entry e : tokenMap.entrySet()) {
                     String name = (String) e.getKey();
                     String val = (String) e.getValue();
-                    methodBody += "              session.setAttribute(\""+groupName+"_"+val+"\", "+name+");\n";
+                    methodBody += "              session.setAttribute(\"" + groupName + "_" + val + "\", " + name + ");\n";
                 }
 
-                methodBody += "              String returnUrl = (String) session.getAttribute(\""+groupName+"_return_url\");\n";
+                methodBody += "              String returnUrl = (String) session.getAttribute(\"" + groupName + "_return_url\");\n";
 
                 methodBody += "              if (returnUrl != null) {\n";
-                methodBody += "                session.removeAttribute(\""+groupName+"_return_url\");\n";
+                methodBody += "                session.removeAttribute(\"" + groupName + "_return_url\");\n";
                 methodBody += "                response.sendRedirect(returnUrl);\n";
                 methodBody += "              }\n";
                 methodBody += "            } else {\n";
-                methodBody += "                session.setAttribute(\""+groupName+"_return_url\", request.getRequestURI());\n";
-                methodBody += "                response.sendRedirect(\""+groupName+"Login\");\n";
+                methodBody += "                session.setAttribute(\"" + groupName + "_return_url\", request.getRequestURI());\n";
+                methodBody += "                response.sendRedirect(\"" + groupName + "Login\");\n";
                 methodBody += "            }\n";
                 methodBody += "        } catch (IOException ex) {\n";
-                methodBody += "            Logger.getLogger("+groupName+Constants.SERVICE_AUTHENTICATOR+".class.getName()).log(Level.SEVERE, null, ex);\n";
+                methodBody += "            Logger.getLogger(" + groupName + Constants.SERVICE_AUTHENTICATOR + ".class.getName()).log(Level.SEVERE, null, ex);\n";
                 methodBody += "        }\n\n";
             }
         }
         return methodBody;
     }
-    
-    public static String getLoginBody(Login login, WadlSaasBean bean, String groupName, 
+
+    public static String getLoginBody(Login login, SaasBean bean, String groupName,
             Map<String, String> tokenMap) throws IOException {
         SessionKeyAuthentication.UseGenerator.Method method = login.getMethod();
         String methodName = null;
-        if(method != null) {
+        if (method != null) {
             methodName = method.getHref();
-            if(methodName == null)
+            if (methodName == null) {
                 return "";
-            else
-                methodName = methodName.startsWith("#")?methodName.substring(1):methodName;
-        } 
+            } else {
+                methodName = methodName.startsWith("#") ? methodName.substring(1) : methodName;
+            }
+        }
         String methodBody = "";
-        methodBody += "                    String method = \""+methodName+"\";\n";
+        methodBody += "                    String method = \"" + methodName + "\";\n";
         methodBody += "                    String v = \"1.0\";\n\n";
         String sigId = "sig";
-        if(login.getSignId() != null)
+        if (login.getSignId() != null) {
             sigId = login.getSignId();
+        }
         List<ParameterInfo> signParams = login.getParameters();
-        if(signParams != null && signParams.size() > 0) {
+        if (signParams != null && signParams.size() > 0) {
             String paramStr = "";
-            paramStr += "        String "+sigId+" = sign(secret, \n";
+            paramStr += "        String " + sigId + " = sign(secret, \n";
             paramStr += getSignParamUsage(signParams, groupName, bean.isDropTargetWeb());
             paramStr += ");\n\n";
             methodBody += paramStr;
         }
 
         String queryParamsCode = "";
-        if(method != null) {
+        if (method != null) {
             String id = method.getId();
-            if(id != null) {
+            if (id != null) {
                 String[] tokens = id.split(",");
                 for (String token : tokens) {
                     String[] tokenElem = token.split("=");
@@ -881,16 +905,17 @@ public class Util {
                 }
             }
             String href = method.getHref();
-            if(href != null) {
-                Application app = bean.getMethod().getSaas().getWadlModel();
-                org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod = 
+            if (href != null && bean instanceof WadlSaasBean) {
+                Application app = ((WadlSaasBean)bean).getMethod().getSaas().getWadlModel();
+                org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod =
                         SaasUtil.wadlMethodFromIdRef(app, href);
-                if(wadlMethod != null) {
-                    ArrayList<ParameterInfo> params = bean.findWadlParams(wadlMethod);
+                if (wadlMethod != null) {
+                    ArrayList<ParameterInfo> params = ((WadlSaasBean)bean).findWadlParams(wadlMethod);
                     Resource parentResource = SaasUtil.getParentResource(app, wadlMethod);
-                    if(parentResource != null)
-                        bean.findWadlParams(params, parentResource.getParam());
-                    if(params != null && 
+                    if (parentResource != null) {
+                        ((WadlSaasBean)bean).findWadlParams(params, parentResource.getParam());
+                    }
+                    if (params != null &&
                             params.size() > 0) {
                         queryParamsCode = Util.getHeaderOrParameterDefinition(params, Constants.QUERY_PARAMS, false);
                     }
@@ -899,11 +924,16 @@ public class Util {
         }
 
         //Insert parameter declaration
-        methodBody += "        "+queryParamsCode;
+        methodBody += "        " + queryParamsCode;
 
-        methodBody += "             "+Constants.REST_CONNECTION+" conn = new "+Constants.REST_CONNECTION+"(\""+bean.getUrl()+"\"";
-        if(!queryParamsCode.trim().equals(""))
-            methodBody += ", "+Constants.QUERY_PARAMS;
+        String url = "";
+        if (bean instanceof WadlSaasBean) {
+            url = ((WadlSaasBean)bean).getUrl();
+        }
+        methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + url + "\"";
+        if (!queryParamsCode.trim().equals("")) {
+            methodBody += ", " + Constants.QUERY_PARAMS;
+        }
         methodBody += ");\n";
 
         methodBody += "                    String result = conn.get();\n";
@@ -911,15 +941,15 @@ public class Util {
         for (Entry e : tokenMap.entrySet()) {
             String name = (String) e.getKey();
             String val = (String) e.getValue();
-            methodBody += "                    "+name+" = result.substring(result.indexOf(\"<"+val+">\") + 13,\n";
-            methodBody += "                            result.indexOf(\"</"+val+">\"));\n\n";
+            methodBody += "                    " + name + " = result.substring(result.indexOf(\"<" + val + ">\") + 13,\n";
+            methodBody += "                            result.indexOf(\"</" + val + ">\"));\n\n";
         }
         return methodBody;
     }
-    
+
     /*
-     */ 
-    public static String getSignParamUsage(List<ParameterInfo> signParams, 
+     */
+    public static String getSignParamUsage(List<ParameterInfo> signParams,
             String groupName, boolean isDropTargetWeb) {
         String paramStr = "                new String[][] {\n";
         for (ParameterInfo p : signParams) {
@@ -934,7 +964,7 @@ public class Util {
         paramStr += "        }\n";
         return paramStr;
     }
-        
+
     public static String[] getParamIds(ParameterInfo p, String groupName,
             boolean isDropTargetWeb) {
         if (p.getId() != null) {//process special case
@@ -950,46 +980,47 @@ public class Util {
                 val = getVariableName(val);
                 val = getAuthenticatorClassName(groupName) + "." +
                         "get" + val.substring(0, 1).toUpperCase() + val.substring(1);
-                if(isDropTargetWeb)
+                if (isDropTargetWeb) {
                     val += "(request, response)";
-                else
+                } else {
                     val += "()";
+                }
                 return new String[]{pElems[0], val};
             }
         }
         return null;
     }
-    
+
     public static String getAuthenticatorClassName(String groupName) {
         return groupName + Constants.SERVICE_AUTHENTICATOR;
     }
-    
+
     public static String getAuthorizationFrameClassName(String groupName) {
         return groupName + Constants.SERVICE_AUTHORIZATION_FRAME;
     }
-    
-    public static String createSessionKeyTokenBodyForWeb(WadlSaasBean bean, 
+
+    public static String createSessionKeyTokenBodyForWeb(SaasBean bean,
             String groupName, String paramVariableName, String saasServicePackageName) throws IOException {
         String methodBody = "";
         methodBody += "        javax.servlet.http.HttpSession session = request.getSession(true);\n";
         methodBody += "        return (String) session.getAttribute(\"" + groupName + "_auth_token\");\n";
         return methodBody;
     }
-     
+
     public static String getTokenMethodName(SessionKeyAuthentication.UseGenerator useGenerator) {
         String methodName = getTokenName(useGenerator);
-        return methodName = "get"+methodName.substring(0,1).toUpperCase()+methodName.substring(1);
+        return methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
     }
-    
+
     public static String getTokenName(SessionKeyAuthentication.UseGenerator useGenerator) {
         String methodName = "token";
         Token token = useGenerator.getToken();
-        if(token != null && token.getId() != null) {
+        if (token != null && token.getId() != null) {
             methodName = token.getId();
         }
         return getVariableName(methodName);
     }
-    
+
     public static String getHeaderOrParameterUsage(List<ParameterInfo> params) {
         String paramUsage = "";
         for (ParameterInfo param : params) {
@@ -1001,7 +1032,7 @@ public class Util {
         }
         return paramUsage;
     }
-    
+
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
         String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
         if (httpMethod == HttpMethodType.PUT ||
@@ -1016,7 +1047,7 @@ public class Util {
         paramCode += "             };\n";
         return paramCode;
     }
-    
+
     public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramCode = "";
         paramCode += "             String[][] " + varName + " = new String[][]{\n";
@@ -1024,7 +1055,7 @@ public class Util {
         paramCode += "             };\n";
         return paramCode;
     }
-    
+
     public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
         String paramsStr = null;
         StringBuffer sb = new StringBuffer();
@@ -1056,31 +1087,30 @@ public class Util {
         }
         return paramsStr;
     }
-    
+
     public static String getParameterName(ParameterInfo param) {
         return param.getName();
     }
-    
-    public static String getParameterName(ParameterInfo param, 
+
+    public static String getParameterName(ParameterInfo param,
             boolean camelize, boolean normalize) {
         return getParameterName(param, camelize, normalize, false);
     }
-    
-    public static String getParameterName(ParameterInfo param, 
+
+    public static String getParameterName(ParameterInfo param,
             boolean camelize, boolean normalize, boolean trimBraces) {
         String name = param.getName();
         if (Util.isKeyword(name)) {
             name += "Param";
         }
-        
-        if(trimBraces && param.getStyle() == ParamStyle.TEMPLATE 
-                && name.startsWith("{") && name.endsWith("}")) {
-            name = name.substring(0, name.length()-1);
+
+        if (trimBraces && param.getStyle() == ParamStyle.TEMPLATE && name.startsWith("{") && name.endsWith("}")) {
+            name = name.substring(0, name.length() - 1);
         }
         return getParameterName(name, camelize, normalize);
     }
-    
-    public static String getParameterName(String name, 
+
+    public static String getParameterName(String name,
             boolean camelize, boolean normalize) {
         if (normalize) {
             name = Util.normailizeName(name);
@@ -1090,12 +1120,12 @@ public class Util {
         }
         return name;
     }
-    
+
     public static String getVariableName(String name) {
         return getVariableName(name, true, true, true);
     }
-    
-    public static String getVariableName(final String name, 
+
+    public static String getVariableName(final String name,
             boolean camelize, boolean normalize, boolean trimBraces) {
         String varName = name;
         if (trimBraces && varName.startsWith("{") && varName.endsWith("}")) {
@@ -1112,7 +1142,7 @@ public class Util {
         }
         return varName;
     }
-    
+
     public static String findParamValue(ParameterInfo param) {
         String paramVal = null;
         if (param.isApiKey()) {
@@ -1124,10 +1154,12 @@ public class Util {
                 paramVal = "";
             }
         } else if (param.getStyle() == ParamStyle.HEADER) {
-            if (param.getDefaultValue() != null) {
+            if (param.isFixed()) {
+                paramVal = param.getFixed();
+            } else if (param.getDefaultValue() != null) {
                 paramVal = param.getDefaultValue().toString();
             } else {
-                paramVal = getParameterName(param).toLowerCase();
+                paramVal = "";
             }
         } else {
             if (param.isFixed()) {
@@ -1145,19 +1177,20 @@ public class Util {
     }
 
     public static void createSessionKeyAuthorizationClassesForWeb(
-            WadlSaasBean bean, Project project,
-            String groupName, String saasServicePackageName, FileObject targetFolder, 
-            JavaSource loginJS, FileObject loginFile, 
+            SaasBean bean, Project project,
+            String groupName, String saasServicePackageName, FileObject targetFolder,
+            JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
             final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
         SaasAuthenticationType authType = bean.getAuthenticationType();
-        if (authType == SaasAuthenticationType.SESSION_KEY) {
-            if(!isUseTemplates) {
-                String fileId = "Login";// NoI18n
+        if (authType == SaasAuthenticationType.SESSION_KEY ||
+                authType == SaasAuthenticationType.HTTP_BASIC) {
+            if (!isUseTemplates) {
+                String fileId = Util.upperFirstChar(Constants.LOGIN);// NoI18n
                 String methodName = "processRequest";// NoI18n
                 String authFileName = groupName + fileId;
                 loginJS = JavaSourceHelper.createJavaSource(
-                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + ".java",
+                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
                 Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
                 if (files != null && files.size() > 0) {
@@ -1165,15 +1198,15 @@ public class Util {
                 }
 
                 if (!JavaSourceHelper.isContainsMethod(loginJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, loginJS, 
-                        parameters, paramTypes, 
-                        "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
+                    addServletMethod(bean, groupName, methodName, loginJS,
+                            parameters, paramTypes,
+                            "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
                 }
 
-                fileId = "Callback";// NOI18n
+                fileId = Util.upperFirstChar(Constants.CALLBACK);// NOI18n
                 authFileName = groupName + fileId;
                 callbackJS = JavaSourceHelper.createJavaSource(
-                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + ".java",
+                        SaasCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
                         targetFolder, saasServicePackageName, authFileName);// NOI18n
                 files = new HashSet<FileObject>(callbackJS.getFileObjects());
                 if (files != null && files.size() > 0) {
@@ -1181,60 +1214,72 @@ public class Util {
                 }
 
                 if (!JavaSourceHelper.isContainsMethod(callbackJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, callbackJS, 
-                        parameters, paramTypes, 
-                        "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
+                    addServletMethod(bean, groupName, methodName, callbackJS,
+                            parameters, paramTypes,
+                            "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
                 }
             } else {
-                SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
-                UseTemplates useTemplates = sessionKey.getUseTemplates();
-                for(Template template: useTemplates.getTemplates()) {
-                    String id = template.getId();
-                    String type = template.getType()==null?"":template.getType();
-                    String templateUrl = template.getUrl();
-                    if(templateUrl == null || templateUrl.trim().equals(""))
-                        throw new IOException("Authentication template is empty.");
-                    
-                    String fileName = null;
-                    if(type.equals("login"))
-                        fileName = bean.getSaasName()+"Login";
-                    else if(type.equals("callback"))
-                        fileName = bean.getSaasName()+"Callback";
-                    else if(type.equals("auth"))
-                        continue;
-                    FileObject fObj = null;
-                    if(templateUrl.endsWith(".java")) {
-                        JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder, 
-                                bean.getSaasServicePackageName(), fileName);
-                        Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
-                        if (files != null && files.size() > 0) {
-                            fObj = files.iterator().next();
+                UseTemplates useTemplates = null;
+                if (bean.getAuthentication() instanceof SessionKeyAuthentication) {
+                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
+                    useTemplates = sessionKey.getUseTemplates();
+                } else if (bean.getAuthentication() instanceof HttpBasicAuthentication) {
+                    HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
+                    useTemplates = httpBasic.getUseTemplates();
+                }
+                if (useTemplates != null) {
+                    for (Template template : useTemplates.getTemplates()) {
+                        String id = template.getId();
+                        String type = template.getType() == null ? "" : template.getType();
+                        String templateUrl = template.getUrl();
+                        if (templateUrl == null || templateUrl.trim().equals("")) {
+                            throw new IOException("Authentication template is empty.");
                         }
-                    } else {
-                        if(templateUrl.indexOf("/") != -1)
-                            fileName = bean.getSaasName()+
-                                    templateUrl.substring(templateUrl.lastIndexOf("/")+1);
-                        if(fileName != null) {
-                            fObj = targetFolder.getFileObject(fileName);
-                            if (fObj == null) {
-                                DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder, 
-                                        fileName);
-                                if(d != null)
-                                    fObj = d.getPrimaryFile();
+                        String fileName = null;
+                        if (type.equals(Constants.LOGIN)) {
+                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.LOGIN);
+                        } else if (type.equals(Constants.CALLBACK)) {
+                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.CALLBACK);
+                        } else if (type.equals(Constants.AUTH)) {
+                            continue;
+                        }
+                        FileObject fObj = null;
+                        if (templateUrl.endsWith("." + Constants.JAVA_EXT)) {
+                            JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
+                                    bean.getSaasServicePackageName(), fileName);
+                            Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
+                            if (files != null && files.size() > 0) {
+                                fObj = files.iterator().next();
+                            }
+                        } else {
+                            if (templateUrl.indexOf("/") != -1) {
+                                fileName = bean.getSaasName() +
+                                        templateUrl.substring(templateUrl.lastIndexOf("/") + 1);
+                            }
+                            if (fileName != null) {
+                                fObj = targetFolder.getFileObject(fileName);
+                                if (fObj == null) {
+                                    DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder,
+                                            fileName);
+                                    if (d != null) {
+                                        fObj = d.getPrimaryFile();
+                                    }
+                                }
                             }
                         }
-                    }
-                    if(fObj != null) {
-                        if(type.equals("login"))
-                            loginFile = fObj;
-                        else if(type.equals("callback"))
-                            callbackFile = fObj;
+                        if (fObj != null) {
+                            if (type.equals(Constants.LOGIN)) {
+                                loginFile = fObj;
+                            } else if (type.equals(Constants.CALLBACK)) {
+                                callbackFile = fObj;
+                            }
+                        }
                     }
                 }
             }
 
             //Make entry into web.xml for login and callback servlets
-            if(loginFile != null && callbackFile != null) {
+            if (loginFile != null && callbackFile != null) {
                 Map<String, String> filesMap = new HashMap<String, String>();
                 filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
                 filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
@@ -1245,44 +1290,44 @@ public class Util {
             }
         }
     }
-    
-    public static String getServletLoginBody(WadlSaasBean bean, 
+
+    public static String getServletLoginBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
         UseGenerator useGenerator = sessionKey.getUseGenerator();
-        if(useGenerator != null) {
+        if (useGenerator != null) {
             SessionKeyAuthentication.UseGenerator.Token token = useGenerator.getToken();
             SessionKeyAuthentication.UseGenerator.Token.Prompt prompt = token.getPrompt();
             String url = prompt.getWebUrl();
             String tokenName = "authToken";
             String tokenId = "auth_token";
-            if(token != null) {
+            if (token != null) {
                 tokenName = Util.getTokenName(useGenerator);
-                tokenId = token.getId()!=null?token.getId():tokenId;
+                tokenId = token.getId() != null ? token.getId() : tokenId;
             }
             methodBody += "        response.setContentType(\"text/html;charset=UTF-8\");\n";
             methodBody += "        PrintWriter out = response.getWriter();\n";
             methodBody += "        try {\n";
             methodBody += "            out.println(\"<html>\");\n";
             methodBody += "            out.println(\"<head>\");\n";
-            methodBody += "            out.println(\"<title>Servlet "+groupName+"Login</title>\");\n";
+            methodBody += "            out.println(\"<title>Servlet " + groupName + "Login</title>\");\n";
             methodBody += "            out.println(\"</head>\");\n";
             methodBody += "            out.println(\"<body>\");\n";
-            methodBody += "            out.println(\"<h1>Servlet "+groupName+"Login at \" + request.getContextPath() + \"</h1>\");\n";
+            methodBody += "            out.println(\"<h1>Servlet " + groupName + "Login at \" + request.getContextPath() + \"</h1>\");\n";
 
             methodBody += "            HttpSession session = request.getSession(true);\n";
 
-            methodBody += "            String "+tokenName+" = (String) session.getAttribute(\""+groupName+"_"+tokenId+"\");\n";
+            methodBody += "            String " + tokenName + " = (String) session.getAttribute(\"" + groupName + "_" + tokenId + "\");\n";
 
-            methodBody += "            if ("+tokenName+" != null) {\n";
+            methodBody += "            if (" + tokenName + " != null) {\n";
             methodBody += "                out.println(\"<p>Already logged in.</b>\");\n";
             methodBody += "            } else {\n";
             String apiKeyName = getVariableName(sessionKey.getApiKeyName());
-            methodBody += "                String apiKey = "+groupName+
-                    Constants.SERVICE_AUTHENTICATOR+".get"+
-                    apiKeyName.substring(0,1).toUpperCase()+apiKeyName.substring(1)+"();\n";
-            methodBody += "                String loginUrl = \"<a href="+Util.getTokenPromptUrl(token, url) +">"+groupName+" Login</a>\";\n";
+            methodBody += "                String apiKey = " + groupName +
+                    Constants.SERVICE_AUTHENTICATOR + ".get" +
+                    apiKeyName.substring(0, 1).toUpperCase() + apiKeyName.substring(1) + "();\n";
+            methodBody += "                String loginUrl = \"<a href=" + Util.getTokenPromptUrl(token, url) + ">" + groupName + " Login</a>\";\n";
             methodBody += "                out.println(loginUrl);\n";
             methodBody += "            }\n";
             methodBody += "            out.println(\"</body>\");\n";
@@ -1293,39 +1338,39 @@ public class Util {
         }
         return methodBody;
     }
-    
-    public static String getServletCallbackBody(WadlSaasBean bean, 
+
+    public static String getServletCallbackBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
-        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication)bean.getAuthentication();
+        SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
         String sessionKeyName = getVariableName(sessionKey.getSessionKeyName());
         String tokenName = "authToken";
         String tokenId = "auth_token";
         UseGenerator useGenerator = sessionKey.getUseGenerator();
-        if(useGenerator != null) {
+        if (useGenerator != null) {
             Token token = useGenerator.getToken();
-            if(token != null) {
+            if (token != null) {
                 tokenName = Util.getTokenName(useGenerator);
-                tokenId = token.getId()!=null?token.getId():tokenId;
+                tokenId = token.getId() != null ? token.getId() : tokenId;
             }
             String name = Util.getParameterName(sessionKey.getSessionKeyName(), true, true);
             methodBody += "        response.setContentType(\"text/html;charset=UTF-8\");\n";
             methodBody += "        PrintWriter out = response.getWriter();\n";
             methodBody += "        try {\n";
             methodBody += "            HttpSession session = request.getSession(true);\n";
-            methodBody += "            String "+tokenName+" = request.getParameter(\""+tokenId+"\");\n";
-            methodBody += "            session.setAttribute(\""+groupName+"_"+tokenId+"\", "+tokenName+");\n";
+            methodBody += "            String " + tokenName + " = request.getParameter(\"" + tokenId + "\");\n";
+            methodBody += "            session.setAttribute(\"" + groupName + "_" + tokenId + "\", " + tokenName + ");\n";
 
-            methodBody += "            "+groupName+Constants.SERVICE_AUTHENTICATOR+".login("+getSessionKeyLoginArgumentsForWeb()+");\n";
-            methodBody += "            String "+sessionKeyName+" = "+groupName+Constants.SERVICE_AUTHENTICATOR+"."+Util.getSessionKeyMethodName(name)+"();\n";
+            methodBody += "            " + groupName + Constants.SERVICE_AUTHENTICATOR + ".login(" + getLoginArgumentsForWeb() + ");\n";
+            methodBody += "            String " + sessionKeyName + " = " + groupName + Constants.SERVICE_AUTHENTICATOR + "." + Util.getSessionKeyMethodName(name) + "();\n";
 
             methodBody += "            out.println(\"<html>\");\n";
             methodBody += "            out.println(\"<head>\");\n";
-            methodBody += "            out.println(\"<title>Servlet "+groupName+"Callback</title>\");\n";
+            methodBody += "            out.println(\"<title>Servlet " + groupName + "Callback</title>\");\n";
             methodBody += "            out.println(\"</head>\");\n";
             methodBody += "            out.println(\"<body>\");\n";
-            methodBody += "            out.println(\"<h1>Servlet "+groupName+"Callback at \" + request.getContextPath() + \"</h1>\");\n";
-            methodBody += "            out.println(\"<p> Your Session Key is \" + "+sessionKeyName+" + \"</p>\");\n";
+            methodBody += "            out.println(\"<h1>Servlet " + groupName + "Callback at \" + request.getContextPath() + \"</h1>\");\n";
+            methodBody += "            out.println(\"<p> Your Session Key is \" + " + sessionKeyName + " + \"</p>\");\n";
             methodBody += "            out.println(\"</body>\");\n";
             methodBody += "            out.println(\"</html>\");\n";
 
@@ -1335,51 +1380,53 @@ public class Util {
         }
         return methodBody;
     }
-    
+
     public static String getSessionKeyMethodName(String name) {
-         String methodName = getVariableName(name);
-         methodName = "get"+methodName.substring(0, 1).toUpperCase()+methodName.substring(1);
-         return methodName;
+        String methodName = getVariableName(name);
+        methodName = "get" + methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
+        return methodName;
     }
-    
+
     public static String getTokenPromptUrl(SessionKeyAuthentication.UseGenerator.Token token,
             String url) {
         String loginUrl = "";
         if (token.getPrompt() != null) {
             int index = url.indexOf("?");
-            loginUrl =  url.substring(0, index + 1);
+            loginUrl = url.substring(0, index + 1);
             String params = url.substring(index + 1);
             String[] tokens = params.split("&");
             for (String tokenE : tokens) {
                 String[] tokenElem = tokenE.split("=");
                 if (tokenElem.length == 2) {
                     String paramVal = tokenElem[1];
-                    if (paramVal.startsWith("{"))
+                    if (paramVal.startsWith("{")) {
                         paramVal = paramVal.substring(1);
-                    if (paramVal.endsWith("}"))
+                    }
+                    if (paramVal.endsWith("}")) {
                         paramVal = paramVal.substring(0, paramVal.length() - 1);
-                    
+                    }
                     if (paramVal.indexOf(":") != -1) {
                         loginUrl += tokenElem[0] + "=" + getVariableName(paramVal.substring(paramVal.indexOf(":") + 1)) + "&";
                     } else {
                         loginUrl += tokenElem[0] + "=\"+" + getVariableName(paramVal) + "+\"&";
                     }
-                    
+
                 }
             }
-            if(loginUrl.endsWith("+\"&"))
+            if (loginUrl.endsWith("+\"&")) {
                 loginUrl = loginUrl.substring(0, loginUrl.length() - 3);
-            else if(loginUrl.endsWith("&"))
+            } else if (loginUrl.endsWith("&")) {
                 loginUrl = loginUrl.substring(0, loginUrl.length() - 1);
+            }
         }
         return loginUrl;
     }
-    
+
     public static List<ParameterInfo> getAuthenticatorMethodParametersForWeb() {
         List<ParameterInfo> params = new ArrayList<ParameterInfo>();
-        params.add(new ParameterInfo(Constants.HTTP_SERVLET_REQUEST_VARIABLE, Object.class, 
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_REQUEST_VARIABLE, Object.class,
                 Constants.HTTP_SERVLET_REQUEST_CLASS));
-        params.add(new ParameterInfo(Constants.HTTP_SERVLET_RESPONSE_VARIABLE, Object.class, 
+        params.add(new ParameterInfo(Constants.HTTP_SERVLET_RESPONSE_VARIABLE, Object.class,
                 Constants.HTTP_SERVLET_RESPONSE_CLASS));
         return params;
     }
@@ -1391,19 +1438,19 @@ public class Util {
                 new ParamFilter[]{ParamFilter.FIXED})));
         return params;
     }
-    
-    public static String getSessionKeyLoginArgumentsForWeb() {
+
+    public static String getLoginArgumentsForWeb() {
         return getHeaderOrParameterUsage(getAuthenticatorMethodParametersForWeb());
     }
-    
+
     /**
      *  Return target and generated file objects
      */
-    public static void addServletMethod(final WadlSaasBean bean, 
-            String groupName, final String methodName, final JavaSource source, 
-            final String[] parameters, final Object[] paramTypes, 
+    public static void addServletMethod(final SaasBean bean,
+            String groupName, final String methodName, final JavaSource source,
+            final String[] parameters, final Object[] paramTypes,
             final String bodyText) throws IOException {
-                
+
         if (JavaSourceHelper.isContainsMethod(source, methodName, parameters, paramTypes)) {
             return;
         }
@@ -1447,8 +1494,8 @@ public class Util {
         }
         return null;
     }
-    
-    public static void addAuthorizationClassesToWebDescriptor(Project p, 
+
+    public static void addAuthorizationClassesToWebDescriptor(Project p,
             Map<String, String> filesMap) throws IOException {
         for (Map.Entry e : filesMap.entrySet()) {
             String name = (String) e.getKey();
@@ -1456,7 +1503,7 @@ public class Util {
             addServiceEntriesToDD(p, name, qName);
         }
     }
-    
+
     /**
      * This is to support non-JSR 109 containers. In this case, a regular jaxws web service
      * is created and the deployment descriptor is updated with the jaxws-ri servlet and
@@ -1472,8 +1519,7 @@ public class Util {
                 servlet = (Servlet) webApp.addBean("Servlet", new String[]{"ServletName", "ServletClass"},
                         new Object[]{servletName, servletClassName}, "ServletName");
                 servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-                ServletMapping servletMapping = (ServletMapping)
-                webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},
+                ServletMapping servletMapping = (ServletMapping) webApp.addBean("ServletMapping", new String[]{"ServletName", "UrlPattern"},
                         new Object[]{servletName, "/" + servletName}, "ServletName");
                 // This also saves server specific configuration, if necessary.
                 webApp.write(getDeploymentDescriptor(p));
@@ -1486,7 +1532,7 @@ public class Util {
             }
         }
     }
-    
+
     public static FileObject getDeploymentDescriptor(Project p) {
         FileObject webInfFo = getWebInf(p);
         if (webInfFo == null) {
@@ -1499,7 +1545,7 @@ public class Util {
         }
         return getWebInf(p).getFileObject("web.xml");//NoI18n
     }
-    
+
     public static FileObject getWebInf(Project p) {
         WebModule webModule = WebModule.getWebModule(p.getProjectDirectory());
         if (webModule != null) {
@@ -1507,7 +1553,7 @@ public class Util {
         }
         return null;
     }
-    
+
     public static WebApp getWebApp(Project p) {
         try {
             FileObject deploymentDescriptor = getDeploymentDescriptor(p);
@@ -1519,7 +1565,7 @@ public class Util {
         }
         return null;
     }
-    
+
     public static boolean isProjectOpened(Project p) {
         // XXX workaround: OpenProjects.getDefault() can be null
         // when called from ProjectOpenedHook.projectOpened() upon IDE startup
@@ -1534,7 +1580,7 @@ public class Util {
         }
         return false;
     }
-    
+
     public static void addClientJars(SaasBean bean, Project p,
             FileObject target) throws IOException {
         if (bean instanceof WadlSaasBean) {
@@ -1549,17 +1595,17 @@ public class Util {
 
     public static void addJaxbLib(Project p) throws IOException {
         if (isJDK5()) {
-                //Add JAXB libs if not available (if using JDK1.5)
-            Library library = LibraryManager.getDefault().getLibrary(JAXB_LIB);     
-                SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (sgs == null || sgs.length < 1) {
-                    throw new IOException("Project has no Java sources"); //NOI18N
-                }
-                FileObject sourceRoot = sgs[0].getRootFolder();
-                ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.COMPILE);
+            //Add JAXB libs if not available (if using JDK1.5)
+            Library library = LibraryManager.getDefault().getLibrary(JAXB_LIB);
+            SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sgs == null || sgs.length < 1) {
+                throw new IOException("Project has no Java sources"); //NOI18N
             }
+            FileObject sourceRoot = sgs[0].getRootFolder();
+            ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.COMPILE);
+        }
     }
-    
+
     public static void addImportsToSource(JavaSource source, List<String> imports) throws IOException {
         for (final String imp : imports) {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -1581,11 +1627,11 @@ public class Util {
         imports.add(StringReader.class.getName());
         return imports;
     }
-    
+
     public static boolean isJDK5() {
         return System.getProperty("java.version").startsWith("1.5") ? true : false;     //NOI18N
     }
-    
+
     public static boolean isContains(List<ParameterInfo> params, ParameterInfo pInfo) {
         boolean found = false;
         String name = getVariableName(pInfo.getName());
@@ -1597,12 +1643,202 @@ public class Util {
         }
         return found;
     }
-    
+
     public static void showUnsupportedDropMessage(Object[] args) {
-        String message = NbBundle.getMessage(AbstractGenerator.class, 
+        String message = NbBundle.getMessage(AbstractGenerator.class,
                 "WARN_UnsupportedDropTarget", args); // NOI18N
-        NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
+        NotifyDescriptor desc = new NotifyDescriptor.Message(message,
                 NotifyDescriptor.Message.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
+    }
+
+    public static String createPrintStatement(String pkg, String serviceName,
+            DropFileType dropFileType, HttpMethodType methodType,
+            boolean canGenerateJaxb, String indent) {
+        String methodBody = "";
+        String commentStr = "//";
+        if (canGenerateJaxb) {
+            String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
+            methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
+        }
+        methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
+        methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
+                ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+
+        return methodBody;
+    }
+
+    public static void addInputParamField(JavaSource source,
+            final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
+                ClassTree modifiedTree = JavaSourceHelper.addField(copy,
+                        initial,
+                        Constants.PRIVATE,
+                        annotations, annotationAttrs,
+                        getParameterName(p, true, true, true),
+                        p.getTypeName(),
+                        getParamValue(p));
+                copy.rewrite(initial, modifiedTree);
+            }
+        });
+        result.commit();
+    }
+
+    public static void addInputParamFields(JavaSource source,
+            final List<ParameterInfo> params) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                JavaSourceHelper.addFields(copy, getParamNames(params),
+                        getParamTypeNames(params), getParamValues(params));
+            }
+        });
+        result.commit();
+    }
+
+    public static String[] getParamNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+
+        for (ParameterInfo param : params) {
+            results.add(getParameterName(param, true, true, true));
+        }
+
+        return results.toArray(new String[results.size()]);
+    }
+
+    public static String[] getParamTypeNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+
+        for (ParameterInfo param : params) {
+            results.add(param.getTypeName());
+        }
+
+        return results.toArray(new String[results.size()]);
+    }
+
+    public static Object[] getParamValues(List<ParameterInfo> params) {
+        List<Object> results = new ArrayList<Object>();
+
+        for (ParameterInfo param : params) {
+            results.add(getParamValue(param));
+        }
+
+        return results.toArray(new Object[results.size()]);
+    }
+
+    public static Object getParamValue(ParameterInfo p) {
+        Object defaultValue = null;
+        if (p.getStyle() != ParamStyle.QUERY) {
+            defaultValue = p.getDefaultValue();
+        }
+        return defaultValue;
+    }
+
+    /*
+     * Generates something like 
+    String apiKey = FacebookAuthenticator.getApiKey();
+    String sessionKey = FacebookAuthenticator.getSessionKey();
+    String method = "facebook.friends.get";
+    String v = "1.0";
+    String callId = String.valueOf(System.currentTimeMillis());
+     */
+    public static String getSignParamDeclaration(SaasBean bean,
+            List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
+        String paramStr = "";
+        for (ParameterInfo p : signParams) {
+            String[] pIds = Util.getParamIds(p, bean.getSaasName(),
+                    bean.isDropTargetWeb());
+            if (pIds != null) {//process special case
+                paramStr += "        String " + getVariableName(pIds[0]) + " = " + pIds[1] + ";\n";
+                continue;
+            }
+            if (isContains(p, filterParams)) {
+                continue;
+            }
+
+            paramStr += "        String " + getVariableName(p.getName()) + " = ";
+            if (p.getFixed() != null) {
+                paramStr += "\"" + p.getFixed() + "\";\n";
+            } else if (p.getType() == Date.class) {
+                paramStr += "conn.getDate();\n";
+            } else if (p.getType() == Time.class) {
+                paramStr += "String.valueOf(System.currentTimeMillis());\n";
+            } else if (p.getType() == HttpMethodType.class) {
+                paramStr += "\"" + bean.getHttpMethod().value() + "\";\n";
+            } else if (p.isRequired()) {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "\"\";\n";
+                }
+            } else {
+                if (p.getDefaultValue() != null) {
+                    paramStr += getQuotedValue(p.getDefaultValue().toString()) + ";\n";
+                } else {
+                    paramStr += "null;\n";
+                }
+            }
+        }
+        paramStr += "\n";
+        return paramStr;
+    }
+
+    public static boolean isContains(ParameterInfo pInfo, List<ParameterInfo> params) {
+        String name = getVariableName(pInfo.getName());
+        for (ParameterInfo p : params) {
+            if (name.equals(getVariableName(p.getName()))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static String getQuotedValue(String value) {
+        String normalized = value;
+        if (normalized.startsWith("\"")) {
+            normalized = normalized.substring(1);
+        } else if (normalized.endsWith("\"")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return "\"" + normalized + "\"";
+    }
+
+    public static String[] getGetParamNames(List<ParameterInfo> queryParams) {
+        ArrayList<String> params = new ArrayList<String>();
+        params.addAll(Arrays.asList(getParamNames(queryParams)));
+        return params.toArray(new String[params.size()]);
+    }
+
+    public static String[] getGetParamTypes(List<ParameterInfo> queryParams) {
+        ArrayList<String> types = new ArrayList<String>();
+        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
+        return types.toArray(new String[types.size()]);
+    }
+
+    public static void addInputParamFields(JavaSource source,
+            final List<ParameterInfo> params,
+            final javax.lang.model.element.Modifier[] modifier) throws IOException {
+        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                List<ParameterInfo> addList = new ArrayList<ParameterInfo>();
+                for (ParameterInfo p : params) {
+                    if (JavaSourceHelper.getField(copy, getParameterName(p, true, true, true)) == null) {
+                        addList.add(p);
+                    }
+                }
+                JavaSourceHelper.addFields(copy, getParamNames(addList),
+                        getParamTypeNames(addList), getParamValues(addList), modifier);
+            }
+        });
+        result.commit();
     }
 }

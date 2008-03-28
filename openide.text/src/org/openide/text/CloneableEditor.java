@@ -51,9 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -293,20 +291,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             
-            EditorKit k; 
-            synchronized (this) {
-                k = support.cesKit();
-                doc = support.getDocument();
-                kit = k;
-                notifyAll();
-            }
-            
-            if (k instanceof Callable) {
+            EditorKit k = support.cesKit();
+            if (newInitialize() && k instanceof Callable) {
                 try {
                     ((Callable) k).call();
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
+            }
+            
+            synchronized (this) {
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
             }
         }
         
@@ -371,10 +368,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return;
             }
             
-            // the following two shall be done out of AWT:
             initCustomEditor();
-            initDecoration();
-            
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
             } else { // not custom editor
@@ -385,6 +379,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
             }
 
+            initDecoration();
             if (customToolbar != null) {
                 Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
                 customToolbar.setBorder(b);

@@ -42,7 +42,16 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,6 +66,112 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
         super(targetComponent, targetFile, m);
     }
 
+    @Override
+    public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
+        initProgressReporting(pHandle);
+
+        preGenerate();
+
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
+        
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
+                
+        //Modify Authenticator class
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
+        
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
+        addImportsToTargetFile();
+        
+        finishProgressReporting();
+
+        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+    }
+    
+    private void setJaxbWrapper() {
+        //TODO
+//        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+//        if(!repTypesFromWadl.isEmpty()) {
+//            getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
+//            getBean().setOutputWrapperPackageName(
+//                    (getBean().getGroupName()+"."+
+//                        getBean().getDisplayName()).toLowerCase());
+//        }
+    }
+    
+    @Override 
+    public void preGenerate() throws IOException {
+        Util.addJaxbLib(getProject());
+        
+        super.preGenerate();
+    }
+
+    /**
+     *  Insert the Saas client call
+     */
+    protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        try {
+            String code = "";
+            if (isInBlock) {
+                code = getCustomMethodBody();
+            } else {
+                code = "\nprivate String call" + getBean().getName() + "Service() {\n"; // NOI18n
+                code += getCustomMethodBody() + "\n";
+                code += "return result;\n";
+                code += "}\n";
+            }
+            insert(code, getTargetComponent(), true);
+        } catch (BadLocationException ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+
+    protected void addImportsToTargetFile() throws IOException {
+        List<String> imports = new ArrayList<String>();
+        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName());
+        imports.add(getBean().getSaasServicePackageName() + "." + getBean().getAuthenticatorClassName());
+        imports.add(REST_CONNECTION_PACKAGE + "." + REST_RESPONSE);
+        Util.addImportsToSource(getTargetSource(), imports);
+    }
+    
+    
+    @Override
+    protected String getCustomMethodBody() throws IOException {
+        String paramUse = "";
+        String paramDecl = "";
+        
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        String indent = "        ";
+        String indent2 = "             ";
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(getBean().getInputParameters());
+        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
+        
+        String methodBody = indent+"try {\n";
+        
+        //Insert authentication code before invoking custom service
+        methodBody += "             " +
+                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
+        
+        methodBody += paramDecl + "\n";
+        methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
+       
+        return methodBody;
+    }
+    
     @Override
     public boolean canShowResourceInfo() {
         return false;

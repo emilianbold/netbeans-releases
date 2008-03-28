@@ -37,6 +37,7 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -156,8 +157,11 @@ public class PredicateEditor extends EditorLifeCycleAdapter
         // Look for the tree node
         TreeModel leftTreeModel = mMapperModel.getLeftTreeModel();
         assert leftTreeModel instanceof MapperSwingTreeModel;
-        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
-                findFirstNode(finderList);
+        TreeFinderProcessor fProcessor = new TreeFinderProcessor(
+                (MapperSwingTreeModel)leftTreeModel);
+        TreePath schemaContextPath = fProcessor.findFirstNode(finderList);
+//        TreePath schemaContextPath = ((MapperSwingTreeModel)leftTreeModel).
+//                findFirstNode(finderList);
         //
         // Show context path
         if (schemaContextPath != null) {

@@ -52,6 +52,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.ProjectHelper;
+import org.apache.tools.ant.helper.ProjectHelperImpl;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
@@ -100,6 +102,12 @@ public class CasaBuilder {
     public static final String DEFAULT_WSDL_ENDPOINTS_REGION_WIDTH = "150";
     public static final String DEFAULT_JBI_MODULES_REGION_WIDTH = "500";
     public static final String DEFAULT_EXTERNAL_MODULES_REGION_WIDTH = "200";
+
+    // WSIT Callback Java project support
+    public static final String CASA_NAMESPACE_URI = "http://java.sun.com/xml/ns/casa";
+    public static final String WSIT_CALLBACK_ELEMENT = "WsitCallback";
+    public static final String WSIT_CALLBACK_PROJECT = "CallbackProject";
+
     // mapping binding component namespace to binding component name,
     // e.x., 
     private Map<String, String> bcNamespace2NameMap;
@@ -1107,6 +1115,21 @@ public class CasaBuilder {
                 if (bindingType != null && bindingType.trim().length() > 0) {
                     newPort.setAttribute(CASA_BINDING_TYPE_ATTR_NAME, bindingType);
                 }
+
+                // 2.1 merge casa port extensibilty elements
+                NodeList pNodes = oldPort.getChildNodes();
+                for (int k = 0; k < pNodes.getLength(); k++) {
+                    if (pNodes.item(k) instanceof Element) {
+                        Element pNode = (Element) pNodes.item(k);
+                        String ns = pNode.getNamespaceURI();
+                        // todo: Assume non CASA elemeents are extensions...
+                        if (!CASA_NAMESPACE_URI.equals(ns)) {
+                            Node clonedNode = deepCloneCasaNode(pNode, newCasaDocument);
+                            newPort.appendChild(clonedNode);
+                        }
+                    }
+                }
+
             }
         }
     }

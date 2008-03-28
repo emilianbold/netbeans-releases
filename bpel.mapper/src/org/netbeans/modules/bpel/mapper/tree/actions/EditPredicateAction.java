@@ -66,7 +66,7 @@ public class EditPredicateAction extends MapperAction<RestartableIterator<Object
         assert nextObj instanceof AbstractPredicate;
         AbstractPredicate pred = (AbstractPredicate)nextObj;
         //
-        XPathSchemaContext sContext = pred.getContext();
+        XPathSchemaContext sContext = pred.getSchemaContext();
         if (sContext == null) {
             sContext = PathConverter.constructContext(itr);
         }

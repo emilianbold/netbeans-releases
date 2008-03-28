@@ -180,6 +180,7 @@
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
             <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
+            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
         </subant>
     </target>
 

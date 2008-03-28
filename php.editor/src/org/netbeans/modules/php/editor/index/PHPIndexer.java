@@ -58,7 +58,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -119,7 +122,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_CONST = "const"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (file.getExtension().equals("php")) { // NOI18N
+        if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
 
             // Skip Gem versions; Rails copies these files into the project anyway! Don't want
             // duplicate entries.
@@ -216,6 +219,8 @@ public class PHPIndexer implements Indexer {
                     indexFunction((FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
                     indexConstant(statement, document);
+                } else if (statement instanceof ClassDeclaration){
+                    indexClass((ClassDeclaration)statement, document);
                 }
             }
             
@@ -262,9 +267,10 @@ public class PHPIndexer implements Indexer {
 //            }
         }
 
-        private void indexClass(AstElement element, IndexDocument document, String signature) {
-            final String name = element.getName();
-            document.addPair(FIELD_CLASS, name+ "," + signature, true);
+        private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
+            StringBuilder signature = new StringBuilder();
+            signature.append(classDeclaration.getName().getName() + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, signature.toString(), true);
         }
 
         private String computeSignature(AstElement element) {
