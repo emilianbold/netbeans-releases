@@ -1,5 +1,5 @@
 /*
- * GoogleMapResource.java
+ * __NAME__.java
  *
  * Created on __DATE__, __TIME__
  *
@@ -8,13 +8,10 @@
  */
 
 package Templates.Classes;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
+
 import java.io.IOException;
 import java.net.URLEncoder;
-import javax.ws.rs.GET;
-import javax.ws.rs.WebApplicationException;
+import org.netbeans.saas.RestConnection;
 import org.netbeans.saas.RestResponse;
 
 /**
@@ -22,13 +19,15 @@ import org.netbeans.saas.RestResponse;
  *
  * @author __USER__
  */
-public class GoogleMapResource {
+public class __NAME__ {
     
     /**
-     * Returns HTML text to access GoogleMap API.
-     * @param address address string to generate map for.
+     * Returns HTML text to access GoogleMap.
+     * @param apiKey.
+     * @param address - address string to generate map for.
+     * @param zoom.
      */
-    public String execute(String key, String address, Integer zoom) {
+    public static RestResponse getGoogleMap(String key, String address, Integer zoom) throws IOException {
         try {
             String encoded = URLEncoder.encode(address, "UTF-8");
             GeoCoder coder = new GeoCoder(encoded, key);
@@ -71,9 +70,9 @@ public class GoogleMapResource {
                     "    <div id='map' style='width: 500px; height: 300px'></div>\n"+
                     "  </body>\n"+
                     "</html>";
-            return mapRep;
-        } catch (IOException ex) {
-            throw new WebApplicationException(ex);
+             return new RestResponse(mapRep.getBytes());
+        } catch (Exception ex) {
+            throw new IOException(ex.getMessage());
         }
     }
     

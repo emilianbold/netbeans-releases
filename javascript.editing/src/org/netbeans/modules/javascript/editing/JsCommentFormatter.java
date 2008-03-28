@@ -60,6 +60,7 @@ public class JsCommentFormatter {
     private static final String THROWS_TAG = "@throws"; //NOI18N
     private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     private static final String CODE_TAG = "@code"; //NOI18N
+    private static final String EXAMPLE_TAG = "@example"; //NOI18N
     
     private final TokenSequence<? extends JsCommentTokenId> ts;
     private final StringBuilder summary;
@@ -299,6 +300,11 @@ public class JsCommentFormatter {
             deprecation = tag.substring(DEPRECATED_TAG.length()).trim();
         } else if (tag.startsWith(CODE_TAG)) {
             code = tag.substring(CODE_TAG.length()).trim();
+            code = code.replace("&", "&amp;"); // NOI18N
+            code = code.replace("<", "&lt;"); // NOI18N
+            code = code.replace(">", "&gt;"); // NOI18N
+        } else if (tag.startsWith(EXAMPLE_TAG)) {
+            code = tag.substring(EXAMPLE_TAG.length()).trim();
             code = code.replace("&", "&amp;"); // NOI18N
             code = code.replace("<", "&lt;"); // NOI18N
             code = code.replace(">", "&gt;"); // NOI18N

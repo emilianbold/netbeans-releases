@@ -799,7 +799,7 @@ public class Util {
         return null;
     }
 
-    public static String createSessionKeyLoginBodyForWeb(WadlSaasBean bean,
+    public static String createSessionKeyLoginBodyForWeb(SaasBean bean,
             String groupName, String paramVariableName) throws IOException {
         String methodBody = "";
         if (bean.getAuthenticationType() != SaasAuthenticationType.SESSION_KEY) {
@@ -857,7 +857,7 @@ public class Util {
         return methodBody;
     }
 
-    public static String getLoginBody(Login login, WadlSaasBean bean, String groupName,
+    public static String getLoginBody(Login login, SaasBean bean, String groupName,
             Map<String, String> tokenMap) throws IOException {
         SessionKeyAuthentication.UseGenerator.Method method = login.getMethod();
         String methodName = null;
@@ -905,15 +905,15 @@ public class Util {
                 }
             }
             String href = method.getHref();
-            if (href != null) {
-                Application app = bean.getMethod().getSaas().getWadlModel();
+            if (href != null && bean instanceof WadlSaasBean) {
+                Application app = ((WadlSaasBean)bean).getMethod().getSaas().getWadlModel();
                 org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod =
                         SaasUtil.wadlMethodFromIdRef(app, href);
                 if (wadlMethod != null) {
-                    ArrayList<ParameterInfo> params = bean.findWadlParams(wadlMethod);
+                    ArrayList<ParameterInfo> params = ((WadlSaasBean)bean).findWadlParams(wadlMethod);
                     Resource parentResource = SaasUtil.getParentResource(app, wadlMethod);
                     if (parentResource != null) {
-                        bean.findWadlParams(params, parentResource.getParam());
+                        ((WadlSaasBean)bean).findWadlParams(params, parentResource.getParam());
                     }
                     if (params != null &&
                             params.size() > 0) {
@@ -926,7 +926,11 @@ public class Util {
         //Insert parameter declaration
         methodBody += "        " + queryParamsCode;
 
-        methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + bean.getUrl() + "\"";
+        String url = "";
+        if (bean instanceof WadlSaasBean) {
+            url = ((WadlSaasBean)bean).getUrl();
+        }
+        methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + url + "\"";
         if (!queryParamsCode.trim().equals("")) {
             methodBody += ", " + Constants.QUERY_PARAMS;
         }
@@ -995,7 +999,7 @@ public class Util {
         return groupName + Constants.SERVICE_AUTHORIZATION_FRAME;
     }
 
-    public static String createSessionKeyTokenBodyForWeb(WadlSaasBean bean,
+    public static String createSessionKeyTokenBodyForWeb(SaasBean bean,
             String groupName, String paramVariableName, String saasServicePackageName) throws IOException {
         String methodBody = "";
         methodBody += "        javax.servlet.http.HttpSession session = request.getSession(true);\n";
@@ -1173,7 +1177,7 @@ public class Util {
     }
 
     public static void createSessionKeyAuthorizationClassesForWeb(
-            WadlSaasBean bean, Project project,
+            SaasBean bean, Project project,
             String groupName, String saasServicePackageName, FileObject targetFolder,
             JavaSource loginJS, FileObject loginFile,
             JavaSource callbackJS, FileObject callbackFile,
@@ -1287,7 +1291,7 @@ public class Util {
         }
     }
 
-    public static String getServletLoginBody(WadlSaasBean bean,
+    public static String getServletLoginBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
         SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
@@ -1335,7 +1339,7 @@ public class Util {
         return methodBody;
     }
 
-    public static String getServletCallbackBody(WadlSaasBean bean,
+    public static String getServletCallbackBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
         SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
@@ -1442,7 +1446,7 @@ public class Util {
     /**
      *  Return target and generated file objects
      */
-    public static void addServletMethod(final WadlSaasBean bean,
+    public static void addServletMethod(final SaasBean bean,
             String groupName, final String methodName, final JavaSource source,
             final String[] parameters, final Object[] paramTypes,
             final String bodyText) throws IOException {
@@ -1653,22 +1657,15 @@ public class Util {
             boolean canGenerateJaxb, String indent) {
         String methodBody = "";
         String commentStr = "//";
-        methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
-        if (methodType == HttpMethodType.GET) {
-            if (canGenerateJaxb) {
-                String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
-                methodBody += indent + commentStr + resultClass + " resultObj = " +
-                        "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
-                methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                        ".println(\"The SaasService returned: \" + resultObj.toString());\n";
-            } else {
-                methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                        ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                    ".println(\"The SaasService returned: \"+result);\n";
+        if (canGenerateJaxb) {
+            String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
+            methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
         }
+        methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
+        methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
+                ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+
         return methodBody;
     }
 
@@ -1751,7 +1748,7 @@ public class Util {
     String v = "1.0";
     String callId = String.valueOf(System.currentTimeMillis());
      */
-    public static String getSignParamDeclaration(WadlSaasBean bean,
+    public static String getSignParamDeclaration(SaasBean bean,
             List<ParameterInfo> signParams, List<ParameterInfo> filterParams) {
         String paramStr = "";
         for (ParameterInfo p : signParams) {

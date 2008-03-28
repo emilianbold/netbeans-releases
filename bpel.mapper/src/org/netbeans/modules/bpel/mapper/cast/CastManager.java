@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.cast;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.openide.ErrorManager;
@@ -159,11 +161,10 @@ public class CastManager {
             }
         }
     }
+
     
-    public void registerTypeCast(ExtensibleElements destination, 
-            SyntheticTypeCast typeCast) {
-        BpelModel bpelModel = destination.getBpelModel();
-        BPELElementsBuilder builder = bpelModel.getBuilder();
+    private Casts registerCastsEntity(BPELElementsBuilder builder, 
+            ExtensibleElements destination) {
         //
         Editor editor = null;
         List<Editor> editorList = destination.getChildren(Editor.class);
@@ -184,13 +185,30 @@ public class CastManager {
             editor.setCasts(casts);
         }
         //
+        return casts;
+    }
+    
+    public void registerTypeCast(ExtensibleElements destination, 
+            AbstractTypeCast newTypeCast) {
+        BpelModel bpelModel = destination.getBpelModel();
+        BPELElementsBuilder builder = bpelModel.getBuilder();
+        //
+        Casts casts = registerCastsEntity(builder, destination);
+        //
         Cast[] castArr = casts.getCasts();
         //
         boolean isEqualFound = false;
         for (Cast cast : castArr) {
+            //
+            if (cast.getSource() == Source.TO && mInLeftMapperTree || 
+                    cast.getSource() != Source.TO && !mInLeftMapperTree) {
+                // Skip casts with oposit source
+                continue;
+            } 
+            //
             TypeCast varTypeCast = TypeCast.convert(cast);
             if (varTypeCast != null) {
-                if (varTypeCast.equals(typeCast)) {
+                if (varTypeCast.equals(newTypeCast)) {
                     isEqualFound = true;
                     break;
                 }
@@ -199,9 +217,44 @@ public class CastManager {
         //
         if (!isEqualFound) {
             Cast newCast = builder.createExtensionEntity(Cast.class);
-            SyntheticTypeCast.populateCast(
-                    typeCast, newCast, casts, mInLeftMapperTree);
+            newTypeCast.populateCast(newCast, casts, mInLeftMapperTree);
             casts.addCast(newCast);
+        }
+    }
+    
+    public void registerTypeCasts(ExtensibleElements destination, 
+            Collection<AbstractTypeCast> newTypeCasts) {
+        BpelModel bpelModel = destination.getBpelModel();
+        BPELElementsBuilder builder = bpelModel.getBuilder();
+        //
+        Casts casts = registerCastsEntity(builder, destination);
+        //
+        Cast[] castArr = casts.getCasts();
+        //
+        for (AbstractTypeCast typeCast : newTypeCasts) {
+            boolean isEqualFound = false;
+            for (Cast cast : castArr) {
+                //
+                if (cast.getSource() == Source.TO && mInLeftMapperTree || 
+                        cast.getSource() != Source.TO && !mInLeftMapperTree) {
+                    // Skip casts with oposit source
+                    continue;
+                } 
+                //
+                TypeCast varTypeCast = TypeCast.convert(cast);
+                if (varTypeCast != null) {
+                    if (varTypeCast.equals(typeCast)) {
+                        isEqualFound = true;
+                        break;
+                    }
+                }
+            }
+            //
+            if (!isEqualFound) {
+                Cast newCast = builder.createExtensionEntity(Cast.class);
+                typeCast.populateCast(newCast, casts, mInLeftMapperTree);
+                casts.addCast(newCast);
+            }
         }
     }
     
@@ -210,7 +263,13 @@ public class CastManager {
         if (typeCast != null) {
             List<Object> parentPath = 
                     PathConverter.constructObjectLocationtList(
-                    typeCast.getXPathExpressionPath());
+                    typeCast.getXPathExpression());
+            //
+            // Remove first component of the path
+            int size = parentPath.size();
+            assert size > 0;
+            parentPath.remove(0);
+            //
             return addTypeCast(parentPath, typeCast);
         }
         return false;
@@ -224,6 +283,13 @@ public class CastManager {
                 break;
             }
         }
+    }
+    
+    @Override
+    public String toString() {
+        return " inLeftTree:" + mInLeftMapperTree + 
+                "  TypeCastCount: " + mCashedCastList.size() + 
+                "  ||  " + super.toString(); 
     }
     
     /**

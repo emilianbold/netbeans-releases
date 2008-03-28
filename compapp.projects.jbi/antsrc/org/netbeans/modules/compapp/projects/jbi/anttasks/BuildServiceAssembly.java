@@ -485,10 +485,16 @@ public class BuildServiceAssembly extends Task {
                 URI realUri = new URI(uri);
                 
                 if (realUri.getScheme() == null) {
-                    uri = "../" + sesuName + "/META-INF/" + uri;
+                    if (new File(catalogFile.getParentFile(), 
+                            "../" + sesuName + "/META-INF/" + uri).exists()) {
+                        uri = "../" + sesuName + "/META-INF/" + uri;
+                    } else {
+                        uri = sesuName + "/META-INF/" + uri;
+                    }
                     
                     // correct the URI (get rid of "META-INF/../")
                     uri = uri.replace("/META-INF/..", "");
+                    
                     
                     systemNode.setAttribute("uri", uri);
                 }
@@ -972,8 +978,10 @@ public class BuildServiceAssembly extends Task {
                 JarEntry jarEntry = jarEntries.nextElement();
                 InputStream is = genericBCJar.getInputStream(jarEntry);
                 
+                String jarEntryName = jarEntry.getName();
+                
                 // TODO: update casa wsdl entry in generic bc jar file.
-                if (jarEntry.getName().equals(compAppWSDLFileName)) {
+                if (jarEntryName.equals(compAppWSDLFileName)) {
 //                    // Quick fix for J1: If the casa wsdl file doesn't contain 
 //                    // active endpoints, then we skip packaging the casa wsdl entry.
 //                    // (Future improvement: This rule should apply to all the 
@@ -1000,7 +1008,12 @@ public class BuildServiceAssembly extends Task {
                     }
                     reader.close();
 //                    }
-                    
+                } else if (bcNames.contains(jarEntryName.substring(0, jarEntryName.length() - 1))) {
+                    // Skip (empty) BC SU directory, (for example, "sun-http-binding/")
+                    // which shouldn't go into the generic bc jar file in the 
+                    // first place.
+                } else if (jarEntryName.equals(".ignore")) {
+                    // Ignore ".ignore" entry.
                 } else {
                     
                     newJar.putNextEntry(jarEntry);

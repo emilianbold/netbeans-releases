@@ -205,7 +205,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         eoXMLCode.close( false );
     }
 
-    private void WaitCredCompletion( EditorOperator eoJavaCode )
+    private void WaitCredCompletion( EditorOperator eoJavaCode, boolean bConstructor )
     {
       eoJavaCode.insert( "Cred" );
       eoJavaCode.typeKey( ' ', InputEvent.CTRL_MASK );
@@ -214,13 +214,18 @@ public class AcceptanceTestCase extends JellyTestCase {
       {
         String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
         if( !sCompletedText.endsWith( "Cred\n" ) )
+        {
+          if( bConstructor )
+            eoJavaCode.insert( "( )" );
           break;
+        }
         if( ++iPassed > 10 )
         {
           try
           {
             CompletionJListOperator jCompl = new CompletionJListOperator( );
             jCompl.clickOnItem( 0, 2 );
+            bConstructor = false;
           }
           catch( JemmyException ex )
           {
@@ -278,76 +283,55 @@ public class AcceptanceTestCase extends JellyTestCase {
         JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
 
         // First most important line like "CreditReport cr = new CreditReport( );"
-        WaitCredCompletion( eoJavaCode );
+        WaitCredCompletion( eoJavaCode, false );
         eoJavaCode.insert( " cr = new " );
-        WaitCredCompletion( eoJavaCode );
+        WaitCredCompletion( eoJavaCode, true );
         eoJavaCode.insert( ";\n" );
 
         // Next lines
         eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
         CompletionJListOperator jCompl = GetCompletion( );
-        jCompl.clickOnItem( "setFirstName", 2 );
-        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
-        WaitEndOfLine( eoJavaCode, "cr.\n" );
-        editor.typeKey( '"' );
-        eoJavaCode.insert( "Hello" );
-        eoJavaCode.pushKey( KeyEvent.VK_END );
-        eoJavaCode.insert( "\n" );
+        int iIndex = jCompl.findItemIndex( "setFirstName" );
+        if( -1 == iIndex )
+          fail( "Unable to find setFirstName() completion." );
+        eoJavaCode.insert( "setFirstName( \"Hello\" );\n" );
 
         // Next lines
         eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
         jCompl = GetCompletion( );
-        jCompl.clickOnItem( "setLastName", 2 );
-        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
-        WaitEndOfLine( eoJavaCode, "cr.\n" );
-        editor.typeKey( '"' );
-        eoJavaCode.insert( "World" );
-        eoJavaCode.pushKey( KeyEvent.VK_END );
-        eoJavaCode.insert( "\n" );
+        iIndex = jCompl.findItemIndex( "setLastName" );
+        if( -1 == iIndex )
+          fail( "Unable to find setLastName() completion." );
+        eoJavaCode.insert( "setLastName( \"World\" );\n" );
 
         // Next lines
         eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
-        jCompl = new CompletionJListOperator( );
-        jCompl.clickOnItem( "setScore", 2 );
-        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
-        WaitEndOfLine( eoJavaCode, "cr.\n" );
-        editor.typeKey( '9' );
-        eoJavaCode.insert( "99" );
-        eoJavaCode.pushKey( KeyEvent.VK_END );
-        eoJavaCode.insert( "\n" );
+        jCompl = GetCompletion( );
+        iIndex = jCompl.findItemIndex( "setScore" );
+        if( -1 == iIndex )
+          fail( "Unable to find setScore() completion." );
+        eoJavaCode.insert( "setScore( 999 );\n" );
 
         // Next lines
         eoJavaCode.insert( "cr" );
         editor.typeKey( '.' );
-        jCompl = new CompletionJListOperator( );
-        jCompl.clickOnItem( "setSsn", 2 );
-        try{ Thread.sleep( 10000 ); } catch( InterruptedException ex ) {}
-        WaitEndOfLine( eoJavaCode, "cr.\n" );
-        editor.typeKey( '"' );
-        eoJavaCode.insert( "123-456-ABC" );
-        eoJavaCode.pushKey( KeyEvent.VK_END );
-        eoJavaCode.insert( "\n" );
+        jCompl = GetCompletion( );
+        iIndex = jCompl.findItemIndex( "setSsn" );
+        if( -1 == iIndex )
+          fail( "Unable to find setSsn() completion." );
+        eoJavaCode.insert( "setSsn( \"123-456-ABC\" );\n" );
 
         // TODO : Check result
     }
 
-    public void CodeCompletion2Internal( ) {
+    public void CodeCompletion2Internal( String sPackage ) {
 
         // Access java code with editor
         EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
 
-        // TODO : REMOVE COMMENT
-        /*
-        eoJavaCode.setCaretPosition(
-            "// TODO code application logic here",
-            0,
-            false
-          );
-        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
-        */
         // Use jaxbm template
         JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
         String sCode = "jaxbm\t";
@@ -359,12 +343,12 @@ public class AcceptanceTestCase extends JellyTestCase {
         String[] asIdealCodeLines =
         {
           "try {",
-          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(obj2BMarshalled.getClass().getPackage().getName());",
+          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(obj2BMarshalled.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(cr.getClass().getPackage().getName());",
           "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
           "",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
-          "marshaller.marshal(args, System.out);|marshaller.marshal(obj2BMarshalled, System.out);",
+          "marshaller.marshal(args, System.out);|marshaller.marshal(obj2BMarshalled, System.out);|marshaller.marshal(cr, System.out);",
           "} catch (javax.xml.bind.JAXBException ex) {",
           "// XXXTODO Handle exception",
           "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
@@ -411,12 +395,16 @@ public class AcceptanceTestCase extends JellyTestCase {
         editor.releaseKey( KeyEvent.VK_DELETE, InputEvent.CTRL_MASK );
         eoJavaCode.insert( "cr" );
 
+        // Correct imports
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Source|Fix Imports...");
+
+        // Check there is required import statement
+        String sText = eoJavaCode.getText( );
+        if( -1 == sText.indexOf( "import " + sPackage + ".CreditReport;" ) )
+          fail( "Unable to fix imports." );
     }
 
     public void RunTheProjectInternal( String sAppName ) {
-
-        // Correct imports
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Source|Fix Imports...");
 
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
         stt.start( );

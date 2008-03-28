@@ -591,14 +591,16 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             if (!roots.equals(oldRoots)) {
                 resources = new ArrayList<PathResourceImplementation>(roots.size());
                 for (URL root : roots) {
-                    assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
-                    PathResourceImplementation pri;
-                    if (type.equals(ClassPath.SOURCE)) {
-                        pri = new SourcePRI(root);
-                    } else {
-                        pri = ClassPathSupport.createResource(root);
+                    if (root != null) {
+                        assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
+                        PathResourceImplementation pri;
+                        if (type.equals(ClassPath.SOURCE)) {
+                            pri = new SourcePRI(root);
+                        } else {
+                            pri = ClassPathSupport.createResource(root);
+                        }
+                        resources.add(pri);
                     }
-                    resources.add(pri);
                 }
                 return true;
             } else {
