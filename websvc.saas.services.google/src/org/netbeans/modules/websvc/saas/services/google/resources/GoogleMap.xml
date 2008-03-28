@@ -59,7 +59,7 @@
         </group>
         <code-gen>
             <artifacts targets="servlet,resource">
-                <artifact id="GoogleMap" type="template"
+                <artifact id="GoogleMapService" type="template"
                     url="Templates/SaaSServices/GoogleMapResource.java"/>
             </artifacts>
         </code-gen>
@@ -70,7 +70,7 @@
     </saas-metadata>
 
     <methods>
-        <method name="getGoogleMap" href="GoogleMap">      
+        <method name="getGoogleMap" href="GoogleMapService">      
             <input>
                 <params>
                     <param name="apiKey" type="string"/>

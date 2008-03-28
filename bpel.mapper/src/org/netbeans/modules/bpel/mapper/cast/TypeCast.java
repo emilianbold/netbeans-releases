@@ -19,15 +19,20 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
+import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.openide.ErrorManager;
 
 /**
@@ -38,12 +43,9 @@ import org.openide.ErrorManager;
  */
 public class TypeCast extends AbstractTypeCast {
 
-    private XPathExpressionPath mXPathExpressionPath;
+    private XPathExpression mXPathExpression;
     
-    public static TypeCast convert(Cast cast) {
-        XPathExpressionPath exprPath = null;
-        GlobalType castTo = null;
-        //
+    public static XPathExpression getExpression(Cast cast) {
         String pathText = cast.getPath();
         XPathModel xPathModel = BpelXPathModelFactory.create(cast);
         XPathExpression xPathExpr = null;
@@ -53,9 +55,13 @@ public class TypeCast extends AbstractTypeCast {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
                     "Unresolved XPath: " + pathText); //NOI18N
         }
+        return xPathExpr;
+    }
+    
+    public static TypeCast convert(Cast cast) {
+        GlobalType castTo = null;
         //
-        assert xPathExpr instanceof XPathExpressionPath;
-        exprPath = (XPathExpressionPath)xPathExpr;
+        XPathExpression xPathExpr = getExpression(cast);
         //
         SchemaReference<GlobalType> gTypeRef = cast.getType();
         if (gTypeRef == null) {
@@ -69,20 +75,40 @@ public class TypeCast extends AbstractTypeCast {
             }
         }
         //
-        return new TypeCast(exprPath, castTo);
+        return new TypeCast(xPathExpr, castTo);
     }
     
-    public TypeCast(XPathExpressionPath path, GlobalType castTo) {
+    public TypeCast(XPathCast xPathCast) {
+        this(xPathCast.getPath(), xPathCast.getCastTo());
+    }
+    
+    public TypeCast(XPathExpression path, GlobalType castTo) {
         super(castTo);
         assert path != null;
-        mXPathExpressionPath = path;
+        assert path instanceof XPathSchemaContextHolder;
+        mXPathExpression = path;
     }
     
     public XPathSchemaContext getSchemaContext() {
-        return mXPathExpressionPath.getSchemaContext();
+        return ((XPathSchemaContextHolder)mXPathExpression).getSchemaContext();
     }
 
-    public XPathExpressionPath getXPathExpressionPath() {
-        return mXPathExpressionPath;
+    public XPathExpression getXPathExpression() {
+        return mXPathExpression;
     }
+    
+    @Override
+    public boolean populateCast(Cast target, 
+            BpelEntity destination, boolean inLeftMapperTree) {
+        String pathText = mXPathExpression.getExpressionString();
+        try {
+            target.setPath(pathText);
+        } catch (VetoException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return false;
+        }
+        //
+        return super.populateCast(target, destination, inLeftMapperTree);
+    }
+    
 } 
