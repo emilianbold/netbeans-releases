@@ -639,13 +639,18 @@ type CDATA #REQUIRED
         <component_type name="InvokeStream" icon="streamInputx32.png" title="IEP.External.InvokeStream.title" description="IEP.External.InvokeStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
-                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.InvokeStreamCustomEditor"/>
                 <property name="type" default="i18n.IEP.Output.StreamOutput.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isSchemaOwner" default="true"/>
                 <property name="wsOutput" default="false"/>
                 <property name="palette" default="external"/>
                 <property name="helpID" default="iep_streamout_propedit"/>
+                
             </property_group>
+
+            <property transient="false" category="IEP.Category.main" name="externalIepProcessQualifiedName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
+            <property transient="false" category="IEP.Category.main" name="externalOperatorName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
             <property transient="false" category="IEP.Category.main" name="includeTimestamp" title="IEP.Output.StreamOutput.includeTimestamp.title" description="IEP.Output.StreamOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.StreamProjectionAndFilter.fromColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
