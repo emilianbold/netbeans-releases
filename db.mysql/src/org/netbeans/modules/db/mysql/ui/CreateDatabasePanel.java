@@ -6,8 +6,6 @@
 
 package org.netbeans.modules.db.mysql.ui;
 
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.KeyEvent;

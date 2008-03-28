@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;

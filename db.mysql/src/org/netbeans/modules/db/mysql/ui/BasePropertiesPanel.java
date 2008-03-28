@@ -15,7 +15,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.MySQLOptions;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;

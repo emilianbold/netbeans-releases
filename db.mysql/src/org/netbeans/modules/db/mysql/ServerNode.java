@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.util.Utils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.modules.db.mysql.util.Utils;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.actions.DeleteAction;

@@ -46,7 +46,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.ServerNodeProvider;
-import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;

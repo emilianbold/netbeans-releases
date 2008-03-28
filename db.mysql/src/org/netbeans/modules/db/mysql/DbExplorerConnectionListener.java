@@ -42,7 +42,7 @@ package org.netbeans.modules.db.mysql;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
+import org.netbeans.modules.db.mysql.DatabaseUtils.URLParser;
 
 /**
  * Listen to changes on the connection list, and if we're not registered

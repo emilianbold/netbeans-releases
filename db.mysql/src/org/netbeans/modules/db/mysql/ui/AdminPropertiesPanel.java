@@ -17,7 +17,7 @@ import org.netbeans.modules.db.mysql.Installation.Command;
 import org.netbeans.modules.db.mysql.InstallationSupport;
 import org.netbeans.modules.db.mysql.MySQLOptions;
 import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.modules.db.mysql.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
