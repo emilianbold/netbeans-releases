@@ -276,6 +276,10 @@ public class PHPCodeCompletion implements Completable {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         IndexedConstant ic = new IndexedConstant(varName, null,
                                 null, url, null, 0, ElementKind.VARIABLE);
+                        
+                        if (param.getParameterType() != null) {
+                            ic.setTypeName(param.getParameterType().getName());
+                        }
 
                         CompletionProposal proposal = new VariableItem(ic, request);
                         proposals.add(proposal);
@@ -551,12 +555,12 @@ public class PHPCodeCompletion implements Completable {
             String typeName = constant.getTypeName();
             formatter.reset();
             if (typeName == null) {
-                typeName = "?";
+                typeName = "?"; //NOI18N
             }
             formatter.type(true);
             formatter.appendText(typeName);
             formatter.type(false);
-            formatter.appendText(" ");
+            formatter.appendText(" "); //NOI18N
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
