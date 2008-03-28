@@ -19,11 +19,20 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
+import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.openide.ErrorManager;
 
 /**
  * The base class for different kind of Type Cast objects.
@@ -103,4 +112,20 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
         return getDisplayName();
     }
 
+    public boolean populateCast(Cast target, 
+            BpelEntity destination, boolean inLeftMapperTree) {
+        //
+        GlobalType castTo = getCastTo();
+        SchemaReference<GlobalType> typeRef =
+                target.createSchemaReference(castTo, GlobalType.class);
+        target.setType(typeRef);
+        //
+        if (inLeftMapperTree) {
+            target.setSource(Source.FROM);
+        } else {
+            target.setSource(Source.TO);
+        }
+        //
+        return true;
+    }
 } 

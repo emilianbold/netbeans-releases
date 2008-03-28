@@ -222,7 +222,8 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         //
-        XPathExprList xPathExprList = buildXPathExprList(xPathModel, graphInfo);
+        XPathExprList xPathExprList = 
+                buildXPathExprList(xPathModel, graphInfo, null);
         //
         XPathExpression expr = xPathExprList.getConnectedExpression();
         if (expr != null) {

@@ -2799,7 +2799,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
             }
-            dumpSource(ci, t);
+            boolean a = false;
+            assert a = true; 
+            if (a) {
+                dumpSource(ci, t);
+            }
             return false;
         }
         return true;

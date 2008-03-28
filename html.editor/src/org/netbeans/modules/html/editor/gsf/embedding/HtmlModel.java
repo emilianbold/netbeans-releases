@@ -288,7 +288,7 @@ public class HtmlModel {
 
     private CodeBlockData getCodeBlockAtSourceOffset(int offset) {
         for (CodeBlockData codeBlock : codeBlocks) {
-            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= offset) {
+            if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd > offset) {
                 return codeBlock;
             }
         }
@@ -298,13 +298,12 @@ public class HtmlModel {
     private CodeBlockData getCodeBlockAtGeneratedOffset(int offset) {
         // TODO - binary search!! they are ordered!
         for (CodeBlockData codeBlock : codeBlocks) {
-            if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd >= offset) {
+            if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd > offset) {
                 return codeBlock;
             }
         }
         return null;
     }
-
     private class CodeBlockData {
 
         /** Start of section in RHTML file */
@@ -331,7 +330,7 @@ public class HtmlModel {
             //sb.append("=\"");
             //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
             //sb.append("\"");
-            sb.append(",\n  JAVASCRIPT(" + generatedStart + "," + generatedEnd + ")");
+            sb.append(",\n  HTML(" + generatedStart + "," + generatedEnd + ")");
             //sb.append("=\"");
             //sb.append(rubyCode.substring(generatedStart,generatedEnd));
             //sb.append("\"");

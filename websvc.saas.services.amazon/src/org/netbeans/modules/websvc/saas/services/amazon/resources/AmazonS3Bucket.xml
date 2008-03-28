@@ -40,7 +40,6 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
                xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/amazon"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
@@ -49,17 +48,11 @@
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketWadl.xml">
-
     <description>AmazonS3 Bucket Service</description>
-    
     <display-name>S3 Buckets Service</display-name>
-
     <saas-metadata>
-
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
-
         <group name="Amazon"/>
-  
         <authentication profile="SaaSServices/AmazonS3/profile.properties">
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign id="authorization">
@@ -68,7 +61,7 @@
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string"/>
                         <param name="Bucket" type="string" required="true" default=""/>
-                        <param name="Content-Type" type="contentType" required="true"/>
+                        <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
             </signed-url>
@@ -79,35 +72,68 @@
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/&quot;"/>
                         <param name="Bucket" type="string" required="true" default=""/>
-                        <param name="Content-Type" type="contentType" required="true"/>
-                    </params>
-                </sign>
-            </signed-url>
-            <signed-url sig-id="Authorization" id="setAcl">
-                <sign id="authorization">
-                    <params>
-                        <param name="Acl" type="string" required="true"/>
-                        <param name="Bucket" type="string" required="true" default=""/>
-                        <param name="Content-Type" type="contentType" required="true"/>
+                        <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
             </signed-url>
             <signed-url sig-id="Authorization" id="getLocation">
                 <sign id="authorization">
-                   <params>
+                    <params>
                         <param name="HTTP-Verb" type="httpMethod" required="true"/>
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string" default="&quot;/?location&quot;"/>
                         <param name="Bucket" type="string" required="true" default=""/>
-                        <param name="Content-Type" type="contentType" required="true"/>
+                        <param name="Content-Type" type="string" required="true"/>
+                    </params>
+                </sign>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="getBucketAcl">
+                <sign id="authorization">
+                    <params>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/?acl&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
+                    </params>
+                </sign>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="setBucketAcl">
+                <sign id="authorization">
+                    <params>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/?acl&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
+                    </params>
+                </sign>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="getObjectAcl">
+                <sign id="authorization">
+                    <params>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/?acl&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
+                    </params>
+                </sign>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="setObjectAcl">
+                <sign id="authorization">
+                    <params>
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="HTTP-Request-URI" type="string" default="&quot;/&quot; + object + &quot;/?acl&quot;"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
             </signed-url>
         </authentication>
-        
     </saas-metadata>
 
     <!-- Process all methods in the wadl !-->
     <methods/>
-    
 </saas-services>

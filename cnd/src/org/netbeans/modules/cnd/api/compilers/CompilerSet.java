@@ -634,16 +634,19 @@ public class CompilerSet {
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
+        tool.setCompilerSet(this);
         return tool;
     }
     
     public void addTool(Tool tool) {
         tools.add(tool);
+        tool.setCompilerSet(this);
     }
     
     public Tool addNewTool(String name, String path, int kind) {
         Tool tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
         tools.add(tool);
+        tool.setCompilerSet(this);
         return tool;
     }
     
@@ -651,6 +654,7 @@ public class CompilerSet {
         for (Tool tool : tools) {
             if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
                 tools.remove(tool);
+                tool.setCompilerSet(null);
                 return;
             }
         }
@@ -724,6 +728,7 @@ public class CompilerSet {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
 //        }
         tools.add(t);
+        t.setCompilerSet(this);
         return t;
     }
     

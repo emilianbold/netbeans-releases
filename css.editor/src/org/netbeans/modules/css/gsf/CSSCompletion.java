@@ -118,7 +118,7 @@ public class CSSCompletion implements Completable {
 
             TokenSequence ts = LexerUtils.getCssTokenSequence(info.getDocument(), caretOffset);
             ts.move(caretOffset - prefix.length());
-            ts.moveNext();
+            boolean hasNext = ts.moveNext();
 
 
             //so far the css parser always parses the whole css content
@@ -138,7 +138,7 @@ public class CSSCompletion implements Completable {
                 //the parse tree is likely broken by some text typed, 
                 //but we still need to provide the completion in some cases
                 
-                if("@".equals(ts.token().text().toString())) {
+                if(hasNext && "@".equals(ts.token().text().toString())) {
                     //complete rules
                     return wrapValues(AT_RULES, CompletionItemKind.VALUE, ts.offset(), formatter);
                 }
