@@ -36,6 +36,7 @@ import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
+import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddCastAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddSpecialStepAction;
@@ -462,6 +463,12 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 return ((Variable) treeItem).getElementType().getName();
             }
         }    
+        
+        if (treeItem instanceof AbstractTypeCast) {
+            GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
+            return gType.getName();
+        }
+        
         return "not named type";
     }
 
