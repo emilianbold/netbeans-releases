@@ -303,7 +303,10 @@ public class JsIndexer implements Indexer {
             }
             
             if (url.endsWith(".js")) {
-                indexRelatedScriptDocs();
+                boolean done = indexRelatedScriptDocs();
+                if (done) {
+                    return;
+                }
             }
 
             IndexDocument document = factory.createDocument(40); // TODO - measure!
@@ -768,7 +771,7 @@ public class JsIndexer implements Indexer {
             }
         }
         
-        private void indexRelatedScriptDocs() {
+        private boolean indexRelatedScriptDocs() {
             // (1) If it's a simple library like JQuery, use the assocaited file, else
             // (2) If it's a YUI file, use the associated file in sdoc, else
             // (3) If it's a YUI "collections" file, use the associated set of files (I must iterate)
@@ -792,6 +795,10 @@ public class JsIndexer implements Indexer {
             int begin = url.lastIndexOf('/');
             if (url.startsWith("jquery-", begin+1)) { // NOI18N
                 indexScriptDoc("jquery.sdoc", false); // NOI18N
+                return true;
+            } else if (url.startsWith("dojo.js", begin+1)) { // NOI18N
+                indexScriptDoc("dojo.sdoc", false); // NOI18N
+                return true;
             } else if (url.startsWith("yahoo.js", begin+1) || // NOI18N
                     url.startsWith("yahoo-debug.js", begin+1) || // NOI18N
                     url.startsWith("yahoo-min.js", begin+1)) { // NOI18N
@@ -803,6 +810,7 @@ public class JsIndexer implements Indexer {
                     // Index all the YUI stuff
                     indexScriptDoc("yui", true);
                 }
+                return true;
             } else {
                 // TODO - do something smarter here based on which "collection" files
                 // you're using which pull in many individual files...
@@ -810,8 +818,11 @@ public class JsIndexer implements Indexer {
                 int yuiIndex = url.indexOf("/yui/build/"); // NOI18N
                 if (yuiIndex != -1) {
                     indexScriptDoc("yui/" + url.substring(yuiIndex+"/yui/build/".length()), false);
+                    return true;
                 }
             }
+            
+            return false;
         }
 
         /**
