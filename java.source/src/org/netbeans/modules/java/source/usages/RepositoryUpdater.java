@@ -1851,7 +1851,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     clean = true;
                 }
                 
-                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
+                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false)), true);
 
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     if (ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true)) {

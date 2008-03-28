@@ -86,16 +86,16 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         this(targetComponent, targetFile, new WadlSaasBean(m));
     }
-    
-    public JaxRsCodeGenerator(JTextComponent targetComponent, 
+
+    public JaxRsCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasBean bean) throws IOException {
         super(targetComponent, targetFile, bean);
-        saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(), 
+        saasServiceFile = SourceGroupSupport.findJavaSourceFile(getProject(),
                 getBean().getSaasServiceName());
         if (saasServiceFile != null) {
             saasServiceJS = JavaSource.forFileObject(saasServiceFile);
         }
-        
+
         this.authGen = new JaxRsAuthenticationGenerator(bean, getProject());
         this.authGen.setLoginArguments(getLoginArguments());
         this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
@@ -107,11 +107,11 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
     public WadlSaasBean getBean() {
         return (WadlSaasBean) bean;
     }
-    
+
     public JaxRsAuthenticationGenerator getAuthenticationGenerator() {
         return authGen;
     }
-    
+
     public JavaSource getSaasServiceSource() {
         return saasServiceJS;
     }
@@ -124,15 +124,15 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         }
         return serviceFolder;
     }
-    
+
     public DropFileType getDropFileType() {
         return dropFileType;
     }
-    
+
     void setDropFileType(DropFileType dropFileType) {
         this.dropFileType = dropFileType;
-     }
-    
+    }
+
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
@@ -164,7 +164,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         methodBody += "        " + fixedCode;
 
         //Insert authentication code before new "+Constants.REST_CONNECTION+"() call
-        methodBody += "             " + 
+        methodBody += "             " +
                 getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
 
         //Insert parameter declaration
@@ -180,7 +180,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         methodBody += ");\n";
 
         //Insert authentication code after new "+Constants.REST_CONNECTION+"() call
-        methodBody += "             " + 
+        methodBody += "             " +
                 getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
         HttpMethodType httpMethod = getBean().getHttpMethod();
@@ -234,11 +234,26 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         List<ParameterInfo> params = getBean().filterParametersByAuth(getBean().filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
         HttpMethodType httpMethod = getBean().getHttpMethod();
+        
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
-            if (!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class))) {
+            
+            ParameterInfo contentTypeParam = Util.findParameter(getBean().getInputParameters(), Constants.CONTENT_TYPE);
+            Class contentType = InputStream.class;
+            
+            if (contentTypeParam == null) {
                 params.add(new ParameterInfo(Constants.CONTENT_TYPE, String.class));
+            } else {
+                if (!contentTypeParam.isFixed() && !params.contains(contentTypeParam)) {
+                    params.add(contentTypeParam);
+                } else {
+                    String value = findParamValue(contentTypeParam);
+                    if (value.equals("text/plain") || value.equals("application/xml") ||
+                            value.equals("text/xml")) {     //NOI18N
+                        contentType = String.class;
+                    }
+                }
             }
-            params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, InputStream.class));
+            params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
         }
         return params;
     }
@@ -290,7 +305,7 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             throw new IOException(ex.getMessage());
         }
     }
-    
+
     /**
      *  Create Saas Service
      */
@@ -372,8 +387,9 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
 
     protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params,
             String indent) {
-        if(indent == null)
+        if (indent == null) {
             indent = " ";
+        }
         String paramDecl = "";
         for (ParameterInfo param : params) {
             String name = getVariableName(param.getName());
@@ -382,15 +398,15 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                 paramDecl += indent + param.getType().getName() + " " + name + " = " + paramVal + ";\n";
             } else {
                 if (paramVal != null) {
-                    paramDecl += indent+"String " + name + " = \"" + paramVal + "\";\n";
+                    paramDecl += indent + "String " + name + " = \"" + paramVal + "\";\n";
                 } else {
-                    paramDecl += indent+"String " + name + " = null;\n";
+                    paramDecl += indent + "String " + name + " = null;\n";
                 }
             }
         }
         return paramDecl;
     }
-    
+
     protected String getHeaderOrParameterDeclaration(List<ParameterInfo> params) {
         String indent = "                 ";
         return getHeaderOrParameterDeclaration(params, indent);

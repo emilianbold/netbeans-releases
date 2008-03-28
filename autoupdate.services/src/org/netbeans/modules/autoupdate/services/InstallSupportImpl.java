@@ -274,6 +274,9 @@ public class InstallSupportImpl {
                     currentStep = STEP.INSTALLATION;
                 }
                 assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+                
+                // do trust of so far untrusted certificates
+                addTrustedCertificates ();
 
                 affectedModuleImpls = new HashSet<ModuleUpdateElementImpl> ();
                 affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
@@ -381,13 +384,12 @@ public class InstallSupportImpl {
                                 for (ModuleUpdateElementImpl impl : affectedModuleImpls) {
                                     int rerunWaitCount = 0;
                                     Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
-                                    // XXX: consider again this
-                                    for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
+                                    for (; rerunWaitCount < 100 && module == null; rerunWaitCount++) {
                                         Thread.sleep(100);
                                         module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ());
                                     }
                                     if (rerunWaitCount == 100) {
-                                        err.log (Level.INFO, "Overflow checks of installed module " + module);
+                                        err.log (Level.INFO, "Timeout waiting for loading module " + impl.getCodeName () + '/' + impl.getSpecificationVersion ());
                                         th.interrupt();
                                         break;
                                     }
@@ -545,6 +547,26 @@ public class InstallSupportImpl {
             assert false : "Unsupported type " + impl;
         }
         return res;
+    }
+    
+    private void addTrustedCertificates () {
+        // find untrusted so far
+        Collection<UpdateElementImpl> untrusted = new HashSet<UpdateElementImpl> (signed);
+        untrusted.removeAll (trusted);
+        if (untrusted.isEmpty ()) {
+            // all are trusted
+            return;
+        }
+        
+        // find corresponding certificates
+        Collection<Certificate> untrustedCertificates = new HashSet<Certificate> ();
+        for (UpdateElementImpl i : untrusted) {
+            untrustedCertificates.addAll (certs.get (i.getUpdateElement ()));
+        }
+        
+        if (! untrustedCertificates.isEmpty ()) {
+            Utilities.addCertificates (untrustedCertificates);
+        }
     }
 
     public void doCancel () throws OperationException {
@@ -785,6 +807,11 @@ public class InstallSupportImpl {
                 List<Certificate> trustedCerts = new ArrayList<Certificate> ();
                 UpdateElementImpl impl = Trampoline.API.impl(el);
                 for (KeyStore ks : Utilities.getKeyStore ()) {
+                    trustedCerts.addAll (getCertificates (ks));
+                }
+                // load user certificates
+                KeyStore ks = Utilities.loadKeyStore ();
+                if (ks != null) {
                     trustedCerts.addAll (getCertificates (ks));
                 }
                 if (trustedCerts.containsAll (nbmCerts)) {

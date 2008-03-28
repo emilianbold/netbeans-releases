@@ -195,7 +195,7 @@ public final class FileUtil extends Object {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
-            fs.addFileChangeListener(fcl);
+            fs.removeFileChangeListener(fcl);
         }
     }
     
