@@ -62,6 +62,8 @@ public class SourcesView extends TopComponent implements org.openide.util.HelpCt
     
     public SourcesView () {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.png")); // NOI18N
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
     protected String preferredID() {

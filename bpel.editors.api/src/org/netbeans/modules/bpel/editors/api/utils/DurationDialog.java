@@ -190,7 +190,7 @@ public final class DurationDialog extends JDialog {
     int day = getInt(myDay.getText());
     int hour = getInt(myHour.getText());
     int minute = getInt(myMinute.getText());
-    int second = getInt(mySecond.getText());
+    double second = getDouble(mySecond.getText());
 
     if (
       check(year, "ERR_invalid_year", myYear) && // NOI18N
@@ -200,7 +200,7 @@ public final class DurationDialog extends JDialog {
       check(minute, "ERR_invalid_minute", myMinute) && // NOI18N
       check(second, "ERR_invalid_second", mySecond)) // NOI18N
     {
-      myDuration = TimeEventUtil.getContent(true, year, month, day, hour, minute, second);
+      myDuration = DurationUtil.getContent(true, year, month, day, hour, minute, second);
       return true;
     }
     else {
@@ -210,7 +210,15 @@ public final class DurationDialog extends JDialog {
   }
 
   private boolean check(int value, String key, JTextField field) {
-    if (value >= 0) {
+    return check(value >= 0, key, field);
+  }
+
+  private boolean check(double value, String key, JTextField field) {
+    return check(value >= 0.0, key, field);
+  }
+
+  private boolean check(boolean condition, String key, JTextField field) {
+    if (condition) {
       return true;
     }
     printError(i18n(DurationDialog.class, key, field.getText()));
