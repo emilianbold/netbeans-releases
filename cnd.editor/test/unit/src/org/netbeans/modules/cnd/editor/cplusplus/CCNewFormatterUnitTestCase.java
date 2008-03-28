@@ -4151,17 +4151,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
                 "int f(int a1, int a2,\n" +
                 "      int a3) {\n" +
-                "\n" +
                 "}\n"
                 );
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "int\n" +
                 "f (int a1, int a2,\n" +
-                "   int a3)\n" +
-                "{\n" +
-                "\n" +
-                "}\n"
+                "   int a3) { }\n" 
                 );
     }
 
@@ -4178,9 +4174,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting GNU new line name",
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
                 ": imp_ (0)\n" +
-                ", env_ (env)\n" +
-                "{\n" +
-                "}\n"
+                ", env_ (env) { }\n" 
                 );
     }
     //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
@@ -4440,6 +4434,40 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "  return;\n" +
                 "}\n" +
                 "\n"
+                );
+    }
+
+    // IZ#130509:Formatter should ignore empty function body
+    public void testIZ130509() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
+        setLoadDocumentText(
+                "int foo0() { \n" +
+                "  }\n" +
+                "int foo1() { } \n" +
+                "int foo2()\n" +
+                " { } \n" +
+                "int foo3(){}\n" +
+                "int foo4(){\n" +
+                "}\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Formatter should ignore empty function body",
+                "int foo0() { }\n" +
+                "\n" +
+                "int foo1() { }\n" +
+                "\n" +
+                "int foo2() { }\n" +
+                "\n" +
+                "int foo3() { }\n" +
+                "\n" +
+                "int foo4() { }\n" +
+                "\n" +
+                "int foo5() { //\n" +
+                "}\n"
                 );
     }
 }

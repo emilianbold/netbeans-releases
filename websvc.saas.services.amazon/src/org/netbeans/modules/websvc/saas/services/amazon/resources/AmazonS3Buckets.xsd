@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/geocoder1"
+            xmlns:tns="http://xml.netbeans.org/schema/geocoder1"
+            elementFormDefault="qualified">
+    <xsd:element name="ListAllMyBucketsResult">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Owner">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="ID"/>
+                            <xsd:element name="DisplayName"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="Buckets">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="Bucket">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="Name">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="CreationDate"/>
+                                                </xsd:sequence>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

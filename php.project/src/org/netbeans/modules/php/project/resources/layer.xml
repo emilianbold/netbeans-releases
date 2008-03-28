@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
                 <attr name="position" intvalue="520"/>
-                
+
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
         </folder>
         <!--folder name="Scripting">
             <attr name="position" intvalue="20"/>
-            
+
             <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHP.php">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.resources.Bundle"/>
@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
             </file>
         </folder-->
-        
+
     </folder>
 
     <!--folder name="OptionsDialog">
@@ -93,13 +93,13 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder-->
-    
+
 <!-- separate php category was moved into misclleaneous as one php panel
     <folder name="OptionsDialog">
         <file name="PhpOptions.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.PhpOptionsCategory"/>
             <attr name="position" intvalue="310"/>
-        </file>     
+        </file>
     </folder>
     <folder name="org.netbeans.modules.php">
         <folder name="options">
@@ -136,6 +136,12 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
+        </folder>
+    </folder>
+
+    <folder name="PHP">
+        <folder name="RuntimeLibraries">
+            <file name="runtime.php" url="nbres:/org/netbeans/modules/php/project/resources/runtime.php"/>
         </folder>
     </folder>
 

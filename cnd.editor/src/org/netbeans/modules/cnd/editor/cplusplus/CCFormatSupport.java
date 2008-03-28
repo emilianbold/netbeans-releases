@@ -968,7 +968,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                             }
                         }
                         if (indent < 0) {
-                            indent = computeStatementIndent(t);
+                            indent = computeStatementIndent(token);
                         }
                         break;
 
@@ -977,7 +977,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        indent = computeStatementIndent(t);
+                        indent = computeStatementIndent(token);
                         break;
                         
                     case CCTokenContext.COMMA_ID:
@@ -988,7 +988,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = computeStatementIndent(t);
                         break;
                     default:
-                        indent = computeStatementIndent(t);
+                        indent = computeStatementIndent(token);
                         break;
                 }
 

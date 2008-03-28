@@ -223,7 +223,10 @@ public class PushAction extends ContextAction {
                             "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
                 }
 
-                boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
+                boolean bMergeNeeded = false;
+                if (bLocalPush) {
+                    bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
+                }
                 boolean bConfirmMerge = false;
                 // Push does not do an Update of the target Working Dir
                 if (!bMergeNeeded) {
