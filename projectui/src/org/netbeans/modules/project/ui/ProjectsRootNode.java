@@ -548,7 +548,7 @@ public class ProjectsRootNode extends AbstractNode {
                                 break;
                             }
                         }
-                        assert n != null;
+                        assert n != null : "newProject yields null node: " + newProj;
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "change original: {0}", n);
                     changeOriginal(n, true);
