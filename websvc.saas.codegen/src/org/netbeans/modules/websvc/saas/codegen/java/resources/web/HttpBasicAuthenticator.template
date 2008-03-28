@@ -74,7 +74,7 @@ public class __NAME__ extends Authenticator {
             if (sessionUsername == null || sessionUsername.length() == 0 ||
                     sessionPassword == null || sessionPassword.length() == 0) {
                 session.setAttribute(RETURN_URL_ATTR, request.getRequestURI());
-                response.sendRedirect(LOGIN_URL);
+                response.sendRedirect(request.getContextPath() + "/" + LOGIN_URL);
             } else {
                 String returnUrl = (String) session.getAttribute(RETURN_URL_ATTR);
 

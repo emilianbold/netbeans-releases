@@ -251,35 +251,37 @@ class PanelProjectLocationVisual
         }
     }
     
-    void store(WizardDescriptor d) {        
+    protected void store(WizardDescriptor d) {        
         String name = projectNameTextField.getText().trim();
         
-        d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
-        d.putProperty(WizardProperties.NAME, name);
+        d.putProperty(    WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
+        d.putProperty(    WizardProperties.NAME, name);
         
         File projectsDir = new File(this.projectLocationTextField.getText());
+
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder (projectsDir);
         }
     }
         
-    void read (WizardDescriptor settings) {
+    protected void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null)
+
+        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        else
+        }
+        else {
             projectLocation = projectLocation.getParentFile();
-        
+        }
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        
-        String projectName = (String) settings.getProperty(WizardProperties.NAME);
+        String projectName = (String) settings.getProperty(    WizardProperties.NAME);
+
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            String formater = panel.getDefaultName(); // NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_NPW1_DefaultProjectName");
+            String formater = panel.getDefaultName();
             while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
                 baseCount++;
         }
-        
         projectNameTextField.setText(projectName);                
         projectNameTextField.selectAll();
     }

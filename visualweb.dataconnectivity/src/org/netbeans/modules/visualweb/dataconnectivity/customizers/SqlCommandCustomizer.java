@@ -168,21 +168,28 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
                     dbconn = dbconns[i];
                     break;
                 }
-            }
+            }             
         } catch (NamingException ex) {
             Exceptions.printStackTrace(ex);
         } catch (SQLException sqe) {
             Exceptions.printStackTrace(sqe);
         }
 
-        
-        String command = (String)srcBean.getProperty("command").getValue();
-        VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
-        
-        vse.addPropertyChangeListener(vseListener);
-        Component retComp = vse.open();
-        if (retComp instanceof TopComponent) {
-            queryEditors.put(srcBean, new QBPair((TopComponent)retComp, vse));
+        Component retComp = null;
+        try {
+            if (dbconn == null) {
+                throw new NamingException(NbBundle.getMessage(SqlCommandCustomizer.class, "NAME_NOT_FOUND") + " " + dsName);
+            }
+            String command = (String) srcBean.getProperty("command").getValue();
+            VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
+            
+            vse.addPropertyChangeListener(vseListener);
+            retComp = vse.open();
+            if (retComp instanceof TopComponent) {
+                queryEditors.put(srcBean, new QBPair((TopComponent) retComp, vse));
+            }
+        } catch (NamingException ne) {
+            Exceptions.printStackTrace(ne);
         }
         
         return retComp ;

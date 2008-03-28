@@ -78,6 +78,8 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.ui.DialogBinding;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
@@ -113,6 +115,16 @@ public class WatchPanel {
     }
     
     public static void setupContext(JEditorPane editorPane, String url, int line) {
+        // do not highlight current row
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        // Do not draw text limit line
+        try {
+            java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N
+            textLimitLineField.setAccessible(true);
+            textLimitLineField.set(eui, false);
+        } catch (Exception ex) {}
+        
         FileObject file;
         StyledDocument doc;
         try {

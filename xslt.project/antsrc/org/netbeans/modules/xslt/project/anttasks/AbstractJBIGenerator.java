@@ -49,8 +49,8 @@ import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
-import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 
 /**
  *
@@ -126,6 +126,12 @@ public abstract class AbstractJBIGenerator {
     public static final String XSI_ATTR_NAME = "xsi:schemaLocation"; // NOI18N
     public static final String XSI_ATTR_VALUE ="http://java.sun.com/xml/ns/jbi jbi.xsd"; // NOI18N
     
+    public static final String JBI_EXT_NS = "http://www.sun.com/jbi/descriptor/service-unit"; // NOI18N
+    
+    public static final String JBI_EXT_DISPLAY_NAME = "display-name";
+    public static final String JBI_EXT_PROC_NAME = "process-name";
+    public static final String JBI_EXT_FILE_PATH = "file-path";
+    
     public static final String NAMESPACE_PREFIX = "ns"; // NOI18N
     public static final String COLON_SEPARATOR = ":"; // NOI18N
     
@@ -180,6 +186,7 @@ public abstract class AbstractJBIGenerator {
             oldProjectTransformer.execute();
         }
         
+        populateNamespace(JBI_EXT_NS);
         process();
         try {
             generateJBIDescriptor();
@@ -292,6 +299,26 @@ public abstract class AbstractJBIGenerator {
             throw new RuntimeException("Problem encountered while processing portType !");
         }
         
+        String displayName = "";
+        String processName = "";
+        String filePath = "";
+        if (pltRefComponent instanceof Service) {
+            Service service = (Service) pltRefComponent;
+            
+            displayName = service.getPartnerLinkType().getQName().getLocalPart();
+            processName = displayName;
+            
+            for (Operation operation: service.getOperations()) {
+                for (Transform transform: operation.getTransforms()) {
+                    filePath += transform.getFile() + ";";
+                }
+            }
+            
+            if (filePath.endsWith(";")) {
+                filePath = filePath.substring(0, filePath.length() - 1);
+            }
+        }
+        
         entry = new ServiceEntry(
                 pltName,
                 portName,
@@ -301,7 +328,10 @@ public abstract class AbstractJBIGenerator {
                 pltNSPrefix,
                 portNameNSPrefix,
                 pltQname,
-                portNameQname
+                portNameQname,
+                displayName,
+                processName,
+                filePath
                 );
         
         
@@ -351,7 +381,12 @@ public abstract class AbstractJBIGenerator {
     }
     
     private void generateJBIDescriptor() throws IOException {
-
+        
+        final String extPrefix = (String) mNameSpacePrefix.get(JBI_EXT_NS);
+        final String extDnElem = extPrefix + ":" + JBI_EXT_DISPLAY_NAME;
+        final String extPnElem = extPrefix + ":" + JBI_EXT_PROC_NAME;
+        final String extFpElem = extPrefix + ":" + JBI_EXT_FILE_PATH;
+        
         FileOutputStream fos = null;
         try
         {
@@ -383,11 +418,14 @@ public abstract class AbstractJBIGenerator {
                     sb.append("        <provides interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
                     sb.append("\" service-name=\"" + getColonedQName(tmpService.getPartnerLinkNameQname(), mNameSpacePrefix));
                     sb.append("\" endpoint-name=\"" + tmpService.getRoleName());
-                    sb.append("\"/>\n");
-
+                    sb.append("\">\n");
+                    sb.append("            <" + extDnElem + ">" + escapeXml(tmpService.getDisplayName()) + "</" + extDnElem + ">\n");
+                    sb.append("            <" + extPnElem + ">" + escapeXml(tmpService.getProcessName()) + "</" + extPnElem + ">\n");
+                    sb.append("            <" + extFpElem + ">" + escapeXml(tmpService.getFilePath()) + "</" + extFpElem + ">\n");
+                    sb.append("        </provides>\n");
                 }
             }
-
+            
             if (mConsumers != null) {
                 for (int j = 0; j < mConsumers.size(); j++) {
                     ServiceEntry tmpService = mConsumers.get(j); 
@@ -395,10 +433,14 @@ public abstract class AbstractJBIGenerator {
                     sb.append("\" service-name=\"" + getColonedQName(tmpService.getPartnerLinkNameQname(), mNameSpacePrefix));
                     sb.append("\" endpoint-name=\"" + tmpService.getRoleName());
 //                    sb.append("\" link-type=\"standard\"/>\n");
-                    sb.append("\" />\n");
+                    sb.append("\">\n");
+                    sb.append("            <" + extDnElem + ">" + escapeXml(tmpService.getDisplayName()) + "</" + extDnElem + ">\n");
+                    sb.append("            <" + extPnElem + ">" + escapeXml(tmpService.getProcessName()) + "</" + extPnElem + ">\n");
+                    sb.append("            <" + extFpElem + ">" + escapeXml(tmpService.getFilePath()) + "</" + extFpElem + ">\n");
+                    sb.append("        </consumes>\n");
                 }
             }
-
+            
             sb.append("    </services>\n");
             sb.append(" </jbi>\n");
             String content = sb.toString();
@@ -410,7 +452,11 @@ public abstract class AbstractJBIGenerator {
             } 
         }
     }
-
+    
+    private String escapeXml(final String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+    
 // TODO a    
 //    private void generateTransformmapFromXsltMap() {
 //        File xsltMapFile = getFileInSrc(XsltproConstants.XSLTMAP_XML);

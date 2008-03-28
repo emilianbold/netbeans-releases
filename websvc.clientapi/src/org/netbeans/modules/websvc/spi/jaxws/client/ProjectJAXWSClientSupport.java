@@ -148,11 +148,11 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
             
             Client client=null;
             finalClientName = findProperClientName(clientName, jaxWsModel);
-                      
+            FileObject xmlResourcesFo = getLocalWsdlFolderForClient(finalClientName,true);                      
             FileObject localWsdl=null;
             try {
                 localWsdl = WSUtils.retrieveResource(
-                        getLocalWsdlFolderForClient(finalClientName,true),
+                        xmlResourcesFo,
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -179,21 +179,21 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     jaxWsModel.setJsr109(Boolean.TRUE);
                 }             
                 try {
+                    String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
                     client = jaxWsModel.addClient(finalClientName, wsdlUrl, packageName);
+                    client.setLocalWsdlFile(localWsdlUrl);
+                    if (packageName == null) {
+                        // compute package name from namespace
+                        client.setPackageName(
+                                WSUtils.getPackageNameForWsdl(FileUtil.toFile(localWsdl)));
+                    }
                 } catch (ClientAlreadyExistsExeption ex) {
                     //this shouldn't happen
                 }
-                if (packageName == null) {
-                    // compute package name from namespace
-                    client.setPackageName(
-                            WSUtils.getPackageNameForWsdl(FileUtil.toFile(localWsdl)));
-                    System.out.println("packageName = "+packageName);
-                }
-                FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
-                String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
-                client.setLocalWsdlFile(localWsdlUrl);
+
                 FileObject catalog = getCatalogFileObject();
                 if (catalog!=null) client.setCatalogFile(CATALOG_FILE);
+                
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
                 // generate wsdl model immediately

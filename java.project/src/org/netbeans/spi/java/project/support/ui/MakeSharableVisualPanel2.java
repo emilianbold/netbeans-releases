@@ -333,7 +333,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
         try {
             File libraryFile = helper.resolveFile(location);
             File prjDir = FileUtil.toFile(helper.getProjectDirectory());
-            boolean absoluteLibrary = LibrariesSupport.isAbsoluteURL(LibrariesSupport.convertFilePathToURL(location));
+            boolean absoluteLibrary = LibrariesSupport.convertFilePathToURI(location).isAbsolute();
             LibraryManager newmanager = LibraryManager.forLocation(libraryFile.toURI().toURL());
             LibraryManager oldmanager = LibraryManager.getDefault(); //TODO once we support moving from one place to another, change this
             for (String lib : libraries) {

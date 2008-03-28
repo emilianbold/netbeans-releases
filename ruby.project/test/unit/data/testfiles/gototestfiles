@@ -16,6 +16,8 @@ spec/views/user/create_spec.rb
 spec/views/user/_partial_spec.rb
 lib/main.rb
 test/main_test.rb
+lib/gibbon.rb
+spec/gibbon_spec.rb
 app/controllers/account_controller.rb
 app/controllers/application.rb
 app/controllers/content_controller.rb

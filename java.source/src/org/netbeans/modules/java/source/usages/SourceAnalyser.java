@@ -141,7 +141,7 @@ public class SourceAnalyser {
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes);
             uv.scan(cu,usages);
             mainMethod[0] |= uv.mainMethod;
-            if (uv.rsList != null && uv.rsList.size()>0) {
+            if (uv.sourceName != null && uv.rsList != null && uv.rsList.size()>0) {
                 final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
                 final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
                 final String rsName = (index == -1 ? uv.sourceName : uv.sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N

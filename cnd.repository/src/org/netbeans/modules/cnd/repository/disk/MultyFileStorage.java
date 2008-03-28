@@ -82,7 +82,7 @@ public class MultyFileStorage implements Storage {
 	return false;
     }
     
-    public Persistent get(Key id) {
+    public Persistent read(Key id) {
         assert id != null;
         Persistent obj = null;
         try {
