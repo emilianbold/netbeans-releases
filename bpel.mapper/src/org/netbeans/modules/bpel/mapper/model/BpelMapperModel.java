@@ -48,7 +48,6 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
-import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * The default implementation of the MapperModel interface for the BPEL Mapper.

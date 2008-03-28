@@ -180,7 +180,7 @@ PropertyChangeListener, KeyListener, CaretListener {
     
     public void insertUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 appendTypedText(offset, length);
@@ -192,7 +192,7 @@ PropertyChangeListener, KeyListener, CaretListener {
 
     public void removeUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 removeAbbrevText(offset, length);

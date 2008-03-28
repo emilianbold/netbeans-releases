@@ -58,7 +58,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 public class DiscountCodeResource {

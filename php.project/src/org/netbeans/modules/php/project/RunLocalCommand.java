@@ -46,6 +46,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.options.CommandLinePreferences;
 import org.netbeans.modules.php.project.options.ProjectActionsPreferences;
 import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -340,7 +341,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
             public String run() {
                 String commandPath = getAntProjectHelper().
                         getStandardPropertyEvaluator().
-                        getProperty(PhpProject.COMMAND_PATH);
+                        getProperty(PhpProjectProperties.COMMAND_PATH);
                 return commandPath;
             }
         });
