@@ -1653,22 +1653,15 @@ public class Util {
             boolean canGenerateJaxb, String indent) {
         String methodBody = "";
         String commentStr = "//";
-        methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
-        if (methodType == HttpMethodType.GET) {
-            if (canGenerateJaxb) {
-                String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
-                methodBody += indent + commentStr + resultClass + " resultObj = " +
-                        "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
-                methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                        ".println(\"The SaasService returned: \" + resultObj.toString());\n";
-            } else {
-                methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                        ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
-            }
-        } else {
-            methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                    ".println(\"The SaasService returned: \"+result);\n";
+        if (canGenerateJaxb) {
+            String resultClass = pkg + "." + Util.upperFirstChar(serviceName);
+            methodBody += indent + resultClass + " resultObj = " +
+                    "result.getDataAsJaxbObject(" + resultClass + ".class);\n";
         }
+        methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
+        methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
+                ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+
         return methodBody;
     }
 
