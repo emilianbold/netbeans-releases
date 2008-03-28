@@ -27,11 +27,11 @@ public class MetaDataSerializerTest extends TestCase {
     }                
     
     public void testGenerateFilenameI18n() throws Exception {
-        System.out.println(new MetaDataSerializer().generateFilename("????", "SELECT \n * \n FROM ????.????"));        
-        assertTrue(new MetaDataSerializer().generateFilename("????", "SELECT \n * \n FROM ????.????").equals("1725849164"));
+        System.out.println(new MetaDataSerializer().generateFilename("あおうえ", "SELECT \n * \n FROM あおうえ.あおうえ"));        
+        assertTrue(new MetaDataSerializer().generateFilename("あおうえ", "SELECT \n * \n FROM あおうえ.あおうえ").equals("1725849164"));  // local result
     } 
     public void testGenerateFilename() throws Exception {
         System.out.println(new MetaDataSerializer().generateFilename("Apache_TRAVEL", "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?"));
-        assertTrue(new MetaDataSerializer().generateFilename("Apache_TRAVEL", "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?").equals("1084670897"));
+        assertTrue(new MetaDataSerializer().generateFilename("Apache_TRAVEL", "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?").equals("1084670897"));  //local result
     }  
 }
