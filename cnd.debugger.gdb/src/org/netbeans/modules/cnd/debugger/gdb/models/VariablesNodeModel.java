@@ -192,7 +192,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
     }
     
     public String getIconBase(Object o) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported.");
+        throw new UnsupportedOperationException("Not supported."); // NOI18N
     }
 
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
