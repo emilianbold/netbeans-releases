@@ -106,10 +106,13 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     private void setJaxbWrapper() {
         List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
         if(!repTypesFromWadl.isEmpty()) {
-            getBean().setOutputWrapperName(repTypesFromWadl.get(0).getLocalPart());
+            QName qName = repTypesFromWadl.get(0);
+            String nsUri = qName.getNamespaceURI();
+            getBean().setOutputWrapperName(qName.getLocalPart());        
             getBean().setOutputWrapperPackageName(
                     (getBean().getGroupName()+"."+
-                        getBean().getDisplayName()).toLowerCase());
+                        getBean().getDisplayName()).toLowerCase() + 
+                        "." + nsUri.substring(nsUri.lastIndexOf(":")+1).toLowerCase());
         }
     }
     
