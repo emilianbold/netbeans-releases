@@ -36,38 +36,37 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+
+package org.netbeans.modules.php.editor.parser.api;
+
+import java.util.List;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
  *
- * @author petr
+ * @author Petr Pisl
  */
-public abstract class ASTNode {
-
-    final private int startOffset;
-    final private int endOffset;
-    private ASTNode parent = null;
+public class Utils {
     
-    public ASTNode(int start, int end) {
-        this.startOffset = start;
-        this.endOffset = end;
+    /**
+     * 
+     * @param root a Program node, where to look for the comment
+     * @param node  a Node for which a commen you want to find. 
+     * @return appropriate comment or null, if the comment doesn't exists.
+     */
+    public static Comment getCommentForNode(Program root, ASTNode node) {
+        List<Comment> comments = root.getComments();
+        
+        if (node.getEndOffset() < root.getEndOffset()) {
+            for (Comment comm : comments) {
+                if (comm.getEndOffset() + 1 == node.getStartOffset()) {
+                    return comm;
+                }
+            }
+        }
+        
+        return null;
     }
-
-    public final int getStartOffset() {
-        return startOffset;
-    }
-
-    public final int getEndOffset() {
-        return endOffset;
-    }
-
-    protected void setParent(ASTNode node) {
-        parent = node;
-    }
-    
-    public ASTNode getParent() {
-        return parent;
-    }
-    
-    public abstract void accept(Visitor visitor);
 }
