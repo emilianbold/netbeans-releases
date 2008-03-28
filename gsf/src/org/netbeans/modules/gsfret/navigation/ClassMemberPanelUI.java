@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsfret.navigation.ClassMemberFilters;
 import org.netbeans.modules.gsfret.navigation.ElementNode;
@@ -94,7 +95,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
     
     /** Creates new form ClassMemberPanelUi */
-    public ClassMemberPanelUI() {
+    public ClassMemberPanelUI(Language language) {
                       
         initComponents();
         
@@ -125,7 +126,24 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             new FilterSubmenuAction(filters.getInstance())            
         };
         
-        add(filtersPanel, BorderLayout.SOUTH);
+        // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
+        // We don't want filters for all languages. Hardcoded for now.
+        boolean includeFilters = true;
+        if (language != null) {
+            String mimeType = language.getMimeType();
+            if (mimeType.equals("text/html") || // NOI18N
+                    mimeType.equals("text/x-css") || // NOI18N
+                    mimeType.equals("text/x-jsp") || // NOI18N
+                    mimeType.equals("application/x-httpd-eruby")) { // NOI18N
+                includeFilters = false;
+                // Perhaps I don't have to create the filterspanel etc. above
+                // in this case, but it's right before 6.1 high resistance and
+                // I'm afraid code relies on the above stuff being non-null
+            }
+        }
+        if (includeFilters) {
+            add(filtersPanel, BorderLayout.SOUTH);
+        }
         
         manager.setRootContext(ElementNode.getWaitNode());
         
