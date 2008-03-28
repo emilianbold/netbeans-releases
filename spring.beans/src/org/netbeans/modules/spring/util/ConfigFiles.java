@@ -44,7 +44,6 @@ package org.netbeans.modules.spring.util;
 import java.io.File;
 import java.net.URI;
 import java.util.regex.Pattern;
-import org.netbeans.api.queries.CollocationQuery;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -56,14 +55,11 @@ public class ConfigFiles {
     private ConfigFiles() {}
 
     public static String getRelativePath(File basedir, File file) {
-        if (CollocationQuery.areCollocated(basedir, file)) {
-            String result = relativizeFile(basedir, file);
-            if (result == null) {
-                result = file.getAbsolutePath();
-            }
-            return result;
+        String result = relativizeFile(basedir, file);
+        if (result == null) {
+            result = file.getAbsolutePath();
         }
-        return null;
+        return result;
     }
 
     // XXX copied from PropertyUtils.
