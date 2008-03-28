@@ -170,6 +170,8 @@ public class PhpProjectProperties {
                  */
                 //properties.setProperty( PhpProject.VERSION,  myProperties.getProperty( PhpProject.VERSION) );
                 
+                properties.setProperty(URL, myProperties.getProperty(URL));
+                
                 properties.setProperty(INCLUDE_PATH, includePath);
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
