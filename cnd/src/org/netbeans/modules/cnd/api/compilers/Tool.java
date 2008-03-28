@@ -83,6 +83,7 @@ public class Tool {
     private String name;
     private String displayName;
     private String path;
+    private CompilerSet compilerSet = null;
     private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
@@ -92,6 +93,7 @@ public class Tool {
         this.name = name;
         this.displayName = displayName;
         this.path = name.length() > 0 ? path + File.separator + name : path;
+        compilerSet = null;
         includeFilePrefix = null;
     }
     
@@ -215,5 +217,13 @@ public class Tool {
             bundle = NbBundle.getBundle(Tool.class);
         }
         return bundle.getString(s);
+    }
+
+    public CompilerSet getCompilerSet() {
+        return compilerSet;
+    }
+
+    public void setCompilerSet(CompilerSet compilerSet) {
+        this.compilerSet = compilerSet;
     }
 }

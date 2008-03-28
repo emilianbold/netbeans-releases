@@ -36,54 +36,77 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.iep.model.impl;
+
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPReference;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.w3c.dom.Element;
 
 /**
- * The AST root node for PHP program (meaning a PHP file).
- * The program holds array of statements such as Class, Function and evaluation statement.
- * The program also holds the PHP file comments.
- * 
+ *
+ * @author radval
  */
-public class Program extends ASTNode {
+public class InvokeStreamOperatorComponentImpl extends OperatorComponentImpl implements InvokeStreamOperatorComponent {
 
-    private final ArrayList<Statement> statements = new ArrayList<Statement>();
+    public InvokeStreamOperatorComponentImpl(IEPModel model,  Element e) {
+            super(model, e);
+        }
+        
+    public InvokeStreamOperatorComponentImpl(IEPModel model) {
+        super(model);
+    }
     
-    /**
-     * Comments array of the php program
-     */
-    private final ArrayList<Comment> comments = new ArrayList<Comment>();
+    public void setExternalIEPProcessQualifiedName(String name) {
+        Property p = super.getProperty(PROP_EXTERNAL_IEP_PROCESS_QUALIFIED_NAME);
+        if(p == null) {
+                p = getModel().getFactory().createProperty(getModel());
+                p.setName(PROP_EXTERNAL_IEP_PROCESS_QUALIFIED_NAME);
+                addProperty(p);
 
-    private Program(int start, int end, Statement[] statements, List commentsList) {
-        super(start, end);
-        for (Statement statement : statements) {
-            this.statements.add(statement);
-        }
-        for (Object comment : commentsList) {
-            this.comments.add((Comment) comment);
         }
 
+        p.setValue(name);
     }
 
-    public Program(int start, int end, List statements, List commentsList) {
-        this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]), commentsList);
+    public String getExternalIEPProcessQualifiedName() {
+        String name = null;
+		
+        Property p = super.getProperty(PROP_EXTERNAL_IEP_PROCESS_QUALIFIED_NAME);
+        if(p != null) {
+            name = p.getValue();
+        }
+
+        return name;
     }
 
-    public List<Comment> getComments() {
-            return comments;
-    }
-    /**
-     * Retrieves the statement list of this program 
-     * @return statement parts of this program
-     */
-    public List<Statement> getStatements() {
-        return this.statements;
+    public void setExternalOperatorName(String name) {
+        Property p = super.getProperty(PROP_EXTERNAL_OPERATOR_NAME);
+        if(p == null) {
+                p = getModel().getFactory().createProperty(getModel());
+                p.setName(PROP_EXTERNAL_OPERATOR_NAME);
+                addProperty(p);
+
+        }
+
+        p.setValue(name);
     }
 
-    @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    public String getExternalOperatorName() {
+        String name = null;
+		
+        Property p = super.getProperty(PROP_EXTERNAL_OPERATOR_NAME);
+        if(p != null) {
+            name = p.getValue();
+        }
+
+        return name;
     }
+
+    public void setExternalOperator(IEPReference operator) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
