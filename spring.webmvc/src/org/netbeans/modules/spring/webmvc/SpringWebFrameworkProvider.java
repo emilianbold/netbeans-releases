@@ -96,8 +96,4 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     public WebApp getWebApp(WebModule webModule) throws IOException {
         return DDProvider.getDefault().getDDRoot(webModule.getDeploymentDescriptor());
     }
-
-    public WebApp getWebAppCopy(WebModule webModule) throws IOException {
-        return DDProvider.getDefault().getDDRootCopy(webModule.getDeploymentDescriptor());
-    }
 }
