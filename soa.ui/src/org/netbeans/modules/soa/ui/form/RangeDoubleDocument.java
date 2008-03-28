@@ -26,12 +26,12 @@ import javax.swing.text.PlainDocument;
  *
  * @author nk160297
  */
-public class RangeIntegerDocument extends PlainDocument {
+public class RangeDoubleDocument extends PlainDocument {
     
-    int myMinValue;
-    int myMaxValue;
+    double myMinValue;
+    double myMaxValue;
     
-    public RangeIntegerDocument(int minValue, int maxValue) {
+    public RangeDoubleDocument(double minValue, double maxValue) {
         super();
         myMinValue = minValue;
         myMaxValue = maxValue;
@@ -50,7 +50,7 @@ public class RangeIntegerDocument extends PlainDocument {
             super.replace(offset, length, text, attrs);
         } else {
             try {
-                int newValue = Integer.parseInt(sb.toString());
+                double newValue = Double.parseDouble(sb.toString());
                 //
                 if (newValue >= myMinValue && newValue <= myMaxValue) {
                     super.replace(offset, length, text, attrs);
@@ -72,7 +72,7 @@ public class RangeIntegerDocument extends PlainDocument {
             super.remove(offset, length);
         } else {
             try {
-                int newValue = Integer.parseInt(sb.toString());
+                double newValue = Double.parseDouble(sb.toString());
                 //
                 if (newValue >= myMinValue && newValue <= myMaxValue) {
                     super.remove(offset, length);
@@ -96,7 +96,7 @@ public class RangeIntegerDocument extends PlainDocument {
             super.insertString(offset, str, a);
         } else {
             try {
-                int newValue = Integer.parseInt(sb.toString());
+                double newValue = Double.parseDouble(sb.toString());
                 //
                 if (newValue >= myMinValue && newValue <= myMaxValue) {
                     super.insertString(offset, str, a);
