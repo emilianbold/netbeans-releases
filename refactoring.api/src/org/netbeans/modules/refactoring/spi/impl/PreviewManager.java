@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -52,6 +55,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -173,9 +177,10 @@ public class PreviewManager {
     
     private class NewDiffSource extends StreamSource {
         private SimpleRefactoringElementImplementation element;
+        private String text = ""; // NOI18N
         
-        NewDiffSource(SimpleRefactoringElementImplementation r) {
-            this.element = r;
+        NewDiffSource(SimpleRefactoringElementImplementation refactElemImpl) {
+            this.element = refactElemImpl;
         }
 
         public String getName() {
@@ -199,6 +204,14 @@ public class PreviewManager {
         
         public Reader createReader() throws IOException {
             return null;
+//            Charset charset = FileEncodingQuery.getEncoding(element.getParentFile());
+//            ByteArrayInputStream is = new ByteArrayInputStream(charset != null ? 
+//                text.getBytes(charset.name()) : text.getBytes());
+//            if (charset != null) {
+//                return new InputStreamReader(is, charset);
+//            } else {
+//                return new InputStreamReader(is);
+//            }
         }
         
         public Writer createWriter(Difference[] conflicts) throws IOException {
@@ -217,10 +230,11 @@ public class PreviewManager {
             return Lookups.singleton(getDocument());
         }
         
-        public void setNewText(String r) {
+        public void setNewText(String newText) {
+            //text = newText;
             try {
                 internal.remove(0, internal.getLength());
-                internal.insertString(0, r, null);
+                internal.insertString(0, newText, null);
             } catch (BadLocationException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
             }
