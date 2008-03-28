@@ -307,7 +307,7 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testIndex3() throws Exception {
-        checkIndexer("testfiles/dojo.js.uncompressed.js");
+        checkIndexer("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testSimple() throws Exception {
@@ -399,7 +399,7 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testRestore7() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/dojo.js.uncompressed.js");
+        List<IndexDocument> docs = indexFile("testfiles/orig-dojo.js.uncompressed.js");
         JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "dojo.deferred", index);
         assertNotNull(element);
@@ -470,5 +470,13 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testWoodStock() throws Exception {
         checkIndexer("testfiles/woodstock.sdoc");
+    }
+
+    public void testWoodStock2() throws Exception {
+        checkIndexer("testfiles/woodstock2.js");
+    }
+
+    public void testWoodStock3() throws Exception {
+        checkIndexer("testfiles/woodstock-body.js");
     }
 }
