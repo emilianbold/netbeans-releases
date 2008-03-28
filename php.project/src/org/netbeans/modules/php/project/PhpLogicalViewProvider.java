@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
@@ -259,7 +261,19 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             for (Action action : getStandardProjectActions()){
                 list.add(action);
             }
-                
+	    
+	    //Custom Actions for Project Nodes - #57874
+            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
+            if (!res.isEmpty()) {
+                list.add(null);
+                for (Object next : res) {
+                    if (next instanceof Action) {
+                        list.add((Action) next);
+                    } else if (next instanceof JSeparator) {
+                        list.add(null);
+                    }
+                }
+            }
             return list.toArray(new Action[list.size()]);
         }
 
