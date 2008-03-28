@@ -6,7 +6,7 @@
     </codetemplate>
     <codetemplate abbreviation="jc" descriptionId="ct_jc" contexts="ruby">
 <code><![CDATA[require 'java'
-include_class '${0 default="package.class"}']]></code>
+import ${0 default="package.class"}]]></code>
     </codetemplate>
     <codetemplate abbreviation="do" descriptionId="ct_do" contexts="ruby" uuid="4B72C5C3-6CA7-41AC-B2F9-51DEA25D469E">
 <code><![CDATA[do |${1 unusedlocal defaults="i,j,k"}|
