@@ -4442,4 +4442,38 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "\n"
                 );
     }
+
+    // IZ#130509:Formatter should ignore empty function body
+    public void testIZ130509() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
+        setLoadDocumentText(
+                "int foo0() { \n" +
+                "  }\n" +
+                "int foo1() { } \n" +
+                "int foo2()\n" +
+                " { } \n" +
+                "int foo3(){}\n" +
+                "int foo4(){\n" +
+                "}\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Formatter should ignore empty function body",
+                "int foo0() { }\n" +
+                "\n" +
+                "int foo1() { }\n" +
+                "\n" +
+                "int foo2() { }\n" +
+                "\n" +
+                "int foo3() { }\n" +
+                "\n" +
+                "int foo4() { }\n" +
+                "\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+    }
 }

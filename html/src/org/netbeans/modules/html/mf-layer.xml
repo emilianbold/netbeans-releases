@@ -77,6 +77,11 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="html">
+                
+                <!-- GSF -->
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/html/htmlObject.png"/>
+                
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

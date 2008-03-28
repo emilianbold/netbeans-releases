@@ -57,6 +57,8 @@ public class ArrayElement extends ASTNode {
         super(start, end);
         this.value = value;
         this.key = key;
+        key.setParent(this);
+        value.setParent(this);
     }
 
     public ArrayElement(int start, int end, Expression value) {

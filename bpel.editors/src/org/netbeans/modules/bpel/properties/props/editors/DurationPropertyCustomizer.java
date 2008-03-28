@@ -156,8 +156,6 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        value = DurationUtil.removeQuotes(value);
-        //
         parseFor(value);
         revalidate(true);
         //
@@ -189,6 +187,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     
     private void parseFor(String text) {
       Duration duration = DurationUtil.parseDuration(text, false);
+//System.out.println("set duration: " + duration);
       fldYear.setText("" + duration.getYears());
       fldMonth.setText("" + duration.getMonths());
       fldDay.setText("" + duration.getDays());

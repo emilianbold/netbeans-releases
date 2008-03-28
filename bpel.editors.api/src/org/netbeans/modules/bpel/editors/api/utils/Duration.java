@@ -93,6 +93,11 @@ public class Duration {
     return mySeconds;
   }
 
+  @Override
+  public String toString() {
+    return myYears + " " + myMonths + " " + myDays + " " + myHours + " " + myMinutes + " " + mySeconds; // NOI18N
+  }
+
   private boolean myHasMinus;
   private int myYears;
   private int myMonths;
