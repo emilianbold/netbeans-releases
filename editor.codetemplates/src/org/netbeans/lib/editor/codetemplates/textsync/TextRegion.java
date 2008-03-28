@@ -89,6 +89,10 @@ public final class TextRegion<I> {
     }
     
     public TextRegion(Position startPos, Position endPos) {
+        if (startPos == null)
+            throw new IllegalArgumentException("startPos cannot be null"); // NOI18N
+        if (endPos == null)
+            throw new IllegalArgumentException("endPos cannot be null"); // NOI18N
         this.startPos = startPos;
         this.endPos = endPos;
     }
