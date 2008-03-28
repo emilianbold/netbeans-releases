@@ -655,7 +655,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         // executes atomic action with renaming
         Op op = new Op();
         op.newName = name;
-        invokeAtomicAction (getPrimaryFile().getParent(), op, synchObject());
+        FileObject target = getPrimaryFile().getParent();
+        if (target == null) {
+            target = getPrimaryFile();
+        }
+        invokeAtomicAction (target, op, synchObject());
 
         if (op.oldName.equals (op.newName)) {
             return; // the new name is the same as the old one
