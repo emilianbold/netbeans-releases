@@ -54,8 +54,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -102,7 +102,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
     public static final String HOST = "host"; // NOI18N
     public static final String COMMAND_LINE = "command"; // NOI18N
     public static final String VERSION = "version"; // NOI18N
-    public static final String SOURCE_ENCODING = PhpProject.SOURCE_ENCODING;
+    public static final String SOURCE_ENCODING = PhpProjectProperties.SOURCE_ENCODING;
     
     // constants
     public static final String CURRENT_FOLDER_PATTERN = "."; // NOI18N
@@ -420,7 +420,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         //    sourcePath = NbBundle.getBundle(NewPhpProjectWizardIterator.class)
         //            .getString(DEFAULT_SOURCE_ROOT_DIR);
         }
-        properties.setProperty(PhpProject.SRC, sourcePath);
+        properties.setProperty(PhpProjectProperties.SRC, sourcePath);
         
     }
 
@@ -435,7 +435,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
             Charset enc = FileEncodingQuery.getDefaultEncoding();
             encoding = enc.name();
         }
-        properties.setProperty(PhpProject.SOURCE_ENCODING, encoding);
+        properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, encoding);
     }
 
     private String getRelatedSourcePath(File sourceFolder, File projectFolder) {
@@ -460,7 +460,7 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
                 Host host = ((HostHolder) obj).getHost();
                 WebServerProvider provider = host.getProvider();
                 String provider_id = provider.getClass().getCanonicalName();
-                properties.setProperty(PhpProject.PROVIDER_ID, provider_id);
+                properties.setProperty(PhpProjectProperties.PROVIDER_ID, provider_id);
                 properties.setProperty(WebServerProvider.HOST_ID, host.getId());
             }
             // add CMD support to all projects

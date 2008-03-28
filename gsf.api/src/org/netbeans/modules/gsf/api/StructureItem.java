@@ -62,7 +62,7 @@ public interface StructureItem {
     long getEndPosition();
     /** Icon to use instead of the default implied by the ElementKind */
     ImageIcon getCustomIcon();
-
+    
     @Override
     public abstract boolean equals(Object o);
     @Override

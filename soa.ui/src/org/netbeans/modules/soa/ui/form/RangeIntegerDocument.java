@@ -106,7 +106,4 @@ public class RangeIntegerDocument extends PlainDocument {
             }
         }
     }
-    
-    
-    
 }

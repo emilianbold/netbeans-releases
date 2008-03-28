@@ -624,20 +624,23 @@ public class JsAnalyzer implements StructureScanner {
             
             Map<String, String> typeMap = element.getDocProps();
             if (typeMap != null) {
-                String clz = typeMap.get("@class"); // NOI18N
-                if (clz != null) {
-                    int dot = clz.lastIndexOf('.');
-                    if (dot != -1) {
-                        element.in = clz.substring(0, dot);
-                        element.name = clz.substring(dot+1);
-                    } else {
-                        element.name = clz;
-                    }
+// I can't look at @class since for Jsdoc (such as in Woodstock) the @class is just
+// a marker and it may not actually specify the class - it could just be the first
+// word of the class description!                
+//                String clz = typeMap.get("@class"); // NOI18N
+//                if (clz != null) {
+//                    int dot = clz.lastIndexOf('.');
+//                    if (dot != -1) {
+//                        element.in = clz.substring(0, dot);
+//                        element.name = clz.substring(dot+1);
+//                    } else {
+//                        element.name = clz;
+//                    }
                     String s = typeMap.get("@extends"); // NOI18N
                     if (s != null) {
                         addSuperClass(element.name, s);
                     }
-                }
+//                }
                 String namespace = typeMap.get("@namespace"); // NOI18N
                 if (namespace != null) {
                     addNameSpace(element.name, namespace);

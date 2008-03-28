@@ -54,6 +54,7 @@ public class BreakStatement extends Statement {
     public BreakStatement(int start, int end, Expression expr) {
         super(start, end);
         this.expression = expr;
+        expr.setParent(this);
     }
 
     /**

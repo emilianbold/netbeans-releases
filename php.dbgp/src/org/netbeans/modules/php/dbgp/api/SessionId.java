@@ -44,8 +44,10 @@ import java.io.File;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.dbgp.SessionProgress;
-import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -62,13 +64,14 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author ads
  *
  */
-public class SessionId {
-    
-    private static final String PREFIX      = "netbeans-dbg-";         // NOI18N
-    
-    private static final String SLASH       = "/";                     // NOI18N
-    
+public class SessionId {    
+    private static final String PREFIX      = "netbeans-dbg-";         // NOI18N    
+    private static final String SLASH       = "/";                     // NOI18N    
     private static final String BACK_SLASH  = "\\";                    // NOI18N           
+        
+    //keep synchronized with org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants
+    private static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
+    
     
     public SessionId( FileObject fileObject ) {
         myId = PREFIX + mySessionsCount;
@@ -182,7 +185,7 @@ public class SessionId {
         }
         if ( !uri.startsWith( myRemoteBase) ) {
             return null;
-        }
+        }	
         String relativePath = uri.substring( myRemoteBase.length() );
         relativePath = relativePath.replace( myRemoteSeparator, File.separator );
         return myLocalBase.getFileObject(relativePath);
@@ -239,7 +242,7 @@ public class SessionId {
 
     private void setupBases( FileObject localFolder, String remoteFolder)
     {
-        if ( localFolder.equals( getProject() ) ) {
+        if ( localFolder.equals( getSourceRoot() ) ) {
             setRemoteBase(  remoteFolder );
             myLocalBase = localFolder;
             return;
@@ -253,13 +256,7 @@ public class SessionId {
         assert indx+1 < remoteFolder.length();
         String folderName = remoteFolder.substring( indx +1 );
         String localName = localFolder.getNameExt();
-        if ( folderName.equals(localName)) {
-            setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx));
-        }
-        else {
-            setRemoteBase( remoteFolder );
-            myLocalBase = localFolder;
-        }
+        setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx));
     }
     
     private void setRemoteBase( String base ) {
@@ -275,6 +272,26 @@ public class SessionId {
         return myDebugFile;
     }
 
+    private FileObject getSourceRoot() {
+	final FileObject[] sourceObjects = getSourceObjects(getProject());
+        return (sourceObjects != null && sourceObjects.length > 0) ? sourceObjects[0] : null;
+    }
+    
+    public static SourceGroup[] getSourceGroups(Project phpProject) {
+        Sources sources = ProjectUtils.getSources(phpProject);
+        SourceGroup[] groups = sources.getSourceGroups(SOURCES_TYPE_PHP);//NOI18N
+        return groups;
+    }
+
+    public static FileObject[] getSourceObjects(Project phpProject) {
+        SourceGroup[] groups = getSourceGroups(phpProject);        
+        FileObject[] fileObjects = new FileObject[groups.length];
+        for (int i = 0; i < groups.length; i++) {
+            fileObjects[i] = groups[i].getRootFolder();
+        }
+        return fileObjects;
+    }
+    
     private String myId;
     
     private static int mySessionsCount = 1;

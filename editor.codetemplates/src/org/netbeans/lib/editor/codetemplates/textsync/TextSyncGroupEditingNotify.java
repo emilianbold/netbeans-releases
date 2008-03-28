@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,36 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.updatecenters.install;
 
-import java.io.File;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.startup.Main;
-import org.netbeans.spi.autoupdate.UpdateItem;
+package org.netbeans.lib.editor.codetemplates.textsync;
 
 /**
+ * Notifications of changes in editing of text sync groups.
  *
- * @author Jaromir Uhrik
+ * @author Miloslav Metelka
  */
-public class TestUtils {
+public interface TextSyncGroupEditingNotify {
 
-    private static UpdateItem item = null;
-    private static ModuleManager mgr = null;
+    void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync);
+    
+    void released(TextRegionEditing textRegionEditing);
+    
+    void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex);
+    
+    void textSyncModified(TextRegionEditing textRegionEditing);
 
-    public static void setUserDir(String path) {
-        System.setProperty("netbeans.user", path);
-    }
-
-    public static File getPlatformDir() {
-        return new File(System.getProperty("netbeans.home")); // NOI18N
-    }
-
-    public static void setPlatformDir(String path) {
-        System.setProperty("netbeans.home", path);
-    }
-
-    public static void testInit() {
-        mgr = Main.getModuleSystem().getManager();
-        assert mgr != null;
-    }
 }
