@@ -43,14 +43,13 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.bpel.editors.api.utils.Duration;
-import org.netbeans.modules.bpel.editors.api.utils.DurationUtil;
+import org.netbeans.modules.soa.ui.util.Duration;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
 /**
- *
  * @author nk160297
  */
 public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
