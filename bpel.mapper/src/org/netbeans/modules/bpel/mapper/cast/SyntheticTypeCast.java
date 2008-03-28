@@ -42,46 +42,10 @@ public class SyntheticTypeCast extends AbstractTypeCast {
     private RestartableIterator<Object> mItr;
     private XPathSchemaContext mSContext;
     
-    public static boolean populateCast(SyntheticTypeCast from, Cast to, 
-            BpelEntity destination, boolean inLeftMapperTree) {
-        RestartableIterator<Object> itr = from.getLocationIterator();
-        XPathExpression pathObj = PathConverter.constructXPath(destination, itr);
-        if (pathObj == null) {
-            return false;
-        }
-        //
-        String pathText = pathObj.getExpressionString();
-        try {
-            to.setPath(pathText);
-        } catch (VetoException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return false;
-        }
-        //
-        GlobalType castTo = from.getCastTo();
-        SchemaReference<GlobalType> typeRef =
-                to.createSchemaReference(castTo, GlobalType.class);
-        to.setType(typeRef);
-        //
-        if (inLeftMapperTree) {
-            to.setSource(Source.FROM);
-        } else {
-            to.setSource(Source.TO);
-        }
-        //
-        return true;
-    }
-    
     public SyntheticTypeCast(RestartableIterator<Object> itr, GlobalType castTo) {
         super(castTo);
         assert itr != null;
         mItr = itr;
-    }
-    
-    public SyntheticTypeCast(XPathSchemaContext sContext, GlobalType castTo) {
-        super(castTo);
-        assert sContext != null;
-        mSContext = sContext;
     }
     
     public RestartableIterator<Object> getLocationIterator() {
@@ -105,6 +69,26 @@ public class SyntheticTypeCast extends AbstractTypeCast {
         }
         //
         return null;
+    }
+    
+    @Override
+    public boolean populateCast(Cast target, 
+            BpelEntity destination, boolean inLeftMapperTree) {
+        RestartableIterator<Object> itr = getLocationIterator();
+        XPathExpression pathObj = PathConverter.constructXPath(destination, itr);
+        if (pathObj == null) {
+            return false;
+        }
+        //
+        String pathText = pathObj.getExpressionString();
+        try {
+            target.setPath(pathText);
+        } catch (VetoException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return false;
+        }
+        //
+        return super.populateCast(target, destination, inLeftMapperTree);
     }
     
 } 
