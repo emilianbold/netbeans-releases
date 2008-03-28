@@ -163,7 +163,7 @@ public class AsmModelAccessorImpl implements AsmModelAccessor {
             
             
             {
-                LOGGER.log(Level.INFO, 
+                LOGGER.log(Level.FINE, 
                            String.format("%s parse time: %d ms", docName, (end - start)) // NOI18N
                           );
             }

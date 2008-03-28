@@ -88,5 +88,5 @@ made subject to such option by the copyright holder.
 <!-- MySQL topics -->
 
 <mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />
-
+<mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="csh_mysql_props.html" />
 </map>

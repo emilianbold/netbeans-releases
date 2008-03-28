@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,15 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.editors.api;
 
-import org.netbeans.modules.xml.xam.Component;
+package org.netbeans.lib.editor.codetemplates.textsync;
 
-public interface DiagramElement {
+/**
+ * Notifications of changes in editing of text sync groups.
+ *
+ * @author Miloslav Metelka
+ */
+public interface TextSyncGroupEditingNotify {
 
-  String getText();
-  void gotoSource();
-  void select();
-  void highlight(boolean highlighted);
-  Component getComponent();
+    void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync);
+    
+    void released(TextRegionEditing textRegionEditing);
+    
+    void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex);
+    
+    void textSyncModified(TextRegionEditing textRegionEditing);
+
 }

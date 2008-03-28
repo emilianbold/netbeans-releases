@@ -54,6 +54,25 @@ public class ContextDetector extends ExtendedTokenSequence {
         super(ts, diffs);
         this.braces = braces;
     }
+    
+    /*package local*/ boolean isStatementContinuation(){
+        Token<CppTokenId> prev = lookPreviousImportant();
+        Token<CppTokenId> next = lookNextImportant();
+        if (prev == null || next == null){
+            return false;
+        }
+        if (next.id() == IDENTIFIER) {
+            if (prev.id() == IDENTIFIER) {
+                return false;
+            } else if (prev.id() == RPAREN) {
+                prev =lookPreviousStatement();
+                if (prev.id() == IDENTIFIER){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /*package local*/ boolean isQuestionColumn(){
         int index = index();

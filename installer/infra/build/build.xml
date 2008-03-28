@@ -334,6 +334,15 @@
 	     <equals arg1="${build.mysql}" arg2="1"/>
         </condition>
 
+        <condition property="do.build.mysql.no.netbeans">
+	     <and>
+		<isset property="do.build.mysql"/>
+		<not>
+                    <isset property="do.build.netbeans"/>
+		</not>
+	     </and>
+        </condition>
+
 
         <condition property="nb.locales.isset">
  	     <not>
@@ -681,6 +690,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-netbeans-engine"/>
     </target>
     <target name="build-mysql-components" if="do.build.mysql">
+        <antcall target="build-netbeans-for-mysql"/>
 	<antcall target="build-mysql"/>
 	<antcall target="build-mysql-connector"/>
     </target>
@@ -703,6 +713,16 @@ jarsigner.storepass=${jarsigner.storepass}
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-nb-base"/>
         <antcall target="build-nb-javase"/>        
+    </target>
+
+    <target name="build-netbeans-for-mysql" if="do.build.mysql.no.netbeans">
+	<set property="netbeans.group.uid" value=""/>
+        <antcall target="build-nb-base"/>
+        <antcall target="build-nb-javase"/>        
+        <antcall target="build-nb-javaee"/>        
+        <antcall target="build-nb-ruby"/>
+        <antcall target="build-runtimes-group"/>
+        <antcall target="build-glassfish"/>
     </target>
 
     <target name="build-tools" if="do.build.jtb">
