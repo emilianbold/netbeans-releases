@@ -54,11 +54,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
-import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -113,7 +112,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         
         // TODO - synchronize
         List<URL> roots = new ArrayList<URL>();
-        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(PhpProject.SOURCES_TYPE_PHP);
+        SourceGroup[] sourceGroups = sourceRoots.getSourceGroups(PhpProjectProperties.SOURCES_TYPE_PHP);
         for (SourceGroup sg : sourceGroups) {
             try {
                 roots.add(FileUtil.toFile(sg.getRootFolder()).toURI().toURL());

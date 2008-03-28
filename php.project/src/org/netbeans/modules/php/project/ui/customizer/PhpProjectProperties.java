@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.customizer;
+package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,21 +46,28 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ResourceMarker;
 import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.classpath.ClassPathSupport;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
+import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 
 
 /**
@@ -72,10 +79,61 @@ public class PhpProjectProperties {
     public static final String STATUS_USE_NO_HOST = "use_no_host";
     public static final String STATUS_ABSENT_HOST = "absent_host";
 
-    private static Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
+    public static final String SRC_              = "src.";               // NOI18N
+
+    public static final String _DIR              = "dir";                // NOI18N
+
+    public static final String SRC                = SRC_ + _DIR;
+
+    public static final String SRC_DIR            = "${" + SRC + "}";     // NOI18N
+
+    public static final String TMP_FILE_POSTFIX   = "~";     // NOI18N
+
+    public static final String PROVIDER_ID  = "provider.id";        // NOI18N
+
+    public static final String VERSION      = "version";            // NOI18N
+
+    public static final String COMMAND_PATH = "command.path";       // NOI18N
+
+    public static final String NAME        
+            = PhpProjectSharedConstants.PHP_PROJECT_NAME; // NOI18N
+
+    public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
+
+    public static final String SOURCE_LBL  = "LBL_Node_Sources";   // NOI18N
+
+    public static final String SOURCES_TYPE_PHP 
+            = PhpProjectSharedConstants.SOURCES_TYPE_PHP;
+
+    public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
+    public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String URL = "url"; // NOI18N
+    public static final String INCLUDE_PATH = "include.path"; // NOI18N
+    // XXX will be replaced with global ide include path
+    public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
+
+    public static final Icon PROJECT_ICON = 
+        new ImageIcon(Utilities.loadImage( 
+                ResourceMarker.getLocation()+ResourceMarker.PROJECT_ICON ));
+
+    private final ClassPathSupport classPathSupport;
     
-    public PhpProjectProperties(PhpProject project) {
+    public final DefaultListModel INCLUDE_PATH_MODEL;
+    public final ListCellRenderer INCLUDE_PATH_LIST_RENDERER;
+
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
+    
+    public PhpProjectProperties(PhpProject project, ClassPathSupport classPathSupport) {
+        assert project != null;
+        assert classPathSupport != null;
+
         myProject = project;
+        this.classPathSupport = classPathSupport;
+        // XXX
+        load();
+
+        INCLUDE_PATH_MODEL = ClassPathUiSupport.createListModel(classPathSupport.itemsIterator(myProperties.getProperty(INCLUDE_PATH)));
+        INCLUDE_PATH_LIST_RENDERER = new ClassPathUiSupport.ClassPathListCellRenderer(project.getEvaluator(), project.getProjectDirectory());
     }
 
     public void save() {
@@ -83,6 +141,11 @@ public class PhpProjectProperties {
 
             public Host run() {
                 AntProjectHelper helper = getAntProjectHelper(getProject());
+                
+                // encode include path
+                String[] includePath = classPathSupport.encodeToStrings(
+                        ClassPathUiSupport.getIterator(INCLUDE_PATH_MODEL));
+                
                 EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
                 /*
@@ -107,6 +170,8 @@ public class PhpProjectProperties {
                  */
                 //properties.setProperty( PhpProject.VERSION,  myProperties.getProperty( PhpProject.VERSION) );
                 
+                properties.setProperty(INCLUDE_PATH, includePath);
+                
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
                 properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -118,7 +183,7 @@ public class PhpProjectProperties {
                 try {
                     ProjectManager.getDefault().saveProject(getProject());
                     // check whether src directory exists - if not, create it (can happen using customizer)
-                    String src = getProject().getEvaluator().getProperty(PhpProject.SRC);
+                    String src = getProject().getEvaluator().getProperty(SRC);
                     File srcDir = PropertyUtils.resolveFile(FileUtil.toFile(getProject().getProjectDirectory()), src);
                     if (!srcDir.exists()) {
                         FileUtil.createFolder(srcDir);
@@ -131,17 +196,17 @@ public class PhpProjectProperties {
             }
 
             private void configureCommandLine(EditableProperties properties) {
-                if (myProperties.containsKey(PhpProject.COMMAND_PATH)) {
-                    String cmd = myProperties.getProperty(PhpProject.COMMAND_PATH);
-                    properties.setProperty(PhpProject.COMMAND_PATH, cmd);
+                if (myProperties.containsKey(COMMAND_PATH)) {
+                    String cmd = myProperties.getProperty(COMMAND_PATH);
+                    properties.setProperty(COMMAND_PATH, cmd);
                 } else {
-                    properties.remove(PhpProject.COMMAND_PATH);
+                    properties.remove(COMMAND_PATH);
                 }
             }
             
             private void configureProvider(EditableProperties properties) {
                 if (myProperties.containsKey(STATUS_USE_NO_HOST)) {
-                    properties.remove(PhpProject.PROVIDER_ID);
+                    properties.remove(PROVIDER_ID);
                     properties.remove(WebServerProvider.HOST_ID);
                     return;
                 }
@@ -154,7 +219,7 @@ public class PhpProjectProperties {
                     if (host != null) {
                         WebServerProvider provider = host.getProvider();
                         String provider_id = provider.getClass().getCanonicalName();
-                        properties.setProperty(PhpProject.PROVIDER_ID, provider_id);
+                        properties.setProperty(PROVIDER_ID, provider_id);
                         properties.setProperty(WebServerProvider.HOST_ID, host.getId());
                     }
                 } else {
@@ -183,17 +248,17 @@ public class PhpProjectProperties {
             // TODO now it processes only one source root dir
             private void configureSources(EditableProperties properties) {
 
-                properties.setProperty(PhpProject.SRC, myProperties.getProperty(PhpProject.SRC));
+                properties.setProperty(SRC, myProperties.getProperty(SRC));
 
             }
 
             private void configureEncoding(EditableProperties properties) {
                 
-                properties.setProperty(PhpProject.SOURCE_ENCODING, 
-                        myProperties.getProperty(PhpProject.SOURCE_ENCODING));
+                properties.setProperty(SOURCE_ENCODING, 
+                        myProperties.getProperty(SOURCE_ENCODING));
 
                 // Ugh - this looks like global clobbering!
-                String value = properties.get(PhpProject.SOURCE_ENCODING);
+                String value = properties.get(SOURCE_ENCODING);
                 if (value != null) {
                     try {
                         FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
@@ -214,7 +279,7 @@ public class PhpProjectProperties {
     }
 
     // XXX remove this method
-    public EditableProperties load() {
+    private EditableProperties load() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
 
             public Host run() {
@@ -247,7 +312,7 @@ public class PhpProjectProperties {
      * use load() before to load properties
      * @return EditableProperties object. null if properties were not loaded using load()
      */
-    EditableProperties getProperties() {
+    public EditableProperties getProperties() {
         return myProperties;
     }
 
