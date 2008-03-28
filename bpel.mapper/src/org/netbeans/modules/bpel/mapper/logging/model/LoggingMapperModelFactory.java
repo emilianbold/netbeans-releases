@@ -182,7 +182,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         Graph newGraph = new Graph(newMapperModel);
         //
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
-        populateGraph(newGraph, leftTreeModel, contextEntity, expr);
+        populateGraph(newGraph, leftTreeModel, contextEntity, expr, null);
         //
         List<TreeItemFinder> finderList = Collections.singletonList(
                 (TreeItemFinder)new LoggingNodeFinder(type, location, level));
