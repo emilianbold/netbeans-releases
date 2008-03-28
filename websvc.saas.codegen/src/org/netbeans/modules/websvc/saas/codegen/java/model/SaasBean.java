@@ -136,6 +136,14 @@ public abstract class SaasBean extends GenericResourceBean {
                 SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
     }
     
+    public String getAuthenticatorClassName() {
+        return Util.getAuthenticatorClassName(getSaasName());
+    }
+    
+    public String getAuthorizationFrameClassName() {
+        return Util.getAuthorizationFrameClassName(getSaasName());
+    }
+    
     public boolean isDropTargetWeb() {
         return isDropTargetWeb;
     }

@@ -43,14 +43,13 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.bpel.editors.api.utils.Duration;
-import org.netbeans.modules.bpel.editors.api.utils.DurationUtil;
+import org.netbeans.modules.soa.ui.util.Duration;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
 /**
- *
  * @author nk160297
  */
 public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
@@ -156,8 +155,6 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        value = DurationUtil.removeQuotes(value);
-        //
         parseFor(value);
         revalidate(true);
         //
@@ -189,6 +186,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     
     private void parseFor(String text) {
       Duration duration = DurationUtil.parseDuration(text, false);
+//System.out.println("set duration: " + duration);
       fldYear.setText("" + duration.getYears());
       fldMonth.setText("" + duration.getMonths());
       fldDay.setText("" + duration.getDays());
