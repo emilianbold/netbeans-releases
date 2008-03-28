@@ -357,9 +357,15 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {btnAdminBrowse, jLabel4, jLabel5, jLabel6, jLabel7}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        txtAdmin.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdmin.AccessibleContext.accessibleDescription")); // NOI18N
         btnAdminBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnAdminBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtAdminArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtAdminArgs.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStart.AccessibleContext.accessibleDescription")); // NOI18N
         btnStartBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStartBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStartArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStartArgs.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStop.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStop.AccessibleContext.accessibleDescription")); // NOI18N
         btnStopBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.btnStopBrowse.AccessibleContext.accessibleDescription")); // NOI18N
+        txtStopArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.txtStopArgs.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnAdminBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdminBrowseActionPerformed

@@ -241,6 +241,11 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {jLabel1, jLabel2, jLabel3, jLabel4, txtHost, txtPort, txtUser}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        chkSavePassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.chkSavePassword.AccessibleContext.accessibleDescription")); // NOI18N
+        txtHost.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtHost.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtPort.AccessibleContext.accessibleDescription")); // NOI18N
+        txtUser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtUser.AccessibleContext.accessibleDescription")); // NOI18N
+        txtPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BasePropertiesPanel.class, "BasePropertiesPanel.txtPassword.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
