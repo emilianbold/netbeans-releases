@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,67 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bpel.editors.api.utils;
 
-import static org.netbeans.modules.soa.ui.util.UI.*;
+package org.netbeans.modules.php.editor.parser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.util.Date;
+import java_cup.runtime.Symbol;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.11.27
+ *
+ * @author Petr Pisl
  */
-public class Duration {
-  public Duration(
-    boolean hasMinus,
-    int years,
-    int months,
-    int days,
-    int hours,
-    int minutes,
-    double seconds
-  ) {
-    myHasMinus = hasMinus;
-    myYears = years;
-    myMonths = months;
-    myDays = days;
-    myHours = hours;
-    myMinutes = minutes;
-    mySeconds = seconds;
-  }
+public class ParserPerformanceTest extends NbTestCase {
+    
+    public ParserPerformanceTest(String testName) {
+        super(testName);
+    }            
 
-  public boolean hasMinus() {
-    return myHasMinus;
-  }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
 
-  public int getYears() {
-    return myYears;
-  }
-
-  public int getMonths() {
-    return myMonths;
-  }
-
-  public int getDays() {
-    return myDays;
-  }
-
-  public int getHours() {
-    return myHours;
-  }
-
-  public int getMinutes() {
-    return myMinutes;
-  }
-
-  public double getSeconds() {
-    return mySeconds;
-  }
-
-  private boolean myHasMinus;
-  private int myYears;
-  private int myMonths;
-  private int myDays;
-  private int myHours;
-  private int myMinutes;
-  private double mySeconds;
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    // the current time is around 700 ms
+    public void testBigFile() throws Exception {
+        File testFile = new File(getDataDir(), "testfiles/Subs.php");
+        assertTrue(testFile.exists());
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Date start = new Date();
+        Symbol root = parser.parse();
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Parsing of big files takes: " + time);
+        assertTrue(time < 1000);
+    }
 }

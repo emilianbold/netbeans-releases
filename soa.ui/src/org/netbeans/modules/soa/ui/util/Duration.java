@@ -38,15 +38,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.editors.api;
+package org.netbeans.modules.soa.ui.util;
 
-import org.netbeans.modules.xml.xam.Component;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
-public interface DiagramElement {
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.11.27
+ */
+public class Duration {
+  public Duration(
+    boolean hasMinus,
+    int years,
+    int months,
+    int days,
+    int hours,
+    int minutes,
+    double seconds
+  ) {
+    myHasMinus = hasMinus;
+    myYears = years;
+    myMonths = months;
+    myDays = days;
+    myHours = hours;
+    myMinutes = minutes;
+    mySeconds = seconds;
+  }
 
-  String getText();
-  void gotoSource();
-  void select();
-  void highlight(boolean highlighted);
-  Component getComponent();
+  public boolean hasMinus() {
+    return myHasMinus;
+  }
+
+  public int getYears() {
+    return myYears;
+  }
+
+  public int getMonths() {
+    return myMonths;
+  }
+
+  public int getDays() {
+    return myDays;
+  }
+
+  public int getHours() {
+    return myHours;
+  }
+
+  public int getMinutes() {
+    return myMinutes;
+  }
+
+  public double getSeconds() {
+    return mySeconds;
+  }
+
+  @Override
+  public String toString() {
+    return myYears + " " + myMonths + " " + myDays + " " + myHours + " " + myMinutes + " " + mySeconds; // NOI18N
+  }
+
+  private boolean myHasMinus;
+  private int myYears;
+  private int myMonths;
+  private int myDays;
+  private int myHours;
+  private int myMinutes;
+  private double mySeconds;
 }
