@@ -91,7 +91,9 @@ public class ReformatterImpl {
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
                 // indent afre preprocessor directive
                 if (braces.getStatementContinuation() == BracesStack.StatementContinuation.START){
-                    braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE);
+                    if (ts.isStatementContinuation()){
+                        braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE);
+                    }
                 }
                 if (doFormat()){
                     indentNewLine(current);
@@ -127,7 +129,9 @@ public class ReformatterImpl {
                 case NEW_LINE:
                 {
                     if (braces.getStatementContinuation() == BracesStack.StatementContinuation.START){
-                        braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE);
+                        if (ts.isStatementContinuation()){
+                            braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE);
+                        }
                     }
                     if (doFormat()) {
                         newLineFormat(previous, current, braces.parenDepth);
@@ -1295,86 +1299,10 @@ public class ReformatterImpl {
             }
             int space = -1;
             if (parenDepth > 0) {
-                // get indent from left paren indent
-                Token<CppTokenId> prev = ts.findOpenParenToken(parenDepth);
-                if (prev != null) {
-                    switch (prev.id()){
-                        case FOR:
-                        {
-                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
-                                int i = ts.openParenIndent(1);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            } else if (codeStyle.alignMultilineFor()){
-                                int i = ts.openParenIndent(parenDepth);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            }
-                            break;
-                        }
-                        case IF:
-                        {
-                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
-                                int i = ts.openParenIndent(1);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            } else if (codeStyle.alignMultilineIfCondition()){
-                                int i = ts.openParenIndent(parenDepth);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            }
-                            break;
-                        }
-                        case WHILE:
-                        {
-                            if (parenDepth > 1 && codeStyle.alignMultilineParen()) {
-                                int i = ts.openParenIndent(1);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            } else if (codeStyle.alignMultilineWhileCondition()){
-                                int i = ts.openParenIndent(parenDepth);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            }
-                            break;
-                        }
-                        case IDENTIFIER:
-                        {
-                            if (braces.isDeclarationLevel()){
-                                if (codeStyle.alignMultilineMethodParams()){
-                                    int i = ts.openParenIndent(parenDepth);
-                                    if (i >=0) {
-                                        space = i;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        // no break
-                        default:
-                        {
-                            Token<CppTokenId> closer = ts.findOpenParenToken(1);
-                            if (closer != null && closer.id() == IDENTIFIER) {
-                                if (codeStyle.alignMultilineCallArgs()) {
-                                    int i = ts.openParenIndent(1);
-                                    if (i >=0) {
-                                        space = i;
-                                    }
-                                }
-                            } else if (codeStyle.alignMultilineParen()){
-                                int i = ts.openParenIndent(1);
-                                if (i >=0) {
-                                    space = i;
-                                }
-                            }
-                            break;
-                        }
+                for(int i = 1; i <= parenDepth; i++){
+                    space = getParenthesisIndent(i);
+                    if (space >= 0) {
+                        break;
                     }
                 }
             } else {
@@ -1426,6 +1354,41 @@ public class ReformatterImpl {
         }
     }
 
+    private int getParenthesisIndent(int depth){
+        Token<CppTokenId> prev = ts.findOpenParenToken(depth);
+        if (prev != null) {
+            switch (prev.id()) {
+                case FOR:
+                    return countParenthesisIndent(codeStyle.alignMultilineFor(), depth);
+                case IF:
+                    return countParenthesisIndent(codeStyle.alignMultilineIfCondition(), depth);
+                case WHILE:
+                    return countParenthesisIndent(codeStyle.alignMultilineWhileCondition(), depth);
+                case IDENTIFIER:
+                {
+                    if (braces.isDeclarationLevel()) {
+                        return countParenthesisIndent(codeStyle.alignMultilineMethodParams(), depth);
+                    } else {
+                        return countParenthesisIndent(codeStyle.alignMultilineCallArgs(), depth);
+                    }
+                }
+                default:
+                    return countParenthesisIndent(codeStyle.alignMultilineParen(), depth);
+            }
+        }
+        return -1;
+    }
+    
+    private int countParenthesisIndent(boolean isIndent, int depth){
+        if (isIndent) {
+            int i = ts.openParenIndent(depth);
+            if (i >= 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     // indent new line after preprocessor directive
     private void indentNewLine(Token<CppTokenId> current){
         if (current.id() == NEW_LINE) {
