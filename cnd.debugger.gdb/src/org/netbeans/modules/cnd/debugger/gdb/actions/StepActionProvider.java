@@ -121,7 +121,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                 }
                 if (action == ActionsManager.ACTION_STEP_OVER) {
                     if (Disassembly.isInDisasm()) {
-                        getDebugger().stepI();
+                        getDebugger().stepOverInstr();
                     } else {
                         getDebugger().stepOver();
                     }
