@@ -44,6 +44,7 @@ import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
@@ -66,15 +67,31 @@ import org.openide.filesystems.FileSystem;
 public class CustomCodeGenerator extends SaasCodeGenerator {
     private DropFileType dropFileType;
     private FileObject serviceFolder;
+    private CustomAuthenticationGenerator authGen;
 
     public CustomCodeGenerator(JTextComponent targetComponent, 
             FileObject targetFile, CustomSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, new CustomSaasBean(m));
+        this(targetComponent, targetFile, new CustomSaasBean(m));
+    }
+
+    public CustomCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, CustomSaasBean bean) throws IOException {
+        super(targetComponent, targetFile, bean);
+
+        this.authGen = new CustomAuthenticationGenerator(bean, getProject());
+        this.authGen.setLoginArguments(getLoginArguments());
+        this.authGen.setAuthenticatorMethodParameters(getAuthenticatorMethodParameters());
+        this.authGen.setSaasServiceFolder(getSaasServiceFolder());
+
     }
 
     @Override
     public CustomSaasBean getBean() {
         return (CustomSaasBean) bean;
+    }
+
+    public CustomAuthenticationGenerator getAuthenticationGenerator() {
+        return authGen;
     }
     
     public DropFileType getDropFileType() {
@@ -210,5 +227,13 @@ public class CustomCodeGenerator extends SaasCodeGenerator {
         params.addAll(bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED})));
         return params;
+    }
+    
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        return Collections.emptyList();
+    }
+
+    protected String getLoginArguments() {
+        return "";
     }
 }
