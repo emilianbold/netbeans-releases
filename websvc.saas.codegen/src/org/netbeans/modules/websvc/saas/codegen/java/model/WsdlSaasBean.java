@@ -47,8 +47,8 @@ import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
 /**
@@ -62,7 +62,7 @@ public class WsdlSaasBean extends SaasBean {
     private WsdlSaasMethod m;
     
     public WsdlSaasBean(WsdlSaasMethod m, Project project) {
-        this(Util.deriveResourceName(m.getName()), 
+        this(m.getSaas(), Util.deriveResourceName(m.getName()), 
                 toJaxwsOperationInfos(m, project));
     }
   
@@ -73,8 +73,8 @@ public class WsdlSaasBean extends SaasBean {
      * @param jaxwsInfos array of JAXWS info objects.
      * @param packageName name of package
      */ 
-    private WsdlSaasBean(String name, JaxwsOperationInfo[] jaxwsInfos) {
-        super(name, 
+    private WsdlSaasBean(Saas saas, String name, JaxwsOperationInfo[] jaxwsInfos) {
+        super(saas, name, 
               null,
               Util.deriveUriTemplate(jaxwsInfos[jaxwsInfos.length-1].getOperationName()),
               Util.deriveMimeTypes(jaxwsInfos), 

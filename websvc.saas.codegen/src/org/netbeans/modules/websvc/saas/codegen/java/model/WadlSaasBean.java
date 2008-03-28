@@ -74,8 +74,6 @@ public class WadlSaasBean extends SaasBean {
     public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
-    private String groupName;
-    private String displayName;
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
@@ -83,7 +81,7 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        super(m.getSaas(), Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
@@ -95,27 +93,6 @@ public class WadlSaasBean extends SaasBean {
 
     public WadlSaasMethod getMethod() {
         return m;
-    }
-    
-    public String getGroupName() {
-        return groupName;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public String getSaasName() {
-        return getGroupName()+getDisplayName();
-    }
-    
-    public String getSaasServiceName() {
-        return getGroupName()+getDisplayName()/*+"Service"*/;
-    }
-    
-    public String getSaasServicePackageName() {
-        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
-                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
     }
     
     public String getSaasServiceMethodName() {
@@ -136,11 +113,6 @@ public class WadlSaasBean extends SaasBean {
     
     private void init() throws IOException { 
         setResourceClassTemplate(RESOURCE_TEMPLATE);
-        SaasGroup g = getMethod().getSaas().getParentGroup();
-        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
-            g = getMethod().getSaas().getTopLevelGroup();
-        this.groupName = Util.normailizeName(g.getName());
-        this.displayName = Util.normailizeName(getMethod().getSaas().getDisplayName());
         setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
         findAuthentication(m);
         initUrl();
