@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,43 +38,66 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.editors.api.utils;
 
-package org.netbeans.editor;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
-* Position in document. This is enhanced version of
-* Swing <CODE>Position</CODE> interface. It supports
-* insert after feature. If Position has
-* <CODE>insertAfter</CODE> flag set and text is inserted
-* right at the mark's position, the position will NOT move.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.11.27
+ */
+public class Duration {
+  public Duration(
+    boolean hasMinus,
+    int years,
+    int months,
+    int days,
+    int hours,
+    int minutes,
+    double seconds
+  ) {
+    myHasMinus = hasMinus;
+    myYears = years;
+    myMonths = months;
+    myDays = days;
+    myHours = hours;
+    myMinutes = minutes;
+    mySeconds = seconds;
+  }
 
-class BasePosition implements Position {
+  public boolean hasMinus() {
+    return myHasMinus;
+  }
 
-    /** The mark that serves this position */
-    private MultiMark mark;
+  public int getYears() {
+    return myYears;
+  }
 
-    BasePosition() throws BadLocationException {
-    }
+  public int getMonths() {
+    return myMonths;
+  }
 
-    /** Get offset in document for this position */
-    public int getOffset() {
-        return mark.getOffset();
-    }
+  public int getDays() {
+    return myDays;
+  }
 
-    void setMark(MultiMark mark) {
-        this.mark = mark;
-    }
-    
-    @Override
-    public String toString() {
-        return super.toString() + " offset=" + getOffset(); // NOI18N
-    }
+  public int getHours() {
+    return myHours;
+  }
 
+  public int getMinutes() {
+    return myMinutes;
+  }
+
+  public double getSeconds() {
+    return mySeconds;
+  }
+
+  private boolean myHasMinus;
+  private int myYears;
+  private int myMonths;
+  private int myDays;
+  private int myHours;
+  private int myMinutes;
+  private double mySeconds;
 }
