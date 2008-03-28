@@ -444,20 +444,18 @@ public final class EarProjectProperties {
             if (serverLibraryName != null) {
                 projectProps.setProperty(J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-                projectProps.setProperty(APPCLIENT_TOOL_RUNTIME,
-                    "${libs." + serverLibraryName + "." + "appclient" + "}");
             }
         } else {
             String classpath = EarProjectGenerator.toClasspathString(j2eePlatform.getClasspathEntries());
             privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
-            
-            // update j2ee.appclient.tool.runtime
-            if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_APP_CLIENT_RUNTIME)) {
-                File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-                privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, EarProjectGenerator.toClasspathString(wsClasspath));
-            } else {
-                privateProps.remove(APPCLIENT_TOOL_RUNTIME);
-            }
+        }
+        
+        // update j2ee.appclient.tool.runtime
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_APP_CLIENT_RUNTIME)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
+            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, EarProjectGenerator.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(APPCLIENT_TOOL_RUNTIME);
         }
         
         // update j2ee.server.type

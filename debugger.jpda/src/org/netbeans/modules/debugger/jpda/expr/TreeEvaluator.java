@@ -119,7 +119,7 @@ public class TreeEvaluator {
         //if (exprTree == null) return null;
         try {
             Mirror mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
-                                                              new EvaluatorVisitor(), evaluationContext,
+                                                              new EvaluatorVisitor(expression), evaluationContext,
                                                               evaluationContext.getDebugger().getEngineContext().getContext());
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;

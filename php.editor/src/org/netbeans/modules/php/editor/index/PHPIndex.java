@@ -389,6 +389,34 @@ public class PHPIndex {
         
         return constants;
     }
+    
+    public Collection<IndexedConstant> getClasses(PHPParseResult context, String name, NameKind kind) {
+        final Set<SearchResult> result = new HashSet<SearchResult>();
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CLASS, name, kind, result, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult map : result) {
+            if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
+                String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
+
+                if (signatures == null) {
+                    continue;
+                }
+
+                for (String signature : signatures) {
+                    int firstSemicolon = signature.indexOf(";");
+                    String className = signature.substring(0, firstSemicolon);
+
+                    IndexedConstant constant = new IndexedConstant(className, null,
+                            this, map.getPersistentUrl(), null, 0, ElementKind.CLASS);
+
+                    constants.add(constant);
+                }
+            }
+        }
+        
+        return constants;
+    }
 
 //    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
 //        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,

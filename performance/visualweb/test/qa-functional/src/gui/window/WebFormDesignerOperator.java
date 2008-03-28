@@ -84,7 +84,14 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             throw new JemmyException("Cannot find designer surface because of expired timeout");            
         }      
     }
+    public void SetCaretOff() {
+        Component surf = surfacecomp.getSource();
+        
+    }
     
+    public void SetCaretOn() {
+        Component surf = surfacecomp.getSource();        
+    }
     /**
      * Find web designer operator located certain top component
      * @param topComponentName name of the top component
