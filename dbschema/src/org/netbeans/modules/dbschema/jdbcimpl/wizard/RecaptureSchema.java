@@ -311,18 +311,14 @@ public class RecaptureSchema {
         
         DatabaseConnection dbconn = findDatabaseConnection(elem);
         if (dbconn == null) {
-            dbconn = createDatabaseConnection(elem);
-            
-            if ( dbconn == null ) {
-                if (debug) {
+            if (debug) {
                     System.out.println("[dbschema-ccp] not found dbconn='" + dbconn + "'");
                 }
-                String message = MessageFormat.format(
-                        bundle.getString("EXC_CouldNotCreateConnection"),
-                        elem.getUrl());
-                
-                throw new SQLException(message);
-            }
+            String message = MessageFormat.format(
+                    bundle.getString("EXC_CouldNotCreateConnection"),
+                    elem.getUrl());
+
+            throw new SQLException(message);
         }
         if (debug) {
             System.out.println("[dbschema-ccp] found dbconn='" + dbconn.getDatabaseURL() + "'");
@@ -350,7 +346,7 @@ public class RecaptureSchema {
         throw new SQLException(message);
     }
     
-    private DatabaseConnection findDatabaseConnection(SchemaElement elem) {
+    private DatabaseConnection findDatabaseConnection(final SchemaElement elem) {
         DatabaseConnection dbconns[] = ConnectionManager.getDefault().getConnections();
         
         // Trim off connection properties, as in some cases, what dbmd.getUrl()
@@ -365,7 +361,18 @@ public class RecaptureSchema {
                 return dbconns[i];
             }
         }
-        return null;
+        
+        // None found, so let the user pick one
+        DatabaseConnection conn = 
+            Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+
+                public DatabaseConnection run() {
+                    return ChooseConnectionPanel.showChooseConnectionDialog(
+                            elem.getUrl());
+                }
+            });
+            
+        return conn;
     }
     
     private static String trimUrl(String url) {
