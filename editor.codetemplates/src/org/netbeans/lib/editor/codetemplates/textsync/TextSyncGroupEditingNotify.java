@@ -39,42 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
+package org.netbeans.lib.editor.codetemplates.textsync;
 
 /**
-* Position in document. This is enhanced version of
-* Swing <CODE>Position</CODE> interface. It supports
-* insert after feature. If Position has
-* <CODE>insertAfter</CODE> flag set and text is inserted
-* right at the mark's position, the position will NOT move.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+ * Notifications of changes in editing of text sync groups.
+ *
+ * @author Miloslav Metelka
+ */
+public interface TextSyncGroupEditingNotify {
 
-class BasePosition implements Position {
-
-    /** The mark that serves this position */
-    private MultiMark mark;
-
-    BasePosition() throws BadLocationException {
-    }
-
-    /** Get offset in document for this position */
-    public int getOffset() {
-        return mark.getOffset();
-    }
-
-    void setMark(MultiMark mark) {
-        this.mark = mark;
-    }
+    void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync);
     
-    @Override
-    public String toString() {
-        return super.toString() + " offset=" + getOffset(); // NOI18N
-    }
+    void released(TextRegionEditing textRegionEditing);
+    
+    void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex);
+    
+    void textSyncModified(TextRegionEditing textRegionEditing);
 
 }
