@@ -54,10 +54,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -80,6 +78,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String NEW_VAR_NAME = "newVarName"; //NOI18N
     public static final String NAMED = "named"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
+    public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
 
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
@@ -104,6 +103,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     public synchronized void updateDefaultValues() {
         updateTemplateEnding();
+        updateTemplateBasedOnCatchers();
         updateTemplateBasedOnSelection();
         boolean cont = true;
         while (cont) {
@@ -138,7 +138,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     
     public void release() {
     }
-    
+
     private void updateTemplateEnding() {
         String text = request.getParametrizedText();
         if (text.endsWith("\n")) { //NOI18N
@@ -156,6 +156,37 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
 
+    private void updateTemplateBasedOnCatchers() {
+        for (CodeTemplateParameter parameter : request.getAllParameters()) {
+            for (String hint : parameter.getHints().keySet()) {
+                if (UNCAUGHT_EXCEPTION_CATCH_STATEMENTS.equals(hint) && isBlockContext(request.getCodeTemplate().getContexts()) && initParsing()) {
+                    SourcePositions[] sourcePositions = new SourcePositions[1];
+                    TreeUtilities tu = cInfo.getTreeUtilities();
+                    StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
+                    if (!errChecker.containsErrors(stmt)) {
+                        TreePath path = tu.pathFor(new TreePath(treePath, stmt), parameter.getInsertTextOffset(), sourcePositions[0]);
+                        path = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                        if (path != null && ((TryTree)path.getLeaf()).getBlock() != null) {
+                            tu.attributeTree(stmt, scope);
+                            StringBuilder sb = new StringBuilder();
+                            int cnt = 0;
+                            for (TypeMirror tm : tu.getUncaughtExceptions(new TreePath(path, ((TryTree)path.getLeaf()).getBlock()))) {
+                                sb.append("catch ("); //NOI18N
+                                sb.append("${_GEN_UCE_TYPE_" + cnt++ + " type=" + Utilities.getTypeName(tm, true) + " default=" + Utilities.getTypeName(tm, false) + "}"); //NOI18N
+                                sb.append(" ${_GEN_UCE_NAME_" + cnt++ + " newVarName}){}"); //NOI18N
+                            }
+                            if (sb.length() > 0) {
+                                StringBuilder ptBuilder = new StringBuilder(request.getParametrizedText());
+                                ptBuilder.replace(parameter.getParametrizedTextStartOffset(), parameter.getParametrizedTextEndOffset(), sb.toString());
+                                request.setParametrizedText(ptBuilder.toString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private void updateTemplateBasedOnSelection() {
         for (CodeTemplateParameter parameter : request.getAllParameters()) {
             if (CodeTemplateParameter.SELECTION_PARAMETER_NAME.equals(parameter.getName())) {

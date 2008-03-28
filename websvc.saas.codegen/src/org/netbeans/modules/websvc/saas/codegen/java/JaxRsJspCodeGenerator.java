@@ -79,7 +79,6 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             code += "\n<%@ page import=\""+AbstractGenerator.REST_CONNECTION_PACKAGE+
@@ -97,6 +96,7 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
+        String indent2 = "                 ";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
@@ -104,7 +104,7 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
         filterParams = filterJspParameters(super.getServiceMethodParameters());
         filterParams = renameJspParameterNames(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        return getCustomMethodBody(paramDecl, paramUse);
+        return getCustomMethodBody(paramDecl, paramUse, indent2);
     }
     
     private List<ParameterInfo> filterJspParameters(List<ParameterInfo> params) {

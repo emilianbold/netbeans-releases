@@ -60,6 +60,7 @@ import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -151,6 +152,10 @@ public class DebugSession implements Runnable {
         return myTransactionId.getAndIncrement() +"";
     }
     
+    public void start() {
+       RequestProcessor.getDefault().post(this);
+    }
+        
     public void stop() {
         isStopped.set( true );
         getBridge().setSuspended( false );
@@ -161,8 +166,6 @@ public class DebugSession implements Runnable {
         getBridge().getThreadsModel().update();
         getBridge().getVariablesModel().clearModel();
         getBridge().getWatchesModel().clearModel();
-        Session session = (Session) getBridge().getEngine().lookupFirst(null, Session.class);
-        StartActionProviderImpl.getInstance().stop(session);
     }
 
     public void setId( InitMessage message ) {

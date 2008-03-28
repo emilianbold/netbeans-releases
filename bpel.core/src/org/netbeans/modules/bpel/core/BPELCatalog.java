@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.resources.ResourcePackageMarker;
+import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
@@ -65,7 +66,6 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     private static final String BPEL_1_1 =
         "http://schemas.xmlsoap.org/ws/2003/03/business-process/";  // NOI18N
 
-    //TODO r
     private static final String WS_ADDRESSING =
         "http://schemas.xmlsoap.org/ws/2004/08/addressing";  // NOI18N
     private static final String URL_WS_ADDRESSING =
@@ -88,6 +88,14 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
 
     private static final String TRACE_2_0 = Trace.LOGGING_NAMESPACE_URI;
 
+    private static final String URL_EDITOR_EXT =
+        "nbres:/"+                                                  // NOI18N
+        ResourcePackageMarker.class.getPackage().getName().
+        replace( '.', '/')+ "/" +                                   // NOI18N
+        ResourcePackageMarker.EDITOR_EXT_SCHEMA; 
+
+    private static final String EDITOR_EXT = Editor.EDITOR_NAMESPACE_URI;
+
     private static final String WS_BPEL_SERVICE_REF = 
             "http://docs.oasis-open.org/wsbpel/2.0/serviceref"; // NOI18N
     
@@ -105,11 +113,10 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     private static final String BPEL_1_1_ID = SCHEMA + BPEL_1_1;
     private static final String BPEL_2_0_ID = SCHEMA + BPEL_2_0;
     private static final String TRACE_2_0_ID = SCHEMA + TRACE_2_0;
+    private static final String EDITOR_EXT_ID = SCHEMA + EDITOR_EXT;
     private static final String WS_BPEL_SERVICE_REF_ID = 
             SCHEMA + WS_BPEL_SERVICE_REF; 
-    // TODO r
     private static final String WS_ADDRESSING_ID = SCHEMA + WS_ADDRESSING;
-
     
     private static final String URL_BPEL_PLT_1_1 =
         "nbres:/org/netbeans/modules/bpel/core/resources/"          // NOI18N
@@ -169,9 +176,9 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         list.add(BPEL_PLT_1_1_ID);
         list.add(BPEL_2_0_ID);
         list.add(BPEL_PLT_2_0_ID);
+        list.add(EDITOR_EXT_ID);
         list.add(TRACE_2_0_ID);
         list.add(WS_BPEL_SERVICE_REF_ID);
-        // TODO r
         list.add(WS_ADDRESSING_ID);
         return list.listIterator();
     }
@@ -187,6 +194,9 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         }
         else if (BPEL_PLT_2_0_ID.equals(publicId)) {
             return URL_BPEL_PLT_2_0;
+        }
+        else if (EDITOR_EXT_ID.equals(publicId)) {
+            return URL_EDITOR_EXT;
         }
         else if (TRACE_2_0_ID.equals(publicId)) {
             return URL_TRACE_2_0;
@@ -275,6 +285,9 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         else if (BPEL_PLT_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_PLT_2_0);
         }
+        else if (EDITOR_EXT.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_EDITOR_EXT);
+        }
         else if (TRACE_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_TRACE_2_0);
         }
@@ -287,7 +300,6 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         else if (WS_BPEL_SERVICE_REF.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_WS_BPEL_SERVICE_REF);
         }
-        // TODO r
         else if (WS_ADDRESSING.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_WS_ADDRESSING);
         }
@@ -306,6 +318,9 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         }
         else if(BPEL_PLT_2_0.equals(name)) {
             return BPEL_PLT_2_0;
+        }
+        else if(EDITOR_EXT.equals(name)) {
+            return EDITOR_EXT;
         }
         else if(TRACE_2_0.equals(name)) {
             return TRACE_2_0;

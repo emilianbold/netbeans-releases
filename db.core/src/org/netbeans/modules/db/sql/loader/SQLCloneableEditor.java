@@ -93,10 +93,12 @@ public class SQLCloneableEditor extends CloneableEditor {
 
     public SQLCloneableEditor() {
         super(null);
+        putClientProperty("oldInitialize", Boolean.TRUE);
     }
 
     public SQLCloneableEditor(SQLEditorSupport support) {
         super(support);
+        putClientProperty("oldInitialize", Boolean.TRUE);
         initialize();
     }
 

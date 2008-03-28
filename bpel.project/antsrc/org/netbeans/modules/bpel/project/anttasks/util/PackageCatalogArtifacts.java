@@ -104,7 +104,8 @@ public class PackageCatalogArtifacts {
                 localCatalogFile.getCanonicalPath()) : null;
             
             doCopy(sourceDirectory, 
-                    buildDirectory, 
+                    buildDirectory,
+                    localCatalogFile.getParentFile(), 
                     projectCatalogReader, 
                     localCatalogReader);
         } catch (Throwable ex) {
@@ -115,6 +116,7 @@ public class PackageCatalogArtifacts {
     private void doCopy(
             final File sourceDirectory,
             final File buildDirectory,
+            final File localCatalogDirectory,
             final CatalogReader projectCatalog, 
             final CatalogReader localCatalog) throws Exception {
         
@@ -165,7 +167,7 @@ public class PackageCatalogArtifacts {
                 final String localUri = listOfLocalURIs.get(i);
                 
                 Util.copyFile(
-                        new File(projectDirectory, localUri), 
+                        new File(localCatalogDirectory, localUri), 
                         new File(metaInfDirectory, localUri));
                 
                 //catalogModel.addURI(new URI(ns), new URI(localUri));

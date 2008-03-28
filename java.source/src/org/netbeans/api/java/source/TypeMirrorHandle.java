@@ -135,7 +135,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
     private static <T extends TypeMirror> TypeMirrorHandle<T> create(T tm, Map<TypeMirror, TypeMirrorHandle> map) {
         TypeMirrorHandle<T> handle = map.get(tm);
         if (handle != null)
-            return handle;
+            return handle.typeMirrors == null ? handle : (TypeMirrorHandle<T>)handle.typeMirrors.get(0);
         map.put(tm, new TypeMirrorHandle(null, null, null));
         TypeKind kind = tm.getKind();
         ElementHandle<? extends Element> element = null;

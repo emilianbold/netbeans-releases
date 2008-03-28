@@ -60,15 +60,22 @@ public class CustomCodeGeneratorFactory {
         CustomCodeGenerator codegen = null;
         try {
             DataObject d = DataObject.find(targetFO);
-            if(Util.isRestJavaFile(d)) {
-                codegen = new CustomResourceClassCodeGenerator(
-                                targetComponent, targetFO, method);
-//            } else if(Util.isServlet(d)) {
-//                codegen = new CustomServletCodeGenerator(
-//                                targetComponent, targetFO, method);
-//            } else {
-//                codegen = new CustomJavaClientCodeGenerator(
-//                                targetComponent, targetFO, method);
+            if (Util.isRestJavaFile(d) || Util.isServlet(d)) {
+                codegen = new CustomServletCodeGenerator(
+                        targetComponent, targetFO, method);
+                if (Util.isServlet(d)) {
+                    codegen.setDropFileType(Constants.DropFileType.SERVLET);
+                } else {
+                    codegen.setDropFileType(Constants.DropFileType.RESOURCE);
+                }
+            } else if (Util.isJsp(d)) {
+                codegen = new CustomJspCodeGenerator(
+                        targetComponent, targetFO, method);
+                codegen.setDropFileType(Constants.DropFileType.JSP);
+            } else {
+                codegen = new CustomJavaClientCodeGenerator(
+                        targetComponent, targetFO, method);
+                codegen.setDropFileType(Constants.DropFileType.JAVA_CLIENT);
             }
         } catch (DataObjectNotFoundException ex) {
             throw new IOException(ex.getMessage());

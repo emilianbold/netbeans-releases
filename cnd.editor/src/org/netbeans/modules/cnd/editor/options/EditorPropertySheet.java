@@ -102,6 +102,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         initComponents();
 
         holder = new PropertySheet();
+        holder.setOpaque(false);
+        holder.setDescriptionAreaVisible(false);
         GridBagConstraints fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         fillConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -219,6 +221,8 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceNamespace));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceClass));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceDeclaration));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.ignoreEmptyFunctionBody));
+	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBraceSwitch));
 	set.put(new BracePlacementProperty(currentLanguage, preferences, EditorOptions.newLineBeforeBrace));
         sheet.put(set);
         
@@ -411,11 +415,13 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
         }
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
     
     void cancel() {
         defaultStyles.clear();
         allPreferences.clear();
+        holder.setNodes(null);
     }
 
     // Change in the combo

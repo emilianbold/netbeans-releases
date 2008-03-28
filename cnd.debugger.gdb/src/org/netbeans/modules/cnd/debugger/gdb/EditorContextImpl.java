@@ -79,7 +79,10 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerAnnotation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.DebuggerBreakpointAnnotation;
+import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport.CppEditorComponent;
+import org.openide.text.Annotation;
 
 /**
  *
@@ -188,11 +191,21 @@ public class EditorContextImpl extends EditorContext {
     }
     
     public Object annotate(DataObject dobj, int lineNumber, String annotationType, Object timeStamp) {
+        GdbBreakpoint b = null;
+        if (timeStamp instanceof GdbBreakpoint) {
+            b = (GdbBreakpoint) timeStamp;
+            timeStamp = null;
+        }
         Line l =  getLine(dobj, lineNumber, timeStamp);
         if (l == null) {
             return null;
         }
-        DebuggerAnnotation annotation = new DebuggerAnnotation(annotationType, l);
+        Annotation annotation;
+        if (b == null) {
+            annotation = new DebuggerAnnotation(annotationType, l);
+        } else {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, b);
+        }
         return annotation;
     }
 

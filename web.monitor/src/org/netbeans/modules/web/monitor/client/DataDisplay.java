@@ -63,6 +63,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import org.netbeans.modules.web.monitor.data.DataRecord;
 import org.netbeans.modules.web.monitor.data.Param; 
+import org.openide.awt.Mnemonics;
 
 abstract public class DataDisplay extends JPanel {
     
@@ -144,17 +145,16 @@ abstract public class DataDisplay extends JPanel {
 
 
     static JLabel createHeaderLabel(String label) {
-        return createHeaderLabel(label, ' ', null, null);
+        return createHeaderLabel(label, null, null);
     }
 
 
-    static JLabel createHeaderLabel(String label, char mnemonic, String ad, Component comp) {
-	JLabel jl = new JLabel(label);
+    static JLabel createHeaderLabel(String label, String ad, Component comp) {
+	JLabel jl = new JLabel();
+        Mnemonics.setLocalizedText(jl, label);
 	Font labelFont = jl.getFont();
 	Font boldFont = labelFont.deriveFont(Font.BOLD);
 	jl.setFont(boldFont);
-        if (mnemonic != ' ')
-            jl.setDisplayedMnemonic(mnemonic);
         if (ad != null)
             jl.getAccessibleContext().setAccessibleDescription(ad);
         if (comp != null)
@@ -168,9 +168,9 @@ abstract public class DataDisplay extends JPanel {
     }
 
     
-    static Component createSortButtonLabel(String label, final DisplayTable dt, char mnemonic, String ad) {
+    static Component createSortButtonLabel(String label, final DisplayTable dt, String ad) {
 	JPanel panel = new JPanel();
-	panel.add(createHeaderLabel(label, mnemonic, ad, dt));
+	panel.add(createHeaderLabel(label, ad, dt));
 	panel.add(createSortButton(dt));
 	return panel;
     }

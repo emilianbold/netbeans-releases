@@ -184,6 +184,15 @@ public final class CodeStyle {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
                                       EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
+    public boolean ignoreEmptyFunctionBody(){
+        return getOption(EditorOptions.ignoreEmptyFunctionBody,
+                         EditorOptions.ignoreEmptyFunctionBodyDefault);
+    }
+
+    public BracePlacement getFormatNewLineBeforeBraceSwitch() {
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,
+                                      EditorOptions.newLineBeforeBraceSwitchDefault));
+    }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
@@ -239,6 +248,10 @@ public final class CodeStyle {
     public boolean alignMultilineParen() {
         return getOption(EditorOptions.alignMultilineParen,
                          EditorOptions.alignMultilineParenDefault);
+    }
+    public boolean alignMultilineArrayInit() {
+        return getOption(EditorOptions.alignMultilineArrayInit,
+                         EditorOptions.alignMultilineArrayInitDefault);
     }
 
     //SpacesAroundOperators

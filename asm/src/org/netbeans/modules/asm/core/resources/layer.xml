@@ -71,7 +71,7 @@
         </folder>        
     </folder>
             
-    <folder name="Menu">
+    <!--<folder name="Menu">
         <folder name="Window">
             <folder name="Debug">
                 <file name="NavigatorAction.shadow">
@@ -80,7 +80,7 @@
                 </file>                          
             </folder>
         </folder>       
-    </folder>
+    </folder>-->
     <folder name="OptionsDialog">        
         <folder name="PreviewExamples">            
             <folder name="text">                

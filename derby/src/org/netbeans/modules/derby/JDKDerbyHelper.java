@@ -112,6 +112,10 @@ public class JDKDerbyHelper {
             if (result != null) {
                 return result;
             }
+            result = testDerbyInstallLocation(new File("/usr/share/javadb")); // NOI18N
+            if (result != null) {
+                return result;
+            }
         }
         for (Object dir : platform.getInstallFolders()) {
             FileObject derbyDir = ((FileObject)dir).getFileObject("db"); // NOI18N

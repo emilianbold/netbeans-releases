@@ -279,7 +279,7 @@ public class JsFormatterTest extends JsTestBase {
     }
 
     public void testFormat4() throws Exception {
-        reformatFileContents("testfiles/dojo.js.uncompressed.js",new IndentPrefs(2,2));
+        reformatFileContents("testfiles/orig-dojo.js.uncompressed.js",new IndentPrefs(2,2));
     }
     
     public void testSimpleBlock() throws Exception {
