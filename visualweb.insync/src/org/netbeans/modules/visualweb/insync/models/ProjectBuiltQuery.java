@@ -244,7 +244,8 @@ public class ProjectBuiltQuery {
 
         public boolean isBuilt() {
             if (!checkProjectOpen()) {
-                throw new IllegalStateException(NbBundle.getMessage(ProjectBuiltQuery.class, "ERROR_ProjectIsNotOpen"));
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+            	    NbBundle.getMessage(ProjectBuiltQuery.class, "ERROR_ProjectIsNotOpen"));
             }
             return built;
         }

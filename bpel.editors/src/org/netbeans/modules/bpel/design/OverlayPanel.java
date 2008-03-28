@@ -35,7 +35,8 @@ public class OverlayPanel extends JComponent{
         
         g2.scale(zoom, zoom);
 
-        designView.getGhost().paint(g2);
+        //fixme - render DND status here
+        
         designView.getFlowLinkTool().paint(g2);
         
     }

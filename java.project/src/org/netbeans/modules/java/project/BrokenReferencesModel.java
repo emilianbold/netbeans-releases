@@ -43,6 +43,7 @@ package org.netbeans.modules.java.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -264,12 +265,13 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else {
                 //XXX: Should check all the volumes (sources, javadoc, ...)?
-                for (URL url : lib.getRawContent("classpath")) { // NOI18N
-                    if ("jar".equals(url.getProtocol())) {   //NOI18N
-                        url = FileUtil.getArchiveFile (url);
+                for (URI uri : lib.getURIContent("classpath")) { // NOI18N
+                    URI uri2 = LibrariesSupport.getArchiveFile(uri);
+                    if (uri2 == null) {
+                        uri2 = uri;
                     }
-                    FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(lib.getManager().getLocation(), url);
-                    if (null == fo && !canResolveEvaluatedUrl(helper.getStandardPropertyEvaluator(), lib.getManager().getLocation(), url)) {
+                    FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(lib.getManager().getLocation(), uri2);
+                    if (null == fo && !canResolveEvaluatedUri(helper.getStandardPropertyEvaluator(), lib.getManager().getLocation(), uri2)) {
                         set.add(new OneReference(REF_TYPE_LIBRARY_CONTENT, libraryRef, true));
                         break;
                     }
@@ -280,17 +282,17 @@ public class BrokenReferencesModel extends AbstractListModel {
         return set;
     }
     
-    /** Tests whether evaluated URL can be resolved. To support library entry 
+    /** Tests whether evaluated URI can be resolved. To support library entry 
      * like "${MAVEN_REPO}/struts/struts.jar".
      */
-    private static boolean canResolveEvaluatedUrl(PropertyEvaluator eval, URL libBase, URL libUrl) {
-        String path = LibrariesSupport.convertURLToFilePath(libUrl);
+    private static boolean canResolveEvaluatedUri(PropertyEvaluator eval, URL libBase, URI libUri) {
+        String path = LibrariesSupport.convertURIToFilePath(libUri);
         String newPath = eval.evaluate(path);
         if (newPath.equals(path)) {
             return false;
         }
-        URL newUrl = LibrariesSupport.convertFilePathToURL(newPath);
-        return null != LibrariesSupport.resolveLibraryEntryFileObject(libBase, newUrl);
+        URI newUri = LibrariesSupport.convertFilePathToURI(newPath);
+        return null != LibrariesSupport.resolveLibraryEntryFileObject(libBase, newUri);
     }
 
     private static File getFile (AntProjectHelper helper, PropertyEvaluator evaluator, String name) {

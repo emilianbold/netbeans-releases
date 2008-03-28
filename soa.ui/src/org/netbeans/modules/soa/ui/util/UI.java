@@ -360,6 +360,15 @@ public final class UI {
     }
   }
 
+  public static double getDouble(String value) {
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return -1.0;
+    }
+  }
+
   public static int round(double value) {
     return (int) Math.ceil(value);
   }

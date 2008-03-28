@@ -368,9 +368,9 @@ precedence right T_STATIC, T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC
 thestart ::=
 top_statement_list:statementList
 {:
-	//PhpAstLexer5 phpAstLexer5 = (PhpAstLexer5) parser.getScanner();
-	//List commentList = phpAstLexer5.getCommentList();
-	Program program = new Program(statementListleft, statementListright, /*parser.ast,*/ statementList/*, commentList*/);
+	ASTPHP5Scanner phpAstLexer5 = (ASTPHP5Scanner) parser.getScanner();
+	List commentList = phpAstLexer5.getCommentList();
+	Program program = new Program(statementListleft, statementListright, /*parser.ast,*/ statementList, commentList);
 	RESULT = program; 
 :}
 ;

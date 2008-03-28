@@ -88,6 +88,9 @@ public class CsmCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        if (sup == null) {
+            return 0;
+        }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(sup, dot)) {
             try {

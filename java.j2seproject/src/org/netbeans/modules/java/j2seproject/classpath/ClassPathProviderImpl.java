@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -55,6 +56,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 
 /**
@@ -92,18 +94,22 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
-        if (fo == null ||  !fo.isValid()) {
-            String prop = evaluator.getProperty(propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put (propname, fo);
-            }
-        }
-        return fo;
+    private FileObject getDir(final String propname) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
+            public FileObject run() {
+                synchronized (ClassPathProviderImpl.this) {
+                    FileObject fo = (FileObject) ClassPathProviderImpl.this.dirCache.get (propname);
+                    if (fo == null ||  !fo.isValid()) {
+                        String prop = evaluator.getProperty(propname);
+                        if (prop != null) {
+                            fo = helper.resolveFileObject(prop);
+                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
+                        }
+                    }
+                    return fo;
+                }
+            }});
     }
-
     
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();

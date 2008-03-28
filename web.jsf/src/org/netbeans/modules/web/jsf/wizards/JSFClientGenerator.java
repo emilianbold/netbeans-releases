@@ -60,7 +60,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +70,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -122,11 +120,13 @@ import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.AnnotationInfo;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.TypeInfo;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -220,6 +220,14 @@ public class JSFClientGenerator {
                 }
             }
         }, true);
+        
+        if (idGetter.size() < 1) {
+            String msg = entityClass + ": " + NbBundle.getMessage(JSFClientGenerator.class, "ERR_GenJsfPages_CouldNotFindIdProperty"); //NOI18N
+            if (fieldAccess[0]) {
+                msg += " " + NbBundle.getMessage(JSFClientGenerator.class, "ERR_GenJsfPages_EnsureSimpleIdNaming"); //NOI18N
+            }
+            throw new IOException(msg);
+        }
         
         if (arrEntityClassFO[0] != null) {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
@@ -993,6 +1001,7 @@ public class JSFClientGenerator {
                     StringBuffer illegalOrphansInCreate = new StringBuffer();
                     StringBuffer illegalOrphansInEdit = new StringBuffer();
                     StringBuffer illegalOrphansInDestroy = new StringBuffer();
+                    StringBuffer initCollectionsInCreate = new StringBuffer();  //useful in case user removes listbox from New.jsp
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -1045,6 +1054,9 @@ public class JSFClientGenerator {
                             }
                             
                             if (isCollection) {
+                                initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n" +
+                                        "}\n");
                                 String refOrMergeString = "em.merge(" + relFieldToAttach + ");\n";
                                 ExecutableElement relIdGetterElement = JsfForm.getIdGetter(workingCopy, isFieldAccess, relClass);
                                 if (relIdGetterElement != null) {
@@ -1319,7 +1331,7 @@ public class JSFClientGenerator {
                     
                     bodyText = "reset(false);\n" +
                             fieldName + " = new " + simpleEntityName + "();\n" + 
-                            (embeddable[0] && idClass != null ? fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" : "") +
+                            (embeddable[0] ? fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" : "") +
                             "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1341,7 +1353,7 @@ public class JSFClientGenerator {
                     
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
-                    if (embeddable[0] && idClass != null) {
+                    if (embeddable[0]) {
                         for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
@@ -1350,12 +1362,21 @@ public class JSFClientGenerator {
                         }
                     }
 
-                    bodyText = codeToPopulatePkFields.toString() +
+                    boolean isGenerated = JsfForm.isGenerated(workingCopy, idGetterElement, isFieldAccess);
+                    bodyText = initCollectionsInCreate.toString() +
+                            codeToPopulatePkFields.toString() +
                             illegalOrphansInCreate.toString() +
                             "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
+                            "} catch (Exception ex) {\n try {\n" +
+                            (isGenerated ? "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" : 
+                            "if (find" + simpleEntityName + "(" + fieldName + "." + idGetterName[0] + "()) != null) {\n" +
+                            "addErrorMessage(\"" + simpleEntityName + " \" + " + fieldName + " + \" already exists.\");\n" +
+                            "} else {\n" +
+                            "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + 
+                            "}\n") +
+                            ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
                             "finally {\n em.close();\n }\n" + 
                             "return listSetup();";
@@ -1614,7 +1635,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
 
                     String newEntityStringInit;
-                    if (embeddable[0] && idClass != null) {
+                    if (embeddable[0]) {
                         newEntityStringInit = simpleEntityName + " new" + simpleEntityName + " = new " + simpleEntityName + "();\n" +
                                 "new" + simpleEntityName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
                                 "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";

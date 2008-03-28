@@ -31,44 +31,43 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{ChooseVehicle.page1}" id="page1">
-            <webuijsf:html binding="#{ChooseVehicle.html1}" id="html1">
-                <webuijsf:head binding="#{ChooseVehicle.head1}" id="head1">
-                    <webuijsf:link binding="#{ChooseVehicle.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{ChooseVehicle.body1}" id="body1" style="-rave-layout: grid">
-                    <webuijsf:form binding="#{ChooseVehicle.form1}" id="form1">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
+                    <webuijsf:form id="form1">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Header.jspf"/>
                         </div>
-                        <h:panelGrid binding="#{ChooseVehicle.content}" id="content" style="left: 0px; top: 240px; position: absolute; width: 800px" styleClass="contents">
-                            <h:panelGrid binding="#{ChooseVehicle.contentGrid}" id="contentGrid">
-                                <h:panelGrid binding="#{ChooseVehicle.messagePanel}" id="messagePanel" style="width: 100%">
-                                    <webuijsf:messageGroup binding="#{ChooseVehicle.messageGroup1}" id="messageGroup1"/>
+                        <h:panelGrid id="content" style="left: 0px; top: 240px; position: absolute; width: 800px" styleClass="contents">
+                            <h:panelGrid id="contentGrid">
+                                <h:panelGrid id="messagePanel" style="width: 100%">
+                                    <webuijsf:messageGroup id="messageGroup1"/>
                                 </h:panelGrid>
-                                <h:panelGrid binding="#{ChooseVehicle.paddingPanel}" id="paddingPanel" style="height: 20px; width: 100%"/>
-                                <h:panelGrid binding="#{ChooseVehicle.dataGrid}" id="dataGrid" style="">
-                                    <webuijsf:table augmentTitle="false" binding="#{ChooseVehicle.table1}" id="table1" paginateButton="true"
-                                        paginationControls="true" title="Vehicles" width="720">
-                                        <webuijsf:tableRowGroup binding="#{ChooseVehicle.tableRowGroup1}" emptyDataMsg="No vehicles found." id="tableRowGroup1"
-                                            rows="4" sourceData="#{ChooseVehicle.vehicleDataProvider}" sourceVar="currentRow">
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn1}" headerText="State" id="tableColumn1" sort="STATE.STATENAME">
-                                                <webuijsf:staticText binding="#{ChooseVehicle.staticText1}" id="staticText1" text="#{currentRow.value['STATE.STATENAME']}"/>
+                                <h:panelGrid id="paddingPanel" style="height: 20px; width: 100%"/>
+                                <h:panelGrid id="dataGrid" style="">
+                                    <webuijsf:table augmentTitle="false" id="table1" paginateButton="true" paginationControls="true" title="Vehicles" width="720">
+                                        <webuijsf:tableRowGroup emptyDataMsg="No vehicles found." id="tableRowGroup1" rows="4"
+                                            sourceData="#{ChooseVehicle.vehicleDataProvider}" sourceVar="currentRow">
+                                            <webuijsf:tableColumn headerText="State" id="tableColumn1" sort="STATE.STATENAME">
+                                                <webuijsf:staticText id="staticText1" text="#{currentRow.value['STATE.STATENAME']}"/>
                                             </webuijsf:tableColumn>
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn2}" headerText="License Plate" id="tableColumn2" sort="VEHICLE.LICENSEPLATE">
-                                                <webuijsf:staticText binding="#{ChooseVehicle.staticText2}" id="staticText2" text="#{currentRow.value['VEHICLE.LICENSEPLATE']}"/>
+                                            <webuijsf:tableColumn headerText="License Plate" id="tableColumn2" sort="VEHICLE.LICENSEPLATE">
+                                                <webuijsf:staticText id="staticText2" text="#{currentRow.value['VEHICLE.LICENSEPLATE']}"/>
                                             </webuijsf:tableColumn>
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn3}" headerText="Make" id="tableColumn3" sort="VEHICLE.MAKE">
-                                                <webuijsf:staticText binding="#{ChooseVehicle.staticText3}" id="staticText3" text="#{currentRow.value['VEHICLE.MAKE']}"/>
+                                            <webuijsf:tableColumn headerText="Make" id="tableColumn3" sort="VEHICLE.MAKE">
+                                                <webuijsf:staticText id="staticText3" text="#{currentRow.value['VEHICLE.MAKE']}"/>
                                             </webuijsf:tableColumn>
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn4}" headerText="Model" id="tableColumn4" sort="VEHICLE.MODEL">
-                                                <webuijsf:staticText binding="#{ChooseVehicle.staticText4}" id="staticText4" text="#{currentRow.value['VEHICLE.MODEL']}"/>
+                                            <webuijsf:tableColumn headerText="Model" id="tableColumn4" sort="VEHICLE.MODEL">
+                                                <webuijsf:staticText id="staticText4" text="#{currentRow.value['VEHICLE.MODEL']}"/>
                                             </webuijsf:tableColumn>
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn5}" headerText="Color" id="tableColumn5" sort="VEHICLE.COLOR">
-                                                <webuijsf:staticText binding="#{ChooseVehicle.staticText5}" id="staticText5" text="#{currentRow.value['VEHICLE.COLOR']}"/>
+                                            <webuijsf:tableColumn headerText="Color" id="tableColumn5" sort="VEHICLE.COLOR">
+                                                <webuijsf:staticText id="staticText5" text="#{currentRow.value['VEHICLE.COLOR']}"/>
                                             </webuijsf:tableColumn>
-                                            <webuijsf:tableColumn binding="#{ChooseVehicle.tableColumn6}" id="tableColumn6">
-                                                <webuijsf:button actionExpression="#{ChooseVehicle.report_action}" binding="#{ChooseVehicle.report}" id="report" text="Report"/>
+                                            <webuijsf:tableColumn id="tableColumn6">
+                                                <webuijsf:button actionExpression="#{ChooseVehicle.report_action}" id="report" text="Report"/>
                                             </webuijsf:tableColumn>
                                         </webuijsf:tableRowGroup>
                                     </webuijsf:table>

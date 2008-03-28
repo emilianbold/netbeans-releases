@@ -81,7 +81,6 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
 
         org.openide.awt.Mnemonics.setLocalizedText(runCheckBox, org.openide.util.NbBundle.getMessage(CustomizerRunComponent.class, "LBL_Run_with_JWS")); // NOI18N
         runCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        runCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -97,7 +96,7 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
         add(hintLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     

@@ -242,7 +242,8 @@ public final class ElementUtilities {
                 case DECLARED:
                     HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
                     Types types = JavacTypes.instance(ctx);
-                    for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
+                    TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+                    for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {
                             CharSequence name = member.getSimpleName();
                             ArrayList<Element> h = hiders.get(name);
@@ -254,6 +255,16 @@ public final class ElementUtilities {
                                 }
                                 h.add(member);
                             }
+                        }
+                    }
+                    if (te.getKind().isClass()) {
+                        VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
+                        if (acceptor == null || acceptor.accept(thisPseudoMember, type))
+                            members.add(thisPseudoMember);
+                        if (te.getSuperclass().getKind() == TypeKind.DECLARED) {
+                            VarSymbol superPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._super, (ClassType)te.getSuperclass(), (ClassSymbol)te);
+                            if (acceptor == null || acceptor.accept(superPseudoMember, type))
+                                members.add(superPseudoMember);
                         }
                     }
                 case BOOLEAN:
