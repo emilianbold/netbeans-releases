@@ -5,11 +5,6 @@
     <Component class="javax.swing.ButtonGroup" name="patternButtons">
     </Component>
   </NonVisualComponents>
-  <Properties>
-    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_JSFPagesAndClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-    </Property>
-  </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_Select_Pattern" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
