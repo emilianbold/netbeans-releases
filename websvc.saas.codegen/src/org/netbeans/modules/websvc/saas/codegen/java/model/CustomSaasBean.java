@@ -89,6 +89,8 @@ public class CustomSaasBean extends SaasBean {
         if(m.getHref() != null)
             setResourceClassTemplate(m.getHref());
         
+        findAuthentication(m);
+        
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
             Output out = m.getOutput();
