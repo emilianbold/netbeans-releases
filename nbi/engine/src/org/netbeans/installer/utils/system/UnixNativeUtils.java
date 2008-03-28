@@ -173,7 +173,14 @@ public abstract class UnixNativeUtils extends NativeUtils {
         if (XDG_DATA_DIRS == null) {
             allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
         } else {
-            allUsersLocation = new File(XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0]);
+            // Workaround for Issue 131194 : 
+            // Cannot install nb 6.1beta in ubuntu with xubuntu session
+            // http://www.netbeans.org/issues/show_bug.cgi?id=131194
+            String firstPath = XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0];
+            if(firstPath.startsWith("etc/xdg/")) {
+                firstPath = File.separator + firstPath;
+            }
+            allUsersLocation = new File(firstPath);
         }
         
         LogManager.log(
