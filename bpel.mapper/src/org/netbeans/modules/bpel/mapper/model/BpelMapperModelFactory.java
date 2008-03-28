@@ -76,7 +76,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 
 /**
- * Implementaiton of the MapperModelFactory for the BPEL mapper.
+ * Implementation of the MapperModelFactory for the BPEL mapper.
  * 
  * @author nk160297
  */
@@ -140,7 +140,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
                     new PartnerLinkTreeExtModel(assign, true);
-            //sourceModel.addExtensionModel(pLinkExtModel);   [Issue 125124]
+            sourceModel.addExtensionModel(pLinkExtModel);
             //
             EmptyTreeModel targetModel = new EmptyTreeModel();
             VariableTreeModel targetVariableModel = 
