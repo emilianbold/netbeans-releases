@@ -548,12 +548,14 @@ public class PHPCodeCompletion implements Completable {
         
         @Override public String getLhsHtml() {
             HtmlFormatter formatter = request.formatter;
+            String typeName = constant.getTypeName();
             formatter.reset();
-            if (constant.getTypeName() != null) {
-                formatter.type(true);
-                formatter.appendText(constant.getTypeName());
-                formatter.type(false);
+            if (typeName == null) {
+                typeName = "?";
             }
+            formatter.type(true);
+            formatter.appendText(typeName);
+            formatter.type(false);
             formatter.appendText(" ");
             formatter.name(getKind(), true);
             formatter.appendText(getName());
