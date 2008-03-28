@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -356,6 +357,24 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (dis != null) {
             return dis.getLineAddress(idx);
         } else {
+            return "";
+        }
+    }
+    
+    public String getNextAddress(String address) {
+        //TODO : can use binary search
+        synchronized (lines) {
+            for (Iterator<Line> iter = lines.iterator(); iter.hasNext();) {
+                Line line = iter.next();
+                if (line.address.equals(address)) {
+                    // Fix for IZ:131372 (Step Over doesn't work in Disasm)
+                    // return next address only for call instructions
+                    if (line.instruction.startsWith("call") && iter.hasNext()) { // NOI18N
+                        return iter.next().address;
+                    }
+                    return "";
+                }
+            }
             return "";
         }
     }

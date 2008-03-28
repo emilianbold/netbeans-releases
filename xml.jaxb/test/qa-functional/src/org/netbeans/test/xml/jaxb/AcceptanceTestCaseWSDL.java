@@ -96,7 +96,7 @@ public class AcceptanceTestCaseWSDL extends AcceptanceTestCase {
         "OpenSchemaFile", // <--
         "RefreshSchemaFile", // <--
         "RegenerateJavaCode", // <--
-        //"CodeCompletion1", // <--
+        "CodeCompletion1", // <--
         "CodeCompletion2", // <--
         "RunTheProject"
     };
@@ -349,7 +349,7 @@ public class AcceptanceTestCaseWSDL extends AcceptanceTestCase {
     public void CodeCompletion2( ) {
         startTest();
 
-        CodeCompletion2Internal( );
+        CodeCompletion2Internal( JAXB_PACKAGE_NAME );
 
         endTest();
     }
