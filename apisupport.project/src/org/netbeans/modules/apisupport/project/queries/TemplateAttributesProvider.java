@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -68,11 +69,12 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
         if (license == null && netBeansOrg) {
             license = "cddl-netbeans-sun"; // NOI18N
         }
-        if (license == null) {
-            return null;
-        } else {
-            return Collections.singletonMap("project", Collections.singletonMap("license", license)); // NOI18N
+        Map<String, String> values = new HashMap<String, String>();
+        if (license != null) {
+            values.put("license", license); // NOI18N
         }
+        values.put("encoding", "UTF-8"); // NOI18N
+        return Collections.singletonMap("project", values); // NOI18N
     }
 
 }

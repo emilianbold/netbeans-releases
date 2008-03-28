@@ -176,7 +176,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         ProjectConfigurationProvider lpcp = pcp;
         if (ppcp != null) {
             lpcp = ppcp;
-        }
+        } 
         LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
         if (lpcp != null && cfg != null && !cfg.equals(getActiveConfiguration(lpcp))) {
             try {
@@ -282,7 +282,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                     JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(config.getDisplayName(), config.equals(activeConfig));
                     jmi.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            activeConfigurationSelected(config, pcp);
+                            activeConfigurationSelected(config, findPCP());
                         }
                     });
                     add(jmi);

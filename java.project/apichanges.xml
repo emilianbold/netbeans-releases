@@ -106,6 +106,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="use-uri-for-relative-paths">
+            <api name="general"/>
+            <summary>Support for adding/removing relative classpath entries</summary>
+            <version major="1" minor="16"/>
+            <date day="27" month="3" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>Allow to add/remove relative classpath entries.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
+            <class package="org.netbeans.api.java.project.classpath" name="ProjectClassPathModifier"/>
+            <issue number="129628"/>
+        </change>        
         <change id="ant-project-libraries">
             <api name="general"/>
             <summary>Support for project-specific libraries</summary>

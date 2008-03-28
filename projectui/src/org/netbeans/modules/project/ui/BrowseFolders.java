@@ -107,7 +107,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         expandSelection( preselectedFileName );
         //expandAllNodes( btv, manager.getRootContext() );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );      
-        jLabel1.setLabelFor(btv);
+        jLabel1.setLabelFor(btv.getViewport().getView());
     }
         
     // ExplorerManager.Provider implementation ---------------------------------

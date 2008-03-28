@@ -79,6 +79,10 @@ public final class Palette {
   }
 
   public JPanel getPanel() {
+    return getPanel(true);
+  }
+  
+  public JPanel getPanel(boolean hasLeftButton) {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.weighty = 0.0;
@@ -88,22 +92,24 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
-    // vlv: print
-    JButton button = createPrintPreviewButton();
+    if (hasLeftButton) {
+      // vlv: print
+      JButton button = createPrintPreviewButton();
 
-    if (button != null) {
+      if (button != null) {
+        c.weightx = 0.0;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, 0, 0, TINY_INSET);
+        panel.add(button, c);
+      }
+      // vlv: expand / collapse
       c.weightx = 0.0;
       c.anchor = GridBagConstraints.EAST;
       c.fill = GridBagConstraints.NONE;
-      c.insets = new Insets(0, 0, 0, TINY_INSET);
-      panel.add(button, c);
+      c.insets = new Insets(0, 0, 0, 0);
+      panel.add(createCollapseExpandAllButton(), c);
     }
-    c.weightx = 0.0;
-    c.anchor = GridBagConstraints.EAST;
-    c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(0, 0, 0, 0);
-    panel.add(createCollapseExpandAllButton(), c);
-
     panel.setBorder(new Border());
     panel.setOpaque(true);
     panel.addMouseMotionListener(new MouseMotionAdapter() {});
@@ -148,7 +154,7 @@ public final class Palette {
 
   private JButton createPrintPreviewButton() {
     Action action = Lookup.getDefault().lookup(Action.class);
-
+    
     if (action == null) {
       return null;
     }

@@ -40,18 +40,43 @@ import java.util.regex.Pattern;
 import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
+import org.jruby.ext.posix.util.Platform;
 import org.jruby.runtime.Constants;
 import org.jruby.runtime.load.Library;
 import org.jruby.util.NormalizedFile;
 
 public class RbConfigLibrary implements Library {
-    /** This is a map from Java's "friendly" OS names to those used by Ruby */
-    public static final Map<String, String> OS_NAMES = new HashMap();
+    // Ruby's designation for some platforms, minus version numbers in some cases
+    private static final String RUBY_DARWIN = "darwin";
+    private static final String RUBY_LINUX = "linux";
+    private static final String RUBY_WIN32 = "mswin32";
+    private static final String RUBY_SOLARIS = "solaris";
+    private static final String RUBY_FREEBSD = "freebsd";
+    private static final String RUBY_AIX = "aix";
     
+    /** This is a map from Java's "friendly" OS names to those used by Ruby */
+    public static final Map<String, String> RUBY_OS_NAMES = new HashMap<String, String>();
     static {
-        OS_NAMES.put("Mac OS X", "darwin");
-        OS_NAMES.put("Darwin", "darwin");
-        OS_NAMES.put("Linux", "linux");
+        RUBY_OS_NAMES.put("Mac OS X", RUBY_DARWIN);
+        RUBY_OS_NAMES.put("Darwin", RUBY_DARWIN);
+        RUBY_OS_NAMES.put("Linux", RUBY_LINUX);
+        RUBY_OS_NAMES.put("Windows 95", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows 98", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows Me", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows NT", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows XP", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows 2003", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows Vista", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Solaris", RUBY_SOLARIS);
+        RUBY_OS_NAMES.put("FreeBSD", RUBY_FREEBSD);
+        RUBY_OS_NAMES.put("AIX", RUBY_AIX);
+    }
+    
+    public static String getOSName() {
+        String OSName = Platform.getOSName();
+        String theOSName = RUBY_OS_NAMES.get(OSName);
+        
+        return theOSName == null ? OSName : theOSName;
     }
     /**
      * Just enough configuration settings (most don't make sense in Java) to run the rubytests
@@ -77,26 +102,22 @@ public class RbConfigLibrary implements Library {
         if (Ruby.isSecurityRestricted()) {
             normalizedHome = "SECURITY RESTRICTED";
         } else {
-            normalizedHome = new NormalizedFile(runtime.getJRubyHome()).getAbsolutePath();
+            normalizedHome = runtime.getJRubyHome();
         }
-        setConfig(configHash, "bindir", new NormalizedFile(normalizedHome, "bin").getAbsolutePath());
-        setConfig(configHash, "RUBY_INSTALL_NAME", jruby_script());
-        setConfig(configHash, "ruby_install_name", jruby_script());
-        setConfig(configHash, "SHELL", jruby_shell());
+        setConfig(configHash, "bindir", new NormalizedFile(normalizedHome, "bin").getPath());
+        setConfig(configHash, "RUBY_INSTALL_NAME", jrubyScript());
+        setConfig(configHash, "ruby_install_name", jrubyScript());
+        setConfig(configHash, "SHELL", jrubyShell());
         setConfig(configHash, "prefix", normalizedHome);
         setConfig(configHash, "exec_prefix", normalizedHome);
 
-        String osName = OS_NAMES.get(System.getProperty("os.name"));
-        if (osName == null) {
-            osName = System.getProperty("os.name");
-        }
-        setConfig(configHash, "host_os", osName);
+        setConfig(configHash, "host_os", Platform.getOSName());
         setConfig(configHash, "host_vendor", System.getProperty("java.vendor"));
-        setConfig(configHash, "host_cpu", System.getProperty("os.arch"));
+        setConfig(configHash, "host_cpu", Platform.ARCH);
         
-        setConfig(configHash, "target_os", osName);
+        setConfig(configHash, "target_os", Platform.getOSName());
         
-        setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
+        setConfig(configHash, "target_cpu", Platform.ARCH);
         
         String jrubyJarFile = "jruby.jar";
         // BEGIN NETBEANS MODIFICATIONS
@@ -122,7 +143,7 @@ public class RbConfigLibrary implements Library {
         
         String libdir = System.getProperty("jruby.lib");
         if (libdir == null) {
-            libdir = new NormalizedFile(normalizedHome, "lib").getAbsolutePath();
+            libdir = new NormalizedFile(normalizedHome, "lib").getPath();
         } else {
             try {
             // Our shell scripts pass in non-canonicalized paths, but even if we didn't
@@ -135,19 +156,19 @@ public class RbConfigLibrary implements Library {
         }
 
         setConfig(configHash, "libdir", libdir);
-        setConfig(configHash, "rubylibdir",     new NormalizedFile(libdir, "ruby/1.8").getAbsolutePath());
-        setConfig(configHash, "sitedir",        new NormalizedFile(libdir, "ruby/site_ruby").getAbsolutePath());
-        setConfig(configHash, "sitelibdir",     new NormalizedFile(libdir, "ruby/site_ruby/1.8").getAbsolutePath());
-        setConfig(configHash, "sitearchdir",    new NormalizedFile(libdir, "ruby/site_ruby/1.8/java").getAbsolutePath());
-        setConfig(configHash, "archdir",    new NormalizedFile(libdir, "ruby/site_ruby/1.8/java").getAbsolutePath());
+        setConfig(configHash, "rubylibdir",     new NormalizedFile(libdir, "ruby/1.8").getPath());
+        setConfig(configHash, "sitedir",        new NormalizedFile(libdir, "ruby/site_ruby").getPath());
+        setConfig(configHash, "sitelibdir",     new NormalizedFile(libdir, "ruby/site_ruby/1.8").getPath());
+        setConfig(configHash, "sitearchdir",    new NormalizedFile(libdir, "ruby/site_ruby/1.8/java").getPath());
+        setConfig(configHash, "archdir",    new NormalizedFile(libdir, "ruby/site_ruby/1.8/java").getPath());
         setConfig(configHash, "configure_args", "");
-        setConfig(configHash, "datadir", new NormalizedFile(normalizedHome, "share").getAbsolutePath());
-        setConfig(configHash, "mandir", new NormalizedFile(normalizedHome, "man").getAbsolutePath());
-        setConfig(configHash, "sysconfdir", new NormalizedFile(normalizedHome, "etc").getAbsolutePath());
-        setConfig(configHash, "localstatedir", new NormalizedFile(normalizedHome, "var").getAbsolutePath());
+        setConfig(configHash, "datadir", new NormalizedFile(normalizedHome, "share").getPath());
+        setConfig(configHash, "mandir", new NormalizedFile(normalizedHome, "man").getPath());
+        setConfig(configHash, "sysconfdir", new NormalizedFile(normalizedHome, "etc").getPath());
+        setConfig(configHash, "localstatedir", new NormalizedFile(normalizedHome, "var").getPath());
         setConfig(configHash, "DLEXT", "jar");
 
-        if (isWindows()) {
+        if (Platform.IS_WINDOWS) {
             setConfig(configHash, "EXEEXT", ".exe");
         } else {
             setConfig(configHash, "EXEEXT", "");
@@ -156,18 +177,16 @@ public class RbConfigLibrary implements Library {
 
     private static void setConfig(RubyHash configHash, String key, String value) {
         Ruby runtime = configHash.getRuntime();
-        configHash.op_aset(runtime.newString(key), runtime.newString(value));
+        configHash.op_aset(runtime.getCurrentContext(), runtime.newString(key), runtime.newString(value));
     }
 
-    private static boolean isWindows() {
-        return System.getProperty("os.name", "").startsWith("Windows");
+    public static String jrubyScript() {
+        return System.getProperty("jruby.script", Platform.IS_WINDOWS ? "jruby.bat" : "jruby").replace('\\', '/');
     }
 
-    private String jruby_script() {
-        return System.getProperty("jruby.script", isWindows() ? "jruby.bat" : "jruby").replace('\\', '/');
+    // TODO: note lack of command.com support for Win 9x...
+    public static String jrubyShell() {
+        return System.getProperty("jruby.shell", Platform.IS_WINDOWS ? "cmd.exe" : "/bin/sh").replace('\\', '/');
     }
 
-    private String jruby_shell() {
-        return System.getProperty("jruby.shell", isWindows() ? "cmd.exe" : "/bin/sh").replace('\\', '/');
-    }
 }
