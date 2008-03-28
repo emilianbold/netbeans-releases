@@ -142,7 +142,7 @@ public class CasaWrapperModel extends CasaModel {
     public static final String PROPERTY_SERVICE_UNIT_RENAMED = PROPERTY_PREFIX + "service_unit_renamed";    // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_ADDED = PROPERTY_PREFIX + "service_unit_added";   // NOI18N
     public static final String PROPERTY_SERVICE_ENGINE_SERVICE_UNIT_REMOVED = PROPERTY_PREFIX + "service_unit_removed"; // NOI18N
-    private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
+    private static final String COMPAPP_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String JBI_SOURCE_DIR = "jbiasa";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
@@ -1439,7 +1439,7 @@ public class CasaWrapperModel extends CasaModel {
 
     private String getRelativePathForCompAppWSDL() {
         String compAppWSDLFileName = getCompAppWSDLFileName();
-        return CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
+        return COMPAPP_WSDL_RELATIVE_LOCATION + compAppWSDLFileName;
     }
 
     private String getPortHref(String relativePath, String serviceName, String portName) {
@@ -1458,7 +1458,7 @@ public class CasaWrapperModel extends CasaModel {
         if (jbiProject != null) {
             return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
         } else {
-            return null;
+            return "casa.wsdl"; // NOI18N
         }
     }
 
@@ -2630,7 +2630,7 @@ public class CasaWrapperModel extends CasaModel {
         FileObject casaFO = lookup.lookup(FileObject.class);
         URI uri = null;
         try {
-            uri = new URI(CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName);
+            uri = new URI(getRelativePathForCompAppWSDL());
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
