@@ -740,8 +740,17 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.IF_ID:
                             case CCTokenContext.WHILE_ID:
                             case CCTokenContext.ELSE_ID:
+                            case CCTokenContext.TRY_ID:
+                            case CCTokenContext.ASM_ID:
+                            case CCTokenContext.CATCH_ID:
                                 indent = getTokenIndent(stmt);
                                 if (isHalfIndentNewlineBeforeBrace()){
+                                    indent += getShiftWidth()/2;
+                                }
+                                break;
+                            case CCTokenContext.SWITCH_ID:
+                                indent = getTokenIndent(stmt);
+                                if (isHalfIndentNewlineBeforeBraceSwitch()){
                                     indent += getShiftWidth()/2;
                                 }
                                 break;
