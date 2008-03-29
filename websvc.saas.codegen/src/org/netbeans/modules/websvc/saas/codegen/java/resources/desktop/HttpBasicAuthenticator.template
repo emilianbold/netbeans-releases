@@ -63,7 +63,7 @@ public class __NAME__ extends Authenticator {
         
     private static boolean isValidUsernamePassword() {
         return (username != null && username.length() > 0 &&
-                password != null || password.length() > 0);
+                password != null && password.length() > 0);
     }
 
     private __NAME__() {
