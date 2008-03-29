@@ -74,8 +74,6 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.Co
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
-import org.w3c.dom.Attr;
-import org.w3c.dom.NamedNodeMap;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -172,9 +170,9 @@ public class CompletionUtil {
     public static List<String> getPrefixesAgainstTargetNamespace(
             CompletionContextImpl context, String namespace) {
         List<String> list = new ArrayList<String>();
-        NamedNodeMap attributes = context.getDocRootAttributes();
-        for(int index=0; index<attributes.getLength(); index++) {
-            Attr attr = (Attr)attributes.item(index);
+        List<DocRootAttribute> attributes = context.getDocRootAttributes();
+        for(int index=0; index<attributes.size(); index++) {
+            DocRootAttribute attr = attributes.get(index);
             if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
                 continue;
             if(attr.getValue().equals(namespace)) {
@@ -569,5 +567,101 @@ public class CompletionUtil {
         }
         return false;
     }
+    
+    /**
+     * Finds the namespace insertion offset in the xml document.
+     */
+    public static int getNamespaceInsertionOffset(Document document) {
+        int offset = 0;
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence ts = th.tokenSequence();
+        while(ts.moveNext()) {
+            Token nextToken = ts.token();
+            if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
+               offset = nextToken.offset(th);
+            }
+        }
+        
+        return offset;
+    }
+    
+    
+    /**
+     * Finds the root element of the xml document. It also populates the
+     * attributes for the root element.
+     */
+    public static DocRoot getDocRoot(Document document) {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence ts = th.tokenSequence();
+        List<DocRootAttribute> attributes = new ArrayList<DocRootAttribute>();
+        String name = null;
+        while(ts.moveNext()) {
+            Token nextToken = ts.token();
+            if(nextToken.id() == XMLTokenId.TAG) {
+                String tagName = nextToken.text().toString();
+                if(name == null && tagName.startsWith("<"))
+                    name = tagName.substring(1, tagName.length());
+                String lastAttrName = null;
+                while(ts.moveNext() ) {
+                    Token t = ts.token();
+                    if(t.id() == XMLTokenId.TAG && t.text().toString().equals(">"))
+                        break;
+                    if(t.id() == XMLTokenId.ARGUMENT) {
+                        lastAttrName = t.text().toString();
+                    }
+                    if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
+                        String value = t.text().toString();
+                        if(value.startsWith("'") || value.startsWith("\""))
+                            value = value.substring(1, value.length()-1);                        
+                        attributes.add(new DocRootAttribute(lastAttrName, value));
+                        lastAttrName = null;
+                    }
+                }
+            }
+        }
+        return new DocRoot(name, attributes);
+    }
+    
+    public static class DocRoot {
+        private String name;
+        private List<DocRootAttribute> attributes;
+        
+        DocRoot(String name, List<DocRootAttribute> attributes) {
+            this.name = name;
+            this.attributes = new ArrayList(attributes);
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public List<DocRootAttribute> getAttributes() {
+            return attributes;
+        }        
+    }
+    
+    public static class DocRootAttribute {
+        private String name;
+        private String value;
+        
+        DocRootAttribute(String name, String value) {
+            this.name = name;            
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+        
+        @Override
+        public String toString() {
+            return name+"="+value;
+        }
+    }
+    
     
 }

@@ -207,7 +207,10 @@ public class WadlSaasBean extends SaasBean {
         findRepresentationType(response, repTypes);
         return repTypes;
     }
-    
+  
+    public static List<RepresentationType> findInputRepresentations(WadlSaasMethod m) {
+        return m.getWadlMethod().getRequest().getRepresentation();
+    }
     
     public String getUrl() {
         return this.url;
@@ -231,6 +234,23 @@ public class WadlSaasBean extends SaasBean {
         }
     }
 
+    public static void findMediaType(Request request, List<String> mimeTypes) {
+        if(request == null)
+            return;
+        List<RepresentationType> reps = request.getRepresentation();
+        for (RepresentationType rep : reps) {
+            String mediaType = rep.getMediaType();
+            if(mediaType == null)
+                continue;
+            String[] mTypes = mediaType.split(",");
+            for(String m: mTypes) {
+                if (m != null && !mimeTypes.contains(m)) {
+                    mimeTypes.add(m);
+                }
+            }
+        }
+    }
+    
     public static void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {
