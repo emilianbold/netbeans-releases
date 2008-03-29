@@ -957,6 +957,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 return token(HTMLTokenId.BLOCK_COMMENT);
                 
             case ISI_TAG:
+                lexerState = ISP_TAG_X;
+                //test if the tagname is SCRIPT
+                if(SCRIPT.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                    lexerEmbeddingState = ISI_SCRIPT;
+                }
+                if(STYLE.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                    lexerEmbeddingState = ISI_STYLE;
+                }
                 return token(HTMLTokenId.TAG_OPEN);
             case ISI_ENDTAG:
                 return token(HTMLTokenId.TAG_CLOSE);

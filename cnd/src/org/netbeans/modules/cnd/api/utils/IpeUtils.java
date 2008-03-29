@@ -860,5 +860,16 @@ public class IpeUtils {
         }
         return false;
     }
+    
+    public static boolean isDbxguiEnabled() {
+        Iterator iter = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+        while (iter.hasNext()) {
+            ModuleInfo info = (ModuleInfo) iter.next();
+            if (info.getCodeNameBase().indexOf("dbxgui") >= 0 && info.isEnabled()) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

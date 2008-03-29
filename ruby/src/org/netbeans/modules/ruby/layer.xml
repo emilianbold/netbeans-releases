@@ -129,14 +129,6 @@
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">
-                <!-- Is this attribute unused? -->
-                <attr name="displayName" stringvalue="Ruby"/>
-                
-                <!-- Used by index scanner to identify relevant files -->
-                <folder name="extensions">
-                    <file name="rb"/>
-                </folder>
-                
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyLanguage"/>

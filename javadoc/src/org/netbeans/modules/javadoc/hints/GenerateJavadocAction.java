@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -116,6 +117,10 @@ public final class GenerateJavadocAction extends TextAction {
         }
         
         final Descriptor desc = new Descriptor();
+        FileObject file = js.getFileObjects().iterator().next();
+        SourceVersion sv = Analyzer.resolveSourceVersion(file);
+        final JavadocGenerator gen = new JavadocGenerator(sv);
+        gen.updateSettings(file);
         
         js.runUserActionTask(new Task<CompilationController>() {
 
@@ -166,9 +171,6 @@ public final class GenerateJavadocAction extends TextAction {
                 if (kind != Kind.COMPILATION_UNIT && !Analyzer.hasErrors(leaf) && Access.PRIVATE.isAccessible(javac, tp, true)) {
                     Element el = javac.getTrees().getElement(tp);
                     if (el != null) {
-                        // better move outside the javac task?
-                        SourceVersion sv = Analyzer.resolveSourceVersion(javac.getFileObject());
-                        JavadocGenerator gen = new JavadocGenerator(sv);
                         desc.javadoc = gen.generateComment(el, javac);
                     }
                 }

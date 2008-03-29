@@ -77,7 +77,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,11 +85,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -111,6 +108,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -681,6 +679,15 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             typeUsed(decl, expr);
         }
         
+        private void handleJavadoc(Element classMember) {
+            if (classMember == null) {
+                return;
+            }
+            for (Element el : JavadocImports.computeReferencedElements(info, classMember)) {
+                typeUsed(el, null);
+            }
+        }
+        
         private void addUse(Element decl, Collection<UseTypes> useTypes, TreePath t, Collection<ColoringAttributes> c) {
             List<Use> uses = type2Uses.get(decl);
             
@@ -861,6 +868,8 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             EnumSet<UseTypes> paramsUseTypes;
             
             Element el = info.getTrees().getElement(getCurrentPath());
+            
+            handleJavadoc(el);
             
             if (el != null && (el.getModifiers().contains(Modifier.ABSTRACT) || el.getModifiers().contains(Modifier.NATIVE) || !el.getModifiers().contains(Modifier.PRIVATE))) {
                 paramsUseTypes = EnumSet.of(UseTypes.WRITE, UseTypes.READ);
@@ -1043,18 +1052,21 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             
             Collection<UseTypes> uses = null;
             
+            Element e = info.getTrees().getElement(getCurrentPath());
             if (tree.getInitializer() != null) {
                 uses = EnumSet.of(UseTypes.DECLARATION, UseTypes.WRITE);
                 if (tree.getInitializer().getKind() == Kind.IDENTIFIER)
                     handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getInitializer()), EnumSet.of(UseTypes.READ));
             } else {
-                Element e = info.getTrees().getElement(getCurrentPath());
-                
                 if (e != null && e.getKind() == ElementKind.FIELD) {
                     uses = EnumSet.of(UseTypes.DECLARATION, UseTypes.WRITE);
                 } else {
                     uses = EnumSet.of(UseTypes.DECLARATION);
                 }
+            }
+            
+            if (e != null && e.getKind().isField()) {
+                handleJavadoc(e);
             }
             
             if (d != null) {
@@ -1202,6 +1214,9 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             
             handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
+            Element el = info.getTrees().getElement(getCurrentPath());
+            handleJavadoc(el);
+            
             scan(tree.getModifiers(), null);
             
 //            System.err.println("tree.getModifiers()=" + tree.getModifiers());
@@ -1334,7 +1349,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         }
         
         private void typeUsed(Element decl, TreePath expr) {
-            if (decl != null && (expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
+            if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
                 ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString());
 
                 if (imp != null) {

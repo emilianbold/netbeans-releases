@@ -133,6 +133,10 @@ public class SourceAnalyser implements IndexDocumentFactory {
         return new IndexDocumentImpl(initialPairs);
     }
 
+    public IndexDocument createDocument(int initialPairs, String overrideUrl) {
+        return new IndexDocumentImpl(initialPairs, overrideUrl);
+    }
+    
     @Override
     public String toString() {
         return "SourceAnalyzer(" + this.index.toString().substring(this.index.toString().indexOf("@")+1) + ")";

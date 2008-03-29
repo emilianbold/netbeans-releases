@@ -24,6 +24,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 
 /**
@@ -85,7 +86,6 @@ public interface XPathModel extends XPathSchemaContextHolder {
      * the first thread.
      */ 
     void resolveExtReferences(boolean again);
-    
     
     /**
      * This method does almost the same as the resolveExtReferences but 
@@ -159,6 +159,8 @@ public interface XPathModel extends XPathSchemaContextHolder {
     ExtensionFunctionResolver getExtensionFunctionResolver();
     
     void setExtensionFunctionResolver(ExtensionFunctionResolver extFuncResolver);
+
+    void setXPathCastResolver(XPathCastResolver xpathCastResolver);
         
     SchemaComponent getLastSchemaComponent();
 }

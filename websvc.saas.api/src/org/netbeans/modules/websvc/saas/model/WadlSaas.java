@@ -234,7 +234,8 @@ public class WadlSaas extends Saas {
         jaxbJars = new ArrayList<FileObject>();
         jaxbSourceJars = new ArrayList<FileObject>();
         for (FileObject xsdFile : getLocalSchemaFiles()) {
-            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName());
+            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName() + "." + 
+                    SaasUtil.toValidJavaName(xsdFile.getName()).toLowerCase());
             if (! xjCompiler.compile()) {
                 return false;
             }
@@ -271,16 +272,17 @@ public class WadlSaas extends Saas {
         return schemaFiles;
     }
 
+    @Override
     public List<FileObject> getLibraryJars() {
         List<FileObject> result = new ArrayList(super.getLibraryJars());
         if (jaxbJars == null) {
             try {
                 compileSchemas();
-                result.addAll(jaxbJars);
             } catch(IOException ex) {
                 ex.printStackTrace();
             }
         }
+        result.addAll(jaxbJars);
         return result;
     }
     

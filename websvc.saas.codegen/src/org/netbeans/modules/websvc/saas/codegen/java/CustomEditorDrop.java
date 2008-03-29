@@ -50,6 +50,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.CustomSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.openide.DialogDescriptor;
@@ -114,19 +115,15 @@ public class CustomEditorDrop implements ActiveEditorDrop {
                     CustomCodeGenerator codegen = codegen = 
                         CustomCodeGeneratorFactory.create(targetComponent, targetFO, method);
                     if(codegen == null) {//No action for DnD
-                        String message = NbBundle.getMessage(CustomEditorDrop.class, 
-                                "WARN_UnsupportedDropTarget", new Object[] {targetFO.getNameExt(), "REST Resource"}); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
+                        Util.showUnsupportedDropMessage(new Object[] {
+                            targetFO.getNameExt(), "REST Resource"});
                         return;
                     }
                 
                     CustomSaasBean bean = codegen.getBean();
                     boolean showParams = codegen.canShowParam();
-                    List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams && bean.getInputParameters() != null) {
-                        allParams.addAll(bean.getInputParameters());
-                    }
+                    List<ParameterInfo> allParams = bean.filterParametersByAuth(
+                            bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
                     if(codegen.canShowResourceInfo() || (showParams && !allParams.isEmpty())) {
                         CustomCodeSetupPanel panel = new CustomCodeSetupPanel(
                                 codegen.getSubresourceLocatorUriTemplate(),

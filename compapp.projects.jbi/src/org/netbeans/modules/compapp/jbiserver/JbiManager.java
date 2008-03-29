@@ -235,6 +235,16 @@ public class JbiManager {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            
+            // Wait some additional time for the JBI framework to get ready.
+            // This is trying to make sure when the app server is started 
+            // on demand when deploying a CompApp project, the state of the   
+            // old SA on the JBI runtime is correct. (#131236)
+            try {
+                Thread.sleep(5000); 
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     

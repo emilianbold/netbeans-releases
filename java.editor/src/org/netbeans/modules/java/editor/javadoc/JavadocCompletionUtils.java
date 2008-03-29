@@ -45,6 +45,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -72,6 +74,8 @@ final class JavadocCompletionUtils {
     static final Pattern JAVADOC_LINE_BREAK = Pattern.compile("\\n[ \\t]*\\*?[ \\t]*\\z"); // NOI18N
     static final Pattern JAVADOC_LINE_INDENT = Pattern.compile("\\A[ \\t]*\\*.*"); // NOI18N
     static final Pattern JAVADOC_WHITE_SPACE = Pattern.compile("[^ \\t]"); // NOI18N
+    private static Set<JavaTokenId> IGNORE_TOKES = EnumSet.of(
+            JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT);
     
     /**
      * Checks if the offset is part of some javadoc block. The javadoc content
@@ -108,8 +112,8 @@ final class JavadocCompletionUtils {
     }
     
     public static Doc findJavadoc(CompilationInfo javac, Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -117,7 +121,7 @@ final class JavadocCompletionUtils {
 
         while (ts.moveNext()) {
             TokenId tid = ts.token().id();
-            if (tid != JavaTokenId.WHITESPACE && tid != JavaTokenId.LINE_COMMENT && tid != JavaTokenId.BLOCK_COMMENT) {
+            if (!IGNORE_TOKES.contains(tid)) {
                 offsetBehindJavadoc = ts.offset();
                 // it is magic for TreeUtilities.pathFor
                 ++offsetBehindJavadoc;
@@ -151,9 +155,9 @@ final class JavadocCompletionUtils {
         return el != null? javac.getElementUtilities().javaDocFor(el): null;
     }
     
-    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (!movedToJavadocToken(ts, offset)) {
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
             return null;
         }
         
@@ -164,6 +168,40 @@ final class JavadocCompletionUtils {
         
         jdts.move(offset);
         return jdts;
+    }
+    
+    /**
+     * Finds javadoc token sequence.
+     * @param javac compilation info
+     * @param e element for which the tokens are queried
+     * @return javadoc token sequence or null.
+     */
+    static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
+        if (e == null || javac.getElementUtilities().isSynthetic(e))
+            return null;
+        
+        Tree tree = javac.getTrees().getTree(e);
+        if (tree == null)
+            return null;
+        
+        int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
+        TokenSequence<JavaTokenId> s = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), elementStartOffset);
+        if (s == null) {
+            return null;
+        }
+        s.move(elementStartOffset);
+        Token<JavaTokenId> token = null;
+        while (s.movePrevious()) {
+            token = s.token();
+            if (!IGNORE_TOKES.contains(token.id())) {
+                break;
+            }
+        }
+        if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
+            return null;
+        }
+        
+        return s.embedded(JavadocTokenId.language());
     }
 
     static boolean isInsideIndent(Token<JavadocTokenId> token, int offset) {

@@ -46,8 +46,6 @@ made subject to such option by the copyright holder.
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-jsp">
-                <attr name="displayName" stringvalue="JSP"/>
-                
                 <!-- use custom editor kit -->
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 
@@ -118,10 +116,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
                 </file>
-                <folder name="extensions">
-                    <file name="rhtml"/>
-                    <file name="erb"/>
-                </folder>
                 -->
             </folder>
             

@@ -60,7 +60,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +70,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -122,11 +120,13 @@ import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.AnnotationInfo;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.TypeInfo;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -149,7 +149,8 @@ public class JSFClientGenerator {
         }
         
         Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
-        String pkgName = controllerClass.substring(0, controllerClass.lastIndexOf('.'));
+        int lastIndexOfDotInControllerClass = controllerClass.lastIndexOf('.');
+        String pkgName = lastIndexOfDotInControllerClass == -1 ? "" : controllerClass.substring(0, lastIndexOfDotInControllerClass);
         
         String persistenceUnit = null;
         PersistenceScope persistenceScopes[] = PersistenceUtils.getPersistenceScopes(project);
@@ -164,10 +165,22 @@ public class JSFClientGenerator {
             }
         }
         SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-        final FileObject jsfRoot = FileUtil.createFolder(sgWeb[0].getRootFolder(), jsfFolder);
+        FileObject pagesRootFolder = sgWeb[0].getRootFolder();
+        int jsfFolderNameAttemptIndex = 1;
+        while (pagesRootFolder.getFileObject(jsfFolder) != null && jsfFolderNameAttemptIndex < 1000) {
+            jsfFolder += "_" + jsfFolderNameAttemptIndex++;
+        }
+        final FileObject jsfRoot = FileUtil.createFolder(pagesRootFolder, jsfFolder);
         
-        String simpleConverterName = simpleEntityName + "Converter"; //NOI18N
-        String converterName = pkgName + "." + simpleConverterName;
+        int lastIndexOfController = controllerClass.lastIndexOf("Controller");
+        String controllerSuffix = controllerClass.substring(lastIndexOfController);
+        String converterSuffix = controllerSuffix.replace("Controller", "Converter");
+        String simpleConverterName = simpleEntityName + converterSuffix; //NOI18N
+        int converterNameAttemptIndex = 1;
+        while (pkg.getFileObject(simpleConverterName, "java") != null && converterNameAttemptIndex < 1000) {
+            simpleConverterName += "_" + converterNameAttemptIndex++;
+        }
+        String converterName = ((pkgName == null || pkgName.length() == 0) ? "" : pkgName + ".") + simpleConverterName;
         final String fieldName = fieldFromClassName(simpleEntityName);
 
         final List<ElementHandle<ExecutableElement>> idGetter = new ArrayList<ElementHandle<ExecutableElement>>();
@@ -208,6 +221,14 @@ public class JSFClientGenerator {
             }
         }, true);
         
+        if (idGetter.size() < 1) {
+            String msg = entityClass + ": " + NbBundle.getMessage(JSFClientGenerator.class, "ERR_GenJsfPages_CouldNotFindIdProperty"); //NOI18N
+            if (fieldAccess[0]) {
+                msg += " " + NbBundle.getMessage(JSFClientGenerator.class, "ERR_GenJsfPages_EnsureSimpleIdNaming"); //NOI18N
+            }
+            throw new IOException(msg);
+        }
+        
         if (arrEntityClassFO[0] != null) {
             addImplementsClause(arrEntityClassFO[0], entityClass, "java.io.Serializable"); //NOI18N
         }
@@ -223,7 +244,15 @@ public class JSFClientGenerator {
             wme.extend(wm);
         }
         
-        controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
+        if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
+            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream("org/netbeans/modules/web/jsf/resources/" + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
+            Charset encoding = FileEncodingQuery.getDefaultEncoding();
+            content = content.replaceAll("__ENCODING__", encoding.name());
+            FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
+            JSFFrameworkProvider.createFile(target, content, encoding.name());  //NOI18N
+        }
+        
+        controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerClass, simpleConverterName, 
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport);
         
         final String managedBean =  getManagedBeanName(simpleEntityName);
@@ -259,18 +288,15 @@ public class JSFClientGenerator {
 
     private static String addLinkToListJspIntoIndexJsp(WebModule wm, String jsfFolder, String simpleEntityName) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
-        FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
-        String indexjspString = INDEX_PAGE;
-        String find = "<title>JSP Page</title>"; // NOI18N
-        if (indexjsp == null) {
-            indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
-            indexjspString = "faces/" + WELCOME_JSF_PAGE;
-            find = "<h1><h:outputText value=\"JavaServer Faces\" /></h1>"; //NOI18N
-        }
-        if (indexjsp != null){
+        
+        FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
+        String indexjspString = "faces/" + WELCOME_JSF_PAGE;
+        String find = "<h1><h:outputText value=\"JavaServer Faces\" /></h1>"; //NOI18N
+        
+        if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
             String endLine = System.getProperty("line.separator"); //NOI18N
-            if ( content.indexOf(find) > 0){
+            if ( content.indexOf(find) > -1){
                 StringBuffer replace = new StringBuffer();
                 String findForm = "<h:form>";
                 boolean needsForm = content.indexOf(findForm) == -1;
@@ -280,13 +306,18 @@ public class JSFClientGenerator {
                 }
                 replace.append(find);
                 replace.append(endLine);
-                replace.append("    <br/>");                        //NOI18N
-                replace.append(endLine);
+                StringBuffer replaceCrux = new StringBuffer();
+                replaceCrux.append("    <br/>");                        //NOI18N
+                replaceCrux.append(endLine);
                 String managedBeanName = getManagedBeanName(simpleEntityName);
-                replace.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
-                replace.append("Show All " + simpleEntityName + " Items");
-                replace.append("\"/>");
-                replace.append(endLine);
+                replaceCrux.append("<h:commandLink action=\"#{" + managedBeanName + ".listSetup}\" value=\"");
+                replaceCrux.append("Show All " + simpleEntityName + " Items");
+                replaceCrux.append("\"/>");
+                replaceCrux.append(endLine);
+                if (content.indexOf(replaceCrux.toString()) > -1) {
+                    return indexjspString;
+                }
+                replace.append(replaceCrux);
                 if (needsForm) {
                     replace.append("</h:form>");
                     replace.append(endLine);
@@ -303,7 +334,7 @@ public class JSFClientGenerator {
             final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
-        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -322,7 +353,7 @@ public class JSFClientGenerator {
                 + "&nbsp;\n"
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.itemCount - {0}.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.lastItem < {0}.itemCount && {0}.lastItem + {0}.batchSize > {0}.itemCount'}'\"/>\n", managedBean));
-        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n");
+        listSb.append("<h:dataTable value='#{" + managedBean + "." + fieldName + "s}' var='item' border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_oddrow,jsfcrud_evenrow\" rules=\"all\" style=\"border:solid 1px\">\n");
         final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
                 + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'" + managedBean + ".asString[{0}]'}'\"/>\n"               
@@ -365,7 +396,7 @@ public class JSFClientGenerator {
                 FileObject list = FileUtil.createData(jsfRoot, "List.jsp");//NOI18N
                 FileLock lock = list.lock();
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(list.getOutputStream(lock)));
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(list.getOutputStream(lock), encoding));
                     bw.write(listText);
                     bw.close();
                 }
@@ -379,7 +410,7 @@ public class JSFClientGenerator {
     private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
-        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -417,7 +448,7 @@ public class JSFClientGenerator {
                 FileObject newForm = FileUtil.createData(jsfRoot, "New.jsp");//NOI18N
                 FileLock lock = newForm.lock();
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(newForm.getOutputStream(lock)));
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(newForm.getOutputStream(lock), encoding));
                     bw.write(newText);
                     bw.close();
                 }
@@ -431,7 +462,7 @@ public class JSFClientGenerator {
     private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
             String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
-        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -475,7 +506,7 @@ public class JSFClientGenerator {
                 FileObject editForm = FileUtil.createData(jsfRoot, "Edit.jsp");//NOI18N
                 FileLock lock = editForm.lock();
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(editForm.getOutputStream(lock)));
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(editForm.getOutputStream(lock), encoding));
                     bw.write(editText);
                     bw.close();
                 }
@@ -489,7 +520,7 @@ public class JSFClientGenerator {
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
             String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
-        Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -537,7 +568,7 @@ public class JSFClientGenerator {
                 FileObject detailForm = FileUtil.createData(jsfRoot, "Detail.jsp");//NOI18N
                 FileLock lock = detailForm.lock();
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(detailForm.getOutputStream(lock)));
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(detailForm.getOutputStream(lock), encoding));
                     bw.write(detailText);
                     bw.close();
                 }
@@ -559,44 +590,87 @@ public class JSFClientGenerator {
                 model = ConfigurationUtils.getConfigModel(fo, true);
                 model.startTransaction();
                 FacesConfig config = model.getRootComponent();
-                ManagedBean mb = model.getFactory().createManagedBean();
+                
+                ManagedBean mb = null;
+                List<ManagedBean> managedBeans = config.getManagedBeans();
+                for (ManagedBean existingManagedBean : managedBeans) {
+                    if (managedBean.equals(existingManagedBean.getManagedBeanName())) {
+                        mb = existingManagedBean;
+                        break;
+                    }
+                }
+                boolean mbIsNew = false;
+                if (mb == null) {
+                    mb = model.getFactory().createManagedBean();
+                    mbIsNew = true;
+                }
                 mb.setManagedBeanName(managedBean);
                 mb.setManagedBeanClass(controllerClass);
                 mb.setManagedBeanScope(ManagedBean.Scope.SESSION);
-                config.addManagedBean(mb);
+                if (mbIsNew) {
+                    config.addManagedBean(mb);
+                }
 
-                Converter cv = model.getFactory().createConverter();
+                Converter cv = null;
+                List<Converter> converters = config.getConverters();
+                for (Converter existingConverter : converters) {
+                    if (entityClass.equals(existingConverter.getConverterForClass())) {
+                        cv = existingConverter;
+                        break;
+                    }
+                }
+                boolean cvIsNew = false;
+                if (cv == null) {
+                    cv = model.getFactory().createConverter();
+                    cvIsNew = true;
+                }
                 cv.setConverterForClass(entityClass);
                 cv.setConverterClass(converterName);
-                config.addConverter(cv);
-                                
-                NavigationRule nr = model.getFactory().createNavigationRule();
-                NavigationCase nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_create");
-                nc.setToViewId("/" + jsfFolder + "/New.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
+                if (cvIsNew) {
+                    config.addConverter(cv);
+                }
+                
+                String[] fromOutcomes = {
+                    fieldName + "_create", 
+                    fieldName + "_list", 
+                    fieldName + "_edit",
+                    fieldName + "_detail"
+                };
+                String[] toViewIds = {
+                    "/" + jsfFolder + "/New.jsp", 
+                    "/" + jsfFolder + "/List.jsp",  
+                    "/" + jsfFolder + "/Edit.jsp", 
+                    "/" + jsfFolder + "/Detail.jsp", 
+                };
+                
+                for (int i = 0; i < fromOutcomes.length; i++) {
+                    NavigationRule nr = null;
+                    NavigationCase nc = null;
+                    List<NavigationRule> navigationRules = config.getNavigationRules();
+                    for (NavigationRule existingNavigationRule : navigationRules) {
+                        List<NavigationCase> navigationCases = existingNavigationRule.getNavigationCases();
+                        for (NavigationCase existingNavigationCase : navigationCases) {
+                            if ( fromOutcomes[i].equals(existingNavigationCase.getFromOutcome()) ) {
+                                nr = existingNavigationRule;
+                                nc = existingNavigationCase;
+                                break;
+                            }
+                        }
+                    }
+                    boolean nrIsNew = false;
+                    if (nr == null) {
+                        nr = model.getFactory().createNavigationRule();
+                        nc = model.getFactory().createNavigationCase();
+                        nrIsNew = true;
+                    }
 
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_list");
-                nc.setToViewId("/" + jsfFolder + "/List.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
-
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_edit");
-                nc.setToViewId("/" + jsfFolder + "/Edit.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
-
-                nr = model.getFactory().createNavigationRule();
-                nc = model.getFactory().createNavigationCase();
-                nc.setFromOutcome(fieldName + "_detail");
-                nc.setToViewId("/" + jsfFolder + "/Detail.jsp");
-                nr.addNavigationCase(nc);
-                config.addNavigationRule(nr);
+                    nc.setFromOutcome(fromOutcomes[i]);
+                    nc.setToViewId(toViewIds[i]);
+                    if (nrIsNew) {
+                        nr.addNavigationCase(nc);
+                        config.addNavigationRule(nr);
+                    }
+                }
             }
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
@@ -818,7 +892,8 @@ public class JSFClientGenerator {
             final FileObject pkg, 
             final ElementHandle<ExecutableElement> idGetter, 
             final String persistenceUnit, 
-            final String simpleControllerName, 
+            final String controllerClass,
+            final String simpleConverterName,
             final String entityClass, 
             final String simpleEntityName,
             final List<ElementHandle<ExecutableElement>> toOneRelMethods,
@@ -926,6 +1001,7 @@ public class JSFClientGenerator {
                     StringBuffer illegalOrphansInCreate = new StringBuffer();
                     StringBuffer illegalOrphansInEdit = new StringBuffer();
                     StringBuffer illegalOrphansInDestroy = new StringBuffer();
+                    StringBuffer initCollectionsInCreate = new StringBuffer();  //useful in case user removes listbox from New.jsp
 
                     List<ElementHandle<ExecutableElement>> allRelMethods = new ArrayList<ElementHandle<ExecutableElement>>(toOneRelMethods);
                     allRelMethods.addAll(toManyRelMethods);
@@ -967,13 +1043,20 @@ public class JSFClientGenerator {
                             String relFieldName = getPropNameFromMethod(mName);
                             String otherFieldName = getPropNameFromMethod(otherName);
                             
-                            boolean columnNullable = JsfForm.isColumnNullable(workingCopy, m, isFieldAccess);
-                            boolean relColumnNullable = JsfForm.isColumnNullable(workingCopy, otherSide, isFieldAccess);
+                            boolean columnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
+                            boolean relColumnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
                             
                             String relFieldToAttach = relFieldName + relTypeReference + "ToAttach";
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
                             
+                            if (!isCollection && !controllerClass.equals(entityClass + "Controller")) {
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
+                            }
+                            
                             if (isCollection) {
+                                initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n" +
+                                        "}\n");
                                 String refOrMergeString = "em.merge(" + relFieldToAttach + ");\n";
                                 ExecutableElement relIdGetterElement = JsfForm.getIdGetter(workingCopy, isFieldAccess, relClass);
                                 if (relIdGetterElement != null) {
@@ -1248,7 +1331,7 @@ public class JSFClientGenerator {
                     
                     bodyText = "reset(false);\n" +
                             fieldName + " = new " + simpleEntityName + "();\n" + 
-                            (embeddable[0] && idClass != null ? fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" : "") +
+                            (embeddable[0] ? fieldName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" : "") +
                             "return \"" + fieldName + "_create\";";
                     methodInfo = new MethodInfo("createSetup", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
@@ -1270,7 +1353,7 @@ public class JSFClientGenerator {
                     
                     TypeElement entityType = workingCopy.getElements().getTypeElement(entityClass);
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
-                    if (embeddable[0] && idClass != null) {
+                    if (embeddable[0]) {
                         for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(workingCopy, entityType)) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(workingCopy, entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
@@ -1279,12 +1362,21 @@ public class JSFClientGenerator {
                         }
                     }
 
-                    bodyText = codeToPopulatePkFields.toString() +
+                    boolean isGenerated = JsfForm.isGenerated(workingCopy, idGetterElement, isFieldAccess);
+                    bodyText = initCollectionsInCreate.toString() +
+                            codeToPopulatePkFields.toString() +
                             illegalOrphansInCreate.toString() +
                             "EntityManager em = getEntityManager();\n" + 
                             "try {\n " + BEGIN + "\n " + initRelatedInCreate.toString() + "em.persist(" + fieldName + ");\n" + updateRelatedInCreate.toString() + COMMIT + "\n" +   //NOI18N
                             "addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
+                            "} catch (Exception ex) {\n try {\n" +
+                            (isGenerated ? "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" : 
+                            "if (find" + simpleEntityName + "(" + fieldName + "." + idGetterName[0] + "()) != null) {\n" +
+                            "addErrorMessage(\"" + simpleEntityName + " \" + " + fieldName + " + \" already exists.\");\n" +
+                            "} else {\n" +
+                            "ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + 
+                            "}\n") +
+                            ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
                             "}\nreturn null;\n} " +   //NOI18N
                             "finally {\n em.close();\n }\n" + 
                             "return listSetup();";
@@ -1327,7 +1419,7 @@ public class JSFClientGenerator {
                     }                    
                     
                     bodyText = codeToPopulatePkFields.toString() + 
-                            simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                            simpleConverterName + " converter = new " + simpleConverterName + "();\n" +
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "String " + currentEntityStringVar + " = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                             "if " + entityStringVar + " == null || " + entityStringVar + ".length() == 0 || !" + entityStringVar + ".equals(" + currentEntityStringVar + ")) {\n" +
@@ -1390,7 +1482,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
 
                     bodyText = "String theId = getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
-                            "return (" + simpleEntityName + ")new " + simpleEntityName + "Converter().getAsObject(FacesContext.getCurrentInstance(), null, theId);";
+                            "return (" + simpleEntityName + ")new " + simpleConverterName + "().getAsObject(FacesContext.getCurrentInstance(), null, theId);";
                     methodInfo = new MethodInfo(getFromReqParamMethod, privateModifier, entityClass, null, null, null, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
                     
@@ -1534,7 +1626,7 @@ public class JSFClientGenerator {
                             "asString = new HashMap<" + simpleEntityName + ",String>() {" +
                             "@Override\n" +
                             "public String get(Object key) {\n" +
-                            "return new " + simpleEntityName + "Converter().getAsString(FacesContext.getCurrentInstance(), null, (" + simpleEntityName + ")key);\n" +
+                            "return new " + simpleConverterName + "().getAsString(FacesContext.getCurrentInstance(), null, (" + simpleEntityName + ")key);\n" +
                             "}\n" +
                             "};\n" +
                             "}\n" +
@@ -1543,7 +1635,7 @@ public class JSFClientGenerator {
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);    
 
                     String newEntityStringInit;
-                    if (embeddable[0] && idClass != null) {
+                    if (embeddable[0]) {
                         newEntityStringInit = simpleEntityName + " new" + simpleEntityName + " = new " + simpleEntityName + "();\n" +
                                 "new" + simpleEntityName + ".s" + idGetterName[0].substring(1) + "(new " + idClass.getSimpleName() + "());\n" + 
                                 "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new" + simpleEntityName + ");\n";
@@ -1551,7 +1643,7 @@ public class JSFClientGenerator {
                     else {
                         newEntityStringInit = "String " + newEntityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, new " + simpleEntityName + "());\n";
                     }
-                    bodyText = simpleEntityName + "Converter converter = new " + simpleEntityName + "Converter();\n" +
+                    bodyText = simpleConverterName + " converter = new " + simpleConverterName + "();\n" +
                             newEntityStringInit +
                             "String " + entityStringVar + " = converter.getAsString(FacesContext.getCurrentInstance(), null, " + fieldName + ");\n" +
                             "if (!" + newEntityStringVar + ".equals(" + entityStringVar + ")) {\n" +

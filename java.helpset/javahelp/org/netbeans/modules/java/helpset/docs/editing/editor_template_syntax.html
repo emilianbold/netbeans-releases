@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
- *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
  *     Use is subject to license terms.
  *
 -->
@@ -42,30 +42,30 @@ Syntax for parameter definition is as follows:
 
 <p>Some parameter names are reserved by the code template infrastructure:
 
-<ul><p><li><tt>${cursor}</tt> defines the position where
+<ul><li><tt>${cursor}</tt> defines the position where
 the caret will be located after the editing of the code template values finishes.
 
-<p><li><tt>${selection}</tt> defines the position for pasting the content of 
+<li><tt>${selection}</tt> defines the position for pasting the content of 
 the editor selection, which is used by the 'selection templates'
 that appear as hints whenever the user selects text in the editor.</ul>
 
 <p>Similarly, some of the hint names are reserved by the code template infrastructure:
 
 <ul>
-    <p><li><tt>${param_name default="value"}</tt> defines the parameter's default value.
-<p><li><tt>${param_name editable=false}</tt> can be used to disable user's editing of the parameter.
-<p><li><tt>${param_name instanceof="java.util.Collection"}</tt> requires the parameter value to be an instance of the given type.
-<p><li><tt>${param_name array}</tt> requires the parameter value to be of an array type (including arrays of primitive data types).
-<p><li><tt>${param_name iterable}</tt> requires the parameter value to be of an array type or an instance of "java.lang.Iterable". Can
+    <li><tt>${param_name default="value"}</tt> defines the parameter's default value.
+<li><tt>${param_name editable=false}</tt> can be used to disable user's editing of the parameter.
+<li><tt>${param_name instanceof="java.util.Collection"}</tt> requires the parameter value to be an instance of the given type.
+<li><tt>${param_name array}</tt> requires the parameter value to be of an array type (including arrays of primitive data types).
+<li><tt>${param_name iterable}</tt> requires the parameter value to be of an array type or an instance of "java.lang.Iterable". Can
 be used in 'for-each' cycles.
-<p><li><tt>${param type="java.util.Iterator"}</tt> requires the parameter value to be the given type. The infrastructure will try to use
+<li><tt>${param type="java.util.Iterator"}</tt> requires the parameter value to be the given type. The infrastructure will try to use
 short name Iterator and import java.util.Iterator if possible.
-<p><li><tt>${param_name iterableElementType}</tt> requires the parameter value to be the type of the iterable element. Can be used in
+<li><tt>${param_name iterableElementType}</tt> requires the parameter value to be the type of the iterable element. Can be used in
 'for-each' cycles.
-<p><li><tt>${param_name leftSideType}</tt> requires the parameter value to be the type of the expression on the assignment's left side.
-<p><li><tt>${param_name rightSideType}</tt> requires the parameter value to be the type of the expression on the assignment's right side.
-<p><li><tt>${param_name cast}</tt> defines that the parameter value would be a type cast if necessary.
-<p><li><tt>${param_name newVarName}</tt> defines that the parameter value should be a 'fresh' unused variable name in the given context.
+<li><tt>${param_name leftSideType}</tt> requires the parameter value to be the type of the expression on the assignment's left side.
+<li><tt>${param_name rightSideType}</tt> requires the parameter value to be the type of the expression on the assignment's right side.
+<li><tt>${param_name cast}</tt> defines that the parameter value would be a type cast if necessary.
+<li><tt>${param_name newVarName}</tt> defines that the parameter value should be a 'fresh' unused variable name in the given context.
 </ul>
         <hr>
         

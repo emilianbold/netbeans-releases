@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -64,8 +65,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -96,10 +95,10 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         public WsNodeList(Project proj) {
             project = proj;
             changeSupport = new ChangeSupport(this);
-            view = ProjectWebServiceView.getProjectWebServiceView(project);
         }
 
         public List<ProjectWebServiceView.ViewType> keys() {
+            initView();
             List<ProjectWebServiceView.ViewType> result = new ArrayList<ProjectWebServiceView.ViewType>();
                 if (!view.isViewEmpty(ProjectWebServiceView.ViewType.SERVICE)) {
                     result.add(ProjectWebServiceView.ViewType.SERVICE);
@@ -126,13 +125,13 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             switch (key) {
                 case SERVICE:
                     if (serviceNode == null) {
-                        serviceNode = new WSRootNode(new Children(key), createLookup(project));
+                        serviceNode = new WSRootNode(new Children(key), createLookup(project, new WsPrivilegedTemplates()));
                         serviceNode.setDisplayName(NbBundle.getBundle(ProjectWebServiceNodeFactory.class).getString("LBL_WebServices"));
                     }
                     return serviceNode;
                 case CLIENT:
                     if (clientNode == null) {
-                        clientNode = new WSRootNode(new Children(key), createLookup(project));
+                        clientNode = new WSRootNode(new Children(key), createLookup(project, new WsClientPrivilegedTemplates()));
                         clientNode.setDisplayName(NbBundle.getBundle(ProjectWebServiceNodeFactory.class).getString("LBL_ServiceReferences"));
                     }
                     return clientNode;
@@ -175,11 +174,12 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         }
 
         private void initView() {
-            view = ProjectWebServiceView.getProjectWebServiceView(project);
+            if(view==null)
+                view = ProjectWebServiceView.getProjectWebServiceView(project);
         }
 
-        private static Lookup createLookup(Project project) {
-            return Lookups.fixed(new Object[]{project, project.getProjectDirectory()});
+        private Lookup createLookup(Project project, PrivilegedTemplates privilegedTemplates) {
+            return Lookups.fixed(new Object[]{project, privilegedTemplates});
         }
 
         private class Children extends org.openide.nodes.Children.Keys<ProjectWebServiceViewImpl> {
@@ -212,17 +212,6 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                 setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
             }
 
-            private void updateKeys() {
-                if (!isInitialized()) {
-                    return;
-                }
-                if (view != null && !view.isViewEmpty(viewType) ) {
-                    setKeys(view.getWebServiceViews());
-                } else {
-                    setKeys(Collections.<ProjectWebServiceViewImpl>emptyList());
-                }
-            }
-            
             private void updateKey (ProjectWebServiceViewImpl view) {
                 if (!isInitialized()) {
                     return;
@@ -297,6 +286,28 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
             Image image = ((ImageIcon) icon).getImage();
             image = Utilities.mergeImages(image, getServicesImage(), 7, 7);
             return image;
+        }
+    }
+    
+    private static class WsPrivilegedTemplates implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/WebServices/WebService.java",    // NOI18N
+                "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
+                "Templates/WebServices/MessageHandler.java", // NOI18N
+                "Templates/WebServices/LogicalHandler.java" // NOI18N
+            };
+        }
+    }
+    private static class WsClientPrivilegedTemplates implements PrivilegedTemplates {
+
+        public String[] getPrivilegedTemplates() {
+            return new String[] {
+                "Templates/WebServices/WebServiceClient", // NOI18N
+                "Templates/WebServices/MessageHandler.java", // NOI18N
+                "Templates/WebServices/LogicalHandler.java" // NOI18N
+            };
         }
     }
 }

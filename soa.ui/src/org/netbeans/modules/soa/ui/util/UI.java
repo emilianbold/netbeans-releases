@@ -360,6 +360,15 @@ public final class UI {
     }
   }
 
+  public static double getDouble(String value) {
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return -1.0;
+    }
+  }
+
   public static int round(double value) {
     return (int) Math.ceil(value);
   }
@@ -791,9 +800,9 @@ public final class UI {
 
   private static Stack<Long> ourTimes = new Stack<Long>();
 
-  public static final int TINY_INSET = 2;
-  public static final int SMALL_INSET = 8;
-  public static final int MEDIUM_INSET = 13;
+  public static final int TINY_INSET = 2; // the 3-rd Fibonacci number
+  public static final int SMALL_INSET = 8; // the 6-th Fibonacci number
+  public static final int MEDIUM_INSET = 13; // the 7-th Fibonacci number
 
   private static final double MILLIS = 1000.0;
   private static final Dimension BUTTON_SIZE = new Dimension(24, 24);

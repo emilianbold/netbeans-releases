@@ -71,12 +71,11 @@ public class ColumnNodeTest extends TestBase {
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
         ConnectionManager.getDefault().addConnection(dbconn);
 
-        ColumnNode columnNode = new ColumnNode();
         ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
         connNodeInfo.setDatabaseConnection(ConnectionList.getDefault().getConnections()[0]);
         DatabaseNodeInfo tableNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.TABLE);
         DatabaseNodeInfo columnNodeInfo = DatabaseNodeInfo.createNodeInfo(tableNodeInfo, DatabaseNode.COLUMN);
-        columnNode.setInfo(columnNodeInfo);
+        ColumnNode columnNode = new ColumnNode(columnNodeInfo);
 
         assertTrue(columnNode.canCopy());
 

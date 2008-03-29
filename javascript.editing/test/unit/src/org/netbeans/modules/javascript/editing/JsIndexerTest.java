@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 /**
  * @author Tor Norbye
@@ -129,8 +130,15 @@ public class JsIndexerTest extends JsTestBase {
         if (documents != null) {
             for (IndexDocument d : documents) {
                 IndexDocumentImpl doc = (IndexDocumentImpl)d;
-
+                
                 sb = new StringBuilder();
+
+                if (doc.overrideUrl != null) {
+                    sb.append("Override URL: ");
+                    sb.append(doc.overrideUrl);
+                    sb.append("\n");
+                }
+                
                 sb.append("Indexed:");
                 sb.append("\n");
                 List<String> strings = new ArrayList<String>();
@@ -209,9 +217,11 @@ public class JsIndexerTest extends JsTestBase {
         private List<String> indexedValues = new ArrayList<String>();
         private List<String> unindexedKeys = new ArrayList<String>();
         private List<String> unindexedValues = new ArrayList<String>();
+        private String overrideUrl;
 
-        IndexDocumentImpl(Index index) {
+        IndexDocumentImpl(Index index, String overrideUrl) {
             this.index = index;
+            this.overrideUrl = overrideUrl;
         }
         
         public void addPair(String key, String value, boolean indexed) {
@@ -232,7 +242,11 @@ public class JsIndexerTest extends JsTestBase {
         }
 
         public IndexDocument createDocument(int initialPairs) {
-            return new IndexDocumentImpl(index);
+            return new IndexDocumentImpl(index, null);
+        }
+
+        public IndexDocument createDocument(int initialPairs, String overrideUrl) {
+            return new IndexDocumentImpl(index, overrideUrl);
         }
     }
     
@@ -242,7 +256,7 @@ public class JsIndexerTest extends JsTestBase {
 
         JsIndexer indexer = new JsIndexer();
         JsIndex.setClusterUrl("file:/bogus"); // No translation
-        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        IndexDocumentFactory factory = new IndexDocumentFactoryImpl(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         List<IndexDocument> result = indexer.index(rpr, factory);
         
         return result;
@@ -293,7 +307,7 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testIndex3() throws Exception {
-        checkIndexer("testfiles/dojo.js.uncompressed.js");
+        checkIndexer("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testSimple() throws Exception {
@@ -385,7 +399,7 @@ public class JsIndexerTest extends JsTestBase {
     }
 
     public void testRestore7() throws Exception {
-        List<IndexDocument> docs = indexFile("testfiles/dojo.js.uncompressed.js");
+        List<IndexDocument> docs = indexFile("testfiles/orig-dojo.js.uncompressed.js");
         JsIndex index = JsIndex.get(((IndexDocumentImpl)docs.get(0)).index);
         IndexedElement element = findElement(docs, JsIndexer.FIELD_FQN, "dojo.deferred", index);
         assertNotNull(element);
@@ -440,5 +454,29 @@ public class JsIndexerTest extends JsTestBase {
 
     public void testReturnTypes() throws Exception {
         checkIndexer("testfiles/returntypes.js");
+    }
+
+    public void testScriptDoc() throws Exception {
+        checkIndexer("testfiles/jquery.sdoc");
+    }
+
+    public void testScriptDoc2() throws Exception {
+        checkIndexer("testfiles/yui.sdoc");
+    }
+
+    public void testTwoNames() throws Exception {
+        checkIndexer("testfiles/two-names.js");
+    }
+
+    public void testWoodStock() throws Exception {
+        checkIndexer("testfiles/woodstock.sdoc");
+    }
+
+    public void testWoodStock2() throws Exception {
+        checkIndexer("testfiles/woodstock2.js");
+    }
+
+    public void testWoodStock3() throws Exception {
+        checkIndexer("testfiles/woodstock-body.js");
     }
 }

@@ -78,6 +78,10 @@ public final class Palette {
     myIsCollapsed = true;
   }
 
+//  public JPanel getPanel() {
+//    return getPanel(true);
+//  }
+  
   public JPanel getPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -88,22 +92,24 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
-    // vlv: print
-    JButton button = createPrintPreviewButton();
-
-    if (button != null) {
-      c.weightx = 0.0;
-      c.anchor = GridBagConstraints.EAST;
-      c.fill = GridBagConstraints.NONE;
-      c.insets = new Insets(0, 0, 0, TINY_INSET);
-      panel.add(button, c);
-    }
-    c.weightx = 0.0;
-    c.anchor = GridBagConstraints.EAST;
-    c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(0, 0, 0, 0);
-    panel.add(createCollapseExpandAllButton(), c);
-
+//    if (hasLeftButton) {
+//      // vlv: print
+//      JButton button = createPrintPreviewButton();
+//
+//      if (button != null) {
+//        c.weightx = 0.0;
+//        c.anchor = GridBagConstraints.EAST;
+//        c.fill = GridBagConstraints.NONE;
+//        c.insets = new Insets(0, 0, 0, TINY_INSET);
+//        panel.add(button, c);
+//      }
+//      // vlv: expand / collapse
+//      c.weightx = 0.0;
+//      c.anchor = GridBagConstraints.EAST;
+//      c.fill = GridBagConstraints.NONE;
+//      c.insets = new Insets(0, 0, 0, 0);
+//      panel.add(createCollapseExpandAllButton(), c);
+//    }
     panel.setBorder(new Border());
     panel.setOpaque(true);
     panel.addMouseMotionListener(new MouseMotionAdapter() {});
@@ -111,7 +117,7 @@ public final class Palette {
     return panel;
   }
 
-  private JMenuBar createMenuBar() {
+  public JMenuBar createMenuBar() {
     myBar = new JMenuBar();
     myBar.setBorder(BorderFactory.createEmptyBorder());
 
@@ -122,7 +128,8 @@ public final class Palette {
     myBar.add(createNumberMenu());
     myBar.add(createDateTimeMenu());
     myBar.add(createBPELMenu());
-
+    myBar.setBorder(new Border());
+    
     return myBar;
   }
 
@@ -148,7 +155,7 @@ public final class Palette {
 
   private JButton createPrintPreviewButton() {
     Action action = Lookup.getDefault().lookup(Action.class);
-
+    
     if (action == null) {
       return null;
     }

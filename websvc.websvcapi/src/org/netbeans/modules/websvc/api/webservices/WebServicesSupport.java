@@ -50,9 +50,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /** WebServicesSupport should be used to manipulate a projects representation
  *  of a web service implementation.
@@ -171,4 +176,17 @@ public final class WebServicesSupport {
         impl.addServiceImpl(serviceName, configFile, fromWSDL,wscompileFeatures);
     }
     
+    public boolean isBroken(Project  project) {
+        return (getWebServicesSupport(project.getProjectDirectory()) == null && !getServices().isEmpty());
+    }
+    
+    public void showBrokenAlert(Project  project) {
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        String projectName = null;
+        if(pi !=null) projectName = pi.getDisplayName();
+        NotifyDescriptor alert = new NotifyDescriptor.Message(
+                NbBundle.getMessage(WebServicesSupport.class, 
+                "ERR_NoJaxrpcPluginFound", projectName), NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(alert);
+    }
 }

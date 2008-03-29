@@ -49,7 +49,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -61,6 +60,7 @@ import java.util.LinkedList;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -79,7 +79,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.Repository;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.util.Base64;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
@@ -249,7 +248,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      * used in 4.1 and previous to the SystemFileSystem.
      */
     public static void importOldConnections() {
-        Vector dbconns = RootNode.getOption().getConnections();
+        Vector dbconns = RootNodeInfo.getOption().getConnections();
         for (Iterator i = dbconns.iterator(); i.hasNext();) {
             try {
                 create((DatabaseConnection) i.next());

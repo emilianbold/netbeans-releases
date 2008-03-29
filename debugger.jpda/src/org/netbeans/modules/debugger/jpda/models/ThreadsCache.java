@@ -163,30 +163,46 @@ public class ThreadsCache implements Executor {
         }
         return groups;
     }
+    
+    private List<ThreadGroupReference> addGroups(ThreadGroupReference group) {
+        List<ThreadGroupReference> addedGroups = new ArrayList<ThreadGroupReference>();
+        ThreadGroupReference parent = group.parent();
+        if (groupMap.get(parent) == null) {
+            addedGroups.addAll(addGroups(parent));
+        }
+        List<ThreadGroupReference> parentsGroups = groupMap.get(parent);
+        if (!parentsGroups.contains(group)) {
+            parentsGroups.add(group);
+            addedGroups.add(group);
+            List<ThreadGroupReference> groups = new ArrayList();
+            List<ThreadReference> threads = new ArrayList();
+            groupMap.put(group, groups);
+            threadMap.put(group, threads);
+        }
+        return addedGroups;
+    }
 
     public boolean exec(Event event) {
         if (event instanceof ThreadStartEvent) {
             ThreadReference thread = ((ThreadStartEvent) event).thread();
             ThreadGroupReference group = thread.threadGroup();
-            ThreadGroupReference addedGroup = null;
+            List<ThreadGroupReference> addedGroups = null;
             synchronized (this) {
-                List<ThreadReference> threads = threadMap.get(group);
-                if (threads != null && !threads.contains(thread)) { // could be added by init()
-                    threads.add(thread);
-                }
                 if (group != null) {
-                    List<ThreadGroupReference> parentsGroups = groupMap.get(group.parent());
-                    if (!parentsGroups.contains(group)) {
-                        parentsGroups.add(group);
-                        addedGroup = group;
-                    }
+                    addedGroups = addGroups(group);
+                }
+                List<ThreadReference> threads = threadMap.get(group);
+                if (!threads.contains(thread)) { // could be added by init()
+                    threads.add(thread);
                 }
                 if (!allThreads.contains(thread)) { // could be added by init()
                     allThreads.add(thread);
                 }
             }
-            if (addedGroup != null) {
-                pcs.firePropertyChange(PROP_GROUP_ADDED, null, group);
+            if (addedGroups != null) {
+                for (ThreadGroupReference g : addedGroups) {
+                    pcs.firePropertyChange(PROP_GROUP_ADDED, null, g);
+                }
             }
             pcs.firePropertyChange(PROP_THREAD_STARTED, null, thread);
         }

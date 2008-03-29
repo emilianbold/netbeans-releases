@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
@@ -444,6 +445,10 @@ public class STSWizardCreator {
         
         FileObject ddFolder = jaxWsSupport.getDeploymentDescriptorFolder();
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml");
+        if(sunjaxwsFile == null){
+            WSUtils.generateSunJaxwsFile(ddFolder);
+            sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml");
+        }
         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
         Endpoint endpoint = endpoints.newEndpoint();
         endpoint.setEndpointName(MEX_NAME);

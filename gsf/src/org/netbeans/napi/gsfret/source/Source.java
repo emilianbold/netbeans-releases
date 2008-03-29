@@ -113,6 +113,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -853,6 +854,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 EmbeddingModel model = registry.getEmbedding(language.getMimeType(), mimeType);
                 assert language != null;
                 Parser parser = language.getParser(); // Todo - call createParserTask here?
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                 
                 if (parser != null) {
                     if (model != null) {
@@ -874,13 +880,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                             // TODO - log problem
                             continue;
                         }
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         
                         Collection<? extends TranslatedSource> translations = model.translate(document);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         for (TranslatedSource translatedSource : translations) {
                             String buffer = translatedSource.getSource();
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                             Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
                             parser.parseFiles(job);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                             ParserResult result = resultHolder[0];
                             result.setTranslatedSource(translatedSource);
                             assert result != null;
@@ -891,6 +912,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                         Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
                         parser.parseFiles(job);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         ParserResult result = resultHolder[0];
                         assert result != null;
                         currentInfo.addEmbeddingResult(language.getMimeType(), result);

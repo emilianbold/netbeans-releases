@@ -178,6 +178,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
+                <friend>org.netbeans.modules.impng</friend>
                 <package>org.netbeans.modules.mobility.cldcplatform</package>
                 <package>org.netbeans.modules.mobility.cldcplatform.wizard</package>
             </friend-packages>

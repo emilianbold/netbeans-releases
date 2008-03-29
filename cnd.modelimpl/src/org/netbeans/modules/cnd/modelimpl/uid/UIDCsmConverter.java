@@ -147,7 +147,7 @@ public class UIDCsmConverter {
     
     private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
-        return new LazyCsmCollection<T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
 //        List<T> out = new ArrayList<T>(uids.size());
 //        for (CsmUID<T> uid : uids) {
 //            assert uid != null;
