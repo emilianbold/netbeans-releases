@@ -171,6 +171,10 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
                         TokenUtilities.textEquals("@argument", text)) { // NOI18N
                     int index = ts.index();
                     String type = nextType(ts);
+                    if (type == null) {
+                        ts.moveIndex(index);
+                        ts.moveNext();
+                    }
                     String name = nextIdent(ts);
                     if (name != null) {
                         result.put(name, type);
