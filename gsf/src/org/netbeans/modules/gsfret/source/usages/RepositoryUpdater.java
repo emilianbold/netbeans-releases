@@ -1868,7 +1868,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         
                         if (handle != null && active != null) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber);
+    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber + ", file=" + active.getNameExt());
 }
                             if (fileCount > 0 && fileNumber <= fileCount) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {

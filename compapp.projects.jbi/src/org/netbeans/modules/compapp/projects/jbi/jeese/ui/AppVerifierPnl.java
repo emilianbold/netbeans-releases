@@ -6,9 +6,16 @@
 
 package org.netbeans.modules.compapp.projects.jbi.jeese.ui;
 
+import java.awt.Component;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.compapp.javaee.util.JavaEEVerifierReportItem;
 
@@ -20,7 +27,7 @@ public class AppVerifierPnl extends javax.swing.JPanel {
 
     static class ResultModel extends DefaultTableModel {
         private List<JavaEEVerifierReportItem> ris;
-        
+
         ResultModel(List<JavaEEVerifierReportItem> list){
             super(list.size(), 7);
             this.ris = list;
@@ -54,17 +61,53 @@ public class AppVerifierPnl extends javax.swing.JPanel {
                 case 5: ret = item.getReferencingClass(); break;
                 case 6: ret = item.getReferencingEjb(); break;
             }
-            
+
             return ret;
         }
-        
+
     }
-    
-    
+
+    public class CustColumnRenderer extends JLabel implements TableCellRenderer {
+        private TableCellRenderer delegate;
+        public CustColumnRenderer(TableCellRenderer dlg){
+            delegate = dlg;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
+            JComponent comp = (JComponent) delegate.getTableCellRendererComponent(table, value, isSelected, hasFocus, rowIndex, vColIndex);
+            if (value != null){
+                comp.setToolTipText(value.toString());
+            }
+
+            return comp;
+        }
+
+        // The following methods override the defaults for performance reasons
+        @Override
+        public void validate() {}
+        @Override
+        public void revalidate() {}
+        @Override
+        protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {}
+        @Override
+        public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
+    }
+
+
     /** Creates new form AppVerifierPnl */
     public AppVerifierPnl(List<JavaEEVerifierReportItem> ris) {
         this.ris = ris;
         initComponents();
+        TableColumnModel model = this.jTable1.getColumnModel();
+        int colCnt = model.getColumnCount();
+        CustColumnRenderer cust = new CustColumnRenderer(
+                this.jTable1.getDefaultRenderer(String.class));
+
+        for (int i =0; i < colCnt; i++){
+            TableColumn col = model.getColumn(i);
+            col.setCellRenderer(cust);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -112,7 +155,7 @@ public class AppVerifierPnl extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private List<JavaEEVerifierReportItem> ris = null;
-    
+
     TableModel getTableModel(){
         TableModel ret = new ResultModel(this.ris);
         return ret;

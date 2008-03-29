@@ -162,7 +162,7 @@ public class MemoryCache {
     
     public void printStatistics(String name) {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
-        System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", 
+        System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", // NOI18N
                 name, readCnt, readHitCnt, hitPercentage);
     }
     

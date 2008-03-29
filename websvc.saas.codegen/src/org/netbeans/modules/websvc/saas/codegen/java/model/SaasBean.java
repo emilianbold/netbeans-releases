@@ -136,6 +136,14 @@ public abstract class SaasBean extends GenericResourceBean {
                 SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
     }
     
+    public String getAuthenticatorClassName() {
+        return Util.getAuthenticatorClassName(getSaasName());
+    }
+    
+    public String getAuthorizationFrameClassName() {
+        return Util.getAuthorizationFrameClassName(getSaasName());
+    }
+    
     public boolean isDropTargetWeb() {
         return isDropTargetWeb;
     }
@@ -324,8 +332,10 @@ public abstract class SaasBean extends GenericResourceBean {
     public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2 == null) {
-            throw new IOException("Element saas-services/service-metadata/authentication " +
-                    "missing in saas service xml for: "+getName());
+            setAuthenticationType(SaasAuthenticationType.PLAIN);
+            return;
+            //throw new IOException("Element saas-services/service-metadata/authentication " +
+            //        "missing in saas service xml for: "+getName());
         }
         if(auth2.getHttpBasic() != null) {
             HttpBasic httpBasic = auth2.getHttpBasic();

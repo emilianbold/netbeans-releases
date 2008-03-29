@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.customizer;
 
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -102,10 +103,9 @@ public class PhpCustomizerProvider implements CustomizerProvider, ProjectWithHos
         }
         else {
             PhpProjectProperties uiProperties = new PhpProjectProperties(
-                    getProject());
+                    getProject(), null);
             // load PhpProjectProperties here to do it once inside 
             // 'ProjectManager.mutex().readAccess'
-            uiProperties.load();
             init( uiProperties );
 
             OptionListener listener = new OptionListener( uiProperties );
