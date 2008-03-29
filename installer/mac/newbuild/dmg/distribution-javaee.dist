@@ -228,7 +228,7 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>
-    <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webjavaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+    <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
     

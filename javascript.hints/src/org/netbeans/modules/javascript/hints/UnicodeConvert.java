@@ -29,6 +29,7 @@ package org.netbeans.modules.javascript.hints;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,14 +81,7 @@ public class UnicodeConvert implements AstRule {
     }
 
     public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        // XXX root
-//        integers.add(-1);
-//        integers.add(NodeTypes.LOCALASGNNODE);
-//        integers.add(NodeTypes.DEFNNODE);
-//        integers.add(NodeTypes.DEFSNODE);
-        integers.add(Token.STRING);
-        return integers;
+        return Collections.singleton(Token.STRING);
     }
     
     public void run(RuleContext context, List<Description> result) {
@@ -124,9 +118,10 @@ public class UnicodeConvert implements AstRule {
                 OffsetRange range = new OffsetRange(lexOffset, lexOffset+1);
                 List<Fix> fixList = new ArrayList<Fix>();
                 fixList.add(new ConvertFix(info, lexOffset, c));
-                    String displayName = getDisplayName();
-                    Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
-                    result.add(desc);
+                fixList.add(new MoreInfoFix("unicodeconvert")); // NOI18N
+                String displayName = getDisplayName();
+                Description desc = new Description(this, displayName, info.getFileObject(), range, fixList, 1500);
+                result.add(desc);
             }
         }
         

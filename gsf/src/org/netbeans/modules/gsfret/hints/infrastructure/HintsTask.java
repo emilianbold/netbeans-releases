@@ -62,6 +62,8 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception {
+        resume();
+        
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
 
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();

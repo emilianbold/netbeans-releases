@@ -387,6 +387,10 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
     }
     
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
+    
+    public static final String INDENT_2 = "             ";
+    
+    public static final String INDENT = "        ";
 
     protected String getJavaInvocationBody(WsdlOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 
@@ -394,7 +398,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
             String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
             String serviceFieldName, String printerName, String responseType) {
 
-        String invocationBody = "";
+        String invocationBody = INDENT_2;
         String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "" ;
         Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
         switch (operation.getOperationType()) {

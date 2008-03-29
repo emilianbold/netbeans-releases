@@ -99,15 +99,18 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
     
     @Override
     protected String getCustomMethodBody() throws IOException {
-        String methodBody = "";
+        String methodBody = INDENT + "try {\n";
         for (ParameterInfo param : bean.getQueryParameters()) {
             String name = param.getName();
-            methodBody += "        "+param.getType().getName()+" " + name + " = null;\n";
+            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = null;\n";
         }
         JaxwsOperationInfo[] operations = ((WsdlSaasBean) bean).getOperationInfos();
         for (JaxwsOperationInfo info : operations) {
             methodBody += getWSInvocationCode(info);
         }
+        methodBody += INDENT + "} catch (Exception ex) {\n";
+        methodBody += INDENT_2 + "ex.printStackTrace();\n";
+        methodBody += INDENT + "}\n";
         return methodBody;
     }
     
@@ -159,7 +162,7 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
                     callbackHandlerName = argumentTypeName;
                 }
                 String argumentName = outArguments.get(i).getName();
-                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + 
+                argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName + 
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
