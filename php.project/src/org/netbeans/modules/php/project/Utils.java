@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.providers.impl.absent.AbsentServerProvider;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -68,7 +69,7 @@ public final class Utils {
     }
 
     public static WebServerProvider getProvider(PhpProject project) {
-        String provider = project.getEvaluator().getProperty(PhpProject.PROVIDER_ID);
+        String provider = project.getEvaluator().getProperty(PhpProjectProperties.PROVIDER_ID);
         if (provider == null) {
             // TODO realize fake provider that will return commands but will 
             // suggest to setup real server

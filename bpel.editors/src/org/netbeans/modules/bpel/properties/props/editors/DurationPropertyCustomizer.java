@@ -35,6 +35,7 @@ import org.netbeans.modules.soa.ui.form.ValidablePropertyCustomizer;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.editors.FormBundle;
+import org.netbeans.modules.soa.ui.form.RangeDoubleDocument;
 import org.netbeans.modules.soa.ui.form.RangeIntegerDocument;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
@@ -42,13 +43,13 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.bpel.properties.props.PropertyVetoError;
-import org.netbeans.modules.bpel.editors.api.utils.TimeEventUtil;
+import org.netbeans.modules.soa.ui.util.Duration;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 
 /**
- *
  * @author nk160297
  */
 public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
@@ -81,7 +82,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         fldDay.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldHour.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
         fldMinute.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
-        fldSecond.setDocument(new RangeIntegerDocument(0, Integer.MAX_VALUE));
+        fldSecond.setDocument(new RangeDoubleDocument(0.0, Double.MAX_VALUE));
         //
         ActionListener timerListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -132,8 +133,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     }
     
     @Override
-    public synchronized void init(
-            PropertyEnv propertyEnv, PropertyEditor propertyEditor) {
+    public synchronized void init(PropertyEnv propertyEnv, PropertyEditor propertyEditor) {
         assert propertyEnv != null && propertyEditor != null : "Wrong params"; // NOI18N
         //
         if (myPropertyEnv == propertyEnv) {
@@ -155,13 +155,6 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         //
         String value = propertyEditor.getAsText();
         //
-        if (value.startsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(1, value.length());
-        }
-        if (value.endsWith(TimeEventUtil.QUOTE)) {
-            value = value.substring(0, value.length() - 1);
-        }
-        //
         parseFor(value);
         revalidate(true);
         //
@@ -181,7 +174,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     public void propertyChange(PropertyChangeEvent event) {
         if (PropertyEnv.PROP_STATE.equals(event.getPropertyName()) &&
                 event.getNewValue() == PropertyEnv.STATE_VALID) {
-            String currText = TimeEventUtil.QUOTE + getContent() + TimeEventUtil.QUOTE;
+            String currText = DurationUtil.addQuotes(getContent());
             try {
                 myPropertyEditor.setAsText(currText);
             } catch (PropertyVetoError ex) {
@@ -192,63 +185,24 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     }
     
     private void parseFor(String text) {
-        String value = text;
-        
-        if (value.length() == 0 ||
-                value.charAt(0) != TimeEventUtil.P_DELIM.charAt(0)) {
-            fldYear.setText(TimeEventUtil.ZERO);
-            fldMonth.setText(TimeEventUtil.ZERO);
-            fldDay.setText(TimeEventUtil.ZERO);
-            fldHour.setText(TimeEventUtil.ZERO);
-            fldMinute.setText(TimeEventUtil.ZERO);
-            fldSecond.setText(TimeEventUtil.ZERO);
-            return;
-        }
-        value = value.substring(1, value.length());
-        value = parse(TimeEventUtil.Y_DELIM, value, fldYear);
-        value = parse(TimeEventUtil.M_DELIM, value, fldMonth);
-        value = parse(TimeEventUtil.D_DELIM, value, fldDay);
-        
-        if (value.length() == 0 ||
-                value.charAt(0) != TimeEventUtil.T_DELIM.charAt(0)) {
-            fldHour.setText(TimeEventUtil.ZERO);
-            fldMinute.setText(TimeEventUtil.ZERO);
-            fldSecond.setText(TimeEventUtil.ZERO);
-            return;
-        }
-        value = value.substring(1, value.length());
-        value = parse(TimeEventUtil.H_DELIM, value, fldHour);
-        value = parse(TimeEventUtil.M_DELIM, value, fldMinute);
-        value = parse(TimeEventUtil.S_DELIM, value, fldSecond);
-    }
-    
-    private String parse(String delim, String text, JTextField field) {
-        String value = text;
-        int k = value.indexOf(delim);
-        
-        if (k == -1) {
-            field.setText(TimeEventUtil.ZERO);
-        } else {
-            int n = TimeEventUtil.parseInt(value.substring(0, k));
-            
-            if (n < 0) {
-                field.setText(TimeEventUtil.ZERO);
-            } else {
-                field.setText(TimeEventUtil.EMPTY + n);
-            }
-            value = value.substring(k + 1, value.length());
-        }
-        return value;
+      Duration duration = DurationUtil.parseDuration(text, false);
+//System.out.println("set duration: " + duration);
+      fldYear.setText("" + duration.getYears());
+      fldMonth.setText("" + duration.getMonths());
+      fldDay.setText("" + duration.getDays());
+      fldHour.setText("" + duration.getHours());
+      fldMinute.setText("" + duration.getMinutes());
+      fldSecond.setText("" + duration.getSeconds());
     }
     
     private String getContent() {
-        return TimeEventUtil.getContent(true,
-                TimeEventUtil.parseInt(fldYear.getText()),
-                TimeEventUtil.parseInt(fldMonth.getText()),
-                TimeEventUtil.parseInt(fldDay.getText()),
-                TimeEventUtil.parseInt(fldHour.getText()),
-                TimeEventUtil.parseInt(fldMinute.getText()),
-                TimeEventUtil.parseInt(fldSecond.getText()));
+        return DurationUtil.getContent(true,
+               DurationUtil.parseInt(fldYear.getText()),
+               DurationUtil.parseInt(fldMonth.getText()),
+               DurationUtil.parseInt(fldDay.getText()),
+               DurationUtil.parseInt(fldHour.getText()),
+               DurationUtil.parseInt(fldMinute.getText()),
+               DurationUtil.parseDouble(fldSecond.getText()));
     }
     
     public Validator createValidator() {
@@ -277,13 +231,13 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
             if ( !check(fldMinute)) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_MINUTES"); // NOI18N
             }
-            if ( !check(fldSecond)) {
+            if (DurationUtil.parseDouble(fldSecond.getText()) < 0) {
                 addReasonKey(Severity.ERROR, "ERR_INVALID_SECONDS"); // NOI18N
             }
         }
         
         private boolean check(JTextField field) {
-            return TimeEventUtil.parseInt(field.getText()) >= 0;
+            return DurationUtil.parseInt(field.getText()) >= 0;
         }
     }
     
@@ -430,5 +384,4 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
     private javax.swing.JLabel lblSecond;
     private javax.swing.JLabel lblYear;
     // End of variables declaration//GEN-END:variables
-    
 }

@@ -298,7 +298,7 @@ public final class JsfForm implements ActiveEditorDrop {
         return false;
     }
     
-    static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
+    public static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? guessField(controller, method) : method;
         if (element != null) {
             if (isAnnotatedWith(element, "javax.persistence.GeneratedValue")) { // NOI18N
@@ -423,9 +423,9 @@ public final class JsfForm implements ActiveEditorDrop {
         if ("DATE".equals(temporal)) {
             return "MM/dd/yyyy";
         } else if ("TIME".equals(temporal)) {
-            return "hh:mm:ss";
+            return "HH:mm:ss";
         } else {
-            return "MM/dd/yyyy, hh:mm:ss";
+            return "MM/dd/yyyy HH:mm:ss";
         }
     }
     
@@ -528,11 +528,11 @@ public final class JsfForm implements ActiveEditorDrop {
             Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), entityClass};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == REL_NONE) || 
-                ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) ) || 
-                (formType == FORM_TYPE_NEW && isReadOnly(controller.getTypes(), method)) ) {
+                ( formType == FORM_TYPE_EDIT && (isId(controller, method, fieldAccess) || isReadOnly(controller.getTypes(), method)) && isRelationship != REL_TO_MANY ) || 
+                (formType == FORM_TYPE_NEW && isReadOnly(controller.getTypes(), method) && isRelationship != REL_TO_MANY) ) {
             //non editable
             String temporal = ( isRelationship == REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
-            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\" #'{'{1}.{2}}\" title=\"{0}\" ";
+            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
@@ -540,14 +540,14 @@ public final class JsfForm implements ActiveEditorDrop {
             //editable
             String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
-            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
             //combo box for editing toOne relationships
-            String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}}\" title=\"{0}\" ";
+            String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{3}\" ";
             template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n";
             Object[] args = new Object [] {name, variable, propName, requiredMessage, relatedController};
@@ -638,31 +638,17 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
-                        ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
-                        int otherSideMultiplicity = REL_TO_ONE;
-                        if (otherSide != null) {
-                            TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
-                            boolean isRelFieldAccess = isFieldAccess(relClass);
-                            otherSideMultiplicity = isRelationship(controller, otherSide, isRelFieldAccess);
-                        }
-
                         Types types = controller.getTypes();                        
                         TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
                         TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
-                        
                         if (typeElement != null) {
-                            boolean relatedIsFieldAccess = isFieldAccess(typeElement);
-                            String getterName = getIdGetter(controller, relatedIsFieldAccess, typeElement).getSimpleName().toString();
-                            String relatedIdProperty = JSFClientGenerator.getPropNameFromMethod(getterName);
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
-                            String detailManagedBean = bean.getSimpleName().toString();
                             stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No " + name + " Items Found)\"/>\n");
                             stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"item\" \n");
                             stringBuffer.append("border=\"1\" cellpadding=\"2\" cellspacing=\"0\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
-                            String removeItems = "remove" + methodName.substring(3);
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
                                     + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"

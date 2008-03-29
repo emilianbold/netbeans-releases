@@ -100,7 +100,7 @@ public class BaseStatistics<K extends Comparable> {
     
     protected void printDistributionDetailed(PrintStream ps) {
         int maxKeyLen = 0;
-        String alignment = "-";
+        String alignment = "-"; // NOI18N
 	for( Map.Entry<K, Integer> entry : values.entrySet() ) {
             K key = entry.getKey();
             int currKeyLen;
@@ -117,7 +117,7 @@ public class BaseStatistics<K extends Comparable> {
                 maxKeyLen = currKeyLen;
             }
 	}
-        String format = "\t%" + alignment + maxKeyLen + "s %8d\n";
+        String format = "\t%" + alignment + maxKeyLen + "s %8d\n"; // NOI18N
 	for( Map.Entry<K, Integer> entry : values.entrySet() ) {
 	    ps.printf(format, entry.getKey(), entry.getValue());	// NOI18N
 	}

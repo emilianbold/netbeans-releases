@@ -285,7 +285,6 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
     }
 
     protected void addSubresourceLocator() throws IOException {
-        Util.checkScanning();
         ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy copy) throws IOException {
@@ -671,10 +670,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             return;
         
         if (s == null)
-            s = "";
+            return;
         
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicLock();
+        //We dont need to lock the document, since there is no way user can
+        //update document during Dnd with a modal dialog
+//        if (doc instanceof BaseDocument)
+//            ((BaseDocument)doc).atomicLock();
         
         int start = insert(s, target, doc);
         
@@ -695,8 +696,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 //            caret.setSelectionVisible(true);
 //        }
         
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicUnlock();
+        //We dont need to lock the document, since there is no way user can
+        //update document during Dnd with a modal dialog
+//        if (doc instanceof BaseDocument)
+//            ((BaseDocument)doc).atomicUnlock();
     }
     
     protected static int insert(String s, JTextComponent target, Document doc)

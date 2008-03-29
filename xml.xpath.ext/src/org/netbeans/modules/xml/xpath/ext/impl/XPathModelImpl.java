@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Iterator;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
@@ -34,9 +33,6 @@ import org.apache.commons.jxpath.ri.Compiler;
 import org.apache.commons.jxpath.ri.Parser;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
-import org.netbeans.modules.xml.xpath.ext.XPathExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.XPathModelFactory;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
 import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
@@ -70,8 +66,8 @@ import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
-import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCast;
-import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathCastResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
@@ -86,6 +82,8 @@ import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 
 /**
@@ -137,13 +135,7 @@ public class XPathModelImpl implements XPathModel {
      * @throws XPathException for any parsing errors
      */
     public XPathExpression parseExpression(String expression) throws XPathException {
-//ENABLE = expression.startsWith("$ItineraryIn.iti");
-//out();
-//out();
-//out();
-//out();
-//out();
-//out();
+//ENABLE = expression.startsWith("$ItineraryIn.iti"); // todo r
 //out();
 //out();
 //out();
@@ -362,12 +354,15 @@ public class XPathModelImpl implements XPathModel {
                 SchemaComponent parentComponent = parentCompPair.getComp();
 
                 if (parentComponent != null) {
-                    // vlv
-                    SchemaComponent castType = getCastType(parentContext);
-
-                    if (castType != null) {
-                        parentComponent = castType;
-                    }
+//                    // vlv
+//                    SchemaComponent castType = getCastType(parentContext);
+//                    // XPathCast cast = getCast(parentContext);
+////out();
+////out("CAST TYPE: " + castType);
+////out();
+//                    if (castType != null) {
+//                        parentComponent = castType;
+//                    }
                     //
                     FindChildrenSchemaVisitor visitor = new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
                     visitor.lookForSubcomponent(parentComponent);
@@ -475,22 +470,82 @@ public class XPathModelImpl implements XPathModel {
       myLastSchemaComponent = pair.getComp();
     }
 
-    private SchemaComponent getCastType(XPathSchemaContext context) {
-      if (myXPathCastResolver == null) {
-        return null;
-      }
-      List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
-
-      if (casts == null) {
-        return null;
-      }
-      for (XPathCast cast : casts) {
-        if (context.equals(cast.getContext())) {
-          return cast.getType();
+    private XPathCast getCast(XPathSchemaContext context) {
+        if (myXPathCastResolver == null) {
+            return null;
         }
-      }
-      return null;
+        //
+        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+        if (casts == null) {
+            return null;
+        }
+        //
+        for (XPathCast cast : casts) {
+            XPathExpression castPath = cast.getPath();
+            if (castPath instanceof XPathSchemaContextHolder) {
+                XPathSchemaContext castPathSContext = 
+                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
+                if (castPathSContext != null && 
+                        castPathSContext.equalsChain(context)) {
+                    return cast;
+                }
+            }
+        }
+        //
+        return null;
     }
+
+//    // vlv
+//    private SchemaComponent getCastType(XPathSchemaContext context) {
+////out();
+////out("GET cast type");
+////out();
+//      if (myXPathCastResolver == null) {
+//        return null;
+//      }
+//      List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+////out("  1");
+//
+//      if (casts == null) {
+//        return null;
+//      }
+//      String path = context.toString();
+////out("  2    : " + path + " " + context.getClass().getName());
+//      for (XPathCast cast : casts) {
+////out("    see: " + cast.getPath());
+//        if (removePrefix(path).equals(removePrefix(cast.getPathText()))) {
+//          return cast.getCastTo();
+//        }
+//      }
+////out("  4");
+//      return null;
+//    }
+//
+//    // vlv
+//    private String removePrefix(String value) {
+//      if (value == null) {
+//        return null;
+//      }
+//      StringBuffer buffer = new StringBuffer();
+//      boolean skip = false;
+//
+//      for (int i=value.length()-1; i >= 0; i--) {
+//        char c = value.charAt(i);
+//
+//        if (c == ':') {
+//          skip = true;
+//          continue;
+//        }
+//        if (skip && c != '/') {
+//          continue;
+//        }
+//        if (skip && c == '/') {
+//          skip = false;
+//        }
+//        buffer.insert(0, c);
+//      }
+//      return buffer.toString();
+//    }
 
     public SchemaComponent getLastSchemaComponent() {
       if (myWasFunctionOrOperation) {
@@ -1332,11 +1387,21 @@ public class XPathModelImpl implements XPathModel {
                 // END of calculation of the schema context
             } 
             //
-            // If there is a schema context for current step, then go on trying 
-            // to resolve schema context for predicates.
             if (schemaContext != null) {
+                //
+                // If there is a type cast for the current step, then replace 
+                // the context to a CastSchemaContext
+                XPathCast cast = getCast(schemaContext);
+                if (cast != null) {
+                    CastSchemaContext castContext = 
+                            new CastSchemaContext(schemaContext, cast);
+                    schemaContext = castContext;
+                }
+                //
                 locationStep.setSchemaContext(schemaContext);
                 //
+                // If there is a schema context for current step, then go on trying 
+                // to resolve schema context for predicates.
                 XPathPredicateExpression[] predArr = locationStep.getPredicates();
                 if (predArr != null) {
                     for (XPathPredicateExpression pred : predArr) {
@@ -1379,8 +1444,7 @@ public class XPathModelImpl implements XPathModel {
                     }
                     //
                     throw new StopResolutionException(
-                        "A parent schema context must be specified to rosolve " +
-                        "a relative location path."); // NOI18N
+                        "A parent schema context must be specified to resolve a relative location path."); // NOI18N
                 }
             }
             //

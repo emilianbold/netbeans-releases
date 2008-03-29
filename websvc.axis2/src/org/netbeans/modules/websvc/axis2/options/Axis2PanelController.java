@@ -120,7 +120,7 @@ public final class Axis2PanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(Axis2PanelController.class);
     }
     
     public void addPropertyChangeListener (PropertyChangeListener l) {

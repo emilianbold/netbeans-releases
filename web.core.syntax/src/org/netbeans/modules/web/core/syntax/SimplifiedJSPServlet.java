@@ -114,6 +114,8 @@ public class SimplifiedJSPServlet {
     private String header = null;
     private StringBuilder scriptlets = new StringBuilder();
     private StringBuilder declarations = new StringBuilder();
+    // keep bean declarations separate to avoid duplicating the declaration, see #130745
+    private String beanDeclarations = null; 
     private boolean processCalled = false;
     private String importStatements = null;
     private int expressionIndex = 1;
@@ -225,7 +227,7 @@ public class SimplifiedJSPServlet {
 
         header = getClassHeader();
         importStatements = createImportStatements();
-        declarations.append("\n" + createBeanVarDeclarations());
+        beanDeclarations = "\n" + createBeanVarDeclarations();
     }
     
     private void processIncludes()  {
@@ -463,7 +465,10 @@ public class SimplifiedJSPServlet {
             return ""; //NOI18N
         }
         
-        return importStatements + header + declarations + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        String classBody = importStatements + header + declarations + beanDeclarations 
+                + METHOD_HEADER + scriptlets + CLASS_FOOTER;
+        
+        return classBody;
     }
 
     private CodeBlockData getCodeBlockAtOffset(int offset) {
@@ -532,7 +537,7 @@ public class SimplifiedJSPServlet {
             int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
 
             if (getType() != JavaCodeType.DECLARATION) {
-                newBlockStart += declarations.length() + METHOD_HEADER.length();
+                newBlockStart += declarations.length() + beanDeclarations.length() + METHOD_HEADER.length();
             }
 
             return newBlockStart;
