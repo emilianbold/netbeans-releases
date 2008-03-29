@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -66,6 +67,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
@@ -78,6 +80,7 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         ActionListener, INewUMLFileTemplates 
 {
     
+    private static final String loggerName = "org.netbeans.modules.uml.ui.controls.newdialog.NewUMLDiagVisualPanel1";
     private NewUMLDiagWizardPanel1 panel;
     private Document m_doc = null;
     private java.util.List saveNamespaces = new java.util.ArrayList();
@@ -319,9 +322,18 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             String fileName = conMan.getDefaultConfigLocation();
             fileName += "NewDialogDefinitions.etc"; // NOI18N
             m_doc = XMLManip.getDOMDocument(fileName);
-            org.dom4j.Node node = m_doc.selectSingleNode(
-                "//PropertyDefinitions/PropertyDefinition"); // NOI18N
-            
+            org.dom4j.Node node = null;
+            if (m_doc != null) 
+            {
+                node = m_doc.selectSingleNode(
+                    "//PropertyDefinitions/PropertyDefinition"); // NOI18N
+            } 
+            else 
+            {
+                UMLLogger.logMessage(loggerName,
+                    "Couldn't load XML document from "+fileName, Level.WARNING);
+            }
+             
             if (node != null)
             {
                 org.dom4j.Element elem = (org.dom4j.Element)node;

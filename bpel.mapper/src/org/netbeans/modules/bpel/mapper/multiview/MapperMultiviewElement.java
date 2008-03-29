@@ -415,7 +415,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         myMapperPanel.setLayout(new BorderLayout());
         myMapper = BpelMapperFactory.createMapper(null);
         myMapperPanel.add(myMapper, BorderLayout.CENTER);
-        myMapperPanel.add(new Palette(myMapper).getPanel(), BorderLayout.NORTH);
+        myMapperPanel.add(new Palette(myMapper).createMenuBar(), BorderLayout.NORTH);
 
         myErrorPanel = new MessagePanel(myMapper);
         myErrorPanel.setText("<b>It is Error Panel !!!</b>"); // NOI18N

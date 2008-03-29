@@ -382,7 +382,7 @@ public class TraceXRef extends TraceModel {
         if (target == null) {
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             try {
-                printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true);
+                printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true); // NOI18N
             } catch (IOException ioe) {
                 // skip it
             }
