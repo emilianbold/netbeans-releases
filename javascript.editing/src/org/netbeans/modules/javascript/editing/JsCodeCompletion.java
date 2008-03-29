@@ -245,6 +245,130 @@ public class JsCodeCompletion implements Completable {
             "\\c", "\\c<i>X</i>: The control character ^<i>X</i>",
             
         };
+
+    private static final String[] CSS_WORDS =
+        new String[] {
+            // Dbl-space lines to keep formatter from collapsing pairs into a block
+        
+            // Source: http://docs.jquery.com/DOM/Traversing/Selectors
+            "nth-child()", "The n-th child of its parent",
+
+            "first-child",  "First child of its parent",
+
+            "last-child", "Last child of its parent",
+
+            "only-child", "Only child of its parent",
+
+            "empty", "Has no children (including text nodes)",
+
+            "enabled", "Element which is not disabled",
+
+            "disabled", "Element which is disabled",
+
+            "checked", "Element which is checked (checkbox, ...)",
+
+            "selected", "Element which is selected (e.g. in a select)",
+        
+            "link", "Not yet visited hyperlink",
+            
+            "visited", "Already visited hyperlink",
+            
+            "active", "",
+            
+            "hover", "",
+            
+            "focus", "Element during user actions",
+            
+            "target", "Target of the referring URI",
+            
+            "lang()", "Element in given language",
+            
+            ":first-line", "The first formatted line",
+            
+            ":first-letter", "The first formatted letter",
+            
+            ":selection", "Portion currently highlighted by the user",
+            
+            ":before", "Generated content before an element",
+
+            ":after", "Generated content after an element",
+            
+            // Custom Selectors
+            "even", "Selects every other (even) element",
+
+            "odd", "Selects every other (odd) element",
+            
+            "eq()", "Selects the Nth element",
+            
+            "nth()", "Selects the Nth element",
+            
+            "gt()", "Selects elements whose index is greater than N",
+            
+            "lt()", "Selects elements whose index is less than N",
+            
+            "first", "Equivalent to :eq(0)",
+            
+            "last", "Selects the last matched element",
+            
+            "parent", "Elements that have children (including text)",
+            
+            "contains('", "Elements which contain the specified text",
+            
+            "visible", "Selects all visible elements",
+            
+            "hidden", "Selects all hidden elements",
+            
+            // Form Selectors
+            "input", "All form elements",
+            
+            "text", "All text fields (type=\"text\")",
+            
+            "password", "All password fields (type=\"password\")",
+            
+            "radio", "All radio fields (type=\"radio\")",
+            
+            "checkbox", "All checkbox fields (type=\"checkbox\")",
+            
+            "submit", "All submit buttons (type=\"submit\")",
+            
+            "image", "All form images (type=\"image\")",
+            
+            "reset", "All reset buttons (type=\"reset\")",
+            
+            "button", "All other buttons (type=\"button\")",
+            
+            "file", "All file uploads (type=\"file\")",
+    };
+    
+    // From http://code.google.com/p/jsdoc-toolkit/wiki/TagReference
+    private static final String[] JSDOC_WORDS =
+            new String[]{
+        "@augments",
+        "@class",
+        "@config",
+        "@constructor",
+        "@deprecated",
+        "@description",
+        "@event",
+        "@example",
+        "@exception",
+        "@fileOverview",
+        "@function",
+        "@ignore",
+        "@inherits",
+        "@memberOf",
+        "@name",
+        "@namespace",
+        "@param",
+        "@param",
+        "@private",
+        "@property",
+        "@return",
+        "@scope",
+        "@scope",
+        "@static",
+        "@type",
+    };
     
     public JsCodeCompletion() {
         
@@ -312,6 +436,13 @@ public class JsCodeCompletion implements Completable {
             TokenId id = token.id();
             if (id == JsTokenId.LINE_COMMENT) {
                 // TODO - Complete symbols in comments?
+                return proposals;
+            } else if (id == JsTokenId.BLOCK_COMMENT) {
+                try {
+                    completeComments(proposals, request);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 return proposals;
             } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
                 completeStrings(proposals, request);
@@ -488,6 +619,41 @@ public class JsCodeCompletion implements Completable {
         return true;
     }
     
+    private boolean completeComments(List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
+        String prefix = request.prefix;
+
+        BaseDocument doc = request.doc;
+        int rowStart = Utilities.getRowFirstNonWhite(doc, request.lexOffset);
+        if (rowStart == -1) {
+            return false;
+        }
+        String line = doc.getText(rowStart, Utilities.getRowEnd(doc, request.lexOffset)-rowStart);
+        int delta = request.lexOffset-rowStart;
+        
+        int i = delta-1;
+        for (; i >= 0; i--) {
+            char c = line.charAt(i);
+            if (Character.isWhitespace(c) || (!Character.isLetterOrDigit(c) && c != '@' && c != '.' && c != '_')) {
+                break;
+            }
+        }
+        i++;
+        prefix = line.substring(i, delta);
+        request.anchor = rowStart+i;
+        
+        // Regular expression matching.  {
+        for (int j = 0, n = JSDOC_WORDS.length; j < n; j++) {
+            String word = JSDOC_WORDS[j];
+            if (startsWith(word, prefix)) {
+                //KeywordItem item = new KeywordItem(word, desc, request);
+                KeywordItem item = new KeywordItem(word, null, request);
+                proposals.add(item);
+            }
+        }
+        
+        return true;
+    }
+    
     private boolean completeStrings(List<CompletionProposal> proposals, CompletionRequest request) {
         String prefix = request.prefix;
 
@@ -504,41 +670,122 @@ public class JsCodeCompletion implements Completable {
             TokenId id = token.id();
             if (id == JsTokenId.IDENTIFIER) {
                 String text = token.text().toString();
-                if ("$".equals(text) || "$F".equals(text)) { // NOI18N
-                    String HTML_MIME_TYPE = "text/html"; // NOI18N
-                    ParserResult result = request.info.getEmbeddedResult(HTML_MIME_TYPE, 0);
-                    if (result != null) {
-                        HtmlParserResult htmlResult = (HtmlParserResult)result;
-                        Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
-                        
-                        if (elementIds.size() > 0) {
-                            // Compute a custom prefix
-                            int lexOffset = request.lexOffset;
-                            if (lexOffset > stringOffset) {
-                                try {
-                                    prefix = request.doc.getText(stringOffset, lexOffset - stringOffset);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            } else {
-                                prefix = "";
+                
+                if (text.startsWith("$") || text.equals("getElementById") ||  // NOI18N
+                        text.startsWith("getElementsByTagName") || text.equals("getElementsByName") || // NOI18N
+                        "addClass".equals(text) || "toggleClass".equals(text)) { // NOI18N
+                    
+                    // Compute a custom prefix
+                    int lexOffset = request.lexOffset;
+                    if (lexOffset > stringOffset) {
+                        try {
+                            prefix = request.doc.getText(stringOffset, lexOffset - stringOffset);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else {
+                        prefix = "";
+                    }
+                    // Update anchor
+                    request.anchor = stringOffset;
+                    
+                    boolean jQuery = false;
+                    if (text.equals("$")) {
+                        for (String imp : request.result.getStructure().getImports()) {
+                            if (imp.indexOf("jquery") != -1) { // NOI18N
+                                jQuery = true;
                             }
-                            
-                            String filename = request.fileObject.getNameExt();
+                        }
+                        if (!jQuery) {
+                            jQuery = request.index.getType("jQuery") != null;
+                        }
+                    }
 
-                            for (SyntaxElement.TagAttribute tag : elementIds) {
-                                String elementId = tag.getValue();
-                                // Strip "'s surrounding value, if any
-                                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-                                        elementId.endsWith("\"")) { // NOI18N
-                                    elementId = elementId.substring(1, elementId.length()-1);
+                    if ("getElementById".equals(text) || (!jQuery && ("$".equals(text) || "$F".equals(text)))) { // NOI18N
+                        addElementIds(proposals, request, prefix);
+                        
+                    } else if ("getElementsByName".equals(text)) { // NOI18N
+                        addElementClasses(proposals, request, prefix);
+                    } else if ("addClass".equals(text) || "toggleClass".equals(text)) { // NOI18N
+                        // From jQuery
+                        addElementClasses(proposals, request, prefix);
+                    } else if (text.startsWith("getElementsByTagName")) { // NOI18N
+                        addTagNames(proposals, request, prefix);
+                    } else if ("$$".equals(text) || (jQuery && "$".equals(text) && jQuery)) { // NOI18N
+                        // Selectors
+                        // Determine whether we want to include elements or classes
+                        // Classes after [ and .
+                        
+                        int showClasses = 1;
+                        int showElements = 2;
+                        int showIds = 3;
+                        int showSpecial = 4;
+                        int expect = showElements;
+                        int i = prefix.length()-1;
+                     findEnd:   
+                        for (; i >= 0; i--) {
+                            char c = prefix.charAt(i);
+                            switch (c) {
+                            case '.':
+                            case '[':
+                                expect = showClasses;
+                                break findEnd;
+                            case '#':
+                                expect = showIds;
+                                break findEnd;
+                            case ':':
+                                expect = showSpecial;
+                                if (i > 0 && prefix.charAt(i-1) == ':') {
+                                    // Handle ::'s
+                                    i--;
                                 }
-
-                                if (startsWith(elementId, prefix)) {
-                                    TagItem item = new TagItem(elementId, filename, request);
+                                break findEnd;
+                            case ' ':
+                            case '/':
+                            case '>':
+                            case '+':
+                            case '~':
+                            case ',':
+                                expect = showElements;
+                                break findEnd;
+                            default:
+                                if (!Character.isLetter(c)) {
+                                    expect = showElements;
+                                    break findEnd;
+                                }
+                            }
+                        }
+                        if (i >= 0) {
+                            prefix = prefix.substring(i+1);
+                        }
+                        // Update anchor
+                        request.anchor = stringOffset+i+1;
+                            
+                        if (expect == showElements) {
+                            addTagNames(proposals, request, prefix);
+                        } else if (expect == showIds) {
+                            addElementIds(proposals, request, prefix);
+                        } else if (expect == showSpecial) {
+                            // Regular expression matching.  {
+                            for (int j = 0, n = CSS_WORDS.length; j < n; j += 2) {
+                                String word = CSS_WORDS[j];
+                                String desc = CSS_WORDS[j + 1];
+                                if (word.startsWith(":") && prefix.length() == 0) {
+                                    // Filter out the double words
+                                    continue;
+                                }
+                                if (startsWith(word, prefix)) {
+                                    if (word.startsWith(":")) { // NOI18N
+                                        word = word.substring(1);
+                                    }
+                                    //KeywordItem item = new KeywordItem(word, desc, request);
+                                    TagItem item = new TagItem(word, desc, request, ElementKind.RULE);
                                     proposals.add(item);
                                 }
                             }
+                        } else {
+                            assert expect == showClasses;
+                            addElementClasses(proposals, request, prefix);
                         }
                     }
                 }
@@ -563,6 +810,88 @@ public class JsCodeCompletion implements Completable {
         }
 
         return true;
+    }
+
+    private void addElementClasses(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> classes = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int classIdx = element.indexOf("class=\""); // NOI18N
+                    if (classIdx != -1) {
+                        int classIdxEnd = element.indexOf('"', classIdx+7);
+                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
+                            String clz = element.substring(classIdx+7, classIdxEnd);
+                            classes.add(clz);
+                        }
+                    }
+                }
+            }
+            
+            String filename = request.fileObject.getNameExt();
+            for (String tag : classes) {
+                if (startsWith(tag, prefix)) {
+                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
+    }
+    
+    private void addTagNames(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> tagNames = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int start = 1;
+                    int end = element.indexOf(' ');
+                    if (end == -1) {
+                        end = element.length()-1;
+                    }
+                    String tag = element.substring(start, end);
+                    tagNames.add(tag);
+                }
+            }
+
+            String filename = request.fileObject.getNameExt();
+            
+            for (String tag : tagNames) {
+                if (startsWith(tag, prefix)) {
+                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
+    }
+    
+    private void addElementIds(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
+            String filename = request.fileObject.getNameExt();
+            for (SyntaxElement.TagAttribute tag : elementIds) {
+                String elementId = tag.getValue();
+                // Strip "'s surrounding value, if any
+                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
+                        elementId.endsWith("\"")) { // NOI18N
+                    elementId = elementId.substring(1, elementId.length()-1);
+                }
+
+                if (startsWith(elementId, prefix)) {
+                    TagItem item = new TagItem(elementId, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
     }
 
 
@@ -2163,11 +2492,13 @@ public class JsCodeCompletion implements Completable {
     private class TagItem extends JsCompletionItem {
         private final String tag;
         private final String description;
+        private final ElementKind kind;
 
-        TagItem(String keyword, String description, CompletionRequest request) {
+        TagItem(String keyword, String description, CompletionRequest request, ElementKind kind) {
             super(null, request);
             this.tag = keyword;
             this.description = description;
+            this.kind = kind;
         }
 
         @Override
@@ -2177,7 +2508,7 @@ public class JsCodeCompletion implements Completable {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.TAG;
+            return kind;
         }
 
         //@Override
