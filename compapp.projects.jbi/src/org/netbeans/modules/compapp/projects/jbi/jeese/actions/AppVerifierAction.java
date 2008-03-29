@@ -137,12 +137,10 @@ public class AppVerifierAction extends NodeAction {
                     throw new Exception(msg);
                 }
                 AppVerifierPnl pnl = new AppVerifierPnl(ri);            
-//                DialogDescriptor dd = new DialogDescriptor(pnl, " " //NOI18N
-//                        + vcpi.getProjectName() + msgVerifyResult);
-                DialogDescriptor dd = new DialogDescriptor(pnl, " " //NOI18N
-                        + vcpi.getProjectName() + msgVerifyResult, true, 
-                        new Object[] {DialogDescriptor.OK_OPTION}, 
-                        DialogDescriptor.OK_OPTION, 
+                DialogDescriptor dd = new DialogDescriptor(pnl, 
+                        " " + msgVerifyResult + vcpi.getProjectName(), true, //NOI18N
+                        new Object[] {DialogDescriptor.CLOSED_OPTION}, 
+                        DialogDescriptor.CLOSED_OPTION, 
                         DialogDescriptor.DEFAULT_ALIGN, null, null);
 
                 Dialog dlg = DialogDisplayer.getDefault().createDialog( dd );
