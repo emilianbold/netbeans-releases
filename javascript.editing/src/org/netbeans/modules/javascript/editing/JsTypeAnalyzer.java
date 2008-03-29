@@ -326,6 +326,9 @@ public class JsTypeAnalyzer {
                             jQuery = true;
                         }
                     }
+                    if (!jQuery && index != null) {
+                        jQuery = index.getType("jQuery") != null;
+                    }
                     if (jQuery) {
                         return "jQuery"; // NOI18N
                     } else {

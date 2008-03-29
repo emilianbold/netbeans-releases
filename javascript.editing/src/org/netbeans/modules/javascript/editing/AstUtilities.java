@@ -788,8 +788,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 }
                             }
                         }
+                    } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) {
+                            className = AstUtilities.getJoinedName(first.getNext());
+                        }
                     }
-
                 }
             }
         } else if (parentType == Token.CALL) {
@@ -815,8 +824,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                         extendsName = superName.toString();
                                     }
                                 }
-
                             }
+                        }
+                    } else if (parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) { // NOI18N
+                            className = AstUtilities.getJoinedName(first.getNext());
                         }
                     }
                 }

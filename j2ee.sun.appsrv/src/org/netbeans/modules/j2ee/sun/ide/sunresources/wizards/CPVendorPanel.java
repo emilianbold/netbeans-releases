@@ -665,10 +665,14 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         FileObject setupFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
         this.helper.getData().setTargetFileObject (setupFolder);
         if(setupFolder != null){
+            String resourceName = this.helper.getData().getString(__Name);
+            if((resourceName != null) && (! resourceName.equals(""))) {
+                targetName = resourceName;
+            }
             targetName = ResourceUtils.createUniqueFileName (targetName, setupFolder, __ConnectionPoolResource);
-            this.nameField.setText (targetName);
-            this.helper.getData ().setString (__Name, targetName);
             this.helper.getData ().setTargetFile (targetName);
+            this.nameField.setText(targetName);
+            this.helper.getData().setString(__Name, targetName);
         }else
             setupValid = false;
     }
