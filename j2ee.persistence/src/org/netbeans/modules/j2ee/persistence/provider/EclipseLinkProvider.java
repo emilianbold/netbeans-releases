@@ -39,48 +39,60 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans;
+package org.netbeans.modules.j2ee.persistence.provider;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.util.Collections;
+import java.util.Map;
+import org.openide.util.NbBundle;
 
 /**
+ * This class represents the EclipseLink provider.
  *
  * @author Andrei Badea
  */
-public class ProjectLookupProvider implements LookupProvider {
+class EclipseLinkProvider extends Provider {
 
-    private final boolean web;
-
-    public static ProjectLookupProvider createNonWeb() {
-        return new ProjectLookupProvider(false);
+    public EclipseLinkProvider(){
+        super("org.eclipse.persistence.jpa.PersistenceProvider"); //NOI18N
     }
 
-    public static ProjectLookupProvider createWeb() {
-        return new ProjectLookupProvider(true);
+    public String getDisplayName() {
+        return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink"); //NOI18N
     }
 
-    public ProjectLookupProvider(boolean web) {
-        this.web = web;
+    public String getJdbcUrl() {
+        return "eclipselink.jdbc.url";
     }
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
-        }
-        List<Object> instances = new ArrayList<Object>(3);
-        instances.add(new ProjectSpringScopeProvider(project));
-        instances.add(new RecommendedTemplatesImpl(web));
-        if (!web) {
-            // For a web project, SpringConfigFileLocationProvider is
-            // provided by the Web MVC support (since it needs to use the WebModule API).
-            instances.add(new SpringConfigFileLocationProviderImpl(project));
-        }
-        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
+    public String getJdbcDriver() {
+        return "eclipselink.jdbc.driver";
+    }
+
+    public String getJdbcUsername() {
+        return "eclipselink.jdbc.user";
+    }
+
+    public String getJdbcPassword() {
+        return "eclipselink.jdbc.password";
+    }
+
+    public String getTableGenerationPropertyName() {
+        return "eclipselink.ddl-generation";
+    }
+
+    public String getTableGenerationDropCreateValue() {
+        return "drop-and-create-tables";
+    }
+
+    public String getTableGenerationCreateValue() {
+        return "create-tables";
+    }
+
+    public Map getUnresolvedVendorSpecificProperties() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Map getDefaultVendorSpecificProperties() {
+        return Collections.EMPTY_MAP;
     }
 }

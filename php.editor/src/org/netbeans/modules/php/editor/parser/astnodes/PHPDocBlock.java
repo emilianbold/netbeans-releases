@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.beans;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Andrei Badea
+ * @author Petr Pisl
  */
-public class ProjectLookupProvider implements LookupProvider {
-
-    private final boolean web;
-
-    public static ProjectLookupProvider createNonWeb() {
-        return new ProjectLookupProvider(false);
+public class PHPDocBlock extends Comment{
+    
+    private String description;
+    private List<PHPDocTag> tags;
+   
+    public PHPDocBlock(int start, int end, String description, List<PHPDocTag> tags) {
+        super(start, end, Comment.Type.TYPE_PHPDOC);
+        this.description = description;
+        this.tags = tags;
+    }
+    
+    public PHPDocBlock(int start, int end, String description) {
+        this (start, end, description, null);
+    }
+   
+    public String getDescription() {
+        return description;
     }
 
-    public static ProjectLookupProvider createWeb() {
-        return new ProjectLookupProvider(true);
+    public List<PHPDocTag> getTags() {
+        return this.tags;
     }
-
-    public ProjectLookupProvider(boolean web) {
-        this.web = web;
-    }
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        if (project == null) {
-            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
-        }
-        List<Object> instances = new ArrayList<Object>(3);
-        instances.add(new ProjectSpringScopeProvider(project));
-        instances.add(new RecommendedTemplatesImpl(web));
-        if (!web) {
-            // For a web project, SpringConfigFileLocationProvider is
-            // provided by the Web MVC support (since it needs to use the WebModule API).
-            instances.add(new SpringConfigFileLocationProviderImpl(project));
-        }
-        return Lookups.fixed(instances.toArray(new Object[instances.size()]));
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
