@@ -104,6 +104,18 @@ public class WrongPackageSuggestionTest extends TreeRuleTestBase {
         performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:verifier:Incorrect Package", "CorrectFix", "package test; public class Test{}");
     }
     
+    public void testMoveToCorrectPackage1() throws Exception {
+        performFixTest("test/Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
+    }
+    
+    public void testMoveToCorrectPackage2() throws Exception {
+        performFixTest("Test.java", "pac|kage other; public class Test{}", "0:8-0:13:verifier:Incorrect Package", "MoveFix", "other/Test.java", "package other; public class Test{}");
+    }
+    
+    public void testMoveToCorrectPackage3() throws Exception {
+        performFixTest("test/Test.java", "|public class Test{}", "0:0-0:1:verifier:Incorrect Package", "MoveFix", "Test.java", "public class Test{}");
+    }
+    
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         WrongPackageSuggestion s = new WrongPackageSuggestion();
