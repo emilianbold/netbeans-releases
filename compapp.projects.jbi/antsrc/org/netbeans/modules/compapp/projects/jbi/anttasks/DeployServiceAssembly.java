@@ -235,7 +235,7 @@ public class DeployServiceAssembly extends Task {
 
         try {
             // Make sure the app server is running.
-            JbiManager.startServer(serverInstanceID, false);
+            JbiManager.startServer(serverInstanceID, true);            
         } catch (Exception e) {
             // NPE from command line because of missing repository in the 
             // default lookup. The server needs to be started explicitly
@@ -258,8 +258,10 @@ public class DeployServiceAssembly extends Task {
             userName = serverInstance.getUserName();
             password = serverInstance.getPassword();
 
+            mgmtServiceWrapper.clearServiceAssemblyStatusCache();
             ServiceAssemblyInfo assembly = mgmtServiceWrapper.getServiceAssembly(
-                    serviceAssemblyID, "server");        
+                    serviceAssemblyID, "server");  
+            
             String status = assembly == null ? null : assembly.getState();
             // System.out.println("Current assembly status is " + status);
 
@@ -326,7 +328,7 @@ public class DeployServiceAssembly extends Task {
             throw new BuildException((String) processResult[0]);
         }             
     }
-    
+        
     private void deployServiceAssembly(DeploymentService adminService) 
             throws BuildException {
         log("[deploy-service-assembly]");
