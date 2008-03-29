@@ -136,10 +136,13 @@ public class CopyPasteHandler {
         }
         
         currentPlaceholder = next;
-        currentPlaceholder
-                .getOwnerPattern()
-                .getView()
-                .scrollPlaceholderToView(currentPlaceholder);
+        
+        if (currentPlaceholder != null){
+            currentPlaceholder
+                    .getOwnerPattern()
+                    .getView()
+                    .scrollPlaceholderToView(currentPlaceholder);
+        }
         
     }
     class PasteAction extends PasteModeAction {
