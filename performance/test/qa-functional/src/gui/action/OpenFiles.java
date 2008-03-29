@@ -103,20 +103,6 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    public void testOpening20kBJavaFile(){
-        WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
-        fileProject = "PerformanceTestData";
-        filePackage = "org.netbeans.test.performance";
-        fileName = "Main20kB.java";
-        menuItem = OPEN;
-        doMeasurement();
-    }
-    
-    public void testOpening20kBTxtFile(){
-        WAIT_AFTER_OPEN = 1000;
-        setPlainTextEditorCaretFilteringOn();
 
         class PhaseHandler extends Handler {
             
@@ -137,9 +123,22 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
             
         }
 
-        Logger.getLogger("TIMER").addHandler(new PhaseHandler());
+    PhaseHandler phaseHandler=new PhaseHandler();
 
-
+    
+    public void testOpening20kBJavaFile(){
+        WAIT_AFTER_OPEN = 1000;
+        setJavaEditorCaretFilteringOn();
+        fileProject = "PerformanceTestData";
+        filePackage = "org.netbeans.test.performance";
+        fileName = "Main20kB.java";
+        menuItem = OPEN;
+        doMeasurement();
+    }
+    
+    public void testOpening20kBTxtFile(){
+        WAIT_AFTER_OPEN = 1000;
+        setPlainTextEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "textfile20kB.txt";
@@ -163,6 +162,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         this.openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -195,6 +195,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     protected void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();

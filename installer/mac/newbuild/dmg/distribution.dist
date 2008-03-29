@@ -233,7 +233,7 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>
-    <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webjavaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
+    <choice id="javaee" title="javaee-title" description="javaee-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javaee.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
     <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
@@ -242,7 +242,7 @@ function checkChoiceUpgradeAction() {
     <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ruby"></pkg-ref>
     </choice>
-    <choice id="soa" title="soa-title" description="soa-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.soa.selected &amp;&amp; choices.webjavaee.selected &amp;&amp; choices.openesb.selected" enabled="choices.webjavaee.selected &amp;&amp; choices.openesb.selected">
+    <choice id="soa" title="soa-title" description="soa-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.soa.selected &amp;&amp; choices.javaee.selected &amp;&amp; choices.openesb.selected" enabled="choices.javaee.selected &amp;&amp; choices.openesb.selected">
         <pkg-ref id="ident.pkg.soa"></pkg-ref>
     </choice>
     <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>

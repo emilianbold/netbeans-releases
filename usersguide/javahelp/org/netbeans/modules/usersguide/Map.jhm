@@ -144,7 +144,6 @@
 
 <!--javascript targets -->
 
-<mapID target="javascript.intro" url="javascript/javascript_editor.html" />
 <mapID target="js.code.completion" url="javascript/code_completion.html" />
 <mapID target="js.basics" url="javascript/js_basics.html" />
 <mapID target="js.refactoring" url="javascript/refactoring.html" />
