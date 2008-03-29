@@ -10,6 +10,11 @@
 				<tocitem text="Creating Composite Application Projects" target="caps_basics_create" />
 				<tocitem text="Adding JBI Modules to Composite Application Projects" target="caps_basics_add_jbi" />
 				<tocitem text="Deploying Composite Application Projects" target="caps_basics_deploy" />
+                                <tocitem text="Working with Java EE Modules in a Composite Application">
+                                    <tocitem text="Java EE Module Options" target="javaee-module-options" />
+                                    <tocitem text="Verifying Server Resources for Java EE Modules" target="verify-server-resources" />
+                                    <tocitem text="Disabling or Enabling Endpoint Deployment in a JBI Module" target="javaee-deployment-settings" />
+                                </tocitem>
 			</tocitem>
 			<tocitem text="Working With the CASA Editor">
 				<tocitem text="About the CASA Editor" target="casaeditor_about-casa" />
