@@ -34,63 +34,43 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.hints;
 
-package org.netbeans.modules.gsfret.hints.infrastructure;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
-import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.HintsController;
+import java.net.URL;
+import org.netbeans.modules.javascript.hints.spi.Fix;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
+ * Fix for showing more information about an error
  *
  * @author Tor Norbye
  */
-public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo> {
-    
-    public SelectionHintsTask() {
+class MoreInfoFix implements Fix {
+
+    private String key;
+
+    public MoreInfoFix(String key) {
+        this.key = key;
     }
-    
-    public void run(CompilationInfo info) throws Exception {
-        resume();
-        
-        Document doc = info.getDocument();
-        if (doc == null) {
-            return;
-        }
 
-        int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
-        
-        if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1) {
-            return;
-        }
+    public String getDescription() {
+        return NbBundle.getMessage(StrictWarning.class, "ShowInfo");
+    }
 
-        int start = range[0];
-        int end = range[1];
-        
-        HintsProvider provider = SuggestionsTask.getHintsProvider(doc, start);
+    public void implement() throws Exception {
+        URL url = new URL("http://wiki.netbeans.org/JavaScript_" + key.replace("msg.", "").replace(".", "")); // NOI18N
 
-        if (provider == null) {
-            return;
-        }
-        
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        
-        if (start != end) {
-            provider.computeSelectionHints(info, result, Math.min(start,end), Math.max(start,end));
-        }
-        
-        if (isCancelled()) {
-            return;
-        }
-        
-        HintsController.setErrors(info.getFileObject(), SelectionHintsTask.class.getName(), result);
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+    }
+
+    public boolean isSafe() {
+        return true;
+    }
+
+    public boolean isInteractive() {
+        return true;
     }
 }

@@ -34,63 +34,20 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsfret.hints.infrastructure;
+package org.netbeans.modules.javascript.hints;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
-import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.HintsController;
-
-/**
- *
- * @author Tor Norbye
- */
-public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo> {
+public class UnsupportedCallsTest extends HintTestBase {
     
-    public SelectionHintsTask() {
-    }
-    
-    public void run(CompilationInfo info) throws Exception {
-        resume();
-        
-        Document doc = info.getDocument();
-        if (doc == null) {
-            return;
-        }
+    public UnsupportedCallsTest(String testName) {
+        super(testName);
+    }            
 
-        int[] range = SelectionAwareSourceTaskFactory.getLastSelection(info.getFileObject());
+    public void testHint1() throws Exception {
+        initializeRegistry();
         
-        if (range == null || range.length != 2 || range[0] == -1 || range[1] == -1) {
-            return;
-        }
-
-        int start = range[0];
-        int end = range[1];
-        
-        HintsProvider provider = SuggestionsTask.getHintsProvider(doc, start);
-
-        if (provider == null) {
-            return;
-        }
-        
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        
-        if (start != end) {
-            provider.computeSelectionHints(info, result, Math.min(start,end), Math.max(start,end));
-        }
-        
-        if (isCancelled()) {
-            return;
-        }
-        
-        HintsController.setErrors(info.getFileObject(), SelectionHintsTask.class.getName(), result);
+        findHints(this, new UnsupportedCalls(), "testfiles/unsupportedcalls.js", null);
     }
 }
