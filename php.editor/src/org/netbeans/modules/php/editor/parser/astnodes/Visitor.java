@@ -218,6 +218,8 @@ public interface Visitor {
 	//public void endVisit(MethodInvocation methodInvocation);
 
 	public void visit(ParenthesisExpression parenthesisExpression);
+        
+        public void visit(PHPDocBlock phpDocBlock);
 
 	//public void endVisit(ParenthesisExpression parenthesisExpression);
 	
