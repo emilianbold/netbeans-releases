@@ -627,21 +627,6 @@ public class SelectPanel extends JPanel implements SharedConstants {
         topPane.add(pane, BorderLayout.CENTER);
     }
     
-//    public List getAttributeMetadataAsList() {
-//        List attributeMetadataList = new ArrayList();
-//        Vector r = mTableModel.getDataVector();
-//        for (int i = 0, I = r.size(); i < I; i++) {
-//            Vector c = (Vector) r.elementAt(i);
-//            if (!(c.elementAt(mNameCol) == null) && !(c.elementAt(mNameCol).equals(""))) {
-//                attributeMetadataList.add(c.elementAt(mNameCol));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 1));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 2));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 3));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 4));
-//            }
-//        }
-//        return attributeMetadataList;
-//    }
     
    
     public List<SchemaAttribute> getAttributes() {
