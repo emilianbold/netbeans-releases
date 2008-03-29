@@ -136,12 +136,15 @@ public class CopyPasteHandler {
         }
         
         currentPlaceholder = next;
-        
-        if (currentPlaceholder != null){
-            currentPlaceholder
-                    .getOwnerPattern()
-                    .getView()
-                    .scrollPlaceholderToView(currentPlaceholder);
+        //find the view owning current placeholder and scroll it to make this placeholder visible
+        if (currentPlaceholder != null ){
+               for (PlaceHolderManager m: managers){
+                    if (m.getPlaceHolders().contains(currentPlaceholder)){
+                        m.getDiagramView().scrollPlaceholderToView(currentPlaceholder);
+                        break;
+                    }
+               }
+
         }
         
     }
