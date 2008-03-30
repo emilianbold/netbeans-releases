@@ -135,7 +135,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private void checkRealUpdates () {
         checkRealUpdatesTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, true);
+                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType, true);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
@@ -154,6 +154,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                             public void run () {
                                 wd.setPanelsAndSettings (panels, wd);
                                 fireChange ();
+                                LazyUnit.storeUpdateElements (operationType, updates);
+                                AutoupdateCheckScheduler.notifyAvailable (LazyUnit.loadLazyUnits (operationType), operationType);
                             }
                         });
                     }
