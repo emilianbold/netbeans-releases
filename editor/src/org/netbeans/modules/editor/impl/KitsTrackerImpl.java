@@ -189,6 +189,7 @@ public final class KitsTrackerImpl extends KitsTracker {
     
     // The map of mime type -> kit class
     private final Map<String, FileObject> mimeType2kitClass = new HashMap<String, FileObject>();
+    private final Map<Class, List<String>> kitClass2mimeTypes = new HashMap<Class, List<String>>();
     private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
@@ -384,8 +385,8 @@ public final class KitsTrackerImpl extends KitsTracker {
         }
             
         synchronized (mimeType2kitClass) {
-            ArrayList<String> list = new ArrayList<String>();
-            HashSet<String> set = new HashSet<String>();
+            List<String> list = null;
+            Set<String> set = null;
 
             if (reload) {
                 // Stop listening
@@ -417,6 +418,7 @@ public final class KitsTrackerImpl extends KitsTracker {
                     
                     mimeType2kitClassLoaded = true;
                     mimeType2kitClass.clear();
+                    kitClass2mimeTypes.clear();
 
                     // Get the root of the MimeLookup registry
                     FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
@@ -440,20 +442,27 @@ public final class KitsTrackerImpl extends KitsTracker {
                     // new Throwable("~~~ KitsTrackerImpl._reload took " + (tm2 - tm) + "msec").printStackTrace();
                 }
 
-                boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
-                for(String mimeType : mimeType2kitClass.keySet()) {
-                    FileObject f = mimeType2kitClass.get(mimeType);
-                    if (isInstanceOf(f, kitClass, !kitClassFinal)) {
-                        list.add(mimeType);
+                list = kitClass2mimeTypes.get(kitClass);
+                if (list == null) {
+                    list = new ArrayList<String>();
+                    kitClass2mimeTypes.put(kitClass, list);
+                    
+                    boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
+                    for(String mimeType : mimeType2kitClass.keySet()) {
+                        FileObject f = mimeType2kitClass.get(mimeType);
+                        if (isInstanceOf(f, kitClass, !kitClassFinal)) {
+                            list.add(mimeType);
+                        }
                     }
                 }
-
+                
                 TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
             } else {
-                set.addAll(knownMimeTypes);
+                set = new HashSet<String>(knownMimeTypes);
                 TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
             }
-            
+
+            assert kitClass != null ? list != null : set != null;
             return kitClass != null ? list : set;
         }
     }
