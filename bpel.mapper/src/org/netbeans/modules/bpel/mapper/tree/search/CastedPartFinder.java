@@ -19,38 +19,26 @@
 
 package org.netbeans.modules.bpel.mapper.tree.search;
 
-import org.netbeans.modules.bpel.mapper.tree.models.VariableDeclarationWrapper;
-import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Variable;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
-import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
+import org.netbeans.modules.xml.wsdl.model.Part;
 
 /**
  *
  * @author nk160297
  */
-public class VariableFinder extends SimpleFinder {
+public class CastedPartFinder extends SimpleFinder {
 
-    private AbstractVariableDeclaration mVariableDecl;
+    private AbstractTypeCast mTypeCast;
     
-    public VariableFinder(AbstractVariableDeclaration variableDecl) {
-        mVariableDecl = variableDecl;
+    public CastedPartFinder(AbstractTypeCast typeCast) {
+        mTypeCast = typeCast;
     }
     
     protected boolean isFit(Object treeItem) {
-        if (treeItem == mVariableDecl && 
-                !(treeItem instanceof VariableDeclarationScope)) {
+        if (treeItem.equals(mTypeCast)) {
              // found!!!
             return true;
-        }
-        if (treeItem instanceof VariableDeclarationWrapper) {
-            VariableDeclaration varDeclDelegate = 
-                    ((VariableDeclarationWrapper)treeItem).getDelegate();
-            if (varDeclDelegate == mVariableDecl) {
-                // found!!!
-                return true; 
-            }
         }
         //
         return false;
@@ -61,12 +49,9 @@ public class VariableFinder extends SimpleFinder {
             // Stop searching if out of variable tree.
             return false;
         }
-        if (treeItem instanceof Variable) {
-            // Stop searching if the tree item is a pure variable.
-            return false;
-        }
-        if (treeItem instanceof VariableDeclarationWrapper) {
-            // Stop searching if the tree item is a variable wrapper.
+        if (treeItem instanceof Part ||
+                treeItem instanceof AbstractTypeCast) {
+            // Stop searching if the tree item is a part.
             return false;
         }
         return true;

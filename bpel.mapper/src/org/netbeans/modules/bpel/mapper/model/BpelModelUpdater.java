@@ -163,7 +163,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             Link link = graphInfo.getTransitLinks().get(0); 
             TreeSourcePin sourcePin = (TreeSourcePin)link.getSource();
             TreePath sourceTreePath = sourcePin.getTreePath();
-            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
+            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath, typeCastCollector);
             //
             XPathModel xPathModel = BpelXPathModelFactory.create(from);
             populateFrom(from, xPathModel, tpInfo, typeCastCollector);
@@ -230,11 +230,10 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             copy.setTo(to);
         }
         //
-        TreePathInfo tpInfo = collectTreeInfo(rightTreePath);
+        typeCastCollector = new HashSet<AbstractTypeCast>();
+        TreePathInfo tpInfo = collectTreeInfo(rightTreePath, typeCastCollector);
         //
         XPathModel xPathModel = BpelXPathModelFactory.create(to);
-
-        typeCastCollector = new HashSet<AbstractTypeCast>();
         populateTo(to, xPathModel, tpInfo, typeCastCollector);
         registerTypeCasts(copy, typeCastCollector, false);
     }
