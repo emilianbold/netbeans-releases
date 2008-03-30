@@ -771,14 +771,19 @@ public final class SourceUtils {
                         public void run(final CompilationController controller)
                                  throws Exception {
                             // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                            if (controller.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
+                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                                 return;
                             }
 
                             TreePathScanner<String, Void> scanner = new TreePathScanner<String, Void>() {
                                 public String visitClass(ClassTree node, Void p) {
-                                    return ElementUtilities.getBinaryName((TypeElement) controller.getTrees()
+                                    try {
+                                        return ElementUtilities.getBinaryName((TypeElement) controller.getTrees()
                                                                                                   .getElement(getCurrentPath()));
+                                    } catch (NullPointerException e) {
+                                        ProfilerLogger.log(e);
+                                        return "";
+                                    }
                                 }
                             };
 
