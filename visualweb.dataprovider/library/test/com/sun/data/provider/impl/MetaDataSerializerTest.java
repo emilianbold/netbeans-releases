@@ -26,12 +26,24 @@ public class MetaDataSerializerTest extends TestCase {
         super(testName);
     }                
     
-    public void testGenerateFilenameI18n() throws Exception {
-        System.out.println(new MetaDataSerializer().generateFilename("あおうえ", "SELECT \n * \n FROM あおうえ.あおうえ"));        
-        assertTrue(new MetaDataSerializer().generateFilename("あおうえ", "SELECT \n * \n FROM あおうえ.あおうえ").equals("1725849164"));  // local result
+    public void testGenerateFilenameI18n_allCols() throws Exception {
+        String dataSourceName = "あおうえ";
+        String command = "SELECT \n * \n FROM あおうえ.あおうえ";
+        System.out.println(new MetaDataSerializer().generateFilename(dataSourceName, command));        
+        assertTrue(new MetaDataSerializer().generateFilename(dataSourceName, command).equals(new MetaDataSerializer().generateFilename(dataSourceName, command)));  // local result
     } 
+    
+    public void testGenerateFilenameI18n() throws Exception {
+        String dataSourceName = "あおうえ";
+        String command = "SELECT あおう, あうえ, おうえ, あおうえ, あ, う, うえ, お, え FROM あおうえ.あおうえ";
+        System.out.println(new MetaDataSerializer().generateFilename(dataSourceName, command));        
+        assertTrue(new MetaDataSerializer().generateFilename(dataSourceName, command).equals(new MetaDataSerializer().generateFilename(dataSourceName, command)));  // local result
+    } 
+    
     public void testGenerateFilename() throws Exception {
-        System.out.println(new MetaDataSerializer().generateFilename("Apache_TRAVEL", "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?"));
-        assertTrue(new MetaDataSerializer().generateFilename("Apache_TRAVEL", "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?").equals("1084670897"));  //local result
+        String dataSourceName = "Apache_TRAVEL";
+        String command = "SELECT ALL \r TRAVEL.TRIP.TRIPID, TRAVEL.TRIP.PERSONID, TRAVEL.TRIP.DEPDATE, TRAVEL.TRIP.DESTCITY, TRAVEL.TRIP.TRIPTYPEID, TRAVEL.TRIP.LASTUPDATED  FROM TRAVEL.TRIP WHERE TRAVEL.TRIP.PERSONID = ?";
+        System.out.println(new MetaDataSerializer().generateFilename(dataSourceName, command));
+        assertTrue(new MetaDataSerializer().generateFilename(dataSourceName, command).equals(new MetaDataSerializer().generateFilename(dataSourceName, command)));  //local result
     }  
 }

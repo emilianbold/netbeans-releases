@@ -84,6 +84,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PostfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.PrefixExpression;
@@ -592,5 +593,8 @@ public class DefaultVisitor implements Visitor {
     }
 
     public void visit(ASTNode node) {
+    }
+
+    public void visit(PHPDocBlock phpDocBlock) {
     }
 }

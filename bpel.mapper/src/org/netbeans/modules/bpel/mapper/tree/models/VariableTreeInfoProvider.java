@@ -36,7 +36,6 @@ import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
-import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddCastAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddSpecialStepAction;
@@ -72,6 +71,7 @@ import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.openide.util.NbBundle;
 
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
@@ -126,7 +126,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         //
         GlobalType gType = null;
         //
-        if (sComp instanceof TypeContainer) {
+        if (sComp instanceof GlobalType) {
+            gType = (GlobalType)sComp;
+        } else if (sComp instanceof TypeContainer) {
             TypeContainer typeContainer = (TypeContainer)sComp;
             NamedComponentReference<? extends GlobalType> typeRef = 
                     typeContainer.getType();
@@ -183,6 +185,13 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         if (treeItem instanceof AbstractVariableDeclaration) {
             return ((AbstractVariableDeclaration)treeItem).getVariableName();
         }
+        //
+        if (treeItem instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
+            return "(" + gType + ")" + getDisplayName(castableObject);
+        }
+        //
         return null;
     }
 
@@ -292,28 +301,17 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         //
         if (treeItem instanceof AbstractTypeCast) {
-            SchemaComponent sComp = ((AbstractTypeCast)treeItem).getSComponent();
-            return getIcon(sComp);
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            return getIcon(castableObject);
         }
         //
         return null;
     }
 
-    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
+    private void populateActionsList(Object treeItem, List<Action> result, 
+            MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
             RestartableIterator<Object> dataObjectPathItr) {
-        //
-        dataObjectPathItr.restart();
-        Object treeItem = dataObjectPathItr.next();
-        //
-        Mapper mapper = mapperTcContext.getMapper();
-        BpelDesignContext context = mapperTcContext.
-                getDesignContextController().getContext();
-        if (mapper == null || context == null) {
-            return Collections.EMPTY_LIST;
-        }
-        //
-        List<Action> result = new ArrayList<Action>();
         //
         boolean isProcessed = false;
         if (treeItem instanceof SchemaComponent) {
@@ -342,6 +340,13 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             Action action = new DeleteCastAction(
                     mapperTcContext, inLeftTree, treePath, dataObjectPathItr);
             result.add(action);
+            //
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            populateActionsList(castableObject, result, 
+                    mapperTcContext, inLeftTree, treePath, 
+                    dataObjectPathItr);
+
+            
             isProcessed = true;
         }
         //
@@ -370,6 +375,25 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 }
             } 
         }
+    }
+    
+    public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
+            boolean inLeftTree, TreePath treePath, 
+            RestartableIterator<Object> dataObjectPathItr) {
+        //
+        dataObjectPathItr.restart();
+        Object treeItem = dataObjectPathItr.next();
+        //
+        Mapper mapper = mapperTcContext.getMapper();
+        BpelDesignContext context = mapperTcContext.
+                getDesignContextController().getContext();
+        if (mapper == null || context == null) {
+            return Collections.EMPTY_LIST;
+        }
+        //
+        List<Action> result = new ArrayList<Action>();
+        populateActionsList(treeItem, result, mapperTcContext, inLeftTree, 
+                treePath, dataObjectPathItr);
         //
         if (!(treeItem instanceof LocationStep || 
                 treeItem instanceof AbstractPredicate || 
@@ -465,11 +489,17 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }    
         
         if (treeItem instanceof AbstractTypeCast) {
+            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            String baseTooltip = getToolTipText(castableObject);
             GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
-            return gType.getName();
+            String castedToLbl = NbBundle.getMessage(
+                    VariableTreeInfoProvider.class, "CASTED_TO"); // NOI18N
+            return baseTooltip + " " + castedToLbl + " " + gType.getName();
         }
-        
-        return "not named type";
+        //
+        String notNamedTypeLbl = NbBundle.getMessage(
+                VariableTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
+        return notNamedTypeLbl;
     }
 
 }

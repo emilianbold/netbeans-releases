@@ -228,10 +228,6 @@ public class CompletionContext {
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
                 
-                if(token.getOffset() == caretOffset) {
-                    break;
-                }
-                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
