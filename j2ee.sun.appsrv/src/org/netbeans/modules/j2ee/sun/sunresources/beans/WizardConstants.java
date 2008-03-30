@@ -187,7 +187,7 @@ public interface WizardConstants {
     public static final String[] VendorsExtraProps = {"sun_db2", "sun_oracle", "sun_msftsql",
         "sun_sybase", "db2", "microsoft_sql", "post-gre-sql", "mysql", "datadirect_sql",
         "datadirect_db2", "datadirect_informix", "datadirect_sybase", "datadirect_oracle", 
-        "jtds_sql", "jtds_sybase", "informix", "sybase2"};
+        "jtds_sql", "jtds_sybase", "informix", "sybase2", "as400"};
     
     
     public static final String[] VendorsDBNameProp = {"sun_db2", "sun_oracle", "sun_msftsql",
