@@ -120,10 +120,10 @@ public final class KitsTrackerImpl extends KitsTracker {
                 contextMimeType = context.peek();
             }
             
-            if (contextMimeType == null || contextMimeType.length() ==0) {
+            if (contextMimeType == null || contextMimeType.length() == 0) {
                 List mimeTypes = getMimeTypesForKitClass(kitClass);
                 if (mimeTypes.size() == 0) {
-                    if (LOG.isLoggable(Level.WARNING)) {
+                    if (LOG.isLoggable(Level.WARNING) && !DYNAMIC_LANGUAGES.contains(kitClass.getName())) {
                         logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
                     }
                     return null;
@@ -201,13 +201,14 @@ public final class KitsTrackerImpl extends KitsTracker {
         "org.netbeans.editor.BaseKit", //NOI18N
         "org.netbeans.editor.ext.ExtKit", //NOI18N
         "org.netbeans.modules.editor.NbEditorKit", //NOI18N
-        
+        // common superclass of some XML related kits
+        "org.netbeans.modules.xml.text.syntax.UniKit", //NOI18N
+    }));
+
+    private static final Set<String> DYNAMIC_LANGUAGES = new HashSet<String>(Arrays.asList(new String [] {
         // Schliemann and GSF kits are provided on the fly by the frameworks' MimeDataProvider
         "org.netbeans.modules.languages.dataobject.LanguagesEditorKit", //NOI18N
         "org.netbeans.modules.gsf.GsfEditorKitFactory$GsfEditorKit", //NOI18N
-        
-        // common superclass of some XML related kits
-        "org.netbeans.modules.xml.text.syntax.UniKit", //NOI18N
     }));
 
     private final ThreadLocal<Stack<String>> contexts = new ThreadLocal<Stack<String>>();
