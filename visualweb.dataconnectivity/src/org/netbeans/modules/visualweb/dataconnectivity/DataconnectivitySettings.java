@@ -68,24 +68,18 @@ public class DataconnectivitySettings {
         return INSTANCE;
     }
 
-    public void setDataProviderSuffixProp(String dpSuffix) {
-        if (dpSuffix.length() == 0) {
-            dpSuffix = "DataProvider"; //NOI18N
-        }
+    public void setDataProviderSuffixProp(String dpSuffix) {        
         getPreferences().put(PROP_DATAPROVIDER, dpSuffix);
     }
     public String getDataProviderSuffixProp() {
-        return getPreferences().get(PROP_DATAPROVIDER, DEFAULT_DATAPROVIDER_SUFFIX); // NOI18N
+        return getPreferences().get(PROP_DATAPROVIDER, DEFAULT_DATAPROVIDER_SUFFIX); 
     }
 
-    public void setRowSetSuffixProp(String rowsetSuffix) {
-        if (rowsetSuffix.length() == 0) {
-            rowsetSuffix = "RowSet"; //NOI18N
-        }
+    public void setRowSetSuffixProp(String rowsetSuffix) {        
         getPreferences().put(PROP_ROWSET, rowsetSuffix);
     }
     public String getRowSetSuffixProp() {
-        return getPreferences().get(PROP_ROWSET, DEFAULT_ROWSET_SUFFIX);  // NOI18N
+        return getPreferences().get(PROP_ROWSET, DEFAULT_ROWSET_SUFFIX); 
     }
 
     public static String getRsSuffix() {
