@@ -53,8 +53,12 @@ import org.netbeans.modules.websvc.saas.codegen.java.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.SaasCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication.UseGenerator.Token.Prompt;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.HttpBasic;
 import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator.Login;
 import org.netbeans.modules.websvc.saas.model.jaxb.UseGenerator.Logout;
@@ -75,6 +79,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
 import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType.Template;
 import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 
 /**
  *
@@ -94,10 +99,49 @@ public abstract class SaasBean extends GenericResourceBean {
     private SaasBean.SaasAuthentication auth;
     private String authProfile;
     private boolean isDropTargetWeb = false;
+    private String groupName;
+    private String displayName;
+    private Saas saas;
 
-    public SaasBean(String name, String packageName, String uriTemplate, 
+    public SaasBean(Saas saas, String name, String packageName, String uriTemplate, 
             MimeType[] mediaTypes, String[] representationTypes, HttpMethodType[] methodTypes) {
         super(name, packageName, uriTemplate, mediaTypes, representationTypes, methodTypes);
+        this.saas = saas;
+        
+        SaasGroup g = saas.getParentGroup();
+        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
+            g = saas.getTopLevelGroup();
+        this.groupName = Util.normailizeName(g.getName());
+        this.displayName = Util.normailizeName(saas.getDisplayName());
+    }
+    
+    public String getGroupName() {
+        return groupName;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public String getSaasName() {
+        return getGroupName()+getDisplayName();
+    }
+    
+    public String getSaasServiceName() {
+        return getGroupName()+getDisplayName()/*+"Service"*/;
+    }
+    
+    public String getSaasServicePackageName() {
+        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
+                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
+    }
+    
+    public String getAuthenticatorClassName() {
+        return Util.getAuthenticatorClassName(getSaasName());
+    }
+    
+    public String getAuthorizationFrameClassName() {
+        return Util.getAuthorizationFrameClassName(getSaasName());
     }
     
     public boolean isDropTargetWeb() {
@@ -288,8 +332,10 @@ public abstract class SaasBean extends GenericResourceBean {
     public void findAuthentication(SaasMethod m) throws IOException {
         Authentication auth2 = m.getSaas().getSaasMetadata().getAuthentication();
         if(auth2 == null) {
-            throw new IOException("Element saas-services/service-metadata/authentication " +
-                    "missing in saas service xml for: "+getName());
+            setAuthenticationType(SaasAuthenticationType.PLAIN);
+            return;
+            //throw new IOException("Element saas-services/service-metadata/authentication " +
+            //        "missing in saas service xml for: "+getName());
         }
         if(auth2.getHttpBasic() != null) {
             HttpBasic httpBasic = auth2.getHttpBasic();

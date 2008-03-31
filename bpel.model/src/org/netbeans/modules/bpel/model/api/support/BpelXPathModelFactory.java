@@ -22,6 +22,7 @@ import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 
@@ -52,6 +53,16 @@ public final class BpelXPathModelFactory {
      * @return the new XPath model.
      */
     public static XPathModel create(final BpelEntity contextEntity) {
+        return create(contextEntity, null);
+    }
+    
+    /**
+     * Create a model which knows about type casts.
+     * @param contextEntity
+     * @param casts
+     * @return
+     */
+    public static XPathModel create(final BpelEntity contextEntity, List<Cast> casts) {
         assert contextEntity != null : 
             "Trying to create a new BPEL XPath model without a context entity"; // NOI18N
         XPathModelHelper helper= XPathModelHelper.getInstance();
@@ -65,6 +76,11 @@ public final class BpelXPathModelFactory {
         //
         model.setExternalModelResolver(
                 new BpelExternalModelResolver(contextEntity.getBpelModel()));
+        //
+        if (casts != null && !casts.isEmpty()) {
+            XPathCastResolverImpl castResolver = new XPathCastResolverImpl(casts);
+            model.setXPathCastResolver(castResolver);
+        }
         //
         return model;
     }

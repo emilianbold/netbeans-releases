@@ -27,6 +27,7 @@ import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.Import;
 import org.netbeans.modules.iep.model.InputOperatorComponent;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OutputOperatorComponent;
@@ -81,6 +82,11 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
     public OutputOperatorComponent createOutputOperator(IEPModel model) {
     	return new OutputOperatorComponentImpl(model);
     }
+
+    public InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model) {
+        return new InvokeStreamOperatorComponentImpl(model);
+    }
+    
     
     public LinkComponent createLink(IEPModel model) {
     	return new LinkComponentImpl(model);

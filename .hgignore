@@ -10,6 +10,7 @@ derby\.log
 \.rej$
 \.tmp\.$
 \.swp$
+^tags$
 /gensrc$
 \.ant-targets-build\.xml$
 ^hs_err_pid[0-9]*\.log

@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.cast;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,15 +32,21 @@ import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.ErrorManager;
 
 /**
@@ -87,6 +94,9 @@ public class CastManager {
     // The cache of type cast.
     private LinkedList<CachedCast> mCashedCastList;
     
+    // The cache of casted variables.
+    private LinkedList<CashedVariableCast> mCashedCastedVarList;
+    
     private boolean mInLeftMapperTree;
     private Object mSynchSource;
     
@@ -98,15 +108,24 @@ public class CastManager {
         mInLeftMapperTree = inLeftMapperTree;
         mSynchSource = synchSource;
         mCashedCastList = new LinkedList<CachedCast>();
+        mCashedCastedVarList = new LinkedList<CashedVariableCast>();
     }
     
+    //-------------------------------------------------------
+    
     public List<AbstractTypeCast> getTypeCast(
-            RestartableIterator<Object> parentPath, SchemaComponent sComp) {
-        //    
+            RestartableIterator<Object> paretnPath, SchemaComponent castedComp) {
+        //
+        // Convert the iterator, which points to the paretn element to the 
+        // iterator, which points to the casted component.
+        RestartableIterator.RestartableIteratorExpander<Object> baseCompItr = 
+                new RestartableIterator.RestartableIteratorExpander<Object>(
+                paretnPath, castedComp); 
+        //
         ArrayList<AbstractTypeCast> result = new ArrayList<AbstractTypeCast>();
-        
+        //
         for (CachedCast cCast : mCashedCastList) {
-            if (cCast.hasSameBase(sComp) && cCast.hasSameLocation(parentPath)) {
+            if (cCast.hasSameCastedCompLocation(baseCompItr)) {
                 result.add(cCast.getTypeCast());
             }
         }
@@ -114,33 +133,99 @@ public class CastManager {
         return result;
     }
     
-    public boolean addTypeCast(List<Object> parentPath, AbstractTypeCast cast) {
-        for (CachedCast cCast : mCashedCastList) {
-            if (cCast.hasSameLocation(parentPath) && cCast.hasSameCastTo(cast)) {
+    public boolean addTypeCast(Cast cast) {
+        TypeCast typeCast = TypeCast.convert(cast);
+        if (typeCast != null) {
+            List<Object> castedCompPath = 
+                    PathConverter.constructObjectLocationtList(
+                    typeCast.getXPathExpression());
+            //
+            return addTypeCastImpl(castedCompPath, typeCast);
+        }
+        return false;
+    }
+    
+    private boolean addTypeCastImpl(List<Object> castedCompPath, AbstractTypeCast cast) {
+        //
+        XPathBpelVariable xPathVar = PathConverter.constructXPathBpelVariable(castedCompPath);
+        if (xPathVar != null) {
+            return addCastedVariableImpl(xPathVar, cast);
+        } else {
+            //
+            for (CachedCast cCast : mCashedCastList) {
+                if (cCast.hasSameCastedCompPath(castedCompPath) && cCast.hasSameCastTo(cast)) {
+                    // the same cast already in cache
+                    return false;
+                }
+            }
+            //
+            CachedCast cCast = new CachedCast(castedCompPath, cast);
+            mCashedCastList.add(cCast);
+            return true;
+        }
+    }
+
+    public void addTypeCast(RestartableIterator<Object> castedCompItr, 
+            SyntheticTypeCast cast) {
+        //
+        List<Object> castedCompPath = 
+                PathConverter.constructObjectLocationtList(castedCompItr);
+        //
+        if (castedCompPath != null) {
+            if (addTypeCastImpl(castedCompPath, cast)) {
+                registerVariableTypeCast(cast);
+            }
+        }
+    }
+    
+    //-------------------------------------------------------
+    
+    /**
+     * Returns casted variables based on the specified variable. 
+     * @param parentPath
+     * @param var
+     * @return
+     */
+    public List<AbstractTypeCast> getCastedVariables(
+            AbstractVariableDeclaration var, Part part) {
+        //
+        ArrayList<AbstractTypeCast> result = new ArrayList<AbstractTypeCast>();
+        if (mCashedCastedVarList != null && !mCashedCastedVarList.isEmpty()) {
+            XPathBpelVariable xPathVar = new XPathBpelVariable(var, part);
+            //
+            for (CashedVariableCast cVCast : mCashedCastedVarList) {
+                if (cVCast.getCastedVariableDecl().equals(xPathVar)) {
+                    result.add(cVCast.getTypeCast());
+                }
+            }
+        }
+        //
+        return result;
+    }
+    
+    public boolean addCastedVariable(AbstractVariableDeclaration var, Part part, 
+            AbstractTypeCast cast) {
+        //
+        XPathBpelVariable xPathVar = new XPathBpelVariable(var, part);
+        return addCastedVariableImpl(xPathVar, cast);
+    }
+        
+    private boolean addCastedVariableImpl(XPathBpelVariable xPathVar, 
+            AbstractTypeCast cast) {
+        //
+        for (CashedVariableCast cVCast : mCashedCastedVarList) {
+            if (cVCast.hasSameValues(xPathVar, cast) ) {
                 // the same cast already in cache
                 return false;
             }
         }
         //
-        CachedCast cCast = new CachedCast(parentPath, cast);
-        mCashedCastList.add(cCast);
+        CashedVariableCast cVCast = new CashedVariableCast(xPathVar, cast);
+        mCashedCastedVarList.add(cVCast);
         return true;
     }
 
-    public boolean addTypeCast(RestartableIterator<Object> parentItr, 
-            SyntheticTypeCast cast) {
-        //
-        List<Object> parentPath = 
-                PathConverter.constructObjectLocationtList(parentItr);
-        //
-        if (parentPath != null) {
-            if (addTypeCast(parentPath, cast)) {
-                registerVariableTypeCast(cast);
-            }
-        }
-        //
-        return false;
-    }
+    //-------------------------------------------------------
     
     public void registerVariableTypeCast(final SyntheticTypeCast typeCast) {
         final Variable var = typeCast.getBaseVariable();
@@ -159,11 +244,9 @@ public class CastManager {
             }
         }
     }
-    
-    public void registerTypeCast(ExtensibleElements destination, 
-            SyntheticTypeCast typeCast) {
-        BpelModel bpelModel = destination.getBpelModel();
-        BPELElementsBuilder builder = bpelModel.getBuilder();
+
+    private Casts getCastsEntity(BPELElementsBuilder builder, 
+            ExtensibleElements destination, boolean create) {
         //
         Editor editor = null;
         List<Editor> editorList = destination.getChildren(Editor.class);
@@ -172,6 +255,9 @@ public class CastManager {
         }
         //
         if (editor == null) {
+            if (!create) {
+                return null;
+            }
             Editor newEditor = builder.createExtensionEntity(Editor.class);
             editor = newEditor;
             destination.addExtensionEntity(Editor.class, editor);
@@ -179,18 +265,38 @@ public class CastManager {
         //
         Casts casts = editor.getCasts();
         if (casts == null) {
+            if (!create) {
+                return null;
+            }
             Casts newCasts = builder.createExtensionEntity(Casts.class);
             casts = newCasts;
             editor.setCasts(casts);
         }
         //
+        return casts;
+    }
+    
+    public void registerTypeCast(ExtensibleElements destination, 
+            AbstractTypeCast newTypeCast) {
+        BpelModel bpelModel = destination.getBpelModel();
+        BPELElementsBuilder builder = bpelModel.getBuilder();
+        //
+        Casts casts = getCastsEntity(builder, destination, true);
+        //
         Cast[] castArr = casts.getCasts();
         //
         boolean isEqualFound = false;
         for (Cast cast : castArr) {
+            //
+            if (cast.getSource() == Source.TO && mInLeftMapperTree || 
+                    cast.getSource() != Source.TO && !mInLeftMapperTree) {
+                // Skip casts with oposit source
+                continue;
+            } 
+            //
             TypeCast varTypeCast = TypeCast.convert(cast);
             if (varTypeCast != null) {
-                if (varTypeCast.equals(typeCast)) {
+                if (varTypeCast.equals(newTypeCast)) {
                     isEqualFound = true;
                     break;
                 }
@@ -199,30 +305,215 @@ public class CastManager {
         //
         if (!isEqualFound) {
             Cast newCast = builder.createExtensionEntity(Cast.class);
-            SyntheticTypeCast.populateCast(
-                    typeCast, newCast, casts, mInLeftMapperTree);
+            newTypeCast.populateCast(newCast, casts, mInLeftMapperTree);
             casts.addCast(newCast);
         }
     }
     
-    public boolean addTypeCast(Cast cast) {
-        TypeCast typeCast = TypeCast.convert(cast);
-        if (typeCast != null) {
-            List<Object> parentPath = 
-                    PathConverter.constructObjectLocationtList(
-                    typeCast.getXPathExpressionPath());
-            return addTypeCast(parentPath, typeCast);
+    public void registerTypeCasts(ExtensibleElements destination, 
+            Collection<AbstractTypeCast> newTypeCasts) {
+        BpelModel bpelModel = destination.getBpelModel();
+        BPELElementsBuilder builder = bpelModel.getBuilder();
+        //
+        Casts casts = getCastsEntity(builder, destination, true);
+        //
+        Cast[] castArr = casts.getCasts();
+        //
+        for (AbstractTypeCast typeCast : newTypeCasts) {
+            boolean isEqualFound = false;
+            for (Cast cast : castArr) {
+                //
+                if (cast.getSource() == Source.TO && mInLeftMapperTree || 
+                        cast.getSource() != Source.TO && !mInLeftMapperTree) {
+                    // Skip casts with oposit source
+                    continue;
+                } 
+                //
+                TypeCast varTypeCast = TypeCast.convert(cast);
+                if (varTypeCast != null) {
+                    if (varTypeCast.equals(typeCast)) {
+                        isEqualFound = true;
+                        break;
+                    }
+                }
+            }
+            //
+            if (!isEqualFound) {
+                Cast newCast = builder.createExtensionEntity(Cast.class);
+                typeCast.populateCast(newCast, casts, mInLeftMapperTree);
+                casts.addCast(newCast);
+            }
         }
-        return false;
     }
     
+    public void deleteTypeCast(final AbstractTypeCast castToUnreg) {
+        final AbstractVariableDeclaration var = castToUnreg.getBaseVariable();
+        if (var != null) {
+            //
+            // TODO: check if the deleted cast is used somewhere and ask 
+            // user's confirmation if so. 
+            //
+            try {
+                BpelModel bpelModel = ((BpelEntity)var).getBpelModel();
+                bpelModel.invoke(new Callable<Object>() {
+                    public Object call() throws Exception {
+                        unregisterTypeCast((ExtensibleElements)var, castToUnreg);
+                        clearEmptyEditorEntity((ExtensibleElements)var);
+                        removeTypeCast(castToUnreg);
+                        return null;
+                    }
+                }, mSynchSource);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+    }
+    
+    /**
+     * Deletes the Cast eitity from the BPEL sources at the specified 
+     * destination.
+     * 
+     * @param destination
+     * @param castToUnreg
+     */
+    public void unregisterTypeCast(ExtensibleElements destination, 
+            AbstractTypeCast castToUnreg) {
+        //
+        BpelModel bpelModel = destination.getBpelModel();
+        BPELElementsBuilder builder = bpelModel.getBuilder();
+        //
+        Casts casts = getCastsEntity(builder, destination, false);
+        //
+        if (casts == null) {
+            return; // Nothing to unregister
+        }
+        //
+        Cast[] castArr = casts.getCasts();
+        for (int index = 0; index < castArr.length; index++) {
+            Cast cast = castArr[index];
+            //
+            if (mInLeftMapperTree && cast.getSource() == Source.TO ||
+                    !mInLeftMapperTree && cast.getSource() != Source.TO) {
+                // Skip casts with oposite source
+                continue;
+            }
+            //
+            TypeCast tCast = TypeCast.convert(cast);
+            if (castToUnreg.equals(tCast)) {
+                // The required cast found!
+                casts.removeCast(index);
+            }
+        }
+        //
+    }
+    
+    /**
+     * Clear empty Editor extensions from the destination.
+     * @param destination
+     */
+    public void clearEmptyEditorEntity(ExtensibleElements destination) {
+        List<Editor> editorExt = destination.getChildren(Editor.class);
+        for (Editor editor : editorExt) {
+            if (clearEmptyContainer(editor)) {
+                destination.remove(editor);
+            }
+        }
+    }
+    
+    /**
+     * Recursively deletes empty containers. 
+     * The method has to be called inside of transaction.
+     * @param container
+     * @return true if all children were deleted.
+     */
+    private boolean clearEmptyContainer(BpelContainer container) {
+        List<BpelEntity> children = container.getChildren();
+        int initialSize = children.size();
+        int deletedChildCount = 0;
+        for (BpelEntity child : children) {
+            if (child instanceof BpelContainer) {
+                if (clearEmptyContainer((BpelContainer)child)) {
+                    container.remove(child);
+                    deletedChildCount++;
+                }
+            }
+        }
+        //
+        return deletedChildCount == initialSize;
+    }
+    
+    /**
+     * Removes the specified cast from the cashe.
+     * @param castToDelete
+     */
     public void removeTypeCast(AbstractTypeCast castToDelete) {
+        for (CashedVariableCast cVarCast : mCashedCastedVarList) {
+            AbstractTypeCast cast = cVarCast.getTypeCast();
+            if (cast.equals(castToDelete)) {
+                mCashedCastList.remove(cast);
+                return;
+            }
+        }
         for (CachedCast cCast : mCashedCastList) {
             AbstractTypeCast cast = cCast.getTypeCast();
             if (cast.equals(castToDelete)) {
                 mCashedCastList.remove(cast);
-                break;
+                return;
             }
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return " inLeftTree:" + mInLeftMapperTree + 
+                "  TypeCastCount: " + mCashedCastList.size() + 
+                "  ||  " + super.toString(); 
+    }
+    
+    public static class CashedVariableCast {
+        // The type cast.
+        private XPathBpelVariable mVariable;
+        
+        // The type cast.
+        private AbstractTypeCast mTypeCast;
+        
+        public CashedVariableCast(XPathBpelVariable variable, 
+                AbstractTypeCast typeCast) {
+            //
+            assert variable != null && typeCast != null;
+            //
+            mVariable = variable;
+            mTypeCast = typeCast;
+        }
+
+        public XPathBpelVariable getCastedVariableDecl() {
+            return mVariable;
+        }
+        
+        public AbstractTypeCast getTypeCast() {
+            return mTypeCast;
+        }
+        
+        public boolean hasSameValues(XPathBpelVariable variable, 
+                AbstractTypeCast typeCast) {
+            return mVariable.equals(variable) && mTypeCast.equals(typeCast);
+        }
+        
+        @Override
+        public  boolean equals(Object obj) {
+            if (obj instanceof CashedVariableCast) {
+                CashedVariableCast other = (CashedVariableCast)obj;
+                return mVariable.equals(other.getCastedVariableDecl()) && 
+                        mTypeCast.equals(other.getTypeCast());
+            }
+            //
+            return false;
+        }
+    
+        @Override
+        public String toString() {
+            return "Var: " + mVariable.toString() + 
+                    " Cast: " + mTypeCast.toString(); // NOI18N
         }
     }
     
@@ -237,6 +528,7 @@ public class CastManager {
      * PredicatedSchemaComp objects. 
      */
     public static class CachedCast {
+        // Points to the Casted Schema Component. 
         // The list contains data objects from which a tree path consists of
         // It is implied that it can contain a set of SchemaComponents and 
         // PredicatedSchemaComp, special steps or another type casts. 
@@ -244,13 +536,13 @@ public class CastManager {
         // The first element is the parent of the type cast!
         // The type cast component isn't in the list itself.
         // It it held in the separate attribute mTypeCast.
-        private List<Object> mParentPath;
+        private List<Object> mCastedCompPath;
 
         // The type cast.
         private AbstractTypeCast mTypeCast;
         
-        public CachedCast(List<Object> parentPath, AbstractTypeCast cast) {
-            mParentPath = parentPath;
+        public CachedCast(List<Object> castedCompPath, AbstractTypeCast cast) {
+            mCastedCompPath = castedCompPath;
             mTypeCast = cast;
         }
         
@@ -264,11 +556,12 @@ public class CastManager {
         
         /**
          * Returns the list of data objects which indicate the location of 
-         * the type cast in the tree. The first element of the list points 
-         * to the parent element of the type cast.
+         * the casted component to whith the type cast is applied.
+         * The casted and casting components are always sibling in the tree.
+         * So the second element of the list is the parent of the cast.
          */
-        public List getParentPath() {
-            return mParentPath;
+        public List<Object> getCastedCompPath() {
+            return mCastedCompPath;
         }
         
         public boolean hasSameBase(SchemaComponent baseSchemaComp) {
@@ -280,19 +573,19 @@ public class CastManager {
             return gType.equals(cast.getCastTo());
         }
         
-        public boolean hasSameLocation(RestartableIterator parentPathItr) {
-            parentPathItr.restart();
-            return hasSameLocationImpl(parentPathItr);
+        public boolean hasSameCastedCompLocation(RestartableIterator castedCompItr) {
+            castedCompItr.restart();
+            return hasSameCastedCompPathImpl(castedCompItr);
         }
         
-        public boolean hasSameLocation(List<Object> parentPath) {
-            Iterator externalItr = parentPath.iterator();
-            return hasSameLocationImpl(externalItr);
+        public boolean hasSameCastedCompPath(List<Object> castedCompPath) {
+            Iterator externalItr = castedCompPath.iterator();
+            return hasSameCastedCompPathImpl(externalItr);
         }
         
-        private boolean hasSameLocationImpl(Iterator externalItr) {
+        private boolean hasSameCastedCompPathImpl(Iterator externalItr) {
             //
-            Iterator internalItr = mParentPath.iterator();
+            Iterator internalItr = mCastedCompPath.iterator();
             boolean theSame = true;
             while (externalItr.hasNext() && internalItr.hasNext()) {
                 Object externalPathStep = externalItr.next();
@@ -326,7 +619,7 @@ public class CastManager {
         
         private String locationToString() {
             StringBuilder sb = new StringBuilder();
-            ListIterator itr = mParentPath.listIterator(mParentPath.size());
+            ListIterator itr = mCastedCompPath.listIterator(mCastedCompPath.size());
             boolean isFirst = true;
             while (itr.hasPrevious()) {
                 if (isFirst) {
@@ -352,13 +645,13 @@ public class CastManager {
                 return false;
             }
             //
-            List path2 = castpred2.getParentPath();
-            if (path2.size() != mParentPath.size()) {
+            List path2 = castpred2.getCastedCompPath();
+            if (path2.size() != mCastedCompPath.size()) {
                 // Pathes have diferrent length
                 return false;
             }
             //
-            Iterator itr = mParentPath.listIterator();
+            Iterator itr = mCastedCompPath.listIterator();
             Iterator itr2 = path2.listIterator();
             //
             while (itr.hasNext()) { // Pathes have the same length!

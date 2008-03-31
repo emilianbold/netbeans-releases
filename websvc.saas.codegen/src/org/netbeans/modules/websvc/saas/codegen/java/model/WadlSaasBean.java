@@ -74,8 +74,6 @@ public class WadlSaasBean extends SaasBean {
     public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
-    private String groupName;
-    private String displayName;
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
@@ -83,7 +81,7 @@ public class WadlSaasBean extends SaasBean {
     }
     
     public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        super(m.getSaas(), Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
@@ -97,27 +95,6 @@ public class WadlSaasBean extends SaasBean {
         return m;
     }
     
-    public String getGroupName() {
-        return groupName;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public String getSaasName() {
-        return getGroupName()+getDisplayName();
-    }
-    
-    public String getSaasServiceName() {
-        return getGroupName()+getDisplayName()/*+"Service"*/;
-    }
-    
-    public String getSaasServicePackageName() {
-        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
-                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
-    }
-    
     public String getSaasServiceMethodName() {
         if(serviceMethodName == null) {
             serviceMethodName = Util.deriveMethodName(getMethod().getName());
@@ -126,21 +103,8 @@ public class WadlSaasBean extends SaasBean {
         return serviceMethodName;
     }
     
-    public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getSaasName());
-    }
-    
-    public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getSaasName());
-    }
-    
     private void init() throws IOException { 
         setResourceClassTemplate(RESOURCE_TEMPLATE);
-        SaasGroup g = getMethod().getSaas().getParentGroup();
-        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
-            g = getMethod().getSaas().getTopLevelGroup();
-        this.groupName = Util.normailizeName(g.getName());
-        this.displayName = Util.normailizeName(getMethod().getSaas().getDisplayName());
         setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
         findAuthentication(m);
         initUrl();
@@ -243,7 +207,10 @@ public class WadlSaasBean extends SaasBean {
         findRepresentationType(response, repTypes);
         return repTypes;
     }
-    
+  
+    public static List<RepresentationType> findInputRepresentations(WadlSaasMethod m) {
+        return m.getWadlMethod().getRequest().getRepresentation();
+    }
     
     public String getUrl() {
         return this.url;
@@ -267,6 +234,23 @@ public class WadlSaasBean extends SaasBean {
         }
     }
 
+    public static void findMediaType(Request request, List<String> mimeTypes) {
+        if(request == null)
+            return;
+        List<RepresentationType> reps = request.getRepresentation();
+        for (RepresentationType rep : reps) {
+            String mediaType = rep.getMediaType();
+            if(mediaType == null)
+                continue;
+            String[] mTypes = mediaType.split(",");
+            for(String m: mTypes) {
+                if (m != null && !mimeTypes.contains(m)) {
+                    mimeTypes.add(m);
+                }
+            }
+        }
+    }
+    
     public static void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {

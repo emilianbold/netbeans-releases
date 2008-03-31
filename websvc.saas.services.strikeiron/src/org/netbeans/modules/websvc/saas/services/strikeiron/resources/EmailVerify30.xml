@@ -67,6 +67,7 @@
         </authentication>
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="ValidateEmail" serviceName="EmailVerification"
                 portName="EmailVerificationSoap" operationName="ValidateEmail">
@@ -75,5 +76,8 @@
             </documentation>
         </method>
     </methods>
+    -->
+    
+    <methods/>
     
 </saas-services>

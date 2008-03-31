@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://s3.amazonaws.com/doc/2006-03-01/"
+            xmlns:tns="http://s3.amazonaws.com/doc/2006-03-01/"
+            elementFormDefault="qualified">
+    <xsd:element name="LocationConstraint">
+        <xsd:complexType></xsd:complexType>
+</xsd:schema>

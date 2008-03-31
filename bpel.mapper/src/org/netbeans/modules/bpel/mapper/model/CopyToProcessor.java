@@ -20,6 +20,7 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
@@ -34,6 +35,7 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -105,7 +107,8 @@ public class CopyToProcessor {
     public static ArrayList<TreeItemFinder> constructFindersList(
             CopyToForm form, 
             BpelEntity contextEntity, To copyTo, 
-            XPathExpression toExpr) {
+            XPathExpression toExpr, 
+            List<Cast> castList) {
         //
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
@@ -186,7 +189,7 @@ public class CopyToProcessor {
         }
         case EXPRESSION: {
             if (toExpr == null) {
-                toExpr = constructExpression(contextEntity, copyTo);
+                toExpr = constructExpression(contextEntity, copyTo, castList);
             }
             //
             if (toExpr != null) {
@@ -195,7 +198,7 @@ public class CopyToProcessor {
                             (AbstractLocationPath)toExpr));
                 } else if (toExpr instanceof XPathVariableReference) {
                     finderList.addAll(FinderListBuilder.build(
-                            (XPathVariableReference)toExpr));
+                            (XPathVariableReference)toExpr, null));
                 }
             }
             //
@@ -219,7 +222,7 @@ public class CopyToProcessor {
     }
     
     public static XPathExpression constructExpression(
-            BpelEntity contextEntity, To copyTo) {
+            BpelEntity contextEntity, To copyTo, List<Cast> castList) {
         //
         String exprLang = copyTo.getExpressionLanguage();
         String exprText = copyTo.getContent();
@@ -229,7 +232,8 @@ public class CopyToProcessor {
         // we can handle only xpath expressions.
         if (isXPathExpr && exprText != null && exprText.length() != 0) {
             try {
-                XPathModel newXPathModel = BpelXPathModelFactory.create(contextEntity);
+                XPathModel newXPathModel = 
+                        BpelXPathModelFactory.create(contextEntity, castList);
                 // NOT NEED to specify schema context because of an 
                 // expression with variable is implied here. 
                 //

@@ -660,7 +660,10 @@ class MapperNode implements GraphListener {
     }
     
     private MapperNode getNextVisibleNode(MapperNode node) {
-        if (node == mapper.getRoot() && node != this) {
+        MapperNode root = mapper.getRoot();
+        if (node == root && (node != this || root.isLeaf() 
+                || root.isCollapsed() || root.getChildCount() < 1)) 
+        {
             return null;
         }
         MapperNode result = null;
