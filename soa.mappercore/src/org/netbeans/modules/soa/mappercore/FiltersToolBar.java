@@ -25,17 +25,37 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.SourcePin;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -45,6 +65,9 @@ import org.openide.util.NbBundle;
 public class FiltersToolBar extends JToolBar implements ActionListener {
 
     private Mapper mapper;
+    
+    private JButton expandLeftButton;
+    private JButton expandRightButton;
     
     private JToggleButton leftAllButton;
     private JToggleButton leftOutputButton;
@@ -56,6 +79,15 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
     private SwitchLeftFilterAction switchLeftFilterAction;
     private SwitchRightFilterAction switchRightFilterAction;
     
+    private ExpandNonEmptyGraphsAction expandNonEmptyGraphsAction;
+    private CollapseAllRightAction collapseAllRightAction;
+    private CollapseOtherNodesAction collapseOtherNodesAction;
+    
+    private CollapseAllLeftAction collapseAllLeftAction;
+    private ExpandMappedNodesLeftAction expandMappedNodesLeftAction;
+    
+    private JPopupMenu expandLeftMenu;
+    private JPopupMenu expandRightMenu;
 
     public FiltersToolBar(Mapper mapper) {
         setFloatable(false);
@@ -65,6 +97,23 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
 
         boolean filterLeft = mapper.isFilterLeft();
         boolean filterRight = mapper.isFilterRight();
+
+        collapseAllLeftAction = new CollapseAllLeftAction();
+        expandMappedNodesLeftAction = new ExpandMappedNodesLeftAction();
+        
+        expandNonEmptyGraphsAction = new ExpandNonEmptyGraphsAction();
+        collapseOtherNodesAction = new CollapseOtherNodesAction();
+        collapseAllRightAction = new CollapseAllRightAction();
+        
+        Icon expandActionsIcon = new ImageIcon(getClass()
+                .getResource("resources/expandactions.png")); // NOI18N
+        expandLeftButton = new JButton(expandActionsIcon);
+        expandLeftButton.addActionListener(this);
+        expandLeftButton.setFocusable(false);
+
+        expandRightButton = new JButton(expandActionsIcon);
+        expandRightButton.addActionListener(this);
+        expandRightButton.setFocusable(false);
         
         switchLeftFilterAction = new SwitchLeftFilterAction();
         switchRightFilterAction = new SwitchRightFilterAction();
@@ -82,6 +131,17 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
         actionMap.put("SwitchLeftFilter", switchLeftFilterAction); // NOI18N
         actionMap.put("SwitchRightFilter", switchRightFilterAction); // NOI18N
         
+        registerMapperAction(expandMappedNodesLeftAction, 
+                "ExpandMappedNodesLeftAction"); // NOI18N
+        registerMapperAction(collapseAllLeftAction, 
+                "СollapseAllLeftAction"); // NOI18N
+        registerMapperAction(expandNonEmptyGraphsAction, 
+                "ExpandNonEmptyGraphsAction"); // NOI18N
+        registerMapperAction(collapseAllRightAction, 
+                "CollapseAllRightAction"); // NOI18N
+        registerMapperAction(collapseOtherNodesAction, 
+                "CollapseOtherNodesAction"); // NOI18N
+        
         String leftToolTip = NbBundle.getMessage(getClass(), 
                 "TTT_LeftTreeFilter"); // NOI18N
         String rightToolTip = NbBundle.getMessage(getClass(), 
@@ -89,12 +149,14 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
         
         leftAllButton = new JToggleButton(NbBundle.getMessage(getClass(), 
                 "LBL_LeftTreeFilterAll")); // NOI18N
+        leftAllButton.setFocusable(false);
         leftAllButton.setSelected(!filterLeft);
         leftAllButton.setToolTipText(leftToolTip);
         leftAllButton.addActionListener(this);
         leftOutputButton = new JToggleButton(NbBundle.getMessage(getClass(), 
                 "LBL_LeftTreeFilterOutput")); // NOI18N
         leftOutputButton.setSelected(filterLeft);
+        leftOutputButton.setFocusable(false);
         leftOutputButton.setToolTipText(leftToolTip);
         leftOutputButton.addActionListener(this);
         leftGroup = new ButtonGroup();
@@ -104,11 +166,13 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
         rightAllButton = new JToggleButton(NbBundle.getMessage(getClass(), 
                 "LBL_RightTreeFilterAll")); // NOI18N
         rightAllButton.setSelected(!filterRight);
+        rightAllButton.setFocusable(false);
         rightAllButton.setToolTipText(rightToolTip);
         rightAllButton.addActionListener(this);
         rightInputButton = new JToggleButton(NbBundle.getMessage(getClass(), 
                 "LBL_RightTreeFilterInput")); // NOI18N
         rightInputButton.setSelected(filterRight);
+        rightInputButton.setFocusable(false);
         rightInputButton.setToolTipText(rightToolTip);
         rightInputButton.addActionListener(this);
         rightGroup = new ButtonGroup();
@@ -123,11 +187,17 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
                 "RightTreeFilterAll"); // NOI18N
         configureAccessibleContext(rightInputButton, 
                 "RightTreeFilterInput"); // NOI18N
+        configureAccessibleContext(expandLeftButton, 
+                "ExpandCollapseLeft"); // NOI18N
+        configureAccessibleContext(expandRightButton, 
+                "ExpandCollapseRight"); // NOI18N
         
+        add(expandLeftButton);
         add(leftAllButton);
         add(leftOutputButton);
         add(rightInputButton);
         add(rightAllButton);
+        add(expandRightButton);
     }
     
     private void configureAccessibleContext(JComponent component, String key) {
@@ -136,6 +206,15 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
                 .getMessage(getClass(), "ACSN_" + key)); // NOI18N
         context.setAccessibleDescription(NbBundle
                 .getMessage(getClass(), "ACSD_" + key)); // NOI18N
+    }
+    
+    private void registerMapperAction(Action action, String key) {
+        Object o = action.getValue(Action.ACCELERATOR_KEY);
+        if (o instanceof KeyStroke) {
+            mapper.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .put((KeyStroke) o, key);
+            mapper.getActionMap().put(key, action);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -149,6 +228,10 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
             mapper.setFilter(mapper.isFilterLeft(), false);
         } else if (source == rightInputButton) {
             mapper.setFilter(mapper.isFilterLeft(), true);
+        } else if (source == expandLeftButton) {
+            showExpandLeftMenu();
+        } else if (source == expandRightButton) {
+            showExpandRightMenu();
         }
     }
     
@@ -171,8 +254,15 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
                 count++;
             }
         }
-
-        w = insets.left + w * count + insets.right;
+        
+        Dimension expandLeftSize = expandLeftButton.getPreferredSize();
+        Dimension expandRightSize = expandRightButton.getPreferredSize();
+        
+        h = Math.max(h, Math.max(expandLeftSize.height, expandRightSize.height));
+        int expandWidth = Math.max(expandLeftSize.width, expandRightSize.width);
+        
+        w = insets.left + expandWidth + 1 + w * count + 4 + 1 + expandWidth 
+                + insets.right;
         h = insets.top + h + insets.bottom;
 
         return new Dimension(w, h);
@@ -203,6 +293,13 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
             buttonW = Math.max(buttonW, component.getPreferredSize().width);
         }
 
+        Dimension expandLeftSize = expandLeftButton.getPreferredSize();
+        Dimension expandRightSize = expandRightButton.getPreferredSize();
+        int expandWidth = Math.max(expandLeftSize.width, expandRightSize.width);
+        
+        expandLeftButton.setBounds(x1, y1, expandWidth, buttonH);
+        x1 += expandWidth + 1;
+        
         if (leftAllButton.isVisible()) {
             leftAllButton.setBounds(x1, y1, buttonW, buttonH);
             x1 += buttonW;
@@ -213,14 +310,14 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
             x1 += buttonW;
         }
 
-        int x3 = x2;
+        int x3 = x2 - expandWidth - 1;
         if (rightAllButton.isVisible()) {
             x3 -= buttonW;
         }
         if (rightInputButton.isVisible()) {
             x3 -= buttonW;
         }
-        x3 = Math.max(x3, x1);
+        x3 = Math.max(x3, x1 + 4);
 
         if (rightInputButton.isVisible()) {
             rightInputButton.setBounds(x3, y1, buttonW, buttonH);
@@ -229,7 +326,10 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
 
         if (rightAllButton.isVisible()) {
             rightAllButton.setBounds(x3, y1, buttonW, buttonH);
+            x3 += buttonW + 1;
         }
+        
+        expandRightButton.setBounds(x3, y1, expandWidth, buttonH);
     }
     
     public void updateButtonsState() {
@@ -257,6 +357,32 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
         g.setColor(oldColor);
     }
     
+    private void showExpandLeftMenu() {
+        if (expandLeftMenu == null) {
+            expandLeftMenu = new JPopupMenu();
+            expandLeftMenu.add(expandMappedNodesLeftAction);
+            expandLeftMenu.add(collapseAllLeftAction);
+        }
+        
+        expandLeftMenu.show(expandLeftButton, -2, 
+                expandLeftButton.getHeight() + 1);
+    }
+    
+    private void showExpandRightMenu() {
+        if (expandRightMenu == null) {
+            expandRightMenu = new JPopupMenu();
+            expandRightMenu.add(expandNonEmptyGraphsAction);
+            expandRightMenu.add(collapseAllRightAction);
+            expandRightMenu.add(collapseOtherNodesAction);
+        }
+        
+        int menuWidth = expandRightMenu.getPreferredSize().width;
+        
+        expandRightMenu.show(expandRightButton, 
+                expandRightButton.getWidth() - menuWidth + 2, 
+                expandRightButton.getHeight() + 1);
+    }
+    
     private class SwitchLeftFilterAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             mapper.setFilter(!mapper.isFilterLeft(), mapper.isFilterRight());
@@ -268,4 +394,143 @@ public class FiltersToolBar extends JToolBar implements ActionListener {
             mapper.setFilter(mapper.isFilterLeft(), !mapper.isFilterRight());
         }
     }
+    
+    private class ExpandLeftAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            showExpandLeftMenu();
+        }
+    }
+    
+    private class ExpandRightAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            showExpandRightMenu();
+        }
+    }
+    
+    private class ExpandNonEmptyGraphsAction extends AbstractAction {
+        ExpandNonEmptyGraphsAction() {
+            super(NbBundle.getMessage(FiltersToolBar.class, 
+                    "LBL_ExpandNonEmptyGraphs")); // NOI18N
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+                    KeyEvent.VK_ADD, KeyEvent.CTRL_DOWN_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            mapper.expandNonEmptyGraphs();
+        }
+    }
+    
+    private class CollapseOtherNodesAction extends AbstractAction {
+        CollapseOtherNodesAction() {
+            super(NbBundle.getMessage(FiltersToolBar.class, 
+                    "LBL_CollapseOtherNodes")); // NOI18N
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+                    KeyEvent.VK_SUBTRACT, 
+                    KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            mapper.hideOtherPathes(1);
+        }
+    }
+    
+    private class CollapseAllRightAction extends AbstractAction {
+        CollapseAllRightAction() {
+            super(NbBundle.getMessage(FiltersToolBar.class, 
+                    "LBL_CollapseAllRight")); // NOI18N
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+                    KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_DOWN_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            mapper.collapseAll(1);
+        }
+    }
+    
+    private class CollapseAllLeftAction extends AbstractAction {
+        CollapseAllLeftAction() {
+            super(NbBundle.getMessage(FiltersToolBar.class, 
+                    "LBL_CollapseAllLeft")); // NOI18N
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+                    KeyEvent.VK_SUBTRACT, 
+                    KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            LeftTree leftTree = mapper.getLeftTree();
+
+            for (int i = leftTree.getRowCount() - 1; i >= 0; i--) {
+                leftTree.collapseRow(i);
+            }
+        }
+    }
+
+    private class ExpandMappedNodesLeftAction extends AbstractAction {
+        ExpandMappedNodesLeftAction() {
+            super(NbBundle.getMessage(FiltersToolBar.class, 
+                    "LBL_ExpandMappedNodesLeft")); // NOI18N
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 
+                    KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            LeftTree leftTree = mapper.getLeftTree();
+            
+            MapperModel mapperModel = mapper.getFilteredModel();
+            TreeModel treeModel = leftTree.getModel();
+
+            if (mapperModel == null || treeModel == null) return;
+            
+            Object root = mapperModel.getRoot();
+            if (root == null) return;
+            
+            TreePath rootTreePath = new TreePath(root);
+            
+            Set<TreePath> treePathes = new HashSet<TreePath>();
+            collectMappedNodes(mapperModel, rootTreePath, treePathes);
+            
+            for (TreePath treePath : treePathes) {
+                if (Utils.isTreePathExpandable(treeModel, treePath)) {
+                    leftTree.expandPath(treePath);
+                }
+            }
+        }
+        
+        private void collectMappedNodes(MapperModel mapperModel, 
+                TreePath rightTreePath, Set<TreePath> result) 
+        {
+            Graph graph = mapperModel.getGraph(rightTreePath);
+            if (graph != null && graph.hasIngoingLinks()) {
+                List<Link> links = graph.getIngoingLinks();
+                if (links != null) {
+                    for (Link link : links) {
+                        SourcePin sourcePin = link.getSource();
+                        if (sourcePin instanceof TreeSourcePin) {
+                            TreePath treePath = ((TreeSourcePin) sourcePin)
+                                    .getTreePath();
+                            TreePath parentPath = (treePath == null) ? null 
+                                    : treePath.getParentPath();
+                                    
+                            if (parentPath != null) {
+                                result.add(parentPath);
+                            }
+                        }
+                    }
+                }
+            }
+                    
+            Object node = rightTreePath.getLastPathComponent();
+            if (!mapperModel.isLeaf(node) 
+                    && mapperModel.searchGraphsInside(rightTreePath))
+            {
+                int childCount = mapperModel.getChildCount(node);
+                for (int i = 0; i < childCount; i++) {
+                    Object child = mapperModel.getChild(node, i);
+                    collectMappedNodes(mapperModel, rightTreePath
+                            .pathByAddingChild(child), result);
+                }
+            }
+        }
+    }
+    
 }

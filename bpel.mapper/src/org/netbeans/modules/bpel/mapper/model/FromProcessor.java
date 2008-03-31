@@ -31,9 +31,9 @@ import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
+import org.netbeans.modules.bpel.model.api.FromHolder;
 import org.netbeans.modules.bpel.model.api.Literal;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
@@ -57,10 +57,11 @@ import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
  * The specific processing is required for different forms.
  * 
  * @author nk160297
+ * @author Vitaly Bychkov
  */
-public class CopyFromProcessor {
+public class FromProcessor {
     
-    public static enum CopyFromForm {
+    public static enum FromForm {
         UNKNOWN, 
         VAR, 
         VAR_PART, 
@@ -73,18 +74,23 @@ public class CopyFromProcessor {
     }
 
     private BpelMapperModelFactory mFactory;
-    private Copy mCopy;
-    private CopyFromForm mCopyFromForm;
+    private FromHolder mContextEntity;
+    private FromForm mCopyFromForm;
     
-    public CopyFromProcessor(BpelMapperModelFactory factory, Copy copy) {
-        assert factory != null && copy != null;
+    public FromProcessor(BpelMapperModelFactory factory, FromHolder fromHolder) {
+        assert factory != null && fromHolder != null;
         mFactory = factory;
-        mCopy = copy;
+        mContextEntity = fromHolder;
     }
     
-    public synchronized CopyFromForm getCopyFromForm() {
+    public From getFrom() {
+        assert mContextEntity != null;
+        return mContextEntity.getFrom();
+    }
+    
+    public synchronized FromForm getFromForm() {
         if (mCopyFromForm == null) {
-            calculateCopyFromForm();
+            calculateFromForm();
         }
         return mCopyFromForm;
     }
@@ -92,14 +98,14 @@ public class CopyFromProcessor {
     public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel, 
             BpelEntityCasts castList) {
         //
-        assert mCopy.getFrom() != null;
+        assert getFrom() != null;
         //
-        switch (getCopyFromForm()) {
+        switch (getFromForm()) {
         case EXPRESSION:
-            mFactory.populateGraph(graph, leftTreeModel, mCopy, mCopy.getFrom(), castList);
+            mFactory.populateGraph(graph, leftTreeModel, mContextEntity, getFrom(), castList);
             break;
         case LITERAL:
-            FromChild literal = mCopy.getFrom().getFromChild(); // literal
+            FromChild literal = getFrom().getFromChild(); // literal
             if (literal != null && literal instanceof Literal) {
                 String literalText = ((Literal)literal).getContent();
                 Vertex newVertex = VertexFactory.getInstance().
@@ -115,7 +121,7 @@ public class CopyFromProcessor {
         default:
             // there is only one link
             ArrayList<TreeItemFinder> fromNodeFinderList = 
-                    constructFindersList(mCopy);
+                    constructFindersList(mContextEntity);
             TreeFinderProcessor fProcessor = new TreeFinderProcessor(leftTreeModel);
             TreePath sourceTreePath = fProcessor.findFirstNode(fromNodeFinderList);
 //            TreePath sourceTreePath = 
@@ -130,25 +136,25 @@ public class CopyFromProcessor {
         return graph;
     }
     
-    private void calculateCopyFromForm() {
-        mCopyFromForm = CopyFromForm.UNKNOWN;
+    private void calculateFromForm() {
+        mCopyFromForm = FromForm.UNKNOWN;
         //
-        if (mCopy == null)  {
+        if (mContextEntity == null)  {
             return;
         }
         //
-        From copyFrom = mCopy.getFrom();
-        if (copyFrom == null) {
+        From from = getFrom();
+        if (from == null) {
             return;
         }
         //
-        mCopyFromForm = calculateCopyFromForm(copyFrom);
+        mCopyFromForm = calculateFromForm(from);
     }
     
-    public static CopyFromForm calculateCopyFromForm(From copyFrom) {
+    public static FromForm calculateFromForm(From copyFrom) {
         //
         if (copyFrom == null) {
-            return CopyFromForm.UNKNOWN;
+            return FromForm.UNKNOWN;
         }
         //
         BpelReference<VariableDeclaration> varRef = copyFrom.getVariable();
@@ -157,45 +163,48 @@ public class CopyFromProcessor {
             if (partRef != null) {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
-                    return CopyFromForm.VAR_PART_QUERY;
+                    return FromForm.VAR_PART_QUERY;
                 } else {
-                    return CopyFromForm.VAR_PART;
+                    return FromForm.VAR_PART;
                 }
             } else {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
-                    return CopyFromForm.VAR_QUERY;
+                    return FromForm.VAR_QUERY;
                 } else {
-                    return CopyFromForm.VAR;
+                    return FromForm.VAR;
                 }
             }
         } else {
             BpelReference<PartnerLink> plRef = copyFrom.getPartnerLink();
             if (plRef != null) {
-                return CopyFromForm.PARTNER_LINK;
+                return FromForm.PARTNER_LINK;
             }
             FromChild literal = copyFrom.getFromChild(); // literal
             if (literal != null && literal instanceof Literal) {
-                return CopyFromForm.LITERAL;
+                return FromForm.LITERAL;
             }
             String expression = copyFrom.getContent(); // Expression
             if (expression != null && expression.length() != 0) {
-                return CopyFromForm.EXPRESSION;
+                return FromForm.EXPRESSION;
             }
         }
         // WSDLReference<CorrelationProperty> cPropRef = copyTo.getProperty();
         //
-        return CopyFromForm.UNKNOWN;
+        return FromForm.UNKNOWN;
     }
-    
-    public ArrayList<TreeItemFinder> constructFindersList(BpelEntity contextEntity) {
-        From copyFrom = mCopy.getFrom();
+
+    public static ArrayList<TreeItemFinder> constructFindersList(From from, 
+            FromForm form, BpelEntity contextEntity) 
+    {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
-        //
-        CopyFromForm form = getCopyFromForm();
+        if (from == null || form == null) {
+            return finderList;
+        }
+        
         switch(form) {
         case VAR: {
-            BpelReference<VariableDeclaration> varDeclRef = copyFrom.getVariable();
+            BpelReference<VariableDeclaration> varDeclRef = from.getVariable();
             if (varDeclRef != null) {
                 VariableDeclaration varDecl = varDeclRef.get();
                 if (varDecl != null) {
@@ -205,14 +214,14 @@ public class CopyFromProcessor {
             break;
         }
         case VAR_PART: {
-            BpelReference<VariableDeclaration> varDeclRef = copyFrom.getVariable();
+            BpelReference<VariableDeclaration> varDeclRef = from.getVariable();
             if (varDeclRef != null) {
                 VariableDeclaration varDecl = varDeclRef.get();
                 if (varDecl != null) {
                     finderList.add(new VariableFinder(varDecl));
                 }
             }
-            WSDLReference<Part> partRef = copyFrom.getPart();
+            WSDLReference<Part> partRef = from.getPart();
             if (partRef != null) {
                 Part part = partRef.get();
                 if (part != null) {
@@ -222,20 +231,20 @@ public class CopyFromProcessor {
             break;
         }
         case VAR_PART_QUERY: {
-            BpelReference<VariableDeclaration> varDeclRef = copyFrom.getVariable();
+            BpelReference<VariableDeclaration> varDeclRef = from.getVariable();
             if (varDeclRef != null) {
                 VariableDeclaration varDecl = varDeclRef.get();
                 if (varDecl != null) {
                     finderList.add(new VariableFinder(varDecl));
                 }
             }
-            WSDLReference<Part> partRef = copyFrom.getPart();
+            WSDLReference<Part> partRef = from.getPart();
             if (partRef != null) {
                 Part part = partRef.get();
                 if (part != null) {
                     finderList.add(new PartFinder(part));
                     //
-                    FromChild query = copyFrom.getFromChild();
+                    FromChild query = from.getFromChild();
                     if (query != null && query instanceof Query) {
                         LocationPathBuilder builder = new LocationPathBuilder(
                                 contextEntity, part, (Query)query);
@@ -249,13 +258,13 @@ public class CopyFromProcessor {
             break;
         }
         case VAR_QUERY: {
-            BpelReference<VariableDeclaration> varDeclRef = copyFrom.getVariable();
+            BpelReference<VariableDeclaration> varDeclRef = from.getVariable();
             if (varDeclRef != null) {
                 VariableDeclaration varDecl = varDeclRef.get();
                 if (varDecl != null) {
                     finderList.add(new VariableFinder(varDecl));
                     //
-                    FromChild query = copyFrom.getFromChild();
+                    FromChild query = from.getFromChild();
                     if (query != null && query instanceof Query) {
                         LocationPathBuilder builder = new LocationPathBuilder(
                                 contextEntity, varDecl, (Query)query);
@@ -269,13 +278,13 @@ public class CopyFromProcessor {
             break;
         }
         case PARTNER_LINK: {
-            BpelReference<PartnerLink> plRef = copyFrom.getPartnerLink();
+            BpelReference<PartnerLink> plRef = from.getPartnerLink();
             if (plRef != null) {
                 PartnerLink pLink = plRef.get();
                 if (pLink != null) {
                     finderList.add(new PartnerLinkFinder(pLink));
                     //
-                    Roles endpointRef = copyFrom.getEndpointReference();
+                    Roles endpointRef = from.getEndpointReference();
                     finderList.add(new EndpointRefFinder(endpointRef));
                 }
             }
@@ -283,7 +292,14 @@ public class CopyFromProcessor {
         }
         }
         //
-        return finderList;
+        return finderList;        
+    }
+    
+    public ArrayList<TreeItemFinder> constructFindersList(BpelEntity contextEntity) {
+        From copyFrom = getFrom();
+        //
+        FromForm form = getFromForm();
+        return constructFindersList(copyFrom, form, contextEntity);
     }
     
 }
