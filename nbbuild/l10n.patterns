@@ -11,6 +11,7 @@
 **/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
 **/ext/defaulttheme-*.jar:messages.properties
+exclude **/batik-mod.jar:
 exclude **/jason-*.jar:
 exclude **/jsf-extensions-*.jar:
 exclude **/tidy-mod.jar:
