@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -214,7 +214,7 @@ final class Tree extends JTree {
       public void mouseClicked(MouseEvent event) {
         // double click
         if (event.getClickCount() == 2 && getSelectedNode().isLeaf()) {
-          gotoDesign(getSelectedNode());
+          gotoVisual(getSelectedNode());
           event.consume();
         }
       }
@@ -338,13 +338,13 @@ final class Tree extends JTree {
   private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
     JMenuItem item;
 
-    // go to design
-    item = createItem("LBL_Go_to_Design"); // NOI18N
+    // go to visual
+    item = createItem("LBL_Go_to_Visual"); // NOI18N
     item.setEnabled( !node.isRoot());
     item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        gotoDesign(node);
+        gotoVisual(node);
       }
     });
     popup.add(item);
@@ -402,8 +402,8 @@ final class Tree extends JTree {
     ((SearchElement) node.getUserObject()).gotoSource();
   }
 
-  private void gotoDesign(DefaultMutableTreeNode node) {
-    ((SearchElement) node.getUserObject()).gotoDesign();
+  private void gotoVisual(DefaultMutableTreeNode node) {
+    ((SearchElement) node.getUserObject()).gotoVisual();
   }
 
   void previousOccurence() {
