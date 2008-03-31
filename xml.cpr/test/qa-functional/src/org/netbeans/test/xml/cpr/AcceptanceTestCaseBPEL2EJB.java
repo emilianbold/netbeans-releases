@@ -93,6 +93,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
         "CreateBluePrint1Sample",
         "AddProjectReference",
         "DeleteProjectReference",
+
         "ImportReferencedSchema",
 
         "RenameSampleSchema",

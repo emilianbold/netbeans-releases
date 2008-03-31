@@ -184,7 +184,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     }
     
     private void selectDBTableNode() {
-        RuntimeTabOperator.invoke();        
+        rto = RuntimeTabOperator.invoke();
+        
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        previousComparator = rto.tree().getComparator();
+        rto.setComparator(comparator);
+        
         Node TableNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName+"|"+DBTableName); // NOI18N
         TableNode.select();
         log("Selected Node path ="+TableNode.getPath()+" and node is "+TableNode.getText());
