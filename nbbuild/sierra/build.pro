@@ -63,6 +63,7 @@
         ${test.cvs.path}/assign/MessageWithNoParts
         ${test.cvs.path}/assign/predicates
         ${test.cvs.path}/assign/VariableAssignments
+        ${test.cvs.path}/assign/virtualassignBpel
         ${test.cvs.path}/benchmark/BenchmarkBpel
         ${test.cvs.path}/benchmark/Ericsson/AlarmIRPBpel2
         ${test.cvs.path}/benchmark/purchaseOrderCoordinator
@@ -98,8 +99,12 @@
         ${test.cvs.path}/eventHandlers/onAlarm
         ${test.cvs.path}/eventHandlers/onEvent
         ${test.cvs.path}/exit/ExitBpel
+        ${test.cvs.path}/faulthandling/FaultHandlingBpel
+        ${test.cvs.path}/faulthandling/StandardFaultsBpel
+        ${test.cvs.path}/faulthandling/SystemFaultsBpel
         ${test.cvs.path}/flow/FlowBpel
         ${test.cvs.path}/foreach-bpel20/ForEachBpel
+        ${test.cvs.path}/i18n/assign/AssignBpel
         ${test.cvs.path}/if/ifBpel
         ${test.cvs.path}/implementMultiOperations/MultipleBPELs
         ${test.cvs.path}/implementMultiOperations/OneBPEL
@@ -108,6 +113,8 @@
         ${test.cvs.path}/JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
+        ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess
+        ${test.cvs.path}/JavaEEIntegration/TwoWayEjbToBP/TwoWay
         ${test.cvs.path}/MessageExchange/MessageExchangeBpel
         ${test.cvs.path}/misc/MiscBpel
         ${test.cvs.path}/PartnerLinks/DuplicateProject1
@@ -123,13 +130,20 @@
         ${test.cvs.path}/samples/EndToEndScenario
         ${test.cvs.path}/samples/samplesBPEL
         ${test.cvs.path}/samples/SynchronousSample
+        ${test.cvs.path}/scalability/ScalabilityBpel
+        ${test.cvs.path}/scalability/Test2/ScalabilityTest2BP
+        ${test.cvs.path}/scenarios/CandidateSelection/SelectionProcess
         ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
         ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
         ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
         ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
         ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
         ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
+        ${test.cvs.path}/systemicqualities/Redelivery/RedeliverWithinRetries
+        ${test.cvs.path}/systemicqualities/Redelivery/RedeliverWithSuspend
+        ${test.cvs.path}/systemicqualities/Redelivery/RedirectOnFailure
         ${test.cvs.path}/TerminationHandler/TerminationHandlerBpel
+        ${test.cvs.path}/TestsForBugs/Bug6431708/testBPEL
         ${test.cvs.path}/wait/WaitBpel
         ${test.cvs.path}/while/WhileBpel
         ${test.cvs.path}/xpathfunctions/XPathFunctionsBpel
