@@ -228,21 +228,15 @@ final class Tree extends JTree {
   }
 
   private void handleEvent(KeyEvent event) {
+//out();
+//out("handleEvent");
     DefaultMutableTreeNode node = getSelectedNode();
     int code = event.getKeyCode();
     int modifiers = event.getModifiers();
+//out(" code: " + code);
 
     if (code == KeyEvent.VK_F10 && isShift(modifiers)) {
-      showPopupMenu(event, 0, 0);
-    }
-    else {
-      handleAction(code, modifiers, node);
-    }
-  }
-
-  private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
-    if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
-      copy(node);
+      showPopupMenu(event, POPUP_MENU_X, POPUP_MENU_Y);
     }
     else if (code == KeyEvent.VK_F12 && isShift(modifiers)) {
       previousOccurence(node);
@@ -252,9 +246,6 @@ final class Tree extends JTree {
     }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
-    }
-    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
-      gotoSource(node);
     }
   }
 
@@ -435,7 +426,11 @@ final class Tree extends JTree {
   }
 
   private void selectOccurence() {
-    TreePath path = new TreePath(myOccurences.get(myIndex).getPath());
+    select(myOccurences.get(myIndex));
+  }
+
+  private void select(DefaultMutableTreeNode node) {
+    TreePath path = new TreePath(node.getPath());
     setSelectionPath(path);
     scrollPathToVisible(path);
   }
@@ -622,8 +617,10 @@ final class Tree extends JTree {
     }
     if (printConfirmation(i18n(Tree.class, "LBL_Are_You_Sure"))) { // NOI18N
       parent.remove(node);
+      select(parent);
       updateUI();
     }
+    requestFocus();
   }
 
   private DefaultMutableTreeNode getNode(TreePath path) {
@@ -731,5 +728,7 @@ final class Tree extends JTree {
   private boolean myIsReformAll;
   private DefaultMutableTreeNode myRoot;
   private List<DefaultMutableTreeNode> myOccurences;
+  private static final int POPUP_MENU_X = 16;
+  private static final int POPUP_MENU_Y = 16;
   private static final Icon EMPTY = icon(Util.class, "empty"); // NOI18N
 }

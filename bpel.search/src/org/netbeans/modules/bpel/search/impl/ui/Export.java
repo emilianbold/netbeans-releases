@@ -339,7 +339,7 @@ public class Export extends Dialog {
   private DialogDescriptor myDescriptor;
   private List<List<String>> myDescriptions;
 
-  private static final String OF = "out"; // NOI18N
+  private static final String OF = "NetBeansProjects"; // NOI18N
   private static final String HTM_EXT = ".htm"; // NOI18N
   private static final String HTML_EXT = ".html"; // NOI18N
   private static final String RESULT = "result.html"; // NOI18N
