@@ -158,6 +158,11 @@ public class Nodes {
         public Wrapper(Node orig, List<ErrorDescription> errors, Map<ErrorDescription, List<FixDescription>> errors2Fixes) {
             super(orig, new ErrorDescriptionChildren(errors, errors2Fixes), lookupForNode(orig, errors, errors2Fixes));
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
         
     }
     
