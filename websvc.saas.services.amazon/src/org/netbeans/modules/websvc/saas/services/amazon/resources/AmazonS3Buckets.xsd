@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://s3.amazonaws.com/doc/2006-03-01/"
+            xmlns:tns="http://s3.amazonaws.com/doc/2006-03-01/"
+            elementFormDefault="qualified">
+    <xsd:element name="ListAllMyBucketsResult">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Owner">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="ID" type="xsd:string"/>
+                            <xsd:element name="DisplayName" type="xsd:string"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="Buckets">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="Bucket" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="Name" type="xsd:string"/>
+                                        <xsd:element name="CreationDate" type="xsd:string"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

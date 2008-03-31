@@ -717,7 +717,7 @@ public final class ClassPath {
 
         /**
          * Check whether a file is included in this entry.
-         * @param resource a path relative to @{link #getURL} (must be terminted with <samp>/</samp> if a non-root folder)
+         * @param resource a path relative to @{link #getURL} (must be terminated with <samp>/</samp> if a non-root folder)
          * @return true if it is {@link FilteringPathResourceImplementation#includes included}
          * @since org.netbeans.api.java/1 1.13
          */

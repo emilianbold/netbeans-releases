@@ -1229,10 +1229,32 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
+     * Step one instruction
      */
     public void stepI() {
         setState(STATE_RUNNING);
         gdb.exec_instruction();
+    }
+    
+    /**
+     * Step over function inside dis
+     */
+    public void stepOverInstr() {
+        Disassembly dis = Disassembly.getCurrent();
+        if (dis == null) {
+            return;
+        }
+        CallStackFrame sf = getCurrentCallStackFrame();
+        if (sf == null) {
+            return;
+        }
+        String newAddress = dis.getNextAddress(getCurrentCallStackFrame().getAddr());
+        if (newAddress.length() == 0) {
+            stepI();
+        } else {
+            gdb.break_insert(GDB_TMP_BREAKPOINT, "*" + newAddress); // NOI18N
+            resume();
+        }
     }
     
     /**
@@ -1787,6 +1809,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public String evaluate(String expression) {
+        // IZ:131315 (gdb may not be initialized yet)
+        if (gdb == null) {
+            return null;
+        }
         CommandBuffer cb = new CommandBuffer(gdb);
         
         if (expression.indexOf('(') != -1) {

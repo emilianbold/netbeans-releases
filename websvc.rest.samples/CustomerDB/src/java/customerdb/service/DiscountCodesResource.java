@@ -61,7 +61,7 @@ import customerdb.converter.DiscountCodeConverter;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @Path("/discountCodes/")

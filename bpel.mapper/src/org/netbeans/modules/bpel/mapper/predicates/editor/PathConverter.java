@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xpath.ext.AbstractLocationPath;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
@@ -174,13 +175,14 @@ public class PathConverter {
                 stage = ParsingStage.SCHEMA;
                 treeItemList.add(obj);
             } else if (obj instanceof Part) {
-                if (stage != ParsingStage.SCHEMA) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.PART;
                 treeItemList.add(obj);
             } else if (obj instanceof AbstractVariableDeclaration) {
-                if (!(stage == ParsingStage.SCHEMA || 
+                if (!(stage == null || 
+                        stage == ParsingStage.SCHEMA || 
                         stage == ParsingStage.PART)) {
                     return null;
                 }
@@ -214,39 +216,87 @@ public class PathConverter {
         return treeItemList;
     }
 
-    public static List<Object> constructObjectLocationtList(
-            XPathExpressionPath exprPath) {
+    public static XPathBpelVariable constructXPathBpelVariable(
+            List<Object> pathList) {
         //
-        ArrayList<Object> treeItemList = new ArrayList<Object>();
+        AbstractVariableDeclaration var = null;
+        Part part = null;
         //
-        LocationStep[] stepArr = exprPath.getSteps();
-        for (int index = stepArr.length - 1; index >= 0; index--) {
-            LocationStep step = stepArr[index];
-            XPathSchemaContext sContext = step.getSchemaContext();
-            if (sContext != null) {
-                SchemaComponent sComp = XPathSchemaContext.Utilities.
-                        getSchemaComp(sContext);
-                if (sComp != null) {
-                    treeItemList.add(sComp);
-                    continue;
+        // Process the path
+        ParsingStage stage = null;
+        for (Object obj: pathList) {
+            if (obj instanceof Part) {
+                if (stage != null) {
+                    return null;
                 }
+                stage = ParsingStage.PART;
+                part = (Part)obj;
+            } else if (obj instanceof AbstractVariableDeclaration) {
+                if (!(stage == null || stage == ParsingStage.PART)) {
+                    return null;
+                }
+                //
+                var = (AbstractVariableDeclaration)obj;
+                stage = ParsingStage.VARIABLE;
+                //
+                // Everything found!
+                break;
+            } else {
+                return null;
             }
-            //
-            // Unresolved step --> the location list can't be built
+        }
+        if (var == null) {
             return null;
         }
         //
-        XPathExpression expr = exprPath.getRootExpression();
-        assert expr instanceof XPathVariableReference;
-        XPathVariable var = ((XPathVariableReference)expr).getVariable();
-        assert var instanceof XPathBpelVariable;
-        XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+        return new XPathBpelVariable(var, part);
+    }
+
+    public static List<Object> constructObjectLocationtList(
+            XPathExpression exprPath) {
         //
-        Part part = bpelVar.getPart();
-        if (part != null) {
-            treeItemList.add(part);
-        } else {
-            VariableDeclaration varDecl = bpelVar.getVarDecl();
+        ArrayList<Object> treeItemList = new ArrayList<Object>();
+        //
+        if (exprPath instanceof AbstractLocationPath) {
+            LocationStep[] stepArr = ((AbstractLocationPath)exprPath).getSteps();
+            for (int index = stepArr.length - 1; index >= 0; index--) {
+                LocationStep step = stepArr[index];
+                XPathSchemaContext sContext = step.getSchemaContext();
+                if (sContext != null) {
+                    SchemaComponent sComp = XPathSchemaContext.Utilities.
+                            getSchemaComp(sContext);
+                    if (sComp != null) {
+                        treeItemList.add(sComp);
+                        continue;
+                    }
+                }
+                //
+                // Unresolved step --> the location list can't be built
+                return null;
+            }
+        }
+        //
+        XPathVariableReference varRefExpr = null;
+        if (exprPath instanceof XPathExpressionPath) {
+            XPathExpression expr = ((XPathExpressionPath)exprPath).getRootExpression();
+            if (expr instanceof XPathVariableReference) {
+                varRefExpr = (XPathVariableReference)expr;
+            }
+        } else if (exprPath instanceof XPathVariableReference) {
+            varRefExpr = (XPathVariableReference)exprPath;
+        }
+        //
+        if (varRefExpr != null) {
+            XPathVariable var = varRefExpr.getVariable();
+            assert var instanceof XPathBpelVariable;
+            XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+            //
+            Part part = bpelVar.getPart();
+            if (part != null) {
+                treeItemList.add(part);
+            } 
+            //
+            AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
             if (varDecl != null) {
                 treeItemList.add(varDecl);
             }

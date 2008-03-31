@@ -50,10 +50,10 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.xml.xpath.ext.metadata.ExtFunctionMetadata;
-import org.netbeans.modules.bpel.editors.api.utils.DurationDialog;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.bpel.mapper.model.VertexFactory;
+import org.netbeans.modules.soa.ui.util.DurationDialog;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**

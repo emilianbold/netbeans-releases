@@ -740,8 +740,17 @@ public class CCFormatSupport extends ExtFormatSupport {
                             case CCTokenContext.IF_ID:
                             case CCTokenContext.WHILE_ID:
                             case CCTokenContext.ELSE_ID:
+                            case CCTokenContext.TRY_ID:
+                            case CCTokenContext.ASM_ID:
+                            case CCTokenContext.CATCH_ID:
                                 indent = getTokenIndent(stmt);
                                 if (isHalfIndentNewlineBeforeBrace()){
+                                    indent += getShiftWidth()/2;
+                                }
+                                break;
+                            case CCTokenContext.SWITCH_ID:
+                                indent = getTokenIndent(stmt);
+                                if (isHalfIndentNewlineBeforeBraceSwitch()){
                                     indent += getShiftWidth()/2;
                                 }
                                 break;
@@ -950,23 +959,36 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Indent one level
                                     indent = getTokenIndent(rpmt) + getRightIndent();
                                     break;
+                                case CCTokenContext.IDENTIFIER_ID:
+                                    if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                                        indent = getTokenIndent(t);
+                                    }
+                                    break;
                                 }
                             }
                         }
                         if (indent < 0) {
-                            indent = computeStatementIndent(t);
+                            indent = computeStatementIndent(token);
                         }
                         break;
 
+                    case CCTokenContext.IDENTIFIER_ID:
+                        if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                            indent = getTokenIndent(t);
+                            break;
+                        }
+                        indent = computeStatementIndent(token);
+                        break;
+                        
                     case CCTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        // else continue to default
-                        //nobreak
-                    default:
                         indent = computeStatementIndent(t);
+                        break;
+                    default:
+                        indent = computeStatementIndent(token);
                         break;
                 }
 

@@ -42,7 +42,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
  *
- * @author petr
+ * @author Petr Pisl
  */
 public class PrintASTVisitor implements Visitor {
 
@@ -588,6 +588,11 @@ public class PrintASTVisitor implements Visitor {
     }
 
     public void visit(ASTNode node) {
+        addIndentation();
+        buffer.append("### Not supported yet ASTNode.\n");
+    }
+
+    public void visit(PHPDocBlock phpDocBlock) {
         addIndentation();
         buffer.append("### Not supported yet ASTNode.\n");
     }

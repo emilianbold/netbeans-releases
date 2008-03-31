@@ -278,7 +278,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 mime);
         String installBefore = null;
         if (isXml) {
-            installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
+            installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject"; //NOI18N
         }
         
         fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore)); // NOI18N

@@ -184,6 +184,10 @@ public final class CodeStyle {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
                                       EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
+    public boolean ignoreEmptyFunctionBody(){
+        return getOption(EditorOptions.ignoreEmptyFunctionBody,
+                         EditorOptions.ignoreEmptyFunctionBodyDefault);
+    }
 
     public BracePlacement getFormatNewLineBeforeBraceSwitch() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,

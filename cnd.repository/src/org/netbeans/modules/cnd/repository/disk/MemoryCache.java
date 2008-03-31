@@ -52,7 +52,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.Filter;
 import org.netbeans.modules.cnd.repository.util.Pair;
 
 /**
@@ -74,14 +73,12 @@ public class MemoryCache {
     private Lock refQueueLock;
     private ReferenceQueue refQueue;
     
-    private static final int DEFAULT_CACHE_CAPACITY = 77165;
-    
     // Cache statistics
     private int readCnt = 0;
     private int readHitCnt = 0;
     
     public MemoryCache() {
-        cache = new ConcurrentHashMap<Key, Object>(DEFAULT_CACHE_CAPACITY);
+        cache = new ConcurrentHashMap<Key, Object>(1024);
         refQueueLock = new ReentrantLock();
         refQueue = new ReferenceQueue();
     }
@@ -165,7 +162,7 @@ public class MemoryCache {
     
     public void printStatistics(String name) {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
-        System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", 
+        System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", // NOI18N
                 name, readCnt, readHitCnt, hitPercentage);
     }
     

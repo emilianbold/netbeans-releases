@@ -73,6 +73,7 @@ public class CommandBuffer {
         token = null;
         state = STATE_NONE;
         err = null;
+        assert gdb != null;
         this.gdb = gdb;
     }
     
