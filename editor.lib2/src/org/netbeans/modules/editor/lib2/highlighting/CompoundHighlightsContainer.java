@@ -121,7 +121,14 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 return HighlightsSequence.EMPTY;
             }
 
-            int [] update = null;
+// Commented as part of #129561
+//            int [] update = null;
+            
+            // #129561
+            int docLen = doc.getLength();
+            if (endOffset >= docLen) {
+                endOffset = docLen;
+            }
             
             int lowest = cacheLowestPos == null ? -1 : cacheLowestPos.getOffset();
             int highest = cacheHighestPos == null ? -1 : cacheHighestPos.getOffset();
@@ -129,27 +136,46 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             if (cacheObsolete) {
                 cacheObsolete = false;
                 discardCache();
+                // #129561 - also clear cache boundaries if cache is obsolete
+                cacheLowestPos = null;
+                cacheHighestPos = null;
+                lowest = -1;
+                highest = -1;
+
             } else {
                 if (lowest == -1 || highest == -1) {
                     // not sure what is cached -> reset the cache
                     discardCache();
                 } else {
-                    int maxDistance = Math.max(MIN_CACHE_SIZE, highest - lowest);
-                    if (endOffset > lowest - maxDistance && endOffset <= highest && startOffset < lowest) {
-                        // below the cached area, but close enough
-                        update = new int [] { startOffset, lowest };
-                    } else if (startOffset < highest + maxDistance && startOffset >= lowest && endOffset > highest) {
-                        // above the cached area, but close enough
-                        update = new int [] { highest, endOffset };
-                    } else if (startOffset < lowest && endOffset > highest) {
-                        // extends the cached area on both sides
-                        update = new int [] { startOffset, lowest, highest, endOffset };
-                    } else if (startOffset >= lowest && endOffset <= highest) {
-                        // inside the cached area
-                    } else {
-                        // completely off the area and too far
+                    // #129561 - changed caching strategy
+                    if (startOffset < lowest || endOffset > highest) {
                         discardCache();
                     }
+// Commented as part of #129561
+//                    int maxDistance = Math.max(MIN_CACHE_SIZE, highest - lowest);
+//                    if (endOffset > lowest - maxDistance && endOffset <= highest && startOffset < lowest) {
+//                        // below the cached area, but close enough
+//                        update = new int [] { startOffset, lowest };
+//                    } else if (startOffset < highest + maxDistance && startOffset >= lowest && endOffset > highest) {
+//                        // above the cached area, but close enough
+//                        update = new int [] { highest, endOffset };
+//                    } else if (startOffset < lowest && endOffset > highest) {
+//                        // extends the cached area on both sides
+//                        update = new int [] { startOffset, lowest, highest, endOffset };
+//                    } else if (startOffset >= lowest && endOffset <= highest) {
+//                        // inside the cached area
+//                    } else {
+//                        // completely off the area and too far
+//                        if (LOG.isLoggable(Level.FINE)) {
+//                            LOG.fine("Cache " + //NOI18N
+//                                    "<" + (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
+//                                    ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
+//                                    " will be discarded due to asking for <" +
+//                                    startOffset + ", " + endOffset + ">"); //NOI18N
+//
+//                        }
+//                        discardCache();
+//                    }
                 }
             }
 
@@ -157,41 +183,81 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             if (bag == null) {
                 bag = new OffsetsBag(doc, true);
                 cache = bag;
-                lowest = highest = -1;
-                update = new int [] { startOffset, endOffset };
+// Commented as part of #129561
+//                lowest = highest = -1;
+//                update = new int [] { startOffset, endOffset };
+                
+                // #129561 - changed caching strategy to build a union
+                // around the current cache and requested interval
+                int cacheStartOffset = (lowest == -1)
+                        ? startOffset
+                        : Math.min(lowest, startOffset);
+                int cacheEndOffset = (highest == -1)
+                        ? endOffset
+                        : Math.max(highest, endOffset);
+                // To decrease number of small iterations add 1/4 of requested cache size
+                // both at computed begining and end of the cache
+                int halfOfExtraCacheSize = Math.max((cacheEndOffset - cacheStartOffset) >> 2,
+                        MIN_CACHE_SIZE >> 1); // this ensures min. cache size
+                cacheStartOffset = Math.max(cacheStartOffset - halfOfExtraCacheSize, 0);
+                cacheEndOffset = Math.min(cacheEndOffset + halfOfExtraCacheSize, doc.getLength());
+
+                updateCache(cacheStartOffset, cacheEndOffset, bag);
+                
+                // Rebuild cache boundaries
+                cacheLowestPos = createPosition(cacheStartOffset);
+                cacheHighestPos = createPosition(cacheEndOffset);
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("CompoundHighlightsContainer@" + System.identityHashCode(this) +
+                        ": New cache boundaries: <" + //NOI18N
+                        (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
+                        ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
+                        "when asked for <" + startOffset + ", " + endOffset + ">\n"); //NOI18N
+                }
+
+            } else { // highlights in cache
+                if (LOG.isLoggable(Level.FINER)) { // Only log for FINER
+                    LOG.finer("CompoundHighlightsContainer@" + System.identityHashCode(this) +
+                        ": Cache boundaries: <" + //NOI18N
+                        (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
+                        ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
+                        "cover <" + startOffset + ", " + endOffset + ">\n"); //NOI18N
+                }
             }
             
-            if (update != null) {
-                for (int i = 0; i < update.length / 2; i++) {
-                    if (update[2 * i + 1] - update[2 * i] < MIN_CACHE_SIZE) {
-                        update[2 * i + 1] = update[2 * i] + MIN_CACHE_SIZE;
-                        if (update[2 * i + 1] >= doc.getLength()) {
-                            update[2 * i + 1] = Integer.MAX_VALUE;
-                        }
-                    }
-                    
-                    updateCache(update[2 * i], update[2 * i + 1], bag);
-                    
-                    if (update[2 * i + 1] == Integer.MAX_VALUE) {
-                        break;
-                    }
-                }
-                
-                if (lowest == -1 || highest == -1) {
-                    cacheLowestPos = createPosition(update[0]);
-                    cacheHighestPos = createPosition(update[update.length - 1]);
-                } else {
-                    cacheLowestPos = createPosition(Math.min(lowest, update[0]));
-                    cacheHighestPos = createPosition(Math.max(highest, update[update.length - 1]));
-                }
-                
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Cache boundaries: " + //NOI18N
-                        "<" + (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
-                        ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
-                        "when asked for <" + startOffset + ", " + endOffset + ">"); //NOI18N
-                }
-            }
+// Commented as part of #129561
+//            if (update != null) {
+//                for (int i = 0; i < update.length / 2; i++) {
+//                    if (update[2 * i + 1] - update[2 * i] < MIN_CACHE_SIZE) {
+//                        update[2 * i + 1] = update[2 * i] + MIN_CACHE_SIZE;
+//                        if (update[2 * i + 1] >= doc.getLength()) {
+//                            update[2 * i + 1] = Integer.MAX_VALUE;
+//                        }
+//                    }
+//                    
+//                    updateCache(update[2 * i], update[2 * i + 1], bag);
+//                    
+//                    if (update[2 * i + 1] == Integer.MAX_VALUE) {
+//                        break;
+//                    }
+//                }
+//                
+//                if (lowest == -1 || highest == -1) {
+//                    cacheLowestPos = createPosition(update[0]);
+//                    cacheHighestPos = createPosition(update[update.length - 1]);
+//                } else {
+//                    cacheLowestPos = createPosition(Math.min(lowest, update[0]));
+//                    cacheHighestPos = createPosition(Math.max(highest, update[update.length - 1]));
+//                }
+//                
+//                if (LOG.isLoggable(Level.FINE)) {
+//                    LOG.fine("Cache boundaries: " + //NOI18N
+//                        "<" + (cacheLowestPos == null ? "-" : cacheLowestPos.getOffset()) + //NOI18N
+//                        ", " + (cacheHighestPos == null ? "-" : cacheHighestPos.getOffset()) + "> " + //NOI18N
+//                        "when asked for <" + startOffset + ", " + endOffset + ">"); //NOI18N
+//                }
+//            }
 
             return new Seq(version, bag.getHighlights(startOffset, endOffset));
         }
@@ -321,7 +387,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         } catch (BadLocationException e) {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Invalid document position: offset = " + offset + //NOI18N
-                    ", document.lenght = " + doc.getLength() + ", will not cache."); //NOI18N
+                    ", document.length = " + doc.getLength() + ", will not cache."); //NOI18N
             }
             return null;
         }
