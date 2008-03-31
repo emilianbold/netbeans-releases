@@ -41,6 +41,8 @@ package org.netbeans.modules.php.editor.index;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +51,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
@@ -59,8 +63,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -720,6 +726,30 @@ public class PHPIndex {
      * from the current file.
      */
     public boolean isReachable(PHPParseResult result, String url) {
+        Project project = FileOwnerQuery.getOwner(result.getFile().getFileObject());
+        
+        if (project != null){
+            try {
+                // return true for platform files
+                // TODO temporary implementation
+                ClassPathProviderImpl cp = project.getLookup().lookup(ClassPathProviderImpl.class);
+
+                File file = new File(new URI(url));
+                FileObject fileObject = FileUtil.toFileObject(file);
+
+                if (cp != null) {
+                    ClassPathProviderImpl.FileType fileType = cp.getFileType(fileObject);
+
+                    if (fileType == ClassPathProviderImpl.FileType.INTERNAL 
+                            || fileType == ClassPathProviderImpl.FileType.PLATFORM) {
+                        return true;
+                    }
+                }
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
         String processedFileURL = null;
         
         try {
