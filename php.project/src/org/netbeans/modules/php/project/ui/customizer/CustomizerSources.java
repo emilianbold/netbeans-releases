@@ -70,29 +70,28 @@ import org.openide.util.NbBundle;
 public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private static final long serialVersionUID = -5803489817914071L;
 
-    final Category category;
     final PhpProjectProperties properties;
     final PropertyEvaluator evaluator;
-    final LocalServerController localServerController;
-    final CopyFilesVisual copyFilesVisual;
+    private final LocalServerController localServerController;
+    private final CopyFilesVisual copyFilesVisual;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
 
-        this.category = category;
         this.properties = properties;
         evaluator = properties.getProject().getEvaluator();
 
         initEncoding();
         LocalServer sources = initSources();
         boolean copyFiles = initCopyFiles();
+        LocalServer copyTarget = initCopyTarget();
         initUrl();
 
         localServerController = new LocalServerController(localServerComboBox, localServerButton, this,
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
         localServerController.selectLocalServer(sources);
 
-        copyFilesVisual = new CopyFilesVisual(this);
+        copyFilesVisual = new CopyFilesVisual(this, copyTarget);
         copyFilesVisual.setCopyFiles(copyFiles);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
@@ -104,7 +103,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     return;
                 }
                 encName = enc.name();
-                properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
+                properties.setEncoding(encName);
             }
         });
         localServerController.addChangeListener(new ChangeListener() {
@@ -135,7 +134,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private void initEncoding() {
         encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING)));
+        encodingComboBox.setModel(new EncodingModel(evaluator.evaluate(properties.getEncoding())));
     }
 
     private LocalServer initSources() {
@@ -147,7 +146,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.getProperty(PhpProjectProperties.SRC);
+        String src = evaluator.evaluate(properties.getSrcDir());
         File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src);
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
@@ -158,11 +157,26 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     }
 
     private boolean initCopyFiles() {
-        return Boolean.valueOf(evaluator.getProperty(PhpProjectProperties.COPY_SRC_FILES));
+        return Boolean.valueOf(evaluator.evaluate(properties.getCopySrcFiles()));
+    }
+
+    private LocalServer initCopyTarget() {
+        // copy target, if any
+        String copyTarget = evaluator.evaluate(properties.getCopySrcTarget());
+        if (copyTarget == null || copyTarget.length() == 0) {
+            return new LocalServer(""); // NOI18N
+        }
+        File resolvedFile = new File(copyTarget);
+        FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
+        if (resolvedFO == null) {
+            // target directory doesn't exist?!
+            return new LocalServer(resolvedFile.getAbsolutePath());
+        }
+        return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
     }
 
     private void initUrl() {
-        urlTextField.setText(evaluator.getProperty(PhpProjectProperties.URL));
+        urlTextField.setText(properties.getUrl());
     }
 
     public String getWebFolderName() {
@@ -209,10 +223,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProjectProperties.SRC, srcPath);
-        properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles));
-        properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
-        properties.setProperty(PhpProjectProperties.URL, url);
+        properties.setSrcDir(srcPath);
+        properties.setCopySrcFiles(String.valueOf(isCopyFiles));
+        properties.setCopySrcTarget(copyFilesVisual.getLocalServer().getSrcRoot());
+        properties.setUrl(url);
     }
 
     private File getSrcDir() {
