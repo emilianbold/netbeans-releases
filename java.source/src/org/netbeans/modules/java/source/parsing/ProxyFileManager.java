@@ -198,6 +198,12 @@ public class ProxyFileManager implements JavaFileManager {
     }
     
     public boolean handleOption (String current, Iterator<String> remains) {
+        for (JavaFileManager m : getFileManager(ALL)) {
+            if (m.handleOption(current, remains)) {
+                return true;
+            }
+        }
+        
         return false;
     }
 
