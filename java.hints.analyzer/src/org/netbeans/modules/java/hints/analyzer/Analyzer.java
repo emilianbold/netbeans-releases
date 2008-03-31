@@ -45,11 +45,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
@@ -63,6 +64,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.hints.infrastructure.HintsTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent;
@@ -72,7 +76,6 @@ import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -204,24 +207,22 @@ public class Analyzer implements Runnable {
     }
     
     private static Collection<? extends FileObject> toAnalyze(Lookup l) {
-        Collection<? extends FileObject> fos = l.lookupAll(FileObject.class);
+        Set<FileObject> result = new LinkedHashSet<FileObject>();
         
-        if (!fos.isEmpty()) {
-            return fos;
-        }
+        result.addAll(l.lookupAll(FileObject.class));
 
-        Collection<? extends DataObject> dos = l.lookupAll(DataObject.class);
-        
-        if (!dos.isEmpty()) {
-            Collection<FileObject> result = new LinkedList<FileObject>();
-            
-            for (DataObject od : dos) {
-                result.add(od.getPrimaryFile());
-            }
-            
-            return result;
+        for (DataObject od : l.lookupAll(DataObject.class)) {
+            result.add(od.getPrimaryFile());
         }
         
-        return Collections.emptyList();
+        for (Project p : l.lookupAll(Project.class)) {
+            Sources s = ProjectUtils.getSources(p);
+            
+            for (SourceGroup sg : s.getSourceGroups("java")) {
+                result.add(sg.getRootFolder());
+            }
+        }
+        
+        return result;
     }
 }
