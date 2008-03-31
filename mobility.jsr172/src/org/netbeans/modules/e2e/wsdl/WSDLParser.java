@@ -103,7 +103,7 @@ public class WSDLParser extends DefaultHandler {
             SAXParser parser = spf.newSAXParser();
             parser.parse( uri, this );
             try {                
-                schemaParser.parseLocation( uri );
+                schemaParser.parseLocation( uri, definition.getTargetNamespace() );
             } catch (SchemaException ex) {
                 throw new WSDLException( ex );
             }

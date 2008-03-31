@@ -66,7 +66,7 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
 
     private static final boolean debug = false;
     /** Editor support for text data object. */
-    private transient TLDEditorSupport editorSupport;
+    private transient volatile TLDEditorSupport editorSupport;
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7581377241494497816L;
     

@@ -392,7 +392,9 @@ public final class JavadocImports {
         if (!jdTokenSequence.moveNext() || jdTokenSequence.token().id() != JavadocTokenId.TAG) {
             return null;
         }
-        if (!jdTokenSequence.moveNext() || jdTokenSequence.token().id() != JavadocTokenId.OTHER_TEXT || !jdTokenSequence.moveNext()) {
+        if (!jdTokenSequence.moveNext()
+                || !(JavadocCompletionUtils.isWhiteSpace(jdTokenSequence.token()) || JavadocCompletionUtils.isLineBreak(jdTokenSequence.token()))
+                || !jdTokenSequence.moveNext()) {
             return null;
         }
         return JavaReference.resolve(jdTokenSequence, jdTokenSequence.offset(), tagSpan[1]);

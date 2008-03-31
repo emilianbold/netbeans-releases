@@ -88,12 +88,14 @@ import java_cup.runtime.*;
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
+    private String comment = null;
     private boolean asp_tags = false;
     private boolean short_tags_allowed = true;
     private StateStack stack = new StateStack();
     private char yy_old_buffer[] = new char[ZZ_BUFFERSIZE];
     private int yy_old_pushbackPos;
     protected int commentStartPosition;
+    private PHPDocCommentParser docParser = new PHPDocCommentParser();
 
     public ASTPHP5Scanner(java.io.Reader in, boolean aspTags) {
         this(in);
@@ -139,9 +141,16 @@ import java_cup.runtime.*;
 	
 	protected void addComment(Comment.Type type) {
 		int leftPosition = getTokenStartPosition();
-		Comment comment = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
-		commentList.add(comment);
-                System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
+                //System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
+                Comment comm;
+                if (type == Comment.Type.TYPE_PHPDOC) {
+                    comm = docParser.parse(commentStartPosition, leftPosition + getTokenLength(),  comment);
+                    comment = null;
+                }
+                else {
+                    comm = new Comment(commentStartPosition, leftPosition + getTokenLength(), /*ast,*/ type);
+                }
+		commentList.add(comm);
 	}	
 	
 	public void setUseAspTagsAsPhp(boolean useAspTagsAsPhp) {
@@ -222,7 +231,7 @@ import java_cup.runtime.*;
 		commentList.add(phpDocBlock);
 		reset(zzReader, documentorLexer.getBuffer(), documentorLexer.getParamenters());*/
                 
-                System.out.println("#######ParsePHPDoc()");
+                //System.out.println("#######ParsePHPDoc()");
 		//return true;
                 return false;
 	}
@@ -921,11 +930,17 @@ yybegin(ST_DOCBLOCK);
      yybegin(ST_IN_SCRIPTING);
 }
 
-<ST_DOCBLOCK>{NEWLINE} {
-}
+<ST_DOCBLOCK>([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
+    int len = yylength();
+        if (len > 1 && (yycharat(len-1) == '*')) {
+            yypushback(1); // go back to mark end of comment in the next token
+        }
+        comment = yytext();
+    } 
 
-<ST_DOCBLOCK>{ANY_CHAR} {
-}
+
+//<ST_DOCBLOCK>{ANY_CHAR} {
+//}
 
 <ST_IN_SCRIPTING>"/**/" {
 	handleCommentStart();

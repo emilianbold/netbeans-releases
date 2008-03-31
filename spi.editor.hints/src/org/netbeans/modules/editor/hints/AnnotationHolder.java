@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -130,42 +130,39 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     private DataObject od;
     private BaseDocument doc;
     
-    private static Map<FileObject, AnnotationHolder> file2Holder = new HashMap<FileObject, AnnotationHolder>();
+    private static Map<DataObject, AnnotationHolder> file2Holder = new HashMap<DataObject, AnnotationHolder>();
     
     public static synchronized AnnotationHolder getInstance(FileObject file) {
         if (file == null)
             return null;
         
-        AnnotationHolder result = file2Holder.get(file);
-        
-        if (result == null) {
-            try {
-                DataObject od = DataObject.find(file);
+        try {
+            DataObject od = DataObject.find(file);
+            AnnotationHolder result = file2Holder.get(od);
+
+            if (result == null) {
                 EditorCookie.Observable editorCookie = od.getCookie(EditorCookie.Observable.class);
-                
+
                 if (editorCookie == null) {
-                    Logger.getLogger("global").log(Level.WARNING, "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
+                    Logger.getLogger("global").log(Level.WARNING,
+                            "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file));
                 } else {
                     Document doc = editorCookie.getDocument();
-                    
+
                     if (doc instanceof BaseDocument) {
-                        file2Holder.put(file, result = new AnnotationHolder(file, od, (BaseDocument) doc, editorCookie));
+                        file2Holder.put(od, result = new AnnotationHolder(file, od, (BaseDocument) doc, editorCookie));
                     }
                 }
-            } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
             }
+
+            return result;
+        } catch (IOException e) {
+            Logger.getLogger("global").log(Level.INFO, null, e);
+            return null;
         }
-        
-        return result;
     }
     
-    /**temporary*/
-    static synchronized Collection<FileObject> coveredFiles() {
-        return new ArrayList<FileObject>(file2Holder.keySet());
-    }
-    
-    private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc, EditorCookie.Observable editorCookie) throws IOException {
+    private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc, EditorCookie.Observable editorCookie) {
         if (file == null)
             return ;
         
@@ -244,7 +241,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             detachAnnotation(a);
         }
         
-        file2Holder.remove(file);
+        file2Holder.remove(od);
         doc.removeDocumentListener(this);
         
         getBag(doc).clear();
@@ -531,6 +528,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         Logger.getLogger(AnnotationHolder.class.getName()).log(Level.FINE, "updateAnnotations: errorsToUpdate={0}", errorsToUpdate);
         
         for (ErrorDescription e : errorsToUpdate) {
+            //TODO: #115340: e can be for an unknown reason null:
+            if (e == null) {
+                continue;
+            }
+            
             LazyFixList l = e.getFixes();
 
             if (l.probablyContainsFixes() && !l.isComputed()) {

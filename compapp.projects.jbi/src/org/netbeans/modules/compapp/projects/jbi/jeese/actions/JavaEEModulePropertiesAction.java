@@ -69,9 +69,7 @@ import org.openide.util.actions.NodeAction;
  * Action to display/edit JavaEE module/project properties.
  */
 public class JavaEEModulePropertiesAction extends NodeAction {
-    private String name = "Deployment Settings";
-    private static final String MSG_DEPLOY_OPTION = "titleDeployOption" ; // No I18N
-    private static final String NAME = "nameProperties" ; // No I18N
+    private String name = "";//NOI18N
     
     public JavaEEModulePropertiesAction() {
         init();
@@ -83,7 +81,7 @@ public class JavaEEModulePropertiesAction extends NodeAction {
     
     private void init() {
         ResourceBundle rb = NbBundle.getBundle(this.getClass());
-        name = rb.getString(NAME);
+        name = rb.getString("nameProperties");//NOI18N
     }
     
     public boolean enable(Project project) {
@@ -101,15 +99,15 @@ public class JavaEEModulePropertiesAction extends NodeAction {
         
         if ( jbiProject != null && vcpi != null ) {
             ResourceBundle rb = NbBundle.getBundle(this.getClass());
-            String msgDeployOption = rb.getString(MSG_DEPLOY_OPTION);
+            String msgDeployOption = rb.getString("titleDeployOption");//NOI18N
             List<EndpointCfg> cfgs = ProjectUtil.getEndpointCfgs(jbiProject, vcpi.getProjectName());
             DeploymentOptionPanel pnl = new DeploymentOptionPanel(cfgs);
             pnl.isDeployThruCA(depThruCA(jbiProject, vcpi.getProjectName()));
             
-            DialogDescriptor dd = new DialogDescriptor(pnl, " " + vcpi.getProjectName() + msgDeployOption);
+            DialogDescriptor dd = new DialogDescriptor(pnl, 
+                    " " + msgDeployOption + vcpi.getProjectName());//NOI18N
             Dialog dlg = DialogDisplayer.getDefault().createDialog( dd );
             
-            //dlg.setSize( 400, 165 );
             dlg.setVisible( true );
             
             if ( dd.getValue() == DialogDescriptor.OK_OPTION ) {

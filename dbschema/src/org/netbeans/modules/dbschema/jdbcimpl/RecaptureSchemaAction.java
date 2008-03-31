@@ -46,8 +46,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dbschema.jdbcimpl.wizard.RecaptureSchema;
 
-import org.openide.loaders.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -93,9 +95,11 @@ public class RecaptureSchemaAction extends CookieAction {
             }
         }
         catch (ClassNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Exceptions.printStackTrace(e);
         }
         catch (SQLException e) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Exception(e, e.getMessage()));
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
