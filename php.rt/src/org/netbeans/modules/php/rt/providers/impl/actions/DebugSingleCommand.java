@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.rt.providers.impl.actions;
 
@@ -34,27 +34,26 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * @author rmatous
  */
-public class RunSingleCommand extends RunCommand{
-    private static final String LBL_RUN_SINGLE             = "LBL_RunSingleFile";     // NOI18N
-    
-    public RunSingleCommand( Project project , WebServerProvider provider) 
+public class DebugSingleCommand extends DebugCommandImpl {
+    public DebugSingleCommand( Project project , WebServerProvider provider) 
     {
         super( project ,provider );
     }
 
     @Override
     public String getId() {
-        return ActionProvider.COMMAND_RUN_SINGLE;
+        return ActionProvider.COMMAND_DEBUG_SINGLE;
     }
-
     
     @Override
     public String getLabel() {
-        return NbBundle.getMessage( RunSingleCommand.class , LBL_RUN_SINGLE );
+        return NbBundle.getMessage( DebugSingleCommand.class , "LBL_DebugSingleFile");//NOI18N
     }
-    
-    
-    
+
+    @Override
+    protected String getRunCommandId() {
+        return ActionProvider.COMMAND_RUN_SINGLE;
+    }            
 }

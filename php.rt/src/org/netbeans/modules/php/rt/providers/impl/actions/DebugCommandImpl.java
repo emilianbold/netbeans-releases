@@ -145,7 +145,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         for (Command command : commands) {
             String id = command.getId();
             System.out.println("command id :" +id );
-            if (RunCommand.RUN.equals(id)) {
+            if (getRunCommandId().equals(id)) {
                 runCommand = command;
             }
         }
@@ -154,6 +154,10 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         }
         assert runCommand instanceof RunCommand;
         return (RunCommand) runCommand;
+    }
+    
+    protected String getRunCommandId() {
+        return RunCommand.RUN;
     }
 
     private FileObject getFirstFile() {
