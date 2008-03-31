@@ -467,6 +467,12 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.api.java.source.support</package>
                 <package>org.netbeans.spi.java.loaders</package>
             </public-packages>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${module.classpath}:${ant.jar}:${tools.jar}:${cluster}/modules/${code.name.base.dashes}.jar</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

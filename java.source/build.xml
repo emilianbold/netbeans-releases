@@ -158,5 +158,26 @@ made subject to such option by the copyright holder.
         <property name="test.unit.excludes.files" location="test-excludes.txt"/>
     </target>
     
+    <target name="nblib" depends="init">
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${tools.jar}"/>
+                <pathelement location="${cluster}/modules/${code.name.base.dashes}.jar"/>
+            </classpath>
+        </javac>
+        <copy todir="build/antclasses">
+            <fileset dir="antsrc" excludes="${jar-excludes}"/>
+        </copy>
+        <mkdir dir="${cluster}/ant/nblib"/>
+        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
+            <fileset dir="build/antclasses"/>
+        </jar>
+    </target>
+
+    <target name="netbeans-extra" depends="nblib"/>
+    
 </project>
    
