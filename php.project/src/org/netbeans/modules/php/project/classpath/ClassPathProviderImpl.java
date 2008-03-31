@@ -166,9 +166,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 } catch (IOException exc) {
                     Exceptions.printStackTrace(exc);
                 } finally {
-                    closeStream(is);
-                    closeStream(os);
-                    closeStream(bos);
+                    closeStreams(is, os, bos);
                 }
             }
             File file = FileUtil.toFile(sfsFolder);
@@ -178,13 +176,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return internalFolder;
     }
 
-    private void closeStream(Closeable stream) {
-        try {
-            if (stream != null) {
-                stream.close();
+    private void closeStreams(Closeable... streams) {
+        for (Closeable stream : streams) {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
