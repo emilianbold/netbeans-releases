@@ -270,6 +270,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("array.cc"); // NOI18N
     }
     
+    public void testTemplateDestrucror() throws Exception {
+        // IZ 131407 : parser doesn't handle specialized destructor
+        performTest("template_destructor.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
