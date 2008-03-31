@@ -3881,6 +3881,8 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 putBoolean(EditorOptions.alignMultilineParen, true);
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.alignMultilineIfCondition, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
         setLoadDocumentText(
             "int foo()\n" +
             "{\n" +
@@ -4149,17 +4151,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
                 "int f(int a1, int a2,\n" +
                 "      int a3) {\n" +
-                "\n" +
                 "}\n"
                 );
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "int\n" +
                 "f (int a1, int a2,\n" +
-                "   int a3)\n" +
-                "{\n" +
-                "\n" +
-                "}\n"
+                "   int a3) { }\n" 
                 );
     }
 
@@ -4176,11 +4174,47 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting GNU new line name",
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
                 ": imp_ (0)\n" +
-                ", env_ (env)\n" +
+                ", env_ (env) { }\n" 
+                );
+    }
+
+    public void testGnuStuleNewLineName5() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree decl_shadowed_for_var_lookup (tree from)\n" +
                 "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
                 "}\n"
                 );
     }
+
+    public void testGnuStuleNewLineName6() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "B::tree A::\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "B::tree\n" +
+                "A::decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+    
     //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
     public void testSpaceWithinBraces() {
         setDefaultsOptions();
@@ -4264,6 +4298,213 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "        .b = 2,\n" +
                 "        .c = 3,\n" +
                 "    };\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "a\n" +
+                "b\n" +
+                "i=0;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    a\n" +
+                "    b\n" +
+                "    i = 0;\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int\n" +
+                "foo() {\n" +
+                "a()\n" +
+                "b\n" +
+                "i=0;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "int\n" +
+                "foo()\n" +
+                "{\n" +
+                "    a()\n" +
+                "    b\n" +
+                "    i = 0;\n" +
+                "}\n"
+                );
+    }
+
+    // IZ#123656:Indenting behavior seems odd
+    public void testIZ123656_3() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+            " C_MODE_START\n" +
+            "#    include <decimal.h>\n" +
+            "        C_MODE_END\n" +
+            "\n" +
+            "#    define DECIMAL_LONGLONG_DIGITS 22\n" +
+            "\n" +
+            "\n" +
+            "        /* maximum length of buffer in our big digits (uint32) */\n" +
+            "#    define DECIMAL_BUFF_LENGTH 9\n" +
+            "        /*\n" +
+            "        point on the border of our big digits))\n" +
+            "*/\n" +
+            "#    define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+            "\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing case after preprocessor",
+            "C_MODE_START\n" +
+            "#include <decimal.h>\n" +
+            "C_MODE_END\n" +
+            "\n" +
+            "#define DECIMAL_LONGLONG_DIGITS 22\n" +
+            "\n" +
+            "\n" +
+            "/* maximum length of buffer in our big digits (uint32) */\n" +
+            "#define DECIMAL_BUFF_LENGTH 9\n" +
+            "/*\n" +
+            "point on the border of our big digits))\n" +
+            " */\n" +
+            "#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)\n" +
+            "\n"
+        );
+    }
+
+    public void testIdentMultyConstructor5() {
+        setDefaultsOptions("MySQL");
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineParen, true);
+        setLoadDocumentText(
+            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+            "				 ulong query_length, bool using_trans,\n" +
+            "				 bool suppress_use)\n" +
+              ":Log_event(thd_arg,\n" +
+            "	     ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+            "	      || (suppress_use          ? LOG_EVENT_SUPPRESS_USE_F    : 0)),\n" +
+            "	     using_trans),\n" +
+            "   data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+            "   db(thd_arg->db), q_len((uint32) query_length),\n" +
+            "   error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+            "              ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+            "               0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+            "   thread_id(thd_arg->thread_id),\n" +
+            "   /* save the original thread id; we already know the server id */\n" +
+            "   slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+            "   flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+            "   sql_mode(thd_arg->variables.sql_mode),\n" +
+            "   auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+            "   auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+            "{\n" +
+            "    time_t end_time;\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing multyline constructor",
+            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
+            "                                 ulong query_length, bool using_trans,\n" +
+            "                                 bool suppress_use)\n" +
+            ": Log_event(thd_arg,\n" +
+            "            ((thd_arg->tmp_table_used ? LOG_EVENT_THREAD_SPECIFIC_F : 0)\n" +
+            "             | (suppress_use ? LOG_EVENT_SUPPRESS_USE_F : 0)),\n" +
+            "            using_trans),\n" +
+            "data_buf(0), query(query_arg), catalog(thd_arg->catalog),\n" +
+            "db(thd_arg->db), q_len((uint32) query_length),\n" +
+            "error_code((thd_arg->killed != THD::NOT_KILLED) ?\n" +
+            "           ((thd_arg->system_thread & SYSTEM_THREAD_DELAYED_INSERT) ?\n" +
+            "            0 : thd->killed_errno()) : thd_arg->net.last_errno),\n" +
+            "thread_id(thd_arg->thread_id),\n" +
+            "/* save the original thread id; we already know the server id */\n" +
+            "slave_proxy_id(thd_arg->variables.pseudo_thread_id),\n" +
+            "flags2_inited(1), sql_mode_inited(1), charset_inited(1),\n" +
+            "sql_mode(thd_arg->variables.sql_mode),\n" +
+            "auto_increment_increment(thd_arg->variables.auto_increment_increment),\n" +
+            "auto_increment_offset(thd_arg->variables.auto_increment_offset)\n" +
+            "{\n" +
+            "  time_t end_time;\n" +
+            "}\n"
+        );
+    }
+
+    // IZ#131379:GNU style: formatter works wrong with functions if it returns struct
+    public void testIZ131379() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n" +
+                "\n" +
+                "void\n" +
+                "decl_shadowed_for_var_insert (tree from, tree to)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n" +
+                "\n"
+                );
+        reformat();
+        assertDocumentText("Indenting behavior seems odd",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n" +
+                "\n" +
+                "void\n" +
+                "decl_shadowed_for_var_insert (tree from, tree to)\n" +
+                "{\n" +
+                "  return;\n" +
+                "}\n" +
+                "\n"
+                );
+    }
+
+    // IZ#130509:Formatter should ignore empty function body
+    public void testIZ130509() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
+        setLoadDocumentText(
+                "int foo0() { \n" +
+                "  }\n" +
+                "int foo1() { } \n" +
+                "int foo2()\n" +
+                " { } \n" +
+                "int foo3(){}\n" +
+                "int foo4(){\n" +
+                "}\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Formatter should ignore empty function body",
+                "int foo0() { }\n" +
+                "\n" +
+                "int foo1() { }\n" +
+                "\n" +
+                "int foo2() { }\n" +
+                "\n" +
+                "int foo3() { }\n" +
+                "\n" +
+                "int foo4() { }\n" +
+                "\n" +
+                "int foo5() { //\n" +
                 "}\n"
                 );
     }

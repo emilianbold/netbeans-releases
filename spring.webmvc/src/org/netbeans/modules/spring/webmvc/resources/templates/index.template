@@ -1,0 +1,5 @@
+<html>
+    <META http-equiv="Content-Type" content="text/html; charset=${project.encoding}">
+    <body><p>${welcomeText} 
+    </body>
+</html>

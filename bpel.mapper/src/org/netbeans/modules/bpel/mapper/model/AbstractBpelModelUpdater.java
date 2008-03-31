@@ -20,9 +20,13 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import javax.swing.tree.TreePath;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
+import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -32,6 +36,7 @@ import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
@@ -98,8 +103,9 @@ public class AbstractBpelModelUpdater {
     
     //==========================================================================
 
-    public XPathExprList buildXPathExprList(
-            XPathModel xPathModel, GraphInfoCollector graphInfo) {
+    public XPathExprList buildXPathExprList(XPathModel xPathModel, 
+            GraphInfoCollector graphInfo, 
+            Set<AbstractTypeCast> typeCastCollector) {
         //
         ArrayList<XPathExpression> xPathExprList = new ArrayList<XPathExpression>();
         boolean hasRoot = false;
@@ -107,11 +113,12 @@ public class AbstractBpelModelUpdater {
         for (Link link : graphInfo.getTransitLinks()) {
             TreeSourcePin sourcePin = (TreeSourcePin)link.getSource();
             TreePath sourceTreePath = sourcePin.getTreePath();
-            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
+            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath, typeCastCollector);
             //
             // The XPath for has to be used because there are another 
             // expressions which has to be combined with it. 
-            XPathExpression newExpression = createVariableXPath(xPathModel, tpInfo);
+            XPathExpression newExpression = createVariableXPath(
+                    xPathModel, tpInfo, typeCastCollector);
             if (newExpression != null) {
                 xPathModel.fillInStubs(newExpression);
                 xPathExprList.add(newExpression);
@@ -120,7 +127,8 @@ public class AbstractBpelModelUpdater {
         }
         //
         for (Vertex vertex : graphInfo.getPrimaryRoots()) {
-            XPathExpression newExpression = createXPathRecursive(xPathModel, vertex);
+            XPathExpression newExpression = createXPathRecursive(
+                    xPathModel, vertex, typeCastCollector);
             if (newExpression != null) {
                 xPathModel.fillInStubs(newExpression);
                 xPathExprList.add(newExpression);
@@ -129,7 +137,8 @@ public class AbstractBpelModelUpdater {
         }
         //
         for (Vertex vertex : graphInfo.getSecondryRoots()) {
-            XPathExpression newExpression = createXPathRecursive(xPathModel, vertex);
+            XPathExpression newExpression = createXPathRecursive(
+                    xPathModel, vertex, typeCastCollector);
             if (newExpression != null) {
                 xPathModel.fillInStubs(newExpression);
                 xPathExprList.add(newExpression);
@@ -141,12 +150,13 @@ public class AbstractBpelModelUpdater {
     }
     
     protected void populateContentHolder(ContentElement contentHolder, 
-            GraphInfoCollector graphInfo) {
+            GraphInfoCollector graphInfo, Set<AbstractTypeCast> typeCastCollector) {
         //
         XPathModel xPathModel = 
                 BpelXPathModelFactory.create((BpelEntity)contentHolder);
         //
-        XPathExprList exprList = buildXPathExprList(xPathModel, graphInfo);
+        XPathExprList exprList = 
+                buildXPathExprList(xPathModel, graphInfo, typeCastCollector);
         
         //
         String newExprString = exprList.toString();
@@ -164,7 +174,7 @@ public class AbstractBpelModelUpdater {
     //==========================================================================
 
     protected XPathExpression createVariableXPath(XPathModel xPathModel, 
-            TreePathInfo tpInfo) {
+            TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector) {
         //
         if (tpInfo == null || tpInfo.varDecl == null) {
             return null;
@@ -179,8 +189,8 @@ public class AbstractBpelModelUpdater {
         if (tpInfo.schemaCompList.isEmpty()) {
             return xPathVarRef;
         } else {
-            List<LocationStep> stepList = 
-                    constructLSteps(xPathModel, tpInfo.schemaCompList);
+            List<LocationStep> stepList = constructLSteps(
+                    xPathModel, tpInfo.schemaCompList, typeCastCollector);
             if (stepList != null && !(stepList.isEmpty())) {
                 XPathExpressionPath exprPath = xPathModel.getFactory().
                         newXPathExpressionPath(xPathVarRef, 
@@ -195,7 +205,7 @@ public class AbstractBpelModelUpdater {
     //==========================================================================
 
     protected List<LocationStep> constructLSteps(XPathModel xPathModel, 
-            List<Object> sCompList) {
+            List<Object> sCompList, Set<AbstractTypeCast> typeCastCollector) {
         if (sCompList == null || sCompList.isEmpty()) {
             return null;
         } 
@@ -212,11 +222,23 @@ public class AbstractBpelModelUpdater {
                 XPathPredicateExpression[] predArr = pred.getPredicates();
                 SchemaComponent sComp = pred.getSComponent();
                 newLocationStep = constructLStep(xPathModel, sComp, predArr);
+            } else if (stepObj instanceof AbstractTypeCast) {
+                AbstractTypeCast typeCast = (AbstractTypeCast)stepObj;
+                SchemaComponent sComp = typeCast.getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, null);
+                //
+                if (typeCastCollector != null) {
+                    typeCastCollector.add(typeCast);
+                }
+                //
             } else if (stepObj instanceof LocationStep) {
                 //
                 // TODO: It would be more correct to do a copy of the stepObj
                 // because of it is owned by another XPathModel. 
                 newLocationStep = (LocationStep)stepObj;
+            } else if (stepObj instanceof AbstractTypeCast) {
+                SchemaComponent sComp = ((AbstractTypeCast)stepObj).getSComponent();
+                newLocationStep = constructLStep(xPathModel, sComp, null);
             }
             //
             if (newLocationStep != null) {
@@ -262,7 +284,8 @@ public class AbstractBpelModelUpdater {
      * @param treePath
      * @return
      */
-    protected TreePathInfo collectTreeInfo(TreePath treePath) {
+    protected TreePathInfo collectTreeInfo(TreePath treePath, 
+            Set<AbstractTypeCast> typeCastCollector) {
         //
         List<Object> objectPath = MapperSwingTreeModel.convertTreePath(treePath);
         //
@@ -270,34 +293,50 @@ public class AbstractBpelModelUpdater {
         //
         // Collect source info according to the tree path
         for (Object item : objectPath) {
-            //
-            if (item instanceof SchemaComponent || 
-                    item instanceof AbstractPredicate ||
-                    item instanceof LocationStep) {
-                sourceInfo.schemaCompList.add(item);
-            } else if (item instanceof AbstractVariableDeclaration) {
-                if (item instanceof VariableDeclarationScope) {
-                    continue;
-                } else if (item instanceof VariableDeclarationWrapper) {
-                    sourceInfo.varDecl = ((VariableDeclarationWrapper)item).getDelegate();
-                } else if (item instanceof VariableDeclaration) {
-                    sourceInfo.varDecl = (VariableDeclaration)item;
-                }
-            } else if (item instanceof Part) {
-                sourceInfo.part = (Part)item;
-            } else if (item instanceof PartnerLink) {
-                sourceInfo.pLink = (PartnerLink)item;
-            } else if (item instanceof Roles) {
-                sourceInfo.roles = (Roles)item;
-            }
+            processItem(item, sourceInfo, typeCastCollector);
         }
         //
         return sourceInfo;
     }
 
+    private void processItem(Object item,
+            AbstractBpelModelUpdater.TreePathInfo sourceInfo, 
+            Set<AbstractTypeCast> typeCastCollector) {
+        //
+        if (item instanceof SchemaComponent || 
+                item instanceof AbstractPredicate || 
+                item instanceof LocationStep) {
+            sourceInfo.schemaCompList.add(item);
+        } else if (item instanceof AbstractTypeCast) {
+            AbstractTypeCast typeCast = (AbstractTypeCast)item;
+            typeCastCollector.add(typeCast);
+            Object castedObj = typeCast.getCastedObject();
+            processItem(castedObj, sourceInfo, typeCastCollector);
+        } else if (item instanceof AbstractVariableDeclaration) {
+            if (item instanceof VariableDeclarationScope) {
+                return;
+            } else if (item instanceof VariableDeclarationWrapper) {
+                sourceInfo.varDecl =
+                        ((VariableDeclarationWrapper) item).getDelegate();
+            } else if (item instanceof VariableDeclaration) {
+                sourceInfo.varDecl =
+                        (VariableDeclaration) item;
+            }
+        } else if (item instanceof Part) {
+            sourceInfo.part = (Part) item;
+        } else if (item instanceof PartnerLink) {
+            sourceInfo.pLink =
+                    (PartnerLink) item;
+        } else if (item instanceof Roles) {
+            sourceInfo.roles =
+                    (Roles) item;
+        }
+    }
+    
     //==========================================================================
 
-    protected XPathExpression createXPathRecursive(XPathModel xPathModel, Vertex vertex) {
+    protected XPathExpression createXPathRecursive(XPathModel xPathModel, 
+            Vertex vertex, Set<AbstractTypeCast> typeCastCollector) {
         XPathExpression newExpression = createXPath(xPathModel, vertex);
         //
         if (newExpression instanceof XPathOperationOrFuntion) {
@@ -386,12 +425,15 @@ public class AbstractBpelModelUpdater {
                     //
                     if (sourcePin instanceof Vertex) {
                         Vertex sourceVertex = (Vertex)sourcePin;
-                        childExpr = createXPathRecursive(xPathModel, sourceVertex);
+                        childExpr = createXPathRecursive(
+                                xPathModel, sourceVertex, typeCastCollector);
                     } else if (sourcePin instanceof TreeSourcePin) {
                         TreePath sourceTreePath = 
                                 ((TreeSourcePin)sourcePin).getTreePath();
-                        TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
-                        childExpr = createVariableXPath(xPathModel, tpInfo);
+                        TreePathInfo tpInfo = 
+                                collectTreeInfo(sourceTreePath, typeCastCollector);
+                        childExpr = createVariableXPath(
+                                xPathModel, tpInfo, typeCastCollector);
                     }
                 }
                 //
@@ -480,6 +522,18 @@ public class AbstractBpelModelUpdater {
         }
         //
         return result;
+    }
+
+    public void registerTypeCasts(ExtensibleElements destination, 
+            Collection<AbstractTypeCast> typeCasts, boolean inLeftTree) {
+        if (typeCasts == null || typeCasts.isEmpty()) {
+            return;
+        }
+        //
+        CastManager cm = CastManager.getCastManager(getMapperModel(), inLeftTree);
+        if (cm != null) {
+            cm.registerTypeCasts(destination, typeCasts);
+        }
     }
 
     //==========================================================================

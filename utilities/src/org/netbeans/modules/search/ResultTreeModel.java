@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -67,6 +67,8 @@ final class ResultTreeModel implements TreeModel {
     private boolean selected = true;
     /** */
     private int objectsCount;
+    /** */
+    private int selectedObjectsCount;
     /** */
     private List<TreeModelListener> treeModelListeners;
     
@@ -282,13 +284,16 @@ final class ResultTreeModel implements TreeModel {
     }
     
     /**
+     * 
+     * @return  {@code true} if the selection changed, {@code false} otherwise
      */
-    void setSelected(boolean selected) {
+    private boolean setSelected(boolean selected) {
         if (selected == this.selected) {
-            return;
+            return false;
         }
         
         this.selected = selected;
+        return true;
     }
     
     private final Task UPDATE_NAME_TASK = new Task();
@@ -322,15 +327,67 @@ final class ResultTreeModel implements TreeModel {
                 if (foundObjectIndex != -1) {
                     objectsCount++;
                     fireNodeAdded(foundObjectIndex, foundObject);
+                    updateRootNodeSelection(true);
                 } else {
+                    /* file became invalid */
+                    assert !foundObject.isObjectValid();
+                    boolean wasSelected = foundObject.isSelected();
+                    foundObject.setSelected(false);
                     fireNodeChanged(foundObject);
+                    if (wasSelected) {
+                        updateRootNodeSelection(false);
+                    }
                 }
             } else {
                 fireRootNodeChanged();
             }
         }
     }
+
+    void setRootNodeSelected(boolean selected) {
+        if (selected) {
+            selectedObjectsCount = objectsCount;
+        } else {
+            selectedObjectsCount = 0;
+        }
+        updateRootNodeSelection();
+    }
     
+    /**
+     */
+    void fileNodeSelectionChanged(MatchingObject matchingObj,
+                                  boolean includingChildren) {
+        assert EventQueue.isDispatchThread();
+
+        fireFileNodeSelectionChanged(matchingObj, includingChildren);
+        updateRootNodeSelection(matchingObj.isSelected());
+    }
+    
+    /**
+     * 
+     * @param  selectionAdded  {@code true} if a file node was selected
+     *                                 or if a selected file node was added;
+     *                         {@code false} if a file node was unselected
+     *                                 or if a selected file node was removed
+     *                                 or if a selected file node became invalid
+     */
+    private void updateRootNodeSelection(boolean selectionAdded) {
+        if (selectionAdded) {
+            selectedObjectsCount++;
+        } else {
+            selectedObjectsCount--;
+        }
+
+        updateRootNodeSelection();
+    }
+
+    private void updateRootNodeSelection() {
+        assert (selectedObjectsCount >= 0) && (selectedObjectsCount <= objectsCount);
+        if (setSelected(selectedObjectsCount != 0)) {
+            fireRootNodeChanged();
+        }
+    }
+
     /**
      */
     private void fireNodeAdded(int index, MatchingObject object) {
@@ -410,10 +467,12 @@ final class ResultTreeModel implements TreeModel {
      * @param  includingSubnodes  whether listeners should be notified also
      *                            about change of the node's children's
      *                            selection
+     * @return  {@code true} if the file node's selection change caused change
+     *          of the root node's selection, {@code false} otherwise
      * @see  MatchingObj#markChildrenSelectionDirty()
      */
-    void fireFileNodeSelectionChanged(MatchingObject matchingObj,
-                                      boolean includingSubnodes) {
+    private void fireFileNodeSelectionChanged(MatchingObject matchingObj,
+                                              boolean includingChildren) {
         assert EventQueue.isDispatchThread();
         
         if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
@@ -431,15 +490,22 @@ final class ResultTreeModel implements TreeModel {
             l.treeNodesChanged(event);
         }
         
-        if (includingSubnodes) {
-            /* ... and also all its children need to be updated: */
-            fireFileNodeChildrenSelectionChanged(matchingObj);
+        if (includingChildren) {
+            if (matchingObj.isExpanded()) {
+                fireFileNodeChildrenSelectionChanged(matchingObj);
+            } else {
+                matchingObj.markChildrenSelectionDirty();
+            }
         }
     }
-    
+
     /**
      */
     void fireFileNodeChildrenSelectionChanged(MatchingObject matchingObj) {
+        if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
+            return;
+        }
+
         Node[] children = resultModel.basicCriteria
                           .getDetails(matchingObj.object);
         int[] indices = new int[children.length];

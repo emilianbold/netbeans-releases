@@ -75,7 +75,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private Object cacheLock = new String("Repository file cache lock"); //NOI18N
     private RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
     
-    private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); 
+    private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
     
     private static final FilesAccessStrategyImpl instance = new FilesAccessStrategyImpl();
     
@@ -195,7 +195,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                     keepLocked = true;
                     break;
                 } else if( TRACE_CONFLICTS ) {
-                    System.out.printf("invalid file descriptir when %s %s\n", readOnly ? "reading" : "writing", fileName);
+                    System.out.printf("invalid file descriptir when %s %s\n", readOnly ? "reading" : "writing", fileName); // NOI18N
                 }
             }  finally {
                 if (!keepLocked) {
@@ -302,8 +302,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
             
     private void resetStatistics() {
-        writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM);
-        readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM);
+        writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM); // NOI18N
+        readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM); // NOI18N
         readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
     }
     
@@ -342,7 +342,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     private static String getBriefClassName(Object o) {
         if( o == null ) {
-            return "null";
+            return "null"; // NOI18N
         } else {
             String name = o.getClass().getName();
             int pos = name.lastIndexOf('.');

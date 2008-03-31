@@ -3,7 +3,6 @@
 <settings version="1.0">
     <module name="org.netbeans.core/1"/>
     <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
     <instanceof class="org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings"/>
     <instance class="org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings"/>
 </settings>

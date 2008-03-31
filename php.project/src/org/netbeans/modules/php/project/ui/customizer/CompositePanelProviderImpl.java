@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

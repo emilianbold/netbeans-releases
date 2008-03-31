@@ -188,12 +188,14 @@ public class CasaSourceMultiViewElement extends CloneableEditor implements Multi
         if (mDataObject.isModified()) {
             editor.syncModel();
         }
+        CasaMultiViewFactory.updateGroupVisibility(CasaSourceMultiViewDesc.PREFERRED_ID);
 //        editor.removeUndoManagerFromDocument();
     }
 
     @Override
     public void componentActivated() {
         super.componentActivated();
+        CasaMultiViewFactory.updateGroupVisibility(CasaSourceMultiViewDesc.PREFERRED_ID);
 //        CasaDataEditorSupport editor = mDataObject.getEditorSupport();
 //        editor.addUndoManagerToDocument();
     }

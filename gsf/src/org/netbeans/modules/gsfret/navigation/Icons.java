@@ -152,6 +152,9 @@ public final class Icons {
         case TAG:
             img = Utilities.loadImage( ICON_BASE + "html_element" + PNG_EXTENSION );
             break;
+        case RULE:
+            img = Utilities.loadImage( ICON_BASE + "rule" + PNG_EXTENSION );
+            break;
         case VARIABLE:
         case PROPERTY:
         case GLOBAL:
