@@ -59,8 +59,8 @@ public class DataconnectivitySettings {
     public static final String PROP_PROMPT_FOR_NAME = "3checkRowset"; // NOI18N
     public static final String PROP_DATAPROVIDER = "4dataprovider"; // NOI18N
     public static final String PROP_ROWSET = "5rowset"; // NOI18N
-    private static final String DEFAULT_ROWSET_SUFFIX = "RowSet";
-    private static final String DEFAULT_DATAPROVIDER_SUFFIX = "DataProvider";
+    private static final String DEFAULT_ROWSET_SUFFIX = "RowSet"; // NOI18N
+    private static final String DEFAULT_DATAPROVIDER_SUFFIX = "DataProvider";  // NOI18N
 
     // Default instance of this system option, for the convenience of associated classes.
     private static final DataconnectivitySettings INSTANCE = new DataconnectivitySettings();

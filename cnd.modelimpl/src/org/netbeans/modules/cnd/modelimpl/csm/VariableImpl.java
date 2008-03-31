@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -168,13 +169,33 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private final void initInitialValue(AST node) {
-        if( node != null ) {
+        if (node != null) {
+            int start = 0;
+            int end = 0;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
-            if( tok != null ) {
+            if (tok != null) {
                 tok = tok.getNextSibling();
             }
-            if( tok != null ) {
-                initExpr = new ExpressionBase(tok, getContainingFile(), null, _getScope());
+            if (tok != null) {
+                CsmAST startAST = AstUtil.getFirstCsmAST(tok);
+                if (startAST != null) {
+                    start = startAST.getOffset();
+                }
+            }
+            AST lastInitAst = tok;
+            while (tok != null) {
+                if (tok.getType() == CPPTokenTypes.SEMICOLON) {
+                    break;
+                }
+                lastInitAst = tok;
+                tok = tok.getNextSibling();
+            }
+            if (lastInitAst != null) {
+                AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
+                if ((lastChild != null) && (lastChild instanceof CsmAST)) {
+                    end = ((CsmAST) lastChild).getEndOffset();
+                    initExpr = new ExpressionBase(start, end, getContainingFile(), null, _getScope());
+                }
             }
         }
     }

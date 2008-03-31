@@ -153,6 +153,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
+                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     return AstUtil.getLastChildRecursively(last);
                 default:
                     last = token;

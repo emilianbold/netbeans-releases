@@ -141,7 +141,13 @@ public class PHPDocCommentParser {
             String[] tokens = line.split("[ ]+");
             if (tokens.length > 0) {
                 String tag = tokens[0];
-                type = PHPDocTag.Type.valueOf(tag.substring(1).toUpperCase());
+                try {
+                    type = PHPDocTag.Type.valueOf(tag.substring(1).toUpperCase());
+                }
+                catch (IllegalArgumentException iae) {
+                    // we are not able to thread such tag
+                    type = null;
+                }
             }
         }
         return type;
