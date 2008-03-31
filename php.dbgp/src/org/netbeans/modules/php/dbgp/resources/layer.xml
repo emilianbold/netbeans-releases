@@ -55,6 +55,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-php-dbgp-annotations-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="Popup">
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                        <attr name="position" intvalue="850"/>
+                    </file>		    		                        
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
                         <attr name="position" intvalue="900"/>
                     </file>
