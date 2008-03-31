@@ -149,8 +149,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (internalFolder == null) {
             // XXX workaround because gsf uses toFile() and this causes NPE for SFS
             // XXX filesystem listener should be used
-            internalFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
-            for (FileObject fo : internalFolder.getChildren()) {
+            FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
+            for (FileObject fo : sfsFolder.getChildren()) {
                 if (FileUtil.toFile(fo) != null) {
                     continue;
                 }
@@ -171,6 +171,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     closeStream(bos);
                 }
             }
+            File file = FileUtil.toFile(sfsFolder);
+            internalFolder = FileUtil.toFileObject(file);
         }
         return internalFolder;
     }
