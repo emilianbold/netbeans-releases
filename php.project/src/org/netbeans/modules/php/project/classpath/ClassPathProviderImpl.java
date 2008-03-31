@@ -172,6 +172,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 }
             }
             File file = FileUtil.toFile(sfsFolder);
+            assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
             internalFolder = FileUtil.toFileObject(file);
         }
         return internalFolder;
