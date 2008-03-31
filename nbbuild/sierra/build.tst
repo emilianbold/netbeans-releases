@@ -44,7 +44,7 @@
     
     <!-- test -->
     <target name="unit-test" depends="test"/>
-    <target name="proj-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9,test-a,test-b"/>
+    <target name="proj-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9,test-a,test-b,test-c"/>
     
     <target name="test">
         <!-- print -->
@@ -265,7 +265,9 @@
 
         <!-- while -->
         <antcall target="do-test-jbi"><param name="dir" value="while/WhileBpel"/></antcall>
+    </target>
 
+    <target name="test-c">
         <!-- xpathfunctions -->
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XPathFunctionsBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XSDFunctions"/></antcall>
