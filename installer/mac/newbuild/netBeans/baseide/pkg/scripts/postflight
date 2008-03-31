@@ -43,7 +43,7 @@ then
   else
     echo No 1.5 JDK home: $jdk_home_1_5
   fi
-  sed -i -E -e "s|\\$\{NETBEANS_HOME\}|${NETBEANS_INSTALL_DIR}/Contents/Resources/NetBeans|g" netbeans.conf
+  sed -i -E -e 's|\\$\{NETBEANS_HOME\}|'$NETBEANS_INSTALL_DIR'/Contents/Resources/NetBeans|g" netbeans.conf
 else
   echo No netbeans.conf in: `pwd`
 fi
