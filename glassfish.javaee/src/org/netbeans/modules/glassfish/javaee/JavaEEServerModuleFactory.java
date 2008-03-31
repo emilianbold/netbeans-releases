@@ -78,10 +78,16 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         } else {
             javaEEJar = new File(glassfishHome, "modules/javaee-5.0.jar"); // Jan/Feb 2008 builds used this name
             if(!javaEEJar.exists()) {
-                javaEEJar = new File(glassfishHome, "modules/javaee-5.0-SNAPSHOT.jar"); // Name in V3P2M2 buld.
+                javaEEJar = new File(glassfishHome, "modules/javaee-5.0-SNAPSHOT.jar"); // Name in V3P2M2 build.
+            }
+            if(!javaEEJar.exists()) {
+                javaEEJar = new File(glassfishHome, "modules/javax.javaee-10.0-SNAPSHOT.jar"); // Name in V3P2M4 build.
             }
             if(javaEEJar.exists()) {
-                File webTierJar = new File(glassfishHome, "modules/web/webtier-10.0-SNAPSHOT.jar");
+                File webTierJar = new File(glassfishHome, "modules/web/webtier-10.0-SNAPSHOT.jar"); // Name & Loc in V3P2M2 build.
+                if(!webTierJar.exists()) {
+                    webTierJar = new File(glassfishHome, "modules/webtier-10.0-SNAPSHOT.jar"); // Name & Loc in V3P2M4 build.
+                }
                 if(webTierJar.exists()) {
                     result = true;
                 }
