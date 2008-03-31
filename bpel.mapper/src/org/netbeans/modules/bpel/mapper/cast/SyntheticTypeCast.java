@@ -24,9 +24,7 @@ import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
-import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
@@ -89,6 +87,12 @@ public class SyntheticTypeCast extends AbstractTypeCast {
         }
         //
         return super.populateCast(target, destination, inLeftMapperTree);
+    }
+
+    public Object getCastedObject() {
+        mItr.restart();
+        Object result = mItr.next();
+        return result;
     }
     
 } 

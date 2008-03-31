@@ -113,7 +113,7 @@ public class AbstractBpelModelUpdater {
         for (Link link : graphInfo.getTransitLinks()) {
             TreeSourcePin sourcePin = (TreeSourcePin)link.getSource();
             TreePath sourceTreePath = sourcePin.getTreePath();
-            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
+            TreePathInfo tpInfo = collectTreeInfo(sourceTreePath, typeCastCollector);
             //
             // The XPath for has to be used because there are another 
             // expressions which has to be combined with it. 
@@ -284,7 +284,8 @@ public class AbstractBpelModelUpdater {
      * @param treePath
      * @return
      */
-    protected TreePathInfo collectTreeInfo(TreePath treePath) {
+    protected TreePathInfo collectTreeInfo(TreePath treePath, 
+            Set<AbstractTypeCast> typeCastCollector) {
         //
         List<Object> objectPath = MapperSwingTreeModel.convertTreePath(treePath);
         //
@@ -292,32 +293,46 @@ public class AbstractBpelModelUpdater {
         //
         // Collect source info according to the tree path
         for (Object item : objectPath) {
-            //
-            if (item instanceof SchemaComponent || 
-                    item instanceof AbstractPredicate ||
-                    item instanceof LocationStep || 
-                    item instanceof AbstractTypeCast) {
-                sourceInfo.schemaCompList.add(item);
-            } else if (item instanceof AbstractVariableDeclaration) {
-                if (item instanceof VariableDeclarationScope) {
-                    continue;
-                } else if (item instanceof VariableDeclarationWrapper) {
-                    sourceInfo.varDecl = ((VariableDeclarationWrapper)item).getDelegate();
-                } else if (item instanceof VariableDeclaration) {
-                    sourceInfo.varDecl = (VariableDeclaration)item;
-                }
-            } else if (item instanceof Part) {
-                sourceInfo.part = (Part)item;
-            } else if (item instanceof PartnerLink) {
-                sourceInfo.pLink = (PartnerLink)item;
-            } else if (item instanceof Roles) {
-                sourceInfo.roles = (Roles)item;
-            }
+            processItem(item, sourceInfo, typeCastCollector);
         }
         //
         return sourceInfo;
     }
 
+    private void processItem(Object item,
+            AbstractBpelModelUpdater.TreePathInfo sourceInfo, 
+            Set<AbstractTypeCast> typeCastCollector) {
+        //
+        if (item instanceof SchemaComponent || 
+                item instanceof AbstractPredicate || 
+                item instanceof LocationStep) {
+            sourceInfo.schemaCompList.add(item);
+        } else if (item instanceof AbstractTypeCast) {
+            AbstractTypeCast typeCast = (AbstractTypeCast)item;
+            typeCastCollector.add(typeCast);
+            Object castedObj = typeCast.getCastedObject();
+            processItem(castedObj, sourceInfo, typeCastCollector);
+        } else if (item instanceof AbstractVariableDeclaration) {
+            if (item instanceof VariableDeclarationScope) {
+                return;
+            } else if (item instanceof VariableDeclarationWrapper) {
+                sourceInfo.varDecl =
+                        ((VariableDeclarationWrapper) item).getDelegate();
+            } else if (item instanceof VariableDeclaration) {
+                sourceInfo.varDecl =
+                        (VariableDeclaration) item;
+            }
+        } else if (item instanceof Part) {
+            sourceInfo.part = (Part) item;
+        } else if (item instanceof PartnerLink) {
+            sourceInfo.pLink =
+                    (PartnerLink) item;
+        } else if (item instanceof Roles) {
+            sourceInfo.roles =
+                    (Roles) item;
+        }
+    }
+    
     //==========================================================================
 
     protected XPathExpression createXPathRecursive(XPathModel xPathModel, 
@@ -415,7 +430,8 @@ public class AbstractBpelModelUpdater {
                     } else if (sourcePin instanceof TreeSourcePin) {
                         TreePath sourceTreePath = 
                                 ((TreeSourcePin)sourcePin).getTreePath();
-                        TreePathInfo tpInfo = collectTreeInfo(sourceTreePath);
+                        TreePathInfo tpInfo = 
+                                collectTreeInfo(sourceTreePath, typeCastCollector);
                         childExpr = createVariableXPath(
                                 xPathModel, tpInfo, typeCastCollector);
                     }
@@ -519,8 +535,7 @@ public class AbstractBpelModelUpdater {
             cm.registerTypeCasts(destination, typeCasts);
         }
     }
-    
-    
+
     //==========================================================================
     
     /**

@@ -46,8 +46,7 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.TopComponent;
+import org.openide.windows.*;
 
 import org.netbeans.modules.compapp.casaeditor.*;
 
@@ -59,7 +58,8 @@ import org.netbeans.modules.compapp.casaeditor.*;
  * @author Jeri Lockhart
  */
 public class CasaMultiViewFactory {
-    
+    public static Boolean groupVisible = Boolean.FALSE;
+
     public static CloneableTopComponent createMultiView(CasaDataObject obj) {
         MultiViewDescription views[] = new MultiViewDescription[2];
 
@@ -107,5 +107,47 @@ public class CasaMultiViewFactory {
                 }
             }
         }
+    }
+
+    /**
+     * Update the visibility of the CASA window group
+     *
+     * @param preferredId
+     */
+    public static void updateGroupVisibility(String preferredId) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponentGroup group = wm.findTopComponentGroup("casa_ui"); // NOI18N
+        if (group == null) {
+            return; // group not found (should not happen)
+        }
+        //
+        boolean isDesignViewSelected = false;
+        for (Mode mode : wm.getModes()) {
+            TopComponent selected = mode.getSelectedTopComponent();
+            if (selected != null) {
+                MultiViewHandler mvh = MultiViews.findMultiViewHandler(selected);
+                if (mvh != null) {
+                    MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                    if (mvp != null) {
+                        String id = mvp.preferredID();
+                        if (preferredId.equals(id)) {
+                            isDesignViewSelected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        synchronized (groupVisible) {
+        	if (isDesignViewSelected && !groupVisible) {
+        		group.open();
+        		groupVisible = Boolean.TRUE;
+        	} else if (!isDesignViewSelected && groupVisible){
+        		group.close();
+        		groupVisible = Boolean.FALSE;
+        	}
+        }
+
+
     }
 }

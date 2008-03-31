@@ -1209,8 +1209,16 @@ public class XPathModelImpl implements XPathModel {
                         "It didn't manage to resolve a type of the variable: " + 
                         vReference); // NOI18N
             } else {
-                parentSchemaContext = new VariableSchemaContext(vReference);
-                vReference.setSchemaContext(parentSchemaContext);
+                XPathSchemaContext schemaContext = new VariableSchemaContext(vReference);
+                XPathCast cast = getCast(schemaContext);
+                if (cast != null) {
+                    CastSchemaContext castContext = 
+                            new CastSchemaContext(schemaContext, cast);
+                    schemaContext = castContext;
+                }
+                vReference.setSchemaContext(schemaContext);
+                //
+                parentSchemaContext = schemaContext;
             }
         }
 

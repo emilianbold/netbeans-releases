@@ -13,12 +13,12 @@ Open issues:
 -->
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-             xmlns:del="urn:delicious"
+             xmlns:del="urn:delicious:deliciousresponse"
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
 	     xmlns="http://research.sun.com/wadl/2006/10">
     <grammars>
-        <include href="Delicious.xsd"/>
+        <include href="DeliciousResponse.xsd"/>
     </grammars>
     <resources base="https://api.del.icio.us/v1">
         <resource path="posts">
