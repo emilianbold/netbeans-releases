@@ -5,6 +5,7 @@ License: GPL - compatible
 Origin: http://www2.cs.tum.edu/projects/cup/
 Files: java-cup-11a.jar
 Source: http://www2.cs.tum.edu/projects/cup/
+OSR: 8446
 
 CUP Parser Generator Copyright Notice, License, and Disclaimer
 Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian

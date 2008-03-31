@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,11 +54,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
@@ -259,7 +262,19 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
             for (Action action : getStandardProjectActions()){
                 list.add(action);
             }
-                
+	    
+	    //Custom Actions for Project Nodes - #57874
+            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
+            if (!res.isEmpty()) {
+                list.add(null);
+                for (Object next : res) {
+                    if (next instanceof Action) {
+                        list.add((Action) next);
+                    } else if (next instanceof JSeparator) {
+                        list.add(null);
+                    }
+                }
+            }
             return list.toArray(new Action[list.size()]);
         }
 
@@ -408,7 +423,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          */
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
-            if (property.startsWith(PhpProject.SRC_) && property.endsWith(PhpProject._DIR)) {
+            if (property.startsWith(PhpProjectProperties.SRC_) && property.endsWith(PhpProjectProperties._DIR)) {
                 createNodes();
             }
         }
@@ -912,7 +927,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         
         private boolean isNotTemporaryFile(DataObject object){
                 String name = object.getPrimaryFile().getNameExt();
-                return !name.endsWith(PhpProject.TMP_FILE_POSTFIX);
+                return !name.endsWith(PhpProjectProperties.TMP_FILE_POSTFIX);
         }
         
         private final File PROJECT_XML = getProject().getHelper()

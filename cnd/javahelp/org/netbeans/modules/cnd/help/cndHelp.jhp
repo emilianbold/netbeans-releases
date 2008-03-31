@@ -203,7 +203,6 @@
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>
-			<file title="index.xml"/>
 			<file title="map.xml"/>
 			<file title="stopwords.swd"/>
 		</directory>

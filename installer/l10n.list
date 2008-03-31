@@ -38,3 +38,7 @@ installer/mac/openesb/pkg/Description.plist
 installer/mac/tomcat/pkg/Welcome.html
 installer/mac/tomcat/pkg/License.html
 installer/mac/tomcat/pkg/Description.plist
+
+#i18n files for new native mac installer
+installer/mac/newbuild/Bundle.properties
+installer/mac/newbuild/dmg/Resources/Welcome*.html

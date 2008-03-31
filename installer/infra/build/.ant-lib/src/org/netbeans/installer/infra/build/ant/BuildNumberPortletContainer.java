@@ -111,13 +111,14 @@ public class BuildNumberPortletContainer extends Task {
                         matcher.group(1);                              // NOMAGI
                 final String microNumber =
                         matcher.group(2);                              // NOMAGI
-                final String minorNumber =
-                        matcher.group(3);                              // NOMAGI
+		final String minorNumber = 
+				(matcher.group(3) == null) ? 	       // NOMAGI
+				"0" : matcher.group(4);                // NOMAGI
                 final String milestoneNumber =
-                        matcher.group(4);                              // NOMAGI
+                        matcher.group(5);                              // NOMAGI
                 
                 final String buildNumber = FORMAT_OUT.format(
-                        FORMAT_IN.parse(matcher.group(5))); // NOMAGI
+                        FORMAT_IN.parse(matcher.group(6))); // NOMAGI
                 
                 getProject().setProperty(
                         prefix + MACRO_BUILD_SUFFIX,
@@ -151,7 +152,7 @@ public class BuildNumberPortletContainer extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "portlet_container-([0-9]+)_([0-9]+)_([0-9]+)-fcs-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
+            "portlet_container-([0-9]+)_([0-9]+)(_([0-9]+))?-fcs-bin-b([0-9]+)-([A-Za-z0-9_]+).zip");//NOI18N
     
     /**
      * Date format used in the input file.

@@ -203,7 +203,17 @@ public class ElementUtilities {
                     int typeIndex = ve.indexOf(':');
                     if (typeIndex != -1) {
                         sb.append("<font color=\"#808080\">"); // NOI18N
-                        sb.append(ve, typeIndex+1, ve.length());
+                        for (int i = typeIndex+1, n = ve.length(); i < n; i++) {
+                            char c = ve.charAt(i);
+                            if (c == '<') { // Handle types... Array<String> etc
+                                sb.append("&lt;");
+                            } else if (c == '>') {
+                                sb.append("&gt;");
+                            } else {
+                                sb.append(c);
+                            }
+                        }
+                        //sb.append(ve, typeIndex+1, ve.length());
                         sb.append("</font>"); // NOI18N
                         sb.append(" ");
                         sb.append("<font color=\"#a06001\">"); // NOI18N
@@ -283,7 +293,11 @@ public class ElementUtilities {
             }
             sb.append("</ul>\n"); // NOI18N
             //sb.append("Click <a href=\"netbeans:choosebrowsers\">here</a> to choose targeted browsers.\n");
-            sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            if (org.openide.util.Utilities.isMac()) {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBrOsx"));
+            } else {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            }
             sb.append("\n"); // NOI18N
             sb.append("</p>"); // NOI18N
         }

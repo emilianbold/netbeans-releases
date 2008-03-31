@@ -157,7 +157,7 @@ public class CssEditorSupport {
                                     //check if the last item has semicolon
                                     //add it if there is no semicolon
                                     if (last.semicolonOffset() == -1) {
-                                        doc.insertString(last.value().offset() + last.value().name().length(), ";", null); //NOI18N
+                                        doc.insertString(last.value().offset() + last.value().name().trim().length(), ";", null); //NOI18N
                                     }
 
                                     initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.key().offset());
@@ -349,8 +349,10 @@ public class CssEditorSupport {
         this.current = null;
 
         if (caretListenerRegistered) {
-            editorPane.removeCaretListener(CARET_LISTENER);
-            d("removed caret listener: " + current);
+            if(editorPane != null) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener: " + current);
+            }
             caretListenerRegistered = false;
         }
 

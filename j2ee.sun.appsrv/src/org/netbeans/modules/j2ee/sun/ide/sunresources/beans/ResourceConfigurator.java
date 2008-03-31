@@ -461,11 +461,16 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }else{
             servName.setValue(hostName);
         }
-        
+        if (! servName.equals("")) { //NOI18N
+            jdbcConnectionPool.addPropertyElement(servName);
+        }
         String portNumber = getUrlPortNo(workingUrl);
-        PropertyElement portno = jdbcConnectionPool.newPropertyElement();
-        portno.setName(WizardConstants.__PortNumber);
-        portno.setValue(portNumber);
+        if (! portNumber.equals("")) { //NOI18N
+            PropertyElement portno = jdbcConnectionPool.newPropertyElement();
+            portno.setName(WizardConstants.__PortNumber);
+            portno.setValue(portNumber);
+            jdbcConnectionPool.addPropertyElement(portno);
+        }
         if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vendorName)) {  //NOI18N
             PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
             String databaseName = "";
@@ -482,8 +487,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             dbName.setValue(databaseName);
             jdbcConnectionPool.addPropertyElement(dbName);
         }
-        jdbcConnectionPool.addPropertyElement(servName);
-        jdbcConnectionPool.addPropertyElement(portno);
+        
         return jdbcConnectionPool;
     }
     

@@ -65,6 +65,11 @@ public class DisableHintFix implements EnhancedFix {
     public ChangeInfo implement() throws Exception {
         HintsSettings.setEnabled(RulesManager.getInstance().getPreferences(rule, null), false);
 
+        refreshHints(info, caretPos);
+        return null;
+    }
+    
+    public static void refreshHints(CompilationInfo info, int caretPos) {
         // Force a refresh
         // HACK ALERT!
         JsHintsProvider provider = new JsHintsProvider();
@@ -78,8 +83,6 @@ public class DisableHintFix implements EnhancedFix {
             HintsController.setErrors(info.getFileObject(), 
                     "org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask", result);
         }
-        
-        return null;
     }
 
     public CharSequence getSortText() {

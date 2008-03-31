@@ -53,7 +53,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @XmlRootElement(name = "discountCodes")
