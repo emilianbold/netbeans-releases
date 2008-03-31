@@ -356,7 +356,7 @@ public class PHPCodeCompletion implements Completable {
     }
     
     private static final boolean isPHPIdentifierPart(char c){
-        return Character.isJavaIdentifierPart(c) && c != '$';
+        return Character.isJavaIdentifierPart(c);// && c != '$';
     }
 
     public String getPrefix(CompilationInfo info, int caretOffset, boolean upToOffset) {
