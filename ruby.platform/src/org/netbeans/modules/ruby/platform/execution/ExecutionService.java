@@ -304,7 +304,10 @@ public class ExecutionService {
                             
                             Map<String, String> env = pb.environment();
                             // set up custom environment configuration
-                            env.putAll(descriptor.getAdditionalEnvironment());
+                            Map<String, String> additionalEnv = descriptor.getAdditionalEnvironment();
+                            if (additionalEnv != null) {
+                                env.putAll(additionalEnv);
+                            }
                             if (descriptor.addBinPath) {
                                 setupProcessEnvironment(env);
                             }
