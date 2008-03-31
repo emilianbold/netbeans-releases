@@ -55,11 +55,11 @@ public class CustomizerPhpIncludePath extends JPanel {
 
         this.category = category;
 
-        includePathList.setModel(uiProps.INCLUDE_PATH_MODEL);
-        includePathList.setCellRenderer(uiProps.INCLUDE_PATH_LIST_RENDERER);
+        includePathList.setModel(uiProps.getIncludePathListModel());
+        includePathList.setCellRenderer(uiProps.getIncludePathListRenderer());
         ClassPathUiSupport.EditMediator.register(uiProps.getProject(),
                                                includePathList,
-                                               uiProps.INCLUDE_PATH_MODEL,
+                                               uiProps.getIncludePathListModel(),
                                                addFolderButton.getModel(),
                                                removeButton.getModel(),
                                                moveUpButton.getModel(),
