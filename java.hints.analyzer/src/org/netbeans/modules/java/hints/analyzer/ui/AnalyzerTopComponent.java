@@ -151,7 +151,7 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(fixButton, "Fix Selected");
+        org.openide.awt.Mnemonics.setLocalizedText(fixButton, org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.fixButton.text")); // NOI18N
         fixButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixButtonActionPerformed(evt);
@@ -159,14 +159,14 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         goOverFixed.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(goOverFixed, "Go Over Fixed Problems");
+        org.openide.awt.Mnemonics.setLocalizedText(goOverFixed, org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.goOverFixed.text")); // NOI18N
         goOverFixed.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goOverFixedActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(fixOnNext, "Fix on Next");
+        org.openide.awt.Mnemonics.setLocalizedText(fixOnNext, org.openide.util.NbBundle.getBundle(AnalyzerTopComponent.class).getString("AnalyzerTopComponent.fixOnNext.text")); // NOI18N
         fixOnNext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixOnNextActionPerformed(evt);
