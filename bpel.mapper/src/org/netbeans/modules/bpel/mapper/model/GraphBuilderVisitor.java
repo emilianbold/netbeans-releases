@@ -30,7 +30,7 @@ import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.search.VariableFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -232,7 +232,7 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         if (xPathVar != null) {
-            VariableDeclaration varDecl = xPathVar.getVarDecl();
+            AbstractVariableDeclaration varDecl = xPathVar.getVarDecl();
             if (varDecl != null) {
                 finderList.add(new VariableFinder(varDecl));
                 //

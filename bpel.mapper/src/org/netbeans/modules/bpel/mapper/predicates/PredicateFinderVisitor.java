@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.mapper.predicates;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -36,7 +36,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
@@ -134,7 +133,7 @@ public class PredicateFinderVisitor extends XPathVisitorAdapter {
             
             // Put the variable or part to the locaton path first
             if (mXPathVariable != null) {
-                VariableDeclaration varDecl = mXPathVariable.getVarDecl();
+                AbstractVariableDeclaration varDecl = mXPathVariable.getVarDecl();
                 objLocationPath.addFirst(varDecl);
                 //
                 Part part = mXPathVariable.getPart();
