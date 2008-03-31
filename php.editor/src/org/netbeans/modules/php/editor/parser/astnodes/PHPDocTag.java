@@ -60,7 +60,7 @@ public class PHPDocTag {
         SEE, SINCE, STATIC, STATICVAR, SUBPACKAGE,
         THROWS, TODO, TUTORIAL,
         USES,
-        VAR, VERSION
+        VAR, VARARG, VERSION
     }
 
     final private Type type;
