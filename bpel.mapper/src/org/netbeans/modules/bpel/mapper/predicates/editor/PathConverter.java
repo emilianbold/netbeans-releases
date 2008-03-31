@@ -175,13 +175,14 @@ public class PathConverter {
                 stage = ParsingStage.SCHEMA;
                 treeItemList.add(obj);
             } else if (obj instanceof Part) {
-                if (stage != ParsingStage.SCHEMA) {
+                if (!(stage == null || stage == ParsingStage.SCHEMA)) {
                     return null;
                 }
                 stage = ParsingStage.PART;
                 treeItemList.add(obj);
             } else if (obj instanceof AbstractVariableDeclaration) {
-                if (!(stage == ParsingStage.SCHEMA || 
+                if (!(stage == null || 
+                        stage == ParsingStage.SCHEMA || 
                         stage == ParsingStage.PART)) {
                     return null;
                 }
@@ -213,6 +214,42 @@ public class PathConverter {
         }
         //
         return treeItemList;
+    }
+
+    public static XPathBpelVariable constructXPathBpelVariable(
+            List<Object> pathList) {
+        //
+        AbstractVariableDeclaration var = null;
+        Part part = null;
+        //
+        // Process the path
+        ParsingStage stage = null;
+        for (Object obj: pathList) {
+            if (obj instanceof Part) {
+                if (stage != null) {
+                    return null;
+                }
+                stage = ParsingStage.PART;
+                part = (Part)obj;
+            } else if (obj instanceof AbstractVariableDeclaration) {
+                if (!(stage == null || stage == ParsingStage.PART)) {
+                    return null;
+                }
+                //
+                var = (AbstractVariableDeclaration)obj;
+                stage = ParsingStage.VARIABLE;
+                //
+                // Everything found!
+                break;
+            } else {
+                return null;
+            }
+        }
+        if (var == null) {
+            return null;
+        }
+        //
+        return new XPathBpelVariable(var, part);
     }
 
     public static List<Object> constructObjectLocationtList(
@@ -257,11 +294,11 @@ public class PathConverter {
             Part part = bpelVar.getPart();
             if (part != null) {
                 treeItemList.add(part);
-            } else {
-                VariableDeclaration varDecl = bpelVar.getVarDecl();
-                if (varDecl != null) {
-                    treeItemList.add(varDecl);
-                }
+            } 
+            //
+            AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
+            if (varDecl != null) {
+                treeItemList.add(varDecl);
             }
         }
         //

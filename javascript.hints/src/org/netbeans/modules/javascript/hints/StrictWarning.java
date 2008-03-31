@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.javascript.hints;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,13 +54,13 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.spi.Description;
 import org.netbeans.modules.javascript.hints.spi.ErrorRule;
 import org.netbeans.modules.javascript.hints.spi.Fix;
 import org.netbeans.modules.javascript.hints.spi.HintSeverity;
 import org.netbeans.modules.javascript.hints.spi.RuleContext;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -131,6 +130,11 @@ public class StrictWarning implements ErrorRule {
                     }
                     c = c.getParentNode();
                 }
+            }
+
+            // In HTML etc ignore these
+            if (node.getType() == Token.EMPTY && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
+                return;
             }
 
             OffsetRange astRange = AstUtilities.getRange(node);
@@ -232,31 +236,5 @@ public class StrictWarning implements ErrorRule {
 
     public JComponent getCustomizer(Preferences node) {
         return null;
-    }
-
-    private static class MoreInfoFix implements Fix {
-
-        private String key;
-
-        public MoreInfoFix(String key) {
-            this.key = key;
-        }
-
-        public String getDescription() {
-            return NbBundle.getMessage(StrictWarning.class, "ShowInfo");
-        }
-
-        public void implement() throws Exception {
-            URL url = new URL("http://wiki.netbeans.org/JavaScript_" + key.replace("msg.", "").replace(".", "")); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        }
-
-        public boolean isSafe() {
-            return true;
-        }
-
-        public boolean isInteractive() {
-            return true;
-        }
     }
 }

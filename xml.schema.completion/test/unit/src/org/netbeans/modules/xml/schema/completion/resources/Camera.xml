@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
     xmlns:p='http://www.pentax.com'
     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
     xsi:schemaLocation='http://www.camera.com camera.xsd'>
+    <
     <c:body>
         <n:description></n:description>
         <n:lens></n:lens>
