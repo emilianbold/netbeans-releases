@@ -423,7 +423,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
          */
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
-            if (property.startsWith(PhpProjectProperties.SRC_) && property.endsWith(PhpProjectProperties._DIR)) {
+            if (PhpProjectProperties.SRC_DIR.equals(property)) {
                 createNodes();
             }
         }

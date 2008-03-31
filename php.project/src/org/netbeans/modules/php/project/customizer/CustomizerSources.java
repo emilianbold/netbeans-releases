@@ -112,7 +112,7 @@ class CustomizerSources extends JPanel {
             else {
                 encName = myOriginalEncoding;
             }
-            getProperties().setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
+            //getProperties().setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
     }
 
     private void load(PhpProjectProperties uiProperties) {
@@ -134,7 +134,7 @@ class CustomizerSources extends JPanel {
     }
     private void setEncoding(PhpProjectProperties properties) {
         Charset select = Charset.defaultCharset();
-        myOriginalEncoding = properties.getProperty(PhpProjectProperties.SOURCE_ENCODING);
+        myOriginalEncoding = null;//properties.getProperty(PhpProjectProperties.SOURCE_ENCODING);
         
         if (myOriginalEncoding != null) {
             if (myEncoding.getModel() instanceof EncodingModel) {
@@ -204,7 +204,7 @@ class CustomizerSources extends JPanel {
         if (sourceFolder != null) {
             FileObject fileObject = getProperties().getProject().getHelper().resolveFileObject(sourceFolder);
             if (fileObject != null && fileObject.isValid()) {
-                getProperties().setProperty(PhpProjectProperties.SRC, sourceFolder);
+                //getProperties().setProperty(PhpProjectProperties.SRC, sourceFolder);
             }
         }
 

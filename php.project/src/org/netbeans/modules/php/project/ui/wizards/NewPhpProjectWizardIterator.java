@@ -239,7 +239,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProjectProperties.SRC, srcPath);
+        properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
 
         properties.setProperty(PhpProjectProperties.URL, (String) descriptor.getProperty(ConfigureProjectPanel.URL));
     }

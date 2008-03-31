@@ -190,7 +190,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private FileObject getSrcPath() {
-        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC);
+        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC_DIR);
         if (dirs.size() == 0) {
             // non-existing directory??
             return null;
