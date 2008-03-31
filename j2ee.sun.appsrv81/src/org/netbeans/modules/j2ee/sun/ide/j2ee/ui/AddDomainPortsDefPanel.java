@@ -205,10 +205,9 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     // to store information entered by the user.
     public void readSettings(Object settings) {
         wiz = (WizardDescriptor) settings;
-        // todo : correct this after late change is approved...
-        //component.includeSip(PlatformValidator.SAILFIN_V1.equals(serverVersion));
-        component.includeSip(false);
+        component.includeSip(PlatformValidator.SAILFIN_V1.equals(serverVersion));
     }
+    
     public void storeSettings(Object settings) {
     }
 
