@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -55,6 +56,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.actions.OpenAction;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -63,6 +66,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
+import org.openide.text.Line;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -317,7 +322,7 @@ public class Nodes {
         private FixDescription fix;
 
         public FixNode(ErrorDescription ed, FixDescription fix) {
-            super(Children.LEAF, Lookups.singleton(fix));
+            super(Children.LEAF, Lookups.fixed(new OpenCookieImpl(ed), fix));
             this.fix = fix;
 
             int line = -1;
@@ -348,5 +353,40 @@ public class Nodes {
             fireDisplayNameChange(null, null);
         }
 
+        @Override
+        public Action getPreferredAction() {
+            return OpenAction.get(OpenAction.class);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[]{
+                OpenAction.get(OpenAction.class),
+            };
+        }
+        
+    }
+    
+    private static final class OpenCookieImpl implements OpenCookie {
+
+        private ErrorDescription ed;
+
+        public OpenCookieImpl(ErrorDescription ed) {
+            this.ed = ed;
+        }
+        
+        public void open() {
+            try {
+                PositionRef pos = ed.getRange().getBegin();
+                int line = pos.getLine();
+                int column = pos.getColumn();
+                Line l = pos.getCloneableEditorSupport().getLineSet().getCurrent(line);
+
+                l.show(Line.SHOW_GOTO, column);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
     }
 }
