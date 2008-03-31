@@ -206,6 +206,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
+        CasaMultiViewFactory.updateGroupVisibility(CasaGraphMultiViewDesc.PREFERRED_ID);
     }
     
     @Override
