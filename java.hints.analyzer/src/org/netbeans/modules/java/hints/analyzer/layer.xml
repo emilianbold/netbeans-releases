@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <file name="AnalyzerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
+                <attr name="position" intvalue="1147" />
             </file>
         </folder>
     </folder>
