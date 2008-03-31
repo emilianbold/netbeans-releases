@@ -139,11 +139,19 @@ public class CheckTreeView extends BeanTreeView  {
         // MouseListener -------------------------------------------------------
         
         public void mouseClicked(MouseEvent e) {
-            if( !e.isPopupTrigger() ) {
+            if (!e.isPopupTrigger()) {
                 TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-                if (toggle( path )) {
-                    e.consume();
-                    repaint(); //XXX
+                Rectangle r = tree.getPathBounds(path);
+                if (r != null) {
+                    r.width = r.height;
+
+                    if (r.contains(e.getPoint())) {
+                        if (toggle(path)) {
+                            e.consume();
+                            repaint(); //XXX
+
+                        }
+                    }
                 }
             }
         }
