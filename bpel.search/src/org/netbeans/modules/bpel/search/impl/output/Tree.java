@@ -231,8 +231,8 @@ final class Tree extends JTree {
 //out();
 //out("handleEvent");
     DefaultMutableTreeNode node = getSelectedNode();
-    int code = event.getKeyCode();
     int modifiers = event.getModifiers();
+    int code = event.getKeyCode();
 //out(" code: " + code);
 
     if (code == KeyEvent.VK_F10 && isShift(modifiers)) {
