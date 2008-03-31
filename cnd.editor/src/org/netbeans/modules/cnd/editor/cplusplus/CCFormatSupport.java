@@ -504,14 +504,14 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
-        TokenItem t = findStatementStart(token, true);
+        TokenItem t = findStatementStart(token, false);
         // preprocessor tokens are not important (bug#22570)
         while (t != null && isPreprocessorLine(t)) {
             TokenItem current = t.getPrevious();
             if (current == null) {
                 return null;
             }
-            t = findStatementStart(current, true);
+            t = findStatementStart(current, false);
         }
         return t;
     }
@@ -968,7 +968,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                             }
                         }
                         if (indent < 0) {
-                            indent = computeStatementIndent(token);
+                            indent = computeStatementIndent(t);
                         }
                         break;
 
@@ -977,7 +977,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                             indent = getTokenIndent(t);
                             break;
                         }
-                        indent = computeStatementIndent(token);
+                        indent = computeStatementIndent(t);
                         break;
                         
                     case CCTokenContext.COMMA_ID:
@@ -988,7 +988,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = computeStatementIndent(t);
                         break;
                     default:
-                        indent = computeStatementIndent(token);
+                        indent = computeStatementIndent(t);
                         break;
                 }
 
