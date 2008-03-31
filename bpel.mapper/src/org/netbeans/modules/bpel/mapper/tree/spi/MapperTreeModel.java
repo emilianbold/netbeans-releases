@@ -67,9 +67,11 @@ public interface MapperTreeModel<TreeItem>
                 MapperTreeModel treeModel, Class<CL> modelClass) {
             List<MapperTreeExtensionModel> extTreeModelList = 
                     treeModel.getExtensionModelList();
-            for (MapperTreeExtensionModel extTreeModel : extTreeModelList) {
-                if (modelClass.isInstance(extTreeModel)) {
-                    return modelClass.cast(extTreeModel);
+            if (extTreeModelList != null) {
+                for (MapperTreeExtensionModel extTreeModel : extTreeModelList) {
+                    if (modelClass.isInstance(extTreeModel)) {
+                        return modelClass.cast(extTreeModel);
+                    }
                 }
             }
             //

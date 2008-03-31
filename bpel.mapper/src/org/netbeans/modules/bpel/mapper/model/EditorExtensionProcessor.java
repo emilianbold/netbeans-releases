@@ -41,17 +41,15 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.cast.CastManager;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.search.AllVariablesFinder;
-import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;
@@ -65,34 +63,27 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 public class EditorExtensionProcessor {
     
     private BpelMapperModel mModel;
+    private BpelDesignContext mDContext;
     
     private CastManager mLeftCastManager;
     private PredicateManager mLeftPredicateManager;
     private CastManager mRightCastManager;
     private PredicateManager mRightPredicateManager;
     
-    public EditorExtensionProcessor(BpelMapperModel mm) {
+    public EditorExtensionProcessor(BpelMapperModel mm, BpelDesignContext context) {
         mModel = mm;
+        mDContext = context;
     }
 
     public void processVariables() {
         //
-        // Only left tree model is used because the left and the right trees 
-        // have the same variables. Variables are the same because of the 
-        // same visibility context.
-        // 
-        TreeFinderProcessor findProc = 
-                new TreeFinderProcessor(mModel.getLeftTreeModel());
-        AllVariablesFinder finder = new AllVariablesFinder();
-        List<TreeItemFinder> finderList = 
-                Collections.singletonList((TreeItemFinder)finder);
-        List<Object> foundObjList = findProc.findAllDataObjects(finderList);
+        Set<VariableDeclaration> visVars = mDContext.getVisibilityScope().
+                getVisibleVariables().getAllVisibleVariables();
         //
-        for (Object obj : foundObjList) {
-            if (obj instanceof Variable) {
-                List<Cast> castList = getCastList((Variable)obj);
-                registerCasts(castList);
-            }
+        for (VariableDeclaration varDecl : visVars) {
+            BpelEntityCasts castList = getCastList(varDecl);
+            registerCasts(castList.getFromCasts());
+            registerCasts(castList.getToCasts());
         }
     }
     
@@ -113,13 +104,19 @@ public class EditorExtensionProcessor {
         return anyRegistered;
     }
     
-    public List<Cast> getCastList(BpelEntity bpelEntity) {
-        List<Cast> result = new ArrayList<Cast>();
+    public BpelEntityCasts getCastList(BpelEntity bpelEntity) {
+        BpelEntityCasts result = new BpelEntityCasts();
         List<Editor> editorList = bpelEntity.getChildren(Editor.class);
         for (Editor editorExt : editorList) {
             List<Cast> castList = getCastList(editorExt);
             if (castList != null) {
-                result.addAll(castList);
+                for (Cast cast : castList) {
+                    if (cast.getSource() == Source.TO) {
+                        result.getToCasts().add(cast);
+                    } else {
+                        result.getFromCasts().add(cast);
+                    }
+                }
             }
         }
         return result;
@@ -184,5 +181,22 @@ public class EditorExtensionProcessor {
         }
     }
     
-    
+    public class BpelEntityCasts {
+        
+        private ArrayList<Cast> mFromCasts;
+        private ArrayList<Cast> mToCasts;
+        
+        public BpelEntityCasts() {
+            mFromCasts = new ArrayList<Cast>();
+            mToCasts = new ArrayList<Cast>();
+        }
+        
+        public List<Cast> getFromCasts() {
+            return mFromCasts;
+        }
+        
+        public List<Cast> getToCasts() {
+            return mToCasts;
+        }
+    }
 }

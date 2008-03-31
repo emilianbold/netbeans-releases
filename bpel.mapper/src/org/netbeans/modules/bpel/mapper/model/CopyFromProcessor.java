@@ -20,8 +20,8 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntityCasts;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
@@ -41,7 +41,6 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Roles;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
@@ -91,7 +90,7 @@ public class CopyFromProcessor {
     }
     
     public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel, 
-            List<Cast> castList) {
+            BpelEntityCasts castList) {
         //
         assert mCopy.getFrom() != null;
         //
