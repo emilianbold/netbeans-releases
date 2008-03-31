@@ -84,6 +84,7 @@ public class PortTypeOperationFaultPanel extends SaveableSectionInnerPanel {
         this.fault = fault;
         this.model = this.fault.getModel();
         initComponents();
+        disableEnterKey();
         
         sync();
         addModifier(javaClassText);

@@ -51,9 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -293,20 +291,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             
-            EditorKit k; 
-            synchronized (this) {
-                k = support.cesKit();
-                doc = support.getDocument();
-                kit = k;
-                notifyAll();
-            }
-            
-            if (k instanceof Callable) {
+            EditorKit k = support.cesKit();
+            if (newInitialize() && k instanceof Callable) {
                 try {
                     ((Callable) k).call();
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
+            }
+            
+            synchronized (this) {
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
             }
         }
         
@@ -371,10 +368,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return;
             }
             
-            // the following two shall be done out of AWT:
             initCustomEditor();
-            initDecoration();
-            
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
             } else { // not custom editor
@@ -385,6 +379,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
             }
 
+            initDecoration();
             if (customToolbar != null) {
                 Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
                 customToolbar.setBorder(b);
@@ -542,10 +537,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public void requestFocus() {
         super.requestFocus();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            customComponent.requestFocus();
-        } else if (pane != null) {
-            pane.requestFocus();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                customComponent.requestFocus();
+            } else {
+                pane.requestFocus();
+            }
         }
     }
 
@@ -555,10 +552,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            return customComponent.requestFocusInWindow();
-        } else if (pane != null) {
-            return pane.requestFocusInWindow();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                return customComponent.requestFocusInWindow();
+            } else {
+                return pane.requestFocusInWindow();
+            }
         }
 
         return false;

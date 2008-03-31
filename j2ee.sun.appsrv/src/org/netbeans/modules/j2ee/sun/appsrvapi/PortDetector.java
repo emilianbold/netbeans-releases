@@ -60,6 +60,8 @@ import java.util.Locale;
 
 public class PortDetector {
     
+    private static final int PORT_CHECK_TIMEOUT = 4000; // Port check timeout in ms
+
     /**
      *  This method accepts a hostname and port #.  It uses this information
      *  to attempt to connect to the port, send a test query, analyze the
@@ -68,24 +70,23 @@ public class PortDetector {
      * it might emit a warning in the server log for GlassFish cases
      * No Harm, just an annoying warning, so we need to use this call only when really needed
      */
-    public static boolean isSecurePort(String hostname, int port) throws IOException, ConnectException, SocketTimeoutException {
-        // Open the socket w/ a 4 second timeout
+    public static boolean isSecurePort(String hostname, int port) 
+            throws IOException, ConnectException, SocketTimeoutException {
+        // Open the socket with a short timeout for connects and reads.
         Socket socket = new Socket();
-        try{
-            socket.connect(new InetSocketAddress(hostname, port),4000);
-        } catch (SocketException ex){// this could be bug 70020 due ot SOCKs proxy not having locahost
-            String socksNonProxyHosts=System.getProperty("socksNonProxyHosts");
-            if ((socksNonProxyHosts!=null) && (socksNonProxyHosts.indexOf("localhost")<0)) {
-                String localhost;
-                if (socksNonProxyHosts.length()>0) localhost="|localhost"; else localhost="localhost";
-                System.setProperty("socksNonProxyHosts",  socksNonProxyHosts+localhost);
+        try {
+            socket.connect(new InetSocketAddress(hostname, port), PORT_CHECK_TIMEOUT);
+            socket.setSoTimeout(PORT_CHECK_TIMEOUT);
+        } catch(SocketException ex) { // this could be bug 70020 due to SOCKs proxy not having localhost
+            String socksNonProxyHosts = System.getProperty("socksNonProxyHosts");
+            if(socksNonProxyHosts != null && socksNonProxyHosts.indexOf("localhost") < 0) {
+                String localhost = socksNonProxyHosts.length() > 0 ? "|localhost" : "localhost";
+                System.setProperty("socksNonProxyHosts",  socksNonProxyHosts + localhost);
                 ConnectException ce = new ConnectException();
                 ce.initCause(ex);
                 throw ce; //status unknow at this point
                 //next call, we'll be ok and it will really detect if we are secure or not
             }
-            
-            
         }
         
         // Send an https query (w/ trailing http query)
@@ -94,8 +95,6 @@ public class PortDetector {
         
         // Get the result
         java.io.InputStream istream = socket.getInputStream();
-        int count=0;
-        int byteRead = 0;
         byte[] input = new byte[8192];
         istream.read(input);
         

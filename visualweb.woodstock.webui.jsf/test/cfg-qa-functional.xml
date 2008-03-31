@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Input: Calendar Acceptance Test" testattribs="input_calendar, acceptance, input, inputee4, all" executor="ide">
+    <testbag name="Input: Calendar Acceptance Test" testattribs="input_calendar, acceptance, input, inputee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/input/calendar/AcceptanceTest.class"/>
@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Input: FileUpload Acceptance Test" testattribs="input_fileupload, acceptance, input, inputee4, all" executor="ide">
+    <testbag name="Input: FileUpload Acceptance Test" testattribs="input_fileupload, acceptance, input, inputee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/input/fileupload/AcceptanceTest.class"/>
@@ -246,7 +246,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Layout: GroupPanel Acceptance Test" testattribs="layout_grouppanel, acceptance, layout, layoutee4, all" executor="ide">
+    <testbag name="Layout: GroupPanel Acceptance Test" testattribs="layout_grouppanel, acceptance, layout, layoutee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/layout/grouppanel/AcceptanceTest.class"/>
@@ -254,7 +254,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Layout: LayoutPanel Acceptance Test" testattribs="layout_layoutpanel, acceptance, layout, layoutee4, all" executor="ide">
+    <testbag name="Layout: LayoutPanel Acceptance Test" testattribs="layout_layoutpanel, acceptance, layout, layoutee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/layout/layoutpanel/AcceptanceTest.class"/>
@@ -310,7 +310,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Layout: TabSet Acceptance Test" testattribs="layout_tabset, acceptance, layout, layoutee4, all" executor="ide">
+    <testbag name="Layout: TabSet Acceptance Test" testattribs="layout_tabset, acceptance, layout, layoutee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/layout/tabset/AcceptanceTest.class"/>
@@ -335,7 +335,7 @@ made subject to such option by the copyright holder.
     </testbag>
     
      <!-- Validation suite for TABLE COMPONENT -->
-    <testbag name="Table: Table Component Acceptance Test" testattribs="table_basic, acceptance, table, tableee4, all" executor="ide">
+    <testbag name="Table: Table Component Acceptance Test" testattribs="table_basic, acceptance, table, tableee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset>  
                 <include name="org/netbeans/modules/visualweb/test/components/table/basic/AcceptanceTest.class"/>
@@ -343,7 +343,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Table: Standard Table Component Acceptance Test" testattribs="table_std, acceptance, table, tableee4, all" executor="ide">
+    <testbag name="Table: Standard Table Component Acceptance Test" testattribs="table_std, acceptance, table, tableee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset>  
                 <include name="org/netbeans/modules/visualweb/test/components/table/std/AcceptanceTest.class"/>
@@ -425,7 +425,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: Checkbox Component Acceptance Test" testattribs="selection_checkbox, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: Checkbox Component Acceptance Test" testattribs="selection_checkbox, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/checkbox/AcceptanceTest.class"/>
@@ -433,7 +433,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: Checkbox Group Component Acceptance Test" testattribs="selection_checkboxgroup, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: Checkbox Group Component Acceptance Test" testattribs="selection_checkboxgroup, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/checkboxgroup/AcceptanceTest.class"/>
@@ -441,7 +441,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: RadioButton Component Acceptance Test" testattribs="selection_radiobutton, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: RadioButton Component Acceptance Test" testattribs="selection_radiobutton, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/radiobutton/AcceptanceTest.class"/>
@@ -449,7 +449,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: RadioButton Group Component Acceptance Test" testattribs="selection_radiobuttongroup, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: RadioButton Group Component Acceptance Test" testattribs="selection_radiobuttongroup, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/radiobuttongroup/AcceptanceTest.class"/>
@@ -457,7 +457,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: Dropdown Component Acceptance Test" testattribs="selection_dropdown, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: Dropdown Component Acceptance Test" testattribs="selection_dropdown, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/dropdown/AcceptanceTest.class"/>
@@ -465,7 +465,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Selection: Listbox Component Acceptance Test" testattribs="selection_listbox, acceptance, selection, selectionee4, all" executor="ide">
+    <testbag name="Selection: Listbox Component Acceptance Test" testattribs="selection_listbox, acceptance, selection, selectionee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/selection/listbox/AcceptanceTest.class"/>
@@ -532,7 +532,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag name="Converter: Calendar Component Acceptance Test" testattribs="converters_calendar, acceptance, converters, convertersee4, all" executor="ide">
+    <testbag name="Converter: Calendar Component Acceptance Test" testattribs="converters_calendar, acceptance, converters, convertersee4, all, msk" executor="ide">
         <testset dir="components/src">
             <patternset> 
 		<include name="org/netbeans/modules/visualweb/test/components/converters/calendar/AcceptanceTest.class"/>

@@ -50,7 +50,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
@@ -105,7 +104,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     return;
                 }
                 encName = enc.name();
-                properties.setProperty(PhpProject.SOURCE_ENCODING, encName);
+                properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, encName);
             }
         });
         localServerController.addChangeListener(new ChangeListener() {
@@ -136,7 +135,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
     private void initEncoding() {
         encodingComboBox.setRenderer(new EncodingRenderer());
-        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProject.SOURCE_ENCODING)));
+        encodingComboBox.setModel(new EncodingModel(evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING)));
     }
 
     private LocalServer initSources() {
@@ -148,7 +147,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         projectFolderTextField.setText(projectPath);
 
         // sources
-        String src = evaluator.getProperty(PhpProject.SRC);
+        String src = evaluator.getProperty(PhpProjectProperties.SRC);
         File resolvedFile = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), src);
         FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
         if (resolvedFO == null) {
@@ -159,11 +158,11 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     }
 
     private boolean initCopyFiles() {
-        return Boolean.valueOf(evaluator.getProperty(PhpProject.COPY_SRC_FILES));
+        return Boolean.valueOf(evaluator.getProperty(PhpProjectProperties.COPY_SRC_FILES));
     }
 
     private void initUrl() {
-        urlTextField.setText(evaluator.getProperty(PhpProject.URL));
+        urlTextField.setText(evaluator.getProperty(PhpProjectProperties.URL));
     }
 
     public String getWebFolderName() {
@@ -194,8 +193,8 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         }
 
         // url
-        boolean validUrl = Utils.isValidUrl(urlTextField.getText());
-        if (!validUrl) {
+        String url = urlTextField.getText();
+        if (!Utils.isValidUrl(url)) {
             err = NbBundle.getMessage(CustomizerSources.class, "MSG_InvalidUrl");
             category.setErrorMessage(err);
             category.setValid(false);
@@ -210,10 +209,10 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
             // relative path, change to absolute
             srcPath = srcDir.getAbsolutePath();
         }
-        properties.setProperty(PhpProject.SRC, srcPath);
-        properties.setProperty(PhpProject.COPY_SRC_FILES, String.valueOf(isCopyFiles));
-        properties.setProperty(PhpProject.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
-        properties.setProperty(PhpProject.URL, urlTextField.getText());
+        properties.setProperty(PhpProjectProperties.SRC, srcPath);
+        properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles));
+        properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyFilesVisual.getLocalServer().getSrcRoot());
+        properties.setProperty(PhpProjectProperties.URL, url);
     }
 
     private File getSrcDir() {
@@ -269,13 +268,11 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(projectFolderLabel)
                             .add(sourceFolderLabel)
                             .add(urlLabel)
                             .add(encodingLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(13, 13, 13)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                             .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                             .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -284,13 +281,16 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                                 .add(localServerButton))))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
-                        .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)))
+                        .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(projectFolderLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectFolderLabel)
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -303,13 +303,13 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(urlLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(encodingLabel)
-                    .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(encodingComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(encodingLabel))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

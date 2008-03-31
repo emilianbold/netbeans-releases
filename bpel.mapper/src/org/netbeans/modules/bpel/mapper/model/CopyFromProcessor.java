@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntityCasts;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.EndpointRefFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
@@ -88,12 +89,14 @@ public class CopyFromProcessor {
         return mCopyFromForm;
     }
     
-    public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel) {
+    public Graph populateGraph(Graph graph, MapperSwingTreeModel leftTreeModel, 
+            BpelEntityCasts castList) {
+        //
         assert mCopy.getFrom() != null;
         //
         switch (getCopyFromForm()) {
         case EXPRESSION:
-            mFactory.populateGraph(graph, leftTreeModel, mCopy, mCopy.getFrom());
+            mFactory.populateGraph(graph, leftTreeModel, mCopy, mCopy.getFrom(), castList);
             break;
         case LITERAL:
             FromChild literal = mCopy.getFrom().getFromChild(); // literal

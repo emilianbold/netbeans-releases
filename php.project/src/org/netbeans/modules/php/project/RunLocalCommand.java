@@ -30,11 +30,14 @@ package org.netbeans.modules.php.project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -43,9 +46,11 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.options.CommandLinePreferences;
 import org.netbeans.modules.php.project.options.ProjectActionsPreferences;
 import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -221,7 +226,12 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
 
         try {
             outputWriter = getOutputWriter();
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+	    FileObject fo = FileUtil.toFileObject(file);
+	    Charset encoding = FileEncodingQuery.getDefaultEncoding();;
+	    if (fo != null) {
+		encoding = FileEncodingQuery.getEncoding(fo);
+	    }
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -258,7 +268,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
         notifyMsg(LBL_PHP_INTERPRETER_MSG, this.getClass(), php);
         
         File tmpFile = null;
-        FileWriter tmpOutput = null;
+        Writer tmpOutput = null;
         BufferedReader reader = null;
         BufferedReader errReader = null;
         if (isCancelled){
@@ -269,10 +279,16 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
             Runtime runtime = Runtime.getRuntime();
             myProcess = runtime.exec(command); // NOI18N
             
+	    Charset encoding = FileEncodingQuery.getDefaultEncoding();
+	    for (FileObject fo : getFileObjects()) {
+		encoding = FileEncodingQuery.getEncoding(fo);
+		break;
+	    }
+	    
             tmpFile = getTmpFile(script);
-            tmpOutput = new FileWriter(tmpFile);
+	    tmpOutput = new OutputStreamWriter(new FileOutputStream(tmpFile), encoding);	    
 
-            reader = new BufferedReader(new InputStreamReader(myProcess.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(myProcess.getInputStream(), encoding));
             errReader = new BufferedReader(new InputStreamReader(myProcess.getErrorStream()));
 
             String line;
@@ -340,7 +356,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
             public String run() {
                 String commandPath = getAntProjectHelper().
                         getStandardPropertyEvaluator().
-                        getProperty(PhpProject.COMMAND_PATH);
+                        getProperty(PhpProjectProperties.COMMAND_PATH);
                 return commandPath;
             }
         });

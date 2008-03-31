@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +86,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private CallStackFrame lastFrame = null;
     private boolean withSource = true;
     private boolean opened = false;
     private boolean opening = false;
@@ -300,12 +300,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return;
         }
         // reload disassembler if needed
-        // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
-        if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+        if (force || getAddressLine(frame.getAddr()) == -1) {
             String filename = frame.getFileName();
             if (filename != null && filename.length() > 0) {
                 debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
@@ -313,7 +312,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 // if filename is not known - just disassemble using address
                 debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
-            lastFrame = frame;
         }
     }
     
@@ -356,6 +354,24 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (dis != null) {
             return dis.getLineAddress(idx);
         } else {
+            return "";
+        }
+    }
+    
+    public String getNextAddress(String address) {
+        //TODO : can use binary search
+        synchronized (lines) {
+            for (Iterator<Line> iter = lines.iterator(); iter.hasNext();) {
+                Line line = iter.next();
+                if (line.address.equals(address)) {
+                    // Fix for IZ:131372 (Step Over doesn't work in Disasm)
+                    // return next address only for call instructions
+                    if (line.instruction.startsWith("call") && iter.hasNext()) { // NOI18N
+                        return iter.next().address;
+                    }
+                    return "";
+                }
+            }
             return "";
         }
     }

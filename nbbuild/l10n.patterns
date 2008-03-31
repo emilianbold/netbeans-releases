@@ -3,18 +3,23 @@
 **/*.jar:**/*.html
 **/*.jar:**/*.png 
 **/*.jar:**/*.css
-**/*.jar:**/docs/**/*.gif
-**/*.jar:**/docs/**/*.hs
-**/*.jar:**/docs/**/*.html
-**/*.jar:**/docs/**/*.jhm
-**/*.jar:**/docs/**/*.jpeg
-**/*.jar:**/docs/**/*.jpg
-**/*.jar:**/docs/**/*.png 
-**/*.jar:**/docs/**/*.toc
-**/*.jar:**/docs/**/*.xml
+**/docs/*.jar:**/*.hs
+**/docs/*.jar:**/*.jhm
+**/docs/*.jar:**/*.jpeg
+**/docs/*.jar:**/*.jpg
+**/docs/*.jar:**/*.toc
+**/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
+**/ext/defaulttheme-*.jar:messages.properties
+exclude **/batik-mod.jar:
+exclude **/jason-*.jar:
+exclude **/jsf-extensions-*.jar:
+exclude **/tidy-mod.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
 exclude **/webui-jsf-suntheme*.jar:
 exclude **/Info/info.xml:
+exclude **/lucene-core-*.jar:
+exclude **/javac-api-nb-*.jar:
+exclude **/javac-impl-nb-*.jar:
 exclude php1/**:

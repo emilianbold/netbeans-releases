@@ -42,7 +42,9 @@
 package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -144,14 +146,29 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         // order of their mimetypes...
         Collections.sort(sortedMimes);
         
+        List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
+        int mimetypesWithElements = 0;
         for (String mimeType : mimeTypes) {
             Language language = registry.getLanguageByMimeType(mimeType);
             StructureScanner scanner = language.getStructure();
             if (scanner != null) {
                 List<? extends StructureItem> children = scanner.scan(info, new NavigatorFormatter());
-                for (StructureItem co : children) {
-                    items.add(co);
+                if(children.size() > 0) {
+                    mimetypesWithElements++;
                 }
+                roots.add(new MimetypeRootNode(language, children));
+            }
+        }
+        
+        if(mimetypesWithElements > 1) {
+            //at least two languages provided some elements - use the root mimetype nodes
+            for(MimetypeRootNode root : roots) {
+                items.add(root);
+            }
+        } else {
+            //just one or none language provided elements - put them to the root
+            for(MimetypeRootNode root : roots) {
+                items.addAll(root.getNestedItems());
             }
         }
         
@@ -159,6 +176,64 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             ui.refresh( rootDescription, info.getFileObject() );
             
         }
+    }
+    
+    private static final class MimetypeRootNode implements StructureItem {
+
+        private Language language;
+        private List<? extends StructureItem> items;
+        
+        private MimetypeRootNode(Language lang, List<? extends StructureItem> items) {
+            this.language = lang;
+            this.items = items;
+        }
+        
+        public String getName() {
+            return language.getDisplayName();
+        }
+
+        public String getSortText() {
+            return getName();
+        }
+
+        public String getHtml() {
+            return getName();
+        }
+
+        public ElementHandle getElementHandle() {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isLeaf() {
+            return false;
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return items;
+        }
+
+        public long getPosition() {
+            return 0;
+        }
+
+        public long getEndPosition() {
+            return 0;
+        }
+
+        public ImageIcon getCustomIcon() {
+            String iconBase = language.getIconBase();
+            return  iconBase == null ? null : new ImageIcon(org.openide.util.Utilities.loadImage(iconBase));
+        }
+
+        
     }
     
     private class NavigatorFormatter extends GsfHtmlFormatter {

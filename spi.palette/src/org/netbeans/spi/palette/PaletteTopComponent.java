@@ -85,6 +85,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
         add( PalettePanel.getDefault().getScrollPane(), BorderLayout.CENTER );
         
         putClientProperty( "keepPreferredSizeWhenSlideIn", Boolean.TRUE ); // NOI18N
+        putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE ); //NOI18N
     }
     
     public void requestActive() {

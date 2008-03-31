@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.modules.bpel.model.ext.editor.api.Source;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
@@ -43,6 +48,15 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
     }
     
     public abstract XPathSchemaContext getSchemaContext();
+    
+    public abstract Object getCastedObject();
+    
+    /**
+     * Returns the base variable if available. 
+     * Base variable is once where the casted object is located. 
+     * @return
+     */
+    public abstract AbstractVariableDeclaration getBaseVariable();
 
     public void setSchemaContext(XPathSchemaContext newContext) {
         throw new UnsupportedOperationException("Not supported"); // NOI18N
@@ -66,12 +80,18 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
     
     @Override
     public boolean equals(Object obj) {
+        //
         // Compare class
         if (!(obj instanceof AbstractTypeCast)) {
             return false;
         }
         //
         AbstractTypeCast comp2 = (AbstractTypeCast)obj;
+        //
+        // Compare cast to
+        if (getCastTo() != comp2.getCastTo()) {
+            return false;
+        }
         //
         XPathSchemaContext mySContext = getSchemaContext();
         if (mySContext == null || comp2.getSchemaContext() == null) {
@@ -88,9 +108,7 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
             }
         }
         //
-        // Compare cast to
-        GlobalType gType = comp2.getCastTo();
-        return getCastTo() == gType;        
+        return true;
     }
 
     public String getDisplayName() {
@@ -103,4 +121,20 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
         return getDisplayName();
     }
 
+    public boolean populateCast(Cast target, 
+            BpelEntity destination, boolean inLeftMapperTree) {
+        //
+        GlobalType castTo = getCastTo();
+        SchemaReference<GlobalType> typeRef =
+                target.createSchemaReference(castTo, GlobalType.class);
+        target.setType(typeRef);
+        //
+        if (inLeftMapperTree) {
+            target.setSource(Source.FROM);
+        } else {
+            target.setSource(Source.TO);
+        }
+        //
+        return true;
+    }
 } 
