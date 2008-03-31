@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.visualweb.dataconnectivity.datasource;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.openide.options.SystemOption;
+import java.util.List;
 
-public class DataSourceUISettings extends SystemOption {
-
-    static final long serialVersionUID = 1L;
-
-    private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; // NOI18N
-    private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; // NOI18N
-
-    public String displayName() {
-        return "DataSourceUISettings"; // NOI18N (not shown in UI)
+/**
+ *
+ * @author Petr Pisl
+ */
+public class PHPDocBlock extends Comment{
+    
+    private String description;
+    private List<PHPDocTag> tags;
+   
+    public PHPDocBlock(int start, int end, String description, List<PHPDocTag> tags) {
+        super(start, end, Comment.Type.TYPE_PHPDOC);
+        this.description = description;
+        this.tags = tags;
+    }
+    
+    public PHPDocBlock(int start, int end, String description) {
+        this (start, end, description, null);
+    }
+   
+    public String getDescription() {
+        return description;
     }
 
-    public boolean isShowAgainBrokenRefAlert() {
-        Boolean b = (Boolean) getProperty(SHOW_AGAIN_BROKEN_REF_ALERT);
-        return b == null ? true : b.booleanValue();
+    public List<PHPDocTag> getTags() {
+        return this.tags;
     }
-
-    public void setShowAgainBrokenRefAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
-
-    public boolean isShowAgainBrokenServerAlert() {
-        Boolean b = (Boolean) getProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT);
-        return b == null ? true : b.booleanValue();
-    }
-
-    public void setShowAgainBrokenServerAlert(boolean again) {
-        this.putProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT, Boolean.valueOf(again), true);
-    }
-
-    public static DataSourceUISettings getDefault() {
-        return (DataSourceUISettings) SystemOption.findObject(DataSourceUISettings.class, true);
-    }
-
 }

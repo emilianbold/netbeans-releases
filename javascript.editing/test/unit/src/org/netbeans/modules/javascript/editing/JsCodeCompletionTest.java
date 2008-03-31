@@ -598,6 +598,22 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testExpressions5() throws Exception {
         checkCompletion("testfiles/completion/lib/expressions5.js", "dur.^t");
     }
+
+    public void testComments1() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.js", "@^param");
+    }
+
+    public void testComments2() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.js", "@p^aram");
+    }
+
+    public void testComments3() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.js", "^@param");
+    }
+
+    public void testComments4() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.js", "T^his");
+    }
     
 //
 //    public void testCompletion6() throws Exception {

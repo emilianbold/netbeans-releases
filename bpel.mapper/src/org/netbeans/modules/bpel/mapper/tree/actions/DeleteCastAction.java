@@ -91,7 +91,7 @@ public class DeleteCastAction extends MapperAction<RestartableIterator<Object>> 
         //
         CastManager castManager = CastManager.getCastManager(sourceModel);
         if (castManager != null) {
-            castManager.removeTypeCast(typeCast);
+            castManager.deleteTypeCast(typeCast);
         }
         //
         // Update BPEL model

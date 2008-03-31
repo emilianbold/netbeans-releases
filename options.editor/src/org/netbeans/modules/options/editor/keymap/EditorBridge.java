@@ -211,10 +211,12 @@ public final class EditorBridge extends KeymapManager {
     private Map<String, EditorAction> getEditorActionsMap() {
         if (editorActionsMap == null) {
             editorActionsMap = new HashMap<String, EditorAction>();
+            initActionMap(null, null);
+            Map<String, EditorAction> emptyMimePathActions = new HashMap<String, EditorAction>(editorActionsMap);
+            
             for (String mimeType : getEditorSettings().getMimeTypes()) {
-                initActionMap(mimeType);
+                initActionMap(mimeType, emptyMimePathActions);
             }
-            initActionMap(null);
         }
         return editorActionsMap;
     }
@@ -227,7 +229,7 @@ public final class EditorBridge extends KeymapManager {
     /**
      * Loads editor actions for given mimeType to editorActionsMap.
      */
-    private void initActionMap(String mimeType) {
+    private void initActionMap(String mimeType, Map<String, EditorAction> emptyMimePathActions) {
 
         // 1) get EditorKit
         EditorKit editorKit = null;
@@ -246,15 +248,20 @@ public final class EditorBridge extends KeymapManager {
 
         // 2) copy actions from EditorKit to actionMap
         Action[] as = editorKit.getActions();
-        int i;
-        int k = as.length;
-        for (i = 0; i < k; i++) {
+        for (int i = 0; i < as.length; i++) {
             Object isHidden = as[i].getValue(BaseAction.NO_KEYBINDING);
             if (isHidden instanceof Boolean && ((Boolean) isHidden).booleanValue()) {
                 continue; // ignore hidden actions
             }
+            
             EditorAction action = new EditorAction((TextAction) as [i]);
             String id = action.getId();
+
+            // filter out actions inherited from an empty mime path (all editors actions)
+            if (emptyMimePathActions != null && emptyMimePathActions.containsKey(id)) {
+                continue;
+            }
+            
             editorActionsMap.put(id, action);
             Set<String> s = actionNameToMimeTypes.get(id);
             if (s == null) {
@@ -362,10 +369,10 @@ public final class EditorBridge extends KeymapManager {
             }
             Set<String> s = map.get(action);
             if (s == null) {
-                map.put(action, keyStrokes);
-            } else {
-                s.addAll(keyStrokes);
+                s = new HashSet<String>();
+                map.put(action, s);
             }
+            s.addAll(keyStrokes);
         }
     }
 

@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.mapper.multiview;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -38,6 +39,8 @@ public interface BpelDesignContext {
     BpelEntity getContextEntity();
     BpelEntity getGraphEntity();
     BpelEntity getSelectedEntity();
+  
+    VisibilityScope getVisibilityScope();
     
 /*
     private WeakReference<BpelEntity> mEntityRef;

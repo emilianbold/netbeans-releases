@@ -95,8 +95,7 @@ public class TreeTableView126560Test extends NbTestCase {
         });
     }
     
-    void clearAwtQueue() throws Exception
-    {
+    private void clearAwtQueue() throws Exception {
         for (int i = 0; i < 2; i++) {
             SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -145,7 +144,7 @@ public class TreeTableView126560Test extends NbTestCase {
         assertFalse("Exception occurred!", exceptionOccurred);
     }
     
-    final class TTVFrame extends JFrame implements ExplorerManager.Provider {
+    private final class TTVFrame extends JFrame implements ExplorerManager.Provider {
 
 
         private TTVFrame() {
@@ -167,14 +166,14 @@ public class TreeTableView126560Test extends NbTestCase {
 
     }
 
-    static class RootTestNode extends AbstractNode {
+    private static class RootTestNode extends AbstractNode {
 
         RootTestNode() {
             super(TestNode.prepareChildren(1, 2));
         }
     }
 
-    static class TestNode extends AbstractNode {
+    private static class TestNode extends AbstractNode {
 
         static int cnt;
         private static RequestProcessor requestProcessor;

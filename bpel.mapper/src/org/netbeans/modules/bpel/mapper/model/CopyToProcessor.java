@@ -198,7 +198,7 @@ public class CopyToProcessor {
                             (AbstractLocationPath)toExpr));
                 } else if (toExpr instanceof XPathVariableReference) {
                     finderList.addAll(FinderListBuilder.build(
-                            (XPathVariableReference)toExpr));
+                            (XPathVariableReference)toExpr, null));
                 }
             }
             //

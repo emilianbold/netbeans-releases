@@ -105,10 +105,10 @@ final class MatchingObject implements PropertyChangeListener {
     /**
      * holds information on whether the {@code object} is selected
      * to be replaced or not.
-     * Unless {@link #selectedMatches} is non-{@code null}, this field's
+     * Unless {@link #matchesSelection} is non-{@code null}, this field's
      * value also applies to the object's subnodes (if any).
      * 
-     * @see  #selectedMatches
+     * @see  #matchesSelection
      */
     private boolean selected = true;
     /**
@@ -126,7 +126,9 @@ final class MatchingObject implements PropertyChangeListener {
      * 
      * @see  #selected
      */
-    private boolean[] selectedMatches;
+    private boolean[] matchesSelection;
+    /** holds number of selected (checked) matches */
+    private int selectedMatchesCount;
     /**
      * flag that indicates that the tree was not notified of this
      * {@code MatchingObject}'s children's selection change and that
@@ -227,7 +229,7 @@ final class MatchingObject implements PropertyChangeListener {
         }
         
         this.selected = selected;
-        selectedMatches = null;
+        matchesSelection = null;
     }
     
     /**
@@ -239,7 +241,7 @@ final class MatchingObject implements PropertyChangeListener {
     /**
      */
     boolean isUniformSelection() {
-        return selectedMatches == null;
+        return matchesSelection == null;
     }
     
     /**
@@ -251,13 +253,13 @@ final class MatchingObject implements PropertyChangeListener {
      *                       unselected
      */
     Boolean checkSubnodesSelection() {
-        if (selectedMatches == null) {
+        if (matchesSelection == null) {
             return Boolean.valueOf(selected);
         }
         
-        final boolean firstMatchSelection = selectedMatches[0];
-        for (int i = 1; i < selectedMatches.length; i++) {
-            if (selectedMatches[i] != firstMatchSelection) {
+        final boolean firstMatchSelection = matchesSelection[0];
+        for (int i = 1; i < matchesSelection.length; i++) {
+            if (matchesSelection[i] != firstMatchSelection) {
                 return null;
             }
         }
@@ -265,39 +267,58 @@ final class MatchingObject implements PropertyChangeListener {
     }
     
     /**
+     * 
+     * @return  {@code true} if the subnode's selection change caused change
+     *          of this object's node's selection, {@code false} otherwise
      */
-    void toggleSubnodeSelection(ResultModel resultModel, int index) {
-        if (selectedMatches == null) {
-            selectedMatches = new boolean[resultModel.getDetailsCount(this)];
-            Arrays.fill(selectedMatches, this.selected);
-        }
-        selectedMatches[index] = !selectedMatches[index];
-    }
-    
-    /**
-     */
-    void setSubnodeSelected(int index,
-                            boolean selected,
-                            ResultModel resultModel) {
-        if (selectedMatches == null) {
-            if (selected == this.selected) {
-                return;
+    boolean toggleSubnodeSelection(ResultModel resultModel, int index) {
+        /* uniform selection */
+        if (matchesSelection == null) {
+            int detailsCount = resultModel.getDetailsCount(this);
+            if (detailsCount == 1) {
+                selected = !selected;
+                return true;
+            } else {
+                matchesSelection = new boolean[detailsCount];
+                Arrays.fill(matchesSelection, selected);
+                matchesSelection[index] = !selected;
+
+                boolean wasSelected = selected;
+                selectedMatchesCount = wasSelected ? detailsCount - 1 : 1;
+                selected = true;
+                return (selected != wasSelected);
             }
-            selectedMatches = new boolean[resultModel.getDetailsCount(this)];
-            Arrays.fill(selectedMatches, this.selected);
         }
-        
-        assert (index >= 0) && (index < selectedMatches.length);
-        selectedMatches[index] = selected;
+
+        /* some subnodes selected, some unselected */
+        assert selected;
+        assert (selectedMatchesCount > 0)
+               && (selectedMatchesCount < matchesSelection.length);
+        boolean wasSubnodeSelected = matchesSelection[index];
+        if (wasSubnodeSelected) {
+            if (--selectedMatchesCount == 0) {
+                matchesSelection = null;
+                selected = false;
+                return true;
+            }
+        } else {
+            if (++selectedMatchesCount == matchesSelection.length) {
+                matchesSelection = null;
+                return false;
+            }
+        }
+
+        matchesSelection[index] = !wasSubnodeSelected;
+        return false;
     }
     
     /**
      */
     boolean isSubnodeSelected(int index) {
-        assert (selectedMatches == null)
-               || ((index >= 0) && (index < selectedMatches.length));
-        return (selectedMatches == null) ? selected
-                                         : selectedMatches[index];
+        assert (matchesSelection == null)
+               || ((index >= 0) && (index < matchesSelection.length));
+        return (matchesSelection == null) ? selected
+                                         : matchesSelection[index];
     }
     
     @Override
