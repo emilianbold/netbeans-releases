@@ -49,16 +49,19 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     // ------- Tests for completion of right parenthesis ')' -------------
     
     public void testRightParenSimpleMethodCall() {
+        setDefaultsOptions();
         setLoadDocumentText("m()|)");
         assertTrue(isSkipRightParen());
     }
     
     public void testRightParenSwingInvokeLaterRunnable() {
+        setDefaultsOptions();
         setLoadDocumentText("SwingUtilities.invokeLater(new Runnable()|))");
         assertTrue(isSkipRightParen());
     }
 
     public void testRightParenSwingInvokeLaterRunnableRun() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "SwingUtilities.invokeLater(new Runnable() {\n"
           + "    public void run()|)\n"
@@ -69,6 +72,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testRightParenIfMethodCall() {
+        setDefaultsOptions();
         setLoadDocumentText(
             " if (a()|) + 5 > 6) {\n"
           + " }"
@@ -77,11 +81,13 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testRightParenNoSkipNonBracketChar() {
+        setDefaultsOptions();
         setLoadDocumentText("m()| ");
         assertFalse(isSkipRightParen());
     }
 
     public void testRightParenNoSkipDocEnd() {
+        setDefaultsOptions();
         setLoadDocumentText("m()|");
         assertFalse(isSkipRightParen());
     }
@@ -90,26 +96,31 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     // ------- Tests for completion of right brace '}' -------------
     
     public void testAddRightBraceIfLeftBrace() {
+        setDefaultsOptions();
         setLoadDocumentText("if (true) {|");
         assertTrue(isAddRightBrace());
     }
 
     public void testAddRightBraceIfLeftBraceWhiteSpace() {
+        setDefaultsOptions();
         setLoadDocumentText("if (true) { \t|\n");
         assertTrue(isAddRightBrace());
     }
     
     public void testAddRightBraceIfLeftBraceLineComment() {
+        setDefaultsOptions();
         setLoadDocumentText("if (true) { // line-comment|\n");
         assertTrue(isAddRightBrace());
     }
 
     public void testAddRightBraceIfLeftBraceBlockComment() {
+        setDefaultsOptions();
         setLoadDocumentText("if (true) { /* block-comment */|\n");
         assertTrue(isAddRightBrace());
     }
 
     public void testAddRightBraceIfLeftBraceAlreadyPresent() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "if (true) {|\n"
           + "}"
@@ -118,6 +129,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testAddRightBraceCaretInComment() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "if (true) { /* in-block-comment |\n"
         );
@@ -125,6 +137,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSimpleAdditionOfOpeningParenthesisAfterWhile () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "while |"
         );
@@ -137,6 +150,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     // ------- Tests for completion of quote (") -------------    
     public void testSimpleQuoteInEmptyDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|"
         );
@@ -147,6 +161,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSimpleQuoteAtBeginingOfDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|  "
         );
@@ -157,6 +172,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSimpleQuoteAtEndOfDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |"
         );
@@ -167,6 +183,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSimpleQuoteInWhiteSpaceArea () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |  "
         );
@@ -177,6 +194,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testQuoteAtEOL () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |\n"
         );
@@ -187,6 +205,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testQuoteWithUnterminatedStringLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  \"unterminated string| \n"
         );
@@ -197,6 +216,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testQuoteAtEOLWithUnterminatedStringLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  \"unterminated string |\n"
         );
@@ -207,6 +227,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteInsideStringLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  \"stri|ng literal\" "
         );
@@ -217,6 +238,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteInsideEmptyParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|) "
         );
@@ -227,6 +249,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteInsideNonEmptyParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|some text) "
         );
@@ -237,6 +260,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(i+|) "
         );
@@ -247,6 +271,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedStringLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(\"unterminated string literal |); "
         );
@@ -257,6 +282,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteBeforePlus () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|+\"string literal\"); "
         );
@@ -267,6 +293,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteBeforeComma () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s[] = new String[]{|,\"two\"};"
         );
@@ -277,6 +304,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteBeforeBrace () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s[] = new String[]{\"one\",|};"
         );
@@ -287,6 +315,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteBeforeSemicolon() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s = \"\" + |;"
         );
@@ -297,6 +326,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteBeforeSemicolonWithWhitespace() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s = \"\" +| ;"
         );
@@ -307,6 +337,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testQuoteAfterEscapeSequence() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "\\|"
         );
@@ -318,6 +349,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     /** issue #69524 */
     public void testQuoteEaten() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|"
         );
@@ -330,6 +362,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
 
     /** issue #69935 */
     public void testQuoteInsideComments() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "/** |\n */"
         );
@@ -341,6 +374,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     /** issue #71880 */
     public void testQuoteAtTheEndOfLineCommentLine() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "// test line comment |\n"
         );
@@ -354,6 +388,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     // ------- Tests for completion of single quote (') -------------        
     
     public void testSingleQuoteInEmptyDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|"
         );
@@ -364,6 +399,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteAtBeginingOfDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|  "
         );
@@ -374,6 +410,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteAtEndOfDoc () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |"
         );
@@ -384,6 +421,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteInWhiteSpaceArea () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |  "
         );
@@ -394,6 +432,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteAtEOL () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  |\n"
         );
@@ -404,6 +443,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteWithUnterminatedCharLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  '| \n"
         );
@@ -414,6 +454,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteAtEOLWithUnterminatedCharLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  ' |\n"
         );
@@ -424,6 +465,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteInsideCharLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "  '| ' "
         );
@@ -434,6 +476,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteInsideEmptyParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|) "
         );
@@ -444,6 +487,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteInsideNonEmptyParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|some text) "
         );
@@ -454,6 +498,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(i+|) "
         );
@@ -464,6 +509,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedCharLiteral () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(' |); "
         );
@@ -474,6 +520,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteBeforePlus () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             " printf(|+\"string literal\"); "
         );
@@ -484,6 +531,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteBeforeComma () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s[] = new String[]{|,\"two\"};"
         );
@@ -494,6 +542,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteBeforeBrace () throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s[] = new String[]{\"one\",|};"
         );
@@ -504,6 +553,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteBeforeSemicolon() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s = \"\" + |;"
         );
@@ -514,6 +564,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testsingleQuoteBeforeSemicolonWithWhitespace() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "String s = \"\" +| ;"
         );
@@ -524,6 +575,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testSingleQuoteAfterEscapeSequence() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "\\|"
         );
@@ -535,6 +587,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     /** issue #69524 */
     public void testSingleQuoteEaten() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "|"
         );
@@ -547,6 +600,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     /** issue #69935 */
     public void testSingleQuoteInsideComments() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "/* |\n */"
         );
@@ -558,6 +612,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
 
     /** issue #71880 */
     public void testSingleQuoteAtTheEndOfLineCommentLine() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "// test line comment |\n"
         );
@@ -568,6 +623,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }    
 
     public void testSystemInclude() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "#include |\n"
         );
@@ -578,6 +634,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testUserInclude() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "#include |\n"
         );
@@ -588,6 +645,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testArray() throws Exception {
+        setDefaultsOptions();
         setLoadDocumentText (
             "int a|\n"
         );
@@ -598,6 +656,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testRightBracePreprocessor() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo(){\n" +
             "#if A\n" +
@@ -612,6 +671,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testRightBracePreprocessor2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo(){\n" +
             "#if A\n" +
@@ -626,6 +686,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testRightBracePreprocessor3() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo(){\n" +
             "#if A\n" +
@@ -640,6 +701,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testRightBracePreprocessor4() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo(){\n" +
             "#if A\n" +
@@ -655,6 +717,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
 
     public void testRightBracePreprocessor5() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo(){\n" +
             "#define PAREN {\n" +
@@ -666,40 +729,48 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     }
     
     public void testIZ102091() throws Exception {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-        try {
-            setLoadDocumentText (
-                "if(i)\n"+
-                "    |"
-            );
-            typeChar('{', true);
-            assertDocumentTextAndCaret ("IZ102091\n", 
-                "if(i)\n"+
-                "{|"
-            );
-        } finally {
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                    put(EditorOptions.newLineBeforeBrace, 
-                    CodeStyle.BracePlacement.SAME_LINE.name());
-        }
+        setLoadDocumentText (
+            "if(i)\n"+
+            "    |"
+        );
+        typeChar('{', true);
+        assertDocumentTextAndCaret ("IZ102091\n", 
+            "if(i)\n"+
+            "{|"
+        );
     }
     
-//    public void testColonAfterPublic() throws Exception {
-//        setLoadDocumentText (
-//            "class A{\n" +
-//            "    public|\n" +
-//            "}\n"
-//        );
-//        typeChar(':');
-//        assertDocumentTextAndCaret ("Colon After Public", 
-//            "class A{\n" +
-//            "public:|\n" +
-//            "}\n"
-//        );
-//    }
+    public void testColonAfterPublic() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText (
+            "class A{\n" +
+            "    public|\n" +
+            "}\n"
+        );
+        typeChar(':', true);
+        assertDocumentText("Colon After Public", 
+            "class A{\n" +
+            "public:\n" +
+            "}\n"
+        );
+    }
     
+    public void testIdentFunctionName()  throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "        |"
+            );
+        typeChar('d',true);
+        assertDocumentTextAndCaret("Incorrect identing of main",
+            "tree\n" +
+            "d|"
+            );
+    }
 
     // ------- Private methods -------------
     
