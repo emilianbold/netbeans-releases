@@ -833,6 +833,7 @@ bigloop:
      * @return ExplorerActionsImpl
      */
     static synchronized ExplorerActionsImpl findExplorerActionsImpl(ExplorerManager em) {
+        assert em != null;
         if (em.actions == null) {
             em.actions = new ExplorerActionsImpl();
             em.actions.attach(em);
