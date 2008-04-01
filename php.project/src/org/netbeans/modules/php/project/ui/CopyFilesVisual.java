@@ -133,8 +133,10 @@ public class CopyFilesVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
 
         copyFilesComboBox.setEditable(true);
+        copyFilesComboBox.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(copyFilesButton, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
+        copyFilesButton.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
