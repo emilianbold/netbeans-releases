@@ -129,25 +129,35 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         nextError = new javax.swing.JButton();
         previousError = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
+        btvHolder.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 0, 1, 1));
+
         org.jdesktop.layout.GroupLayout btvHolderLayout = new org.jdesktop.layout.GroupLayout(btvHolder);
         btvHolder.setLayout(btvHolderLayout);
         btvHolderLayout.setHorizontalGroup(
             btvHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 572, Short.MAX_VALUE)
+            .add(0, 650, Short.MAX_VALUE)
         );
         btvHolderLayout.setVerticalGroup(
             btvHolderLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 246, Short.MAX_VALUE)
+            .add(0, 254, Short.MAX_VALUE)
         );
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/refresh.png"))); // NOI18N
+        refreshButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        refreshButton.setContentAreaFilled(false);
+        refreshButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        refreshButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        refreshButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        refreshButton.setPreferredSize(new java.awt.Dimension(24, 24));
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(fixButton, "Fix Selected");
+        org.openide.awt.Mnemonics.setLocalizedText(fixButton, org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "AnalyzerTopComponent.fixButton.text")); // NOI18N
         fixButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixButtonActionPerformed(evt);
@@ -155,14 +165,14 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         goOverFixed.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(goOverFixed, "Go Over Fixed Problems");
+        org.openide.awt.Mnemonics.setLocalizedText(goOverFixed, org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "AnalyzerTopComponent.goOverFixed.text")); // NOI18N
         goOverFixed.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goOverFixedActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(fixOnNext, "Fix on Next");
+        org.openide.awt.Mnemonics.setLocalizedText(fixOnNext, org.openide.util.NbBundle.getMessage(AnalyzerTopComponent.class, "AnalyzerTopComponent.fixOnNext.text")); // NOI18N
         fixOnNext.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fixOnNextActionPerformed(evt);
@@ -170,6 +180,11 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         nextError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/nextmatch.png"))); // NOI18N
+        nextError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        nextError.setContentAreaFilled(false);
+        nextError.setMaximumSize(new java.awt.Dimension(24, 24));
+        nextError.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextError.setPreferredSize(new java.awt.Dimension(24, 24));
         nextError.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nextErrorActionPerformed(evt);
@@ -177,6 +192,12 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         });
 
         previousError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/hints/analyzer/ui/prevmatch.png"))); // NOI18N
+        previousError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        previousError.setContentAreaFilled(false);
+        previousError.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        previousError.setMaximumSize(new java.awt.Dimension(24, 24));
+        previousError.setMinimumSize(new java.awt.Dimension(24, 24));
+        previousError.setPreferredSize(new java.awt.Dimension(24, 24));
         previousError.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previousErrorActionPerformed(evt);
@@ -187,40 +208,40 @@ public final class AnalyzerTopComponent extends TopComponent implements Explorer
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(nextError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(previousError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(refreshButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(fixButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(previousError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(nextError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(2, 2, 2)
+                        .add(btvHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(4, 4, 4)
+                        .add(fixButton)
                         .add(18, 18, 18)
                         .add(goOverFixed)
                         .add(18, 18, 18)
-                        .add(fixOnNext))
-                    .add(btvHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(fixOnNext)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(refreshButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(previousError)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(nextError))
+                        .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
+                        .add(previousError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(1, 1, 1)
+                        .add(nextError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(btvHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(fixButton)
                     .add(goOverFixed)
-                    .add(fixOnNext))
+                    .add(fixOnNext)
+                    .add(fixButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
