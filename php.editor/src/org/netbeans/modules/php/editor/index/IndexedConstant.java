@@ -49,8 +49,8 @@ public class IndexedConstant extends IndexedElement {
     private String typeName;
     
     public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
-            String attributes, int flags, ElementKind kind){
-        super(name, in, index, fileUrl, attributes, flags, kind);
+            String attributes, int flags){
+        super(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
     }
 
     public String getTypeName() {

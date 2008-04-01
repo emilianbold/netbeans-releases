@@ -238,7 +238,7 @@ public class PHPCodeCompletion implements Completable {
                 
                 if (varName != null && varName.startsWith(prefix)) {
                     IndexedConstant ic = new IndexedConstant(varName, null,
-                            null, url, null, 0, ElementKind.VARIABLE);
+                            null, url, null, 0);
 
                     String varType = extractVariableTypeFromExpression(statement);
                     ic.setTypeName(varType);
@@ -275,7 +275,7 @@ public class PHPCodeCompletion implements Completable {
                     if (param.getParameterName() instanceof Variable) {
                         String varName = extractVariableName((Variable) param.getParameterName());
                         IndexedConstant ic = new IndexedConstant(varName, null,
-                                null, url, null, 0, ElementKind.VARIABLE);
+                                null, url, null, 0);
                         
                         if (param.getParameterType() != null) {
                             ic.setTypeName(param.getParameterType().getName());
@@ -348,6 +348,11 @@ public class PHPCodeCompletion implements Completable {
     }
         
     public String document(CompilationInfo info, ElementHandle element) {
+        if (element instanceof IndexedElement) {
+            IndexedElement indexedElement = (IndexedElement) element;
+            return String.format("<h1>%s</h1>%s", indexedElement.getName(), indexedElement.getFilenameUrl());
+        }
+
         return null;
     }
 
