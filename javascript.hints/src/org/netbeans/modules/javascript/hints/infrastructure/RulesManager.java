@@ -249,7 +249,7 @@ public class RulesManager {
         // Add builtin wrappers for strict warnings
         for (String key : KNOWN_STRICT_ERROR_KEYS) {
             StrictWarning rule = new StrictWarning(key);
-            if ("msg.reserved.keyword".equals(key)) {
+            if ("msg.reserved.keyword".equals(key) || "msg.trailing.comma".equals(key)) { // NOI18N
                 rule.setDefaultSeverity(HintSeverity.ERROR);
             }
             errors.put(key, Collections.<ErrorRule>singletonList(rule));

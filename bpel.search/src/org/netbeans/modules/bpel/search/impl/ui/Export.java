@@ -96,7 +96,7 @@ public class Export extends Dialog {
     c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFileName = new JTextField(TEXT_WIDTH);
-    myFileName.setText(getOutFolder(RESULT)); // NOI18N
+    myFileName.setText(getResultFolder());
     panel.add(myFileName, c);
 
     c.weightx = 0.0;
@@ -198,9 +198,13 @@ public class Export extends Dialog {
 
     // create html
     StringBuffer html = new StringBuffer();
-    html.append("<html><body>" + LS); // NOI18N
-    html.append("<h3>" + i18n("LBL_Search_Results") + // NOI18N
-      "</h3>" + LS + LS); // NOI18N
+    html.append("<html>" + LS); // NOI18N
+    
+    if (myTitle != null) {
+      html.append("<title>" + removeHtml(myTitle) + "</title>" +  LS); // NOI18N
+    }
+    html.append("<body>" + LS); // NOI18N
+    html.append("<h3>" + i18n("LBL_Search_Results") + "</h3>" + LS + LS); // NOI18N
 
     if (myTitle != null) {
       html.append(myTitle + LS + LS);
@@ -233,16 +237,20 @@ public class Export extends Dialog {
       html.append("</tr>" + LS); // NOI18N
     }
     html.append("</table>" + LS + LS); // NOI18N
-    html.append("</body></html>" + LS); // NOI18N
+    html.append("</body>" + LS); // NOI18N
+    html.append("</html>" + LS); // NOI18N
 
-    // export to file
+    writeToFile(file, html.toString());
+  }
+
+  private void writeToFile(File file, String text) {
     try {
       FileOutputStream outputStream = new FileOutputStream(file);
-      outputStream.write(html.toString().getBytes());
+      outputStream.write(text.getBytes());
       outputStream.close();
     }
     catch (IOException e) {
-      printError(i18n("LBL_Cannot_Write_to_File", file.getAbsolutePath())); // NOI18N
+      printError(i18n("LBL_Can_not_Write_to_File", file.getAbsolutePath())); // NOI18N
       show();
       return;
     }
@@ -282,8 +290,8 @@ public class Export extends Dialog {
     return myDescriptor;
   }
 
-  private String getOutFolder(String file) {
-    return UH + FS + OF + FS + file;
+  private String getResultFolder() {
+    return UH + FS + SE + FS + RE;
   }
 
   @Override
@@ -339,11 +347,11 @@ public class Export extends Dialog {
   private DialogDescriptor myDescriptor;
   private List<List<String>> myDescriptions;
 
-  private static final String OF = "NetBeansProjects"; // NOI18N
+  private static final String SE = "search"; // NOI18N
+  private static final String RE = "result.html"; // NOI18N
   private static final String HTM_EXT = ".htm"; // NOI18N
   private static final String HTML_EXT = ".html"; // NOI18N
-  private static final String RESULT = "result.html"; // NOI18N
 
-  private static final int TEXT_HEIGHT = 10;
   private static final int TEXT_WIDTH = 30;
+  private static final int TEXT_HEIGHT = 10;
 }

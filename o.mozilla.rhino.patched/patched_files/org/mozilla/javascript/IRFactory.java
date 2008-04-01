@@ -132,17 +132,33 @@ final class IRFactory
         //
 
         Node.Jump switchNode = new Node.Jump(Token.SWITCH, expr, lineno);
-        Node block = new Node(Token.BLOCK, switchNode);
-        return block;
+        // <netbeans>
+        // We don't want to rewrite the AST in the way indicate above;
+        // that makes doing AST based formatting for example very tricky
+        // since the Switch node doesn't correspond to the editor region
+        // for the switch.
+        //Node block = new Node(Token.BLOCK, switchNode);
+        //return block;
+        return switchNode;
+        // </netbeans>
     }
 
     /**
      * If caseExpression argument is null it indicate default label.
      */
-    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements)
+    void addSwitchCase(Node switchBlock, Node caseExpression, Node statements
+            // <netbeans>
+            , int caseStart
+            // </netbeans>
+            )
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). Therefore, this
+        // assertion is no longer valid
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node gotoTarget = Node.newTarget();
@@ -150,6 +166,11 @@ final class IRFactory
             Node.Jump caseNode = new Node.Jump(Token.CASE, caseExpression);
             caseNode.target = gotoTarget;
             switchNode.addChildToBack(caseNode);
+            // <netbeans>
+            int start = caseStart;
+            int end = statements.getSourceEnd();
+            caseNode.setSourceBounds(start, end);
+            // </netbeans>
         } else {
             switchNode.setDefault(gotoTarget);
         }
@@ -159,8 +180,12 @@ final class IRFactory
 
     void closeSwitch(Node switchBlock)
     {
-        if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
-        Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        // <netbeans>
+        // I've modified the switch AST - see createSwitch(). 
+        //if (switchBlock.getType() != Token.BLOCK) throw Kit.codeBug();
+        //Node.Jump switchNode = (Node.Jump)switchBlock.getFirstChild();
+        Node.Jump switchNode = (Node.Jump)switchBlock;
+        // </netbeans>
         if (switchNode.getType() != Token.SWITCH) throw Kit.codeBug();
 
         Node switchBreakTarget = Node.newTarget();
@@ -309,6 +334,11 @@ final class IRFactory
         int t = breakStatement.getType();
         if (t == Token.LOOP || t == Token.LABEL) {
             jumpStatement = (Node.Jump)breakStatement;
+        // <netbeans>
+        // I've modified the AST for switch - see createSwitch()
+        } else if (t == Token.SWITCH) {
+            jumpStatement = (Node.Jump)breakStatement;
+        // </netbeans>
         } else if (t == Token.BLOCK
                    && breakStatement.getFirstChild().getType() == Token.SWITCH)
         {

@@ -1,0 +1,3 @@
+function f() {
+    editor = new 
+}

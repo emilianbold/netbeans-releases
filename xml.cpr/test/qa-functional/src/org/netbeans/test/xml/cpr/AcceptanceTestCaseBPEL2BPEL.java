@@ -93,6 +93,10 @@ import javax.swing.JTable;
 import javax.swing.tree.TreeNode;
 //import org.openide.explorer.view.VisualizerNode;
 
+import org.netbeans.test.xml.cpr.lib.FindUsagesOperator;
+
+import org.netbeans.jemmy.JemmyException;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -437,6 +441,8 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
         JPopupMenuOperator popup = new JPopupMenuOperator( );
         popup.pushMenu( "Delete" );
+
+        try{ Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
       }
 
       // Go to source
@@ -475,6 +481,27 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
       // Refactor rename
       prn.performPopupAction( "Find Usages" );
+
+      // Wait window
+      JDialogOperator opFindProgress = null;
+      try
+      {
+        opFindProgress = new JDialogOperator( "Find XML Usages" );
+      }
+      catch( JemmyException ex )
+      {
+        // No window found. Too fast?
+      }
+      if( null != opFindProgress )
+      {
+        System.out.println( "****** USAGES HERE" );
+        opFindProgress.waitClosed( );
+      }
+
+      // Check result
+      FindUsagesOperator fuop = new FindUsagesOperator( );
+      
+      System.out.println( "******" + ( null == fuop ) );
 
       endTest( );
     }
