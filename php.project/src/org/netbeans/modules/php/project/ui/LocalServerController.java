@@ -131,7 +131,7 @@ public class LocalServerController {
     }
 
     // to enable/disable components
-    public void setState(boolean enabled) {
+    public void setEnabled(boolean enabled) {
         localServerComboBox.setEnabled(enabled);
         localServerBrowseButton.setEnabled(enabled);
     }
