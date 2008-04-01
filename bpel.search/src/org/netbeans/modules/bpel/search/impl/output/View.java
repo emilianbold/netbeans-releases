@@ -136,13 +136,13 @@ public final class View extends TopComponent implements SearchListener {
   @Override
   public String getDisplayName()
   {
-    return i18n(View.class, "LBL_Search_Results_Name"); // NOI18N
+    return i18n(View.class, "LBL_Search_Results"); // NOI18N
   }
 
   @Override
   public String getToolTipText()
   {
-    return i18n(View.class, "LBL_Search_Results_Tooltip"); // NOI18N
+    return i18n(View.class, "TLT_Search_Results"); // NOI18N
   }
 
   @Override
@@ -151,8 +151,6 @@ public final class View extends TopComponent implements SearchListener {
     super.componentClosed();
     myList = null;
     myTree = null;
-//  myTabbed.removeAll();
-//  myTabbed = null;
   }
 
   @Override

@@ -117,7 +117,10 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
-            folderTextField.setText(Constants.REST_JMAKI_DIR);
+            String folderName = Constants.REST_STUBS_DIR;
+            if(createJmakiCheckBox.isSelected())
+                folderName = Constants.REST_JMAKI_DIR;
+            folderTextField.setText(folderName);
             
             if (isJmakiEnabled(project)) {
                 if (!createJmakiCheckBox.isEnabled()) {
