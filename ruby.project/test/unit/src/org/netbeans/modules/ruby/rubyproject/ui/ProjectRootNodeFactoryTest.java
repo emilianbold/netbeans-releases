@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,38 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.modules.ruby.rubyproject.ui;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
+import org.netbeans.spi.project.ui.support.NodeList;
 
-import org.netbeans.junit.NbTestSuite;
-import gui.window.*;
-import org.netbeans.junit.NbTestCase;
-
-/**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
- *
- * @author  lmartinek@netbeans.org
- */
-public class MeasureJ2EEDialogs {
-
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public ProjectRootNodeFactoryTest(String testName) {
+        super(testName);
+    }            
 
-// workaround. JAX-RPC support is a separate plugin, this test just closes warning dialog
-        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
-
-        suite.addTest(new SelectJ2EEModuleDialog("measureTime", "Select J2EE Module Dialog open"));
-        suite.addTest(new InvokeEJBAction("testAddBusinessMethodDialog", "Add Business method Dialog open"));
-        suite.addTest(new InvokeEJBAction("testCallEJBDialog", "Call EJB Dialog open"));
-        //Disabled because JAX-RPC issues in NB6.0 - enable again when fixed
-//        suite.addTest(new InvokeWSAction("testAddOperationDialog", "Add Operation Dialog open"));
-
-        return suite;
+    public void testCreateNodes() throws Exception {
+        Project p = createTestProject("rubyprj", "README");
+        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
+        NodeList result = instance.createNodes(p);
+        assertSame("three children (lib, test, README)", 3, result.keys().size());
     }
-    
+
 }

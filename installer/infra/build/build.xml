@@ -115,6 +115,12 @@
             </fileset>
 	    <regexpmapper handledirsep="true" from="(.*)/other/(.*)" to="\2"/>
         </copy>
+	<copy todir="${nbi.all.dir}/translatedfiles/src/installer/engine/src">
+            <fileset dir="${hg.root.translatedfiles}/src">
+               <include name="*/nb*/reglib/reglib/**/*.*"/>
+            </fileset>
+	    <regexpmapper handledirsep="true" from="(.*)/nb.*/reglib/reglib/(.*)" to="\2"/>
+        </copy>
     </target>
 
 
