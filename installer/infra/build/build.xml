@@ -108,17 +108,12 @@
     </target>
 
     <target name="-get-translatedfiles" if="use.hg.root.translatedfiles">
-	<copy todir="${nbi.all.dir}/translatedfiles/src/nbi">
-            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/nbi">
-                <include name="**/*.*"/>
+	<copy todir="${nbi.all.dir}/translatedfiles/src">
+            <fileset dir="${hg.root.translatedfiles}/src">
+               <include name="*/other/nbi/**/*.*"/>
+               <include name="*/other/installer/**/*.*"/>
             </fileset>
-        </copy>
-        <copy todir="${nbi.all.dir}/translatedfiles/src/installer">
-            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/installer">
-                <include name="components/**/*.*"/>
-                <include name="infra/**/*.*"/>
-                <include name="engine/**/*.*"/>
-            </fileset>
+	    <regexpmapper handledirsep="true" from="(.*)/other/(.*)" to="\2"/>
         </copy>
     </target>
 

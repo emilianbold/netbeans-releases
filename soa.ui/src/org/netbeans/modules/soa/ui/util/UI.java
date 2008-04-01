@@ -430,6 +430,22 @@ public final class UI {
     return p;
   }
 
+
+  public static String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
+  }
+
+  public static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
+  }
+
   public static void startTimeln() {
     tim();
     startTime();

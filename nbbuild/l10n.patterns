@@ -10,7 +10,7 @@
 **/docs/*.jar:**/*.toc
 **/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
-**/defaulttheme*.jar:messages.properties
+**/defaulttheme*.jar:**/messages.properties
 exclude **/batik-mod.jar:
 exclude **/jason-*.jar:
 exclude **/jsf-extensions-*.jar:
