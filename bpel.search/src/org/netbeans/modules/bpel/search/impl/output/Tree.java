@@ -421,6 +421,9 @@ final class Tree extends JTree {
   }
 
   private void select(DefaultMutableTreeNode node) {
+    if (node == null) {
+      return;
+    }
     TreePath path = new TreePath(node.getPath());
     setSelectionPath(path);
     scrollPathToVisible(path);
@@ -441,17 +444,6 @@ final class Tree extends JTree {
       TreeNode child = (TreeNode) children.nextElement();
       copy(child, buffer, indent + "    "); // NOI18N
     }
-  }
-
-  private String removeHtml(String value) {
-    if (value == null) {
-      return null;
-    }
-    value = replace(value, "<b>", "'"); // NOI18N
-    value = replace(value, "</b>", "'"); // NOI18N
-    value = replace(value, "&nbsp;", " "); // NOI18N
-    
-    return value;
   }
 
   void export() {
@@ -486,31 +478,18 @@ final class Tree extends JTree {
   }
 
   private String getDescription(DefaultMutableTreeNode node) {
-    if (isRoot(node)) {
+    if (node.isRoot()) {
       return ""; // NOI18N
     }
     String description = getDescription((DefaultMutableTreeNode) node.getParent());
 
     if ( !node.isLeaf()) {
-      if ( !isRoot((DefaultMutableTreeNode) node.getParent())) {
+      if ( !((DefaultMutableTreeNode) node.getParent()).isRoot()) {
         description += LS;
       }
       description += node;
     }
     return description;
-  }
-
-  private boolean isRoot(DefaultMutableTreeNode node) {
-    if (node == null) {
-      return true;
-    }
-    if (node.getParent() == null) {
-      return true;
-    }
-    if (node.getParent().getParent() == null) {
-      return true;
-    }
-    return false;
   }
 
   void expose() {
@@ -531,8 +510,7 @@ final class Tree extends JTree {
       isExpanded = false;
 
       while (children.hasMoreElements()) {
-        DefaultMutableTreeNode child =
-          (DefaultMutableTreeNode) children.nextElement();
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
         isExpanded = isExpanded(new TreePath(child.getPath()));
 
         if (isExpanded) {
@@ -566,8 +544,7 @@ final class Tree extends JTree {
     
     if (myIsReformAll) {
       while (children.hasMoreElements()) {
-        DefaultMutableTreeNode child =
-          (DefaultMutableTreeNode) children.nextElement();
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
         TreePath path = new TreePath(child.getPath());
         expandPath(path);
 
@@ -579,8 +556,7 @@ final class Tree extends JTree {
     else {
       // process node which has only one child
       if (children.hasMoreElements()) {
-        DefaultMutableTreeNode child =
-          (DefaultMutableTreeNode) children.nextElement();
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
 
         if ( !children.hasMoreElements()) {
           TreePath path = new TreePath(child.getPath());
@@ -599,8 +575,7 @@ final class Tree extends JTree {
       Enumeration children = node.children();
     
       while (children.hasMoreElements()) {
-        DefaultMutableTreeNode child =
-          (DefaultMutableTreeNode) children.nextElement();
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
         TreePath path = new TreePath(child.getPath());
         collapsePath(path);
       }
@@ -608,17 +583,29 @@ final class Tree extends JTree {
   }
 
   private void remove(DefaultMutableTreeNode node) {
-    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
-
-    if (parent == null) {
+    if (node.getParent() == null) {
       return;
     }
     if (printConfirmation(i18n(Tree.class, "LBL_Are_You_Sure"))) { // NOI18N
-      parent.remove(node);
-      select(parent);
+      select(removeParent(node));
       updateUI();
     }
     requestFocus();
+  }
+
+  private DefaultMutableTreeNode removeParent(DefaultMutableTreeNode node) {
+    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+
+    if (parent == null) {
+      return null;
+    }
+    parent.remove(node);
+    Enumeration children = parent.children();
+
+    if (children.hasMoreElements()) {
+      return parent;
+    }
+    return removeParent(parent);
   }
 
   private DefaultMutableTreeNode getNode(TreePath path) {
@@ -680,10 +667,6 @@ final class Tree extends JTree {
 
   private static SearchElement getUserObject(Object object) {
     return (SearchElement) ((DefaultMutableTreeNode) object).getUserObject();
-  }
-
-  private static String getHtml(String value) {
-    return "<html>" + value + "</html>"; // NOI18N
   }
 
   // ----------------------------------------------------------------------
