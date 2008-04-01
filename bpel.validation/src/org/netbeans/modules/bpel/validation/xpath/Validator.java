@@ -127,6 +127,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     value = value.trim();
 
+    if (value.length() == 0) {
+      return;
+    }
     if ( !value.startsWith("$")) { // NOI18N
       addError("FIX_To_Value", to, value); // NOI18N
     }
