@@ -152,10 +152,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
                     targetName = "hibernate" + (mappingFilesCount++) + ".hbm";
                 }
             }
-            ((TemplateWizard) wizard).setTargetName(targetName);
-
-
-
+            ((TemplateWizard) wizard).setTargetName(targetName);            
         }
     }
 
