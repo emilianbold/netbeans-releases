@@ -62,6 +62,8 @@ public class CopyFilesVisual extends JPanel {
 
         localServerController = new LocalServerController(copyFilesComboBox, copyFilesButton, webFolderNameProvider,
                 NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
+        // set default, disabled state
+        localServerController.setState(false);
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
