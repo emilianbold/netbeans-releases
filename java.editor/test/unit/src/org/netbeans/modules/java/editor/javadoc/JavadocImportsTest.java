@@ -307,6 +307,7 @@ public class JavadocImportsTest extends JavadocTestSupport {
                 "    * local_link {@link #m()}\n" +
                 "    * unclosed link {@value Math#PI\n" +
                 "    * @see java.util.Collections\n" +
+                "    * @see \"java.io.File\"\n" +
                 "    * @throws ThrowsUnresolved\n" +
                 "    */\n" +
                 "   void m() throws java.io.IOException {\n" +
@@ -345,6 +346,10 @@ public class JavadocImportsTest extends JavadocTestSupport {
         assertNotNull(exp);
         el = JavadocImports.findReferencedElement(info, code.indexOf("util", code.indexOf("@see")));
         assertEquals(exp, el);
+
+        // @see "java.io.File"; issue #131253
+        el = JavadocImports.findReferencedElement(info, code.indexOf("File", code.indexOf("@see \"java.io.File\"")));
+        assertNull(el);
 
         // java.util.Collections#binarySearch
         exp = findElement(code, "binarySearch(Collections.<String>emptyList()");

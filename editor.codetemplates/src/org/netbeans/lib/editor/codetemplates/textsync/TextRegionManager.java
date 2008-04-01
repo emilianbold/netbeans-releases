@@ -105,7 +105,7 @@ public final class TextRegionManager {
     
     TextRegionManager(Document doc) {
         this.doc = doc;
-        this.rootRegion = new TextRegion<Void>(null, null);
+        this.rootRegion = new TextRegion<Void>();
         this.groups = new GapList<TextSyncGroup>(2);
         if (doc instanceof BaseDocument) {
             // Add the listener to allow doc syncing modifications
@@ -410,11 +410,15 @@ public final class TextRegionManager {
                 break;
         }
         if (index < 0) { // Fixed first region -> check parent
-            if (parent.startOffset() > offset) {
+            if (!isRoot(parent) && parent.startOffset() > offset) {
                 parent.setStartPos(pos);
                 fixRegionStartOffset(parent, offset);
             }
         }
+    }
+    
+    private boolean isRoot(TextRegion region) {
+        return (region == rootRegion);
     }
     
     private void updateMasterRegionBounds() {

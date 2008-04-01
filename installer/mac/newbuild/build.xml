@@ -292,7 +292,7 @@ Microsystems, Inc. All Rights Reserved.
        
         <condition property="nb.locales.nonzero.length">
             <and>
-                <isset property="${nb.locales}"/>
+                <isset property="nb.locales"/>
                 <length string="${nb.locales}" when="greater" length="0"/>
             </and>
         </condition>   

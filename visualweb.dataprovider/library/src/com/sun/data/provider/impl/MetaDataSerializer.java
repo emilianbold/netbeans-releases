@@ -118,8 +118,14 @@ public class MetaDataSerializer {
             throw new NamingException(bundle.getString("NAME_NOT_FOUND")); 
         }
         dataSourceName = dataSourceName.replaceFirst("java:comp/env/jdbc/", ""); // NOI18N        
-        String name = dataSourceName + command;       
-        return (new Integer(Math.abs(name.hashCode()))).toString(); 
+        String name = dataSourceName + command;   
+        int hashValue = name.hashCode();
+        if (hashValue < 0) {
+            name = "_" + Math.abs(hashValue); // NOI18N
+        } else {
+            name = new Integer(hashValue).toString();
+        }
+        return name; 
     }
 }
 

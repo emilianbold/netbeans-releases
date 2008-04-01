@@ -219,6 +219,14 @@ public class DesignView extends JPanel implements
         setFocusCycleRoot(true);
         setFocusTraversalKeysEnabled(false);
 
+        scrollPane.addScrollListener(new TriScrollPane.ScrollListener() {
+
+            public void viewScrolled(JComponent view) {
+                overlayView.revalidate();
+                overlayView.repaint();
+            }
+        });
+        
         reloadModel();
         diagramChanged();
     }

@@ -4177,6 +4177,44 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 ", env_ (env) { }\n" 
                 );
     }
+
+    public void testGnuStuleNewLineName5() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+
+    public void testGnuStuleNewLineName6() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "B::tree A::\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "B::tree\n" +
+                "A::decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+    
     //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
     public void testSpaceWithinBraces() {
         setDefaultsOptions();

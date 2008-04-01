@@ -52,6 +52,7 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -190,12 +191,17 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
             methodBody += "        " + Util.getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
         }
 
+        boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
         //Insert the method call
         String returnStatement = "return conn";
         if (httpMethod == HttpMethodType.GET) {
             methodBody += "             " + returnStatement + ".get(" + headerUsage + ");\n";
         } else if (httpMethod == HttpMethodType.PUT) {
-            methodBody += "             " + returnStatement + ".put(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+            if (hasRequestRep) {
+                methodBody += "             " + returnStatement + ".put(" + headerUsage + ", " + Constants.PUT_POST_CONTENT + ");\n";
+            } else {
+                methodBody += "             " + returnStatement + ".put(" + headerUsage + ");\n";
+            }
         } else if (httpMethod == HttpMethodType.POST) {
             if (!queryParamsCode.trim().equals("")) {
                 methodBody += "             " + returnStatement + ".post(" + headerUsage + ", " + Constants.QUERY_PARAMS + ");\n";
@@ -234,15 +240,13 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
         List<ParameterInfo> params = getBean().filterParametersByAuth(getBean().filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
         HttpMethodType httpMethod = getBean().getHttpMethod();
-        
+
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
-            
+
             ParameterInfo contentTypeParam = Util.findParameter(getBean().getInputParameters(), Constants.CONTENT_TYPE);
             Class contentType = InputStream.class;
-            
-            if (contentTypeParam == null) {
-                params.add(new ParameterInfo(Constants.CONTENT_TYPE, String.class));
-            } else {
+
+            if (contentTypeParam != null) {
                 if (!contentTypeParam.isFixed() && !params.contains(contentTypeParam)) {
                     params.add(contentTypeParam);
                 } else {
@@ -253,7 +257,10 @@ public class JaxRsCodeGenerator extends SaasCodeGenerator {
                     }
                 }
             }
-            params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
+
+            if (!getBean().findInputRepresentations(getBean().getMethod()).isEmpty()) {
+                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
+            }
         }
         return params;
     }

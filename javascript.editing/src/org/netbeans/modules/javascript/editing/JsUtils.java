@@ -52,6 +52,7 @@ public class JsUtils {
         return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType);
     }
 
+    public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     public static boolean isRhtmlDocument(Document doc) {

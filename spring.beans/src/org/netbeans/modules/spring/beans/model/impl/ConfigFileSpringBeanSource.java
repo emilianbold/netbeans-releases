@@ -134,6 +134,9 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             name2Bean.clear();
             beans.clear();
             Node rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
+            if (rootNode == null) {
+                return;
+            }
             NodeList childNodes = rootNode.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node node = childNodes.item(i);
