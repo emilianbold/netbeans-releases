@@ -323,9 +323,8 @@ public class HgConfigFiles {
         Ini system = null;
         try {            
             if (Utilities.isWindows() && tmpFile != null && tmpFile.isFile() && tmpFile.canWrite() && file != null) {
-                file.delete();
-                boolean bRenamed = tmpFile.renameTo(file);
-                system = bRenamed? new Ini(new FileReader(tmpFile)): null;
+                tmpFile.deleteOnExit();
+                system = new Ini(new FileReader(tmpFile));
             } else {
                 system = new Ini(new FileReader(file));
             }

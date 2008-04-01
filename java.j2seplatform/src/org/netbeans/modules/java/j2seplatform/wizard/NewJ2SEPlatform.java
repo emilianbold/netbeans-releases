@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.InterruptedException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -56,8 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,6 +70,8 @@ import org.openide.util.Utilities;
  * Made public to allow ide/projectimport to reuse it
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
+    
+    private static final Logger LOGGER = Logger.getLogger(NewJ2SEPlatform.class.getName());
     
     private static Set<String> propertiesToFix = new HashSet<String> ();
     
@@ -135,6 +137,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             is.close();
             f.delete();
         } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot execute probe process", ex);
             this.valid = false;
         }
     }
@@ -193,6 +196,9 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             command[2] = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar", "org.netbeans.modules.java.j2seplatform", false).getAbsolutePath(); // NOI18N
             command[3] = "org.netbeans.modules.java.j2seplatform.wizard.SDKProbe";
             command[4] = path;
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("Executing: %s %s %s %s %s", command[0],command[1],command[2],command[3],command[4]));
+            }
             final Process process = runtime.exec(command);
             // PENDING -- this may be better done by using ExecEngine, since
             // it produces a cancellable task.
