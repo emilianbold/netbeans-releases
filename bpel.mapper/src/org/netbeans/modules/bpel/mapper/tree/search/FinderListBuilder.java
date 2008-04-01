@@ -53,6 +53,23 @@ import org.openide.util.NbBundle;
  */
 public class FinderListBuilder {
 
+    public static void populateFinderList(ArrayList<TreeItemFinder> finderList, 
+            VariableSchemaContext varContext) {
+        //
+        XPathVariable var = varContext.getVariable();
+        assert var instanceof XPathBpelVariable;
+        XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+        AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
+        VariableFinder varFinder = new VariableFinder(varDecl);
+        finderList.add(varFinder);
+        //
+        Part part = bpelVar.getPart();
+        if (part != null) {
+            PartFinder partFinder = new PartFinder(part);
+            finderList.add(partFinder);
+        }
+    }
+    
     public static List<TreeItemFinder> build(XPathSchemaContext schemaContext) {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
@@ -62,22 +79,19 @@ public class FinderListBuilder {
         // 
         while (context != null) { 
             if (context instanceof VariableSchemaContext) {
-                XPathVariable var = ((VariableSchemaContext)context).getVariable();
-                assert var instanceof XPathBpelVariable;
-                XPathBpelVariable bpelVar = (XPathBpelVariable)var;
-                AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
-                VariableFinder varFinder = new VariableFinder(varDecl);
-                finderList.add(varFinder);
-                //
-                Part part = bpelVar.getPart();
-                if (part != null) {
-                    PartFinder partFinder = new PartFinder(part);
-                    finderList.add(partFinder);
-                }
+                populateFinderList(finderList, (VariableSchemaContext)context);
             } else if (context instanceof CastSchemaContext) {
                 CastSchemaContext castContext = (CastSchemaContext)context;
+                //
                 TypeCast typeCast = new TypeCast(castContext.getTypeCast());
-                result.add(typeCast);
+                Object castedObj = typeCast.getCastedObject();
+                if (castedObj instanceof SchemaComponent) {
+                    result.addFirst(typeCast);
+                } else if (castedObj instanceof AbstractVariableDeclaration) {
+                    finderList.add(new CastedVariableFinder(typeCast));
+                } else if (castedObj instanceof Part) {
+                    finderList.add(new CastedPartFinder(typeCast));
+                }
             } else {
                 SchemaComponent sComp = XPathSchemaContext.Utilities.
                         getSchemaComp(context);

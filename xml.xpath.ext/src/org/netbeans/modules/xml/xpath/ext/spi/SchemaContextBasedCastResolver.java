@@ -38,47 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.model.api.support;
+package org.netbeans.modules.xml.xpath.ext.spi;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2008.03.27
+ * Looks through the chan of SchemaContext elements and 
+ * try finding the corresponding cast. 
+ * 
+ * @author nk160297
  */
-public class XPathCastResolverImpl implements XPathCastResolver {
+public class SchemaContextBasedCastResolver implements XPathCastResolver {
 
-    public XPathCastResolverImpl(List<Cast> casts) {
-        myXPathCasts = new ArrayList<XPathCast>();
-
-        for (Cast cast : casts) {
-            myXPathCasts.add(new XPathCastImpl(cast));
-        }
+    private XPathSchemaContext mSContext;
+    
+    public SchemaContextBasedCastResolver(XPathSchemaContext sContext) {
+        mSContext = sContext;
     }
-
+    
     public List<XPathCast> getXPathCasts() {
-        return myXPathCasts;
+        List<XPathCast> castList = new ArrayList<XPathCast>();
+        populateCastList(mSContext, castList);
+        return castList;
     }
-    private List<XPathCast> myXPathCasts;
 
-    public XPathCast getCast(XPathSchemaContext soughtContext) {
-        if (myXPathCasts == null || myXPathCasts.size() == 0) {
+    public XPathCast getCast(XPathSchemaContext baseSContext) {
+        return getCast(mSContext, baseSContext);
+    }
+  
+    private XPathCast getCast(XPathSchemaContext lookInside, 
+            XPathSchemaContext soughtSContext) {
+        if (lookInside == null) {
             return null;
         }
         //
-        for (XPathCast xPathCast : myXPathCasts) {
-            XPathSchemaContext sContext = xPathCast.getSchemaContext();
-            if (sContext != null && sContext.equalsChain(soughtContext)) {
-                return xPathCast;
+        if (lookInside instanceof CastSchemaContext) {
+            CastSchemaContext castContext = (CastSchemaContext)lookInside;
+            XPathSchemaContext baseSContext = castContext.getBaseContext();
+            if (baseSContext != null && baseSContext.equalsChain(soughtSContext)) {
+                XPathCast result = castContext.getTypeCast();
+                return result;
             }
+        } else {
+            return getCast(lookInside.getParentContext(), soughtSContext);
         }
         //
         return null;
     }
+
+    private void populateCastList(XPathSchemaContext lookInside, 
+            List<XPathCast> castList) {
+        if (lookInside == null) {
+            return;
+        }
+        //
+        if (lookInside instanceof CastSchemaContext) {
+            CastSchemaContext castContext = (CastSchemaContext)lookInside;
+            XPathCast cast = castContext.getTypeCast();
+            castList.add(cast);
+        }
+        populateCastList(lookInside.getParentContext(), castList);
+    }
+
 }

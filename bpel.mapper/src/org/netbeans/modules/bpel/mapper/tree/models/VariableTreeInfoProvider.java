@@ -392,8 +392,6 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         }
         //
         List<Action> result = new ArrayList<Action>();
-        populateActionsList(treeItem, result, mapperTcContext, inLeftTree, 
-                treePath, dataObjectPathItr);
         //
         if (!(treeItem instanceof LocationStep || 
                 treeItem instanceof AbstractPredicate || 
@@ -405,6 +403,9 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
                 result.add(action);
             }
         }
+        //
+        populateActionsList(treeItem, result, mapperTcContext, inLeftTree, 
+                treePath, dataObjectPathItr);
         //
         return result;
 //        if (result.isEmpty()) {

@@ -232,12 +232,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
       jdRefactor.waitClosed( );
 
-      // Wait status
-      //MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-      //stt.start( );
-      //stt.waitText( "Refactored nax" );
-      //stt.stop( );
-
       // Check result
       pto = new ProjectsTabOperator( );
 
@@ -270,8 +264,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
     public void RedoRenameSampleSchemaInternal( String sModule, String sPath )
     {
       // Redo
-      //try{ Thread.sleep( 5000 ); } catch( InterruptedException ex ) {}
-      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Refactor|Redo [File Rename]");
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
