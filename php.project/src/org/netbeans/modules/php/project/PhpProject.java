@@ -51,7 +51,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.php.project.customizer.PhpCustomizerProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
@@ -83,7 +82,10 @@ import org.w3c.dom.Text;
  *
  */
 public class PhpProject implements Project, AntProjectListener {
-    
+
+    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation()
+            + ResourceMarker.PROJECT_ICON));
+
     PhpProject( AntProjectHelper helper ) {
         myHelper = helper;
         AuxiliaryConfiguration configuration = 
@@ -257,7 +259,7 @@ public class PhpProject implements Project, AntProjectListener {
          * @see org.netbeans.api.project.ProjectInformation#getIcon()
          */
         public Icon getIcon() {
-            return PhpProjectProperties.PROJECT_ICON;
+            return PROJECT_ICON;
         }
 
         /* (non-Javadoc)
