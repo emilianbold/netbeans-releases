@@ -191,8 +191,8 @@ public class ProjectRootNodeFactory implements NodeFactory {
     
     private static class RootChildNode {
         
-        public final SourceGroup group;
-        public final FileObject fileObject;
+        private final SourceGroup group;
+        private final FileObject fileObject;
         
         RootChildNode(SourceGroup group) {
             this.group = group;
@@ -223,45 +223,28 @@ public class ProjectRootNodeFactory implements NodeFactory {
         
     }
     
-    // Copied from inner class in Java Projects' PackageView class:
-    /**
-     * FilterNode which listens on the PackageViewSettings and changes the view
-     * to the package view or tree view.
-     */
-    private static final class RootNode extends FilterNode { // implements PropertyChangeListener {
-        
-        private RootNode(final SourceGroup group) {
-            super(getOriginalNode(group));
-        }
-        
-        private static Node getOriginalNode(final SourceGroup group) {
-            FileObject root = group.getRootFolder();
-            // Guard condition, if the project is (closed) and deleted but not
-            // yet gced and the view is switched, the source group is not valid.
-            if (root == null || !root.isValid()) {
-                return new AbstractNode(Children.LEAF);
-            }
-            return new TreeRootNode(group);
-        }
-    }
-    
     private static class FolderViewFilterNode extends FilterNode {
         
         protected String nodeName;
         private final Project project;
         private Action[] actions;
         
-        public FolderViewFilterNode(final SourceGroup sourceGroup, final Project project) {
-            this(new RootNode(sourceGroup), project);
-        }
-        
-        public FolderViewFilterNode(final FilterNode rootNode, final Project project) {
-            super(rootNode);
+        FolderViewFilterNode(final SourceGroup sourceGroup, final Project project) {
+            super(getOriginalNode(sourceGroup));
             this.project = project;
             this.nodeName = "Sources"; // NOI18N
-
         }
-        
+
+        private static Node getOriginalNode(final SourceGroup group) {
+            FileObject root = group.getRootFolder();
+            // Guard condition, if the project is (closed) and deleted but not
+            // yet GCed and the view is switched, the source group is not valid.
+            if (root == null || !root.isValid()) {
+                return new AbstractNode(Children.LEAF);
+            }
+            return new TreeRootNode(group);
+        }
+
         public @Override Action[] getActions(boolean context) {
             if (actions == null) {
                 actions = new Action[] {
@@ -289,11 +272,11 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private final String nodeName;
         private final String panelName;
         
-        public PreselectPropertiesAction(Project project, String nodeName) {
+        PreselectPropertiesAction(Project project, String nodeName) {
             this(project, nodeName, null);
 }
         
-        public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
+        PreselectPropertiesAction(Project project, String nodeName, String panelName) {
             super(NbBundle.getMessage(ProjectRootNodeFactory.class, "LBL_Properties_Action"));
             this.project = project;
             this.nodeName = nodeName;
