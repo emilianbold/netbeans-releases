@@ -150,7 +150,7 @@ class ExtPlainView extends PlainView {
      * if line is too long the end of line is replaced by lineTooLong
      */
     boolean getText(int offset, int length, Segment txt) throws BadLocationException {
-        OutputDocument doc = (OutputDocument) getDocument();
+        Document doc = getDocument();
         Element elem = getElement();
         int lineIndex = elem.getElementIndex(offset);
         Element lineElem = elem.getElement(lineIndex);

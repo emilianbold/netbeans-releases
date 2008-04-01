@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml.xpath.ext.spi;
 
 import java.util.List;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -48,5 +49,10 @@ import java.util.List;
  */
 public interface XPathCastResolver {
 
-  List<XPathCast> getXPathCasts();
+    /**
+     * @deprecated Use the getCast() method instead
+     */
+    List<XPathCast> getXPathCasts();
+  
+    XPathCast getCast(XPathSchemaContext baseSContext);
 }

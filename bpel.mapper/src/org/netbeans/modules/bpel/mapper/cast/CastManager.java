@@ -138,7 +138,7 @@ public class CastManager {
         if (typeCast != null) {
             List<Object> castedCompPath = 
                     PathConverter.constructObjectLocationtList(
-                    typeCast.getXPathExpression());
+                    typeCast.getPathExpression());
             //
             return addTypeCastImpl(castedCompPath, typeCast);
         }
@@ -462,7 +462,7 @@ public class CastManager {
             }
         }
     }
-    
+
     @Override
     public String toString() {
         return " inLeftTree:" + mInLeftMapperTree + 
@@ -665,6 +665,6 @@ public class CastManager {
             return true;
         }
     }
-    
+
 }
   

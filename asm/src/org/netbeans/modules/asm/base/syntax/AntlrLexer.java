@@ -99,7 +99,7 @@ public class AntlrLexer implements AsmHighlightLexer {
                 
             } else {
                 Logger.getLogger(this.getClass().getName()).
-                    log(Level.SEVERE, "Antlr highlight lexer crashed"); // NOI18N
+                    log(Level.SEVERE, "Unresolved symbol at position " + start); // NOI18N
 
                 length = 0;
             }            
