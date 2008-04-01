@@ -240,10 +240,13 @@ public class Export extends Dialog {
     html.append("</body>" + LS); // NOI18N
     html.append("</html>" + LS); // NOI18N
 
-    // file
+    writeToFile(file, html.toString());
+  }
+
+  private void writeToFile(File file, String text) {
     try {
       FileOutputStream outputStream = new FileOutputStream(file);
-      outputStream.write(html.toString().getBytes());
+      outputStream.write(text.getBytes());
       outputStream.close();
     }
     catch (IOException e) {
