@@ -58,7 +58,7 @@ public class CustomizerHost extends CustomizerHostVisual{
         
         myProjectProperties = properties;
         read();
-        store();
+//        store();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CustomizerHost extends CustomizerHostVisual{
 
     private void read() {
         if (getProjectProperties() != null){
-            loadProjectProps();
+//            loadProjectProps();
         }
 
     }
@@ -77,41 +77,41 @@ public class CustomizerHost extends CustomizerHostVisual{
     @Override
     protected void update() {
         super.update();
-        store();
+//        store();
     }
 
 
-    protected void store(){
-            Host host = getSelectedHost();
-            getProjectProperties().remove(PhpProjectProperties.STATUS_USE_NO_HOST);
-            getProjectProperties().remove(PhpProjectProperties.STATUS_ABSENT_HOST);
-            if (host == null || host instanceof NoHost){
-                getProjectProperties().setProperty(PhpProjectProperties.STATUS_USE_NO_HOST, "");
-            } 
-            else if (host instanceof AbsentHost){
-                //getProjectProperties().setProperty(PhpProjectProperties.STATUS_ABSENT_HOST, "");
-                getProjectProperties().setProperty(WebServerProvider.HOST_ID, host.getId());
-            } 
-            else {
-                getProjectProperties().setProperty(WebServerProvider.HOST_ID, host.getId());
-            }
-    }
-    
-    private void loadProjectProps() {
-        String hostId = getProjectProperties().getProperty(WebServerProvider.HOST_ID);
-        WebServerProvider provider = Utils.getProvider(getProjectProperties().getProject());
-        Host host = null;
-        if (hostId != null && provider != null) {
-            
-            host = provider.findHost(hostId);
-            if (host == null){
-                host = new AbsentHost(hostId);
-            }
-            setSelectedHost(host);
-        } else {
-            setSelectedHost(getNoHost());
-        }
-    }
+//    protected void store(){
+//            Host host = getSelectedHost();
+//            getProjectProperties().remove(PhpProjectProperties.STATUS_USE_NO_HOST);
+//            getProjectProperties().remove(PhpProjectProperties.STATUS_ABSENT_HOST);
+//            if (host == null || host instanceof NoHost){
+//                getProjectProperties().setProperty(PhpProjectProperties.STATUS_USE_NO_HOST, "");
+//            } 
+//            else if (host instanceof AbsentHost){
+//                //getProjectProperties().setProperty(PhpProjectProperties.STATUS_ABSENT_HOST, "");
+//                getProjectProperties().setProperty(WebServerProvider.HOST_ID, host.getId());
+//            } 
+//            else {
+//                getProjectProperties().setProperty(WebServerProvider.HOST_ID, host.getId());
+//            }
+//    }
+//    
+//    private void loadProjectProps() {
+//        String hostId = getProjectProperties().getProperty(WebServerProvider.HOST_ID);
+//        WebServerProvider provider = Utils.getProvider(getProjectProperties().getProject());
+//        Host host = null;
+//        if (hostId != null && provider != null) {
+//            
+//            host = provider.findHost(hostId);
+//            if (host == null){
+//                host = new AbsentHost(hostId);
+//            }
+//            setSelectedHost(host);
+//        } else {
+//            setSelectedHost(getNoHost());
+//        }
+//    }
 
     protected void loadProviderProperties() {
         Host host = getSelectedHost();
@@ -121,7 +121,7 @@ public class CustomizerHost extends CustomizerHostVisual{
         {
             return;
         } 
-        EditableProperties props = getProjectProperties().getProperties();
+        EditableProperties props = null;//getProjectProperties().getProperties();
         props.setProperty(WebServerProvider.HOST_ID, host.getId());
         ProjectCustomizerComponent customizer = getProviderComoponent();
         customizer.read(props);
@@ -149,8 +149,8 @@ public class CustomizerHost extends CustomizerHostVisual{
         
         ProjectConfigProvider configProvider = host.getProvider().getProjectConfigProvider();
         
-        myProviderComponent = configProvider.getCustomizerPanel(
-                getProjectProperties().getProperties());
+        myProviderComponent = configProvider.getCustomizerPanel(null);
+                //getProjectProperties().getProperties());
         return myProviderComponent;
     }
     

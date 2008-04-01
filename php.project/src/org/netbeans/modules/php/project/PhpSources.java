@@ -39,6 +39,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -111,15 +112,15 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         /*
          * Main source root config.
          */
-        String label = NbBundle.getMessage(PhpProject.class, PhpProjectProperties.SOURCE_LBL);
-        sourcesHelper.addPrincipalSourceRoot(PhpProjectProperties.SRC_DIR, label, null, null);
+        String label = NbBundle.getMessage(PhpProject.class, "LBL_Node_Sources");
+        sourcesHelper.addPrincipalSourceRoot("${" + PhpProjectProperties.SRC_DIR + "}", label, null, null); // NOI18N
 
         List<String> labels = new ArrayList<String>();
         List<String> roots = new ArrayList<String>();
         readSources(labels, roots);
         for (int i = 0; i < labels.size(); i++) {
             sourcesHelper.addPrincipalSourceRoot(roots.get(i), labels.get(i), null, null);
-            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProjectProperties.SOURCES_TYPE_PHP, labels.get(i), null, null);
+            sourcesHelper.addTypedSourceRoot(roots.get(i), PhpProjectSharedConstants.SOURCES_TYPE_PHP, labels.get(i), null, null);
         }
 
 
@@ -145,12 +146,11 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
                 for (Entry<String, String> entry : props.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
-                    if (key.equals(PhpProjectProperties.SRC_DIR)) {
+                    if (key.equals("${" + PhpProjectProperties.SRC_DIR + "}")) { // NOI18N
                         continue;
                     }
-                    if (key.startsWith(PhpProjectProperties.SRC_) && key.endsWith(PhpProjectProperties._DIR)) {
-                        String lbl = key.substring(PhpProjectProperties.SRC_.length()).substring(0, PhpProjectProperties._DIR.length());
-                        labels.add(lbl);
+                    if (PhpProjectProperties.SRC_DIR.equals(key)) {
+                        labels.add("dir"); // NOI18N
                         roots.add(value);
                     }
                     continue;
@@ -175,7 +175,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
      */
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
-        if (property.startsWith(PhpProjectProperties.SRC_) && property.endsWith(PhpProjectProperties._DIR)) {
+        if (PhpProjectProperties.SRC_DIR.equals(property)) {
            this.fireChange();
         }
     }
