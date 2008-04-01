@@ -57,6 +57,14 @@
         </testset>
     </testbag>
 
+    <testbag testattribs="alltests or php" executor="installer-executor" name="installer php bandle test">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerPHP.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="alltests or cpp" executor="installer-executor" name="installer cpp bandle test">
         <testset dir=".">
             <patternset>
