@@ -360,7 +360,7 @@ public final class EarProjectProperties {
         
         ArrayList libs = new ArrayList ();
         libs.addAll(ClassPathUiSupport.getList(EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
-        ProjectProperties.storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
+        ProjectProperties.storeLibrariesLocations (antProjectHelper, libs.iterator(), projectProperties);
         
         CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
         

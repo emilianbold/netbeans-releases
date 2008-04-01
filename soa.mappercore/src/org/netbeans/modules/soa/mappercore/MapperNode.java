@@ -588,6 +588,12 @@ class MapperNode implements GraphListener {
     }
     
     public boolean mustDrawLine() {
+        if (getParent() == null) {
+            // Root node is never visible. 
+            // We should not paint line for invisible node
+            return false;
+        }
+        
         MapperNode nextNode = getNextVisibleNode(this);
         // graph or nextGraph is not Empty or One Link
         if (this.getGraph() != null && !this.getGraph().isEmptyOrOneLink() ||
@@ -654,7 +660,10 @@ class MapperNode implements GraphListener {
     }
     
     private MapperNode getNextVisibleNode(MapperNode node) {
-        if (node == mapper.getRoot() && node != this) {
+        MapperNode root = mapper.getRoot();
+        if (node == root && (node != this || root.isLeaf() 
+                || root.isCollapsed() || root.getChildCount() < 1)) 
+        {
             return null;
         }
         MapperNode result = null;

@@ -196,6 +196,7 @@ public final class CodeTemplateParameterImpl {
             if (!handler.isInserted()) {
                 handler.checkInsertTextBuilt();
             }
+            return textRegion.startOffset() - handler.getInsertOffset();
         }
         return textRegion.startOffset();
     }

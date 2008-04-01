@@ -137,7 +137,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter
     }
     
     private JPanel createPalette() {
-        return new Palette(mMapper).getPanel(false);
+        return new Palette(mMapper).getPanel();
     }
     
     /**

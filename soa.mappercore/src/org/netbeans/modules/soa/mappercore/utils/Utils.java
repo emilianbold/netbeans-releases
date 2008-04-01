@@ -229,8 +229,10 @@ public class Utils {
     public static boolean isTreePathExpandable(TreeModel treeModel, 
             TreePath treePath) 
     {
-        return (treeModel != null) 
-                && !treeModel.isLeaf(treePath.getLastPathComponent())
+        if (treeModel == null) return false;
+        if (treePath == null) return false;
+
+        return !treeModel.isLeaf(treePath.getLastPathComponent())
                 && isTreePathInModel(treeModel, treePath);
     }
     
@@ -238,6 +240,7 @@ public class Utils {
             TreePath treePath) 
     {
         if (treeModel == null) return false;
+        if (treePath == null) return false;
         
         TreePath parentPath = treePath.getParentPath();
         
