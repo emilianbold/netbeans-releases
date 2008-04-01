@@ -155,13 +155,13 @@ public class CopyNode extends BpelNode<Copy> {
         }
 
         Copy ref = getReference();
-        From from = ref.getFrom();
+        From from = (ref == null) ? null : ref.getFrom();
         
         if (from != null && from.equals(component)) {
             return true;
         }
         
-        To to = ref.getTo();
+        To to = (ref == null) ? null : ref.getTo();
         if (to != null && to.equals(component)) {
             return true;
         }

@@ -69,6 +69,8 @@ public class VisibilityScope {
     private List<BaseScope> myScopeList;
     private List<VariableDeclarationScope> myVarScopeList;
     
+    private VisibleVariables mVisibleVariables;
+    
     public VisibilityScope(BpelEntity modelElement, Lookup lookup) {
         baseModelElement = modelElement;
     }
@@ -167,6 +169,43 @@ public class VisibilityScope {
         }
         //
         return null;
+    }
+    
+    public synchronized VisibleVariables getVisibleVariables() {
+        if (mVisibleVariables == null) {
+            mVisibleVariables = calculateVisibleVariables();
+        }
+        return mVisibleVariables;
+    }
+    
+    /**
+     * Traverses the specified visibility scope and collects all 
+     * overridden variables.
+     * @param visScope to travrse over
+     * @return the set of overridden variables
+     */
+    private VisibleVariables calculateVisibleVariables() {
+        VisibleVariables result = new VisibleVariables();
+        //
+        HashSet<String> visibleNames = new HashSet<String>();
+        //
+        List<VariableDeclarationScope> vdScopeList = getVarScopeChain();
+        for (int index = vdScopeList.size() - 1; index >=0; index--) {
+            VariableDeclarationScope vdScope = vdScopeList.get(index);
+            List<VariableDeclaration> varList = Utils.getVarDeclInScope(vdScope);
+            for (VariableDeclaration varDecl : varList) {
+                String varName = varDecl.getVariableName();
+                //
+                if (visibleNames.contains(varName)) {
+                    result.mAllOverridenVariables.add(varDecl);
+                } else {
+                    visibleNames.add(varName);
+                    result.mAllVisibleVariables.add(varDecl);
+                }
+            }
+        }
+        //
+        return result;
     }
     
     public static class Utils {
@@ -312,4 +351,26 @@ public class VisibilityScope {
 
     }
     
+    /**
+     * This class is intended for temporary holding variable search results.
+     */
+    public static final class VisibleVariables {
+        private HashSet<VariableDeclaration> mAllVisibleVariables;
+        private HashSet<VariableDeclaration> mAllOverridenVariables;
+
+        public VisibleVariables() {
+            mAllVisibleVariables = new HashSet<VariableDeclaration>();
+            mAllOverridenVariables = new HashSet<VariableDeclaration>();
+        }
+        
+        public Set<VariableDeclaration> getAllVisibleVariables() {
+            return mAllVisibleVariables;
+        }
+
+        public Set<VariableDeclaration> getAllOverridenVariables() {
+            return mAllOverridenVariables;
+        }
+    }
+
+
 }

@@ -19,20 +19,27 @@
 
 package org.netbeans.modules.bpel.mapper.cast;
 
-import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
-import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.spi.CastSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.spi.VariableSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
 import org.openide.ErrorManager;
 
 /**
@@ -97,6 +104,30 @@ public class TypeCast extends AbstractTypeCast {
         return mXPathExpression;
     }
     
+    public AbstractVariableDeclaration getBaseVariable() {
+        XPathVariableReference varRef = null;
+        if (mXPathExpression instanceof XPathVariableReference) {
+            varRef = (XPathVariableReference)mXPathExpression;
+        } else if (mXPathExpression instanceof XPathExpressionPath) {
+            XPathExpression rootExpr = 
+                    ((XPathExpressionPath)mXPathExpression).getRootExpression();
+            if (rootExpr != null && rootExpr instanceof XPathVariableReference) {
+                varRef = (XPathVariableReference)rootExpr;
+            }
+        }
+        //
+        if (varRef != null) {
+            XPathVariable xPathVar = varRef.getVariable();
+            if (xPathVar != null && xPathVar instanceof XPathBpelVariable) {
+                AbstractVariableDeclaration varDecl = 
+                        ((XPathBpelVariable)xPathVar).getVarDecl();
+                return varDecl;
+            }
+        }
+        //
+        return null;
+    }
+    
     @Override
     public boolean populateCast(Cast target, 
             BpelEntity destination, boolean inLeftMapperTree) {
@@ -111,4 +142,42 @@ public class TypeCast extends AbstractTypeCast {
         return super.populateCast(target, destination, inLeftMapperTree);
     }
     
+    public Object getCastedObject() {
+        assert mXPathExpression instanceof XPathSchemaContextHolder;
+        XPathSchemaContext sContext = 
+                ((XPathSchemaContextHolder)mXPathExpression).getSchemaContext();
+        if (sContext != null) {
+            return getSchemaContextSubject(sContext);
+        }
+        //
+        return null;
+    }
+    
+    private Object getSchemaContextSubject(XPathSchemaContext sContext) {
+        if (sContext == null) {
+            return null;
+        }
+        //
+        Object result = null;
+        if (sContext instanceof VariableSchemaContext) {
+            XPathVariable var = ((VariableSchemaContext)sContext).getVariable();
+            assert var instanceof XPathBpelVariable;
+            XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+            Part part = bpelVar.getPart();
+            if (part == null) {
+                result = bpelVar.getVarDecl();
+            } else {
+                result = part;
+            }
+        } else if (sContext instanceof CastSchemaContext) {
+            XPathSchemaContext baseContext = ((CastSchemaContext)sContext).getBaseContext();
+            result = getSchemaContextSubject(baseContext);
+        } else {
+            SchemaComponent sComp = XPathSchemaContext.Utilities.
+                    getSchemaComp(sContext);
+            return sComp;
+        }
+        //
+        return result;
+    }
 } 

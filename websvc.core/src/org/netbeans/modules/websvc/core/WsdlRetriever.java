@@ -326,34 +326,10 @@ public class WsdlRetriever implements Runnable {
     public static String beautifyUrlName(String urlName) {
         // 1. verify protocol, use http if not specified.
         if(urlName.indexOf("://") == -1) { // NOI18N
-            urlName = "http://" + urlName; // NOI18N
+            return "http://" + urlName; // NOI18N
+        } else {
+            return urlName;
         }
-        
-        // 2. if this looks like a service, add a ?WSDL argument.
-        try {
-            URL testUrl = new URL(urlName);
-            String testName = testUrl.getPath();
-            boolean hasArguments = (testUrl.getFile().indexOf('?') != -1);
-            int slashIndex = testName.lastIndexOf('/');
-            if(slashIndex != -1) {
-                testName = testName.substring(slashIndex+1);
-            }
-            int dotIndex = testName.lastIndexOf('.');
-            if(dotIndex != -1) {
-                String extension = testName.substring(dotIndex+1);
-                if(!"xml".equals(extension) && !"wsdl".equals(extension) && !hasArguments) { // NOI18N
-                    urlName += "?WSDL"; // NOI18N
-                }
-            } else if(!hasArguments) {
-                // no file extension and no http arguments -- probably needs extension
-                urlName = urlName + "?WSDL"; // NOI18N
-            }
-        } catch(MalformedURLException ex) {
-            // do nothing about this here.  This error will occur again for real
-            // in the caller and be handled there.
-        }
-        
-        return urlName;
     }
     
     private String getSchemaUrlName(String wsdlUrl, String schemaName) {

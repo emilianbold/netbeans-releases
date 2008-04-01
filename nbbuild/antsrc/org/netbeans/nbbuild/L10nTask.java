@@ -209,9 +209,13 @@ public class L10nTask extends Task {
                             }
                         }
                     }
-
+                    
                     File oneFile = new File(tmpDir, file);
                     zipFileSet.setSrc(oneFile);
+                    file = file.replaceAll("org-netbeans-modules-", "");
+                    file = file.replaceAll("/netbeans/modules/", "/");
+                    file = file.replaceAll("\\.nbm/", "/");
+                    file = file.replaceAll("\\.jar", "");
                     zipFileSet.setPrefix(file);
                     zip.addZipfileset(zipFileSet);
                 }
