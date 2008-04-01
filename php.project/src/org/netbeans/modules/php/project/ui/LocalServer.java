@@ -168,13 +168,15 @@ public class LocalServer implements Comparable<LocalServer> {
     public static class ComboBoxEditor implements javax.swing.ComboBoxEditor, UIResource, DocumentListener {
 
         private static final long serialVersionUID = -4527321803090719483L;
-        private final JTextField component = new JTextField();
+        private final JTextField component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        private LocalServer activeItem;
+        private LocalServer activeItem = null;
 
-        public ComboBoxEditor() {
+        public ComboBoxEditor(Component editor) {
             super();
-            component.setOpaque(true);
+            assert editor instanceof JTextField;
+
+            component = (JTextField) editor;
             component.getDocument().addDocumentListener(this);
         }
 
@@ -237,6 +239,10 @@ public class LocalServer implements Comparable<LocalServer> {
         }
 
         private void processUpdate() {
+            if (activeItem == null) {
+                // no items set yet
+                return;
+            }
             boolean enabled = false;
             if (activeItem.isEditable()) {
                 enabled = true;
