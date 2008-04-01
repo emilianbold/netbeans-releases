@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -96,7 +96,7 @@ public class Export extends Dialog {
     c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFileName = new JTextField(TEXT_WIDTH);
-    myFileName.setText(getOutFolder(RESULT)); // NOI18N
+    myFileName.setText(getResultFolder());
     panel.add(myFileName, c);
 
     c.weightx = 0.0;
@@ -282,8 +282,8 @@ public class Export extends Dialog {
     return myDescriptor;
   }
 
-  private String getOutFolder(String file) {
-    return UH + FS + OF + FS + file;
+  private String getResultFolder() {
+    return UH + FS + SE + FS + RE;
   }
 
   @Override
@@ -339,11 +339,11 @@ public class Export extends Dialog {
   private DialogDescriptor myDescriptor;
   private List<List<String>> myDescriptions;
 
-  private static final String OF = "out"; // NOI18N
+  private static final String SE = "search"; // NOI18N
+  private static final String RE = "result.html"; // NOI18N
   private static final String HTM_EXT = ".htm"; // NOI18N
   private static final String HTML_EXT = ".html"; // NOI18N
-  private static final String RESULT = "result.html"; // NOI18N
 
-  private static final int TEXT_HEIGHT = 10;
   private static final int TEXT_WIDTH = 30;
+  private static final int TEXT_HEIGHT = 10;
 }

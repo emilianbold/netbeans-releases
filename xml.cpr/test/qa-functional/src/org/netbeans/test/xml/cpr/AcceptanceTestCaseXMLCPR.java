@@ -88,6 +88,11 @@ import org.netbeans.api.project.ProjectInformation;
  */
 
 public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
+
+    protected final String PURCHASE_SCHEMA_FILE_NAME = "purchaseOrder.xsd";
+
+    protected final String LOAN_SCHEMA_FILE_NAME_ORIGINAL = "newLoanApplication.xsd";
+    protected final String LOAN_SCHEMA_FILE_NAME_RENAMED = "myLoanApplication.xsd";
     
     class CFulltextStringComparator implements Operator.StringComparator
     {
@@ -209,7 +214,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|newLoanApplication.xsd"
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
         );
       prn.select( );
 
@@ -237,7 +242,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       pto = new ProjectsTabOperator( );
 
       prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|myLoanApplication.xsd"
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_RENAMED
         );
       if( null == prn )
       {
@@ -254,7 +259,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|newLoanApplication.xsd"
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
         );
       if( null == prn )
       {
@@ -270,13 +275,13 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|newLoanApplication.xsd"
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
         );
 
       prn.performPopupAction( "Refactor|Redo [File Rename]" );
 
       prn = pto.getProjectRootNode(
-          sModule + "|" + sPath + "|myLoanApplication.xsd"
+          sModule + "|" + sPath + "|" + LOAN_SCHEMA_FILE_NAME_RENAMED
         );
       if( null == prn )
       {

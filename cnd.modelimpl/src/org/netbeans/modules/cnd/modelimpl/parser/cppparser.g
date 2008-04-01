@@ -2091,6 +2091,7 @@ dtor_declarator[boolean definition]
 	//({definition}? dtor_scope_override)
         dtor_scope_override
 	TILDE ID
+       (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN

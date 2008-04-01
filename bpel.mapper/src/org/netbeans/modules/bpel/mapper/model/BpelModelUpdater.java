@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.cast.AbstractTypeCast;
-import org.netbeans.modules.bpel.mapper.model.CopyFromProcessor.CopyFromForm;
+import org.netbeans.modules.bpel.mapper.model.FromProcessor.FromForm;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
@@ -120,40 +120,11 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     
     //==========================================================================
 
-    private void updateCopy(TreePath rightTreePath, Copy copy) throws Exception {
-        //
-        // Do common preparations
-        //
-        Graph graph = getMapperModel().graphRequired(rightTreePath);
-        //
-        //=====================================================================
-        //
-        // Remove copy if there is not any content in the graph 
-        //
-        if (graph.isEmpty()) {
-            // Remove copy from the BPEL model
-            BpelContainer copyOwner = copy.getParent();
-            if (copyOwner != null) {
-                copyOwner.remove(copy);
-            }
-            getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
-            return; // NOTHING TO DO FURTHER
-        }
-        //
-        //=====================================================================
-        // Populate FROM
-        //
-        From from = copy.getFrom();
-        CopyFromForm oldFromForm = null;
-        if (from == null) {
-            BpelModel bpelModel = copy.getBpelModel();
-            from = bpelModel.getBuilder().createFrom();
-            copy.setFrom(from);
-        } else {
-            oldFromForm = CopyFromProcessor.calculateCopyFromForm(from);
-        }
-        //
-        Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+    protected void updateFrom(Graph graph, 
+            Set<AbstractTypeCast> typeCastCollector, From from) throws Exception 
+    {
+        assert from != null;
+        FromForm oldFromForm = FromProcessor.calculateFromForm(from);
         //
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         if (graphInfo.onlyOneTransitLink()) {
@@ -217,6 +188,42 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
                 from.removeVariable();
             }
         }
+    } 
+
+    private void updateCopy(TreePath rightTreePath, Copy copy) throws Exception {
+        //
+        // Do common preparations
+        //
+        Graph graph = getMapperModel().graphRequired(rightTreePath);
+        //
+        //=====================================================================
+        //
+        // Remove copy if there is not any content in the graph 
+        //
+        if (graph.isEmpty()) {
+            // Remove copy from the BPEL model
+            BpelContainer copyOwner = copy.getParent();
+            if (copyOwner != null) {
+                copyOwner.remove(copy);
+            }
+            getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
+            return; // NOTHING TO DO FURTHER
+        }
+        //
+        Set<AbstractTypeCast> typeCastCollector = new HashSet<AbstractTypeCast>();
+        //
+        //
+        //=====================================================================
+        // Populate FROM
+        //
+        From from = copy.getFrom();
+        if (from == null) {
+            BpelModel bpelModel = copy.getBpelModel();
+            from = bpelModel.getBuilder().createFrom();
+            copy.setFrom(from);
+        }
+        //
+        updateFrom(graph, typeCastCollector, from);
         //
         registerTypeCasts(copy, typeCastCollector, true);
         //
@@ -381,7 +388,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
 
     private From populateFrom(From from, XPathModel xPathModel, 
             TreePathInfo tpInfo, Set<AbstractTypeCast> typeCastCollector) {
-        CopyFromProcessor.CopyFromForm fromForm = calculateCopyFromForm(tpInfo);
+        FromProcessor.FromForm fromForm = calculateCopyFromForm(tpInfo);
         //
         switch(fromForm) {
         case VAR: {
@@ -702,23 +709,23 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     
     //==========================================================================
 
-    private CopyFromProcessor.CopyFromForm calculateCopyFromForm(TreePathInfo tpInfo) {
+    private FromProcessor.FromForm calculateCopyFromForm(TreePathInfo tpInfo) {
         if (tpInfo.varDecl != null) {
             if (tpInfo.part == null && tpInfo.schemaCompList.isEmpty()) {
-                return CopyFromProcessor.CopyFromForm.VAR;
+                return FromProcessor.FromForm.VAR;
             } else if (tpInfo.part != null && tpInfo.schemaCompList.isEmpty()) {
-                return CopyFromProcessor.CopyFromForm.VAR_PART;
+                return FromProcessor.FromForm.VAR_PART;
             } else if (tpInfo.part == null && !tpInfo.schemaCompList.isEmpty()) {
                 // return CopyFromProcessor.CopyFromForm.VAR_QUERY;
-                return CopyFromProcessor.CopyFromForm.EXPRESSION;
+                return FromProcessor.FromForm.EXPRESSION;
             } else if (tpInfo.part != null && !tpInfo.schemaCompList.isEmpty()) {
                 // return CopyFromProcessor.CopyFromForm.VAR_PART_QUERY;
-                return CopyFromProcessor.CopyFromForm.EXPRESSION;
+                return FromProcessor.FromForm.EXPRESSION;
             }
         } else if (tpInfo.pLink != null) {
-            return CopyFromProcessor.CopyFromForm.PARTNER_LINK;
+            return FromProcessor.FromForm.PARTNER_LINK;
         }
-        return CopyFromProcessor.CopyFromForm.UNKNOWN;
+        return FromProcessor.FromForm.UNKNOWN;
     }
     
     private CopyToProcessor.CopyToForm calculateCopyToForm(TreePathInfo tpInfo) {

@@ -150,7 +150,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         /*folderTextField.setText(
             getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder)
         );*/
-        folderTextField.setText("collaborations");
+        folderTextField.setText("Collaborations");
 
         String ext = (template == null) ? "" : template.getExt(); // NOI18N
         expectedExtension = (ext.length() == 0) ? "" : ("." + ext); // NOI18N

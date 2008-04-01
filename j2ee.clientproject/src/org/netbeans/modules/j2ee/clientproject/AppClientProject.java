@@ -784,7 +784,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);

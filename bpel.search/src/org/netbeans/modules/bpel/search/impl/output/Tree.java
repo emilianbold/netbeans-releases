@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -124,7 +124,7 @@ final class Tree extends JTree {
 //out("skip leaf: " + child);
         continue;
       }
-      if (child.getUserObject().equals(next)) {
+      if (getUserObject(child).equals(next)) {
         // go to the next level
 //out("next level");
         addElement(child, element, parents);
@@ -140,14 +140,15 @@ final class Tree extends JTree {
 
   void finished(String target, String text, int count) {
     myText = i18n(Tree.class, "LBL_Search_Tab", target, text); // NOI18N
-    String title = i18n(Tree.class, "LBL_Found", target, text, "" + count); // NOI18N
-    String catchword = i18n(Tree.class, "LBL_Catchword", target, text, "" + count); // NOI18N
+    String title = i18n(Tree.class, "LBL_Root", target, text, "" + count); // NOI18N
+    String print = i18n(Tree.class, "TXT_Root", target, text, "" + count); // NOI18N
+    String tooltip = getHtml(title);
 
     myRoot.setUserObject(new SearchElement.Adapter(
-      title, title, icon(Util.class, "find"), null)); // NOI18N
+      title, tooltip, icon(Util.class, "find"), null)); // NOI18N
 
     // vlv: print
-    putClientProperty(java.awt.print.Printable.class, catchword);
+    putClientProperty(java.awt.print.Printable.class, print);
 
     createOccurences();
     updateRoot();
@@ -214,7 +215,7 @@ final class Tree extends JTree {
       public void mouseClicked(MouseEvent event) {
         // double click
         if (event.getClickCount() == 2 && getSelectedNode().isLeaf()) {
-          gotoDesign(getSelectedNode());
+          getUserObject(getSelectedNode()).gotoVisual();
           event.consume();
         }
       }
@@ -229,20 +230,13 @@ final class Tree extends JTree {
 
   private void handleEvent(KeyEvent event) {
     DefaultMutableTreeNode node = getSelectedNode();
-    int code = event.getKeyCode();
     int modifiers = event.getModifiers();
+    int code = event.getKeyCode();
+//out();
+//out("key: " + code + " " + event.getKeyChar());
 
     if (code == KeyEvent.VK_F10 && isShift(modifiers)) {
-      showPopupMenu(event, 0, 0);
-    }
-    else {
-      handleAction(code, modifiers, node);
-    }
-  }
-
-  private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
-    if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
-      copy(node);
+      showPopupMenu(event, POPUP_MENU_X, POPUP_MENU_Y);
     }
     else if (code == KeyEvent.VK_F12 && isShift(modifiers)) {
       previousOccurence(node);
@@ -252,9 +246,6 @@ final class Tree extends JTree {
     }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
-    }
-    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
-      gotoSource(node);
     }
   }
 
@@ -338,13 +329,13 @@ final class Tree extends JTree {
   private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
     JMenuItem item;
 
-    // go to design
-    item = createItem("LBL_Go_to_Design"); // NOI18N
+    // go to visual
+    item = createItem("LBL_Go_to_Visual"); // NOI18N
     item.setEnabled( !node.isRoot());
     item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        gotoDesign(node);
+        getUserObject(node).gotoVisual();
       }
     });
     popup.add(item);
@@ -355,7 +346,7 @@ final class Tree extends JTree {
     item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        gotoSource(node);
+        getUserObject(node).gotoSource();
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
@@ -369,7 +360,6 @@ final class Tree extends JTree {
         copy(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
     popup.add(item);
 
     // collapse / expand
@@ -396,14 +386,6 @@ final class Tree extends JTree {
 
   private void updateSize() {
     putClientProperty(Dimension.class, getMaximumSize());
-  }
-
-  private void gotoSource(DefaultMutableTreeNode node) {
-    ((SearchElement) node.getUserObject()).gotoSource();
-  }
-
-  private void gotoDesign(DefaultMutableTreeNode node) {
-    ((SearchElement) node.getUserObject()).gotoDesign();
   }
 
   void previousOccurence() {
@@ -435,30 +417,41 @@ final class Tree extends JTree {
   }
 
   private void selectOccurence() {
-    TreePath path = new TreePath(myOccurences.get(myIndex).getPath());
+    select(myOccurences.get(myIndex));
+  }
+
+  private void select(DefaultMutableTreeNode node) {
+    TreePath path = new TreePath(node.getPath());
     setSelectionPath(path);
     scrollPathToVisible(path);
   }
 
   private void copy(TreeNode node) {
     StringBuffer buffer = new StringBuffer();
-
     copy(node, buffer, ""); // NOI18N
-    buffer.append(LS);
-
     StringSelection selection = new StringSelection(buffer.toString());
-    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-      selection, selection);
+    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
   }
 
   private void copy(TreeNode node, StringBuffer buffer, String indent) {
-    buffer.append(indent + node + LS);
+    buffer.append(indent + removeHtml(getUserObject(node).getName()) + LS);
     Enumeration children = node.children();
 
     while (children.hasMoreElements()) {
       TreeNode child = (TreeNode) children.nextElement();
       copy(child, buffer, indent + "    "); // NOI18N
     }
+  }
+
+  private String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
   }
 
   void export() {
@@ -622,8 +615,10 @@ final class Tree extends JTree {
     }
     if (printConfirmation(i18n(Tree.class, "LBL_Are_You_Sure"))) { // NOI18N
       parent.remove(node);
+      select(parent);
       updateUI();
     }
+    requestFocus();
   }
 
   private DefaultMutableTreeNode getNode(TreePath path) {
@@ -680,7 +675,15 @@ final class Tree extends JTree {
         return text.substring(k + 1);
       }
     }
-    return "";
+    return ""; // NOI18N
+  }
+
+  private static SearchElement getUserObject(Object object) {
+    return (SearchElement) ((DefaultMutableTreeNode) object).getUserObject();
+  }
+
+  private static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
   }
 
   // ----------------------------------------------------------------------
@@ -691,13 +694,10 @@ final class Tree extends JTree {
       boolean leaf, int row, boolean focus)
     {
       super.getTreeCellRendererComponent(tree, value, select, expanded, leaf, row, focus);
-      SearchElement element =
-        (SearchElement) ((DefaultMutableTreeNode) value).getUserObject();
-
-      setText("<html>" + getHtmlName(element.getName(), leaf, row) + "</html>"); // NOI18N
+      SearchElement element = getUserObject(value);
+      setText(getHtml(getHtmlName(element.getName(), leaf, row)));
       setToolTipText(element.getToolTip());
       setIcon(element.getIcon());
-
       return this;
     }
 
@@ -731,5 +731,8 @@ final class Tree extends JTree {
   private boolean myIsReformAll;
   private DefaultMutableTreeNode myRoot;
   private List<DefaultMutableTreeNode> myOccurences;
+
+  private static final int POPUP_MENU_X = 16;
+  private static final int POPUP_MENU_Y = 16;
   private static final Icon EMPTY = icon(Util.class, "empty"); // NOI18N
 }

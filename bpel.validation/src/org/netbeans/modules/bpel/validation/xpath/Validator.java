@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -54,6 +54,7 @@ import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
@@ -61,6 +62,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
@@ -83,7 +85,8 @@ import org.netbeans.modules.soa.ui.util.DurationUtil;
 public final class Validator extends BpelValidator implements ValidationVisitor {
 
   @Override
-  public void visit(Copy copy) {
+  public void visit(Copy copy)
+  {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
@@ -110,6 +113,51 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    }
+  }
+
+  @Override
+  public void visit(To to)
+  {
+    // # 125525
+    checkPartnerLink(to);
+    // # 131658
+    checkVariable(to);
+  }
+
+  private void checkPartnerLink(To to) {
+    BpelReference<PartnerLink> ref = to.getPartnerLink();
+
+    if (ref == null) {
+      return;
+    }
+    PartnerLink partnerLink = ref.get();
+
+    if (partnerLink == null) {
+      return;
+    }
+    WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
+
+    if (ref1 == null || ref1.get() == null) {
+      addError("FIX_To_PartnerLink", to);
+    }
+  }
+
+  private void checkVariable(To to) {
+    String value = to.getContent();
+//out();
+//out("to: " + value);
+//out();
+    if (value == null) {
+      return;
+    }
+    value = value.trim();
+
+    if (value.length() == 0) {
+      return;
+    }
+    if ( !value.startsWith("$")) { // NOI18N
+      addError("FIX_To_Value", to, value); // NOI18N
     }
   }
 

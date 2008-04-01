@@ -139,7 +139,7 @@ public class JSFClientGenerator {
     private static String INDEX_PAGE = "index.jsp"; //NOI18N
     private static String WELCOME_JSF_PAGE = "welcomeJSF.jsp";  //NOI18N
     
-    public static void generateJSFPages(Project project, final String entityClass, String jsfFolder, String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
+    public static void generateJSFPages(Project project, final String entityClass, String jsfFolder, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport) throws IOException {
         final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
         
         String simpleControllerName = simpleClassName(controllerClass);
@@ -267,19 +267,19 @@ public class JSFClientGenerator {
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport);
+                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass);
             }
         }, true);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport);
+                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass);
             }
         }, true);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport);
+                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass);
             }
         }, true);
         
@@ -408,7 +408,7 @@ public class JSFClientGenerator {
     }
     
     private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
+            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
         final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -421,7 +421,7 @@ public class JSFClientGenerator {
         newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass, embeddedPkSupport);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass, embeddedPkSupport, controllerClass);
         newSb.append("</h:panelGrid>\n<br />\n");
         
         newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
@@ -460,7 +460,7 @@ public class JSFClientGenerator {
     }
     
     private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
+            String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
         final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -474,7 +474,7 @@ public class JSFClientGenerator {
                 + "<h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass, embeddedPkSupport);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass, embeddedPkSupport, controllerClass);
         editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\">\n"
                 + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{" + managedBean + ".asString[" + managedBean + "." + fieldName + "]}\"/>\n"
                 + "</h:commandLink>\n"
@@ -518,7 +518,7 @@ public class JSFClientGenerator {
     }
 
     private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
-            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport) throws FileStateInvalidException, IOException {
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
         final Charset encoding = FileEncodingQuery.getDefaultEncoding();
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
@@ -531,8 +531,8 @@ public class JSFClientGenerator {
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport);
-        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport, controllerClass);
+        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass);
         detailSb.append("</h:panelGrid>\n");
         detailSb.append("<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
@@ -995,6 +995,7 @@ public class JSFClientGenerator {
                     String bodyText;
                     StringBuffer updateRelatedInCreate = new StringBuffer();
                     StringBuffer updateRelatedInEditPre = new StringBuffer();
+                    StringBuffer attachRelatedInEdit = new StringBuffer();
                     StringBuffer updateRelatedInEditPost = new StringBuffer();
                     StringBuffer updateRelatedInDestroy = new StringBuffer();
                     StringBuffer initRelatedInCreate = new StringBuffer();
@@ -1046,23 +1047,21 @@ public class JSFClientGenerator {
                             boolean columnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, m, isFieldAccess);
                             boolean relColumnNullable = JsfForm.isFieldOptionalAndNullable(workingCopy, otherSide, isFieldAccess);
                             
-                            String relFieldToAttach = relFieldName + relTypeReference + "ToAttach";
+                            String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
                             
                             if (!isCollection && !controllerClass.equals(entityClass + "Controller")) {
                                 modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
                             }
                             
+                            ExecutableElement relIdGetterElement = JsfForm.getIdGetter(workingCopy, isFieldAccess, relClass);
+                            String refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
+                            
                             if (isCollection) {
                                 initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
                                         fieldName + ".s" + mName.substring(1) + "(new ArrayList<" + relTypeReference + ">());\n" +
                                         "}\n");
-                                String refOrMergeString = "em.merge(" + relFieldToAttach + ");\n";
-                                ExecutableElement relIdGetterElement = JsfForm.getIdGetter(workingCopy, isFieldAccess, relClass);
-                                if (relIdGetterElement != null) {
-                                    String relIdGetter = relIdGetterElement.getSimpleName().toString();
-                                    refOrMergeString = "em.getReference(" + relFieldToAttach + ".getClass(), " + relFieldToAttach + "." + relIdGetter + "());\n";
-                                }
+
                                 
                                 modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.ArrayList");
                                 
@@ -1073,6 +1072,13 @@ public class JSFClientGenerator {
                                         "}\n" +
                                         fieldName + ".s" + mName.substring(1) + "(attached" + mName.substring(3) + ");\n"
                                         );
+                            }
+                            else {
+                                initRelatedInCreate.append(relTypeReference + " " + scalarRelFieldName + " = " + fieldName + "." + mName +"();\n" +
+                                    "if (" + scalarRelFieldName + " != null) {\n" +
+                                    scalarRelFieldName + " = " + refOrMergeString +
+                                    fieldName + ".s" + mName.substring(1) + "(" + scalarRelFieldName + ");\n" +
+                                    "}\n");
                             }
                             
                             String relrelInstanceName = "old" + otherName.substring(3) + "Of" + scalarRelFieldName.substring(0, 1).toUpperCase() + (scalarRelFieldName.length() > 1 ? scalarRelFieldName.substring(1) : "");
@@ -1090,12 +1096,7 @@ public class JSFClientGenerator {
                                 illegalOrphansInCreate.append("}\n");
                             }
                             
-                            if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                updateRelatedInCreate.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + scalarRelFieldName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n");
-                            }
-
                             updateRelatedInCreate.append( (isCollection ? "for(" + relTypeReference + " " + scalarRelFieldName + " : " + fieldName + "." + mName + "()){\n" :
-                                                            relTypeReference + " " + scalarRelFieldName + " = " + fieldName + "." + mName +"();\n" +
                                                             "if (" + scalarRelFieldName + " != null) {\n"));
                                                             //if 1:1, be sure to orphan the related entity's current related entity
                             if (otherSideMultiplicity == JsfForm.REL_TO_ONE){
@@ -1114,22 +1115,10 @@ public class JSFClientGenerator {
                                                             scalarRelFieldName + "." + otherName + "().add(" + fieldName +");\n") +
                                                         scalarRelFieldName + " = em.merge(" + scalarRelFieldName +");\n");
                             if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_ONE){
-                                String relTypeListName = relFieldName + "RemoveList";
                                 updateRelatedInCreate.append("if " + relrelInstanceName + " != null) {\n" +
-                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + scalarRelFieldName + "sToRemove.get(" + relrelInstanceName + ");\n" +
-                                        "if " + relTypeListName + " == null) {\n" +
-                                        relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
-                                        scalarRelFieldName + "sToRemove.put(" + relrelInstanceName + ", " + relTypeListName + ");\n" +
-                                        "}\n" +
-                                        relTypeListName + ".add(" + scalarRelFieldName + ");\n" +
-                                        "}\n}\n" +
-                                        "for (" + simpleEntityName + " " + relrelInstanceName + " : " + scalarRelFieldName + "sToRemove.keySet()) {\n" +
-                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + scalarRelFieldName + "sToRemove.get(" + relrelInstanceName + ");\n" +
-                                        "for (" + relTypeReference + " " + scalarRelFieldName + " : " + relTypeListName + ") {\n" +
                                         relrelInstanceName + "." + mName + "().remove(" + scalarRelFieldName + ");\n" +
-                                        "}\n" +
-                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n");
-                                        
+                                        relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" +
+                                        "}\n");
                             }
                             updateRelatedInCreate.append("}\n");
                             
@@ -1157,6 +1146,17 @@ public class JSFClientGenerator {
                                             "}\n" +
                                             "}\n");
                                 }
+                                String relFieldToAttachInEdit = newScalarRelFieldName + "ToAttach";
+                                String refOrMergeStringInEdit = getRefOrMergeString(relIdGetterElement, relFieldToAttachInEdit);
+                                String attachedRelFieldNew = "attached" + mName.substring(3) + "New";
+                                attachRelatedInEdit.append("List<" + relTypeReference + "> " + attachedRelFieldNew + " = new ArrayList<" + relTypeReference + ">();\n" +
+                                        "for (" + relTypeReference + " " + relFieldToAttachInEdit + " : " + relFieldNew + ") {\n" +
+                                        relFieldToAttachInEdit + " = " + refOrMergeStringInEdit +
+                                        attachedRelFieldNew + ".add(" + relFieldToAttachInEdit + ");\n" +
+                                        "}\n" +
+                                        relFieldNew + " = " + attachedRelFieldNew + ";\n" +
+                                        fieldName + ".s" + mName.substring(1) + "(" + relFieldNew + ");\n"
+                                        );
                                 if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relColumnNullable) {
                                     updateRelatedInEditPost.append(
                                         "for (" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
@@ -1167,36 +1167,19 @@ public class JSFClientGenerator {
                                         "}\n" +
                                         "}\n");
                                 }
-                                if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                   updateRelatedInEditPost.append("Map<" + simpleEntityName + ",List<" + relTypeReference + ">> " + newScalarRelFieldName + "sToRemove = new HashMap<" + simpleEntityName + ",List<" + relTypeReference + ">>();\n"); 
-                                }
                                 updateRelatedInEditPost.append("for (" + relTypeReference + " " + newScalarRelFieldName + " : " + relFieldNew + ") {\n" +
                                 "if (!" + relFieldOld + ".contains(" + newScalarRelFieldName + ")) {\n" +
                                 ((otherSideMultiplicity == JsfForm.REL_TO_ONE) ? simpleEntityName + " " + oldOfNew + " = " + newScalarRelFieldName + "." + relrelGetterName + "();\n" +
                                     newScalarRelFieldName + ".s" + otherName.substring(1) + "(" + fieldName+ ");\n" :
                                     newScalarRelFieldName + "." + otherName + "().add(" + fieldName +");\n") +
                                 newScalarRelFieldName + " = em.merge(" + newScalarRelFieldName + ");\n");
-                                String relTypeListName = relFieldName + "RemoveList";
-                                String relTypeRemoveName = relFieldName + "Remove" + relTypeReference;
                                 if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
                                     updateRelatedInEditPost.append("if " + oldOfNew + " != null && !" + oldOfNew + ".equals(" + fieldName + ")) {\n" +
-                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + newScalarRelFieldName + "sToRemove.get(" + oldOfNew + ");\n" +
-                                        "if " + relTypeListName + " == null) {\n" +
-                                        relTypeListName + " = new ArrayList<" + relTypeReference + ">();\n" +
-                                        newScalarRelFieldName + "sToRemove.put(" + oldOfNew + ", " + relTypeListName + ");\n" +
-                                        "}\n" +
-                                        relTypeListName + ".add(" + newScalarRelFieldName + ");\n" +
+                                        oldOfNew + "." + mName + "().remove(" + newScalarRelFieldName + ");\n" +
+                                        oldOfNew + " = em.merge(" + oldOfNew + ");\n" +
                                         "}\n");
                                 }
                                 updateRelatedInEditPost.append("}\n}\n");
-                                if (otherSideMultiplicity == JsfForm.REL_TO_ONE) {
-                                        updateRelatedInEditPost.append("for (" + simpleEntityName + " " + oldOfNew + " : " + newScalarRelFieldName + "sToRemove.keySet()) {\n" +
-                                        "List<" + relTypeReference + "> " + relTypeListName + " = " + newScalarRelFieldName + "sToRemove.get(" + oldOfNew + ");\n" +
-                                        "for (" + relTypeReference + " " + relTypeRemoveName + " : " + relTypeListName + ") {\n" +
-                                        oldOfNew + "." + mName + "().remove(" + relTypeRemoveName + ");\n" +
-                                        "}\n" +
-                                        oldOfNew + " = em.merge(" + oldOfNew + ");\n}\n");
-                                }
                             } else {
                                 updateRelatedInEditPre.append("\n" + relTypeReference + " " + scalarRelFieldName + "Old = " + oldMe + "." + mName + "();\n");
                                 updateRelatedInEditPre.append(relTypeReference + " " + scalarRelFieldName + "New = " + fieldName + "." + mName +"();\n");
@@ -1207,6 +1190,11 @@ public class JSFClientGenerator {
                                         "illegalOrphans = true;\n" +
                                         "}\n");
                                 }
+                                String refOrMergeStringInEdit = getRefOrMergeString(relIdGetterElement, scalarRelFieldName + "New"); 
+                                attachRelatedInEdit.append("if (" + scalarRelFieldName + "New != null) {\n" +
+                                    scalarRelFieldName + "New = " + refOrMergeStringInEdit +
+                                    fieldName + ".s" + mName.substring(1) + "(" + scalarRelFieldName + "New);\n" +
+                                    "}\n");
                                 if (otherSideMultiplicity == JsfForm.REL_TO_MANY || relColumnNullable) {
                                      updateRelatedInEditPost.append(   
                                         "if(" + scalarRelFieldName + "Old != null && !" + scalarRelFieldName + "Old.equals(" + scalarRelFieldName + "New)) {\n" +
@@ -1430,7 +1418,7 @@ public class JSFClientGenerator {
                             "return outcome;\n" +
                             "}\n";
                     bodyText += "EntityManager em = getEntityManager();\n" + 
-                        "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + 
+                        "try {\n " + BEGIN + "\n" + updateRelatedInEditPre.toString() + illegalOrphansInEdit.toString() + attachRelatedInEdit.toString() +
                         fieldName + " = em.merge(" + fieldName + ");\n " + 
                         updateRelatedInEditPost.toString() + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n" +   //NOI18N
@@ -1466,11 +1454,12 @@ public class JSFClientGenerator {
                             "addErrorMessage(\"The " + fieldName + " with id \" + current" + simpleEntityName + "String + \" no longer exists.\");\n" +
                             relatedControllerOutcomeSwath + 
                             "return listSetup();\n" +
-                            "}\n";                    
+                            "}\n";           
+                    String refOrMergeStringInDestroy = getRefOrMergeString(idGetterElement, fieldName);
                     bodyText += illegalOrphansInDestroy.toString() + 
                         "EntityManager em = getEntityManager();\n" + 
                         "try {\n " + BEGIN + "\n" + 
-                        fieldName + " = em.merge(" + fieldName + ");\n" + updateRelatedInDestroy.toString() + 
+                        fieldName + " = " + refOrMergeStringInDestroy + updateRelatedInDestroy.toString() + 
                         "em.remove(" + fieldName + ");\n " + COMMIT + "\n" +   //NOI18N
                         "addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n" +   //NOI18N
                         "} catch (Exception ex) {\n try {\n ensureAddErrorMessage(ex, \"A persistence error occurred.\");\n" + ROLLBACK + "\n } catch (Exception e) {\n ensureAddErrorMessage(e, \"An error occurred attempting to roll back the transaction.\");\n" + 
@@ -1658,6 +1647,15 @@ public class JSFClientGenerator {
             }).commit();
     
         return controllerFileObject;
+    }
+    
+    private static String getRefOrMergeString(ExecutableElement relIdGetterElement, String relFieldToAttach) {
+        String refOrMergeString = "em.merge(" + relFieldToAttach + ");\n";
+        if (relIdGetterElement != null) {
+            String relIdGetter = relIdGetterElement.getSimpleName().toString();
+            refOrMergeString = "em.getReference(" + relFieldToAttach + ".getClass(), " + relFieldToAttach + "." + relIdGetter + "());\n";
+        }
+        return refOrMergeString;
     }
 
     private static HashSet<String> CONVERTED_TYPES = new HashSet<String>();
