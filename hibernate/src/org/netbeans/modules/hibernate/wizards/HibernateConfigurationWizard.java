@@ -54,6 +54,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -78,8 +79,8 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private final String url = "hibernate.connection.url";
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
-
     private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg";
+
     public static HibernateConfigurationWizard create() {
         return new HibernateConfigurationWizard();
     }
@@ -93,7 +94,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
             WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
-            
+
             panels = new WizardDescriptor.Panel[]{
                 targetChooser,
                 descriptor
@@ -125,16 +126,15 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         return panels;
     }
 
-    
     private boolean foundConfigFileInProject(ArrayList<FileObject> configFiles, String configFileName) {
-        for(FileObject fo : configFiles) {
-            if(fo.getName().equals(configFileName)) {
+        for (FileObject fo : configFiles) {
+            if (fo.getName().equals(configFileName)) {
                 return true;
             }
         }
         return false;
     }
-    
+
     public String name() {
         return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle");
     }
@@ -196,9 +196,15 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         project = Templates.getProject(wizard);
-        descriptor = new HibernateConfigurationWizardDescriptor(project);  
-        FileObject sourceRoot = Util.getSourceRoot(project);        
-        Templates.setTargetFolder(wizard, sourceRoot); 
+        descriptor = new HibernateConfigurationWizardDescriptor(project);
+        if (Templates.getTargetFolder(wizard) == null) {            
+            HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
+            FileObject location = provider != null ? provider.getLocation() : null;
+            if (location != null) {
+                Templates.setTargetFolder(wizard, location);
+            }
+        }    
+        
         // Set the targetName here. Default name for new files should be in the form : 'hibernate<i>.cfg.xml 
         // and not like : hibernate.cfg<i>.xml.
         if (wizard instanceof TemplateWizard) {
@@ -226,15 +232,15 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         String targetName = Templates.getTargetName(wizard);
         FileObject templateFileObject = Templates.getTemplate(wizard);
         DataObject templateDataObject = DataObject.find(templateFileObject);
-        
-        
+
+
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
 
         SessionFactory sFactory = new SessionFactory();
         if (descriptor.getSessionName() != null && !"".equals(descriptor.getSessionName())) {
             sFactory.setAttributeValue(sessionName, descriptor.getSessionName());
         }
-        
+
         if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {
             int row = sFactory.addProperty2(descriptor.getDialectName());
             sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);
@@ -263,7 +269,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
             System.out.println("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
-            
+
             return Collections.singleton(hdo.getPrimaryFile());
 
         } catch (Exception e) {
