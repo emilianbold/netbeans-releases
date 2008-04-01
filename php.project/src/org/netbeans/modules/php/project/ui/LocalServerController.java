@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,6 +69,7 @@ public class LocalServerController {
     public LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
             WebFolderNameProvider webFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
         assert localServerComboBox.isEditable() : "localServerComboBox has to be editable";
+        assert localServerComboBox.getEditor().getEditorComponent() instanceof JTextField;
 
         this.localServerComboBox = localServerComboBox;
         this.localServerBrowseButton = localServerBrowseButton;
@@ -75,7 +77,8 @@ public class LocalServerController {
         this.webFolderNameProvider = webFolderNameProvider;
         this.browseDialogTitle = browseDialogTitle;
         localServerComboBoxModel = new LocalServer.ComboBoxModel(defaultLocalServers);
-        localServerComboBoxEditor = new LocalServer.ComboBoxEditor(localServerComboBox.getEditor().getEditorComponent());
+        JTextField editor = (JTextField) localServerComboBox.getEditor().getEditorComponent();
+        localServerComboBoxEditor = new LocalServer.ComboBoxEditor(editor);
 
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
