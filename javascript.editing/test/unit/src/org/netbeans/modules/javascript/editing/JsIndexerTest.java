@@ -483,4 +483,8 @@ public class JsIndexerTest extends JsTestBase {
     public void testDojoExtend() throws Exception {
         checkIndexer("testfiles/dnd.js");
     }
+
+    public void testClassProps() throws Exception {
+        checkIndexer("testfiles/classprops.js");
+    }
 }
