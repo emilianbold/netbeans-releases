@@ -88,6 +88,7 @@ public class HibernateUtil {
         for(HibernateConfiguration configuration : configurations) {
             try {
                 DatabaseConnection dbConnection = getDBConnection(configuration);
+                if(dbConnection != null) {
                 java.sql.Connection jdbcConnection = dbConnection.getJDBCConnection();
                 if(jdbcConnection != null) {
                     java.sql.DatabaseMetaData dbMetadata = jdbcConnection.getMetaData();
@@ -108,6 +109,11 @@ public class HibernateUtil {
                     }
                 }else {
                    // JDBC Connection could not be established.
+                    //TODO Handle this situation gracefully, probably by displaying message to user.
+                    //throw new DatabaseException("JDBC Connection cannot be established.");
+                }
+                } else {
+                    // DBConnection could not be established.
                     //TODO Handle this situation gracefully, probably by displaying message to user.
                     //throw new DatabaseException("JDBC Connection cannot be established.");
                 }
@@ -305,17 +311,9 @@ public class HibernateUtil {
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
             //TODO check the driver here... it might not be loaded and driver[0] might result in AIOOB exception
             // The following is an annoying work around till #129633 is fixed.
-            while(drivers.length == 0) {
-                // Unable to load the driver. 
-                Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
-
-                    public Object run() {
-                        JDBCDriverManager.getDefault().showAddDriverDialog();
-                        return new Object();
-                    }
-                    
-                });
-                drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+            if(drivers.length == 0)  {
+                //throw new DatabaseException("Unable to load the driver : " + driverClassName);
+                return null;
             }
             final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
@@ -350,6 +348,9 @@ public class HibernateUtil {
     }
 
     private static Connection getJDBCConnection(HibernateConfiguration hibernateConfiguration) throws DatabaseException {
+        if(getDBConnection(hibernateConfiguration) == null) {
+            return null;
+        }
         return getDBConnection(hibernateConfiguration).getJDBCConnection();
     }
 
