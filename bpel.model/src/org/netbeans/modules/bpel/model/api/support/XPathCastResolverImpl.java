@@ -43,6 +43,7 @@ package org.netbeans.modules.bpel.model.api.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
@@ -52,17 +53,32 @@ import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
  * @version 2008.03.27
  */
 public class XPathCastResolverImpl implements XPathCastResolver {
-  public XPathCastResolverImpl(List<Cast> casts) {
-    myXPathCasts = new ArrayList<XPathCast>();
 
-    for (Cast cast : casts) {
-      myXPathCasts.add(new XPathCastImpl(cast));
+    public XPathCastResolverImpl(List<Cast> casts) {
+        myXPathCasts = new ArrayList<XPathCast>();
+
+        for (Cast cast : casts) {
+            myXPathCasts.add(new XPathCastImpl(cast));
+        }
     }
-  }
 
-  public List<XPathCast> getXPathCasts() {
-    return myXPathCasts;
-  }
+    public List<XPathCast> getXPathCasts() {
+        return myXPathCasts;
+    }
+    private List<XPathCast> myXPathCasts;
 
-  private List<XPathCast> myXPathCasts;
+    public XPathCast getCast(XPathSchemaContext soughtContext) {
+        if (myXPathCasts == null || myXPathCasts.size() == 0) {
+            return null;
+        }
+        //
+        for (XPathCast xPathCast : myXPathCasts) {
+            XPathSchemaContext sContext = xPathCast.getSchemaContext();
+            if (sContext != null && sContext.equalsChain(soughtContext)) {
+                return xPathCast;
+            }
+        }
+        //
+        return null;
+    }
 }

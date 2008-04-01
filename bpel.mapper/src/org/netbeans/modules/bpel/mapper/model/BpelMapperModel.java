@@ -82,7 +82,9 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         STUB_GRAPH = new Graph(this);
         //
         mConnectionConstraints = new ConnectionConstraint[] {
-                ConnectionConstraint.Access.getGeneralConstraint(this)};
+                ConnectionConstraint.Access.getGeneralConstraint(this),
+                ConnectionConstraint.Access.getPlConstraint()
+        };
     }
 
     public MapperTcContext getMapperTcContext() {
