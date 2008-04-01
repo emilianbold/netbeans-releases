@@ -96,7 +96,7 @@ public class Export extends Dialog {
     c.insets = new Insets(MEDIUM_INSET, TINY_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFileName = new JTextField(TEXT_WIDTH);
-    myFileName.setText(getOutFolder(RESULT)); // NOI18N
+    myFileName.setText(getResultFolder());
     panel.add(myFileName, c);
 
     c.weightx = 0.0;
@@ -282,8 +282,8 @@ public class Export extends Dialog {
     return myDescriptor;
   }
 
-  private String getOutFolder(String file) {
-    return UH + FS + OF + FS + file;
+  private String getResultFolder() {
+    return UH + FS + SE + FS + RE;
   }
 
   @Override
@@ -339,11 +339,11 @@ public class Export extends Dialog {
   private DialogDescriptor myDescriptor;
   private List<List<String>> myDescriptions;
 
-  private static final String OF = "NetBeansProjects"; // NOI18N
+  private static final String SE = "search"; // NOI18N
+  private static final String RE = "result.html"; // NOI18N
   private static final String HTM_EXT = ".htm"; // NOI18N
   private static final String HTML_EXT = ".html"; // NOI18N
-  private static final String RESULT = "result.html"; // NOI18N
 
-  private static final int TEXT_HEIGHT = 10;
   private static final int TEXT_WIDTH = 30;
+  private static final int TEXT_HEIGHT = 10;
 }
