@@ -106,6 +106,10 @@ public class CasaBindingBadges {
     
     public Rectangle getBadgeBoundsForParent(Badge badge, Widget parentWidget) {
         Widget widget = mBadgeWidgets.get(badge);
+        if (widget == null) {
+            return null;
+        }
+        
         Point location = widget.getLocation();
         Widget iterParent = widget.getParentWidget();
         while (iterParent != null && iterParent != parentWidget) {
