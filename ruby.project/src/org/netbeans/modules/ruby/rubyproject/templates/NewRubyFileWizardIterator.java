@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,53 +60,50 @@ import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 /**
  * Wizard to create a new Java file.
  * Based on org.netbeans.modules.ruby.rubyproject.templates.*.
- *
  */
 public class NewRubyFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
+    private Type type;
+
     private static final long serialVersionUID = 1L;
     
-    public static final int TYPE_FILE = 0;
-    public static final int TYPE_CLASS = 1;
-    public static final int TYPE_MODULE = 2;
-    public static final int TYPE_TEST = 3;
-    public static final int TYPE_SPEC = 4;
+    private final transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
-    private int type = TYPE_FILE;
+    static enum Type {
+        FILE, CLASS, MODULE, TEST, SPEC
+    }
     
-    /** Create a new wizard iterator. */
-    public NewRubyFileWizardIterator() {}
+    NewRubyFileWizardIterator() {
+        this(Type.FILE);
+    }
     
-    
-    NewRubyFileWizardIterator( int type ) {
+    NewRubyFileWizardIterator(final Type type) {
         this.type = type;
-    }    
+    }
     
     public static NewRubyFileWizardIterator classWizard() {
-        return new NewRubyFileWizardIterator( TYPE_CLASS );
+        return new NewRubyFileWizardIterator(Type.CLASS);
     }
 
     public static NewRubyFileWizardIterator moduleWizard() {
-        return new NewRubyFileWizardIterator( TYPE_MODULE );
+        return new NewRubyFileWizardIterator(Type.MODULE);
     }
 
     public static NewRubyFileWizardIterator testWizard() {
-        return new NewRubyFileWizardIterator( TYPE_TEST );
+        return new NewRubyFileWizardIterator(Type.TEST);
     }
-    
+
     public static NewRubyFileWizardIterator specWizard() {
-        return new NewRubyFileWizardIterator( TYPE_SPEC );
+        return new NewRubyFileWizardIterator(Type.SPEC);
     }
-    
+
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
-        
         // Ask for Ruby folders
         Project project = Templates.getProject( wizardDescriptor );
         Sources sources = ProjectUtils.getSources(project);
@@ -117,13 +114,11 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
             return new WizardDescriptor.Panel[] {            
                 Templates.createSimpleTargetChooser( project, groups ),
             };
-        }
-        else {
+        } else {
             return new WizardDescriptor.Panel[] {
                 new RubyTargetChooserPanel( project, groups, null, this.type)
             };
         }
-               
     }
     
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
@@ -179,7 +174,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
         Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
-        if (prop != null && prop instanceof String[]) {
+        if (prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
         String[] steps = createSteps (beforeSteps, panels);
@@ -194,7 +189,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -231,8 +226,6 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     public final void addChangeListener(ChangeListener l) {
         synchronized(listeners) {

@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.mapper.tree.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateEditor;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateMapperModelFactory;
@@ -28,6 +29,7 @@ import org.netbeans.modules.bpel.mapper.predicates.editor.PredicateUpdater;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -69,8 +71,12 @@ public class AddPredicateAction extends MapperAction<RestartableIterator<Object>
         // Create new mapper TC context
         MapperTcContext wrapper = new MapperTcContext.Wrapper(mMapperTcContext);
         //
+        // Obtain CastManager from the main mapper's left tree
+        MapperModel mm = getContext().getMapper().getModel();
+        CastManager castManager = CastManager.getCastManager((BpelMapperModel)mm, true);
+        //
         PredicateMapperModelFactory modelFactory = new PredicateMapperModelFactory();
-        BpelMapperModel predMModel = modelFactory.constructEmptyModel(wrapper);
+        BpelMapperModel predMModel = modelFactory.constructEmptyModel(wrapper, castManager);
         //
         PredicateEditor editor = new PredicateEditor(sContext, null, predMModel);
         wrapper.setMapper(editor.getMapper());

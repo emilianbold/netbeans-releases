@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,47 +38,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.model.api.support;
 
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.ruby.rubyproject.ui;
 
-import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
+import org.netbeans.spi.project.ui.support.NodeList;
 
-/**
- * @author Vladimir Yaroslavskiy
- * @version 2008.03.27
- */
-public class XPathCastResolverImpl implements XPathCastResolver {
+public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
+    
+    public ProjectRootNodeFactoryTest(String testName) {
+        super(testName);
+    }            
 
-    public XPathCastResolverImpl(List<Cast> casts) {
-        myXPathCasts = new ArrayList<XPathCast>();
-
-        for (Cast cast : casts) {
-            myXPathCasts.add(new XPathCastImpl(cast));
-        }
+    public void testCreateNodes() throws Exception {
+        Project p = createTestProject("rubyprj", "README");
+        ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
+        NodeList result = instance.createNodes(p);
+        assertSame("three children (lib, test, README)", 3, result.keys().size());
     }
 
-    public List<XPathCast> getXPathCasts() {
-        return myXPathCasts;
-    }
-    private List<XPathCast> myXPathCasts;
-
-    public XPathCast getCast(XPathSchemaContext soughtContext) {
-        if (myXPathCasts == null || myXPathCasts.size() == 0) {
-            return null;
-        }
-        //
-        for (XPathCast xPathCast : myXPathCasts) {
-            XPathSchemaContext sContext = xPathCast.getSchemaContext();
-            if (sContext != null && sContext.equalsChain(soughtContext)) {
-                return xPathCast;
-            }
-        }
-        //
-        return null;
-    }
 }
