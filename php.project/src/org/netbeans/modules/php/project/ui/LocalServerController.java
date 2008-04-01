@@ -75,7 +75,7 @@ public class LocalServerController {
         this.webFolderNameProvider = webFolderNameProvider;
         this.browseDialogTitle = browseDialogTitle;
         localServerComboBoxModel = new LocalServer.ComboBoxModel(defaultLocalServers);
-        localServerComboBoxEditor = new LocalServer.ComboBoxEditor();
+        localServerComboBoxEditor = new LocalServer.ComboBoxEditor(localServerComboBox.getEditor().getEditorComponent());
 
         localServerComboBox.setModel(localServerComboBoxModel);
         localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
