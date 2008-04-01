@@ -87,10 +87,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         PhpProjectProperties uiProperties = new PhpProjectProperties(project, classPathSupport);
         Lookup context = Lookups.fixed(project, uiProperties);
 
-        OptionListener listener = new OptionListener(project, uiProperties);
+        OptionListener optionListener = new OptionListener(project);
+        StoreListener storeListener = new StoreListener(uiProperties);
         dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
-                listener, null);
-        dialog.addWindowListener(listener);
+                optionListener, storeListener, null);
+        dialog.addWindowListener(optionListener);
         dialog.setTitle(MessageFormat.format(
                 NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Customizer_Title"),
                 ProjectUtils.getInformation(project).getDisplayName()));
@@ -99,28 +100,29 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         dialog.setVisible(true);
     }
 
-    /** Listens to the actions on the Customizer's option buttons */
+    private class StoreListener implements ActionListener {
+
+        private final PhpProjectProperties uiProperties;
+
+        StoreListener(PhpProjectProperties uiProperties ) {
+            this.uiProperties = uiProperties;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            uiProperties.save();
+        }
+    }
+
     private static class OptionListener extends WindowAdapter implements ActionListener {
 
         private final Project project;
-        private final PhpProjectProperties uiProperties;
 
-        OptionListener(Project project, PhpProjectProperties uiProperties) {
+        OptionListener(Project project) {
             this.project = project;
-            this.uiProperties = uiProperties;
         }
 
         // Listening to OK button ----------------------------------------------
         public void actionPerformed( ActionEvent e ) {
-            // Store the properties into project
-
-//#95952 some users experience this assertion on a fairly random set of changes in
-// the customizer, that leads me to assume that a project can be already marked
-// as modified before the project customizer is shown.
-//            assert !ProjectManager.getDefault().isModified(project) :
-//                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            uiProperties.save();
-
             // Close & dispose the the dialog
             Dialog dialog = project2Dialog.get(project);
             if (dialog != null) {

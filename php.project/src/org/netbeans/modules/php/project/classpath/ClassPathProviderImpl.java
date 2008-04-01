@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +102,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     // GuardedBy(this)
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(this)
-    private final Map<ClassPathCache, ClassPath> cache = new HashMap<ClassPathCache, ClassPath>();
+    private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, PhpSources sources) {
         this.helper = helper;
@@ -148,8 +149,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (internalFolder == null) {
             // XXX workaround because gsf uses toFile() and this causes NPE for SFS
             // XXX filesystem listener should be used
-            internalFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
-            for (FileObject fo : internalFolder.getChildren()) {
+            FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
+            for (FileObject fo : sfsFolder.getChildren()) {
                 if (FileUtil.toFile(fo) != null) {
                     continue;
                 }
@@ -165,22 +166,25 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 } catch (IOException exc) {
                     Exceptions.printStackTrace(exc);
                 } finally {
-                    closeStream(is);
-                    closeStream(os);
-                    closeStream(bos);
+                    closeStreams(is, os, bos);
                 }
             }
+            File file = FileUtil.toFile(sfsFolder);
+            assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
+            internalFolder = FileUtil.toFileObject(file);
         }
         return internalFolder;
     }
 
-    private void closeStream(Closeable stream) {
-        try {
-            if (stream != null) {
-                stream.close();
+    private void closeStreams(Closeable... streams) {
+        for (Closeable stream : streams) {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -189,7 +193,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private FileObject getSrcPath() {
-        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC);
+        List<FileObject> dirs = getDirs(PhpProjectProperties.SRC_DIR);
         if (dirs.size() == 0) {
             // non-existing directory??
             return null;

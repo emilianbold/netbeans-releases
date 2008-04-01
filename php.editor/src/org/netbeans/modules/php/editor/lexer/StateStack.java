@@ -43,7 +43,7 @@ package org.netbeans.modules.php.editor.lexer;
 
 public class StateStack implements Cloneable {
 
-	private byte[] stack;
+	public byte[] stack;
 	private int lastIn = -1;
 
 	/**
@@ -96,7 +96,7 @@ public class StateStack implements Cloneable {
 		return rv;
 	}
 
-    @Override
+        @Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -120,6 +120,16 @@ public class StateStack implements Cloneable {
 		return true;
 	}
 
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 31 * hash + lastIn;
+            for (int i = lastIn; i >= 0; i--) {
+		hash = 31 * hash + this.stack[i];
+            }
+            return hash;
+        }
+        
 	public void copyFrom(StateStack s) {
 		while (s.lastIn >= this.stack.length) {
 			this.multiplySize();

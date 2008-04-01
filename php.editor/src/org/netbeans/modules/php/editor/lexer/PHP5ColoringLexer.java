@@ -1212,8 +1212,31 @@ public class PHP5ColoringLexer  {
                 stack = PHP5ColoringLexer.this.stack.createClone();
                 zzState =  PHP5ColoringLexer.this.zzState;
                 zzLexicalState = PHP5ColoringLexer.this.zzLexicalState;
+                
             }
             
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) {
+			return true;
+		}
+
+		if (obj == null || obj.getClass() != this.getClass()) {
+			return false;
+		}
+                
+                LexerState state = (LexerState) obj;
+                return (this.stack.equals(state.stack) && (this.zzState == state.zzState) && (this.zzLexicalState == state.zzLexicalState));
+            }
+         
+            @Override
+            public int hashCode() {
+                int hash = 11;
+                hash = 31 * hash + this.zzState;
+                hash = 31 * hash + this.zzLexicalState;
+                hash = 31 * hash + this.stack.hashCode();
+                return hash;
+            }
         }
         
         public LexerState getState() {

@@ -147,7 +147,7 @@ public class PhpProject implements Project, AntProjectListener {
                     public String run() {
                         Element data = getHelper().getPrimaryConfigurationData(true);
                         NodeList nl = data.getElementsByTagNameNS(
-                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME);
+                                PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME);
                         if (nl.getLength() == 1) {
                             nl = nl.item(0).getChildNodes();
                             if (nl.getLength() == 1
@@ -170,7 +170,7 @@ public class PhpProject implements Project, AntProjectListener {
             public Object run() {
                 Element data = getHelper().getPrimaryConfigurationData(true);
                 NodeList nl = data.getElementsByTagNameNS(
-                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectProperties.NAME ); 
+                        PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE, PhpProjectSharedConstants.PHP_PROJECT_NAME); 
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -182,7 +182,7 @@ public class PhpProject implements Project, AntProjectListener {
                 else {
                     nameEl = data.getOwnerDocument().createElementNS(
                             PhpProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                            PhpProjectProperties.NAME ); 
+                            PhpProjectSharedConstants.PHP_PROJECT_NAME); 
                     data.insertBefore(nameEl, /* OK if null */data
                             .getChildNodes().item(0));
                 }
@@ -222,7 +222,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpLogicalViewProvider( this , provider ),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery( getEvaluator(), 
-                    new String[] { PhpProjectProperties.SRC_DIR } , new String[] {} ),
+                    new String[] { "${" + PhpProjectProperties.SRC_DIR + "}" } , new String[] {} ), // NOI18N
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),
