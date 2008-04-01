@@ -1197,7 +1197,9 @@ public class HgCommand {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_DEBUG_CMD);
+        if(bGetFileInfo){
+            command.add(HG_LOG_DEBUG_CMD);
+        }
         
         String dateStr = handleRevDates(from, to);
         if(dateStr != null){
