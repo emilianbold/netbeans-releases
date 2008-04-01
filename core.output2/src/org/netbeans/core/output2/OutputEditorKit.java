@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -47,14 +47,18 @@
 package org.netbeans.core.output2;
 
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.TextAction;
 import org.openide.util.Exceptions;
 
 /**
@@ -65,13 +69,19 @@ import org.openide.util.Exceptions;
 final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text.ViewFactory, ChangeListener {
     private final boolean wrapped;
     private final JTextComponent comp;
+    private static final Action[] actions = prepareActions();
 
     /** Creates a new instance of OutputEditorKit */
     OutputEditorKit(boolean wrapped, JTextComponent comp) {
         this.comp = comp;
-        this.wrapped = wrapped;
+        this.wrapped = wrapped;       
     }
-
+    
+    @Override
+    public Action[] getActions() {
+        return actions;
+    }
+    
     public WrappedTextView view() {
         return lastWrappedView;
     }
@@ -88,6 +98,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
         return result;
     }
 
+    @Override
     public javax.swing.text.ViewFactory getViewFactory() {
         return this;
     }
@@ -96,6 +107,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
         return wrapped;
     }
     
+    @Override
     public void install(JEditorPane c) {
         super.install(c);
         if (wrapped) {
@@ -103,6 +115,7 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
         }
     }
     
+    @Override
     public void deinstall(JEditorPane c) {
         super.deinstall(c);
         if (wrapped) {
@@ -165,4 +178,109 @@ final class OutputEditorKit extends DefaultEditorKit implements javax.swing.text
             Exceptions.printStackTrace(e);
         }
     }
+    
+    /*
+     * Replaces DefaultEditorKit actions which uses Utilities.getRowEnd()/getRowStart()
+     * which are very expensive for long lines in unwrapped mode
+     */
+    static Action[] prepareActions() {
+        DefaultEditorKit dek = new DefaultEditorKit();
+        Action[] defActions = dek.getActions();
+        Action[] newActions = new Action[defActions.length];
+        for (int i = 0; i < defActions.length; i++) {
+            Object actionName = defActions[i].getValue(Action.NAME);
+            if (actionName.equals(beginLineAction)) {
+                newActions[i] = new OutputBeginLineAction(beginLineAction, false);
+            } else if (actionName.equals(selectionBeginLineAction)) {
+                newActions[i] = new OutputBeginLineAction(selectionBeginLineAction, true);
+            } else if (actionName.equals(endLineAction)) {
+                newActions[i] = new OutputEndLineAction(endLineAction, false);
+            } else if (actionName.equals(selectionEndLineAction)) {
+                newActions[i] = new OutputEndLineAction(selectionEndLineAction, true);
+            } else {
+                newActions[i] = defActions[i];
+            }            
+        }
+        return newActions;
+    }    
+
+    /*
+     * Position the caret to the beginning of the line.
+     * @see DefaultEditorKit#beginLineAction
+     * @see DefaultEditorKit#selectBeginLineAction
+     * @see DefaultEditorKit#getActions
+     */
+    static class OutputBeginLineAction extends TextAction {
+
+        /** 
+         * Create this action with the appropriate identifier. 
+         * @param nm  the name of the action, Action.NAME.
+         * @param select whether to extend the selection when
+         *  changing the caret position.
+         */
+        OutputBeginLineAction(String nm, boolean select) {
+            super(nm);
+            this.select = select;
+        }
+
+        /** The operation to perform when this action is triggered. */
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent target = getTextComponent(e);
+            if (target != null) {
+                Document doc = target.getDocument();
+                Element map = doc.getDefaultRootElement();
+                int offs = target.getCaretPosition();
+                int lineIndex = map.getElementIndex(offs);
+                int lineStart = map.getElement(lineIndex).getStartOffset();
+
+                if (select) {
+                    target.moveCaretPosition(lineStart);
+                } else {
+                    target.setCaretPosition(lineStart);
+                }
+            }
+        }
+
+        private boolean select;
+    }
+    
+    /*
+     * Position the caret to the end of the line.
+     * @see DefaultEditorKit#endLineAction
+     * @see DefaultEditorKit#selectEndLineAction
+     * @see DefaultEditorKit#getActions
+     */
+    static class OutputEndLineAction extends TextAction {
+
+        /** 
+         * Create this action with the appropriate identifier. 
+         * @param nm  the name of the action, Action.NAME.
+         * @param select whether to extend the selection when
+         *  changing the caret position.
+         */
+        OutputEndLineAction(String nm, boolean select) {
+            super(nm);
+            this.select = select;
+        }
+
+        /** The operation to perform when this action is triggered. */
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent target = getTextComponent(e);
+            if (target != null) {
+                Document doc = target.getDocument();
+                Element map = doc.getDefaultRootElement();
+                int offs = target.getCaretPosition();
+                int lineIndex = map.getElementIndex(offs);
+                int lineEnd = map.getElement(lineIndex).getEndOffset() - 1;
+
+                if (select) {
+                    target.moveCaretPosition(lineEnd);
+                } else {
+                    target.setCaretPosition(lineEnd);
+                }
+            }            
+        }
+
+        private boolean select;
+    }    
 }

@@ -110,8 +110,9 @@ public class StrictWarning implements ErrorRule {
                 return;
             }
             
-            int start = (Integer)error.getParameters()[0];
-            range = new OffsetRange(start, start+1);
+            astOffset = (Integer)error.getParameters()[0];
+            lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            range = new OffsetRange(lexOffset, lexOffset+1);
         } else if ("msg.reserved.keyword".equals(key)) {
             String keyword = (String) error.getParameters()[1];
             range = new OffsetRange(lexOffset-keyword.length(), lexOffset);
@@ -134,6 +135,7 @@ public class StrictWarning implements ErrorRule {
 
             // In HTML etc ignore these
             if (node.getType() == Token.EMPTY && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
+                context.remove = true;
                 return;
             }
 

@@ -92,6 +92,7 @@ import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
 import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
+import org.netbeans.modules.bpel.design.actions.RenameAction;
 import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
@@ -535,7 +536,7 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
 
-       // am.put("rename-something", new RenameAction()); // NOI18N
+        am.put("rename-something", new RenameAction(this)); // NOI18N
         am.put("delete-something", new DeleteAction(this)); // NOI18N
         am.put("cancel-something", new CancelAction(this)); // NOI18N
         am.put("gotosource-something", new GoToSourceAction(this)); // NOI18N

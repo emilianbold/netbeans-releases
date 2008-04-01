@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,44 +75,58 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-public final class SourceNodeFactory implements NodeFactory {
+public class ProjectRootNodeFactory implements NodeFactory {
     
     public NodeList createNodes(Project p) {
         RubyProject project = p.getLookup().lookup(RubyProject.class);
         assert project != null;
-        return new SourcesNodeList(project);
+        return new RootChildren(project);
     }
     
-    private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
+    private static class RootChildren implements NodeList<RootChildNode>, ChangeListener {
         
-        private RubyProject project;
+        private final RubyProject project;
+        private final List<ChangeListener> listeners;
         
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        
-        public SourcesNodeList(RubyProject proj) {
+        public RootChildren(RubyProject proj) {
+            listeners = new ArrayList<ChangeListener>();
             project = proj;
         }
         
-        public List<SourceGroupKey> keys() {
+        public List<RootChildNode> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.emptyList();
             }
+            
+            // source roots
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
             // Here we're adding sources, tests
-            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
+            List<RootChildNode> result =  new ArrayList<RootChildNode>();
             for( int i = 0; i < groups.length; i++ ) {
-                result.add(new SourceGroupKey(groups[i]));
+                result.add(new RootChildNode(groups[i]));
             }
-            FileObject rakeFile = RakeSupport.findRakeFile(project);
-            if (rakeFile != null && project.getProjectDirectory().equals(rakeFile.getParent())) {
-                result.add(new SourceGroupKey(rakeFile));
-            }
-            FileObject readme = project.getProjectDirectory().getFileObject("README"); // NOI18N
-            if (readme != null) {
-                result.add(new SourceGroupKey(readme));
-            }
+            
+            // files under project's root
+            result.addAll(getRootFiles());
             return result;
+        }
+        
+        /** Returns nodes representing files under project's root. */
+        private List<? extends RootChildNode> getRootFiles() {
+            FileObject rootDir = project.getProjectDirectory();
+            List<RootChildNode> rootFiles =  new ArrayList<RootChildNode>();
+            FileObject rakeFile = RakeSupport.findRakeFile(project);
+            if (rakeFile != null && rootDir.equals(rakeFile.getParent())) {
+                rootFiles.add(new RootChildNode(rakeFile));
+            }
+            for (FileObject rootChild : rootDir.getChildren()) {
+                if (rootChild.isFolder() || RakeSupport.isRakeFile(rootChild)) {
+                    continue;
+                }
+                rootFiles.add(new RootChildNode(rootChild));
+            }
+            return rootFiles;
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
@@ -135,7 +149,7 @@ public final class SourceNodeFactory implements NodeFactory {
             }
         }
 
-        public Node node(SourceGroupKey key) {
+        public Node node(RootChildNode key) {
             if (key.group == null) {
                 try {
                     if (RakeSupport.isRakeFile(key.fileObject)) {
@@ -148,7 +162,7 @@ public final class SourceNodeFactory implements NodeFactory {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            return new PackageViewFilterNode(key.group, project);
+            return new FolderViewFilterNode(key.group, project);
         }
 
         public void addNotify() {
@@ -175,17 +189,17 @@ public final class SourceNodeFactory implements NodeFactory {
         
     }
     
-    private static class SourceGroupKey {
+    private static class RootChildNode {
         
         public final SourceGroup group;
         public final FileObject fileObject;
         
-        SourceGroupKey(SourceGroup group) {
+        RootChildNode(SourceGroup group) {
             this.group = group;
             this.fileObject = group.getRootFolder();
         }
         
-        SourceGroupKey(FileObject fileObject) {
+        RootChildNode(FileObject fileObject) {
             this.group = null;
             this.fileObject = fileObject;
         }
@@ -195,10 +209,10 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         public @Override boolean equals(Object obj) {
-            if (!(obj instanceof SourceGroupKey)) {
+            if (!(obj instanceof RootChildNode)) {
                 return false;
             } else {
-                SourceGroupKey otherKey = (SourceGroupKey) obj;
+                RootChildNode otherKey = (RootChildNode) obj;
                 String thisDisplayName = group == null ? null : group.getDisplayName();
                 String otherDisplayName = otherKey.group == null ? null : otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??
@@ -211,60 +225,41 @@ public final class SourceNodeFactory implements NodeFactory {
     
     // Copied from inner class in Java Projects' PackageView class:
     /**
-     * FilterNode which listens on the PackageViewSettings and changes the view to 
-     * the package view or tree view
-     *
+     * FilterNode which listens on the PackageViewSettings and changes the view
+     * to the package view or tree view.
      */
     private static final class RootNode extends FilterNode { // implements PropertyChangeListener {
         
-        private SourceGroup sourceGroup;
-        
-        private RootNode (SourceGroup group) {
+        private RootNode(final SourceGroup group) {
             super(getOriginalNode(group));
-            this.sourceGroup = group;
-            //JavaProjectSettings.addPropertyChangeListener(WeakListeners.propertyChange(this, JavaProjectSettings.class));
         }
         
-//        public void propertyChange (PropertyChangeEvent event) {
-//            if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(event.getPropertyName())) {
-//                changeOriginal(getOriginalNode(sourceGroup), true);
-//            }
-//        }
-        
-        private static Node getOriginalNode(SourceGroup group) {
+        private static Node getOriginalNode(final SourceGroup group) {
             FileObject root = group.getRootFolder();
-            //Guard condition, if the project is (closed) and deleted but not yet gced
-            // and the view is switched, the source group is not valid.
-            if ( root == null || !root.isValid()) {
-                return new AbstractNode (Children.LEAF);
+            // Guard condition, if the project is (closed) and deleted but not
+            // yet gced and the view is switched, the source group is not valid.
+            if (root == null || !root.isValid()) {
+                return new AbstractNode(Children.LEAF);
             }
-//            switch (JavaProjectSettings.getPackageViewType()) {
-//                case JavaProjectSettings.TYPE_PACKAGE_VIEW:
-//                    return new PackageRootNode(group);
-//                case JavaProjectSettings.TYPE_TREE:
-                    return new TreeRootNode(group);
-//                default:
-//                    assert false : "Unknown PackageView Type"; //NOI18N
-//                    return new PackageRootNode(group);
-//            }
-        }        
+            return new TreeRootNode(group);
+        }
     }
     
-    
-    
-    /** Yet another cool filter node just to add properties action
-     */
-    private static class PackageViewFilterNode extends FilterNode {
+    private static class FolderViewFilterNode extends FilterNode {
         
-        private String nodeName;
-        private Project project;
+        protected String nodeName;
+        private final Project project;
         private Action[] actions;
         
-        public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
-            //super(PackageView.createPackageView(sourceGroup));
-            super(new RootNode(sourceGroup));
+        public FolderViewFilterNode(final SourceGroup sourceGroup, final Project project) {
+            this(new RootNode(sourceGroup), project);
+        }
+        
+        public FolderViewFilterNode(final FilterNode rootNode, final Project project) {
+            super(rootNode);
             this.project = project;
-            this.nodeName = "Sources";
+            this.nodeName = "Sources"; // NOI18N
+
         }
         
         public @Override Action[] getActions(boolean context) {
@@ -287,10 +282,8 @@ public final class SourceNodeFactory implements NodeFactory {
         
     }
     
-    
-    /** The special properties action
-     */
-    static class PreselectPropertiesAction extends AbstractAction {
+    /** The special properties action. */
+    private static class PreselectPropertiesAction extends AbstractAction {
         
         private final Project project;
         private final String nodeName;
@@ -298,17 +291,16 @@ public final class SourceNodeFactory implements NodeFactory {
         
         public PreselectPropertiesAction(Project project, String nodeName) {
             this(project, nodeName, null);
-        }
+}
         
         public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
-            super(NbBundle.getMessage(SourceNodeFactory.class, "LBL_Properties_Action"));
+            super(NbBundle.getMessage(ProjectRootNodeFactory.class, "LBL_Properties_Action"));
             this.project = project;
             this.nodeName = nodeName;
             this.panelName = panelName;
         }
         
         public void actionPerformed(ActionEvent e) {
-            // RubyCustomizerProvider cp = (RubyCustomizerProvider) project.getLookup().lookup(RubyCustomizerProvider.class);
             CustomizerProviderImpl cp = project.getLookup().lookup(CustomizerProviderImpl.class);
             if (cp != null) {
                 cp.showCustomizer(nodeName, panelName);

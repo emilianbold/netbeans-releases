@@ -54,7 +54,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.netbeans.api.project.FileOwnerQuery;
@@ -116,10 +115,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.w3c.dom.Element;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.bpel.model.ext.editor.api.Casts;
 import org.netbeans.modules.bpel.model.ext.editor.api.Editor;

@@ -59,8 +59,11 @@ public class CastSchemaContext implements XPathSchemaContext {
 
     public Set<SchemaCompPair> getSchemaCompPairs() {
         if (mCompPairSet == null) {
+            XPathSchemaContext parentContext = getParentContext();
+            SchemaComponent parentComp = Utilities.getSchemaComp(parentContext);
+            //
             GlobalType castTo = mXPathCast.getCastTo();
-            SchemaCompPair sCompPair = new SchemaCompPair(castTo, null);
+            SchemaCompPair sCompPair = new SchemaCompPair(castTo, parentComp);
             mCompPairSet = Collections.singleton(sCompPair);
         }
         //
@@ -76,19 +79,22 @@ public class CastSchemaContext implements XPathSchemaContext {
         // in this context and it always is implied as used!
     }
 
+    public String toStringWithoutParent() {
+        String castTo = mXPathCast.getCastTo().getName();
+        return "(" + castTo + ")" + mBaseContext.toStringWithoutParent();
+    }
+    
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         //
         XPathSchemaContext parentContext = getParentContext();
         if (parentContext != null) {
             sb.append(parentContext.toString());
+            sb.append(LocationStep.STEP_SEPARATOR);
         }
-        sb.append(LocationStep.STEP_SEPARATOR);
         //
-        String baseComp = mBaseContext.getSchemaCompPairs().toString();
-        String castTo = mXPathCast.getCastTo().getName();
-        sb.append("(").append(castTo).append(")").append(baseComp);
+        sb.append(toStringWithoutParent());
         //
         return sb.toString();
     }
