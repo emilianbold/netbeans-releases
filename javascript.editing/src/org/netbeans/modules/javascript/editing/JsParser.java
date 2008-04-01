@@ -192,16 +192,28 @@ public class JsParser implements Parser {
                     int lineEnd = JsUtils.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
+                        lineEnd++; // lineEnd is exclusive, not inclusive
                         StringBuilder sb = new StringBuilder(doc.length());
                         int lineStart = JsUtils.getRowStart(doc, offset);
-                        int rest = lineStart + 1;
-
-                        sb.append(doc.substring(0, lineStart));
-                        sb.append('#');
-
-                        if (rest < doc.length()) {
-                            sb.append(doc.substring(rest, doc.length()));
+                        if (lineEnd >= lineStart+2) {
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append("//");
+                            int rest = lineStart + 2;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
+                        } else {
+                            // A line with just one character - can't replace with a comment
+                            // Just replace the char with a space
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append(" ");
+                            int rest = lineStart + 1;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
+                            
                         }
+
                         assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
