@@ -184,6 +184,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
     private FileObject wadlFile;
+    private String folderName;
     
     public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
@@ -199,9 +200,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert p != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.p = p;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -212,9 +212,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert wadlFile != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.wadlFile = wadlFile;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -223,6 +222,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     public FileObject getRootDir() {
         return root;
+    }
+    
+    public String getFolderName() {
+        return folderName;
     }
     
     public Project getProject() {
@@ -245,17 +248,43 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return model;
     }
 
+    public static final String DEFAULT_PROTOCOL = "http";
+    public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_PORT = "8080";
+    
+    private String getApplicationNameFromUrl(String url) {
+        String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
+        if(appName.endsWith("/"))
+            appName = appName.substring(0, appName.length()-1);
+        String[] paths = appName.split("/");
+        if(paths != null && paths.length > 0) {
+            for(int i=0;i<paths.length;i++) {
+                String path = paths[i];
+                if(path != null && path.startsWith(DEFAULT_HOST) &&
+                        i+1 < paths.length && paths[i+1] != null &&
+                        paths[i+1].trim().length() > 0) {
+                    return paths[i+1];
+                }
+            }
+        }
+        return ClientStubModel.normailizeName(appName);
+    }
+    
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
         
         this.model = new ClientStubModel();
-        if(p != null)
+        String baseUrl = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT+"/";
+        if(p != null) {
             this.model.buildModel(p);
-        else if(wadlFile != null) {
-            String appName = this.model.buildModel(wadlFile);
-            if(appName != null)
-                this.projectName = appName;
+            baseUrl += getProjectName() + "/resources";
+        } else if(wadlFile != null) {
+            String url = this.model.buildModel(wadlFile);
+            if(url != null) {
+                baseUrl = url;
+                this.projectName = getApplicationNameFromUrl(baseUrl);
+            }
         }
         List<Resource> resourceList = model.getResources();
         
@@ -274,23 +303,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         if (createJmaki()) {
-            resourcesDir = getRootDir();
+            resourcesDir = createFolder(getRootDir(), RESOURCES);
             dojoDir = createFolder(resourcesDir, DOJO);
             restDir = createFolder(dojoDir, REST);
             rjsDir = createFolder(restDir, RJS);
             rdjDir = createFolder(restDir, RDJ);
-            templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
+            templatesDir = createFolder(getRootDir(), TEMPLATES);
             initJs(p);
             initDojo(p, resourceList);
             initJmaki(p, resourceList);
         } else {
-            rjsDir = createFolder(getRootDir().getParent(), REST);
+            rjsDir = createFolder(getRootDir(), getFolderName());
             initJs(p);
         }
         
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "", baseUrl);
             
         for (Resource r : resourceList) {
             if(pHandle != null)
@@ -497,7 +526,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
         createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, TXT, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir(), BUNDLE, PROPERTIES, canOverwrite());
                 
         //find first container 
         Resource c = null;
@@ -701,7 +730,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return result;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg, String baseUrl) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
@@ -709,7 +738,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", "http://localhost:8080/" + prjName + "/resources"));
+                    sb.append(line.replaceAll("__BASE_URL__", baseUrl));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {

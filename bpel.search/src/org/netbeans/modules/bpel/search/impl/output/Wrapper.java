@@ -87,9 +87,9 @@ final class Wrapper extends JPanel {
         if (isAlt(modifiers)) {
           return;
         }
+        event.consume();
         myTextField.setText(String.valueOf(c));
         showPanel();
-        event.consume();
       }
     });
     JLabel label = new JLabel(" " + i18n(Wrapper.class, "LBL_Quick_Search")); // NOI18N
