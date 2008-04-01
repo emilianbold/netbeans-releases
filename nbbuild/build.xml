@@ -2019,7 +2019,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="gen-sigtests" depends="sigtests-init">
     <echo message="Generating signature files for ${cluster.config} modules"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
   </target>
 
   <target name="check-sigtests" depends="sigtests-init">
@@ -2030,6 +2032,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
     
     <concat destfile="${sigtest.output.dir}/all">

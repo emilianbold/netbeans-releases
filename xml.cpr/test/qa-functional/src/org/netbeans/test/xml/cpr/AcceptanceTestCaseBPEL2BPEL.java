@@ -87,6 +87,11 @@ import org.netbeans.test.xml.schema.lib.util.Helpers;
 import javax.swing.JList;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.awt.Point;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.ComponentChooser;
+import javax.swing.JTable;
+import javax.swing.tree.TreeNode;
+//import org.openide.explorer.view.VisualizerNode;
 
 /**
  *
@@ -101,8 +106,10 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "AddProjectReference",
         "DeleteProjectReference",
         "AddSampleSchema",
-
         "ImportReferencedSchema",
+        "ImportReferencedSchema2",
+        "DeleteReferencedSchema",
+        "FindUsages",
 
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
@@ -207,35 +214,58 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
-    public void ImportReferencedSchema( )
+    private void ExpandByClicks(
+        JTableOperator table,
+        int row,
+        int col,
+        int count,
+        int result,
+        String error
+      )
     {
-      startTest( );
+      table.clickOnCell( row, col, count );
+       int iRows = table.getRowCount( );
+       if( result != iRows )
+         fail( error + iRows );
+      return;
+    }
 
+    class CFulltextStringComparator implements Operator.StringComparator
+    {
+      public boolean equals( java.lang.String caption, java.lang.String match )
+      {
+        return caption.equals( match );
+      }
+    }
+
+    private void ImportReferencedSchemaInternal( )
+    {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
       ProjectRootNode prn = pto.getProjectRootNode(
-          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
+          SAMPLE_NAME + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME
         );
       prn.select( );
 
       JTreeOperator tree = pto.tree( );
       tree.clickOnPath(
-          tree.findPath( SAMPLE_NAME + "|Process Files|purchaseOrder.xsd" ),
+          tree.findPath( SAMPLE_NAME + "|Process Files|" + PURCHASE_SCHEMA_FILE_NAME ),
           2
         );
 
       // Check was it opened or no
-      EditorOperator eoSchemaEditor = new EditorOperator( "purchaseOrder.xsd" );
+      EditorOperator eoSchemaEditor = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
       if( null == eoSchemaEditor )
       {
-        fail( "purchaseOrder.xsd was not opened after double click." );
+        fail( PURCHASE_SCHEMA_FILE_NAME + " was not opened after double click." );
       }
 
       // Switch to schema view
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      // ^ - remove???
 
       // Select first column
-      SchemaMultiView opMultiView = new SchemaMultiView( "purchaseOrder.xsd" );
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
       opMultiView.switchToSchema( );
       opMultiView.switchToSchemaColumns( );
       JListOperator opList = opMultiView.getColumnListOperator( 0 );
@@ -254,11 +284,197 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
       JDialogOperator jImport = new JDialogOperator( "Add Import" );
 
       // Import required files
-        // TODO
+      JTableOperator jto = new JTableOperator( jImport, new ComponentChooser( ) {
+            public java.lang.String getDescription() { return "getDesriptor: looking for happy"; }
+            public boolean checkComponent( java.awt.Component comp ) { if( comp instanceof JTable ) return true; return false; }
+          }
+      );
+
+      int iRows = jto.getRowCount( );
+      if( 2 != iRows )
+        fail( "Unknown initial import table state, number of rows: " + iRows );
+
+      ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
+      ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
+      ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
+      ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
+      ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
+
+      ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+      ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
 
       // Close
-      JButtonOperator jOk = new JButtonOperator( jImport, "Cancel" ); // TODO : OK
+      JButtonOperator jOk = new JButtonOperator( jImport, "OK" );
+      if( !jOk.isEnabled( ) )
+        fail( "OK button disabled after clicking in imports." );
       jOk.push( );
+
+      int iResult = 0;
+      for( int i = 0; i <= 1; i++ )
+      {
+        // Check imported files in list
+        opList = opMultiView.getColumnListOperator( 1 );
+
+        // Go to source
+        iIndex = i;//opList.findItemIndex( asImported[ 0 ] );
+        opList.selectItem( iIndex );
+        pt = opList.getClickPoint( iIndex );
+        opList.clickForPopup( pt.x, pt.y );
+
+        // Click Add / Import...
+        popup = new JPopupMenuOperator( );
+        popup.pushMenu( "Go To Source" );
+
+        // Check text
+        String[] asRequiredLines =
+        {
+          "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+          "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+        };
+        EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+        int iLineNumber = eoXMLSource.getLineNumber( );
+        String sChoosenLine = eoXMLSource.getText( iLineNumber );
+        for( int j = 0; j < asRequiredLines.length; j++ )
+          if( -1 != sChoosenLine.indexOf( asRequiredLines[ j ] ) )
+            iResult += ( j + 1 );//fail( "Go to source came to unknown line: #" + iLineNumber + ", \"" + sChoosenLine + "\"" );
+
+        // Switch back
+        opMultiView.switchToSchema( );
+        opMultiView.switchToSchemaColumns( );
+      }
+      if( 3 != iResult )
+        fail( "Go to source works incorrect way, not all elements recognized: " + iResult );
+    }
+
+    public void ImportReferencedSchema( )
+    {
+      startTest( );
+
+      ImportReferencedSchemaInternal( );
+
+      endTest( );
+    }
+
+    public void ImportReferencedSchema2( )
+    {
+      startTest( );
+
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( "Referenced Schemas" );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add / Import...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( "Add|Import..." );
+
+      // Get import dialog
+      JDialogOperator jImport = new JDialogOperator( "Add Import" );
+
+      // Import required files
+      JTableOperator jto = new JTableOperator( jImport, new ComponentChooser( ) {
+            public java.lang.String getDescription() { return "getDesriptor: looking for happy"; }
+            public boolean checkComponent( java.awt.Component comp ) { if( comp instanceof JTable ) return true; return false; }
+          }
+      );
+
+      int iRows = jto.getRowCount( );
+      if( 2 != iRows )
+        fail( "Unknown initial import table state, number of rows: " + iRows );
+
+      ExpandByClicks( jto, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: " );
+      ExpandByClicks( jto, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: " );
+      ExpandByClicks( jto, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: " );
+      ExpandByClicks( jto, 5, 0, 2, 8, "Unknown import table state after forth click, number of rows: " );
+      ExpandByClicks( jto, 6, 0, 2, 9, "Unknown import table state after third click, number of rows: " );
+
+      ExpandByClicks( jto, 3, 1, 1, 9, "Unknown to click on checkbox. #" );
+      JLabelOperator jl = new JLabelOperator( jImport, "Selected document is already referenced." );
+      ExpandByClicks( jto, 4, 1, 1, 9, "Unknown to click on checkbox. #" );
+      jl = new JLabelOperator( jImport, "Document cannot reference itself." );
+      ExpandByClicks( jto, 7, 1, 1, 9, "Unknown to click on checkbox. #" );
+      jl = new JLabelOperator( jImport, "Selected document is already referenced." );
+
+      // Close
+      JButtonOperator jOk = new JButtonOperator( jImport, "OK" );
+      if( jOk.isEnabled( ) )
+        fail( "OK button enabled after clicking on existing imports." );
+      JButtonOperator jCancel = new JButtonOperator( jImport, "Cancel" );
+      jCancel.push( );
+
+      endTest( );
+    }
+
+    public void DeleteReferencedSchema( )
+    {
+      startTest( );
+
+      // Select first column
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      opList = opMultiView.getColumnListOperator( 1 );
+
+      // Click Delete
+      for( int i = 0; i < 2; i++ )
+      {
+        // Right click on Reference Schemas
+        opList.selectItem( 0 );
+
+        // Right click on Reference Schemas
+        Point pt = opList.getClickPoint( 0 );
+        opList.clickForPopup( pt.x, pt.y );
+
+        JPopupMenuOperator popup = new JPopupMenuOperator( );
+        popup.pushMenu( "Delete" );
+      }
+
+      // Go to source
+      opMultiView.switchToSource( );
+
+      // Check there is no more imports
+      EditorOperator eoXMLSource = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sCompleteCode = eoXMLSource.getText( );
+      String[] asRequiredLines =
+      {
+        "<xs:import schemaLocation=\"" + MODULE_NAME + "/newLoanApplication.xsd\" namespace=\"http://xml.netbeans.org/examples/LoanApplication\"/>",
+        "<xs:import schemaLocation=\"inventory.xsd\" namespace=\"http://manufacturing.org/xsd/inventory\"/>"
+      };
+      for( String sImport : asRequiredLines )
+      {
+        if( -1 != sCompleteCode.indexOf( sImport ) )
+          fail( "Import statement was not removed: \"" + sCompleteCode + "\"" );
+      }
+
+      ImportReferencedSchemaInternal( );
+
+      endTest( );
+    }
+
+    public void FindUsages( )
+    {
+      startTest( );
+
+      // Select schema
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+
+      ProjectRootNode prn = pto.getProjectRootNode(
+          MODULE_NAME + "|" + "Process Files" + "|" + LOAN_SCHEMA_FILE_NAME_ORIGINAL
+        );
+      prn.select( );
+
+      // Refactor rename
+      prn.performPopupAction( "Find Usages" );
 
       endTest( );
     }
