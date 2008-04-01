@@ -45,13 +45,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ResourceMarker;
 import org.netbeans.modules.php.project.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -60,8 +57,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.Utilities;
-
 
 // XXX remove package org.netbeans.modules.php.project.customizer and make this class package private
 /**
@@ -79,9 +74,6 @@ public class PhpProjectProperties {
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     // XXX will be replaced with global ide include path
     public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
-
-    public static final Icon PROJECT_ICON =
-        new ImageIcon(Utilities.loadImage(ResourceMarker.getLocation() + ResourceMarker.PROJECT_ICON));
 
     private final PhpProject project;
     private final ClassPathSupport classPathSupport;
