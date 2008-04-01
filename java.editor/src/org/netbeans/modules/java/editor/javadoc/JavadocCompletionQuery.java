@@ -407,6 +407,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 // broken syntax
                 return;
             }
+        } else if (! (JavadocCompletionUtils.isWhiteSpace(jdts.token())
+                || JavadocCompletionUtils.isLineBreak(jdts.token()) )) {
+            // not java reference
+            return;
         }
         
         if (noPrefix) {
@@ -965,7 +969,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }
         };
         for (TypeElement e : controller.getElementUtilities().getGlobalTypes(acceptor)) {
-            items.add(JavadocCompletionItem.createTypeItem((TypeElement) e, substitutionOffset, false, elements.isDeprecated(e)));
+            items.add(JavadocCompletionItem.createTypeItem(e, substitutionOffset, false, elements.isDeprecated(e)));
         }
     }
 

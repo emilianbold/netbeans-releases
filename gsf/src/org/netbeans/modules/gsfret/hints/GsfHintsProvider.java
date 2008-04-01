@@ -330,6 +330,10 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
                     //meaning: cancelled
                     return;
                 }
+                
+                if (isCanceled()) {
+                    return;
+                }
 
                 descriptions.addAll(desc);
             }

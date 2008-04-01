@@ -41,7 +41,6 @@
 package org.netbeans.modules.xml.schema.completion.util;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,8 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import org.w3c.dom.Attr;
-import org.w3c.dom.NamedNodeMap;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -65,6 +62,8 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext.CompletionType;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRootAttribute;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
@@ -91,7 +90,7 @@ public class CompletionContextImpl extends CompletionContext {
             this.document = support.getDocument();
             this.element = support.getElementChain(offset);
             this.token = support.getPreviousToken(offset);
-            this.docRoot = CompletionUtil.getRoot(element);
+            this.docRoot = CompletionUtil.getDocRoot(document);
             this.lastTypedChar = support.lastTypedChar();
             populateNamespaces();            
         } catch(Exception ex) {
@@ -163,13 +162,13 @@ public class CompletionContextImpl extends CompletionContext {
             return;        
         //Check if the tag has any prefix. If yes, the defaultNamespace
         //is the one with this prefix.
-        String tagName = docRoot.getTagName();
+        String tagName = docRoot.getName();
         String defNS = XMLConstants.XMLNS_ATTRIBUTE;
         String temp = CompletionUtil.getPrefixFromTag(tagName);
         if(temp != null) defNS = defNS+":"+temp; //NOI18N
-        NamedNodeMap attributes = docRoot.getAttributes();
-        for(int index=0; index<attributes.getLength(); index++) {
-            Attr attr = (Attr)attributes.item(index);
+        List<DocRootAttribute> attributes = docRoot.getAttributes();
+        for(int index=0; index<attributes.size(); index++) {
+            DocRootAttribute attr = attributes.get(index);
             String attrName = attr.getName();
             if(CompletionUtil.getLocalNameFromTag(attrName).
                     equals(XSI_SCHEMALOCATION)) {
@@ -317,11 +316,11 @@ public class CompletionContextImpl extends CompletionContext {
         return true;        
     }
        
-    public NamedNodeMap getDocRootAttributes() {
+    public List<DocRootAttribute> getDocRootAttributes() {
         return docRoot.getAttributes();
     }
     
-    public StartTag getDocRoot() {
+    public DocRoot getDocRoot() {
         return docRoot;
     }
     
@@ -381,7 +380,7 @@ public class CompletionContextImpl extends CompletionContext {
                 if(ns == null)
                     qname = new QName(defaultNamespace, lName);
                 else
-                    qname = new QName(ns, lName);                
+                    qname = new QName(ns, lName);
             } else {
                 qname = new QName(declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix), lName, prefix); //NOI18N
             }
@@ -623,12 +622,13 @@ public class CompletionContextImpl extends CompletionContext {
         return existingAttributes;
     }
     
+    
     private int completionAtOffset = -1;
     private FileObject primaryFile;
     private String typedChars;
     private TokenItem token;
     private SyntaxElement element;
-    private StartTag docRoot;
+    private DocRoot docRoot;
     private char lastTypedChar;
     private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
     private List<QName> pathFromRoot;

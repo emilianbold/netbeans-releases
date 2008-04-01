@@ -210,7 +210,7 @@ public class LeftTree extends JTree implements
  
     public int getCenterY(TreePath treePath) {
         Rectangle bounds = getRowBounds(getRowForPath(treePath));
-
+        
         while (bounds == null) {
             treePath = treePath.getParentPath();
             bounds = getRowBounds(getRowForPath(treePath));
