@@ -251,11 +251,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void configureCopyFiles(EditableProperties properties) {
         String copyFilesString = Boolean.FALSE.toString();
-        String copyTargetString = ""; // NOI18N
         Boolean copyFiles = (Boolean) descriptor.getProperty(ConfigureServerPanel.COPY_FILES);
         if (copyFiles != null && copyFiles) {
             copyFilesString = Boolean.TRUE.toString();
-            LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        }
+        String copyTargetString = ""; // NOI18N
+        LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureServerPanel.COPY_TARGET);
+        if (localServer != null && localServer.getSrcRoot().length() > 0) {
             copyTargetString = FileUtil.normalizeFile(new File(localServer.getSrcRoot())).getAbsolutePath();
         }
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
