@@ -357,7 +357,6 @@ public class PHPIndex {
 
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
-                    
                     String funcName = signature.substring(0, firstSemicolon);
 
                     IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
@@ -373,7 +372,7 @@ public class PHPIndex {
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, NameKind kind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
-        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_BASE);
+        search(PHPIndexer.FIELD_CONST, name, kind, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
             if (map.getPersistentUrl() != null && isReachable(context, map.getPersistentUrl())) {
@@ -384,9 +383,10 @@ public class PHPIndex {
                 }
 
                 for (String signature : signatures) {
+                    String constName = signature.substring(0, signature.indexOf(';'));
 
-                    IndexedConstant constant = new IndexedConstant(signature, null,
-                            this, map.getPersistentUrl(), null, 0, ElementKind.GLOBAL);
+                    IndexedConstant constant = new IndexedConstant(constName, null,
+                            this, map.getPersistentUrl(), null, 0);
 
                     constants.add(constant);
                 }
@@ -414,7 +414,7 @@ public class PHPIndex {
                     String className = signature.substring(0, firstSemicolon);
 
                     IndexedConstant constant = new IndexedConstant(className, null,
-                            this, map.getPersistentUrl(), null, 0, ElementKind.CLASS);
+                            this, map.getPersistentUrl(), null, 0);
 
                     constants.add(constant);
                 }
@@ -423,300 +423,6 @@ public class PHPIndex {
         
         return constants;
     }
-
-//    private Set<IndexedElement> getByFqn(String name, String type, NameKind kind,
-//        Set<Index.SearchScope> scope, boolean onlyConstructors, JsParseResult context,
-//        boolean includeMethods, boolean includeProperties) {
-//        //assert in != null && in.length() > 0;
-//        
-//        final Set<SearchResult> result = new HashSet<SearchResult>();
-//
-//        String field = PHPIndexer.FIELD_FQN;
-//        Set<String> terms = TERMS_FQN;
-//        NameKind originalKind = kind;
-//        if (kind == NameKind.EXACT_NAME) {
-//            // I can't do exact searches on methods because the method
-//            // entries include signatures etc. So turn this into a prefix
-//            // search and then compare chopped off signatures with the name
-//            kind = NameKind.PREFIX;
-//        }
-//        
-//        if (kind == NameKind.CASE_INSENSITIVE_PREFIX || kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-//            // TODO - can I do anything about this????
-//            //field = PHPIndexer.FIELD_BASE_LOWER;
-//            //terms = FQN_BASE_LOWER;
-//        }
-//
-//        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-//        String searchUrl = null;
-//        if (context != null) {
-//            try {
-//                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-//            } catch (FileStateInvalidException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-//
-//        Set<String> seenTypes = new HashSet<String>();
-//        seenTypes.add(type);
-//        boolean haveRedirected = false;
-//        boolean inheriting = type == null;
-//        
-//        while (true) {
-//        
-//            String fqn;
-//            if (type != null && type.length() > 0) {
-//                fqn = type + "." + name;
-//            } else {
-//                fqn = name;
-//            }
-//
-//            String lcfqn = fqn.toLowerCase();
-//            search(field, lcfqn, kind, result, scope, terms);
-//
-//            for (SearchResult map : result) {
-//                String[] signatures = map.getValues(field);
-//
-//                if (signatures != null) {
-//                    // Check if this file even applies
-//                    if (context != null) {
-//                        String fileUrl = map.getPersistentUrl();
-//                        if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-//                            boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-//                            if (!isLibrary && !isReachable(context, fileUrl)) {
-//                                continue;
-//                            }
-//                        }
-//                    }
-//
-//                    for (String signature : signatures) {
-//                        // Lucene returns some inexact matches, TODO investigate why this is necessary
-//                        if ((kind == NameKind.PREFIX) && !signature.startsWith(lcfqn)) {
-//                            continue;
-//                        } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, lcfqn, 0, lcfqn.length())) {
-//                            continue;
-//                        } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
-//                            int end = signature.indexOf(';');
-//                            assert end != -1;
-//                            String n = signature.substring(0, end);
-//                            try {
-//                                if (!n.matches(lcfqn)) {
-//                                    continue;
-//                                }
-//                            } catch (Exception e) {
-//                                // Silently ignore regexp failures in the search expression
-//                            }
-//                        } else if (originalKind == NameKind.EXACT_NAME) {
-//                            // Make sure the name matches exactly
-//                            // We know that the prefix is correct from the first part of
-//                            // this if clause, by the signature may have more
-//                            if (((signature.length() > lcfqn.length()) &&
-//                                    (signature.charAt(lcfqn.length()) != ';'))) {
-//                                continue;
-//                            }
-//                        }
-//
-//                        // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-//                        assert map != null;
-//
-//                        String elementName = null;
-//                        int nameEndIdx = signature.indexOf(';');
-//                        assert nameEndIdx != -1;
-//                        elementName = signature.substring(0, nameEndIdx);
-//                        nameEndIdx++;
-//
-//                        String funcIn = null;
-//                        int inEndIdx = signature.indexOf(';', nameEndIdx);
-//                        assert inEndIdx != -1;
-//                        inEndIdx++;
-//
-//                        int startCs = inEndIdx;
-//                        inEndIdx = signature.indexOf(';', startCs);
-//                        assert inEndIdx != -1;
-//                        if (inEndIdx > startCs) {
-//                            // Compute the case sensitive name
-//                            elementName = signature.substring(startCs, inEndIdx);
-//                            if (kind == NameKind.PREFIX && !elementName.startsWith(fqn)) {
-//                                continue;
-//                            } else if (kind == NameKind.EXACT_NAME && !elementName.equals(fqn)) {
-//                                continue;
-//                            }
-//                        }
-//                        inEndIdx++;
-//
-//                        int lastDot = elementName.lastIndexOf('.');
-//                        IndexedElement element = null;
-//                        if (name.length() < lastDot) {
-//                            int nextDot = elementName.indexOf('.', fqn.length());
-//                            if (nextDot != -1) {
-//                                int flags = IndexedElement.decode(signature, inEndIdx, 0);
-//                                ElementKind k = ElementKind.PACKAGE;
-//                                // If there are no more dots after this one, it's a class, not a package
-//                                int nextNextDot = elementName.indexOf('.', nextDot+1);
-//                                if (nextNextDot == -1) {
-//                                    k = ElementKind.CLASS;
-//                                }
-//                                if (type != null && type.length() > 0) {
-//                                    String pkg = elementName.substring(type.length()+1, nextDot);
-//                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
-//                                } else {
-//                                    String pkg = elementName.substring(0, nextDot);
-//                                    element = new IndexedPackage(pkg, null, this, map.getPersistentUrl(), signature, flags, k);
-//                                }
-//                            } else {
-//                                funcIn = elementName.substring(0, lastDot);
-//                                elementName = elementName.substring(lastDot+1);
-//                            }
-//                        } else if (lastDot != -1) {
-//                            funcIn = elementName.substring(0, lastDot);
-//                            elementName = elementName.substring(lastDot+1);
-//                        }
-//                        if (element == null) {
-//                            element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-//                        }
-//                        boolean isFunction = element instanceof IndexedFunction;
-//                        if (isFunction && !includeMethods) {
-//                            continue;
-//                        } else if (!isFunction && !includeProperties) {
-//                            continue;
-//                        }
-//                        if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
-//                            continue;
-//                        }
-//                        if (!haveRedirected) {
-//                            element.setSmart(true);
-//                        }
-//                        if (!inheriting) {
-//                            element.setInherited(false);
-//                        }
-//                        elements.add(element);
-//                    }
-//                }
-//            }
-//            
-//            if (type == null || "Object".equals(type)) { // NOI18N
-//                break;
-//            }
-//            type = getExtends(type, scope);
-//            if (type == null) {
-//                type = "Object"; // NOI18N
-//                haveRedirected = true;
-//            }
-//            // Prevent circularity in types
-//            if (seenTypes.contains(type)) {
-//                break;
-//            } else {
-//                seenTypes.add(type);
-//            }
-//            inheriting = true;
-//        }
-//        
-//        return elements;
-//    }
-    /** Try to find the type of a symbol and return it */
-//    public String getType(String symbol) {
-//        //assert in != null && in.length() > 0;
-//
-//        final Set<SearchResult> result = new HashSet<SearchResult>();
-//
-//        String field = PHPIndexer.FIELD_FQN;
-//        Set<String> terms = TERMS_BASE;
-//        String lcsymbol = symbol.toLowerCase();
-//        search(field, lcsymbol, NameKind.PREFIX, result, ALL_SCOPE, terms);
-//
-////        final Set<IndexedElement> elements = new HashSet<IndexedElement>();
-////        String searchUrl = null;
-////        if (context != null) {
-////            try {
-////                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
-////            } catch (FileStateInvalidException ex) {
-////                Exceptions.printStackTrace(ex);
-////            }
-////        }
-//
-//        for (SearchResult map : result) {
-//            String[] signatures = map.getValues(field);
-//
-//            if (signatures != null) {
-////                // Check if this file even applies
-////                if (context != null) {
-////                    String fileUrl = map.getPersistentUrl();
-////                    if (searchUrl == null || !searchUrl.equals(fileUrl)) {
-////                        boolean isLibrary = fileUrl.indexOf("jsstubs") != -1; // TODO - better algorithm
-////                        if (!isLibrary && !isReachable(context, fileUrl)) {
-////                            continue;
-////                        }
-////                    }
-////                }
-//
-//                for (String signature : signatures) {
-//                    // Lucene returns some inexact matches, TODO investigate why this is necessary
-//                    // Make sure the name matches exactly
-//                    // We know that the prefix is correct from the first part of
-//                    // this if clause, by the signature may have more
-//                    if (((signature.length() > lcsymbol.length()) &&
-//                            (signature.charAt(lcsymbol.length()) != ';'))) {
-//                        continue;
-//                    }
-//
-//                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-//                    assert map != null;
-//
-//                    String elementName = null;
-//                    int nameEndIdx = signature.indexOf(';');
-//                    assert nameEndIdx != -1;
-//                    elementName = signature.substring(0, nameEndIdx);
-//                    if (!elementName.startsWith(symbol)) {
-//                        continue;
-//                    }
-//                    nameEndIdx++;
-//
-//                    String funcIn = null;
-//                    int inEndIdx = signature.indexOf(';', nameEndIdx);
-//                    assert inEndIdx != -1;
-//                    if (inEndIdx > nameEndIdx + 1) {
-//                        funcIn = signature.substring(nameEndIdx, inEndIdx);
-//                    }
-//                    inEndIdx++;
-//
-//                    int startCs = inEndIdx;
-//                    inEndIdx = signature.indexOf(';', startCs);
-//                    assert inEndIdx != -1;
-////                    if (inEndIdx > startCs) {
-////                        // Compute the case sensitive name
-////                        elementName = signature.substring(startCs, inEndIdx);
-////                    }
-//                    inEndIdx++;
-//
-//                    // Filter out methods on other classes
-////                    if (!includeMethods && (funcIn != null)) {
-////                        continue;
-////                    } else if (in != null && (funcIn == null || !funcIn.equals(in))) {
-////                        continue;
-////                    }
-//
-//                    IndexedElement element = IndexedElement.create(signature, map.getPersistentUrl(), elementName, funcIn, inEndIdx, this, false);
-////                    boolean isFunction = element instanceof IndexedFunction;
-////                    if (isFunction && !includeMethods) {
-////                        continue;
-////                    } else if (!isFunction && !includeProperties) {
-////                        continue;
-////                    }
-////                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
-////                        continue;
-////                    }
-////                    elements.add(element);
-//
-//                    String type = element.getType();
-//                    if (type != null) {
-//                        return type;
-//                    }
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
 
     /** 
      * Decide whether the given url is included from the current compilation

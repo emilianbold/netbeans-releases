@@ -43,23 +43,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Indexer;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -73,9 +65,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,7 +108,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
-    static final String FIELD_CONST = "const"; //NOI18N
+    static final String FIELD_CONST = "constant"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
         if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
@@ -165,7 +154,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.1"; // NOI18N
+        return "0.1.4"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -425,9 +414,16 @@ public class PHPIndexer implements Indexer {
                             Expression paramExpr = invocation.getParameters().get(0);
 
                             if (paramExpr instanceof Scalar) {
-                                String defineVal = PHPIndex.dequote(((Scalar) paramExpr).getStringValue());
+                                String constName = ((Scalar) paramExpr).getStringValue();
+                                char firstChar = constName.charAt(0);
+                                
+                                // check if const name is really quoted
+                                if (firstChar == constName.charAt(constName.length() - 1) 
+                                        && firstChar == '\'' || firstChar == '\"') {
+                                    String defineVal = PHPIndex.dequote(constName);
 
-                                document.addPair(FIELD_CONST, defineVal, false);
+                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset(), false);
+                                }
                             }
                         }
                     }
@@ -458,6 +454,7 @@ public class PHPIndexer implements Indexer {
                 }
             }
             signature.append(";");
+            signature.append(functionDeclaration.getStartOffset());
 
             document.addPair(FIELD_BASE, signature.toString(), true);
         }
