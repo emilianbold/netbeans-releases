@@ -86,7 +86,7 @@ public class TypeCast extends AbstractTypeCast {
     }
     
     public TypeCast(XPathCast xPathCast) {
-        this(xPathCast.getPath(), xPathCast.getCastTo());
+        this(xPathCast.getPathExpression(), xPathCast.getCastTo());
     }
     
     public TypeCast(XPathExpression path, GlobalType castTo) {
@@ -100,7 +100,7 @@ public class TypeCast extends AbstractTypeCast {
         return ((XPathSchemaContextHolder)mXPathExpression).getSchemaContext();
     }
 
-    public XPathExpression getXPathExpression() {
+    public XPathExpression getPathExpression() {
         return mXPathExpression;
     }
     
@@ -180,4 +180,5 @@ public class TypeCast extends AbstractTypeCast {
         //
         return result;
     }
+
 } 
