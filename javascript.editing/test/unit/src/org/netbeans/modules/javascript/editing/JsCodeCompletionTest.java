@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -58,6 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,8 +73,8 @@ public class JsCodeCompletionTest extends JsTestBase {
     public JsCodeCompletionTest(String testName) {
         super(testName);
     }
-
-    private String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals) {
+    
+    private String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals, boolean includeModifiers) {
         StringBuilder sb = new StringBuilder();
         sb.append("Results for " + caretLine + " with queryType=" + type + " and nameKind=" + kind);
         sb.append("\n");
@@ -132,6 +134,15 @@ public class JsCodeCompletionTest extends JsTestBase {
                     sb.append(" ");
                 }
             }
+            
+            if (proposal.getModifiers().size() > 0) {
+                List<String> modifiers = new ArrayList<String>();
+                for (Modifier mod : proposal.getModifiers()) {
+                    modifiers.add(mod.name());
+                }
+                Collections.sort(modifiers);
+                sb.append(modifiers);
+            }
 
             sb.append(" ");
             
@@ -174,7 +185,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         return sb.toString();
     }
     
-    public void checkCompletion(String file, String caretLine) throws Exception {
+    public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
         // TODO call TestCompilationInfo.setCaretOffset!        
         QueryType type = QueryType.COMPLETION;
         boolean caseSensitive = true;
@@ -200,8 +211,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
         assertNotNull(text);
-        assertNotNull(AstUtilities.getParseResult(ci));
-        
+
         int caretOffset = -1;
         if (caretLine != null) {
             int caretDelta = caretLine.indexOf("^");
@@ -211,8 +221,10 @@ public class JsCodeCompletionTest extends JsTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
+            ((TestCompilationInfo)ci).setCaretOffset(caretOffset);
         }
 
+        assertNotNull(AstUtilities.getParseResult(ci));
         
         JsCodeCompletion cc = new JsCodeCompletion();
         
@@ -293,7 +305,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         JsIndex.setClusterUrl("file:/bogus"); // No translation
         List<CompletionProposal> proposals = cc.complete(ci, caretOffset, prefix, kind, type, caseSensitive, formatter);
         
-        String described = describe(caretLine, kind, type, proposals);
+        String described = describe(caretLine, kind, type, proposals, includeModifiers);
         assertDescriptionMatches(file, described, true, ".completion");
     }
     
@@ -323,7 +335,6 @@ public class JsCodeCompletionTest extends JsTestBase {
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
         assertNotNull(text);
-        assertNotNull(AstUtilities.getParseResult(ci));
         
         int caretOffset = -1;
         if (caretLine != null) {
@@ -334,8 +345,11 @@ public class JsCodeCompletionTest extends JsTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
+            ((TestCompilationInfo)ci).setCaretOffset(caretOffset);
         }
         
+        assertNotNull(AstUtilities.getParseResult(ci));
+
         JsCodeCompletion cc = new JsCodeCompletion();
         boolean upToOffset = type == QueryType.COMPLETION;
         String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
@@ -548,73 +562,80 @@ public class JsCodeCompletionTest extends JsTestBase {
 //    
 
     public void testLocalCompletion1() throws Exception {
-        checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo1");
+        checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo1", false);
     }
 
     public void testLocalCompletion2() throws Exception {
-        checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo2");
+        checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo2", false);
     }
     
     public void test129036() throws Exception {
-        checkCompletion("testfiles/completion/lib/test129036.js", "my^ //Foo");
+        checkCompletion("testfiles/completion/lib/test129036.js", "my^ //Foo", false);
     }
     
     public void testCompletionStringCompletion1() throws Exception {
-        checkCompletion("testfiles/completion/lib/test1.js", "Hell^o World");
+        checkCompletion("testfiles/completion/lib/test1.js", "Hell^o World", false);
     }
 
     public void testCompletionStringCompletion2() throws Exception {
-        checkCompletion("testfiles/completion/lib/test1.js", "\"f\\^oo\"");
+        checkCompletion("testfiles/completion/lib/test1.js", "\"f\\^oo\"", false);
     }
     
     public void testCompletionRegexpCompletion1() throws Exception {
-        checkCompletion("testfiles/completion/lib/test1.js", "/re^g/");
+        checkCompletion("testfiles/completion/lib/test1.js", "/re^g/", false);
     }
 
     public void testCompletionRegexpCompletion2() throws Exception {
-        checkCompletion("testfiles/completion/lib/test1.js", "/b\\^ar/");
+        checkCompletion("testfiles/completion/lib/test1.js", "/b\\^ar/", false);
     }
 
     public void testExpression1() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions.js", "^escape");
+        checkCompletion("testfiles/completion/lib/expressions.js", "^escape", false);
     }
 
     public void testExpressions2() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions.js", "^toE");
+        checkCompletion("testfiles/completion/lib/expressions.js", "^toE", false);
     }
 
     public void testExpressions2b() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions2.js", "ownerDocument.^");
+        checkCompletion("testfiles/completion/lib/expressions2.js", "ownerDocument.^", false);
     }
 
     public void testExpressions3() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions3.js", "specified.^");
+        checkCompletion("testfiles/completion/lib/expressions3.js", "specified.^", false);
     }
 
     public void testExpressions4() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions4.js", "document.b^");
+        checkCompletion("testfiles/completion/lib/expressions4.js", "document.b^", false);
     }
 
     public void testExpressions5() throws Exception {
-        checkCompletion("testfiles/completion/lib/expressions5.js", "dur.^t");
+        checkCompletion("testfiles/completion/lib/expressions5.js", "dur.^t", false);
     }
 
     public void testComments1() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.js", "@^param");
+        checkCompletion("testfiles/completion/lib/comments.js", "@^param", false);
     }
 
     public void testComments2() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.js", "@p^aram");
+        checkCompletion("testfiles/completion/lib/comments.js", "@p^aram", false);
     }
 
     public void testComments3() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.js", "^@param");
+        checkCompletion("testfiles/completion/lib/comments.js", "^@param", false);
     }
 
     public void testComments4() throws Exception {
-        checkCompletion("testfiles/completion/lib/comments.js", "T^his");
+        checkCompletion("testfiles/completion/lib/comments.js", "T^his", false);
     }
-    
+
+    public void testNewCompletionEol() throws Exception {
+        checkCompletion("testfiles/completion/lib/newcompletion.js", "new ^", false);
+    }
+
+    public void testYahoo() throws Exception {
+        checkCompletion("testfiles/completion/lib/yahoo.js", "e^ // complete on editor members etc", true);
+    }
 //
 //    public void testCompletion6() throws Exception {
 //        checkCompletion("testfiles/completion/lib/test2.js", "class My^Test");
@@ -628,7 +649,7 @@ public class JsCodeCompletionTest extends JsTestBase {
 // (and the test infrastructure refuses to update the index for test files themselves)
 //    public void testCall1() throws Exception {
 //        //checkComputeMethodCall("testfiles/calls/call1.js", "foo2(^x);", "Foo#bar", "name", true);
-//        checkComputeMethodCall("testfiles/calls/call1.js", "x.addEventListener(type, ^listener, useCapture)", "Foo#bar", "name", true);
+//        checkComputeMethodCall("testfiles/calls/call1.js", "x.addEventListener(type, ^listener, useCapture)", "Foo#bar", "listener", true);
 //    }
 //
 //    public void testCall2() throws Exception {
