@@ -83,7 +83,8 @@ import org.netbeans.modules.soa.ui.util.DurationUtil;
 public final class Validator extends BpelValidator implements ValidationVisitor {
 
   @Override
-  public void visit(Copy copy) {
+  public void visit(Copy copy)
+  {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
@@ -110,6 +111,24 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    }
+  }
+
+  // # 131658
+  @Override
+  public void visit(To to)
+  {
+    String value = to.getContent();
+//out();
+//out("to: " + value);
+//out();
+    if (value == null) {
+      return;
+    }
+    value = value.trim();
+
+    if ( !value.startsWith("$")) { // NOI18N
+      addError("FIX_To_Value", to, value); // NOI18N
     }
   }
 
