@@ -41,6 +41,9 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -53,6 +56,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
 
     public void testCreateProject() throws Exception {
         registerLayer();
+        
         File projectDir = new File(getWorkDir(), "RubyApp");
         String name = "script.rb";
         RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
@@ -66,5 +70,9 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
         assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
 
         assertNotNull("has README", prjDirFO.getFileObject("README"));
+        Project p = ProjectManager.getDefault().findProject(prjDirFO);
+        assertNotNull("has project", p);
+        List<?> targets = RakeTargetsAction.getRakeTargets(p);
+        assertSame("correct Rakefile", 10, targets.size());
     }
 }

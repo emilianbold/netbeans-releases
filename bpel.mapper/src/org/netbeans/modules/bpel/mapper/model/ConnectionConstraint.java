@@ -18,177 +18,158 @@
  */
 package org.netbeans.modules.bpel.mapper.model;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.model.api.support.Roles;
-import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
-import org.netbeans.modules.soa.mappercore.model.GraphSubset;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
-import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
-import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentGroup;
-import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
-import org.netbeans.modules.bpel.mapper.palette.Palette;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
- * 
+ *
  * @author Vitaly Bychkov
  * @version 1.0
  */
 public interface ConnectionConstraint {
     boolean canConnect(TreePath treePath, SourcePin source, 
             TargetPin target, TreePath oldTreePath, Link oldLink);
-
- 
+    
     class Access {
         private Access() {
         }
-
-        public static ConnectionConstraint getGeneralConstraint(BpelMapperModel model) {
+        
+        public static ConnectionConstraint getGeneralConstraint(
+                BpelMapperModel model) 
+        {
             return new GeneralConstraint(model);
         }
 
         public static ConnectionConstraint getPlConstraint() {
             return new PlConstraint();
         }
-    
     }
 
-
     class GeneralConstraint implements ConnectionConstraint {
-        
-        private BpelMapperModel myModel;
 
-        public GeneralConstraint(BpelMapperModel model) {
+        private BpelMapperModel myModel;
+        
+        private GeneralConstraint(BpelMapperModel model) {
             myModel = model;
         }
 
-        public boolean canConnect(TreePath treePath, SourcePin source, 
-                    TargetPin target, TreePath oldTreePath, Link oldLink) 
+        public boolean canConnect(TreePath treePath, SourcePin source,
+                                  TargetPin target, TreePath oldTreePath,
+                                  Link oldLink) 
         {
-
+            assert myModel != null;
             MapperSwingTreeModel rModel = myModel.getRightTreeModel();
             MapperSwingTreeModel lModel = myModel.getLeftTreeModel();
-
             if (rModel == null || lModel == null) {
                 return false;
             }
+            
 
-            if (oldTreePath != null && !oldTreePath.equals(treePath)) {
-                // Reconnect
-                // link to another graph is not allowed for a while
-                if (!(oldLink.getSource() instanceof TreeSourcePin)) {
-                    return false;
-                }
+        if (oldTreePath != null && !oldTreePath.equals(treePath)) {
+            // Reconnect
+            // link to another graph is not allowed for a while
+            if (!(oldLink.getSource() instanceof TreeSourcePin)) {
+                return false;
             }
-            Boolean result = true;
-            SourcePin oldSource = null;
-            TargetPin oldTarget = null;
-             if (oldLink != null) {
-     //          oldGraph = oldLink.getGraph();
-                oldSource = oldLink.getSource();
-                oldTarget = oldLink.getTarget();
-     //           oldLink.disconnect();
-                oldLink.setSource(null);
-                oldLink.setTarget(null);
-            }
-           
-            if (target instanceof Graph) {
-                if (!rModel.isConnectable(treePath)) {
-                    result = false;
-                }
-                if (((Graph) target).hasOutgoingLinks()) {
-                    // The target tree node already has a connected link
-                    result = false;
-                }
-           
+        }
+        
+        Boolean result = true;
+        SourcePin oldSource = null;
+        TargetPin oldTarget = null;
+         if (oldLink != null) {
+            oldSource = oldLink.getSource();
+            oldTarget = oldLink.getTarget();
+            oldLink.setSource(null);
+            oldLink.setTarget(null);
+        }
+       
+        if (target instanceof Graph) {
+            if (!rModel.isConnectable(treePath)) {
+                result = false;
             }
             //
-            if (source instanceof TreeSourcePin) {
-                TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
-                if (!lModel.isConnectable(sourceTreePath)) {
-                    result = false;
-                }
+            if (((Graph) target).hasOutgoingLinks()) {
+                // The target tree node already has a connected link
+                result = false;
+            }
+       
+        }
+        //
+        if (source instanceof TreeSourcePin) {
+            TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
+            if (!lModel.isConnectable(sourceTreePath)) {
+                result = false;
+            }
+        }
+        //
+        // Check there is only one outgoing link
+        if (source instanceof Vertex) {
+            Link outgoingLink = ((Vertex) source).getOutgoingLink();
+            if (outgoingLink != null) {
+                result = false;
+            }
+        }
+        
+        //
+        if (target instanceof VertexItem) {
+            // Check the item doesn't have incoming link yet
+            Link ingoingLink = ((VertexItem) target).getIngoingLink();
+            if (ingoingLink != null) {
+                result = false;
             }
             //
-            // Check there is only one outgoing link
+            // Check connection 2 vertexes 
             if (source instanceof Vertex) {
-                Link outgoingLink = ((Vertex) source).getOutgoingLink();
-                if (outgoingLink != null) {
-                    result = false;
-                }
-            }
-            //
-            if (target instanceof VertexItem) {
-                // Check the item doesn't have incoming link yet
-                Link ingoingLink = ((VertexItem) target).getIngoingLink();
-                if (ingoingLink != null) {
-                    result = false;
-                }
                 //
-                // Check connection 2 vertexes 
-                if (source instanceof Vertex) {
-                    //
-                    // Trying connect the vertex to itself isn't allowed
-                    Vertex targetVertex = ((VertexItem) target).getVertex();
-                    if (targetVertex == source) {
-                        result = false;
-                    }
-                    // Check cyclic dependences
-                    if (BpelMapperUtils.areVertexDependent((Vertex) source, targetVertex)) {
-                        result = false;
-                    }
+                // Trying connect the vertex to itself isn't allowed
+                Vertex targetVertex = ((VertexItem) target).getVertex();
+                if (targetVertex == source) {
+                    result = false;
+                }
+                // Check cyclic dependences
+                if (BpelMapperUtils.areVertexDependent((Vertex) source, targetVertex)) {
+                    result = false;
                 }
             }
-            //
-            if (oldLink != null) {
-                oldLink.setSource(oldSource);
-                oldLink.setTarget(oldTarget);
-            }
-            return result;
+        }
+        //
+        if (oldLink != null) {
+            oldLink.setSource(oldSource);
+            oldLink.setTarget(oldTarget);
+        }
+        return result;
         }
     }
-
-
+    
     class PlConstraint implements ConnectionConstraint {
-        public boolean canConnect(TreePath treePath, SourcePin source, 
-                    TargetPin target, TreePath oldTreePath, Link oldLink) 
+
+        public boolean canConnect(TreePath treePath, SourcePin source,
+                                  TargetPin target, TreePath oldTreePath,
+                                  Link oldLink) 
         {
-            
-            if (source instanceof TreeSourcePin && target instanceof VertexItem) {
-                TreePath tPath = ((TreeSourcePin) source).getTreePath();
-                Object node = tPath.getLastPathComponent();
-                if (node instanceof MapperTreeNode) {
-                    Object dataObj = ((MapperTreeNode)node).getDataObject();
-                    if (dataObj instanceof PartnerLink || dataObj instanceof Roles ) {
-                        return false;
+            if (target instanceof VertexItem) {
+                if (source instanceof TreeSourcePin) {
+                    TreePath tPath = ((TreeSourcePin)source).getTreePath();
+                    Object node = tPath.getLastPathComponent();
+                    if (node instanceof MapperTreeNode) {
+                        Object dataObj = ((MapperTreeNode)node).getDataObject();
+                        if (dataObj instanceof PartnerLink || dataObj instanceof Roles) {
+                            return false;
+                        }
                     }
                 }
             }
             return true;
         }
     }
-
 }
