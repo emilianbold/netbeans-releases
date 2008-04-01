@@ -66,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -209,6 +210,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * @see FileType
      */
     public FileType getFileType(FileObject file) {
+        Parameters.notNull("file", file);
+
         FileObject path = getInternalPath();
         if (path.equals(file) || FileUtil.isParentOf(path, file)) {
             return FileType.INTERNAL;
@@ -219,7 +222,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             }
         }
         path = getSrcPath();
-        if (path.equals(file) || FileUtil.isParentOf(path, file)) {
+        if (path != null
+                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
             return FileType.SOURCE;
         }
         return FileType.UNKNOWN;
@@ -235,18 +239,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
 
     /**
-     * Resolve absolute path for the given file name. The order is the current directory then PHP include path.
-     * @param currentDirectory the current directory of the script in which the PHP <code>include()</code>
-     *                         or <code>require()</code> function is called.
-     * @param fileName a file name.
+     * Resolve absolute path for the given file name. The order is the given directory then PHP include path.
+     * @param directory the directory to which the PHP <code>include()</code> or <code>require()</code> functions
+     *                  could be resolved. Typically the directory containing the given script.
+     * @param fileName a file name or a relative path delimited by '/'.
      * @return resolved file path or <code>null</code> if the given file is not found.
      */
-    public FileObject resolveFile(FileObject currentDirectory, String fileName) {
-        assert currentDirectory != null;
-        assert currentDirectory.isFolder();
-        assert fileName != null;
+    public FileObject resolveFile(FileObject directory, String fileName) {
+        Parameters.notNull("directory", directory);
+        Parameters.notNull("fileName", fileName);
 
-        FileObject resolved = currentDirectory.getFileObject(fileName);
+        if (!directory.isFolder()) {
+            throw new IllegalArgumentException("valid directory needed");
+        }
+
+        FileObject resolved = directory.getFileObject(fileName);
         if (resolved != null) {
             return resolved;
         }
