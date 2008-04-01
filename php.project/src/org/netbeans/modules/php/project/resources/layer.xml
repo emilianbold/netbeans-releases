@@ -61,16 +61,16 @@ made subject to such option by the copyright holder.
 
             </folder>
         </folder>
-        <!--folder name="Scripting">
+        <folder name="Scripting">
             <attr name="position" intvalue="20"/>
 
-            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHP.php">
+            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/EmptyPHPFileDescription.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
             </file>
-        </folder-->
+        </folder>
 
     </folder>
 
