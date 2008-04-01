@@ -193,6 +193,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         } else {
             renderingHints = null;
         }
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
