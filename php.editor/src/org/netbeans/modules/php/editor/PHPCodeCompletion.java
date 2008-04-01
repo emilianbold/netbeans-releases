@@ -93,7 +93,7 @@ import org.openide.util.Exceptions;
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCodeCompletion implements Completable {
-    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING};
+    private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING, UNKNOWN};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -113,7 +113,9 @@ public class PHPCodeCompletion implements Completable {
             TokenHierarchy th = TokenHierarchy.get(info.getDocument());
             TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
             tokenSequence.move(caretOffset);
-            tokenSequence.moveNext();
+            if (!tokenSequence.moveNext()){
+                return CompletionContext.UNKNOWN;
+            }
             
             switch (tokenSequence.token().id()){
                 case T_INLINE_HTML:
