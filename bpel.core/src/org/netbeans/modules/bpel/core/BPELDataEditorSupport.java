@@ -128,7 +128,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
             }
         }
         catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             // assert false;
         }
     }
