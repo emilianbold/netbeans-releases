@@ -10,6 +10,7 @@ else
 fi
 
 hg --config extensions.purge= clean --all || exit
+hg -R contrib --config extensions.purge= clean --all || exit
 
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/../../../../NBstore
