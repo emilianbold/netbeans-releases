@@ -87,19 +87,6 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
-        wizard.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
-        wizard.putProperty(ConfigureProjectPanel.SET_AS_MAIN, null);
-        wizard.putProperty(ConfigureProjectPanel.WWW_FOLDER, null);
-        wizard.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
-        wizard.putProperty(ConfigureProjectPanel.URL, null);
-        wizard.putProperty(ConfigureProjectPanel.CREATE_INDEX_FILE, null);
-        wizard.putProperty(ConfigureProjectPanel.INDEX_FILE, null);
-        wizard.putProperty(ConfigureProjectPanel.ENCODING, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_FILES, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_TARGET, null);
-        wizard.putProperty(ConfigureServerPanel.COPY_TARGETS, null);
-
         panels = null;
         descriptor = null;
     }

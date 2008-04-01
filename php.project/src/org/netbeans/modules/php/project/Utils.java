@@ -40,14 +40,19 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.rt.providers.impl.absent.AbsentServerProvider;
 import org.netbeans.modules.php.rt.spi.providers.Host;
 import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
 import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
 import org.netbeans.modules.php.rt.utils.ServersUtils;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -68,23 +73,27 @@ public final class Utils {
     }
 
     public static WebServerProvider getProvider(PhpProject project) {
-        // XXX remove all this provider stuff
-        String provider = null;
-        if (provider == null) {
-            // TODO realize fake provider that will return commands but will 
-            // suggest to setup real server
-            return new AbsentServerProvider();
-            //return null;
-        }
-        WebServerProvider[] providers = WebServerProvider.ServerFactory.getProviders();
-        for (WebServerProvider prov : providers) {
-            if (prov.getClass().getCanonicalName().equals(provider)) {
-                return prov;
+        PropertyEvaluator evaluator = project.getEvaluator();
+        String url = evaluator.getProperty(PhpProjectProperties.URL);
+        String domain = null;
+        String baseDir = null;      
+        String port = null;        
+        if (url != null) {
+            try {
+                URL u = new URL(url);
+                domain = u.getHost();
+                baseDir = u.getPath();
+                int portNumber = u.getPort();
+                port = (portNumber != -1) ? String.valueOf(portNumber) : null;
+            } catch(MalformedURLException mex) {
+                Exceptions.printStackTrace(mex);
             }
         }
-        return null;
+        String docRoot = evaluator.getProperty(PhpProjectProperties.COPY_SRC_TARGET);        
+        return (domain != null && baseDir != null ) ? WebServerProvider.ServerFactory.getDefaultProvider(domain, baseDir, port, docRoot) : null;
     }
-
+    
+    
     public static Host findHostById(String hostId) {
         return ServersUtils.findHostById(hostId);
     }
