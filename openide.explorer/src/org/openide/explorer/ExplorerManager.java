@@ -234,13 +234,8 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     try {
                         checkUnderRoot(value[i], "EXC_NodeSelectionCannotContainNodes");
                     } catch (IllegalArgumentException e) {
-                        boolean dontFailGracefully = false;
-                        assert dontFailGracefully = true;
-                        if (dontFailGracefully) {
-                            throw e;
-                        } else {
-                            return false;
-                        }
+                        assert false : e;
+                        return false;
                     }
                 }
 
