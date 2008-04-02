@@ -109,7 +109,7 @@ public class HgConfigFiles {
      *
      * @return the HgConfiles instance
      */
-    public static HgConfigFiles getInstance() {
+    public static HgConfigFiles getSysInstance() {
         if (instance==null) {
             instance = new HgConfigFiles();
         }
@@ -171,8 +171,16 @@ public class HgConfigFiles {
         setProperty(HG_UI_SECTION, HG_USERNAME, value); 
     }
 
-    public String getUserName() {
+    public String getSysUserName() {
         return getUserName(true);
+    }
+
+    public String getSysPushPath() {
+        return getDefaultPush(true);
+    }
+
+    public String getSysPullPath() {
+        return getDefaultPull(true);
     }
 
     public Properties getProperties(String section) {
