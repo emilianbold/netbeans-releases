@@ -22,7 +22,10 @@ Microsystems, Inc. All Rights Reserved.
 <project name="Mac Installer" basedir="." default="build-all-dmg">
     
     <import file="${basedir}/build.pro"/>
-    <property file="${basedir}/Bundle.properties"/>     
+    <property file="${basedir}/Bundle.properties"/>
+    <condition property="ml.suffix" value="-ml" else="">
+        <istrue value="${mlbuild}"/>
+    </condition>      
             
     <target name="build-glassfish-pkg" >
         <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
@@ -138,7 +141,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml_postfix}.zip"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}${ml.suffix}.zip"/>
         </exec>      
     </target>
     

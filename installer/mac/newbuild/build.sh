@@ -29,7 +29,7 @@ if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ] || [ -z "$4" ]; then
     exit 1
 fi
 
-zipmodulclustersdir=$1
+work_dir=$1
 prefix=$2
 buildnumber=$3
 ml_build=$4
@@ -58,11 +58,13 @@ basename=`dirname "$0"`
 cd "$basename"
 chmod -R a+x *.sh
 
-commonname=$zipmodulclustersdir/$prefix-$buildnumber 
-
+commonname=$work_dir/zip/moduleclusters/$prefix-$buildnumber 
 ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='false' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options
 
+rm -rf "$basename"/dist_en
+mv -f "$basename"/dist "$basename"/dist_en
+
 if [ 1 -eq $ml_build ] ; then
-mv -f dist dist_en
-ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options    
+commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
+ant -f $basename/build.xml build-all-dmg -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST $instrumentation_options    
 fi
