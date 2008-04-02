@@ -377,14 +377,14 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int endOffset,
                         CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    return new ChangeParametersUI(selectedElement, info);
+                    return ChangeParametersUI.create(selectedElement, info);
                 }
             };
         } else {
             task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
-                    return new ChangeParametersUI(handles.iterator().next(), cinfo);                
+                    return ChangeParametersUI.create(handles.iterator().next(), cinfo);                
                 }
             };
         }
