@@ -485,8 +485,8 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                                         addElement(entry.getValue());
                                     }
 
-                                    updateButtons();
                                     builder = new EntityResourceModelBuilder(project, entities.values());
+                                    updateButtons();
                                 }
                             });
                         }
