@@ -75,9 +75,6 @@ public final class CheckForUpdatesAction extends CallableSystemAction {
                 if (pluginManagerUI != null) {
                     pluginManagerUI.updateUnitsChanged();
                 }
-                AutoupdateCheckScheduler.notifyAvailable (units, OperationType.UPDATE);
-            } else {
-                // notify available plugins/updates in the future
             }
         }
     }

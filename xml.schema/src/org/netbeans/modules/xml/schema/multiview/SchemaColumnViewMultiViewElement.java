@@ -408,7 +408,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
-        ExplorerUtils.activateActions(manager, false);
+        if(manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+        }
     }
 
     @Override
@@ -421,8 +423,10 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         super.componentClosed();
         if(categoryPane!= null) categoryPane.close();
         if(toolbar!= null) toolbar.removeAll();
-        //manager.setRootContext(null);
-        manager = null;
+        if(manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+            manager = null;
+        }
         toolbar = null;
         validateAction = null;
         schemaModel = null;

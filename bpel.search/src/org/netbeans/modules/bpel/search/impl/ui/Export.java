@@ -50,9 +50,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -75,8 +73,8 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  */
 public class Export extends Dialog {
 
-  public void show(List<List<String>> descriptions, String title) {
-    myDescriptions = descriptions;
+  public void show(List<List<String>> items, String title) {
+    myItems = items;
     myTitle = title;
     show();
   }
@@ -125,8 +123,8 @@ public class Export extends Dialog {
     c.weighty = 1.0;
     c.gridwidth = 2;
     c.fill = GridBagConstraints.BOTH;
-    myTextArea = new JTextArea(TEXT_HEIGHT, 1);
-    panel.add(new JScrollPane(myTextArea), c);
+    myDescription = new JTextArea(TEXT_HEIGHT, 1);
+    panel.add(new JScrollPane(myDescription), c);
 
     // []
     c.gridy++;
@@ -194,9 +192,7 @@ public class Export extends Dialog {
   }
 
   private void exportFile(File file) {
-    List<String> text = getText();
-
-    // create html
+    // title
     StringBuffer html = new StringBuffer();
     html.append("<html>" + LS); // NOI18N
     
@@ -209,19 +205,18 @@ public class Export extends Dialog {
     if (myTitle != null) {
       html.append(myTitle + LS + LS);
     }
-    if (text.size() > 0) {
-      html.append("<p><b>" + // NOI18N
-        i18n("LBL_Description") + "</b> "); // NOI18N
-    
-      for (String item : text) {
-        html.append(item + LS);
-      }
-    }
+    // description
+    html.append("<p><b>" + i18n("LBL_Description") + "</b>" + LS); // NOI18N
+    html.append("<pre>" + LS); // NOI18N
+    html.append(myDescription.getText() + LS);
+    html.append("</pre>" + LS); // NOI18N
+
+    // items
     int count = 1;
     html.append(LS + "<p><table border=1>" + LS); // NOI18N
 
-    for (List<String> description : myDescriptions) {
-      if (description == null) {
+    for (List<String> item : myItems) {
+      if (item == null) {
         html.append("</table>" + LS); // NOI18N
         html.append(LS + "<p><table border=1>" + LS); // NOI18N
         count = 1;
@@ -229,10 +224,8 @@ public class Export extends Dialog {
       }
       html.append("<tr><td>" + (count++) + "</td>"); // NOI18N
       
-      for (String item : description) {
-        html.append(" <td>"); // NOI18N
-        html.append(processBrackets(item));
-        html.append("</td>"); // NOI18N
+      for (String value : item) {
+        html.append(" <td>" + processBrackets(value) + "</td>"); // NOI18N
       }
       html.append("</tr>" + LS); // NOI18N
     }
@@ -262,16 +255,6 @@ public class Export extends Dialog {
         ErrorManager.getDefault().notify(e);
       }
     }
-  }
-
-  private List<String> getText() {
-    List<String> text = new ArrayList<String>();
-    StringTokenizer stk = new StringTokenizer(myTextArea.getText(), LS);
-
-    while (stk.hasMoreTokens()) {
-      text.add(stk.nextToken());
-    }
-    return text;
   }
 
   @Override
@@ -341,11 +324,11 @@ public class Export extends Dialog {
   }
 
   private String myTitle;
-  private JTextArea myTextArea;
   private JTextField myFileName;
   private JCheckBox myRunBrowser;
+  private JTextArea myDescription;
+  private List<List<String>> myItems;
   private DialogDescriptor myDescriptor;
-  private List<List<String>> myDescriptions;
 
   private static final String SE = "search"; // NOI18N
   private static final String RE = "result.html"; // NOI18N

@@ -219,24 +219,6 @@ public class RulesManager {
 
     // Private methods ---------------------------------------------------------
 
-    /** Public only for testing infrastructure. Others should not touch!! */
-    public static final String[] KNOWN_STRICT_ERROR_KEYS = new String[] {
-        // NetBeans custom rule
-        "msg.trailing.comma", // NOI18N
-
-        "msg.bad.octal.literal", // NOI18N
-        "msg.reserved.keyword", // NOI18N
-        "msg.dup.parms", // NOI18N
-        "msg.return.inconsistent", // NOI18N
-        "msg.no.return.value", // NOI18N
-        "msg.anon.no.return.value", // NOI18N
-        // Handled by separate hint implementation, AccidentalAssignment
-        //"msg.equal.as.assign", // NOI18N
-        "msg.var.hides.arg", // NOI18N
-        "msg.var.redecl", // NOI18N
-        "msg.no.side.effects" // NOI18N
-    };
-
     private static void initErrors() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         errorsTreeModel = new DefaultTreeModel( rootNode );
@@ -247,9 +229,9 @@ public class RulesManager {
         categorizeErrorRules(rules, errors, folder, rootNode);
 
         // Add builtin wrappers for strict warnings
-        for (String key : KNOWN_STRICT_ERROR_KEYS) {
+        for (String key : StrictWarning.KNOWN_STRICT_ERROR_KEYS) {
             StrictWarning rule = new StrictWarning(key);
-            if ("msg.reserved.keyword".equals(key)) {
+            if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) { // NOI18N
                 rule.setDefaultSeverity(HintSeverity.ERROR);
             }
             errors.put(key, Collections.<ErrorRule>singletonList(rule));

@@ -304,7 +304,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             if (candidate != null) {
                 boolean invalid = false;
-                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1) {
+                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1 &&
+                        // If it's in my sdocs.zip, I've gotta try to find the corresponding element
+                        candidate.getFilenameUrl().indexOf("sdocs.zip") == -1) {
                     invalid = true;
                 }
                 IndexedElement com = candidate;
@@ -320,7 +322,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
                        node.getSourceStart(), com);
                 }
                 if (invalid) {
-                    loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    if (candidate.isDocOnly()) {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "NoSourceDocOnly", candidate.getName()));
+                    } else {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    }
                 }
 
                 if (!CHOOSE_ONE_DECLARATION && elements.size() > 1) {
