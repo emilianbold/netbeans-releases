@@ -1648,7 +1648,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgConfigFiles.getInstance().getUserName();
+        String globalUsername = HgConfigFiles.getSysInstance().getSysUserName();
         String username = null;
         if(projectUserName != null && projectUserName.length() > 0)
             username = projectUserName;
