@@ -1273,6 +1273,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return threadsCache;
     }
     
+    @Override
+    public List<JPDAThread> getAllThreads() {
+        ThreadsCache tc = getThreadsCache();
+        if (tc == null) {
+            return Collections.emptyList();
+        }
+        List<ThreadReference> threadList = tc.getAllThreads();
+        int n = threadList.size();
+        List<JPDAThread> threads = new ArrayList<JPDAThread>(n);
+        for (int i = 0; i < n; i++) {
+            threads.add(getThread(threadList.get(i)));
+        }
+        return Collections.unmodifiableList(threads);
+    }
+    
     public JPDAThreadGroup[] getTopLevelThreadGroups() {
         ThreadsCache tc = getThreadsCache();
         if (tc == null) {

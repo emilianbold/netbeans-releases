@@ -315,6 +315,15 @@ public abstract class JPDADebugger {
     public abstract void setSuspend (int s);
     
     /**
+     * Returns all threads that exist in the debuggee.
+     *
+     * @return all threads
+     */
+    public List<JPDAThread> getAllThreads() {
+        return Collections.emptyList();
+    }
+    
+    /**
      * Returns current thread or null.
      *
      * @return current thread or null
