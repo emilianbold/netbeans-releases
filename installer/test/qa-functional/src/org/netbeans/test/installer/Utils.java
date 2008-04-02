@@ -539,7 +539,7 @@ public class Utils {
 
         String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? "-" + data.getBuildNumber() : "";
         return prefix + "/" + "bundles" + 
-                "/" + bundleNamePrefix + "-" +
+                "/" + bundleNamePrefix + 
                 build_number + bundleType + "-" + 
                 data.getPlatformName() + "." + data.getPlatformExt();
     }
