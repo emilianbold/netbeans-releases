@@ -25,6 +25,7 @@ import org.netbeans.modules.bpel.mapper.logging.tree.model.LoggingAlertingTreeMo
 import org.netbeans.modules.bpel.mapper.model.BpelChangeProcessor;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.FromProcessor;
 import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor;
 import org.netbeans.modules.bpel.mapper.model.EditorExtensionProcessor.BpelEntityCasts;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -36,9 +37,9 @@ import org.netbeans.modules.bpel.mapper.tree.search.LoggingNodeFinder;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.FromHolder;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
@@ -59,13 +60,6 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             return source instanceof ExtensibleElements;
     }
 
-//    private interface myLeftTreeSpecialCreator {
-//        boolean accept(Class entityClass);
-//        void addGraph(MapperModel mapperModel);
-//        MapperTreeModel getSourceTree();
-//    }
-    
-    
     public LoggingMapperModelFactory() {
         super();
     }
@@ -85,67 +79,29 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         }
         LoggingAlertingTreeModel targetModel = 
                 new LoggingAlertingTreeModel((ExtensibleElements)bpelEntity);
-        
-//        if (bpelEntity instanceof Copy) {
-//            Copy copy = (Copy)bpelEntity;
-//            //
-//            EmptyTreeModel sourceModel = new EmptyTreeModel();
-//            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
-//            sourceModel.addExtensionModel(sourceVariableModel);
-//            PartnerLinkTreeExtModel pLinkExtModel = 
-//                    new PartnerLinkTreeExtModel(copy, true);
-//            sourceModel.addExtensionModel(pLinkExtModel);
-//            //
-//            BpelMapperModel newMapperModel = new BpelMapperModel(
-//                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-//            //
-//            addTraceGraph(copy, newMapperModel);
-//            postProcess(newMapperModel);
-//            //
-//            return newMapperModel;
-//            //
-//        } else if (bpelEntity instanceof Assign) {
-//            Assign assign = (Assign)bpelEntity;
-//            //
-//            EmptyTreeModel sourceModel = new EmptyTreeModel();
-//            VariableTreeModel variableModel = new VariableTreeModel(context);
-//            sourceModel.addExtensionModel(variableModel);
-//            PartnerLinkTreeExtModel pLinkExtModel = 
-//                    new PartnerLinkTreeExtModel(assign, true);
-//            sourceModel.addExtensionModel(pLinkExtModel);
-//            //
-//            BpelMapperModel newMapperModel = new BpelMapperModel(
-//                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-//            addTraceGraph(assign, newMapperModel);
-//            postProcess(newMapperModel);
-//            //
-//            return newMapperModel;
-//            //
-//        } else {
-            //
-            EmptyTreeModel sourceModel = new EmptyTreeModel();
-            VariableTreeModel sourceVariableModel = 
-                    new VariableTreeModel(context, true, mapper);
-            sourceModel.addExtensionModel(sourceVariableModel);
-            PartnerLinkTreeExtModel pLinkExtModel = 
-                    new PartnerLinkTreeExtModel(bpelEntity, true);
-            sourceModel.addExtensionModel(pLinkExtModel);
-            //
-            BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, changeProcessor, sourceModel, targetModel);
-            //
-            editorExtProcessor = new EditorExtensionProcessor(newMapperModel, context);
-            editorExtProcessor.processVariables();
-            //
-            addTraceGraph((ExtensibleElements)bpelEntity, newMapperModel);
-            postProcess(newMapperModel);
-            //
-            return newMapperModel;
-//        }
+
+        EmptyTreeModel sourceModel = new EmptyTreeModel();
+
+        VariableTreeModel sourceVariableModel = 
+                new VariableTreeModel(context, true, mapper);
+        sourceModel.addExtensionModel(sourceVariableModel);
+        PartnerLinkTreeExtModel pLinkExtModel = 
+                new PartnerLinkTreeExtModel(bpelEntity, true);
+        sourceModel.addExtensionModel(pLinkExtModel);
         //
-//        return null;
+        BpelMapperModel newMapperModel = new BpelMapperModel(
+                mapperTcContext, changeProcessor, sourceModel, targetModel);
+        //
+        editorExtProcessor = new EditorExtensionProcessor(newMapperModel, context);
+        editorExtProcessor.processVariables();
+        //
+        addTraceGraph((ExtensibleElements)bpelEntity, newMapperModel);
+        postProcess(newMapperModel);
+        //
+        return newMapperModel;
     }
 
+    // todo m
     private void addTraceGraph(ExtensibleElements entity, BpelMapperModel newMapperModel) {
         assert entity != null && newMapperModel != null;
         List<Trace> traces = (entity).getChildren(Trace.class);
@@ -158,7 +114,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
                     BpelEntityCasts castList = editorExtProcessor.getCastList(log);
                     From from = log.getFrom();
                     if (from != null) {
-                        addExpressionGraph(from, newMapperModel, 
+                        addFromGraph(log, newMapperModel, 
                                 LogAlertType.LOG, log.getLocation(), 
                                 log.getLevel(), entity, castList);
                     }
@@ -171,7 +127,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
                     BpelEntityCasts castList = editorExtProcessor.getCastList(alert);
                     From from = alert.getFrom();
                     if (from != null) {
-                        addExpressionGraph(from, newMapperModel, 
+                        addFromGraph(alert, newMapperModel, 
                                 LogAlertType.ALERT, alert.getLocation(), 
                                 alert.getLevel(), entity, castList);
                     }
@@ -180,20 +136,27 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         }
     }
     
-    private void addExpressionGraph(Expression expr, 
+    private void addFromGraph(FromHolder fromHolder, 
             BpelMapperModel newMapperModel, 
             LogAlertType type,
             Location location,
             Object level,
             BpelEntity contextEntity, 
             BpelEntityCasts castList) {
-        assert expr != null && newMapperModel != null && type != null && location != null && level != null;
+        assert fromHolder != null && newMapperModel != null && type != null && location != null && level != null;
+        if (fromHolder.getFrom() == null) {
+            return;
+        }
         //
         Graph newGraph = new Graph(newMapperModel);
         //
+        FromProcessor fromProcessor = new FromProcessor(this, fromHolder);
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
-        populateGraph(newGraph, leftTreeModel, contextEntity, expr, castList);
-        //
+        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel, castList);
+        if (newGraph == null) {
+            return;
+        }
+
         List<TreeItemFinder> finderList = Collections.singletonList(
                 (TreeItemFinder)new LoggingNodeFinder(type, location, level));
         //
