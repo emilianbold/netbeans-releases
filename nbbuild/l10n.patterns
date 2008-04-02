@@ -10,9 +10,14 @@
 **/docs/*.jar:**/*.toc
 **/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
-exclude **/jason-*.jar:
-exclude **/jsf-extensions-*.jar:
+**/defaulttheme*.jar:**/messages.properties
+exclude **/*.jar:**/Bundle_noi18n.properties
+exclude **/batik-mod.jar:
+exclude **/json-*.jar:
 exclude **/tidy-mod.jar:
+exclude **/commons-*.jar:
+exclude **/jsf-extensions-*.jar:
+exclude **/jsf-impl.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
 exclude **/webui-jsf-suntheme*.jar:

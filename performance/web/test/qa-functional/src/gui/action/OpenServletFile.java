@@ -49,6 +49,12 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
 import org.netbeans.performance.test.utilities.PerformanceTestCase;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+
 /**
  * Test of opening files.
  *
@@ -93,6 +99,27 @@ public class OpenServletFile extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+        class PhaseHandler extends Handler {
+            
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
     
     public void testOpeningServletFile(){
         WAIT_AFTER_OPEN = 1000;
@@ -121,10 +148,12 @@ public class OpenServletFile extends PerformanceTestCase {
     }
 
     public void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
         
         if (this.openNode == null) {

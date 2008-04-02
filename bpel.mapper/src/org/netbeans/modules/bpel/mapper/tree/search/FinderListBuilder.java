@@ -29,7 +29,7 @@ import org.netbeans.modules.bpel.mapper.cast.TypeCast;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.predicates.XPathPredicate;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
@@ -53,6 +53,23 @@ import org.openide.util.NbBundle;
  */
 public class FinderListBuilder {
 
+    public static void populateFinderList(ArrayList<TreeItemFinder> finderList, 
+            VariableSchemaContext varContext) {
+        //
+        XPathVariable var = varContext.getVariable();
+        assert var instanceof XPathBpelVariable;
+        XPathBpelVariable bpelVar = (XPathBpelVariable)var;
+        AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
+        VariableFinder varFinder = new VariableFinder(varDecl);
+        finderList.add(varFinder);
+        //
+        Part part = bpelVar.getPart();
+        if (part != null) {
+            PartFinder partFinder = new PartFinder(part);
+            finderList.add(partFinder);
+        }
+    }
+    
     public static List<TreeItemFinder> build(XPathSchemaContext schemaContext) {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
@@ -62,22 +79,19 @@ public class FinderListBuilder {
         // 
         while (context != null) { 
             if (context instanceof VariableSchemaContext) {
-                XPathVariable var = ((VariableSchemaContext)context).getVariable();
-                assert var instanceof XPathBpelVariable;
-                XPathBpelVariable bpelVar = (XPathBpelVariable)var;
-                VariableDeclaration varDecl = bpelVar.getVarDecl();
-                VariableFinder varFinder = new VariableFinder(varDecl);
-                finderList.add(varFinder);
-                //
-                Part part = bpelVar.getPart();
-                if (part != null) {
-                    PartFinder partFinder = new PartFinder(part);
-                    finderList.add(partFinder);
-                }
+                populateFinderList(finderList, (VariableSchemaContext)context);
             } else if (context instanceof CastSchemaContext) {
                 CastSchemaContext castContext = (CastSchemaContext)context;
+                //
                 TypeCast typeCast = new TypeCast(castContext.getTypeCast());
-                result.add(typeCast);
+                Object castedObj = typeCast.getCastedObject();
+                if (castedObj instanceof SchemaComponent) {
+                    result.addFirst(typeCast);
+                } else if (castedObj instanceof AbstractVariableDeclaration) {
+                    finderList.add(new CastedVariableFinder(typeCast));
+                } else if (castedObj instanceof Part) {
+                    finderList.add(new CastedPartFinder(typeCast));
+                }
             } else {
                 SchemaComponent sComp = XPathSchemaContext.Utilities.
                         getSchemaComp(context);
@@ -98,7 +112,8 @@ public class FinderListBuilder {
         return finderList;
     }
     
-    public static List<TreeItemFinder> build(XPathVariableReference varRef) {
+    public static List<TreeItemFinder> build(XPathVariableReference varRef, 
+            TypeCast typeCast) {
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         XPathVariable var = varRef.getVariable();
@@ -111,15 +126,32 @@ public class FinderListBuilder {
         }
         assert var instanceof XPathBpelVariable;
         XPathBpelVariable bpelVar = (XPathBpelVariable)var;
-        VariableDeclaration varDecl = bpelVar.getVarDecl();
-        VariableFinder varFinder = new VariableFinder(varDecl);
-        finderList.add(varFinder);
-        //
+        AbstractVariableDeclaration varDecl = bpelVar.getVarDecl();
         Part part = bpelVar.getPart();
-        if (part != null) {
-            PartFinder partFinder = new PartFinder(part);
-            finderList.add(partFinder);
+        //
+        Object castedObj = null;
+        if (typeCast != null) {
+            castedObj = typeCast.getCastedObject();
         }
+        //
+        if (castedObj != null && castedObj == varDecl) {
+            CastedVariableFinder varCastFinder = new CastedVariableFinder(typeCast);
+            finderList.add(varCastFinder);
+        } else {
+            VariableFinder varFinder = new VariableFinder(varDecl);
+            finderList.add(varFinder);
+        }
+        //
+        if (part != null) {
+            if (castedObj != null && castedObj == part) {
+                CastedPartFinder partCastFinder = new CastedPartFinder(typeCast);
+                finderList.add(partCastFinder);
+            } else {
+                PartFinder partFinder = new PartFinder(part);
+                finderList.add(partFinder);
+            }
+        }
+        //
         return finderList;
     }
 
@@ -130,7 +162,15 @@ public class FinderListBuilder {
             XPathExpression rootExpr = 
                     ((XPathExpressionPath)locationPath).getRootExpression();
             if (rootExpr instanceof XPathVariableReference) {
-                finderList.addAll(build((XPathVariableReference)rootExpr));
+                XPathVariableReference varRef = (XPathVariableReference)rootExpr;
+                XPathSchemaContext sContext = varRef.getSchemaContext();
+                if (sContext instanceof CastSchemaContext) {
+                    CastSchemaContext castContext = (CastSchemaContext)sContext;
+                    TypeCast typeCast = new TypeCast(castContext.getTypeCast());
+                    finderList.addAll(build(varRef, typeCast));
+                } else {
+                    finderList.addAll(build(varRef, null));
+                }
             }
         }
         //

@@ -486,7 +486,7 @@ public class MultiKeymap implements Keymap {
         }
     }
 
-    public String toString() {
+    public @Override String toString() {
         return "MK: name=" + getName(); // NOI18N
     }
 

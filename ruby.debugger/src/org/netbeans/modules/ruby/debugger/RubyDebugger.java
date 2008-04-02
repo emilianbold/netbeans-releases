@@ -108,8 +108,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                session = null;
+                if (session != null) { // #131563
+                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    session = null;
+                }
             }
         };
     }

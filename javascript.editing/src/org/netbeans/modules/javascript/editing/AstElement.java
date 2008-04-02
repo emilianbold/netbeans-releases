@@ -64,6 +64,7 @@ public class AstElement extends JsElement {
     public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
     public static final Set<Modifier> PRIVATE = EnumSet.of(Modifier.PRIVATE);
+    public static final Set<Modifier> STATIC_PRIVATE = EnumSet.of(Modifier.PRIVATE,Modifier.STATIC);
 
     protected List<AstElement> children;
     protected Node node;

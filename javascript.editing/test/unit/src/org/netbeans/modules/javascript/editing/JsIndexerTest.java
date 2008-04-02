@@ -479,4 +479,12 @@ public class JsIndexerTest extends JsTestBase {
     public void testWoodStock3() throws Exception {
         checkIndexer("testfiles/woodstock-body.js");
     }
+
+    public void testDojoExtend() throws Exception {
+        checkIndexer("testfiles/dnd.js");
+    }
+
+    public void testClassProps() throws Exception {
+        checkIndexer("testfiles/classprops.js");
+    }
 }
