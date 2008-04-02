@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -63,7 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
-import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -438,16 +437,13 @@ public class PHPIndex {
             try {
                 // return true for platform files
                 // TODO temporary implementation
-                ClassPathProviderImpl cp = project.getLookup().lookup(ClassPathProviderImpl.class);
-
-                File file = new File(new URI(url));
-                FileObject fileObject = FileUtil.toFileObject(file);
-
-                if (cp != null) {
-                    ClassPathProviderImpl.FileType fileType = cp.getFileType(fileObject);
-
-                    if (fileType == ClassPathProviderImpl.FileType.INTERNAL 
-                            || fileType == ClassPathProviderImpl.FileType.PLATFORM) {
+                PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
+                if (phpSourcePath != null) {
+                    File file = new File(new URI(url));
+                    FileObject fileObject = FileUtil.toFileObject(file);
+                    PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
+                    if (fileType == PhpSourcePath.FileType.INTERNAL
+                            || fileType == PhpSourcePath.FileType.INCLUDE) {
                         return true;
                     }
                 }
