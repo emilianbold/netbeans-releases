@@ -246,7 +246,8 @@ public class CommandRunner extends BasicTask<OperationState> {
                 serverCmd.toString(), instanceName);
         
         int retries = 3;
-        boolean succeeded = false;
+        boolean httpSucceeded = false;
+        boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
         String commandUrl = constructCommandUrl(true);
@@ -259,7 +260,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         try {
             urlToConnectTo = new URL(commandUrl);
 
-            while(!succeeded && retries-- > 0) {
+            while(!httpSucceeded && retries-- > 0) {
                 try {
                     Logger.getLogger("glassfish").log(Level.FINE, "V3 HTTP Command: " + commandUrl );
 
@@ -308,8 +309,10 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                         // Process the response message
                         if(handleReceive(hconn)) {
-                            succeeded = serverCmd.processResponse();
+                            commandSucceeded = serverCmd.processResponse();
                         }
+                        
+                        httpSucceeded = true;
                     } else {
                         Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " +
                                 urlToConnectTo);
@@ -325,7 +328,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                     }
                 }
                 
-                if(!succeeded && retries > 0) {
+                if(!httpSucceeded && retries > 0) {
                     try {
                         Thread.sleep(HTTP_RETRY_DELAY);
                     } catch (InterruptedException e) {}
@@ -335,7 +338,7 @@ public class CommandRunner extends BasicTask<OperationState> {
             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
         
-        if(succeeded) {
+        if(commandSucceeded) {
             return fireOperationStateChanged(OperationState.COMPLETED, "MSG_ServerCmdCompleted", // NOI18N
                     serverCmd.toString(), instanceName);
         } else {

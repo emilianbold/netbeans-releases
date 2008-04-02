@@ -42,7 +42,6 @@ package org.netbeans.modules.glassfish.common;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +49,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.glassfish.AppDesc;
 
 
@@ -134,7 +135,24 @@ public abstract class ServerCommand {
      * @throws java.io.IOException in case of stream error.
      */
     public boolean readResponse(InputStream in) throws IOException {
-        return true;
+        boolean result = false;
+
+        Manifest m = new Manifest();
+        m.read(in);
+        String outputCode = m.getMainAttributes().getValue("exit-code"); // NOI18N
+        if(outputCode.equalsIgnoreCase("Success")) { // NOI18N
+            readManifest(m);
+            result = true;
+        } else {
+            // !PW FIXME Need to pass this message back.  Need <Result> object?
+            String message = m.getMainAttributes().getValue("message"); // NOI18N
+            Logger.getLogger("glassfish").log(Level.WARNING, message);
+        }
+
+        return result;
+    }
+    
+    public void readManifest(Manifest manifest) throws IOException {
     }
     
     /**
@@ -216,18 +234,8 @@ public abstract class ServerCommand {
         }
         
         @Override
-        public boolean readResponse(InputStream in) throws IOException {
-            boolean result = false;
-
-            Manifest m = new Manifest();
-            m.read(in);
-            String outputCode = m.getMainAttributes().getValue("exit-code"); // NOI18N
-            if(outputCode.equalsIgnoreCase("Success")) { // NOI18N
-                list = m;
-                result = true;
-            }
-            
-            return result;
+        public void readManifest(Manifest manifest) throws IOException {
+            list = manifest;
         }
         
         @Override
@@ -243,13 +251,13 @@ public abstract class ServerCommand {
             }
 
             String [] containers = containerDesc.split(","); // NOI18N
-            for(String container: containers) {
-                if(skipContainer(container)) {
+            for(String c: containers) {
+                if(skipContainer(c)) {
                     continue;
                 }
                 
                 // get container attributes
-                Attributes contAttr = list.getAttributes(container);
+                Attributes contAttr = list.getAttributes(c);
                 String appDesc = contAttr.getValue("children"); // NOI18N
 
                 // !PW XXX Do we want/need to show empty containers?
@@ -274,7 +282,7 @@ public abstract class ServerCommand {
                     appMap = new HashMap<String, List<AppDesc>>();
                 }
                 
-                appMap.put(container, appList);
+                appMap.put(c, appList);
             }
             
             return true;
