@@ -58,6 +58,8 @@ import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -66,22 +68,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
  * Defines the various (BOOT and SOURCE) class paths for a PHP project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
-
-    /**
-     * Type of file classpath is required for.
-     */
-    public static enum FileType {
-        INTERNAL, // nb internal files (signature files)
-        PLATFORM, // php include path
-        SOURCE, // project sources
-        UNKNOWN,
-    }
+public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePath, PropertyChangeListener {
 
     /**
      * Constants for different cached classpaths.
@@ -147,33 +140,41 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
     private synchronized FileObject getInternalPath() {
         if (internalFolder == null) {
-            // XXX workaround because gsf uses toFile() and this causes NPE for SFS
-            // XXX filesystem listener should be used
-            FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
-            for (FileObject fo : sfsFolder.getChildren()) {
-                if (FileUtil.toFile(fo) != null) {
-                    continue;
-                }
-                InputStream is = null;
-                OutputStream os = null;
-                ByteArrayOutputStream bos = null;
-                try {
-                    is = fo.getInputStream();
-                    os = fo.getOutputStream();
-                    bos = new ByteArrayOutputStream();
-                    FileUtil.copy(is, bos);
-                    os.write(bos.toByteArray());
-                } catch (IOException exc) {
-                    Exceptions.printStackTrace(exc);
-                } finally {
-                    closeStreams(is, os, bos);
-                }
-            }
-            File file = FileUtil.toFile(sfsFolder);
-            assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
-            internalFolder = FileUtil.toFileObject(file);
+            internalFolder = getInternalFolder();
         }
         return internalFolder;
+    }
+
+    // workaround because gsf uses toFile() and this causes NPE for SFS
+    // see #131401 for more information
+    private FileObject getInternalFolder() {
+        assert Thread.holdsLock(this);
+
+        // FS AtomicAction should not be needed (synchronized)
+        FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
+        for (FileObject fo : sfsFolder.getChildren()) {
+            // XXX need to handle file updates as well
+            if (FileUtil.toFile(fo) != null) {
+                continue;
+            }
+            InputStream is = null;
+            OutputStream os = null;
+            ByteArrayOutputStream bos = null;
+            try {
+                is = fo.getInputStream();
+                os = fo.getOutputStream();
+                bos = new ByteArrayOutputStream();
+                FileUtil.copy(is, bos);
+                os.write(bos.toByteArray());
+            } catch (IOException exc) {
+                Exceptions.printStackTrace(exc);
+            } finally {
+                closeStreams(is, os, bos);
+            }
+        }
+        File file = FileUtil.toFile(sfsFolder);
+        assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
+        return FileUtil.toFileObject(file);
     }
 
     private void closeStreams(Closeable... streams) {
@@ -202,51 +203,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return dirs.get(0);
     }
 
-    /**
-     * Get the file type for the given file object.
-     * @param file the input file.
-     * @return the file type for the given file object.
-     * @see FileType
-     */
     public FileType getFileType(FileObject file) {
+        Parameters.notNull("file", file);
+
         FileObject path = getInternalPath();
         if (path.equals(file) || FileUtil.isParentOf(path, file)) {
             return FileType.INTERNAL;
         }
         for (FileObject dir : getPlatformPath()) {
             if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                return FileType.PLATFORM;
+                return FileType.INCLUDE;
             }
         }
         path = getSrcPath();
-        if (path.equals(file) || FileUtil.isParentOf(path, file)) {
+        if (path != null
+                && (path.equals(file) || FileUtil.isParentOf(path, file))) {
             return FileType.SOURCE;
         }
         return FileType.UNKNOWN;
     }
 
-    /**
-     * Get all the possible path roots from PHP include path.
-     * @return all the possible path roots from PHP include path.
-     */
     public List<FileObject> getIncludePath() {
         return new ArrayList<FileObject>(getPlatformPath());
     }
 
+    public FileObject resolveFile(FileObject directory, String fileName) {
+        Parameters.notNull("directory", directory);
+        Parameters.notNull("fileName", fileName);
 
-    /**
-     * Resolve absolute path for the given file name. The order is the current directory then PHP include path.
-     * @param currentDirectory the current directory of the script in which the PHP <code>include()</code>
-     *                         or <code>require()</code> function is called.
-     * @param fileName a file name.
-     * @return resolved file path or <code>null</code> if the given file is not found.
-     */
-    public FileObject resolveFile(FileObject currentDirectory, String fileName) {
-        assert currentDirectory != null;
-        assert currentDirectory.isFolder();
-        assert fileName != null;
+        if (!directory.isFolder()) {
+            throw new IllegalArgumentException("valid directory needed");
+        }
 
-        FileObject resolved = currentDirectory.getFileObject(fileName);
+        FileObject resolved = directory.getFileObject(fileName);
         if (resolved != null) {
             return resolved;
         }
@@ -269,7 +258,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             case SOURCE:
                 cp = cache.get(ClassPathCache.SOURCE);
                 if (cp == null) {
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation(sourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(
+                            ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
+                            evaluator, new String[] {PhpProjectProperties.SRC_DIR}));
                     cache.put(ClassPathCache.SOURCE, cp);
                 }
                 break;
@@ -283,14 +274,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache.get(ClassPathCache.PLATFORM);
         if (cp == null) {
-            FileObject internalPath = getInternalPath();
-            List<FileObject> platformPath = getPlatformPath();
-            List<FileObject> cpItems = new ArrayList<FileObject>(platformPath.size() + 1);
-            cpItems.add(internalPath);
-            cpItems.addAll(platformPath);
-
-            cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
-                    cpItems.toArray(new FileObject[cpItems.size()]));
+            ClassPath internalClassPath =
+                    org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
+                    getInternalPath());
+            ClassPath includePath = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
+                    new String[] {PhpProjectProperties.INCLUDE_PATH}));
+            cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
+                    internalClassPath, includePath);
             cache.put(ClassPathCache.PLATFORM, cp);
         }
         return cp;

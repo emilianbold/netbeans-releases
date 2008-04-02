@@ -172,11 +172,10 @@ public class LocalServer implements Comparable<LocalServer> {
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private LocalServer activeItem = null;
 
-        public ComboBoxEditor(Component editor) {
+        public ComboBoxEditor(JTextField editor) {
             super();
-            assert editor instanceof JTextField;
 
-            component = (JTextField) editor;
+            component = editor;
             component.getDocument().addDocumentListener(this);
         }
 
