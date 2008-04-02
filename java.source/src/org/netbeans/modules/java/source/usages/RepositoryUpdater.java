@@ -2222,19 +2222,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                             JavaTaskProvider.refresh(fo);
                         }
-                        if (Log.instance(jt.getContext()).nerrors == 0) {
-                            try {
-                                fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
-                                jt.generate();
-                            } finally {
-                                fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
-                            }
+                        try {
+                            fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
+                            jt.generate();
+                        } finally {
+                            fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
                         }
-                        //                        if (!listener.errors.isEmpty()) {
                         Log.instance(jt.getContext()).nerrors = 0;
-                        //                            listener.cleanDiagnostics();
-                        //                        }
-
                         listener.cleanDiagnostics();
                     } else {
                         for (Pair<String,String> s : classNamesToDelete) {
@@ -2767,7 +2761,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         JavaFileObject active = null;
         File           activeFile = null;
         Pair<JavaFileObject, File> activePair = null;
-        List<Pair<JavaFileObject, File>> compilableFiles = new LinkedList<Pair<JavaFileObject, File>>();
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();
         final Map<URI, List<String>> misplacedSource2FQNsLocal = new HashMap<URI, List<String>>(misplacedSource2FQNs);
@@ -2895,21 +2888,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                             System.gc();
                             continue;
-                        }                        
-                        final JavaCompiler jc = JavaCompiler.instance(jt.getContext());
-                        final JavaFileObject finalActive = active;
-                        Filter f = new Filter() {
-                            public void process(Env<AttrContext> env) {
-                                try {
-                                    jc.attribute(env);
-                                } catch (Throwable t) {
-                                    if (finalActive.toUri().getPath().contains("org/openide/loaders/OpenSupport.java")) {
-                                        Exceptions.printStackTrace(t);
-                                }
-                            }
-                            }
-                        };
-                        f.run(jc.todo, types);
+                        }
+                        jt.analyze(types);
                         dumpClasses (listener.getEnteredTypes(), fileManager,
                                 rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
@@ -2968,19 +2948,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         if (TasklistSettings.isTasklistEnabled()) {
                             toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeFile, diag));
                         }
-//                        if (!listener.errors.isEmpty()) {
-                        if (Log.instance(jt.getContext()).nerrors == 0) {
-                            compilableFiles.add(activePair);
-                        }
-                            Log.instance(jt.getContext()).nerrors = 0;
-//                            listener.cleanDiagnostics();
-//                        }
+
+                        Log.instance(jt.getContext()).nerrors = 0;
                         if (compiledFiles != null) {
                             compiledFiles.add(activeFile);
                         }
                         if (toRecompile != null) {
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
+                        }
+                        try {
+                            fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
+                            jt.generate(types);
+                        } finally {
+                            fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
                         }
                         active = null;
                         activeFile = null;
@@ -3060,227 +3041,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             LowMemoryNotifier.getDefault().removeLowMemoryListener(listener);
         }
         
-        batchGenerate(compilableFiles, rootFo, cpInfo, ideClosed);
-        
         return toRefresh;
     }
-    
-    
-    //COS start
-    private static Set<URL> batchGenerate(final List<Pair<JavaFileObject,File>> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo,
-        final AtomicBoolean ideClosed) throws IOException {
-        assert toCompile != null;
-        assert rootFo != null;
-        assert cpInfo != null;
-        File rootFile = FileUtil.toFile(rootFo);
-        assert rootFile != null;
-        JavaFileObject active = null;
-        Pair<JavaFileObject, File> activePair = null;
-        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
-        final CompilerListener listener = new CompilerListener ();
-        
-        Set<URL> toRefresh = new HashSet<URL>();
-        LowMemoryNotifier.getDefault().addLowMemoryListener(listener);
-        try {
-            fileManager.handleOption("output-classfiles", Arrays.asList("true").iterator());
-            JavacTaskImpl jt = null;
-            try {                
-                List<Pair> bigFiles = new LinkedList<Pair>();
-                int state = 0;
-                boolean isBigFile = false;
-                final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
-                while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
-                    if (ideClosed != null && ideClosed.get()) {
-                        return toRefresh;
-                    }
-                    try {
-                        if (listener.lowMemory.getAndSet(false)) {
-                            if (jt != null) {
-                                jt.finish();
-                            }
-                            jt = null;
-                            listener.cleanDiagnostics();
-                            if (state == 1) {
-                                break;
-                            } else {
-                                state = 1;
-                            }
-                            System.gc();
-                            continue;
-                        }
-                        if (active == null) {
-                            if (!toCompile.isEmpty()) {
-                                activePair = toCompile.remove(0);
-                                active = activePair.first;
-                                isBigFile = false;
-                            } else {
-                                activePair = bigFiles.remove(0);
-                                active = activePair.first;
-                                isBigFile = true;
-                            }
-                            
-                            if (CALLBACK != null) {
-                                CALLBACK.willCompile(active);
-                            }
-                        }
-                        if (jt == null) {
-                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
-                            jt.setTaskListener(listener);
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
-                            }
-                        }
-                        Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-                        if (listener.lowMemory.getAndSet(false)) {
-                            jt.finish();
-                            jt = null;
-                            listener.cleanDiagnostics();
-                            trees = null;
-                            if (state == 1) {
-                                if (isBigFile) {
-                                    break;
-                                } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
-                                    state = 0;
-                                }
-                            } else {
-                                state = 1;
-                            }
-                            System.gc();
-                            continue;
-                        }
-                        Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                        
-                        if (listener.lowMemory.getAndSet(false)) {
-                            jt.finish();
-                            jt = null;
-                            listener.cleanDiagnostics();
-                            trees = null;
-                            types = null;
-                            if (state == 1) {
-                                if (isBigFile) {
-                                    break;
-                                } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
-                                    state = 0;
-                                }
-                            } else {
-                                state = 1;
-                            }
-                            System.gc();
-                            continue;
-                        }                        
-                        final JavaCompiler jc = JavaCompiler.instance(jt.getContext());
-                        final JavaFileObject finalActive = active;
-                        Filter f = new Filter() {
-                            public void process(Env<AttrContext> env) {
-                                try {
-                                    jc.attribute(env);
-                                } catch (Throwable t) {
-                                    if (finalActive.toUri().getPath().contains("org/openide/loaders/OpenSupport.java")) {
-                                        Exceptions.printStackTrace(t);
-                                }
-                            }
-                            }
-                        };
-                        f.run(jc.todo, types);
-                        if (listener.lowMemory.getAndSet(false)) {
-                            jt.finish();
-                            jt = null;
-                            listener.cleanDiagnostics();
-                            trees = null;
-                            types = null;
-                            if (state == 1) {
-                                if (isBigFile) {
-                                    break;
-                                } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
-                                    state = 0;
-                                }
-                            } else {
-                                state = 1;
-                            }
-                            System.gc();
-                            continue;
-                        }
-                        jt.generate(types);
-                        active = null;
-                        activePair = null;
-                        state  = 0;
-                    } catch (CouplingAbort a) {
-                        //coupling error
-                        //TODO: check if the source sig file ~ the source java file:
-                        couplingAbort(a, active);
-                        if (jt != null) {
-                            jt.finish();
-                        }
-                        jt = null;
-                        listener.cleanDiagnostics();
-                        state = 0;
-                    } catch (Throwable t) {
-                        if (LOGGER.isLoggable(Level.FINEST)) {
-                            final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                            final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                            final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                            final String message = String.format("batchCompile caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s",
-                                        FileUtil.getFileDisplayName(rootFo),
-                                        active.toUri().toString(),
-                                        bootPath == null   ? null : bootPath.toString(),
-                                        classPath == null  ? null : classPath.toString(),
-                                        sourcePath == null ? null : sourcePath.toString()
-                                        );
-                            LOGGER.log(Level.FINEST, message, t);  //NOI18N
-                        }
-                        if (t instanceof ThreadDeath) {
-                            throw (ThreadDeath) t;
-                        }
-                        else if (t instanceof OutputFileManager.InvalidSourcePath) {
-                            //Handled above
-                            throw (OutputFileManager.InvalidSourcePath) t;
-                        }
-                        else {
-                            if (jt != null) {
-                                jt.finish();
-                            }
-                            final URI activeURI = active.toUri();
-                            jt = null;
-                            active = null;                            
-                            listener.cleanDiagnostics();
-                            if (!(t instanceof Abort)) {                                
-                                final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                                final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                                final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
-                                t = Exceptions.attachMessage(t,String.format("Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s",
-                                        FileUtil.getFileDisplayName(rootFo),
-                                        activeURI.toString(),
-                                        bootPath == null   ? null : bootPath.toString(),
-                                        classPath == null  ? null : classPath.toString(),
-                                        sourcePath == null ? null : sourcePath.toString()
-                                        ));
-                                Exceptions.printStackTrace(t);
-                            }
-                        }
-                    }
-                }
-                if (state == 1) {
-                    LOGGER.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
-                }
-            } finally {
-                if (jt != null) {
-                    jt.finish();
-                }
-            }
-        } finally {
-            LowMemoryNotifier.getDefault().removeLowMemoryListener(listener);
-            fileManager.handleOption("output-classfiles", Arrays.asList("false").iterator());
-        }
-        
-        return toRefresh;
-    }
-    //COS end
     
     private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager,
         final String currentRoot, final Set<URI> dirtyFiles, final com.sun.tools.javac.code.Types javacTypes,
@@ -3446,8 +3208,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 result.put(path,files);
             }
             files.add(f);
+        } else if (extIndex+1+FileObjects.CLASS.length() == path.length() && path.endsWith(FileObjects.CLASS)) {
+            int index = path.indexOf('$',oi);  //NOI18N
+            if (index == -1) {
+                path = path.substring(oi,extIndex);
+            } else {
+                path = path.substring(oi,index);
+            }
+            List<File> files = result.get(path);
+            if (files == null) {
+                files = new LinkedList<File>();
+                result.put(path,files);
+            }
+            files.add(f);
         }
-                }
+    }
+    
     private static void getAllClassFilesImpl (final File folder, final File root, final int oi, final Map<String,List<File>> result, final boolean recursive) {
         final File[] content = folder.listFiles();
         if (content == null) {

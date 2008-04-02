@@ -1169,6 +1169,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
         options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
