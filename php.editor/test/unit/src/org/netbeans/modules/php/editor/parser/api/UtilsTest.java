@@ -39,53 +39,44 @@
 
 package org.netbeans.modules.php.editor.parser.api;
 
-import java.util.List;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import java.io.FileReader;
+import java.io.StringReader;
+import java_cup.runtime.Symbol;
+import junit.framework.TestCase;
+import org.netbeans.modules.php.editor.parser.*;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
- * This is AST Utils class. 
+ *
  * @author Petr Pisl
  */
-public class Utils {
+public class UtilsTest extends TestCase {
     
-    /**
-     * 
-     * @param root a Program node, where to look for the comment
-     * @param node  a Node for which a commen you want to find. 
-     * @return appropriate comment or null, if the comment doesn't exists.
-     */
-    public static Comment getCommentForNode(Program root, ASTNode node) {
-        List<Comment> comments = root.getComments();
-        
-        if (node.getEndOffset() < root.getEndOffset()) {
-            for (Comment comm : comments) {
-                if (comm.getEndOffset() + 1 == node.getStartOffset()) {
-                    return comm;
-                }
-            }
-        }
-        
-        return null;
-    }
-    
-    public static Program getRoot(CompilationInfo info) {
-        ParserResult result =info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
+    public UtilsTest(String testName) {
+        super(testName);
+    }            
 
-        if (result == null) {
-            return null;
-        }
-        
-        if (result instanceof PHPParseResult) {
-            return ((PHPParseResult)result).getProgram();
-        }
-        else {
-            return null;
-        }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    public void testGetCommentForNode() throws Exception {
+        String text = "<?php\n    /**\n    * @link http://ahoj\n    */    class Test  {}?>";
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(text));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Symbol root = parser.parse();
+        assertNotNull(root);
+        Program program = (Program)root.value;
+        assertEquals(2, program.getStatements().size());
+        ASTNode classDeclaration = program.getStatements().get(0);
+        Comment comment = Utils.getCommentForNode(program, classDeclaration);
+        assertNotNull(comment);
+    }
+
 }

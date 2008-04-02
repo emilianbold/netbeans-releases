@@ -116,480 +116,309 @@ import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
  */
 public class DefaultVisitor implements Visitor {
 
+    public void scan(ASTNode node) {
+        if (node != null) {
+            node.accept(this);
+        }
+    }
+
+    public void scan(Iterable<? extends ASTNode> nodes) {
+        if (nodes != null) {
+            for (ASTNode n : nodes) {
+                scan(n);
+            }
+        }
+    }
+
     public void visit(ArrayAccess node) {
-        node.getName().accept(this);
-        node.getIndex().accept(this);
+        scan(node.getName());
+        scan(node.getIndex());
     }
 
     public void visit(ArrayCreation node) {
-        for (ArrayElement el : node.getElements()) {
-            el.accept(this);
-        }
+        scan(node.getElements());
     }
 
     public void visit(ArrayElement node) {
-        if (node.getKey() != null) {
-            node.getKey().accept(this);
-        }
-        if (node.getValue() != null) {
-            node.getValue().accept(this);
-        }
+        scan(node.getKey());
+        scan(node.getValue());
     }
 
     public void visit(Assignment node) {
-        node.getLeftHandSide().accept(this);
-        node.getRightHandSide().accept(this);
+        scan(node.getLeftHandSide());
+        scan(node.getRightHandSide());
     }
 
     public void visit(ASTError astError) {
     }
 
     public void visit(BackTickExpression node) {
-        if (node.getExpressions() != null) {
-            for (Expression expr : node.getExpressions()) {
-                expr.accept(this);
-            }
-        }
+        scan(node.getExpressions());
     }
 
     public void visit(Block node) {
-        for (Statement statement : node.getStatements()) {
-            statement.accept(this);
-        }
+        scan(node.getStatements());
     }
 
     public void visit(BreakStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(CastExpression node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(CatchClause node) {
-        node.getClassName().accept(this);
-        node.getVariable().accept(this);
-        node.getBody().accept(this);
+        scan(node.getClassName());
+        scan(node.getVariable());
+        scan(node.getBody());
     }
 
     public void visit(ClassConstantDeclaration node) {
-        if (node.getNames() != null) {
-            for (Identifier iden : node.getNames()) {
-                iden.accept(this);
-            }
-        }
-        if (node.getInitializers() != null) {
-            for (Expression expr : node.getInitializers()) {
-                expr.accept(this);
-            }
-        }
+        scan(node.getNames());
+        scan(node.getInitializers());
     }
 
     public void visit(ClassDeclaration node) {
-        if (node.getName() != null) {
-            node.getName().accept(this);
-        }
-        if (node.getSuperClass() != null) {
-            node.getSuperClass().accept(this);
-        }
-        if (node.getInterfaes() != null) {
-            for (Identifier identifier : node.getInterfaes()) {
-                identifier.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getName());
+        scan(node.getSuperClass());
+        scan(node.getInterfaes());
+        scan(node.getBody());
     }
 
     public void visit(ClassInstanceCreation node) {
-        node.getClassName().accept(this);
-        if (node.ctorParams() != null) {
-            for (Expression expr : node.ctorParams()) {
-                expr.accept(this);
-            }
-        }
+        scan(node.getClassName());
+        scan(node.ctorParams());
     }
 
     public void visit(ClassName node) {
-        node.getName().accept(this);
+        scan(node.getName());
     }
 
     public void visit(CloneExpression node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(Comment comment) {
     }
 
     public void visit(ConditionalExpression node) {
-        if (node.getCondition() != null) {
-            node.getCondition().accept(this);
-        }
-        if (node.getIfTrue() != null) {
-            node.getIfTrue().accept(this);
-        }
-        if (node.getIfFalse() != null) {
-            node.getIfFalse().accept(this);
-        }
+        scan(node.getCondition());
+        scan(node.getIfTrue());
+        scan(node.getIfFalse());
     }
 
     public void visit(ContinueStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(DeclareStatement node) {
-        if (node.getDirectiveNames() != null) {
-            for (Identifier identifier : node.getDirectiveNames()) {
-                identifier.accept(this);
-            }
-        }
-        if (node.getDirectiveValues() != null) {
-            for (Expression val : node.getDirectiveValues()) {
-                val.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getDirectiveNames());
+        scan(node.getDirectiveValues());
+        scan(node.getBody());
     }
 
     public void visit(DoStatement node) {
-        if (node.getCondition() != null) {
-            node.getCondition().accept(this);
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getCondition());
+        scan(node.getBody());
     }
 
     public void visit(EchoStatement node) {
-        for (Expression expression : node.getExpressions()) {
-            expression.accept(this);
-        }
+        scan(node.getExpressions());
     }
 
     public void visit(EmptyStatement emptyStatement) {
     }
 
     public void visit(ExpressionStatement node) {
-        node.getExpression().accept(this);
+        scan(node.getExpression());
     }
 
     public void visit(FieldAccess node) {
-        node.getDispatcher().accept(this);
-        node.getField().accept(this);
+        scan(node.getDispatcher());
+        scan(node.getField());
     }
 
     public void visit(FieldsDeclaration node) {
-        if (node.getFields() != null) {
-            for (SingleFieldDeclaration decl : node.getFields()) {
-                decl.accept(this);
-            }
-        }
+        scan(node.getFields());
     }
 
     public void visit(ForEachStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
-        if (node.getKey() != null) {
-            node.getKey().accept(this);
-        }
-        if (node.getValue() != null) {
-            node.getValue().accept(this);
-        }
-        if (node.getStatement() != null) {
-            node.getStatement().accept(this);
-        }
+        scan(node.getExpression());
+        scan(node.getKey());
+        scan(node.getValue());
+        scan(node.getStatement());
     }
 
     public void visit(FormalParameter node) {
-        if (node.getParameterName() != null) {
-            node.getParameterName().accept(this);
-        }
-
-        if (node.getParameterType() != null) {
-            node.getParameterType().accept(this);
-        }
-
-        if (node.getDefaultValue() != null) {
-            node.getDefaultValue().accept(this);
-        }
+        scan(node.getParameterName());
+        scan(node.getParameterType());
+        scan(node.getDefaultValue());
     }
 
     public void visit(ForStatement node) {
-        if (node.getInitializers() != null) {
-            for (Expression expr : node.getInitializers()) {
-                expr.accept(this);
-            }
-        }
-        if (node.getConditions() != null) {
-            for (Expression expr : node.getConditions()) {
-                expr.accept(this);
-            }
-        }
-        if (node.getUpdaters() != null) {
-            for (Expression expr : node.getUpdaters()) {
-                expr.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getInitializers());
+        scan(node.getConditions());
+        scan(node.getUpdaters());
+        scan(node.getBody());
     }
 
     public void visit(FunctionDeclaration node) {
-        if (node.getFunctionName() != null) {
-            node.getFunctionName().accept(this);
-        }
-        if (node.getFormalParameters() != null) {
-            for (FormalParameter parameter : node.getFormalParameters()) {
-                parameter.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getFunctionName());
+        scan(node.getFormalParameters());
+        scan(node.getBody());
     }
 
     public void visit(FunctionInvocation node) {
-        node.getFunctionName().accept(this);
-        if (node.getParameters() != null) {
-            for (Expression expr : node.getParameters()) {
-                expr.accept(this);
-            }
-        }
+        scan(node.getFunctionName());
+        scan(node.getParameters());
     }
 
     public void visit(FunctionName node) {
-        node.getName().accept(this);
+        scan(node.getName());
     }
 
     public void visit(GlobalStatement node) {
-        if (node.getVariables() != null) {
-            for (Variable var : node.getVariables()) {
-                var.accept(this);
-            }
-        }
+        scan(node.getVariables());
     }
 
     public void visit(Identifier identifier) {
     }
 
     public void visit(IfStatement node) {
-        if (node.getCondition() != null) {
-            node.getCondition().accept(this);
-        }
-        if (node.getTrueStatement() != null) {
-            node.getTrueStatement().accept(this);
-        }
-        if (node.getFalseStatement() != null) {
-            node.getFalseStatement().accept(this);
-        }
+        scan(node.getCondition());
+        scan(node.getTrueStatement());
+        scan(node.getFalseStatement());
     }
 
     public void visit(IgnoreError node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(Include node) {
-        node.getExpression().accept(this);
+        scan(node.getExpression());
     }
 
     public void visit(InfixExpression node) {
-        node.getLeft().accept(this);
-        node.getRight().accept(this);
+        scan(node.getLeft());
+        scan(node.getRight());
     }
 
     public void visit(InLineHtml inLineHtml) {
     }
 
     public void visit(InstanceOfExpression node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(InterfaceDeclaration node) {
-        if (node.getName() != null) {
-            node.getName().accept(this);
-        }
-        if (node.getInterfaes() != null) {
-            for (Identifier identifier : node.getInterfaes()) {
-                identifier.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getName());
+        scan(node.getInterfaes());
+        scan(node.getBody());
     }
 
     public void visit(ListVariable node) {
-        if (node.getVariables() != null) {
-            for (VariableBase var : node.getVariables()) {
-                var.accept(this);
-            }
-        }
+        scan(node.getVariables());
     }
 
     public void visit(MethodDeclaration node) {
-        node.getFunction().accept(this);
+        scan(node.getFunction());
     }
 
     public void visit(MethodInvocation node) {
-        node.getDispatcher().accept(this);
-        node.getMethod().accept(this);
+        scan(node.getDispatcher());
+        scan(node.getMethod());
     }
 
     public void visit(ParenthesisExpression node) {
-        node.getExpression().accept(this);
+        scan(node.getExpression());
     }
 
     public void visit(PostfixExpression node) {
-        if (node.getVariable() != null) {
-            node.getVariable().accept(this);
-        }
+        scan(node.getVariable());
     }
 
     public void visit(PrefixExpression node) {
-        node.getVariable().accept(this);
+        scan(node.getVariable());
     }
 
     public void visit(Program program) {
-        List<Statement> statements = program.getStatements();
-        for (Statement statement : statements) {
-            statement.accept(this);
-        }
+        scan(program.getStatements());
     }
 
     public void visit(Quote node) {
-        for (Expression expression : node.getExpressions()) {
-            expression.accept(this);
-        }
+        scan(node.getExpressions());
     }
 
     public void visit(Reference node) {
-        node.getExpression().accept(this);
+        scan(node.getExpression());
     }
 
     public void visit(ReflectionVariable node) {
-        node.getName().accept(this);
+        scan(node.getName());
     }
 
     public void visit(ReturnStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(Scalar scalar) {
     }
 
     public void visit(SingleFieldDeclaration node) {
-        if (node.getName() != null) {
-            node.getName().accept(this);
-        }
-        if (node.getValue() != null) {
-            node.getValue().accept(this);
-        }
+        scan(node.getName());
+        scan(node.getValue());
     }
 
     public void visit(StaticConstantAccess node) {
-        if (node.getClassName() != null) {
-            node.getClassName().accept(this);
-        }
-        if (node.getConstant() != null) {
-            node.getConstant().accept(this);
-        }
+        scan(node.getClassName());
+        scan(node.getConstant());
     }
 
     public void visit(StaticFieldAccess node) {
-        if (node.getClassName() != null) {
-            node.getClassName().accept(this);
-        }
-        if (node.getField() != null) {
-            node.getField().accept(this);
-        }
+        scan(node.getClassName());
+        scan(node.getField());
     }
 
     public void visit(StaticMethodInvocation node) {
-        node.getClassName().accept(this);
-        node.getMethod().accept(this);
+        scan(node.getClassName());
+        scan(node.getMethod());
     }
 
     public void visit(StaticStatement node) {
-        if (node.getExpressions() != null) {
-            for (Expression ex : node.getExpressions()) {
-                ex.accept(this);
-            }
-        }
+        scan(node.getExpressions());
     }
 
     public void visit(SwitchCase node) {
-        if (node.getValue() != null) {
-            node.getValue().accept(this);
-        }
-        if (node.getActions() != null) {
-            for (Statement st : node.getActions()) {
-                st.accept(this);
-            }
-        }
+        scan(node.getValue());
+        scan(node.getActions());
     }
 
     public void visit(SwitchStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getExpression());
+        scan(node.getBody());
     }
 
     public void visit(ThrowStatement node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(TryStatement node) {
-        if (node.getCatchClauses() != null) {
-            for (CatchClause cc : node.getCatchClauses()) {
-                cc.accept(this);
-            }
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getCatchClauses());
+        scan(node.getBody());
     }
 
     public void visit(UnaryOperation node) {
-        if (node.getExpression() != null) {
-            node.getExpression().accept(this);
-        }
+        scan(node.getExpression());
     }
 
     public void visit(Variable node) {
-        node.getName().accept(this);
+        scan(node.getName());
     }
 
     public void visit(WhileStatement node) {
-        if (node.getCondition() != null) {
-            node.getCondition().accept(this);
-        }
-        if (node.getBody() != null) {
-            node.getBody().accept(this);
-        }
+        scan(node.getCondition());
+        scan(node.getBody());
     }
 
     public void visit(ASTNode node) {
