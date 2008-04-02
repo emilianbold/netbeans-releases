@@ -80,6 +80,20 @@ public class OffsetRange {
         return getEnd()-getStart();
     }
 
+    /**
+     * Return true if the given range overlaps with the current range.
+     * Full containment one way or the other is also considered overlapping.
+     */
+    public boolean overlaps(OffsetRange range) {
+        if (range == OffsetRange.NONE) {
+            return false;
+        } else if (this == OffsetRange.NONE) {
+            return false;
+        } else {
+            return end > range.start && start < range.end;
+        }
+    }
+
     @Override
     public String toString() {
         if (this == NONE) {
