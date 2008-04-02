@@ -42,7 +42,6 @@
 package org.netbeans.modules.gsf.api;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 /**
