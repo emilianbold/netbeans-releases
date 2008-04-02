@@ -232,6 +232,13 @@ public class PHPCodeCompletion implements Completable {
                     for (IndexedFunction method : methods){
                         proposals.add(new FunctionItem(method, request));
                     }
+                    
+                    Collection<IndexedConstant> properties = request.index.getProperties(
+                            request.result, typeName, request.prefix, NameKind.PREFIX);
+                    
+                    for (IndexedConstant prop : properties){
+                        proposals.add(new VariableItem(prop, request));
+                    }
                 }
             }
         } catch (IOException ex) {
