@@ -98,6 +98,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
             case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
             case ATTRIBUTE:
+            case RULE: return item.isSmart() ? 482 - SMART_TYPE : 482;
             case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
             case PROPERTY:
             case METHOD: return item.isSmart() ? 500 - SMART_TYPE : 500;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -118,6 +119,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         sharableProject = new javax.swing.JCheckBox();
         setAsMainCheckBox = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
+        lblHint = new javax.swing.JLabel();
 
         projectNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         projectNameLabel.setLabelFor(projectNameTextField);
@@ -164,6 +166,8 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
 
+        lblHint.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "HINT_LibrariesFolder")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -172,30 +176,29 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                 .add(createdFolderLabel)
                 .add(339, 339, 339))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(projectLocationLabel)
+                    .add(projectNameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(projectNameLabel)
-                        .add(18, 18, 18)
-                        .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(projectLocationLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
-                            .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseButton))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(sharableProject)
                     .add(layout.createSequentialGroup()
                         .add(librariesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 296, Short.MAX_VALUE)
+                            .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseLibraries))
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(setAsMainCheckBox)
                 .addContainerGap())
@@ -224,9 +227,11 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .add(librariesLabel)
                     .add(browseLibraries)
                     .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lblHint)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -281,6 +286,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
         librariesLocation.setEnabled(sharableProject.isSelected());
         browseLibraries.setEnabled(sharableProject.isSelected());
         librariesLabel.setEnabled(sharableProject.isSelected());
+        lblHint.setEnabled(sharableProject.isSelected());
         if (sharableProject.isSelected()) {
            librariesLocation.setText(currentLibrariesLocation);
         } else {
@@ -416,6 +422,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField createdFolderTextField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblHint;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JTextField librariesLocation;
     private javax.swing.JLabel projectLocationLabel;

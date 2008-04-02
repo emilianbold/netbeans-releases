@@ -525,7 +525,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     static boolean matches(Template<?> t, Pair<?> item, boolean deepCheck) {
         String id = t.getId();
 
-        if ((id != null) && !item.getId().equals(id)) {
+        if (id != null && !id.equals(item.getId())) {
             return false;
         }
 

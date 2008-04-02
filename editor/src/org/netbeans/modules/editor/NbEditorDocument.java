@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
+import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
@@ -71,6 +72,8 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.AnnotationDesc;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
@@ -297,7 +300,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     /** Implementation of AnnotationDesc, which delegate to Annotation instance
      * defined in org.openide.text package.
      */
-    static class AnnotationDescDelegate extends AnnotationDesc {
+    static class AnnotationDescDelegate extends AnnotationDesc implements Lookup.Provider {
         
         private Annotation delegate;
         private PropertyChangeListener l;
@@ -328,7 +331,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             };
             delegate.addPropertyChangeListener(l);
         }
-        
+
         public String getAnnotationType() {
             return delegate.getAnnotationType();
         }
@@ -352,9 +355,12 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 return 0;
             }
         }
+
+        public Lookup getLookup() {
+            return Lookups.singleton(delegate);
+        }
         
     }
-    
     
     class NbPrintContainer extends AttributedCharacters implements PrintContainer {
 

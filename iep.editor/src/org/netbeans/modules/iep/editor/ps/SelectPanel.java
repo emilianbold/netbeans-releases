@@ -70,6 +70,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -82,7 +84,7 @@ import org.openide.util.NbBundle;
 public class SelectPanel extends JPanel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(SelectPanel.class.getName());
     
-    private static Set QUANTITY_TYPES = new HashSet();
+    private static Set<String> QUANTITY_TYPES = new HashSet<String>();
     static {
 //        QUANTITY_TYPES.add(SQL_TYPE_TINYINT);
 //        QUANTITY_TYPES.add(SQL_TYPE_SMALLINT);
@@ -109,7 +111,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
     private static SmartTextField mTextFieldExpression;
     private static AttributeDropNotificationListener mTextFieldExpressionDropHandler;
     private static JComboBox mComboBoxSqlType;
-    private static Vector mSqlType;
+    private static Vector<String> mSqlType;
    
     
     private IEPModel mModel;
@@ -156,7 +158,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         
         mTextFieldExpression = new SmartTextField(truncateColumn, mTextFieldExpressionDropHandler);
         
-        mSqlType = new Vector();
+        mSqlType = new Vector<String>();
         mSqlType.add("");
         for(int i = 0; i < SQL_TYPE_NAMES.length; i++)
             mSqlType.add(SQL_TYPE_NAMES[i]);
@@ -175,6 +177,14 @@ public class SelectPanel extends JPanel implements SharedConstants {
     
     public void removeAttributeDropNotificationListener(AttributeDropNotificationListener listener) {
     	this.mListernerList.remove(AttributeDropNotificationListener.class, listener);
+    }
+    
+    protected DefaultMoveableRowTableModel createTableModel() {
+    	return new DefaultMoveableRowTableModel();
+    }
+    
+    protected boolean isAddEmptyRow() {
+    	return true;
     }
     
     private void initAttributeMetadataTables() {
@@ -284,7 +294,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         add(topPane, BorderLayout.CENTER);
         JPanel pane = new JPanel();
         pane.setLayout(new BorderLayout(5, 5));
-        mTableModel = new DefaultMoveableRowTableModel();
+        mTableModel = createTableModel();
         if (mReadOnly) {
             mTable = new MoveableRowTable(mTableModel) {
                 public boolean isCellEditable(int row, int column) {
@@ -295,25 +305,10 @@ public class SelectPanel extends JPanel implements SharedConstants {
                 }
             };
         } else {
-            mTable = new MoveableRowTable(mTableModel) {
-              public boolean isCellEditable(int row, int column) {
-                  //Working on this code fragment.
-                   /* if(column == 2 ) { // to ensure non editability of scale and size column in case of non varchar.
-                        if(mTableModel.getValueAt(row,1) != null && mTableModel.getValueAt(row,1).toString().equals(SQL_TYPE_VARCHAR)) {
-                            return true;
-                        } else {
-                            return false;
-                        } 
-                    }
-                    */ 
-                    return true;
-                    }
-                     
-                   
-            };
+            mTable = new MoveableRowTable(mTableModel);
         }
         mDropTarget = new DropTarget(mTable, new MyDropTargetAdapter());
-        Vector data = new Vector();
+        Vector<Vector<String>> data = new Vector<Vector<String>>();
         try {
         	SchemaComponent outputSchema = mComponent.getOutputSchemaId();
         	
@@ -322,10 +317,10 @@ public class SelectPanel extends JPanel implements SharedConstants {
             		List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             		Iterator<SchemaAttribute> attrIt = attrs.iterator();
             		String fromColumnListStr = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getValue();
-            		List fromColumnList = (List) mComponent.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().parse(fromColumnListStr);
+            		List<String> fromColumnList = (List<String>) mComponent.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().parse(fromColumnListStr);
             		int j = 0;
 	            	while(attrIt.hasNext()) {
-	            		Vector r = new Vector();
+	            		Vector<String> r = new Vector<String>();
                         r.add(fromColumnList.get(j));
                         
 	            		SchemaAttribute sa = attrIt.next();
@@ -372,7 +367,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
             		List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             		Iterator<SchemaAttribute> attrIt = attrs.iterator();
             		while(attrIt.hasNext()) {
-	            		Vector r = new Vector();
+	            		Vector<String> r = new Vector<String>();
                         
 	            		SchemaAttribute sa = attrIt.next();
 	            		String attributeName = sa.getAttributeName();
@@ -473,8 +468,8 @@ public class SelectPanel extends JPanel implements SharedConstants {
                     }
                 }
                 */
-                if(data.size() == 0) {
-                    Vector r = new Vector();
+                if(data.size() == 0 && isAddEmptyRow()) {
+                    Vector<String> r = new Vector<String>();
                     if (mHasExpressionColumn) {
                         r.add("");
                     }
@@ -486,21 +481,23 @@ public class SelectPanel extends JPanel implements SharedConstants {
                     data.add(r);
                 }
             } else {
-                Vector r = new Vector();
-                if (mHasExpressionColumn) {
-                    r.add("");
-                }
-                r.add("");
-                r.add("");
-                r.add("");
-                r.add("");
-                r.add("");
-                data.add(r);
+            	if(isAddEmptyRow()) {
+	                Vector<String> r = new Vector<String>();
+	                if (mHasExpressionColumn) {
+	                    r.add("");
+	                }
+	                r.add("");
+	                r.add("");
+	                r.add("");
+	                r.add("");
+	                r.add("");
+	                data.add(r);
+            	}
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
-        Vector colTitle = new Vector();
+        Vector<String> colTitle = new Vector<String>();
         if (mHasExpressionColumn) {
             colTitle.add(NbBundle.getMessage(SelectPanel.class, "SelectPanel.EXPRESSION"));
         }
@@ -630,21 +627,6 @@ public class SelectPanel extends JPanel implements SharedConstants {
         topPane.add(pane, BorderLayout.CENTER);
     }
     
-//    public List getAttributeMetadataAsList() {
-//        List attributeMetadataList = new ArrayList();
-//        Vector r = mTableModel.getDataVector();
-//        for (int i = 0, I = r.size(); i < I; i++) {
-//            Vector c = (Vector) r.elementAt(i);
-//            if (!(c.elementAt(mNameCol) == null) && !(c.elementAt(mNameCol).equals(""))) {
-//                attributeMetadataList.add(c.elementAt(mNameCol));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 1));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 2));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 3));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 4));
-//            }
-//        }
-//        return attributeMetadataList;
-//    }
     
    
     public List<SchemaAttribute> getAttributes() {
@@ -676,12 +658,35 @@ public class SelectPanel extends JPanel implements SharedConstants {
         return attributeList;
     }
     
+    public void setAttributes(List<SchemaAttribute> attributes) {
+    	if(attributes == null) {
+    		return;
+    	}
+    	
+    	Iterator<SchemaAttribute> it = attributes.iterator();
+    	while(it.hasNext()) {
+    		SchemaAttribute sa = it.next();
+    		
+    		String name = sa.getAttributeName();
+    		String type = sa.getAttributeType();
+    		String size = sa.getAttributeSize();
+    		String scale = sa.getAttributeScale();
+    		String comment = sa.getAttributeComment();
+    		
+    		mTableModel.addRow(mHasExpressionColumn?
+                    new Object[] {"", name, type, size, scale, comment} :
+                    new Object[] {name, type, size, scale, comment});
+                int rcount = mTable.getRowCount();
+                mTable.setRowSelectionInterval(rcount - 1, rcount - 1);
+    	}
+    }
+    
     public boolean hasExpressionList() {
         return mHasExpressionColumn;
     }
     
     public List getExpressionList() {
-        List expList = new ArrayList();
+        List<String> expList = new ArrayList<String>();
         if (!mHasExpressionColumn) {
             return expList;
         }
@@ -689,14 +694,14 @@ public class SelectPanel extends JPanel implements SharedConstants {
         for (int i = 0, I = r.size(); i < I; i++) {
             Vector c = (Vector) r.elementAt(i);
             if (!(c.elementAt(1) == null) && !(c.elementAt(1).equals(""))) {
-                expList.add(c.elementAt(0));
+                expList.add((String) c.elementAt(0));
             }
         }
         return expList;
     }
     
     public List getToColumnList() {
-        List toList = new ArrayList();
+        List<String> toList = new ArrayList<String>();
         if (!mHasExpressionColumn) {
             return toList;
         }
@@ -704,7 +709,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         for (int i = 0, I = r.size(); i < I; i++) {
             Vector c = (Vector) r.elementAt(i);
             if (!(c.elementAt(1) == null) && !(c.elementAt(1).equals(""))) {
-                toList.add(c.elementAt(1));
+                toList.add((String)c.elementAt(1));
             }
         }
         return toList;

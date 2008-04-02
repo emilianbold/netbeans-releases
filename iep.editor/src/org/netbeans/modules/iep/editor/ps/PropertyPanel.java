@@ -29,6 +29,8 @@ import java.text.ParseException;
 import java.util.Calendar;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.lib.TcgProperty;
@@ -247,7 +249,7 @@ public class PropertyPanel {
 //        return panel;
 //    }
     
-    public static PropertyPanel createSingleLineTextPanel(String label, Property prop, JTextFieldFilter tff, boolean createPanel) {
+    public static PropertyPanel createSingleLineTextPanel(String label, Property prop, Document tff, boolean createPanel) {
         PropertyPanel panel = new PropertyPanel(label, prop) {
             public String getStringValue() {
                 return ((JTextField)input[0]).getText();
@@ -344,6 +346,10 @@ public class PropertyPanel {
     
     public static PropertyPanel createSingleLineTextPanel(String label, Property prop, boolean createPanel) {
         return createSingleLineTextPanel(label, prop, JTextFieldFilter.newAlphaNumericUnderscore(), createPanel);
+    }
+    
+    public static PropertyPanel createSingleLineTextPanelWithoutFilter(String label, Property prop, boolean createPanel ) {
+        return createSingleLineTextPanel(label, prop, new PlainDocument(), createPanel);
     }
     
 //    public static PropertyPanel createFloatNumberPanel(String label, TcgProperty prop, boolean createPanel) {

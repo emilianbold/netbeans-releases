@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -360,6 +360,15 @@ public final class UI {
     }
   }
 
+  public static double getDouble(String value) {
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return -1.0;
+    }
+  }
+
   public static int round(double value) {
     return (int) Math.ceil(value);
   }
@@ -419,6 +428,22 @@ public final class UI {
     p.add(panel, c);
 
     return p;
+  }
+
+
+  public static String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
+  }
+
+  public static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
   }
 
   public static void startTimeln() {

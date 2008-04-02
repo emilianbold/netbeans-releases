@@ -78,6 +78,7 @@ public class ProviderUtil {
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
     public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
+    public static final Provider ECLIPSELINK_PROVIDER = new EclipseLinkProvider();
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
@@ -555,7 +556,8 @@ public class ProviderUtil {
      * 
      *@param project the project whose PUDataObject is to be get. Must not be null.
      * 
-     *@return <code>PUDataObject</code> associated with the given project; never null.
+     *@return <code>PUDataObject</code> associated with the given project or null 
+     * if there is no such <code>PUDataObject</code>.
      * 
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
@@ -565,7 +567,14 @@ public class ProviderUtil {
         
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
-            puFileObject = createPersistenceDDFile(project);
+            try {
+                puFileObject = createPersistenceDDFile(project);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        if (puFileObject == null) {
+            return null;
         }
         return getPUDataObject(puFileObject);
     }
@@ -575,24 +584,19 @@ public class ProviderUtil {
      * persistence units (<tt>persistence.xml</tt>). <i>Todo: move somewhere else?</i>
      * @return FileObject representing <tt>persistence.xml</tt>.
      */
-    private static FileObject createPersistenceDDFile(Project project){
-        final FileObject[] dd = new FileObject[1];
-        try {
-            final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
-            // must create the file using AtomicAction, see #72058
-            persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() {
-                    try {
-                        dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
-                                "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    private static FileObject createPersistenceDDFile(Project project) throws IOException {
+        final FileObject persistenceLocation = PersistenceLocation.createLocation(project);
+        if (persistenceLocation == null) {
+            return null;
         }
+        final FileObject[] dd = new FileObject[1];
+        // must create the file using AtomicAction, see #72058
+        persistenceLocation.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
+                        "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
+            }
+        });
         return dd[0];
     }
     
@@ -635,7 +639,7 @@ public class ProviderUtil {
      */
     public static Provider[] getAllProviders() {
         return new Provider[]{
-            TOPLINK_PROVIDER, HIBERNATE_PROVIDER, 
+            TOPLINK_PROVIDER, ECLIPSELINK_PROVIDER, HIBERNATE_PROVIDER, 
             KODO_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     

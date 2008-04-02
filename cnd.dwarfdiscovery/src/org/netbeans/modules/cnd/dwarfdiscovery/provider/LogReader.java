@@ -96,7 +96,7 @@ public class LogReader {
                         if (oneMoreLine == null) {
                             break;
                         }
-                        line = line.substring(0, line.length()-2) + " " + oneMoreLine.trim(); //NOI18N
+                        line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                     }
                     line = trimBackApostropheCalls(line);
 

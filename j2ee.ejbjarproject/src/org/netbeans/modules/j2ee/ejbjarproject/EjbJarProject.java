@@ -147,6 +147,7 @@ import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
@@ -378,6 +379,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,
@@ -404,7 +406,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                         EjbJarProjectProperties.META_INF),
                 QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-                QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING),
+                encodingQuery,
                 new RecommendedTemplatesImpl(updateHelper),
                 refHelper,
                 classPathExtender,
@@ -419,7 +421,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
-                new EjbJarTemplateAttributesProvider(helper),
+                QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -954,6 +956,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesSupport.isBroken(EjbJarProject.this)) {
+                apiWebServicesSupport.showBrokenAlert(EjbJarProject.this);
+            }
+            else if(apiWebServicesClientSupport.isBroken(EjbJarProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(EjbJarProject.this);
+            }
         }
         
         private void updateProject() {
@@ -968,7 +976,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(classPathModifier.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);

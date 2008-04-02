@@ -282,12 +282,13 @@ public class RailsInstallationPanel extends JPanel {
         Runnable asyncCompletionTask = new InstallationComplete();
         Gem rails = new Gem("rails", null, null); // NOI18N
         Gem jdbc = new Gem("ActiveRecord-JDBC", null, null); // NOI18N
-        Gem[] gems = new Gem[] { rails, jdbc };
-        if (gemManager().isValidRails((false))) {
+        Gem[] gems = new Gem[]{rails, jdbc};
+        RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(platform());
+        if (railsInfo.getVersion() == null) {
+            gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
+        } else {
             // Already installed: update
             gemManager().update(gems, this, false, false, true, asyncCompletionTask);
-        } else {
-            gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
         }
     }//GEN-LAST:event_railsButtonActionPerformed
 

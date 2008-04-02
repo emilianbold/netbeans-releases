@@ -55,13 +55,14 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
+import org.netbeans.modules.ruby.rubyproject.templates.NewRubyFileWizardIterator.Type;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 /**
- * @autho!r Tor Norbye
+ * @author Tor Norbye
  */
 public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
     
@@ -85,7 +86,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         return projectFolder;
     }
     
-    protected void createTemplate(String newName, String templateName, int type,
+    protected void createTemplate(String newName, String templateName, Type type,
             Map<String,String> createProperties) throws Exception {
         //MockServices.setServices(GsfDataLoader.class);
         RubyProject p = createTestProject();
@@ -179,7 +180,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
 
     public void testNewFile() throws Exception {
         Map<String,String> map = Collections.emptyMap();
-        createTemplate("createdfile", "main.rb", NewRubyFileWizardIterator.TYPE_FILE, map);
+        createTemplate("createdfile", "main.rb", Type.FILE, map);
     }
 
     public void testNewClass() throws Exception {
@@ -187,14 +188,14 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         map.put("class", "MyClass");
         map.put("module", "OutermostModule::OtherModule::InnerModule");
         map.put("extend", "ParentModule::ParentClass");
-        createTemplate("createdclass", "class.rb", NewRubyFileWizardIterator.TYPE_CLASS, map);
+        createTemplate("createdclass", "class.rb", Type.CLASS, map);
     }
 
     public void testNewModule() throws Exception {
         Map<String,String> map = new HashMap<String,String>();
         map.put("module", "MyModule");
         map.put("outermodules", "OutermostModule::OtherModule::InnerModule");
-        createTemplate("createdmodule", "module.rb", NewRubyFileWizardIterator.TYPE_MODULE, map);
+        createTemplate("createdmodule", "module.rb", Type.MODULE, map);
     }
 
     public void testNewTest() throws Exception {
@@ -203,7 +204,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         map.put("classfile", "foo");
         map.put("module", "OutermostModule::OtherModule::InnerModule");
         map.put("extend", "Test::Unit::TestCase");
-        createTemplate("createdtest", "test.rb", NewRubyFileWizardIterator.TYPE_TEST, map);
+        createTemplate("createdtest", "test.rb", Type.TEST, map);
     }
 
     public void testNewSpec() throws Exception {
@@ -211,6 +212,6 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         map.put("classname", "FireFly");
         map.put("classfile", "fire_fly");
         map.put("classfield", "fire_fly");
-        createTemplate("createdspec", "rspec.rb", NewRubyFileWizardIterator.TYPE_SPEC, map);
+        createTemplate("createdspec", "rspec.rb", Type.SPEC, map);
     }
 }

@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 
@@ -52,7 +50,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         XPathSchemaContext result = parentContext;
         for (SchemaComponent sComp : pathList) {
             result = new SimpleSchemaContext(result, sComp);
-        }
+            }
         //
         return result;
     }
@@ -101,9 +99,18 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         // in this context and it always is implied as used!
     }
 
+    public String toStringWithoutParent() {
+        StringBuilder sb = new StringBuilder();
+        if (mSchemaCompPair != null) {
+            SchemaComponent sComp = mSchemaCompPair.getComp();
+            SchemaCompPair.appendCompName(sb, sComp);
+        }
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         //
         if (mParentContext != null) {
             sb.append(mParentContext.toString());
@@ -111,8 +118,7 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         sb.append(LocationStep.STEP_SEPARATOR);
         //
         if (mSchemaCompPair != null) {
-            SchemaComponent sComp = mSchemaCompPair.getComp();
-            SchemaCompPair.appendCompName(sb, sComp);
+            sb.append(toStringWithoutParent());
         }
         //
         return sb.toString();
@@ -160,5 +166,4 @@ public class SimpleSchemaContext implements XPathSchemaContext {
         }
         return false;
     }
-    
 }

@@ -153,6 +153,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
+    // TODO - make delay configurable?
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
     
     private static RepositoryUpdater instance;
@@ -1323,7 +1324,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.1RC2");
+                        int rubyIndex = path.indexOf("jruby-1.1");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }
@@ -1864,10 +1865,20 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 isBigFile = true;
                             }
                         }
+
+                        // See 131671 for example -- this may be a file like
+                        // ".#foo.rb" which is technically a Ruby file, but a shortlived
+                        // one that we don't want to bother with. .# files tend to be
+                        // shortlived backup files.
+                        if (active.getNameExt().startsWith(".#")) { // NOI18N
+                            state  = 0;
+                            active = null;
+                            continue;
+                        }
                         
                         if (handle != null && active != null) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber);
+    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber + ", file=" + active.getNameExt());
 }
                             if (fileCount > 0 && fileNumber <= fileCount) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
