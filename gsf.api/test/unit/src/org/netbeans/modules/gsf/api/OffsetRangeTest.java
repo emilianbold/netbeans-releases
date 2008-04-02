@@ -38,51 +38,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.sql.framework.ui.output.dataview;
 
-import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.sql.framework.model.SQLDefinition;
-import org.netbeans.modules.sql.framework.model.SQLJoinView;
-import org.netbeans.modules.sql.framework.model.SQLObject;
-import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
+package org.netbeans.modules.gsf.api;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author Ahimanikya Satapathy
+ * @author Tor Norbye
  */
-public class JoinViewDataPanel extends DataOutputPanel {
+public class OffsetRangeTest extends NbTestCase {
 
-    private static transient final Logger mLogger = Logger.getLogger(JoinViewDataPanel.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
-
-    public JoinViewDataPanel(SQLJoinView etlObject, SQLDefinition sqlDefinition) {
-        super(etlObject, sqlDefinition, false, false);
+    public OffsetRangeTest(String testName) {
+        super(testName);
     }
 
-    public void generateResult() {
-        generateResult(this.table);
+    public void testOverlaps() {
+        OffsetRange range1 = new OffsetRange(1, 4);
+        OffsetRange range2 = new OffsetRange(2, 6);
+        OffsetRange range3 = new OffsetRange(4, 6);
+        OffsetRange range4 = new OffsetRange(0, 1);
+        OffsetRange range5 = new OffsetRange(0, 6);
+        assertTrue(range1.overlaps(range2));
+        assertTrue(range2.overlaps(range1));
+        assertFalse(range1.overlaps(range3));
+        assertFalse(range3.overlaps(range1));
+        assertFalse(range1.overlaps(range4));
+        assertFalse(range4.overlaps(range1));
+        assertTrue(range1.overlaps(range5));
+        assertTrue(range5.overlaps(range1));
+        
+        assertFalse(range1.overlaps(OffsetRange.NONE));
+        assertFalse(OffsetRange.NONE.overlaps(range5));
+        assertFalse(OffsetRange.NONE.overlaps(OffsetRange.NONE));
+    }
+    
+    public void testGetStart() {
+        OffsetRange range = new OffsetRange(1, 4);
+        assertEquals(1, range.getStart());
     }
 
-    public void generateResult(SQLObject aTable) {
-        this.table = aTable;
-        String nbBundle1 = mLoc.t("BUND350: Data: {0}", table.getDisplayName());
-        this.setName(nbBundle1.substring(15));
-        String nbBundle2 = mLoc.t("BUND351: Loading Data");
-        String title = nbBundle2.substring(15);
-        String nbBundle3 = mLoc.t("BUND352: Loading from database, please wait...");
-        String msg = nbBundle3.substring(15);
-        UIUtil.startProgressDialog(title, msg);
-        generateSelectAllTableData();
+    public void testGetEnd() {
+        OffsetRange range = new OffsetRange(1, 4);
+        assertEquals(4, range.getEnd());
     }
 
-    //select all columns and rows and show to the user
-    private void generateSelectAllTableData() {
-        refreshButton.setEnabled(false);
-        refreshField.setEnabled(false);
-        DataViewWorkerThread queryThread = new DataViewWorkerThread(table, this);
-        queryThread.start();
+    public void testGetLength() {
+        OffsetRange range = new OffsetRange(1, 4);
+        assertEquals(3, range.getLength());
+    }
+
+    public void testContainsInclusive() {
+        OffsetRange range = new OffsetRange(1, 4);
+        assertTrue(range.containsInclusive(1));
+        assertTrue(range.containsInclusive(3));
+        assertTrue(range.containsInclusive(4));
+        assertFalse(range.containsInclusive(5));
+        assertFalse(range.containsInclusive(0));
     }
 }
-
-    
-

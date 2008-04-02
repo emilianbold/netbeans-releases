@@ -249,7 +249,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
-        initialUserName = HgModuleConfig.getDefault().getUserName();
+        initialUserName = HgModuleConfig.getDefault().getSysUserName();
         userNameTextField.setText(initialUserName);
         executablePathTextField.setText(HgModuleConfig.getDefault().getExecutableBinaryPath());
         exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
