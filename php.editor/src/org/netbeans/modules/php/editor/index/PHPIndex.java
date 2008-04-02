@@ -179,13 +179,40 @@ public class PHPIndex {
                 
                 if (funcName.toLowerCase().startsWith(name.toLowerCase())) {
                     IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            classMap.getPersistentUrl(), funcName, null, 0, this, false);
+                            classMap.getPersistentUrl(), funcName, className, 0, this, false);
 
                     functions.add(func);
                 }
             }
         }
         return functions;
+    }
+    
+    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) {
+        final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
+        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult classMap : classSearchResult) {
+            String[] signatures = classMap.getValues(PHPIndexer.FIELD_FIELD);
+
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                int firstSemicolon = signature.indexOf(";");
+                String propName = signature.substring(0, firstSemicolon);
+                
+                if (propName.toLowerCase().startsWith(name.toLowerCase())) {
+                    IndexedConstant prop = new IndexedConstant(propName, className,
+                            this, classMap.getPersistentUrl(), null, 0);
+
+                    properties.add(prop);
+                }
+            }
+        }
+        return properties;
     }
     
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {

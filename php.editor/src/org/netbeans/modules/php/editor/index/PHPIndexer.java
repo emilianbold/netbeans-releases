@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
@@ -144,7 +145,7 @@ public class PHPIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.1.6"; // NOI18N
+        return "0.1.7"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -223,7 +224,13 @@ public class PHPIndexer implements Indexer {
 
                 if (statement instanceof FieldsDeclaration) {
                     FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
-                    // TODO index fields
+                    
+                    for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
+                        if (field.getName().getName() instanceof Identifier) {
+                            Identifier identifier = (Identifier) field.getName().getName();
+                            document.addPair(FIELD_FIELD, identifier.getName() + ";", true);
+                        }
+                    }
                 }
 
             }
