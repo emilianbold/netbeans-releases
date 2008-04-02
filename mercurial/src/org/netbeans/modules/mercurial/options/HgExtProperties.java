@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mercurial.options;
 
-import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -48,19 +47,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.Properties;
 import java.util.Enumeration;
-import javax.swing.JOptionPane;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,14 +66,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.options.PropertiesPanel;
 import org.netbeans.modules.mercurial.options.PropertiesTable;
 import org.netbeans.modules.mercurial.ui.properties.HgPropertiesNode;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -106,7 +94,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
         panel.getComboName().setEditable(true);
         panel.getBtnAdd().setEnabled(false);
         initPropertyNameCbx();
-        refreshProperties();
+        refreshProperties(); 
     }
     
     public PropertiesPanel getPropertiesPanel() {
@@ -176,6 +164,8 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                         i++;
                      }
                      propTable.setNodes(hgProps);
+                     setSelected(0);
+                     propTable.getTable().getSelectionModel().setSelectionInterval(0,0);
                 }
             };
             support.start(rp, null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress")); // NOI18N
@@ -231,11 +221,15 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     }
 
     public void removeProperties() {
-        final int[] rows = propTable.getSelectedItems();
+        final int[] rows = propTable.getSelectedItems();       
         // No rows selected
         if (rows.length == 0) return;
         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-        HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length - rows.length];
+        HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length - rows.length];        
+        // Translate view index to model index
+        for(int i = 0; i < rows.length; i++){
+            rows[i] = propTable.getModelIndex(rows[i]);
+        }
         int j = 0;
         int k = 0;
         for (int i = 0; i < hgPropertiesNodes.length; i++) {
@@ -246,6 +240,8 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             }
         }
         propTable.setNodes(hgProps);
+        panel.getComboName().getEditor().setItem(""); // NOI18N
+        panel.getTxtAreaValue().setText(""); // NOI18N
     }
     
     public void insertUpdate(DocumentEvent event) {
@@ -272,25 +268,34 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             panel.getBtnAdd().setEnabled(true);
         }
     }    
-    
+
+    private void setSelected(int index) {
+        HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
+        if (hgPropertiesNodes == null || hgPropertiesNodes.length == 0 || index < 0) {
+            return;
+        }
+        final String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(index)].getName();
+        final String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(index)].getValue();
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                ComboBoxModel targetsModel;
+                Set<String> initialSet = new LinkedHashSet<String>();
+                initialSet.add(hgPropertyName);
+                targetsModel = new DefaultComboBoxModel(new Vector<String>(initialSet));
+                panel.getComboName().setModel(targetsModel);
+                panel.getTxtAreaValue().setText(hgPropertyValue);               
+            }
+        });
+    }
+
     public class TableMouseListener extends MouseAdapter {
         
         @Override
         public void mouseClicked(MouseEvent event) {
-            //super.mouseClicked(arg0);
-            if (event.getClickCount() == 2) {
+            if (event.getClickCount() == 1) {
                 int[] rows = propTable.getSelectedItems();
-                HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-                if (hgPropertiesNodes == null)
-                    return;
-                final String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(rows[0])].getName(); 
-                final String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(rows[0])].getValue(); 
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.getComboName().getEditor().setItem(hgPropertyName);
-                        panel.getTxtAreaValue().setText(hgPropertyValue);
-                    }
-                });
+                if(rows != null && rows.length > 0) 
+                    setSelected(rows[0]);
             }
         }
 }

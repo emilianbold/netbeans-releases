@@ -54,6 +54,7 @@ import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
@@ -61,6 +62,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
@@ -114,10 +116,34 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
   }
 
-  // # 131658
   @Override
   public void visit(To to)
   {
+    // # 125525
+    checkPartnerLink(to);
+    // # 131658
+    checkVariable(to);
+  }
+
+  private void checkPartnerLink(To to) {
+    BpelReference<PartnerLink> ref = to.getPartnerLink();
+
+    if (ref == null) {
+      return;
+    }
+    PartnerLink partnerLink = ref.get();
+
+    if (partnerLink == null) {
+      return;
+    }
+    WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
+
+    if (ref1 == null || ref1.get() == null) {
+      addError("FIX_To_PartnerLink", to);
+    }
+  }
+
+  private void checkVariable(To to) {
     String value = to.getContent();
 //out();
 //out("to: " + value);
@@ -127,6 +153,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     value = value.trim();
 
+    if (value.length() == 0) {
+      return;
+    }
     if ( !value.startsWith("$")) { // NOI18N
       addError("FIX_To_Value", to, value); // NOI18N
     }

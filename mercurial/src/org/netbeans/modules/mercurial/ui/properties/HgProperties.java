@@ -166,7 +166,15 @@ public class HgProperties implements ListSelectionListener {
                         String hgPropertyValue = hgPropertiesNodes[i].getValue();
                         boolean bPropChanged = !(initHgProps[i].getValue()).equals(hgPropertyValue);
                         if (bPropChanged && hgPropertyValue.trim().length() >= 0 ) {
-                            HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                            if (hgPropertyName.equals(HGPROPNAME_USERNAME) &&
+                                    !HgModuleConfig.getDefault().isUserNameValid(hgPropertyValue)) {
+                                JOptionPane.showMessageDialog(null,
+                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
+                                        NbBundle.getMessage(HgProperties.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
+                                        JOptionPane.WARNING_MESSAGE);
+                            }else{
+                                HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                            }
                         }
                     }
                     HgRepositoryContextCache.resetPullDefault();

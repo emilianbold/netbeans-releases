@@ -123,9 +123,13 @@ public class LibraryTest extends JellyTestCase {
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
-        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, 1);
+        //Create EJB Module:
+        String moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreateEjbModule");
+        JCheckBoxOperator jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
-        jcbo = new JCheckBoxOperator(npnlso, 2);
+        //Create Web Application Module:
+        moduleLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NEAP_CreatWebAppModule");
+        jcbo = new JCheckBoxOperator(npnlso, moduleLabel);
         jcbo.setSelected(false);
         npnlso.finish();
         //add modules to j2ee app

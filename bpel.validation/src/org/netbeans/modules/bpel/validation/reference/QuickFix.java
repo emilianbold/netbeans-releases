@@ -94,7 +94,7 @@ class QuickFix {
       if (myVariables.length == 0) {
         return false;
       }
-      if (myVariables.length != 1) { // todo r
+      if (myVariables.length != 1) { // todo m
         return false;
       }
       return true;

@@ -475,24 +475,26 @@ public class XPathModelImpl implements XPathModel {
             return null;
         }
         //
-        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
-        if (casts == null) {
-            return null;
-        }
-        //
-        for (XPathCast cast : casts) {
-            XPathExpression castPath = cast.getPath();
-            if (castPath instanceof XPathSchemaContextHolder) {
-                XPathSchemaContext castPathSContext = 
-                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
-                if (castPathSContext != null && 
-                        castPathSContext.equalsChain(context)) {
-                    return cast;
-                }
-            }
-        }
-        //
-        return null;
+        return myXPathCastResolver.getCast(context);
+        
+//        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+//        if (casts == null) {
+//            return null;
+//        }
+//        //
+//        for (XPathCast cast : casts) {
+//            XPathExpression castPath = cast.getPathExpression();
+//            if (castPath instanceof XPathSchemaContextHolder) {
+//                XPathSchemaContext castPathSContext = 
+//                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
+//                if (castPathSContext != null && 
+//                        castPathSContext.equalsChain(context)) {
+//                    return cast;
+//                }
+//            }
+//        }
+//        //
+//        return null;
     }
 
 //    // vlv
@@ -1165,7 +1167,7 @@ public class XPathModelImpl implements XPathModel {
                 // ex.printStackTrace();
             } finally {
                 //
-                // restor context
+                // restore context
                 parentSchemaContext = lpInitialContext;
             }
         }
