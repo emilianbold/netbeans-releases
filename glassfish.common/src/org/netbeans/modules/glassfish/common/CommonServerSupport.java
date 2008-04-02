@@ -192,7 +192,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(properties, null, startServerListener, stateListener));
+                new StartTask(properties, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }

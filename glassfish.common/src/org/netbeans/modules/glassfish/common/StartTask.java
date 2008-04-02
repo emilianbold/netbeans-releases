@@ -47,14 +47,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -67,17 +64,13 @@ public class StartTask extends BasicTask<OperationState> {
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     private static final String GFV3_SNAPSHOT_JAR_NAME = "glassfish-10.0-SNAPSHOT.jar"; // NOI18N"
 
-    private final JavaPlatform platform;
-    
     /**
      * 
      * @param dm 
      * @param startServer 
      */
-    public StartTask(Map<String, String> properties, JavaPlatform platform, 
-            OperationStateListener... stateListener) {
+    public StartTask(Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
-        this.platform = platform != null ? platform : JavaPlatform.getDefault();
     }
     
     /**
@@ -156,12 +149,29 @@ public class StartTask extends BasicTask<OperationState> {
     
     private String[] createEnvironment() {
         List<String> envp = new ArrayList<String>();
-        FileObject fo = platform.getInstallFolders().iterator().next();
-        String javaHome = FileUtil.toFile(fo).getAbsolutePath();
-        String javaEnv = "JAVA_HOME=" + javaHome;
-        envp.add(javaEnv); // NOI18N
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv);
+        String jdkHome = getJdkHome();
+        if(jdkHome != null) {
+            String javaEnv = "JAVA_HOME=" + jdkHome;
+            envp.add(javaEnv); // NOI18N
+            Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv);
+        } else {
+            Logger.getLogger("glassfish").log(Level.WARNING, "Unable to set JAVA_HOME for GlassFish V3 enviroment.");
+        }
         return (String[]) envp.toArray(new String[envp.size()]);
+    }
+    
+    private String getJdkHome() {
+        String result = null;
+        String jdkHome = System.getProperty("jdk.home");
+        if(jdkHome == null || jdkHome.length() == 0) {
+            String javaHome = System.getProperty("java.home");
+            if(javaHome.endsWith(File.separatorChar + "jre")) {
+                result = javaHome.substring(javaHome.length()-4);
+            }
+        } else {
+            result = jdkHome;
+        }
+        return result;
     }
     
     private NbProcessDescriptor createProcessDescriptor() {
@@ -180,13 +190,18 @@ public class StartTask extends BasicTask<OperationState> {
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argumentBuf);
         appendJavaOpts(argumentBuf);
-        argumentBuf.append(" -client -jar \"");
-        argumentBuf.append(jarLocation);
-        argumentBuf.append("\"");
+        argumentBuf.append(" -client -jar ");
+        argumentBuf.append(quote(jarLocation));
         
         String arguments = argumentBuf.toString();
         Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + arguments);
         return new NbProcessDescriptor(startScript, arguments); // NOI18N
+    }
+    
+    // quote the string if it contains spaces.  Might want to expand to all
+    // white space (tabs, localized white space, etc.)
+    private String quote(String path) {
+        return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
     
     private StringBuilder appendJavaOpts(StringBuilder argumentBuf) {
