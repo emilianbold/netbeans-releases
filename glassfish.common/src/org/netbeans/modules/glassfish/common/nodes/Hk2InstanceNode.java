@@ -57,10 +57,10 @@ import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 
@@ -94,21 +94,14 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     private volatile String displayName = null;
     private volatile String shortDesc = null;
     
-    public Hk2InstanceNode(final GlassfishInstance instance, boolean showChildren) {
-        super(showChildren ? new Children.Array() : Children.LEAF, instance.getLookup());
+    public Hk2InstanceNode(final GlassfishInstance instance, boolean isFullNode) {
+        super(isFullNode ? new Hk2InstanceChildren(instance) : Children.LEAF, instance.getLookup());
         serverInstance = instance;
         setIconBaseWithExtension(ICON_BASE);
         
-        if(showChildren) {
-            getChildren().add(new Node[] {
-                new Hk2ItemNode(instance.getLookup(), 
-                        new Hk2ApplicationsChildren(instance.getLookup()),
-                        NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Apps"),
-                        Hk2ItemNode.J2EE_APPLICATION_FOLDER)
-            });
+        if(isFullNode) {
+            serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
         }
-        
-        serverInstance.addChangeListener(this);
     }
 
     @Override
