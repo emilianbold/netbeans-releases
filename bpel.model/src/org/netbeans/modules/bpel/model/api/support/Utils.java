@@ -213,7 +213,7 @@ public final class Utils {
         model.setExternalModelResolver(new ExternalModelResolver() {
             public Collection<SchemaModel> getModels(String modelNsUri) {
                 BpelModel bpelModel = ((BpelEntity) element).getBpelModel();
-                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
+                return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri, true);
             }
 
             public Collection<SchemaModel> getVisibleModels() {
