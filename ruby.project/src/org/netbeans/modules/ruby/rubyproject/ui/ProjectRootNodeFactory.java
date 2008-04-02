@@ -44,8 +44,8 @@ package org.netbeans.modules.ruby.rubyproject.ui;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -86,10 +86,10 @@ public class ProjectRootNodeFactory implements NodeFactory {
     private static class RootChildren implements NodeList<RootChildNode>, ChangeListener {
         
         private final RubyProject project;
-        private final List<ChangeListener> listeners;
+        private final List<ChangeListener> changeListeners;
         
         public RootChildren(RubyProject proj) {
-            listeners = new ArrayList<ChangeListener>();
+            changeListeners = new CopyOnWriteArrayList<ChangeListener>();
             project = proj;
         }
         
@@ -129,23 +129,17 @@ public class ProjectRootNodeFactory implements NodeFactory {
             return rootFiles;
         }
         
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            changeListeners.add(l);
         }
         
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            changeListeners.remove(l);
         }
         
         private void fireChange() {
-            List<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
-                elem.stateChanged(new ChangeEvent( this ));
+            for (ChangeListener changeListener : changeListeners) {
+                changeListener.stateChanged(new ChangeEvent(this));
             }
         }
 
