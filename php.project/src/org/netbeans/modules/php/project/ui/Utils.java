@@ -106,7 +106,13 @@ public final class Utils {
             return;
         }
 
-        String projectLocation = new File(newLocation, newSubfolderName).getAbsolutePath();
+        File file = null;
+        if (newSubfolderName == null) {
+            file = new File(newLocation);
+        } else {
+            file = new File(newLocation, newSubfolderName);
+        }
+        String projectLocation = file.getAbsolutePath();
         for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
             LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
             if (projectLocation.equals(element.getSrcRoot())) {
