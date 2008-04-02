@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchResult;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -63,7 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
-import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -180,13 +179,40 @@ public class PHPIndex {
                 
                 if (funcName.toLowerCase().startsWith(name.toLowerCase())) {
                     IndexedFunction func = (IndexedFunction) IndexedElement.create(signature,
-                            classMap.getPersistentUrl(), funcName, null, 0, this, false);
+                            classMap.getPersistentUrl(), funcName, className, 0, this, false);
 
                     functions.add(func);
                 }
             }
         }
         return functions;
+    }
+    
+    public Collection<IndexedConstant> getProperties(PHPParseResult context, String className, String name, NameKind kind) {
+        final Set<SearchResult> classSearchResult = new HashSet<SearchResult>();
+        Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
+        search(PHPIndexer.FIELD_CLASS, className, NameKind.PREFIX, classSearchResult, ALL_SCOPE, TERMS_BASE);
+
+        for (SearchResult classMap : classSearchResult) {
+            String[] signatures = classMap.getValues(PHPIndexer.FIELD_FIELD);
+
+            if (signatures == null) {
+                continue;
+            }
+
+            for (String signature : signatures) {
+                int firstSemicolon = signature.indexOf(";");
+                String propName = signature.substring(0, firstSemicolon);
+                
+                if (propName.toLowerCase().startsWith(name.toLowerCase())) {
+                    IndexedConstant prop = new IndexedConstant(propName, className,
+                            this, classMap.getPersistentUrl(), null, 0);
+
+                    properties.add(prop);
+                }
+            }
+        }
+        return properties;
     }
     
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
@@ -285,16 +311,13 @@ public class PHPIndex {
             try {
                 // return true for platform files
                 // TODO temporary implementation
-                ClassPathProviderImpl cp = project.getLookup().lookup(ClassPathProviderImpl.class);
-
-                File file = new File(new URI(url));
-                FileObject fileObject = FileUtil.toFileObject(file);
-
-                if (cp != null) {
-                    ClassPathProviderImpl.FileType fileType = cp.getFileType(fileObject);
-
-                    if (fileType == ClassPathProviderImpl.FileType.INTERNAL 
-                            || fileType == ClassPathProviderImpl.FileType.PLATFORM) {
+                PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
+                if (phpSourcePath != null) {
+                    File file = new File(new URI(url));
+                    FileObject fileObject = FileUtil.toFileObject(file);
+                    PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
+                    if (fileType == PhpSourcePath.FileType.INTERNAL
+                            || fileType == PhpSourcePath.FileType.INCLUDE) {
                         return true;
                     }
                 }
