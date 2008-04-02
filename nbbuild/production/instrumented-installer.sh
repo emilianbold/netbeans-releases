@@ -57,4 +57,4 @@ ssh $NATIVE_MAC_MACHINE sh $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $
 cd ${BASE_DIR}/installer/infra/build
 bash build.sh
 
-scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* ${WORKSPACE}/dist/installers/bundles
+scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* ${WORKSPACE}/dist/installers/bundles
