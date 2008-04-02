@@ -176,10 +176,12 @@ public class ElementUtilities {
             
                 if (indexedElement != null) {
                     String url = indexedElement.getFilenameUrl();
-                    if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
-                        sb.append(" (Core JavaScript)");
-                    } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
-                        sb.append(" (DOM)");
+                    if (url != null) {
+                        if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
+                            sb.append(" (Core JavaScript)");
+                        } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
+                            sb.append(" (DOM)");
+                        }
                     }
                 }
 

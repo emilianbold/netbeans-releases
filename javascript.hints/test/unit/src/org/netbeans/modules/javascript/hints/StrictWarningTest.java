@@ -67,9 +67,15 @@ public class StrictWarningTest extends HintTestBase {
     }
     
     public void testReservedKeyword() throws Exception {
+        goldenfileSuffix = "";
         findHints(this, new StrictWarning("msg.reserved.keyword"), "testfiles/reserved.js", null);
     }
 
+    public void testTrailingComma() throws Exception {
+        goldenfileSuffix = "";
+        findHints(this, new StrictWarning("msg.trailing.comma"), "testfiles/trailingcomma.js", null);
+    }
+    
     @Override
     protected String getGoldenFileSuffix() {
         return goldenfileSuffix;
