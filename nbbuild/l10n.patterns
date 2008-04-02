@@ -11,6 +11,7 @@
 **/docs/*.jar:**/*.xml
 **/*.jar:**/*.url
 **/defaulttheme*.jar:**/messages.properties
+exclude **/*.jar:**/Bundle_noi18n.properties
 exclude **/batik-mod.jar:
 exclude **/json-*.jar:
 exclude **/tidy-mod.jar:
