@@ -93,30 +93,42 @@ public class JsParserTest extends JsTestBase {
     }
         
     public void testPartial1() throws Exception {
-        checkParseTree("testfiles/broken1.rb", "\"str\".^", Token.GETPROP);
+        checkParseTree("testfiles/broken1.js", "\"str\".^", Token.GETPROP);
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "x.^", Token.GETPROP);
+        checkParseTree("testfiles/broken2.js", "x.^", Token.GETPROP);
     }
     
     public void testPartial3() throws Exception {
-        checkParseTree("testfiles/broken3.rb", "new String().^", Token.GETPROP);
+        checkParseTree("testfiles/broken3.js", "new String().^", Token.GETPROP);
     }
     
     public void testPartial4() throws Exception {
-        checkParseTree("testfiles/broken4.rb", "call(50,^)", Token.NUMBER);
+        checkParseTree("testfiles/broken4.js", "call(50,^)", Token.NUMBER);
     }
     
     public void testPartial5() throws Exception {
-        checkParseTree("testfiles/broken5.rb", "call(50, ^)", Token.CALL);
+        checkParseTree("testfiles/broken5.js", "call(50, ^)", Token.CALL);
     }
 
     public void testPartial6() throws Exception {
-        checkParseTree("testfiles/broken6.rb", "x = new ^", Token.SCRIPT);
+        checkParseTree("testfiles/broken6.js", "x = new ^", Token.SCRIPT);
     }
 
     public void testPartial7() throws Exception {
-        checkParseTree("testfiles/broken7.rb", "k.^", Token.GETPROP);
+        checkParseTree("testfiles/broken7.js", "k.^", Token.GETPROP);
+    }
+
+    public void testPartial8() throws Exception {
+        checkParseTree("testfiles/broken8.js", "partialLiteralName^", Token.OBJECTLIT);
+    }
+
+    public void testPartial9() throws Exception {
+        checkParseTree("testfiles/broken9.js", "x^", Token.OBJECTLIT);
+    }
+
+    public void testPartial10() throws Exception {
+        checkParseTree("testfiles/broken10.js", "xy^", Token.OBJECTLIT);
     }
 }

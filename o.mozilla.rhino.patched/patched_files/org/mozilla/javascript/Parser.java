@@ -424,11 +424,6 @@ public
     private Node enterSwitch(Node switchSelector, int lineno)
     {
         Node switchNode = nf.createSwitch(switchSelector, lineno);
-        // <netbeans>
-        int startOffset = getStartOffset();
-        // TODO: Compute end position, perhaps in exitSwitch??
-        switchNode.setSourceBounds( startOffset, startOffset);
-        // </netbeans>
         if (loopAndSwitchSet == null) {
             loopAndSwitchSet = new ObjArray();
         }
@@ -1017,6 +1012,10 @@ return null;
                 switchLoop: for (;;) {
                     tt = nextToken();
                     Node caseExpression;
+                    // <netbeans>
+                    // We need to correct the AST offsets of the case blocks
+                    int caseStart = peekedTokenStart;                    
+                    // </netbeans>                    
                     switch (tt) {
                       case Token.RC:
                         break switchLoop;
@@ -1059,7 +1058,10 @@ return null;
                     }
 
                     // caseExpression == null => add default lable
-                    nf.addSwitchCase(pn, caseExpression, block);
+                    // <netbeans>
+                    //nf.addSwitchCase(pn, caseExpression, block);
+                    nf.addSwitchCase(pn, caseExpression, block, caseStart);
+                    // </netbeans>
                 }
                 decompiler.addEOL(Token.RC);
                 nf.closeSwitch(pn);
@@ -1067,7 +1069,8 @@ return null;
                 exitSwitch();
             }
             // <netbeans>
-            setSourceOffsets(pn, startOffset);
+            int endOffset = matchedTokenEnd;
+            pn.setSourceBounds(startOffset, endOffset);
             // </netbeans>
             return pn;
           }

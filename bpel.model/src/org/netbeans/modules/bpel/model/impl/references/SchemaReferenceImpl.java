@@ -94,4 +94,5 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
     }
     
     private  SchemaReferenceBuilder.SchemaResolver myResolver;
+    private boolean mLookNotImportedModels = false;
 }

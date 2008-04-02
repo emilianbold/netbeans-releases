@@ -210,7 +210,7 @@ public class PluginsOperator extends NbDialogOperator {
     public WizardOperator installer() {
         // "NetBeans IDE Installer"
         String installerTitle = Bundle.getString(
-                "org.netbeans.modules.autoupdate.ui.Bundle",
+                "org.netbeans.modules.autoupdate.ui.wizards.Bundle",
                 "UninstallUnitWizard_Title");
         return new WizardOperator(installerTitle);
     }

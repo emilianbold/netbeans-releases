@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
+import org.netbeans.modules.bpel.mapper.multiview.MapperMultiviewElement;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
@@ -48,6 +49,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  * The class collects all type casts which are used in the edited 
@@ -142,6 +144,7 @@ public class CastManager {
             //
             return addTypeCastImpl(castedCompPath, typeCast);
         }
+        //
         return false;
     }
     
@@ -399,7 +402,7 @@ public class CastManager {
             }
             //
             TypeCast tCast = TypeCast.convert(cast);
-            if (castToUnreg.equals(tCast)) {
+            if (tCast != null && castToUnreg.equals(tCast)) {
                 // The required cast found!
                 casts.removeCast(index);
             }
