@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
@@ -61,6 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -68,6 +70,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
 /**
@@ -113,6 +116,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_CONST = "constant"; //NOI18N
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
+    static final String FIELD_INCLUDE = "include"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
         if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
@@ -145,7 +149,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.1.7"; // NOI18N
+        return "0.1.9"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -191,13 +195,36 @@ public class PHPIndexer implements Indexer {
             
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
-            
+
             Program program = result.getProgram();
+            String processedFileURL = null;
+
+            try {
+                processedFileURL = result.getFile().getFileObject().getURL().toExternalForm();
+
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            assert processedFileURL.startsWith("file:");
+            String processedFileAbsPath = processedFileURL.substring("file:".length());
+            StringBuilder includes = new StringBuilder();
             
             for (Statement statement : program.getStatements()){
                 if (statement instanceof FunctionDeclaration){
                     indexFunction(FIELD_BASE, (FunctionDeclaration)statement, document);
                 } else if (statement instanceof ExpressionStatement){
+                    ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+                    if (expressionStatement.getExpression() instanceof Include) {
+                        Include include = (Include) expressionStatement.getExpression();
+                        if (include.getExpression() instanceof Scalar) {
+                            Scalar scalar = (Scalar) include.getExpression();
+                            String rawInclude = scalar.getStringValue();
+                            String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
+                            includes.append(incl + ';');
+                        }
+                    }
+                    
                     indexConstant(statement, document);
                 } else if (statement instanceof ClassDeclaration){
                     // create a new document for each class
@@ -206,6 +233,8 @@ public class PHPIndexer implements Indexer {
                     indexClass((ClassDeclaration)statement, classDocument);
                 }
             }
+            
+            document.addPair(FIELD_INCLUDE, includes.toString(), true);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
