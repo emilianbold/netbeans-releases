@@ -58,6 +58,8 @@ import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathFactory;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.php.project.PhpSources;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -72,17 +74,7 @@ import org.openide.util.WeakListeners;
 /**
  * Defines the various (BOOT and SOURCE) class paths for a PHP project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
-
-    /**
-     * Type of file classpath is required for.
-     */
-    public static enum FileType {
-        INTERNAL, // nb internal files (signature files)
-        PLATFORM, // php include path
-        SOURCE, // project sources
-        UNKNOWN,
-    }
+public final class ClassPathProviderImpl implements ClassPathProvider, PhpSourcePath, PropertyChangeListener {
 
     /**
      * Constants for different cached classpaths.
@@ -211,12 +203,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return dirs.get(0);
     }
 
-    /**
-     * Get the file type for the given file object.
-     * @param file the input file.
-     * @return the file type for the given file object.
-     * @see FileType
-     */
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
@@ -226,7 +212,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         }
         for (FileObject dir : getPlatformPath()) {
             if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                return FileType.PLATFORM;
+                return FileType.INCLUDE;
             }
         }
         path = getSrcPath();
@@ -237,22 +223,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return FileType.UNKNOWN;
     }
 
-    /**
-     * Get all the possible path roots from PHP include path.
-     * @return all the possible path roots from PHP include path.
-     */
     public List<FileObject> getIncludePath() {
         return new ArrayList<FileObject>(getPlatformPath());
     }
 
-
-    /**
-     * Resolve absolute path for the given file name. The order is the given directory then PHP include path.
-     * @param directory the directory to which the PHP <code>include()</code> or <code>require()</code> functions
-     *                  could be resolved. Typically the directory containing the given script.
-     * @param fileName a file name or a relative path delimited by '/'.
-     * @return resolved file path or <code>null</code> if the given file is not found.
-     */
     public FileObject resolveFile(FileObject directory, String fileName) {
         Parameters.notNull("directory", directory);
         Parameters.notNull("fileName", fileName);
@@ -284,7 +258,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             case SOURCE:
                 cp = cache.get(ClassPathCache.SOURCE);
                 if (cp == null) {
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation(sourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(
+                            ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
+                            evaluator, new String[] {PhpProjectProperties.SRC_DIR}));
                     cache.put(ClassPathCache.SOURCE, cp);
                 }
                 break;
@@ -298,14 +274,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache.get(ClassPathCache.PLATFORM);
         if (cp == null) {
-            FileObject internalPath = getInternalPath();
-            List<FileObject> platformPath = getPlatformPath();
-            List<FileObject> cpItems = new ArrayList<FileObject>(platformPath.size() + 1);
-            cpItems.add(internalPath);
-            cpItems.addAll(platformPath);
-
-            cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
-                    cpItems.toArray(new FileObject[cpItems.size()]));
+            ClassPath internalClassPath =
+                    org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
+                    getInternalPath());
+            ClassPath includePath = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
+                    new String[] {PhpProjectProperties.INCLUDE_PATH}));
+            cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
+                    internalClassPath, includePath);
             cache.put(ClassPathCache.PLATFORM, cp);
         }
         return cp;

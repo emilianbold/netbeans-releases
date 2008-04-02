@@ -216,7 +216,10 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.php.editor</friend>
+                <package>org.netbeans.modules.php.project.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
