@@ -12,7 +12,7 @@
 **/*.jar:**/*.url
 **/defaulttheme*.jar:**/messages.properties
 exclude **/batik-mod.jar:
-exclude **/jason-*.jar:
+exclude **/json-*.jar:
 exclude **/tidy-mod.jar:
 exclude **/commons-*.jar:
 exclude **/jsf-extensions-*.jar:
