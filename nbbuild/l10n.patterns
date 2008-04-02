@@ -13,8 +13,10 @@
 **/defaulttheme*.jar:**/messages.properties
 exclude **/batik-mod.jar:
 exclude **/jason-*.jar:
-exclude **/jsf-extensions-*.jar:
 exclude **/tidy-mod.jar:
+exclude **/commons-*.jar:
+exclude **/jsf-extensions-*.jar:
+exclude **/jsf-impl.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
 exclude **/webui-jsf-suntheme*.jar:
