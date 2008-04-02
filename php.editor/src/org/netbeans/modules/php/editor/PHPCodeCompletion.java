@@ -139,8 +139,13 @@ public class PHPCodeCompletion implements Completable {
 
                     if (tokenId == PHPTokenId.PHP_NEW || tokenId == PHPTokenId.PHP_EXTENDS) {
                         return CompletionContext.CLASS_NAME;
-                    } else if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR){
+                    } else if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
                         return CompletionContext.CLASS_MEMBER;
+                    } else if (tokenId == PHPTokenId.PHP_STRING) {
+                        if (tokenSequence.movePrevious() 
+                                && tokenSequence.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                            return CompletionContext.CLASS_MEMBER;
+                        }
                     }
                 }
             }
