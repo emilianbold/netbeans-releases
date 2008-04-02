@@ -87,7 +87,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         LocalServer copyTarget = initCopyTarget();
         initUrl();
 
-        localServerController = new LocalServerController(localServerComboBox, localServerButton, this,
+        localServerController = LocalServerController.create(localServerComboBox, localServerButton,
                 NbBundle.getMessage(CustomizerSources.class, "LBL_SelectSourceFolderTitle"), sources);
         localServerController.selectLocalServer(sources);
 
@@ -198,7 +198,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         // copy files
         boolean isCopyFiles = copyFilesVisual.isCopyFiles();
         if (isCopyFiles) {
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", false); // NOI18N
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true); // NOI18N
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
