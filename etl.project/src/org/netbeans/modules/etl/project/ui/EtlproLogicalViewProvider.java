@@ -258,13 +258,13 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
             String nbBundle1 = mLoc.t("BUND702: Build");
-            String nbBundle2 = mLoc.t("BUND703: Clean and Build");
+            String nbBundle2 = mLoc.t("BUND703: Clean & Build");
             String nbBundle3 = mLoc.t("BUND704: Clean");
             String nbBundle4 = mLoc.t("BUND705: Generate WSDL");
-            String nbBundle5 = mLoc.t("BUND706: Generate Schema");
+            String nbBundle5 = mLoc.t("BUND706: Generate Schema...");
             String nbBundle6 = mLoc.t("BUND707: Redeploy Project");
             String nbBundle7 = mLoc.t("BUND708: Deploy Project");
-            String nbBundle10 = mLoc.t("BUND709: Bulk Loader");
+            String nbBundle10 = mLoc.t("BUND709: Generate Bulk Loader");
 
 
             return new Action[]{

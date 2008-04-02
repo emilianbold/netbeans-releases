@@ -55,6 +55,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.Action;
@@ -162,15 +163,17 @@ final class Tree extends JTree {
   }
 
   private void createOccurences() {
-    myOccurences = new ArrayList<DefaultMutableTreeNode>();
+    myOccurences = new LinkedList<DefaultMutableTreeNode>();
+//out();
     createOccurences(myRoot);
-    myIndex = -1;
+//out();
   }
 
   private void createOccurences(DefaultMutableTreeNode node) {
     Enumeration children = node.children();
 
-    if (node.isLeaf()) {
+    if (node.isLeaf() && !node.isRoot()) {
+//out("    ADD: " + node + " " + node.hashCode());
       myOccurences.add(node);
     }
     while (children.hasMoreElements()) {
@@ -392,32 +395,61 @@ final class Tree extends JTree {
     previousOccurence(getSelectedNode());
   }
 
-  private void previousOccurence(TreeNode node) {
-    myIndex--;
+  private void previousOccurence(DefaultMutableTreeNode node) {
+//out();
+//out("PREV: " + node);
+    int index;
 
-    if (myIndex < 0) {
-      myIndex = myOccurences.size() - 1;
+    if (node.isLeaf()) {
+      index = myOccurences.indexOf(node) - 1;
+//out("leaf: " + index);
     }
-    selectOccurence();
-    requestFocus();
+    else {
+      index = myOccurences.indexOf(getNearestChild(node)) - 1;
+//out("node: " + index);
+    }
+    select(index);
   }
 
   void nextOccurence() {
     nextOccurence(getSelectedNode());
   }
   
-  private void nextOccurence(TreeNode node) {
-    myIndex++;
+  private void nextOccurence(DefaultMutableTreeNode node) {
+//out();
+//out("NEXT: " + node);
+    int index;
 
-    if (myIndex == myOccurences.size()) {
-      myIndex = 0;
+    if (node.isLeaf()) {
+      index = myOccurences.indexOf(node) + 1;
+//out("leaf: " + index);
     }
-    selectOccurence();
-    requestFocus();
+    else {
+      index = myOccurences.indexOf(getNearestChild(node));
+//out("node: " + index);
+    }
+    select(index);
   }
 
-  private void selectOccurence() {
-    select(myOccurences.get(myIndex));
+  private DefaultMutableTreeNode getNearestChild(DefaultMutableTreeNode node) {
+//out();
+    DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getFirstChild();
+
+    while (child != null) {
+//out("  child: " + child);
+      if (child.isLeaf()) {
+        break;
+      }
+      child = (DefaultMutableTreeNode) child.getFirstChild();
+    }
+//out();
+    return child;
+  }
+
+  private void select(int index) {
+    if (0 <= index && index < myOccurences.size()) {
+      select(myOccurences.get(index));
+    }
   }
 
   private void select(DefaultMutableTreeNode node) {
@@ -427,6 +459,7 @@ final class Tree extends JTree {
     TreePath path = new TreePath(node.getPath());
     setSelectionPath(path);
     scrollPathToVisible(path);
+    requestFocus();
   }
 
   private void copy(TreeNode node) {
@@ -600,6 +633,7 @@ final class Tree extends JTree {
       return null;
     }
     parent.remove(node);
+    myOccurences.remove(node);
     Enumeration children = parent.children();
 
     if (children.hasMoreElements()) {
@@ -708,7 +742,6 @@ final class Tree extends JTree {
     }
   }
 
-  private int myIndex;
   private String myText;
   private Export myExport;
   private boolean myIsReformAll;
