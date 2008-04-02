@@ -47,13 +47,11 @@
     <folder name="SaaSServices">
         <folder name="AmazonS3">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties"/>
             <file name="AmazonS3Buckets.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Buckets.xml"/>
             <file name="AmazonS3Bucket.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Bucket.xml"/>
         </folder>
         <folder name="AmazonECS">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/profile.properties"/>
             <file name="AmazonECS.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonECS.xml"/>
         </folder>
     </folder>

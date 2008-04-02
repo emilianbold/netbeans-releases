@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.debugger;
+package org.netbeans.modules.bpel.model.api.references;
 
-import junit.framework.TestCase;
-
-public class ToolTipAnnotationTest extends TestCase {
-
-    public ToolTipAnnotationTest(String testName) {
-        super(testName);
-    }
-
-    public void testGetExpressionToEvaluate() {
-        String line = "    @a1, @a1_gem = util_gem 'a', '1' do |s| s.executables << 'a_bin' end\n";
-        assertEquals("variable parsed", "@a1_gem", ToolTipAnnotation.getExpressionToEvaluate(line, 13));
-        String line2 = "while eof?\n";
-        assertEquals("question mark parsed", "eof?", ToolTipAnnotation.getExpressionToEvaluate(line2, 8));
-    }
-
-    public void testIsRubyIdentifier() {
-        assertTrue("@ is identifier", ToolTipAnnotation.isRubyIdentifier('@'));
-        assertTrue("? is identifier", ToolTipAnnotation.isRubyIdentifier('?'));
-    }
+/**
+ * Marker interface. It indicates which rules should be used to 
+ * resolve external references. By the default behaviour, BPEL model does
+ * not allow refering to not imported external models. A BPEL entity, 
+ * which implements this interface, can refer to not imported models. 
+ * 
+ * See Cast extension.
+ * 
+ * @author nk160297
+ */
+public interface OutOfImportReference {
 
 }
