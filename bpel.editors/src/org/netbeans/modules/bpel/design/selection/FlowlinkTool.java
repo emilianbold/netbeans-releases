@@ -108,7 +108,7 @@ public class FlowlinkTool implements DnDTool {
             VisualElement e = currentView.findElement(viewPt.x, viewPt.y);
 
             endElement = (e != null && isValidLinkTo(e)) ? e : null;
-            System.out.println("EndElement= " + e);
+           
             getDesignView().repaint();
         }
     }
