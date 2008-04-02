@@ -59,11 +59,11 @@ public class Program extends ASTNode {
     private Program(int start, int end, Statement[] statements, List<Comment> commentsList) {
         super(start, end);
         for (Statement statement : statements) {
-            statement.setParent(this);
+//            statement.setParent(this);
             this.statements.add(statement);
         }
         for (Comment comment : commentsList) {
-            comment.setParent(this);
+//            comment.setParent(this);
             this.comments.add((Comment) comment);
         }
 
