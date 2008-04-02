@@ -309,7 +309,9 @@ public class AbstractBpelModelUpdater {
             sourceInfo.schemaCompList.add(item);
         } else if (item instanceof AbstractTypeCast) {
             AbstractTypeCast typeCast = (AbstractTypeCast)item;
-            typeCastCollector.add(typeCast);
+            if (typeCastCollector != null) {
+                typeCastCollector.add(typeCast);
+            }
             Object castedObj = typeCast.getCastedObject();
             processItem(castedObj, sourceInfo, typeCastCollector);
         } else if (item instanceof AbstractVariableDeclaration) {

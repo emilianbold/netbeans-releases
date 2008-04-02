@@ -104,7 +104,7 @@ final class Panel extends JPanel {
     toolBar.setFloatable(false);
     JButton button;
 
-    // collapse/expand
+    // collapse / expand
     button = createButton(
       new ButtonAction(
         icon(Util.class, "expose"), // NOI18N
@@ -116,11 +116,11 @@ final class Panel extends JPanel {
     );
     toolBar.add(button);
 
-    // collapse/expand
+    // view
     button = createButton(
       new ButtonAction(
         icon(Util.class, "view"), // NOI18N
-        i18n(Panel.class, "TLT_View")) { // NOI18N
+        i18n(Panel.class, "TLT_Change_View")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           changeView();
         }

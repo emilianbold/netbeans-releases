@@ -41,12 +41,14 @@
 package org.netbeans.modules.bpel.model.api.support;
 
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.openide.ErrorManager;
 
 /**
@@ -75,7 +77,16 @@ public class XPathCastImpl implements XPathCast {
         myPathText = cast.getPath();
     }
 
+    public XPathCastImpl(XPathExpression castWhat, GlobalType castTo) {
+        mXPathExpression = castWhat;
+        mCastTo = castTo;
+    }
+    
     public String getPathText() {
+        if (myPathText == null) {
+            assert mXPathExpression != null;
+            myPathText = mXPathExpression.getExpressionString();
+        }
         return myPathText;
     }
 
@@ -83,7 +94,7 @@ public class XPathCastImpl implements XPathCast {
         return mCastTo;
     }
 
-    public XPathExpression getPath() {
+    public XPathExpression getPathExpression() {
         if (mXPathExpression == null) {
             mXPathExpression = getExpression(mCast);
         }
@@ -111,4 +122,19 @@ public class XPathCastImpl implements XPathCast {
     private String myPathText;
     private GlobalType mCastTo;
     private XPathExpression mXPathExpression;
+
+    public XPathSchemaContext getSchemaContext() {
+        XPathExpression expr = getPathExpression();
+        if (expr != null && expr instanceof XPathSchemaContextHolder) {
+            XPathSchemaContext sContext = 
+                    ((XPathSchemaContextHolder)expr).getSchemaContext();
+            return sContext;
+        }
+        //
+        return null;
+    }
+
+    public void setSchemaContext(XPathSchemaContext newContext) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

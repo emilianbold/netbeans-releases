@@ -29,12 +29,14 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
+import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 
 /**
  * The base class for different kind of Type Cast objects.
  * @author nk160297
  */
-public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
+public abstract class AbstractTypeCast 
+        implements XPathSchemaContextHolder, XPathCast {
 
     private GlobalType mCastTo;
 
@@ -47,8 +49,10 @@ public abstract class AbstractTypeCast implements XPathSchemaContextHolder {
         return mCastTo;
     }
     
-    public abstract XPathSchemaContext getSchemaContext();
-    
+    public String getPathText() {
+        return getPathExpression().getExpressionString();
+    }
+
     public abstract Object getCastedObject();
     
     /**
