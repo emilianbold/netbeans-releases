@@ -141,6 +141,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private String tabNameSeq;
         int currentAction = 0;
         private ExecutorTask executorTask = null;
+        private NativeExecutor projectExecutor = null;
         private StopAction sa = null;
         private RerunAction ra = null;
         private ProgressHandle progressHandle = null;
@@ -379,7 +380,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     }
                     env = env1;
                 }
-                NativeExecutor projectExecutor =  new NativeExecutor(
+                projectExecutor =  new NativeExecutor(
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),
@@ -409,6 +410,10 @@ public class DefaultProjectActionHandler implements ActionListener {
         
         public ExecutorTask getExecutorTask() {
             return executorTask;
+        }
+        
+        public NativeExecutor getNativeExecutor() {
+            return projectExecutor;
         }
         
         public void executionStarted() {
@@ -526,6 +531,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 return;
             setEnabled(false);
             if (handleEvents.getExecutorTask() != null) {
+                handleEvents.getNativeExecutor().stop();
                 handleEvents.getExecutorTask().stop();
             }
         }
