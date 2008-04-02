@@ -67,16 +67,35 @@ public class UtilsTest extends TestCase {
     }
     
     public void testGetCommentForNode() throws Exception {
-        String text = "<?php\n    /**\n    * @link http://ahoj\n    */    class Test  {}?>";
+        String text = "<?php\n    /**\n    * @link http://ahoj\n    */    class Test  {}\n   $name=\"Hello\"?>";
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(text));
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
         Symbol root = parser.parse();
         assertNotNull(root);
         Program program = (Program)root.value;
         assertEquals(2, program.getStatements().size());
-        ASTNode classDeclaration = program.getStatements().get(0);
-        Comment comment = Utils.getCommentForNode(program, classDeclaration);
+        
+        ASTNode astNode = program.getStatements().get(0);
+        Comment comment = Utils.getCommentForNode(program, astNode);
         assertNotNull(comment);
+        
+        astNode = program.getStatements().get(1);
+        comment = Utils.getCommentForNode(program, astNode);
+        assertNull(comment);
+        
+    }
+    
+    public void testGetNodeAtOffset() throws Exception {
+        String text = "<?php\n    /**\n    * @link http://ahoj\n    */    class Test  {} \n    $name = \"hello\"\n?>";
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(text));
+        ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+        Symbol root = parser.parse();
+        assertNotNull(root);
+        Program program = (Program)root.value;
+        ASTNode node = Utils.getNodeAtOffset(program, 79);
+        assertEquals(Scalar.class, node.getClass());
+        assertEquals(76, node.getStartOffset());
+        assertEquals(83, node.getEndOffset());
     }
 
 }

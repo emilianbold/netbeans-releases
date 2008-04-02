@@ -60,14 +60,29 @@ public class LocalServerController {
 
     private final JComboBox localServerComboBox;
     private final JButton localServerBrowseButton;
-    private final WebFolderNameProvider webFolderNameProvider;
+    private final WebFolderNameProvider webFolderNameProvider; // can be null
     private final String browseDialogTitle;
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private /*final*/ MutableComboBoxModel localServerComboBoxModel;
     private final LocalServer.ComboBoxEditor localServerComboBoxEditor;
 
-    public LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
+    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
             WebFolderNameProvider webFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, webFolderNameProvider,
+                browseDialogTitle, defaultLocalServers);
+    }
+
+    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
+            String browseDialogTitle, LocalServer... defaultLocalServers) {
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, null, browseDialogTitle,
+                defaultLocalServers);
+    }
+
+    private LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
+            WebFolderNameProvider webFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
+        assert localServerComboBox != null;
+        assert localServerBrowseButton != null;
+        assert browseDialogTitle != null;
         assert localServerComboBox.isEditable() : "localServerComboBox has to be editable";
         assert localServerComboBox.getEditor().getEditorComponent() instanceof JTextField;
 
@@ -95,8 +110,12 @@ public class LocalServerController {
         });
         localServerBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                String newSubfolderName = null;
+                if (webFolderNameProvider != null) {
+                    newSubfolderName = webFolderNameProvider.getWebFolderName();
+                }
                 Utils.browseLocalServerAction(localServerBrowseButton.getParent(), localServerComboBox,
-                        localServerComboBoxModel, webFolderNameProvider.getWebFolderName(), browseDialogTitle);
+                        localServerComboBoxModel, newSubfolderName, browseDialogTitle);
             }
         });
     }
