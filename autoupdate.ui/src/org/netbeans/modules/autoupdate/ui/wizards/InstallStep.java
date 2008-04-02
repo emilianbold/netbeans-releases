@@ -76,8 +76,10 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -536,6 +538,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             } catch (OperationException x) {
                 log.log (Level.INFO, x.getMessage (), x);
             }
+            if (clearLazyUnits) {
+                LazyUnit.storeLazyUnits (model.getOperation (), null);
+                AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
+            }
             notifyInstallRestartNeeded (support, r, true); // NOI18N
         }
     }
@@ -666,6 +672,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 
             } else {
                 support.doRestartLater (restarter);
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                    AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
+                }
                 try {
                     model.doCleanup (false);
                 } catch (OperationException x) {
