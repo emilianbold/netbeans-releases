@@ -76,7 +76,7 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
             HintsProvider provider = language.getHintsProvider();
 
             if (provider == null) {
-                return;
+                continue;
             }
 
             provider.computeHints(info, result);
