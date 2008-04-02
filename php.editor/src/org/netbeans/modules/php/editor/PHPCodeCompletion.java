@@ -94,7 +94,7 @@ import org.openide.util.Exceptions;
  */
 public class PHPCodeCompletion implements Completable {
     private static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, STRING,
-        CLASS_MEMBER, UNKNOWN};
+        CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -141,10 +141,17 @@ public class PHPCodeCompletion implements Completable {
                         return CompletionContext.CLASS_NAME;
                     } else if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
                         return CompletionContext.CLASS_MEMBER;
+                    } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                        return CompletionContext.STATIC_CLASS_MEMBER;
                     } else if (tokenId == PHPTokenId.PHP_STRING) {
-                        if (tokenSequence.movePrevious() 
-                                && tokenSequence.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
-                            return CompletionContext.CLASS_MEMBER;
+                        if (tokenSequence.movePrevious()) {
+                            tokenId = tokenSequence.token().id();
+                            
+                            if (tokenId == PHPTokenId.PHP_OBJECT_OPERATOR) {
+                                return CompletionContext.CLASS_MEMBER;
+                            } else if (tokenId == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM){
+                                return CompletionContext.STATIC_CLASS_MEMBER;
+                            }
                         }
                     }
                 }
@@ -190,6 +197,8 @@ public class PHPCodeCompletion implements Completable {
                 break;
             case CLASS_MEMBER:
                 autoCompleteClassMembers(proposals, request);
+                break;
+            case STATIC_CLASS_MEMBER:
                 break;
         }
         
