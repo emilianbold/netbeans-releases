@@ -74,6 +74,7 @@ public class XPathCastImpl implements XPathCast {
     public XPathCastImpl(Cast cast) {
         mCast = cast;
         mCastTo = getType(cast);
+        assert mCastTo != null;
         myPathText = cast.getPath();
     }
 
