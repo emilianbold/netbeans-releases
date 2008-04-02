@@ -671,7 +671,10 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                         endOffset = getLines().getLineStart(lineIndex+1);
                     }
                     assert endOffset >= getStartOffset() : "Illogical getLine #" + lineIndex
-                        + " with lines " + getLines() + " or writer has been reset";
+                        + " with lines " + getLines() + " or writer has been reset"
+                        + ". writer: " + (writer == null ? "is null" : 
+                            ("writer.isDisposed(): " + writer.isDisposed()
+                            + ". writer.getStorage(): " + writer.getStorage()));
                 } else if (lineIndex >= getLines().getLineCount()-1) {
                     //always recalculate the last line...
                     endOffset = getLines().getCharCount() + inBuffer.length();

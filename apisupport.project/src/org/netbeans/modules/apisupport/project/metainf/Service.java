@@ -258,6 +258,7 @@ final class Service {
                     for (String clazz : classes) {
                         w.println(clazz);
                     }
+                    w.flush();
                 } finally {
                     os.close();
                 }
