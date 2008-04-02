@@ -148,33 +148,41 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
     private synchronized FileObject getInternalPath() {
         if (internalFolder == null) {
-            // XXX workaround because gsf uses toFile() and this causes NPE for SFS
-            // XXX filesystem listener should be used
-            FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
-            for (FileObject fo : sfsFolder.getChildren()) {
-                if (FileUtil.toFile(fo) != null) {
-                    continue;
-                }
-                InputStream is = null;
-                OutputStream os = null;
-                ByteArrayOutputStream bos = null;
-                try {
-                    is = fo.getInputStream();
-                    os = fo.getOutputStream();
-                    bos = new ByteArrayOutputStream();
-                    FileUtil.copy(is, bos);
-                    os.write(bos.toByteArray());
-                } catch (IOException exc) {
-                    Exceptions.printStackTrace(exc);
-                } finally {
-                    closeStreams(is, os, bos);
-                }
-            }
-            File file = FileUtil.toFile(sfsFolder);
-            assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
-            internalFolder = FileUtil.toFileObject(file);
+            internalFolder = getInternalFolder();
         }
         return internalFolder;
+    }
+
+    // workaround because gsf uses toFile() and this causes NPE for SFS
+    // see #131401 for more information
+    private FileObject getInternalFolder() {
+        assert Thread.holdsLock(this);
+
+        // FS AtomicAction should not be needed (synchronized)
+        FileObject sfsFolder = Repository.getDefault().getDefaultFileSystem().findResource("PHP/RuntimeLibraries"); // NOI18N
+        for (FileObject fo : sfsFolder.getChildren()) {
+            // XXX need to handle file updates as well
+            if (FileUtil.toFile(fo) != null) {
+                continue;
+            }
+            InputStream is = null;
+            OutputStream os = null;
+            ByteArrayOutputStream bos = null;
+            try {
+                is = fo.getInputStream();
+                os = fo.getOutputStream();
+                bos = new ByteArrayOutputStream();
+                FileUtil.copy(is, bos);
+                os.write(bos.toByteArray());
+            } catch (IOException exc) {
+                Exceptions.printStackTrace(exc);
+            } finally {
+                closeStreams(is, os, bos);
+            }
+        }
+        File file = FileUtil.toFile(sfsFolder);
+        assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
+        return FileUtil.toFileObject(file);
     }
 
     private void closeStreams(Closeable... streams) {
