@@ -119,7 +119,8 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_INCLUDE = "include"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        if (file != null && file.getFileObject() != null 
+                && PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
             return true;
         }
         
