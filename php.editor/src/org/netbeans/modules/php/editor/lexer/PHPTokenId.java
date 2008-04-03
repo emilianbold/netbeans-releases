@@ -69,7 +69,7 @@ public enum PHPTokenId implements TokenId {
     PHP_DIE(null, "keyword"), //NOI18N
     //	PHP_FILE(null, "php"),
     //	PHP_REFERENCE(null, "php"),
-    PHP_SEMICOLON(null, "php"), //NOI18N
+    PHP_SEMICOLON(null, "separator"), //NOI18N
     PHP_CASE(null, "keyword"), //NOI18N
     PHP_NUMBER(null, "number"), //NOI18N
     //	PHP_DNUMBER(null, "php"),
@@ -78,7 +78,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_TILDA(null, "php"),
     PHP_FINAL(null, "keyword"), //NOI18N
     //	PHP_CLASS_C(null, "php"),
-    PHP_PAAMAYIM_NEKUDOTAYIM(null, "php"), //NOI18N
+    PHP_PAAMAYIM_NEKUDOTAYIM(null, "operator"), //NOI18N
     PHP_EXTENDS(null, "keyword"), //NOI18N
     PHP_VAR_COMMENT(null, "comment"), //NOI18N
     PHP_USE(null, "php"), //NOI18N
@@ -212,7 +212,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_LGREATER(null, "php"),
     PHP_IF("if", "keyword"), //NOI18N
     PHP_DECLARE(null, "keyword"), //NOI18N
-    PHP_OBJECT_OPERATOR(null, "php"), //NOI18N
+    PHP_OBJECT_OPERATOR(null, "operator"), //NOI18N
     PHP_SELF(null, "keyword"), //NOI18N
     PHP_COMMENT(null, "comment"), //NOI18N
     PHP_COMMENT_START(null, "comment"), //NOI18N
@@ -224,17 +224,17 @@ public enum PHPTokenId implements TokenId {
     UNKNOWN_TOKEN(null, "error"), //NOI18N
     PHP_HEREDOC_TAG(null, "php"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
-    PHP__FUNCTION__(null, "php"), //NOI18N
-    PHP_CASTING(null, "php"), //NOI18N
-    PHP__FILE__(null, "php"), //NOI18N
-    PHP__LINE__(null, "php"), //NOI18N
-    PHP_OPERATOR(null, "php"), //NOI18N
-    PHP_PARENT(null, "php"), //NOI18N
-    PHP__CLASS__(null, "php"), //NOI18N
-    PHP__METHOD__(null, "php"), //NOI18N
-    PHP_FROM(null, "php"), //NOI18N
-    PHP_TRUE(null, "php"), //NOI18N
-    PHP_FALSE(null, "php"), //NOI18N
+    PHP__FUNCTION__(null, "constant"), //NOI18N
+    PHP_CASTING(null, "keyword"), //NOI18N
+    PHP__FILE__(null, "constant"), //NOI18N
+    PHP__LINE__(null, "constant"), //NOI18N
+    PHP_OPERATOR(null, "operator"), //NOI18N
+    PHP_PARENT(null, "keyword"), //NOI18N
+    PHP__CLASS__(null, "constant"), //NOI18N
+    PHP__METHOD__(null, "constant"), //NOI18N
+    PHP_FROM(null, "keyword"), //NOI18N
+    PHP_TRUE(null, "keyword"), //NOI18N
+    PHP_FALSE(null, "keyword"), //NOI18N
     TASK(null, "php"); //NOI18N
     
     private final String fixedText;
