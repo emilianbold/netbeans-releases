@@ -73,21 +73,29 @@ public abstract class WsdlValidator extends CoreValidator {
     if ( !(model instanceof WSDLModel)) {
       return null;
     }
+//out();
+//out("VALIDATE WSDL");
     WSDLModel wsdlModel = (WSDLModel) model;
 
     if (wsdlModel.getState() == Model.State.NOT_WELL_FORMED) {
+//out("11");
       return null;
     }
+//out("22");
     init(validation, type);
 
     if ( !isValidationComplete()) {
+//out("33");
       return null;
     }
     Definitions definitions = wsdlModel.getDefinitions();
-    
+//out("44");
+
     if (definitions == null) {
+//out("55");
       return null;
     }
+//out("66");
     startTime();
     definitions.accept(getVisitor());
     endTime(getDisplayName());

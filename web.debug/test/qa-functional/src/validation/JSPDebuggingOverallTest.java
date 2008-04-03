@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -67,7 +67,6 @@ import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -187,14 +186,14 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
 
     /** Set breakpoint.
      * - open index.jsp
-     * - select <h1> in editor
+     * - select <h2> in editor
      * - toggle breakpoint at selected line
      */
     public void testSetBreakpoint() throws Exception {
         new OpenAction().performAPI(new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "index.jsp")); // NOI18N
         // find sample file in Editor
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
-        Utils.setBreakpoint(eo, "<h1>"); // NOI18N
+        Utils.setBreakpoint(eo, "<h2>"); // NOI18N
     }
 
     /** Debug project.
