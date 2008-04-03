@@ -165,6 +165,14 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "?>");
     }
     
+    public void testArrayVariable() throws Exception {
+        performTestSimpleFindDeclaration(0,
+                                         "<?php\n" +
+                                         "^$foo = array();\n" +
+                                         "$f|oo['test'] = array();\n" +
+                                         "?>");
+    }
+    
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {
         assertTrue(code.length > 0);
         
