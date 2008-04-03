@@ -113,7 +113,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
-    static final String FIELD_CONST = "constant"; //NOI18N
+    static final String FIELD_CONST = "const"; //NOI18N
     static final String FIELD_FIELD = "field"; //NOI18N
     static final String FIELD_METHOD = "method"; //NOI18N
     static final String FIELD_INCLUDE = "include"; //NOI18N
@@ -150,7 +150,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.2"; // NOI18N
+        return "0.2.3"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -291,7 +291,7 @@ public class PHPIndexer implements Indexer {
                                         && firstChar == '\'' || firstChar == '\"') {
                                     String defineVal = PHPIndex.dequote(constName);
 
-                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset() + ";", false);
+                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset() + ";", true);
                                 }
                             }
                         }
