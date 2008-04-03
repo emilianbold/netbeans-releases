@@ -1389,7 +1389,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (updateIndex) {
                 this.flags|=UPDATE_INDEX;
             }
-            if (filterOutFileManager && binding != null) {
+            if (filterOutFileManager && binding != null && rootFo != null) {
                 //No need to be fully synchronized OutputFileManager.setFilteredFiles is idempotent
                 OutputFileManager ofm = this.classpathInfo.getOutputFileManager();
                 if (ofm != null && !ofm.isFiltered()) {

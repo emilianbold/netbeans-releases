@@ -3162,6 +3162,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public static Set<File> getAffectedCacheFiles (final FileObject file, final FileObject root) {
+        assert file != null;
+        assert root != null;
         File[] res = null;
         File classCache = null;
         try {
