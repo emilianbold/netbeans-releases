@@ -1486,7 +1486,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             assert uqImpl != null;                
             final SourceAnalyser sa = uqImpl.getSourceAnalyser();
             assert sa != null;
-            sa.delete(parserFile);
+            sa.delete(parserFile, language);
         }
 //            
 //            
