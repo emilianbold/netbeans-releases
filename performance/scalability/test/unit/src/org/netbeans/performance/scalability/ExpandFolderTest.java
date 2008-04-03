@@ -40,6 +40,7 @@
 
 package org.netbeans.performance.scalability;
 
+import java.io.File;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,7 +48,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
     private FileObject root;
@@ -65,6 +64,8 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
     }
     
     public static Test suite() {
+        CountingSecurityManager.register();
+        
         NbTestSuite s = new NbTestSuite();
         s.addTest(NbModuleSuite.create(ExpandFolderTest.class, ".*", ".*"));
 //        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, null, ".*"));
@@ -79,15 +80,13 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         root = FileUtil.toFileObject(getWorkDir());
         assertNotNull("Cannot find dir for " + getWorkDir() + " exists: " + getWorkDir().exists(), root);
 
-        FileObject[] openFiles = new FileObject[1000];
-        for (int i = 0; i < openFiles.length; i++) {
-            openFiles[i] = FileUtil.createData(root, "empty" + i + ".java");
+        for (int i = 0; i < 1000; i++) {
+            new File(getWorkDir(), "empty" + i + ".java").createNewFile();
         }
     }
     
     public void testGetNodesForAFolder() throws Exception {
-        Thread.sleep(10000);
-        
+        CountingSecurityManager.initialize(getWorkDirPath());
         long now = System.currentTimeMillis();
         DataFolder f = DataFolder.findFolder(root);
         Node n = f.getNodeDelegate();
@@ -95,7 +94,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        len = System.currentTimeMillis() - now;
+        len = CountingSecurityManager.assertCounts("About 1000?", 1000);
     }
 
     public Long call() throws Exception {
