@@ -770,34 +770,16 @@ public final class OpenProjectList {
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
-    public List<Project> getRecentProjects() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.getProjects();
-                }
-            }
-        });
+    public synchronized List<Project> getRecentProjects() {
+        return recentProjects.getProjects();
     }
     
-    public boolean isRecentProjectsEmpty() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
-            public Boolean run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.isEmpty();
-                }
-            }
-        });
+    public synchronized boolean isRecentProjectsEmpty() {
+        return recentProjects.isEmpty();
     }
     
-    public List<UnloadedProjectInformation> getRecentProjectsInformation() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List>() {
-            public List run() {
-                synchronized (OpenProjectList.class) {
-                    return recentProjects.getRecentProjectsInfo();
-                }
-            }
-        });
+    public synchronized List<UnloadedProjectInformation> getRecentProjectsInformation() {
+        return recentProjects.getRecentProjectsInfo();
     }
     
     /** As this class is singletnon, which is not GCed it is good idea to 
