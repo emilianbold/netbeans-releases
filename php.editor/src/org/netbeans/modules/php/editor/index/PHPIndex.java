@@ -106,7 +106,8 @@ public class PHPIndex {
         }
     }
 
-    static void setClusterUrl(String url) {
+    //public needed for tests (see org.netbeans.modules.php.editor.nav.TestBase):
+    public static void setClusterUrl(String url) {
         clusterUrl = url;
     }
 
