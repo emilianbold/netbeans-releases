@@ -43,6 +43,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.Permission;
+import junit.framework.Assert;
 
 /**
  *
@@ -59,6 +60,8 @@ public final class CountingSecurityManager extends SecurityManager {
     }
     
     public static void initialize(String prefix) {
+        Assert.assertNotNull(prefix);
+        
         if (! (System.getSecurityManager() instanceof CountingSecurityManager)) {
             setAllowedReplace(true);
             System.setSecurityManager(new CountingSecurityManager());
@@ -91,8 +94,8 @@ public final class CountingSecurityManager extends SecurityManager {
     public void checkRead(String file) {
         if (file.startsWith(prefix)) {
             cnt++;
-            pw.println("checkRead: " + file);
-            new Exception().printStackTrace(pw);
+//            pw.println("checkRead: " + file);
+//            new Exception().printStackTrace(pw);
         }
     }
 
