@@ -4151,17 +4151,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         setLoadDocumentText(
                 "int f(int a1, int a2,\n" +
                 "      int a3) {\n" +
-                "\n" +
                 "}\n"
                 );
         reformat();
         assertDocumentText("Incorrect formatting GNU new line name",
                 "int\n" +
                 "f (int a1, int a2,\n" +
-                "   int a3)\n" +
-                "{\n" +
-                "\n" +
-                "}\n"
+                "   int a3) { }\n" 
                 );
     }
 
@@ -4178,11 +4174,47 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting GNU new line name",
                 "Db::Db (DbEnv *env, u_int32_t flags)\n" +
                 ": imp_ (0)\n" +
-                ", env_ (env)\n" +
+                ", env_ (env) { }\n" 
+                );
+    }
+
+    public void testGnuStuleNewLineName5() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "tree decl_shadowed_for_var_lookup (tree from)\n" +
                 "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "tree\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
                 "}\n"
                 );
     }
+
+    public void testGnuStuleNewLineName6() {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+                "B::tree A::\n" +
+                "decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect formatting GNU new line name",
+                "B::tree\n" +
+                "A::decl_shadowed_for_var_lookup (tree from)\n" +
+                "{\n" +
+                "  return NULL_TREE;\n" +
+                "}\n"
+                );
+    }
+    
     //IZ#131158:"Spaces Within Parenthesis|Braces" checkbox works wrongly
     public void testSpaceWithinBraces() {
         setDefaultsOptions();
@@ -4440,6 +4472,40 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "  return;\n" +
                 "}\n" +
                 "\n"
+                );
+    }
+
+    // IZ#130509:Formatter should ignore empty function body
+    public void testIZ130509() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.ignoreEmptyFunctionBody, true);
+        setLoadDocumentText(
+                "int foo0() { \n" +
+                "  }\n" +
+                "int foo1() { } \n" +
+                "int foo2()\n" +
+                " { } \n" +
+                "int foo3(){}\n" +
+                "int foo4(){\n" +
+                "}\n" +
+                "int foo5() { //\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Formatter should ignore empty function body",
+                "int foo0() { }\n" +
+                "\n" +
+                "int foo1() { }\n" +
+                "\n" +
+                "int foo2() { }\n" +
+                "\n" +
+                "int foo3() { }\n" +
+                "\n" +
+                "int foo4() { }\n" +
+                "\n" +
+                "int foo5() { //\n" +
+                "}\n"
                 );
     }
 }

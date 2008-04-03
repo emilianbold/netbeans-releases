@@ -53,6 +53,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
@@ -104,27 +105,36 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     }
 
     protected void registerLayer() throws Exception {
-        MockLookup.setInstances(new Repo());
+        MockLookup.setInstances(new Repo(getWorkDir()));
         FileObject template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Ruby/main.rb");
         assertNotNull("layer registered", template);
     }
 
     private static final class Repo extends Repository {
 
-        public Repo() throws Exception {
-            super(mksystem());
+        public Repo(final File root) throws Exception {
+            super(mksystem(root));
+        }
+        
+        private static FileSystem mksystem(final File root) throws Exception {
+            List<FileSystem> fss = new ArrayList<FileSystem>();
+            
+            // self layer
+            addLayer(fss, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
+            
+            // local filesystem preventing tons of FreeMarker warnings about missing license-default.txt
+            LocalFileSystem fs = new LocalFileSystem();
+            fs.setRootDirectory(root);
+            FileUtil.createData(fs.getRoot(), "Templates/Licenses/license-default.txt");
+            fss.add(fs);
+            
+            return new MultiFileSystem(fss.toArray(new FileSystem[fss.size()]));
         }
 
-        private static FileSystem mksystem() throws Exception {
-            List<FileSystem> layers = new ArrayList<FileSystem>();
-            addLayer(layers, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
-            return new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
-        }
-
-        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
+        private static void addLayer(List<FileSystem> fss, String layerRes) throws SAXException {
             URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
             assert layerFile != null : layerRes + " found";
-            layers.add(new XMLFileSystem(layerFile));
+            fss.add(new XMLFileSystem(layerFile));
         }
     }
 }

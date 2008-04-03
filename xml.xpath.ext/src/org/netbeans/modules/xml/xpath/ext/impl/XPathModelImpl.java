@@ -475,24 +475,26 @@ public class XPathModelImpl implements XPathModel {
             return null;
         }
         //
-        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
-        if (casts == null) {
-            return null;
-        }
-        //
-        for (XPathCast cast : casts) {
-            XPathExpression castPath = cast.getPath();
-            if (castPath instanceof XPathSchemaContextHolder) {
-                XPathSchemaContext castPathSContext = 
-                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
-                if (castPathSContext != null && 
-                        castPathSContext.equalsChain(context)) {
-                    return cast;
-                }
-            }
-        }
-        //
-        return null;
+        return myXPathCastResolver.getCast(context);
+        
+//        List<XPathCast> casts = myXPathCastResolver.getXPathCasts();
+//        if (casts == null) {
+//            return null;
+//        }
+//        //
+//        for (XPathCast cast : casts) {
+//            XPathExpression castPath = cast.getPathExpression();
+//            if (castPath instanceof XPathSchemaContextHolder) {
+//                XPathSchemaContext castPathSContext = 
+//                        ((XPathSchemaContextHolder)castPath).getSchemaContext();
+//                if (castPathSContext != null && 
+//                        castPathSContext.equalsChain(context)) {
+//                    return cast;
+//                }
+//            }
+//        }
+//        //
+//        return null;
     }
 
 //    // vlv
@@ -1165,7 +1167,7 @@ public class XPathModelImpl implements XPathModel {
                 // ex.printStackTrace();
             } finally {
                 //
-                // restor context
+                // restore context
                 parentSchemaContext = lpInitialContext;
             }
         }
@@ -1209,8 +1211,16 @@ public class XPathModelImpl implements XPathModel {
                         "It didn't manage to resolve a type of the variable: " + 
                         vReference); // NOI18N
             } else {
-                parentSchemaContext = new VariableSchemaContext(vReference);
-                vReference.setSchemaContext(parentSchemaContext);
+                XPathSchemaContext schemaContext = new VariableSchemaContext(vReference);
+                XPathCast cast = getCast(schemaContext);
+                if (cast != null) {
+                    CastSchemaContext castContext = 
+                            new CastSchemaContext(schemaContext, cast);
+                    schemaContext = castContext;
+                }
+                vReference.setSchemaContext(schemaContext);
+                //
+                parentSchemaContext = schemaContext;
             }
         }
 

@@ -176,10 +176,12 @@ public class ElementUtilities {
             
                 if (indexedElement != null) {
                     String url = indexedElement.getFilenameUrl();
-                    if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
-                        sb.append(" (Core JavaScript)");
-                    } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
-                        sb.append(" (DOM)");
+                    if (url != null) {
+                        if (url.indexOf("jsstubs/stub_core_") != -1) { // NOI18N
+                            sb.append(" (Core JavaScript)");
+                        } else if (url.indexOf("jsstubs/stub_") != -1) { // NOI18N
+                            sb.append(" (DOM)");
+                        }
                     }
                 }
 
@@ -293,7 +295,11 @@ public class ElementUtilities {
             }
             sb.append("</ul>\n"); // NOI18N
             //sb.append("Click <a href=\"netbeans:choosebrowsers\">here</a> to choose targeted browsers.\n");
-            sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            if (org.openide.util.Utilities.isMac()) {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBrOsx"));
+            } else {
+                sb.append(NbBundle.getMessage(JsCodeCompletion.class, "EditTargetedBr"));
+            }
             sb.append("\n"); // NOI18N
             sb.append("</p>"); // NOI18N
         }

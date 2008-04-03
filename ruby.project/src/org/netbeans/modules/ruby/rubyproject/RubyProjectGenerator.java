@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -96,7 +98,14 @@ public class RubyProjectGenerator {
         if ( mainClass != null ) {
             createFromTemplate( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile"); // NOI18N
+        
+        // Rakefile
+        final Map<String, String> rakeProps = new HashMap<String, String>();
+        rakeProps.put("PROJECT_NAME", dir.getName());
+        
+        createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
+        
+        // README
         FileObject readme = dirFO.createData("README"); // NOI18N
         writeLines(readme, NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
         
@@ -296,8 +305,14 @@ public class RubyProjectGenerator {
         return h;
     }
 
-    private static DataObject createFromTemplate( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
-        int lastDotIdx = mainClassName.lastIndexOf( '/' );
+    private static DataObject createFromTemplate(String mainClassName, FileObject srcFolder, String templateName) throws IOException {
+        return createFromTemplate(mainClassName, srcFolder, templateName, null);
+    }
+            
+    private static DataObject createFromTemplate(String mainClassName,
+            FileObject srcFolder, String templateName,
+            final Map<String, ? extends Object> props) throws IOException {
+        int lastDotIdx = mainClassName.lastIndexOf('/');
         String mName, pName;
         if ( lastDotIdx == -1 ) {
             mName = mainClassName.trim();
@@ -326,13 +341,17 @@ public class RubyProjectGenerator {
             pkgFolder = FileUtil.createFolder( srcFolder, fName );        
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );
-        // BEGIN SEMPLICE MODIFICATIONS
+        
         int extension = mName.lastIndexOf('.');
         if (extension != -1) {
             mName = mName.substring(0, extension);
         }
-        // END SEMPLICE MODIFICATIONS
-        return mt.createFromTemplate(pDf, mName);
+        
+        if (props != null) {
+            return mt.createFromTemplate(pDf, mName, props);
+        } else {
+            return mt.createFromTemplate(pDf, mName);
+        }
     }
 
     // TODO: use FileUtils when #118087 is fixed

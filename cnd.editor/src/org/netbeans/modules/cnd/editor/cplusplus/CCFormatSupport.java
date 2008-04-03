@@ -504,14 +504,14 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
-        TokenItem t = findStatementStart(token, true);
+        TokenItem t = findStatementStart(token, false);
         // preprocessor tokens are not important (bug#22570)
         while (t != null && isPreprocessorLine(t)) {
             TokenItem current = t.getPrevious();
             if (current == null) {
                 return null;
             }
-            t = findStatementStart(current, true);
+            t = findStatementStart(current, false);
         }
         return t;
     }

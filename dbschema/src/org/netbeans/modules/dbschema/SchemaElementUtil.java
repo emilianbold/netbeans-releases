@@ -117,7 +117,7 @@ public class SchemaElementUtil {
                         org.openide.loaders.DataObject dataObject = org.openide.loaders.DataObject.find(fo);
 
                         if (dataObject != null)
-                            se = (SchemaElement)dataObject.getCookie(SchemaElement.class);
+                            se = dataObject.getCookie(SchemaElement.class);
                     } 
                     catch (ClassCastException e) {
                         // really ugly, caused by faulty code in DBSchemaDataObject.getCookie(...)
@@ -135,7 +135,10 @@ public class SchemaElementUtil {
                             ObjectInput i = new XMLInputStream(s); 
                             se = (SchemaElement) i.readObject(); 
                             if (!se.isCompatibleVersion()) {
-                                String message = MessageFormat.format(ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("PreviousVersion"), new String[] {name}); //NOI18N
+                                String message = MessageFormat.format(
+                                        ResourceBundle.getBundle(
+                                            "org.netbeans.modules.dbschema.resources.Bundle").
+                                            getString("PreviousVersion"), name); //NOI18N
                                 org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(message, org.openide.NotifyDescriptor.ERROR_MESSAGE));
                             }
                             i.close(); 

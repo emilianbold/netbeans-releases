@@ -51,6 +51,9 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.dtd.DTD;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
@@ -188,16 +191,9 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
             if (l.size() > 0) {
                 HtmlParserResult result = l.get(0);
                 if(result == null) {
-                    return null;
+                    return new int[]{context.getSearchOffset(), context.getSearchOffset()};
                 }
                 AstNode root = result.root();
-                
-                System.out.println(root);
-                System.out.println("---------");
-                for(SyntaxElement se : result.elementsList()) {
-                    System.out.println(se);
-                }
-                
                 
                 int searched =  result.getTranslatedSource() == null 
                         ? context.getSearchOffset() 
@@ -207,7 +203,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     if (origin.type() == AstNode.NodeType.OPEN_TAG) {
                         AstNode parent = origin.parent();
                         if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                            return null;
+                            Element element = result.dtd().getElement(origin.name().toUpperCase());
+                            if(element != null && element.hasOptionalEnd()) {
+                                return new int[]{searched, searched};
+                            } else {
+                                return null;
+                            }
                         } else {
                             //last element must be the matching tag
                             AstNode endTag = parent.children().get(parent.children().size() - 1);
@@ -216,7 +217,12 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     } else if (origin.type() == AstNode.NodeType.ENDTAG) {
                         AstNode parent = origin.parent();
                         if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                            return null;
+                            Element element = result.dtd().getElement(origin.name().toUpperCase());
+                            if(element != null && element.hasOptionalStart()) {
+                                return new int[]{searched, searched};
+                            } else {
+                                return null;
+                            }
                         } else {
                             //first element must be the matching tag
                             AstNode openTag = parent.children().get(0);
@@ -232,7 +238,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             return translate(new int[]{origin.startOffset(), origin.startOffset() + BLOCK_COMMENT_START.length()}, result.getTranslatedSource());
                         }
 
-                    }
+                    } 
                 }
             }
 

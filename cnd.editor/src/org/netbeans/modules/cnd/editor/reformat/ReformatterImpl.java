@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.reformat;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -862,8 +863,15 @@ public class ReformatterImpl {
             }
         }
         if (entry != null && entry.isLikeToFunction()) {
-            newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceDeclaration(),
-                    codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
+            Token<CppTokenId> nextImportant = ts.lookNextImportant();
+            if (nextImportant != null && nextImportant.id() == RBRACE &&
+                codeStyle.ignoreEmptyFunctionBody()) {
+                newLine(previous, current, BracePlacement.SAME_LINE,
+                        codeStyle.spaceBeforeMethodDeclLeftBrace(), 0);
+            } else {
+                newLine(previous, current, codeStyle.getFormatNewlineBeforeBraceDeclaration(),
+                        codeStyle.spaceBeforeMethodDeclLeftBrace(), 1);
+            }
             //if (codeStyle.newLineFunctionDefinitionName()) {
             //    functionDefinitionNewLine();
             //}
@@ -1062,25 +1070,50 @@ public class ReformatterImpl {
                     case LPAREN:
                         paren--;
                         if (paren==0 && hasParen){
+                            ArrayList<Integer> nlList = new ArrayList<Integer>();
                             Token<CppTokenId> function = ts.lookPreviousImportant();
                             if (function != null && function.id()==IDENTIFIER) {
                                 int startName = -1;
+                                boolean isPrevID = false;
                                 while (ts.movePrevious()) {
                                     switch(ts.token().id()){
                                         case COMMA:
                                         case COLON:
                                             return;
+                                        case NEW_LINE:
+                                            nlList.add(ts.index());
+                                            break;
+                                        case BLOCK_COMMENT:
                                         case WHITESPACE:
                                             break;
-                                        case IDENTIFIER:
-                                        case SCOPE:
                                         case TILDE:
                                             startName = ts.index();
+                                            isPrevID = true;
                                             break;
+                                        case SCOPE:
+                                            startName = ts.index();
+                                            isPrevID = false;
+                                            break;
+                                        case IDENTIFIER:
+                                            if (!isPrevID) {
+                                                startName = ts.index();
+                                                isPrevID = true;
+                                                break;
+                                            }
+                                            // nobreak
                                         default:
                                             ts.moveIndex(startName);
                                             ts.moveNext();
-                                            newLineBefore(false);
+                                            newLineBefore(braces.getIndent());
+                                            for(int i = 0; i < nlList.size(); i++){
+                                                int nl = nlList.get(i);
+                                                if (startName < nl) {
+                                                    ts.moveIndex(nl);
+                                                    ts.moveNext();
+                                                    ts.moveNext();
+                                                    removeLineBefore(false);
+                                                }
+                                            }
                                             return;
                                     }
                                 }
@@ -1126,8 +1159,20 @@ public class ReformatterImpl {
                               Token<CppTokenId> current, StackEntry statementEntry) {
         
         int indent = continuationIndent(entry.getSelfIndent());
-        if (previous != null) {
-            boolean done = false;
+        Token<CppTokenId> prevImportant = ts.lookPreviousImportant();
+        boolean emptyBody = false;
+        boolean done = false;
+        if (prevImportant != null && prevImportant.id() == LBRACE &&
+            entry != null && entry.isLikeToFunction() && codeStyle.ignoreEmptyFunctionBody()) {
+            emptyBody = true;
+            if (ts.isFirstLineToken()){
+                done = removeLineBefore(true);
+                if (!done) {
+                    emptyBody = false;
+                }
+            }
+        }
+        if (previous != null && !done) {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 if (diff.before != null && previous.id() == WHITESPACE) {
@@ -1143,6 +1188,8 @@ public class ReformatterImpl {
                             } else {
                                 diff.replace.replaceSpaces(0);
                             }
+                        } else if (emptyBody) {
+                            diff.replace.setText(0, 1);
                         } else {
                             diff.replace.replaceSpaces(indent);
                         }
@@ -1153,7 +1200,9 @@ public class ReformatterImpl {
                 }
                 if (diff.after != null) {
                     if (!done) {
-                        if (diff.after.hasNewLine() || ts.isFirstLineToken()) {
+                        if (emptyBody) {
+                            diff.after.setText(0, 1);
+                        } else if (diff.after.hasNewLine() || ts.isFirstLineToken()) {
                             diff.after.replaceSpaces(indent); // NOI18N
                         } else {
                             if (!entry.isLikeToArrayInitialization()) {
@@ -1168,7 +1217,9 @@ public class ReformatterImpl {
             }
             if (!done) {
                 if (previous.id() == WHITESPACE) {
-                    if (ts.isFirstLineToken()) {
+                    if (emptyBody) {
+                        ts.replacePrevious(previous, 0, 1);
+                    } else if (ts.isFirstLineToken()) {
                         ts.replacePrevious(previous, 0, indent);
                     } else {
                         if (braces.parenDepth <= 0) {
@@ -1184,7 +1235,9 @@ public class ReformatterImpl {
                            previous.id() == ESCAPED_WHITESPACE) {
                     ts.addBeforeCurrent(0, indent);
                 } else {
-                    if (!entry.isLikeToArrayInitialization()) {
+                    if (emptyBody) {
+                        ts.addBeforeCurrent(0, 1);
+                    } else if (!entry.isLikeToArrayInitialization()) {
                         ts.addBeforeCurrent(1, indent);
                     } else {
                         spaceBefore(previous, codeStyle.spaceWithinBraces());
@@ -1613,6 +1666,10 @@ public class ReformatterImpl {
         } else {
             spaces = getIndent();
         }
+        newLineBefore(spaces);
+    }
+
+    private void newLineBefore(int spaces) {
         if (!ts.isFirstLineToken()) {
             Token<CppTokenId> previous = ts.lookPrevious();
             if (previous != null) {

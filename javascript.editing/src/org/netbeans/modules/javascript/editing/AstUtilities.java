@@ -309,6 +309,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     public static OffsetRange getNameRange(Node node) {
         final int type = node.getType();
         switch (type) {
+        case Token.FUNCTION: {
+            if (node.hasChildren()) {
+                for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                    if (child.getType() == Token.FUNCNAME) {
+                        return getNameRange(child);
+                    }
+                }
+            }
+            
+            return getRange(node);
+        }
         case Token.NAME:
         case Token.BINDNAME:
         case Token.FUNCNAME:
@@ -420,7 +431,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         return grandChild.getNext().getString();
                     }
                 } else {
-                    assert false : "Unexpected call firstchild - " + child;
+                    // WARNING: I can have something unexpected here, like a HOOK node in the following
+                    // for the conditional -
+                    //  (this.creator ? this.creator : this.defaultCreator)(item, hint);
+                    // not sure how to handle this.
+                    
+                    //assert false : "Unexpected call firstchild - " + child;
                 }
             }
         }
@@ -772,8 +788,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 }
                             }
                         }
+                    } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) {
+                            className = AstUtilities.getJoinedName(first.getNext());
+                        }
                     }
-
                 }
             }
         } else if (parentType == Token.CALL) {
@@ -799,8 +824,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                         extendsName = superName.toString();
                                     }
                                 }
-
                             }
+                        }
+                    } else if (parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) { // NOI18N
+                            className = AstUtilities.getJoinedName(first.getNext());
                         }
                     }
                 }

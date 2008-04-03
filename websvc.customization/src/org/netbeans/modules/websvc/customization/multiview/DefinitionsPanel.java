@@ -95,6 +95,7 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         this.model = this.definitions.getModel();
         this.node = node;
         initComponents();
+        disableEnterKey();
         if(!isClient(node)){
             enableAsyncMappingCB.setVisible(false);
         }

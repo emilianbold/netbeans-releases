@@ -173,7 +173,14 @@ public abstract class UnixNativeUtils extends NativeUtils {
         if (XDG_DATA_DIRS == null) {
             allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
         } else {
-            allUsersLocation = new File(XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0]);
+            // Workaround for Issue 131194 : 
+            // Cannot install nb 6.1beta in ubuntu with xubuntu session
+            // http://www.netbeans.org/issues/show_bug.cgi?id=131194
+            String firstPath = XDG_DATA_DIRS.split(SystemUtils.getPathSeparator())[0];
+            if(firstPath.startsWith("etc/xdg/")) {
+                firstPath = File.separator + firstPath;
+            }
+            allUsersLocation = new File(firstPath);
         }
         
         LogManager.log(
@@ -476,16 +483,55 @@ public abstract class UnixNativeUtils extends NativeUtils {
                 throw new IOException();
             }
         }
-        ExecutionResults results;
+        final List<String> stdoutList = new ArrayList<String>();
+
+        Thread quotaThread = null;
         try {
-            results = SystemUtils.executeCommand(quotaExecutable.getPath(), "-v");
-        } catch (IOException e) {
-            LogManager.log("... error occured when running quota executable", e);
-            throw e;
+            quotaThread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        LogManager.log("... running command : " + quotaExecutable.getPath() + " -v");
+                        Process p = new ProcessBuilder(quotaExecutable.getPath(), "-v").start();
+                        final InputStream is = p.getInputStream();
+                        final InputStream err = p.getErrorStream();
+                        p.waitFor();
+                        final String output = StringUtils.readStream(is);
+                        final String error = StringUtils.readStream(err);
+                        LogManager.log("... stdout:");
+                        LogManager.log(output);
+                        LogManager.log("... stderr:");
+                        LogManager.log(error);
+                        LogManager.log("... return : " + p.exitValue());
+                        stdoutList.add(output);
+                        is.close();
+                        err.close();
+                    } catch (IOException e) {
+                        LogManager.log("... error occured when running quota executable", e);
+                    } catch (InterruptedException e) {
+                        LogManager.log("... interrupted");
+                    }
+                }
+            };
+
+            quotaThread.start();
+            quotaThread.join(QUOTA_TIMEOUT_MILLIS);
+            if (quotaThread.isAlive()) {
+                LogManager.log("... quota command is hanging more than 5 seconds so killing it");
+                quotaThread.interrupt();
+                LogManager.log("... killed");
+            }
+        } catch (InterruptedException ie) {
+            LogManager.log("... interrupted", ie);
+            quotaThread.interrupt();
+        }
+        if(stdoutList.size()==0) {
+            LogManager.log("... quota produced no stdout for analysis");
+            throw new IOException();
         }
 
-        final String[] lines = StringUtils.splitByLines(results.getStdOut());
-
+        final String stdout = stdoutList.get(0);
+        final String[] lines = StringUtils.splitByLines(stdout);
         if (lines.length <= 2) {
             LogManager.log("... no quota set for the user (number of lines in output less that 3)");
             throw new IOException();
@@ -795,4 +841,5 @@ public abstract class UnixNativeUtils extends NativeUtils {
       "/bin/quota",      //NOI18N
     };
     private static final byte [] ELF_BYTES = new byte[]{'\177','E','L','F'};
+    private static final long QUOTA_TIMEOUT_MILLIS = 5000;//NOMAGI
 }

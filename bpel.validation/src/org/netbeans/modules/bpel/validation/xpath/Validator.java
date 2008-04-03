@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -46,6 +46,7 @@ import org.netbeans.modules.bpel.model.api.Condition;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
+import org.netbeans.modules.bpel.model.api.DurationExpression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.From;
@@ -53,6 +54,7 @@ import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
@@ -60,6 +62,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
@@ -72,6 +75,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+import org.netbeans.modules.soa.ui.util.Duration;
+import org.netbeans.modules.soa.ui.util.DurationUtil;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -80,7 +85,8 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.Validation
 public final class Validator extends BpelValidator implements ValidationVisitor {
 
   @Override
-  public void visit(Copy copy) {
+  public void visit(Copy copy)
+  {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
@@ -107,6 +113,51 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    }
+  }
+
+  @Override
+  public void visit(To to)
+  {
+    // # 125525
+    checkPartnerLink(to);
+    // # 131658
+    checkVariable(to);
+  }
+
+  private void checkPartnerLink(To to) {
+    BpelReference<PartnerLink> ref = to.getPartnerLink();
+
+    if (ref == null) {
+      return;
+    }
+    PartnerLink partnerLink = ref.get();
+
+    if (partnerLink == null) {
+      return;
+    }
+    WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
+
+    if (ref1 == null || ref1.get() == null) {
+      addError("FIX_To_PartnerLink", to);
+    }
+  }
+
+  private void checkVariable(To to) {
+    String value = to.getContent();
+//out();
+//out("to: " + value);
+//out();
+    if (value == null) {
+      return;
+    }
+    value = value.trim();
+
+    if (value.length() == 0) {
+      return;
+    }
+    if ( !value.startsWith("$")) { // NOI18N
+      addError("FIX_To_Value", to, value); // NOI18N
     }
   }
 
@@ -237,46 +288,86 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 
   @Override
   public void visit(Branches branches) {
-      checkXPath(branches);
+    checkXPath(branches);
   }
 
   @Override
   public void visit(Condition condition) {
-      checkXPath(condition);
+    checkXPath(condition);
   }
   
   @Override
   public void visit(DeadlineExpression deadline) {
-      checkXPath(deadline);
+    checkXPath(deadline);
   }
   
   @Override
   public void visit(FinalCounterValue counter) {
-      checkXPath(counter);
+    checkXPath(counter);
   }
   
   @Override
   public void visit(For fo) {
-      checkXPath(fo);
-  }
-  
-  @Override
-  public void visit(Query query) {
-      checkXPath(query);
+    checkXPath(fo);
+    checkDuration(fo);
   }
   
   @Override
   public void visit(RepeatEvery repeatEvery) {
-      checkXPath(repeatEvery);
+    checkXPath(repeatEvery);
+    checkDuration(repeatEvery);
+    // # 117688
+    checkNegative(repeatEvery);
+  }
+
+  private void checkNegative(RepeatEvery repeatEvery) {
+    String value = repeatEvery.getContent();
+
+    try {
+      Duration duration = DurationUtil.parseDuration(value, true);
+
+      if (duration.hasMinus() || isZero(duration)) {
+        addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
+      }
+    }
+    catch (IllegalArgumentException e) {}
+  }
+
+  private boolean isZero(Duration duration) {
+//out("duration: " + duration);
+    return
+      duration.getYears() == 0 &&
+      duration.getMonths() == 0 &&
+      duration.getDays() == 0 &&
+      duration.getHours() == 0 &&
+      duration.getMinutes() == 0 &&
+      duration.getSeconds() == 0.0;
   }
   
   @Override
+  public void visit(Query query) {
+    checkXPath(query);
+  }
+
+  @Override
   public void visit(StartCounterValue counter) {
-      checkXPath(counter);
+    checkXPath(counter);
   }
 
   private SchemaComponent checkXPath(ContentElement element) {
     return Utils.checkXPathExpression(element, new PathValidationContext(this, this, element));
+  }
+
+  // # 117689
+  private void checkDuration(DurationExpression duration) {
+    String value = duration.getContent();
+
+    try {
+      DurationUtil.parseDuration(value, true);
+    }
+    catch (IllegalArgumentException e) {
+      addError("FIX_Duration", duration, e.getMessage()); // NOI18N
+    }
   }
   
   private static void out() {

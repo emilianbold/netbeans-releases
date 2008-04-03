@@ -73,8 +73,8 @@ public class JsIndex {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
 
-    static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
-    static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
+    public static final Set<SearchScope> ALL_SCOPE = EnumSet.allOf(SearchScope.class);
+    public static final Set<SearchScope> SOURCE_SCOPE = EnumSet.of(SearchScope.SOURCE);
     
     private static final Set<String> TERMS_FQN = Collections.singleton(JsIndexer.FIELD_FQN);
     private static final Set<String> TERMS_BASE = Collections.singleton(JsIndexer.FIELD_BASE);
@@ -349,10 +349,13 @@ public class JsIndex {
                     boolean isFunction = element instanceof IndexedFunction;
                     if (isFunction && !includeMethods) {
                         continue;
+                    } else if (onlyConstructors) {
+                        if (element.getKind() == ElementKind.PROPERTY && funcIn == null && Character.isUpperCase(elementName.charAt(0))) {
+                            element.setKind(ElementKind.CONSTRUCTOR);
+                        } else if (element.getKind() != ElementKind.CONSTRUCTOR) {
+                            continue;
+                        }
                     } else if (!isFunction && !includeProperties) {
-                        continue;
-                    }
-                    if (onlyConstructors && element.getKind() != ElementKind.CONSTRUCTOR) {
                         continue;
                     }
                     elements.add(element);

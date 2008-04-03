@@ -101,7 +101,7 @@ echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
 if [ -f $sigtest_jar ]; then
-    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log
+    ant -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log 2>&1
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         (

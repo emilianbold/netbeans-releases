@@ -122,6 +122,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
     private ListMap mColumnMetadataTable;
     private DropTarget mDropTarget;
     private boolean mReadOnly;
+    
     private boolean mHasExpressionColumn;
     private int mNameCol;
     private SelectPanelTableCellRenderer  spTCRenderer;
@@ -537,7 +538,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         }
         mTable.setPreferredScrollableViewportSize(new Dimension(700, 300));
         pane.add(new JScrollPane(mTable), BorderLayout.CENTER);
-        if (!mReadOnly) {
+        if (!mReadOnly && isShowButtons()) {
             JPanel cp = new JPanel();
             cp.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             cp.setLayout(new GridLayout(1, 5, 10, 10));
@@ -627,21 +628,6 @@ public class SelectPanel extends JPanel implements SharedConstants {
         topPane.add(pane, BorderLayout.CENTER);
     }
     
-//    public List getAttributeMetadataAsList() {
-//        List attributeMetadataList = new ArrayList();
-//        Vector r = mTableModel.getDataVector();
-//        for (int i = 0, I = r.size(); i < I; i++) {
-//            Vector c = (Vector) r.elementAt(i);
-//            if (!(c.elementAt(mNameCol) == null) && !(c.elementAt(mNameCol).equals(""))) {
-//                attributeMetadataList.add(c.elementAt(mNameCol));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 1));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 2));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 3));
-//                attributeMetadataList.add(c.elementAt(mNameCol + 4));
-//            }
-//        }
-//        return attributeMetadataList;
-//    }
     
    
     public List<SchemaAttribute> getAttributes() {
@@ -780,6 +766,10 @@ public class SelectPanel extends JPanel implements SharedConstants {
             }
         }
         return attributeList;
+    }
+    
+    protected boolean isShowButtons() {
+        return true;
     }
     
     public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
