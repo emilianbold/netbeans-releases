@@ -67,15 +67,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
-import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.modules.xml.retriever.RetrieverEngine;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
@@ -84,7 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -391,7 +388,8 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
             
     public String name() {
-        return "//TODO";
+        return NbBundle.getMessage(XMLWizardIterator.class, "TITLE_x_of_y",
+            Integer.valueOf(current + 1), Integer.valueOf(current));
     }
     
     public void nextPanel() {
