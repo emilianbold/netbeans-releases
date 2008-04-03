@@ -165,15 +165,16 @@ public class NativeExecution extends ExecutionSupport {
         super.start();
     }
     
-    public void destroy() {
+    public void stop() {
         /*
         if (executionThread != null) {
             executionThread.interrupt();
         }
          */
-        if (executionProcess != null) {
-            executionProcess.destroy();
-        }
+        outputReaderThread.cancel();
+//        if (executionProcess != null) {
+//            executionProcess.destroy();
+//        }
     }
     
     
@@ -184,6 +185,7 @@ public class NativeExecution extends ExecutionSupport {
         private Reader err;
         private Writer output;
         private Reader tmp_in;
+        private boolean cancel = false;
         
         public OutputReaderThread(InputStream err, Writer output) {
             this.err = new InputStreamReader(err);
@@ -203,6 +205,9 @@ public class NativeExecution extends ExecutionSupport {
                 int read;
                 
                 while ((read = err.read()) != (-1)) {
+                    if (cancel) { // 131739 
+                        break;
+                    }
                     if (read == 10)
                         output.write("\n"); // NOI18N
                     else
@@ -213,6 +218,10 @@ public class NativeExecution extends ExecutionSupport {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
+        }
+        
+        public void cancel() {
+            cancel = true;
         }
     }
     

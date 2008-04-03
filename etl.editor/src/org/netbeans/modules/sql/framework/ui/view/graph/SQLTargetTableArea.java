@@ -201,7 +201,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             String nbBundle8 = mLoc.t("BUND443: Properties");
             String lblProps =  nbBundle8.substring(15);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('7',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
         } catch (BaseException ex) {

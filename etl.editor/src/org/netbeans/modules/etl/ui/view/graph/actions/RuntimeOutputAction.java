@@ -72,7 +72,7 @@ public class RuntimeOutputAction extends GraphAction {
     
     public RuntimeOutputAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND031: Runtime Outputs...");
+        String nbBundle1 = mLoc.t("BUND031: Runtime Outputs");
         this.putValue(Action.NAME,nbBundle1.substring(15));
 
         //action icon

@@ -45,6 +45,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xpath.ext.schema.GetNameVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,9 +122,9 @@ public final class ResolverUtility {
         } else if (comp instanceof SchemaComponent) {
             targetNamespace = ((SchemaComponent)comp).getModel().
                     getSchema().getTargetNamespace();
-            if (comp instanceof Named) {
-                compName = ((Named)comp).getName();
-            }
+            GetNameVisitor nameVisitor = new GetNameVisitor();
+            ((SchemaComponent)comp).accept(nameVisitor);
+            compName = nameVisitor.getName();
         }
         //
         assert compName != null :
