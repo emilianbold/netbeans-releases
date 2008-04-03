@@ -150,7 +150,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.1.9"; // NOI18N
+        return "0.2.1"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -222,7 +222,7 @@ public class PHPIndexer implements Indexer {
                             Scalar scalar = (Scalar) include.getExpression();
                             String rawInclude = scalar.getStringValue();
                             String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
-                            includes.append(incl + ';');
+                            includes.append(incl + ";");
                         }
                     }
                     
@@ -289,7 +289,7 @@ public class PHPIndexer implements Indexer {
                                         && firstChar == '\'' || firstChar == '\"') {
                                     String defineVal = PHPIndex.dequote(constName);
 
-                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset(), false);
+                                    document.addPair(FIELD_CONST, defineVal + ";" + invocation.getStartOffset() + ";", false);
                                 }
                             }
                         }
@@ -321,7 +321,7 @@ public class PHPIndexer implements Indexer {
                 }
             }
             signature.append(";");
-            signature.append(functionDeclaration.getStartOffset());
+            signature.append(functionDeclaration.getStartOffset() + ";"); //NOI18N
 
             document.addPair(field, signature.toString(), true);
         }
