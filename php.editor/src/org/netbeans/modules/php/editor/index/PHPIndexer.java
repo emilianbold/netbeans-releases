@@ -150,7 +150,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.1"; // NOI18N
+        return "0.2.2"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -239,9 +239,10 @@ public class PHPIndexer implements Indexer {
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
-            StringBuilder signature = new StringBuilder();
-            signature.append(classDeclaration.getName().getName() + ";"); //NOI18N
-            document.addPair(FIELD_CLASS, signature.toString(), true);
+            StringBuilder classSignature = new StringBuilder();
+            classSignature.append(classDeclaration.getName().getName() + ";"); //NOI18N
+            classSignature.append(classDeclaration.getStartOffset() + ";"); //NOI18N
+            document.addPair(FIELD_CLASS, classSignature.toString(), true);
             // index 
             
             classDeclaration.getSuperClass();
@@ -258,7 +259,8 @@ public class PHPIndexer implements Indexer {
                     for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
                         if (field.getName().getName() instanceof Identifier) {
                             Identifier identifier = (Identifier) field.getName().getName();
-                            document.addPair(FIELD_FIELD, identifier.getName() + ";", true);
+                            String fieldSignature = identifier.getName() + ";" + field.getStartOffset() + ";";
+                            document.addPair(FIELD_FIELD, fieldSignature, true);
                         }
                     }
                 }
