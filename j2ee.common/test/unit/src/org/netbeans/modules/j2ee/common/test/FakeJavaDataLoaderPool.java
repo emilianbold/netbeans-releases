@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.modules.j2ee.common.test;
 
 import java.util.Enumeration;
 import org.netbeans.modules.java.JavaDataLoader;

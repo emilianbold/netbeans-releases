@@ -39,31 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.modules.j2ee.common.test;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * A ClassPathProvider impl for tests. 
- * 
- * @author Erno Mononen
+ *
+ * @author Andrei Badea
  */
-public class ClassPathProviderImpl implements ClassPathProvider {
-    
-    private final ClassPath classPath;
+public class TestUtilities {
 
-    public ClassPathProviderImpl(FileObject[] sources) {
-        this.classPath = ClassPathSupport.createClassPath(sources);
+    private TestUtilities() {
+    }
+
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
+    }
+
+    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
+        int s = (int)FileUtil.toFile(fo).length();
+        byte[] data = new byte[s];
+        InputStream stream = fo.getInputStream();
+        try {
+            int len = stream.read(data);
+            if (len != s) {
+                throw new EOFException("truncated file");
+            }
+            return new String (data);
+        } finally {
+            stream.close();
+        }
     }
     
-    public ClassPath findClassPath(FileObject file, String type) {
-        if (ClassPath.SOURCE.equals(type)){
-            return classPath;
-        }
-        return null;
+    /**
+     * Creates a cache folder for the Java infrastructure.
+     * 
+     * @param folder the parent folder for the cache folder, 
+     * typically the working dir.
+     */ 
+    public static void setCacheFolder(File folder) throws Exception {
+        File cacheFolder = new File(folder,"cache");
+        FileUtil.createFolder(cacheFolder);
+        IndexUtil.setCacheFolder(cacheFolder);
     }
     
 }
