@@ -89,7 +89,7 @@ public class UnsupportedCalls implements AstRule {
     }
 
     public Set<Integer> getKinds() {
-        return Collections.singleton(Token.NAME);
+        return Collections.singleton(Token.STRING);
     }
     
     public void run(RuleContext context, List<Description> result) {
@@ -100,9 +100,8 @@ public class UnsupportedCalls implements AstRule {
         if (parent.getType() == Token.GETPROP) {
             Node grandParent = parent.getParentNode();
             if (grandParent != null && grandParent.getType() == Token.CALL &&
-                    grandParent.getFirstChild() == parent && node.getNext() != null && 
-                    node.getNext().getType() == Token.STRING) {
-                String name = node.getNext().getString();
+                    grandParent.getFirstChild() == parent) {
+                String name = node.getString();
                 Node callNode = grandParent;
                 if (NAME_SET.contains(name)) {
                     //if (STATISTICS != null) {
@@ -176,7 +175,7 @@ public class UnsupportedCalls implements AstRule {
                     EnumSet<BrowserVersion> compat = COMPAT_MAP.get(fqn);
                     if (!SupportedBrowsers.getInstance().isSupported(compat)) {
                         // Quickfix!
-                        OffsetRange astRange = AstUtilities.getRange(info, node.getNext());
+                        OffsetRange astRange = AstUtilities.getRange(info, node);
                         OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
                         if (lexRange == OffsetRange.NONE) {
                             return;
@@ -357,7 +356,7 @@ public class UnsupportedCalls implements AstRule {
             JLabel htmlLabel = new JLabel(html);
             htmlLabel.setBorder(new EmptyBorder(12, 12, 11, 11));
             DialogDescriptor descriptor =
-                new DialogDescriptor(htmlLabel, getDescription(),
+                new DialogDescriptor(htmlLabel, fqn,
                     true, new Object[] { close }, close, DialogDescriptor.DEFAULT_ALIGN,
                     new HelpCtx(UnsupportedCalls.class), null);
             Dialog dlg = null;
