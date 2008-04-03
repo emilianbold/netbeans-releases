@@ -68,6 +68,7 @@ import java.io.CharArrayWriter;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -1496,6 +1497,15 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CutAction.class.getName ()); // NOI18N
         }
 
+        @Override
+        public void setEnabled(boolean newValue) {
+            // In order to allow the action to operate even if there is no selection
+            // (to cut a single line) the setEnabled(false) is ignored.
+            if (enabled) {
+                super.setEnabled(enabled);
+            }
+        }
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1513,6 +1523,13 @@ public class BaseKit extends DefaultEditorKit {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
+                    // If there is no selection then pre-select a current line including newline
+                    if (!Utilities.isSelectionShowing(target)) {
+                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                target.getCaretPosition());
+                        target.select(elem.getStartOffset(), elem.getEndOffset());
+                    }
+
                     target.cut();
                 } finally {
                     DocumentUtilities.setTypingModification(doc, false);
@@ -1532,8 +1549,23 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CopyAction.class.getName ()); // NOI18N
         }
 
+        @Override
+        public void setEnabled(boolean enabled) {
+            // In order to allow the action to operate even if there is no selection
+            // (to copy a single line) the setEnabled(false) is ignored.
+            if (enabled) {
+                super.setEnabled(enabled);
+            }
+        }
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                // If there is no selection then pre-select a current line including newline
+                if (!Utilities.isSelectionShowing(target)) {
+                    Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                            target.getCaretPosition());
+                    target.select(elem.getStartOffset(), elem.getEndOffset());
+                }
                 target.copy();
             }
         }
