@@ -1040,7 +1040,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             case Token.NAME:
-                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL) {
+                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                        node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
                 }
