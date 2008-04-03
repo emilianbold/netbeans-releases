@@ -67,9 +67,9 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         CountingSecurityManager.register();
         
         NbTestSuite s = new NbTestSuite();
-        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, ".*", ".*"));
-//        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, null, ".*"));
+        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, null, ".*"));
         s.addTest(NbModuleSuite.create(ExpandFolderTest.class, "ide[0-9]*|java[0-9]*", ".*"));
+        s.addTest(NbModuleSuite.create(ExpandFolderTest.class, ".*", ".*"));
         s.addTest(new CompareResults(s));
         return s;
     }
