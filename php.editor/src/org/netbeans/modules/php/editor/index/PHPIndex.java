@@ -106,7 +106,8 @@ public class PHPIndex {
         }
     }
 
-    static void setClusterUrl(String url) {
+    //public needed for tests (see org.netbeans.modules.php.editor.nav.TestBase):
+    public static void setClusterUrl(String url) {
         clusterUrl = url;
     }
 
@@ -202,14 +203,36 @@ public class PHPIndex {
                 String propName = signature.substring(0, firstSemicolon);
                 
                 if (propName.toLowerCase().startsWith(name.toLowerCase())) {
+                    int offset = extractOffsetFromIndexSignature(signature, 1);
+                    
                     IndexedConstant prop = new IndexedConstant(propName, className,
-                            this, classMap.getPersistentUrl(), null, 0);
+                            this, classMap.getPersistentUrl(), null, 0, offset);
 
                     properties.add(prop);
                 }
             }
         }
         return properties;
+    }
+    
+    static int extractOffsetFromIndexSignature(String signature, int offsetSection) {
+        assert offsetSection != 0; // Obtain directly, and logic below (+1) is wrong
+        int startIndex = 0;
+        
+        for (int i = 0; i < offsetSection; i++) {
+            startIndex = signature.indexOf(';', startIndex + 1);
+        }
+
+        assert startIndex != -1;
+        startIndex ++;
+        int endIndex = signature.indexOf(';', startIndex);
+        
+        if (endIndex > startIndex){
+            String offsetStr = signature.substring(startIndex, endIndex);
+            return Integer.parseInt(offsetStr);
+        }
+        
+        return -1;
     }
     
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, NameKind kind) {
@@ -254,9 +277,10 @@ public class PHPIndex {
 
                 for (String signature : signatures) {
                     String constName = signature.substring(0, signature.indexOf(';'));
+                    int offset = extractOffsetFromIndexSignature(signature, 1);
 
                     IndexedConstant constant = new IndexedConstant(constName, null,
-                            this, map.getPersistentUrl(), null, 0);
+                            this, map.getPersistentUrl(), null, 0, offset);
 
                     constants.add(constant);
                 }
@@ -282,9 +306,10 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     int firstSemicolon = signature.indexOf(";");
                     String className = signature.substring(0, firstSemicolon);
+                    int offset = extractOffsetFromIndexSignature(signature, 1);
 
                     IndexedConstant constant = new IndexedConstant(className, null,
-                            this, map.getPersistentUrl(), null, 0);
+                            this, map.getPersistentUrl(), null, 0, offset);
 
                     constants.add(constant);
                 }

@@ -332,6 +332,7 @@ public abstract class IndexedElement extends PHPElement {
 //    protected static final int CASE_SENSITIVE_INDEX = 2;
 //    protected static final int FLAG_INDEX = 3;
     protected static final int ARG_INDEX = 1;
+    protected static final int OFFSET_INDEX = 2;
 //    protected static final int NODE_INDEX = 5;
 //    protected static final int DOC_INDEX = 6;
 //    protected static final int BROWSER_INDEX = 7;
@@ -499,5 +500,9 @@ public abstract class IndexedElement extends PHPElement {
 //        hash = 53 * hash + flags;
         hash = 53 * hash + getKind().hashCode();
         return hash;
+    }
+    
+    public int getOffset(){
+        return -1;
     }
 }
