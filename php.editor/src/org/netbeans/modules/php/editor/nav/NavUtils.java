@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -105,11 +106,15 @@ public class NavUtils {
         AttributedElement result = null;
 
         for (final ASTNode leaf : path) {
-            if (leaf instanceof Variable) {
+            if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {
                 result = a.getElement(leaf);
                 continue;
             }
 
+            if (leaf instanceof ArrayAccess && result == null) {
+                return a.getElement(leaf);
+            }
+            
             if (leaf instanceof FunctionInvocation) {
                 FunctionInvocation i = (FunctionInvocation) leaf;
 
