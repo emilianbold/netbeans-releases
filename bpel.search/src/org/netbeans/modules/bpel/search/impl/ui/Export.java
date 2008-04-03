@@ -311,8 +311,7 @@ public class Export extends Dialog {
     }
     return
       value.substring(0, index) +
-      replace +
-      processBrackets(value.substring(index + 1), text, replace);
+      replace + processBrackets(value.substring(index + 1), text, replace);
   }
 
   private String processLBrackets(String value) {

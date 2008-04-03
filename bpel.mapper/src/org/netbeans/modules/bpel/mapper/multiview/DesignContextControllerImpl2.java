@@ -543,6 +543,7 @@ public class DesignContextControllerImpl2
     
     private void checkXPathExpression(ContentElement contenElement, StringBuffer errMsgBuffer) {
         String xpathExpression = contenElement.getContent();
+        xpathExpression = (xpathExpression != null) ? xpathExpression.trim() : null;
         if ((xpathExpression != null) && (xpathExpression.length() > 0)) {
             String errMsg = checkXPathExpression(contenElement, xpathExpression);                
             if (errMsg != null) {

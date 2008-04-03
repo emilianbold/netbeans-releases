@@ -137,6 +137,14 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         IEPModel model = createdObject.getPlanEditorSupport().getModel();
         IEPWizardHelper.processUsingExistingSchema(model, wizard);
         
+        //set targetNamespace on iepfile
+        String tns = Utility.generateTargetNamespace(createdObject);
+        
+        model.startTransaction();
+        model.getPlanComponent().setName(createdObject.getName());
+        model.getPlanComponent().setTargetNamespace(tns);
+        model.endTransaction();
+        
         Set set = new HashSet(1);                
         set.add(createdObject.getPrimaryFile());
         return set;
