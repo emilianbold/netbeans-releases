@@ -101,8 +101,8 @@ if [ "$action" = "build" ]; then
 #        exit 0
     fi
 
-    FAILED=`cat $RESULT`
-    if [ -z "$FAILED" ]; then
+    FAILED=`cat $RESULT | wc -l`
+    if [ "$FAILED" -gt 0 ]; then
         echo "No push. Failed tests in following modules:"
         cat $RESULT
         exit
