@@ -181,27 +181,20 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
-        //>>> such equals and hashCode implementation
-        //is necessary since the ElementNode class from
-        // gsf navigator requires it
         @Override
         public boolean equals(Object o) {
             if(!(o instanceof HtmlStructureItem)) {
                 return false;
             }
-            
             HtmlStructureItem compared = (HtmlStructureItem)o;
-            
-            return getName().equals(compared.getName())
-                    && getKind() == compared.getKind();
+            return compared.handle.signatureEquals(handle);
         }
         
         @Override
         public int hashCode() {
-            return getName().hashCode() + getKind().hashCode();
-            
+            return handle.node().path().toString().hashCode();
         }
-        //<<<
+
         
         public ElementKind getKind() {
             return ElementKind.TAG;
