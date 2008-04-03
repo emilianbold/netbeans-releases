@@ -56,23 +56,32 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
 
     public void testCreateProject() throws Exception {
         registerLayer();
-        
-        File projectDir = new File(getWorkDir(), "RubyApp");
+        String appName = "RubyApp";
         String name = "script.rb";
-        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-        FileObject prjDirFO = helper.getProjectDirectory();
-        assertNotNull("project created", prjDirFO);
+        String expectedName = "script.rb";
+        for (int i = 0; i < 2; i++) {
+            File projectDir = new File(getWorkDir(), appName);
+            RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
+            FileObject prjDirFO = helper.getProjectDirectory();
+            assertNotNull("project created", prjDirFO);
 
-        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-        FileObject libDirFO = prjDirFO.getFileObject("lib");
-        assertNotNull("has lib", libDirFO);
-        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
+            assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
+            FileObject libDirFO = prjDirFO.getFileObject("lib");
+            assertNotNull("has lib", libDirFO);
+            assertNotNull("has script.rb", libDirFO.getFileObject(expectedName));
+            assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
 
-        assertNotNull("has README", prjDirFO.getFileObject("README"));
-        Project p = ProjectManager.getDefault().findProject(prjDirFO);
-        assertNotNull("has project", p);
-        List<?> targets = RakeTargetsAction.getRakeTargets(p);
-        assertSame("correct Rakefile", 10, targets.size());
+            assertNotNull("has README", prjDirFO.getFileObject("README"));
+            Project p = ProjectManager.getDefault().findProject(prjDirFO);
+            assertNotNull("has project", p);
+            List<?> targets = RakeTargetsAction.getRakeTargets(p);
+            assertSame("correct Rakefile", 10, targets.size());
+            
+            // test main class without extension in the next run
+            name = "another_script";
+            expectedName = "another_script.rb";
+            appName = "RubyApp1";
+        }
     }
+
 }

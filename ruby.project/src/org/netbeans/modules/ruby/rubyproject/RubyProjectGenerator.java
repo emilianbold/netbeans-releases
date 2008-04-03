@@ -74,7 +74,7 @@ import org.w3c.dom.NodeList;
 /**
  * Creates a RubyProject from scratch according to some initial configuration.
  */
-public class RubyProjectGenerator {
+public final class RubyProjectGenerator {
     
     public static final String DEFAULT_SRC_NAME = "src.dir"; // NOI18N
     public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
@@ -125,7 +125,7 @@ public class RubyProjectGenerator {
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
+            public Void run() throws IOException {
                 Element data = h.getPrimaryConfigurationData(true);
                 Document doc = data.getOwnerDocument();
                 NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
@@ -342,10 +342,7 @@ public class RubyProjectGenerator {
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );
         
-        int extension = mName.lastIndexOf('.');
-        if (extension != -1) {
-            mName = mName.substring(0, extension);
-        }
+        mName = Util.stripExtension(mName, ".rb");
         
         if (props != null) {
             return mt.createFromTemplate(pDf, mName, props);
