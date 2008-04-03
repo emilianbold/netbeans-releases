@@ -47,10 +47,12 @@ import org.netbeans.modules.gsf.api.ElementKind;
  */
 public class IndexedConstant extends IndexedElement {
     private String typeName;
+    private int offset;
     
     public IndexedConstant(String name, String in, PHPIndex index, String fileUrl,
-            String attributes, int flags){
+            String attributes, int flags, int offset){
         super(name, in, index, fileUrl, attributes, flags, ElementKind.GLOBAL);
+        this.offset = offset;
     }
 
     public String getTypeName() {
@@ -61,5 +63,8 @@ public class IndexedConstant extends IndexedElement {
         this.typeName = typeName;
     }
 
-    
+    @Override
+    public int getOffset() {
+        return offset;
+    }
 }
