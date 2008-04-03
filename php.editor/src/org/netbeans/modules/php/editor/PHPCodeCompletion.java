@@ -38,11 +38,14 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.modules.gsf.api.CompletionProposal;
@@ -64,17 +68,25 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceModel;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
@@ -82,10 +94,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -424,8 +440,51 @@ public class PHPCodeCompletion implements Completable {
         
     public String document(CompilationInfo info, ElementHandle element) {
         if (element instanceof IndexedElement) {
-            IndexedElement indexedElement = (IndexedElement) element;
-            return String.format("<h1>%s</h1>%s", indexedElement.getName(), indexedElement.getFilenameUrl());
+            final IndexedElement indexedElement = (IndexedElement) element;
+            StringBuilder builder = new StringBuilder();
+            
+            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>",
+                    indexedElement.getName(), indexedElement.getFilenameUrl()));
+            
+            final StringBuilder phpDoc = new StringBuilder();
+            
+            if (indexedElement.getOffset() > -1) {
+                FileObject fo = element.getFileObject();
+                SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+                try {
+
+                    model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(CompilationInfo ci) throws Exception {
+                            ParserResult presult = ci.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE).iterator().next();
+                            Program program = Utils.getRoot(presult.getInfo());
+                            ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                            Comment comment = Utils.getCommentForNode(program, node);
+                            
+                            if (comment instanceof PHPDocBlock) {
+                                PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
+                                phpDoc.append(pHPDocBlock.getDescription());
+                            }
+
+                        }
+                    }, true);
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            if (phpDoc.length() > 0){
+                builder.append(phpDoc);
+            } else {
+                //TODO localize me
+                builder.append("PHPDoc not found");
+            }
+
+            return builder.toString();
         }
 
         return null;

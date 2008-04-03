@@ -61,4 +61,5 @@ public class IndexedConstant extends IndexedElement {
         this.typeName = typeName;
     }
 
+    
 }
