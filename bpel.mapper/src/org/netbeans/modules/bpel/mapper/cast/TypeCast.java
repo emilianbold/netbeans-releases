@@ -75,16 +75,18 @@ public class TypeCast extends AbstractTypeCast {
             if (gTypeRef == null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, 
                         "Cast To has to be specified");
+                return null;
             } else {
                 castTo = gTypeRef.get();
                 if (castTo == null) {
                     ErrorManager.getDefault().log(ErrorManager.WARNING, 
                             "Unresolved global type: " + gTypeRef.getQName());
+                    return null;
                 }
             }
             //
             return new TypeCast(xPathExpr, castTo);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             String msg = "An error while processing the cast: path=\"" + 
                     cast.getPath() + "\" castTo=\"" + 
                     cast.getType() + "\"";
