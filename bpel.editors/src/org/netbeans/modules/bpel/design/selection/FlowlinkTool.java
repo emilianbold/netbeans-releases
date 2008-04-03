@@ -179,6 +179,7 @@ public class FlowlinkTool implements DnDTool {
 
         if (button != null) {
             button.setVisible(true);
+            button = null;
 
         }
 
