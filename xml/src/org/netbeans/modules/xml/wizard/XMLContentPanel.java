@@ -34,8 +34,9 @@ public class XMLContentPanel extends AbstractPanel {
     }
         
     public XMLContentPanel(boolean value) {
-        this();
         this.visible = value;
+        initComponents(); 
+        initAccessibility();
     }
 
     private void initAccessibility() {
