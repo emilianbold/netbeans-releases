@@ -27,7 +27,7 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
     private static transient final Logger mLogger = Logger.getLogger(NewFlatfileTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND274: Add External Tables...");
-    public String nbBundle6 = mLoc.t("BUND274: Add External Tables");
+    public String nbBundle6 = mLoc.t("BUND874: Add External Tables");
     public void performAction() {
         WizardDescriptor.Iterator iterator = new MashupTableWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
