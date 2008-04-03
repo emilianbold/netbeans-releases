@@ -50,6 +50,16 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
                 </file>
                 
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.DeclarationFinderImpl"/>
+                </file>
+                
+                <file name="occurrences.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>
