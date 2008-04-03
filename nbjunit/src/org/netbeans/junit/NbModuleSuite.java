@@ -115,6 +115,7 @@ public class NbModuleSuite {
         private final String clusterRegExp;
         private final String moduleRegExp;
         private NbTestSuite delegate;
+        private static int invocations;
 
         public S(Class<?> aClass, String clusterRegExp, String moduleRegExp) {
             super();
@@ -178,7 +179,7 @@ public class NbModuleSuite {
             System.setProperty("netbeans.logger.console", "true");
             System.setProperty("netbeans.home", platform.getPath());
 
-            File ud = new File(new File(Manager.getWorkDirPath()), "userdir");
+            File ud = new File(new File(Manager.getWorkDirPath()), "userdir" + invocations++);
             ud.mkdirs();
             NbTestCase.deleteSubFiles(ud);
 
