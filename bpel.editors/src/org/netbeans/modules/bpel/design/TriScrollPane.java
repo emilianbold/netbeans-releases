@@ -165,10 +165,10 @@ public class TriScrollPane extends JScrollPane {
     public JComponent getComponent(Point pt) {
         if (rightComponent.getBounds().contains(pt)) {
             return right;
-        } else if (viewport.getBounds().contains(pt)) {
-            return center;
         } else if (leftComponent.getBounds().contains(pt)) {
             return left;
+        } else if (viewport.getBounds().contains(pt)) {
+            return center;
         } else {
             return null;
         }

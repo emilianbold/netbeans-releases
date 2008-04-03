@@ -338,6 +338,8 @@ public class JbiProjectProperties {
     
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     
+    public static final String OSGI_SUPPORT = "osgi.support"; // NOI18N
+
     //================== Start of JBI  =====================================//
     
     /**
@@ -536,7 +538,8 @@ public class JbiProjectProperties {
         new PropertyDescriptor(JAVADOC_ENCODING, PROJECT, STRING_PARSER),
         new PropertyDescriptor(JAVADOC_PREVIEW, PROJECT, BOOLEAN_PARSER),
         new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
-        
+        new PropertyDescriptor(OSGI_SUPPORT, PROJECT, BOOLEAN_PARSER),
+
         // This should be OS-agnostic
         new PropertyDescriptor(JBI_CONTENT_ADDITIONAL, PROJECT, SEMICOLON_PATH_PARSER),
         new PropertyDescriptor(JBI_JAVAEE_JARS, PROJECT, SEMICOLON_PATH_PARSER),

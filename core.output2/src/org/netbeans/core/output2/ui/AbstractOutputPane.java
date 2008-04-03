@@ -758,5 +758,15 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                 super.mouseReleased(e);
             }
         }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            // do not change caret or selection visibility
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            // do not change caret or selection visibility
+        }
     }
 }

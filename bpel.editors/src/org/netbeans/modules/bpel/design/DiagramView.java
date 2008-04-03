@@ -160,8 +160,6 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
 
             if (!printMode) {
                 placeholderManager.paint(g2);
-            //  FIXME              flowLinkTool.paint(g2);
-//                ghost.paint(g2);
             }
         }
     }
