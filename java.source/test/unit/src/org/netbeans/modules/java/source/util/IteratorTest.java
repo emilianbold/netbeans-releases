@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import junit.framework.*;
 
@@ -86,6 +87,27 @@ public class IteratorTest extends TestCase {
         //Next try, didn't work in prev version
         i = Iterators.chained(data);
         assertEquals (result,i);
+    }
+    
+    public void testFilteredIterables () {
+        final List<Integer> data = createSequentialList (TEST_SEQ_SIZE);
+        final List<Integer> expected = new LinkedList<Integer>();
+        final List<Integer> filtered = new LinkedList<Integer>();
+        for (Integer i = 0; i < data.size(); i++) {
+            Integer x = data.get(i);
+            if (i%2 == 0) {                
+                expected.add(x);                
+            }
+            else {
+                filtered.add(x);
+            }
+        }
+        final Iterable<Integer> res = Iterators.filter(data, new Comparable<Integer>() {
+            public int compareTo(Integer i) {
+                return filtered.contains(i) ? 0 : -1;
+            }
+        });
+        assertEquals (expected,res);
     }
     
     private static void assertEquals (List<Integer> expected, Iterable<Integer> data) {
