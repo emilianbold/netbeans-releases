@@ -84,4 +84,9 @@ public class ArrayAccess extends Variable {
     public VariableBase getName() {
         return (VariableBase) super.getName();
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 }
