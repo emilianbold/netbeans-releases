@@ -30,13 +30,12 @@ public class XMLContentPanel extends AbstractPanel {
     /** Creates new form XMLContentPanel */
     public XMLContentPanel() {
         initComponents(); 
-    }
-    
-    public XMLContentPanel(boolean value) {
-        visible = value;
-        initComponents(); 
         initAccessibility();
+    }
         
+    public XMLContentPanel(boolean value) {
+        this();
+        this.visible = value;
     }
 
     private void initAccessibility() {
