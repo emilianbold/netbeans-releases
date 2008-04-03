@@ -116,9 +116,13 @@ abstract class CopySupport {
 		    File target = nextPair.getTarget();
 		    File targetParent = target.getParentFile();
 		    FileObject source = nextPair.getSource();
-		    doDelete(target);
-		    FileObject parent = FileUtil.createFolder(targetParent);
-		    FileUtil.copyFile(nextPair.getSource(), parent, source.getName(), source.getExt());
+		    doDelete(target);		    
+                    if (source.isData()) {
+                        FileObject parent = FileUtil.createFolder(targetParent);
+                        FileUtil.copyFile(nextPair.getSource(), parent, source.getName(), source.getExt());
+                    } else {
+                        FileUtil.createFolder(target);
+                    }
 		} catch (IOException ex) {
 		    Exceptions.printStackTrace(ex);
 		}
@@ -135,7 +139,7 @@ abstract class CopySupport {
 	    private void doDelete(File target) throws IOException {
 		if (target.exists()) {
 		    FileObject targetFo = FileUtil.toFileObject(target);
-		    if (targetFo != null) {
+		    if (targetFo != null && targetFo.isValid()) {
 			targetFo.delete();
 		    } else {
 			target.delete();
@@ -336,7 +340,7 @@ abstract class CopySupport {
 	    final boolean copyEnabled = isCopyEnabled();
 	    final FileObject sourceRoot = getSourceRoot();
 	    final FileObject targetRoot = isCopyEnabled() ? getTargetRoot(true) : getTargetRoot(false);
-	    if (sourceRoot != null && targetRoot != null && sourceRoot != targetRoot) {
+	    if (sourceRoot != null && targetRoot != null && sourceRoot != targetRoot && targetRoot.canWrite()) {
 		config = SourceTargetPair.forConfig(sourceRoot, targetRoot, copyEnabled);
 	    } else {
 		config = CopyImpl.INVALID_CONFIG;
@@ -375,7 +379,7 @@ abstract class CopySupport {
 	    FileObject retval = null;
 	    String targetString = project.getEvaluator().getProperty(PhpProjectProperties.COPY_SRC_TARGET);
 	    if (targetString != null && targetString.trim().length() > 0) {
-		File target = new File(targetString);
+		File target = FileUtil.normalizeFile(new File(targetString));
 		if (create) {
 		    try {
 			retval = FileUtil.createFolder(target);
