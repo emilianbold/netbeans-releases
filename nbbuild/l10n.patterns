@@ -34,3 +34,6 @@ exclude **/bdi-1.0.0.jar:
 exclude **/itext-2.0.5.jar:
 exclude **/jxpath1.1.jar:
 exclude **/prefuse-beta.jar:
+exclude **/httpunit-1.6.2.jar:
+exclude **/wsdl4j-1.5.2.zip:
+exclude **/xmlbeans-2.1.0.zip:
