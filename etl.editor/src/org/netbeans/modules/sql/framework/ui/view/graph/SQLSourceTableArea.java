@@ -209,7 +209,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             String nbBundle6 = mLoc.t("BUND443: Properties");
             String lblProps = nbBundle6.substring(15);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('Z',InputEvent.SHIFT_DOWN_MASK));
+            propertiesItem.setAccelerator(KeyStroke.getKeyStroke('7',InputEvent.CTRL_DOWN_MASK+InputEvent.SHIFT_MASK));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
 
