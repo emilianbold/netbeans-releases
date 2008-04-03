@@ -108,7 +108,7 @@ public class PHPCodeCompletion implements Completable {
         CLASS_MEMBER, STATIC_CLASS_MEMBER, UNKNOWN};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
-        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
         "eval()", "exit()", "for", "foreach", "function", "global", "if",
         "include()", "include_once()", "isset()", "list()", "new",
         "print()", "require()", "require_once()", "return()", "static",
@@ -117,6 +117,8 @@ public class PHPCodeCompletion implements Completable {
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+    
+    private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
     
@@ -633,7 +635,9 @@ public class PHPCodeCompletion implements Completable {
     private class KeywordItem extends PHPCompletionItem {
         private String description = null;
         private String keyword = null;
-
+        private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
+        
+        
         KeywordItem(String keyword, CompletionRequest request) {
             super(null, request);
             this.keyword = keyword;
@@ -662,10 +666,23 @@ public class PHPCodeCompletion implements Completable {
         @Override
         public String getRhsHtml() {
             if (description != null) {
-                return description;
+                HtmlFormatter formatter = request.formatter;
+                formatter.reset();
+                formatter.appendHtml(description);
+                return formatter.getText();
+                
             } else {
                 return null;
             }
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            if (keywordIcon == null) {
+                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
+            }
+
+            return keywordIcon;
         }
     }
     
