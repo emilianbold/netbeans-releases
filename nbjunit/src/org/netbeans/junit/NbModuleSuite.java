@@ -109,17 +109,37 @@ public class NbModuleSuite {
     public static Test create(Class<? extends Test> clazz, String clustersRegExp, String moduleRegExp) {
         return new S(clazz, clustersRegExp, moduleRegExp);
     }
-
     static final class S extends NbTestSuite {
         private final Class<?> clazz;
         private final String clusterRegExp;
         private final String moduleRegExp;
+        private NbTestSuite delegate;
 
         public S(Class<?> aClass, String clusterRegExp, String moduleRegExp) {
             super();
             this.clazz = aClass;
             this.clusterRegExp = clusterRegExp;
             this.moduleRegExp = moduleRegExp;
+        }
+
+        @Override
+        public Enumeration tests() {
+            return delegate.tests();
+        }
+
+        @Override
+        public int testCount() {
+            return delegate.testCount();
+        }
+
+        @Override
+        public Test testAt(int arg0) {
+            return delegate.testAt(arg0);
+        }
+
+        @Override
+        public int countTestCases() {
+            return delegate.countTestCases();
         }
 
         @Override
@@ -197,7 +217,8 @@ public class NbModuleSuite {
             try {
                 testLoader.loadClass("junit.framework.Test");
                 Class<?> sndClazz = testLoader.loadClass(clazz.getName());
-                new NbTestSuite(sndClazz).run(result);
+                delegate = new NbTestSuite(sndClazz);
+                delegate.run(result);
             } catch (ClassNotFoundException ex) {
                 result.addError(this, ex);
             }
