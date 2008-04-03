@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -136,13 +136,13 @@ public final class View extends TopComponent implements SearchListener {
   @Override
   public String getDisplayName()
   {
-    return i18n(View.class, "LBL_Search_Results_Name"); // NOI18N
+    return i18n(View.class, "LBL_Search_Results"); // NOI18N
   }
 
   @Override
   public String getToolTipText()
   {
-    return i18n(View.class, "LBL_Search_Results_Tooltip"); // NOI18N
+    return i18n(View.class, "TLT_Search_Results"); // NOI18N
   }
 
   @Override
@@ -151,8 +151,6 @@ public final class View extends TopComponent implements SearchListener {
     super.componentClosed();
     myList = null;
     myTree = null;
-//  myTabbed.removeAll();
-//  myTabbed = null;
   }
 
   @Override

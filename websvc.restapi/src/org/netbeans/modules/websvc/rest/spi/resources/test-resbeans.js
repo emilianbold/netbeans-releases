@@ -1300,12 +1300,11 @@ WADLParser.prototype = {
           if(resources != null) {
               for (i=0;i<resources.length;i++) {
                 str += '<node uri="'+baseURL+ts.getPath(resources[i], '')+'"/>';
-                thisNode = iterator.iterateNext();
               }
           }
         }
         catch (e) {
-          dump( 'Error: Document tree modified during iteration ' + e );
+          ts.debug('evaluateWADLUpdate() err name: [' + e.name + '] message: [' + e.message+']');
         }
         str += '</root>';
         return str;

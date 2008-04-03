@@ -187,6 +187,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

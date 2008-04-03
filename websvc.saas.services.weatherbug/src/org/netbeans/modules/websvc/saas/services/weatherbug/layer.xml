@@ -5,7 +5,6 @@
     <folder name="SaaSServices">
         <folder name="WeatherBug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.weatherbug.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/weatherbug/resources/profile.properties"/>
             <file name="WeatherBug.xml" url="/org/netbeans/modules/websvc/saas/services/weatherbug/resources/WeatherBug.xml"/>
         </folder>
     </folder>

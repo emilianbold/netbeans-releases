@@ -179,8 +179,15 @@ public abstract class BaseProvider implements ElementProvider {
     
     
     public Collection<? extends ElementDescriptor> getElements(Project project, String text, SearchType type, boolean first) {
-        cancel();
-	delegate = createDelegate();
+        if( first ) {
+            cancel();
+            delegate = createDelegate();
+        }
+        synchronized (this) {
+            if( delegate == null ) {
+                delegate = createDelegate();
+            }
+        }
         return delegate.getElements(project, text, type, first);
     }
     

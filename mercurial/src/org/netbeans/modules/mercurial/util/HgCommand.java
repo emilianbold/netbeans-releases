@@ -1197,7 +1197,9 @@ public class HgCommand {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_DEBUG_CMD);
+        if(bGetFileInfo){
+            command.add(HG_LOG_DEBUG_CMD);
+        }
         
         String dateStr = handleRevDates(from, to);
         if(dateStr != null){
@@ -1644,9 +1646,9 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-
+        
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgConfigFiles.getInstance().getUserName();
+        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
         String username = null;
         if(projectUserName != null && projectUserName.length() > 0)
             username = projectUserName;

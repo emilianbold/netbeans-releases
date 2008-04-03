@@ -66,27 +66,35 @@ public class TypeCast extends AbstractTypeCast {
     }
     
     public static TypeCast convert(Cast cast) {
-        GlobalType castTo = null;
-        //
-        XPathExpression xPathExpr = getExpression(cast);
-        //
-        SchemaReference<GlobalType> gTypeRef = cast.getType();
-        if (gTypeRef == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                    "Cast To has to be specified");
-        } else {
-            castTo = gTypeRef.get();
-            if (castTo == null) {
+        try {
+            GlobalType castTo = null;
+            //
+            SchemaReference<GlobalType> gTypeRef = cast.getType();
+            XPathExpression xPathExpr = getExpression(cast);
+            //
+            if (gTypeRef == null) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                        "Unresolved global type: " + gTypeRef.getQName());
+                        "Cast To has to be specified");
+            } else {
+                castTo = gTypeRef.get();
+                if (castTo == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                            "Unresolved global type: " + gTypeRef.getQName());
+                }
             }
+            //
+            return new TypeCast(xPathExpr, castTo);
+        } catch (Throwable ex) {
+            String msg = "An error while processing the cast: path=\"" + 
+                    cast.getPath() + "\" castTo=\"" + 
+                    cast.getType() + "\"";
+            ErrorManager.getDefault().log(ErrorManager.WARNING, msg );
+            return null;
         }
-        //
-        return new TypeCast(xPathExpr, castTo);
     }
     
     public TypeCast(XPathCast xPathCast) {
-        this(xPathCast.getPath(), xPathCast.getCastTo());
+        this(xPathCast.getPathExpression(), xPathCast.getCastTo());
     }
     
     public TypeCast(XPathExpression path, GlobalType castTo) {
@@ -100,7 +108,7 @@ public class TypeCast extends AbstractTypeCast {
         return ((XPathSchemaContextHolder)mXPathExpression).getSchemaContext();
     }
 
-    public XPathExpression getXPathExpression() {
+    public XPathExpression getPathExpression() {
         return mXPathExpression;
     }
     
@@ -180,4 +188,5 @@ public class TypeCast extends AbstractTypeCast {
         //
         return result;
     }
+
 } 

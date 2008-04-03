@@ -103,6 +103,9 @@ public class LexUtilities {
 
     public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
         try {
+            if (info == null) {
+                return null;
+            }
             BaseDocument doc = (BaseDocument) info.getDocument();
             if (doc == null && forceOpen) {
                 doc = NbUtilities.getBaseDocument(info.getFileObject(), true);

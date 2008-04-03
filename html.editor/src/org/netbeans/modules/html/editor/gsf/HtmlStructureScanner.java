@@ -123,7 +123,7 @@ public class HtmlStructureScanner implements StructureScanner {
                                 foldRange.add(new OffsetRange(so, eo));
                             }
                         } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
