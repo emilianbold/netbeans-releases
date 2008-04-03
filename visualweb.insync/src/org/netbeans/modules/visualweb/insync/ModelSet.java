@@ -464,10 +464,14 @@ public abstract class ModelSet implements FileChangeListener {
                 String[] j2eeJars = JsfProjectUtils.getJ2eeClasspathEntries(project);
                 for (String j2eeJar : j2eeJars) {
                     for (URL url : urls) {
-                        File file = FileUtil.toFile(URLMapper.findFileObject(url));
-                        if (j2eeJar.equals(file.getPath())) {
-                            urlSet.remove(url);
-                            break;
+                        URL fileURL = FileUtil.getArchiveFile(url);
+                        FileObject fileObj = URLMapper.findFileObject(fileURL != null ? fileURL : url);
+                        if (fileObj != null) {
+                            File file = FileUtil.toFile(fileObj);
+                            if (file != null && j2eeJar.equals(file.getPath())) {
+                                urlSet.remove(url);
+                                break;
+                            }
                         }
                     }
                 }
