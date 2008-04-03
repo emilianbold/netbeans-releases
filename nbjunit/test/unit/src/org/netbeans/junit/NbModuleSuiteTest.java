@@ -70,6 +70,7 @@ public class NbModuleSuiteTest extends TestCase {
      */
     public void testRun() {
         Test instance = NbModuleSuite.create(T.class, null, null);
+        assertEquals("no so far", 0, instance.countTestCases());
         junit.textui.TestRunner.run(instance);
         
         assertEquals("OK", System.getProperty("t.one"));

@@ -49,6 +49,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -124,22 +125,22 @@ public class NbModuleSuite {
 
         @Override
         public Enumeration tests() {
-            return delegate.tests();
+            return delegate != null ? delegate.tests() : Collections.enumeration(Collections.emptyList());
         }
 
         @Override
         public int testCount() {
-            return delegate.testCount();
+            return delegate != null ? delegate.testCount() : 0;
         }
 
         @Override
         public Test testAt(int arg0) {
-            return delegate.testAt(arg0);
+            return delegate != null ? delegate.testAt(arg0) : null;
         }
 
         @Override
         public int countTestCases() {
-            return delegate.countTestCases();
+            return delegate != null ? delegate.countTestCases() : 0;
         }
 
         @Override
