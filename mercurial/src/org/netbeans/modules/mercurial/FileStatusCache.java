@@ -587,9 +587,9 @@ public class FileStatusCache {
                 }
                 if (files != null) {
                     for (File file : files.keySet()) {
-                        if (!interestingFiles.containsKey(file)) {
-                        // A file was in cache but is now up to date
-                        Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0}", file); // NOI18N
+                        if (file.isFile() && !interestingFiles.containsKey(file)) {
+                            // A file was in cache but is now up to date
+                            Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0} {1}", new Object[] {file, files.get(file)}); // NOI18N
                             refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
                         }
                     }
