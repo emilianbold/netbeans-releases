@@ -276,15 +276,11 @@ public class SemiAttribute extends DefaultVisitor {
 
         node2Element.put(node, func);
         
-        DefinitionScope enclosed = new DefinitionScope(true);
-        
-        func.enclosedElements = enclosed;
-        
         if (node.getSuperClass() != null) {
             func.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
         }
                 
-        scopes.push(enclosed);
+        scopes.push(func.enclosedElements);
         
         super.visit(node);
         
@@ -540,7 +536,7 @@ public class SemiAttribute extends DefaultVisitor {
     
     public static class ClassElement extends AttributedElement {
         
-        private DefinitionScope enclosedElements;
+        private final DefinitionScope enclosedElements = new DefinitionScope(true);
         private ClassElement superClass;
         
         public ClassElement(Union2<ASTNode, IndexedElement> n, Kind k) {
