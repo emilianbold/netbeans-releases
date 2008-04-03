@@ -78,7 +78,7 @@ class FilesystemHandler extends VCSInterceptor {
         Subversion.LOG.fine("beforeDelete " + file);
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
-        return !file.isFile() && hasMetadata(file);
+        return !file.isFile() && hasMetadata(file); // XXX files should be also removed by svn !!!
     }
 
     /**
@@ -90,7 +90,14 @@ class FilesystemHandler extends VCSInterceptor {
         Subversion.LOG.fine("doDelete " + file);
         boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
         if (!isMetadata) {
-            remove(file);
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                // funny thing is, the command will delete all files recursively
+                client.remove(new File [] { file }, true);            
+            } catch (SVNClientException e) {
+                // XXX log this
+                return;
+            }
         }
     }
 
@@ -203,7 +210,7 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             if (!file.exists()) {                
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(true);                                        
+                    SvnClient client = Subversion.getInstance().getClient(false);                                        
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true); 
                 } catch (SVNClientException ex) {
@@ -284,17 +291,6 @@ class FilesystemHandler extends VCSInterceptor {
     private boolean isVersioned(File file) {
         if (SvnUtils.isPartOfSubversionMetadata(file)) return false;            
         return  ( !file.isFile() && hasMetadata(file) ) || ( file.isFile() && hasMetadata(file.getParentFile()) );        
-    }
-
-    private boolean remove(File file) {
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            // funny thing is, the command will delete all files recursively
-            client.remove(new File [] { file }, true);
-            return true;
-        } catch (SVNClientException e) {
-            return false;
-        }
     }
 
     private void revertDeleted(SvnClient client, final File file, boolean checkParents) {
