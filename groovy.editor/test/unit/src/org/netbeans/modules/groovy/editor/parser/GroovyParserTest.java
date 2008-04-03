@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.editor.parser;
 import java.io.IOException;
 import java.util.Scanner;
 import org.codehaus.groovy.ast.ASTNode;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.AstPath;
@@ -134,6 +135,48 @@ public class GroovyParserTest extends GroovyTestBase {
                 "\t}\n" +
                 "}");
         checkParseTree(testFO, "void ^main", "MethodNode");
+    }
+    
+    public void testAstUtilitiesGetRoot() throws IOException {
+        copyStringToFileObject(testFO,
+                "class Hello {\n" +
+                "\tdef name = 'aaa'\n" +
+                "\tprintln name\n" +
+                "\tstatic void main(args) {\n" +
+                "\t\tprintln 'Hello, world'\n" +
+                "\t}\n" +
+                "}");
+        
+        CompilationInfo info = getInfo(testFO);
+        ASTNode root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath(root ,1, (BaseDocument)info.getDocument());
+        assertNotNull("new AstPath() failed", path);
+    }    
+    
+    
+    public void testRootNPE() throws IOException {
+        
+        // we have an issue with compileUnit.getModules()
+        // in GroovyParser.java returning no AST, see # 131317
+        // This might be related to GROOVY-1443
+        // The sanitize() recursion reads:
+        // NONE
+        // ERROR_DOT
+        // ERROR_LINE
+        // MISSING_END
+      
+        
+        copyStringToFileObject(testFO,
+                "def m() {\n" +
+                "\tObject x = new Object()\n" +
+                "\tx.\n" +
+                "}\n");
+        
+        CompilationInfo info = getInfo(testFO);
+        ASTNode root = AstUtilities.getRoot(info);
+        // root is null, the AssertionError/NPE is just the follow-up:
+        AstPath path = new AstPath(root ,1, (BaseDocument)info.getDocument());
+        assertNotNull("new AstPath() failed", path);
     }
 
 }
