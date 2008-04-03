@@ -38,14 +38,11 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +65,6 @@ import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
@@ -95,13 +90,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -443,7 +438,7 @@ public class PHPCodeCompletion implements Completable {
             final IndexedElement indexedElement = (IndexedElement) element;
             StringBuilder builder = new StringBuilder();
             
-            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>",
+            builder.append(String.format("<h1>%s</h1><p><font size=\"-1\">%s</font></p><br><br>", //NOI18N
                     indexedElement.getName(), indexedElement.getFilenameUrl()));
             
             final StringBuilder phpDoc = new StringBuilder();
@@ -467,6 +462,17 @@ public class PHPCodeCompletion implements Completable {
                             if (comment instanceof PHPDocBlock) {
                                 PHPDocBlock pHPDocBlock = (PHPDocBlock) comment;
                                 phpDoc.append(pHPDocBlock.getDescription());
+                                
+                                // list PHPDoc tags
+                                // TODO a better support for PHPDoc tags
+                                phpDoc.append("<br><br><table>\n"); //NOI18N
+                                
+                                for (PHPDocTag tag : pHPDocBlock.getTags()){
+                                    phpDoc.append(String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                                            tag.getKind().toString(), tag.getValue()));
+                                }
+                                
+                                phpDoc.append("</table>\n"); //NOI18N
                             }
 
                         }
