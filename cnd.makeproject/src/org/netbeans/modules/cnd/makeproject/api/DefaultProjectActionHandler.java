@@ -383,7 +383,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     if (!gotpath) {
-                        env1.add(Path.getPathAsString() + File.pathSeparator + csdirs);
+                        env1.add(pathname + Path.getPathAsString() + File.pathSeparator + csdirs);
                     }
                     env = env1.toArray(new String[env1.size()]);
                 } else { // Build or Clean
