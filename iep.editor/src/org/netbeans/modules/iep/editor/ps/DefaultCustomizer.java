@@ -187,7 +187,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             rightPane.add(mSelectPanel, gbc);
             
             if (mHasExpressionColumn) {
-                if (mHasFromClause) {
+                if (mHasFromClause && isShowFromClause()) {
                     gbc.gridx = 0;
                     gbc.gridy = rightPaneGridY++;
                     gbc.gridwidth = 1;
@@ -386,7 +386,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 mSelectPanel.validateContent(evt);
                 
                 if (mHasExpressionColumn) {
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.validateContent(evt);
                         String from = mFromPanel.getStringValue();
@@ -550,7 +550,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     mModel.endTransaction();
                     //ritmComponent.getProperty(TO_COLUMN_LIST_KEY).setValue(toList);
                     
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.store();
                     }
@@ -575,6 +575,12 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             NotifyHelper.reportError(e.getMessage());
         }
     }
+    
+    protected boolean isShowFromClause() {
+        return true;
+    }
+    
+    
     
     class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
 

@@ -208,7 +208,7 @@ public class HgModuleConfig {
             } catch (Exception ex) {
                 hostName = "localhost"; //NOI18N
             }
-            userName = userId + "@" + hostName + ".zzz"; // NOI18N
+            userName = userId + "@" + hostName; // NOI18N
         }
         return userName;
     }

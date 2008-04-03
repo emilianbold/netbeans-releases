@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCast;
 import org.netbeans.modules.xml.xpath.ext.spi.XPathCastResolver;
 import org.netbeans.modules.bpel.model.ext.editor.api.Cast;
+import org.openide.ErrorManager;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -58,7 +59,14 @@ public class XPathCastResolverImpl implements XPathCastResolver {
         myXPathCasts = new ArrayList<XPathCast>();
 
         for (Cast cast : casts) {
-            myXPathCasts.add(new XPathCastImpl(cast));
+            try {
+                myXPathCasts.add(new XPathCastImpl(cast));
+            } catch(Throwable ex) {
+                String msg = "An error while processing the cast: path=\"" + 
+                        cast.getPath() + "\" castTo=\"" + 
+                        cast.getType() + "\"";
+                ErrorManager.getDefault().log(ErrorManager.WARNING, msg );
+            }
         }
     }
 
