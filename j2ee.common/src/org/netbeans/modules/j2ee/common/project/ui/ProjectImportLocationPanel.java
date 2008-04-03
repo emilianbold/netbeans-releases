@@ -79,13 +79,15 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
     private String lastModuleLocation = null;
     
     private Object j2eeModuleType;
+    private boolean allowAlternativeBuildXml;
     
     /** Creates new form TestPanel */
     public ProjectImportLocationPanel (Object j2eeModuleType, String name, String title, 
-            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel) {
+            ProjectImportLocationWizardPanel wizard, String nameFormatter, String importLabel, boolean allowAlternativeBuildXml) {
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
         this.nameFormatter = nameFormatter;
+        this.allowAlternativeBuildXml = allowAlternativeBuildXml;
         initComponents ();
         jLabelSrcLocationDesc.setText(importLabel);
         currentLibrariesLocation = "."+File.separatorChar+"lib"; // NOI18N
@@ -224,6 +226,9 @@ final class ProjectImportLocationPanel extends JPanel implements HelpCtx.Provide
                 }
                 else if ("build".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ProjectImportLocationPanel.class,"TXT_BuildFolder");
+                }
+                else if ("build.xml".equals(childName) && !allowAlternativeBuildXml) {    //NOI18N
+                    file = NbBundle.getMessage(ProjectImportLocationPanel.class, "TXT_BuildXML");
                 }
 //                else if ("WEB-INF".equals(childName)) {    //NOI18N
 //                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");

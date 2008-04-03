@@ -70,6 +70,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
+import javax.swing.undo.UndoManager;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.editor.lib.ColoringMap;
@@ -662,6 +663,23 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, Setting
 
             // add all document layers
             drawLayerList.add(newDoc.getDrawLayerList());
+            
+            // If there is the wrapper component the default UndoManager
+            // of the document gets cleared so that only the TopComponent's one gets used.
+            UndoManager undoManager = (UndoManager) newDoc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+            if (hasExtComponent()) {
+                if (undoManager != null) {
+                    newDoc.removeUndoableEditListener(undoManager);
+                    newDoc.putProperty(BaseDocument.UNDO_MANAGER_PROP, null);
+                }
+            } else { // Implicit use e.g. an editor pane in a dialog
+                if (undoManager == null) {
+                    // By default have an undo manager in UNDO_MANAGER_PROP
+                    undoManager = new UndoManager();
+                    newDoc.addUndoableEditListener(undoManager);
+                    newDoc.putProperty(BaseDocument.UNDO_MANAGER_PROP, undoManager);
+                }
+            }
         }
     }
 
