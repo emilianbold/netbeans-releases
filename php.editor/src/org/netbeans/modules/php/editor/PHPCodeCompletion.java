@@ -643,6 +643,16 @@ public class PHPCodeCompletion implements Completable {
         public String getName() {
             return keyword;
         }
+        
+        @Override public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            
+            return formatter.getText();
+        }
 
         @Override
         public ElementKind getKind() {
