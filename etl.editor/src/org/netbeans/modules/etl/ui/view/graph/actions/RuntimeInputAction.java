@@ -72,7 +72,7 @@ public class RuntimeInputAction extends GraphAction {
     
     public RuntimeInputAction() {
         //action name
-        String nbBundle1 = mLoc.t("BUND029: Runtime Inputs...");
+        String nbBundle1 = mLoc.t("BUND029: Runtime Inputs");
         this.putValue(Action.NAME, nbBundle1.substring(15));
 
         //action icon

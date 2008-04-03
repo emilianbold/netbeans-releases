@@ -77,17 +77,17 @@ public class EPFootprintUtilities extends gui.EPUtilities{
         wizard_location.txtProjectLocation().clearText();
         wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
         String pname = wizard_location.txtProjectName().getText();
-
-        if(j2eeProject) {
-            new JComboBoxOperator(wizard_location,1).selectItem(1);
-            new JCheckBoxOperator(wizard_location,"Create Application Client module:").setSelected(true);
-        }
         
         pname = pname + "_" + System.currentTimeMillis();
         wizard_location.txtProjectName().clearText();
         wizard_location.txtProjectName().typeText(pname);
         
         wizard.next();
+        
+        if(j2eeProject) {
+            new JComboBoxOperator(wizard,1).selectItem(1);
+            new JCheckBoxOperator(wizard,"Create Application Client module:").setSelected(true);
+        }
         
         new EventTool().waitNoEvent(1000);
         wizard.finish();

@@ -150,4 +150,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testSemantic8() throws Exception {
         checkSemantic("testfiles/semantic8.js", "new^");
     }
+
+    public void testSemanticE4x() throws Exception {
+        checkSemantic("testfiles/e4x.js", "order^");
+    }
 }
