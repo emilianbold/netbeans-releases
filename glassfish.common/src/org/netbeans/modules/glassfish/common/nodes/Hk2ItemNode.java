@@ -292,6 +292,7 @@ public class Hk2ItemNode extends AbstractNode {
     public static Decorator RESOURCES_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public Image getIcon(int type) { return Utilities.loadImage(RESOURCES_ICON); }
+        @Override public Image getOpenedIcon(int type) { return getIcon(type); }
     };
     
     public static Decorator J2EE_APPLICATION = new Decorator() { 
