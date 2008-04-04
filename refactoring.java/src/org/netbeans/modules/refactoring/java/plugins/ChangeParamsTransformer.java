@@ -89,33 +89,31 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return super.visitNewClass(tree, p);
     }
     
-    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> originalArguments) {
+    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = refactoring.getParameterInfo();
-        int origArgsCount = originalArguments.size();
-        int maxOrigIndex = -1;
-        for (int index = 0; index < pi.length; index++) {
-            int originalIndex = pi[index].getOriginalIndex();
-            if (originalIndex >= origArgsCount) {
-                break;
-            }
+        for (int i = 0; i < pi.length; i++) {
+            int originalIndex = pi[i].getOriginalIndex();
             ExpressionTree vt;
-            if (originalIndex <0) {
-                String value = pi[index].getDefaultValue();
+            if (originalIndex < 0) {
+                String value = pi[i].getDefaultValue();
                 SourcePositions pos[] = new SourcePositions[1];
                 vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
             } else {
-                maxOrigIndex = Math.max(originalIndex, maxOrigIndex);
-                vt = originalArguments.get(originalIndex);
+                if (i == pi.length - 1 && pi[i].getType().endsWith("...")) { // NOI18N
+                    // last param is vararg, so copy all remaining arguments
+                    for (int j = originalIndex; j < currentArguments.size(); j++) {
+                        arguments.add(currentArguments.get(j));
+                    }
+                    break;
+                } else {
+                    vt = currentArguments.get(originalIndex);
+                }
             }
             arguments.add(vt);
         }
-        for (int index = maxOrigIndex + 1; index < origArgsCount; index++) {
-            arguments.add(originalArguments.get(index));
-        }
         return arguments;
     }
-    
 
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
