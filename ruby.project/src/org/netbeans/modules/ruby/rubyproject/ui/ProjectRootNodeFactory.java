@@ -65,7 +65,11 @@ import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -73,6 +77,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 public class ProjectRootNodeFactory implements NodeFactory {
@@ -85,10 +90,14 @@ public class ProjectRootNodeFactory implements NodeFactory {
     
     private static class RootChildren implements NodeList<RootChildNode>, ChangeListener {
         
+        private final FileChangeListener rootFOListener;
         private final RubyProject project;
         private final List<ChangeListener> changeListeners;
         
         public RootChildren(RubyProject proj) {
+            rootFOListener = new RootFileChangeListener();
+            FileObject prjRoot = proj.getProjectDirectory();
+            prjRoot.addFileChangeListener(WeakListeners.create(FileChangeListener.class, rootFOListener, prjRoot));
             changeListeners = new CopyOnWriteArrayList<ChangeListener>();
             project = proj;
         }
@@ -180,9 +189,27 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-        
+
+        final class RootFileChangeListener extends FileChangeAdapter {
+
+            public @Override void fileFolderCreated(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileDataCreated(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileDeleted(FileEvent fe) {
+                stateChanged(null);
+            }
+
+            public @Override void fileRenamed(FileRenameEvent fe) {
+                stateChanged(null);
+            }
+        }
     }
-    
+
     private static class RootChildNode {
         
         private final SourceGroup group;
