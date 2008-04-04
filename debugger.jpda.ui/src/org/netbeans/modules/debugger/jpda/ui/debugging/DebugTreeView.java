@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -53,6 +54,12 @@ import org.openide.explorer.view.BeanTreeView;
  */
 public class DebugTreeView extends BeanTreeView {
 
+    DebugTreeView() {
+        super();
+        tree.setPreferredSize(new Dimension(0, 0));
+        tree.setMinimumSize(new Dimension(5, 5));
+    }
+    
     public JTree getTree() {
         return tree;
     }

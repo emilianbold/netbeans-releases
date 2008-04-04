@@ -6,17 +6,19 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -65,12 +67,19 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         initComponents();
         
         treeView = new DebugTreeView();
-        treeView.setRootVisible(true);
+        treeView.setRootVisible(false);
+        //treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         treeViewScrollPane.setViewportView(treeView);
         
         manager.addPropertyChangeListener(this);
         treeView.addTreeExpansionListener(this);
-        manager.setRootContext(new ElemRootNode("root node", 4));
+        
+        Collection<Node> col1 = new ArrayList<Node>();
+        col1.add(new ElemNode("subnode 1", 4));
+        col1.add(new ElemNode("subnode 2", 6));
+        ElemNode rootNode = new ElemNode("root node", new ElemNodeChildren2(col1));
+        
+        manager.setRootContext(rootNode);
     }
 
     /** This method is called from within the constructor to
@@ -81,53 +90,59 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         mainScrollPane = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         rightPanel = new javax.swing.JPanel();
-        testPanel = new javax.swing.JPanel();
-        testButton = new javax.swing.JButton();
         treeViewScrollPane = new javax.swing.JScrollPane();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.GridBagLayout());
 
         mainScrollPane.setBorder(null);
+        mainScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        mainScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        mainPanel.setLayout(new java.awt.BorderLayout());
+        mainPanel.setLayout(new java.awt.GridBagLayout());
 
         leftPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.highlight"));
         leftPanel.setPreferredSize(new java.awt.Dimension(24, 0));
-        leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-        mainPanel.add(leftPanel, java.awt.BorderLayout.WEST);
+        leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        mainPanel.add(leftPanel, gridBagConstraints);
 
         rightPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.highlight"));
         rightPanel.setPreferredSize(new java.awt.Dimension(24, 0));
-        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-        mainPanel.add(rightPanel, java.awt.BorderLayout.EAST);
-
-        testButton.setText(org.openide.util.NbBundle.getMessage(DebuggingView.class, "DebuggingView.testButton.text")); // NOI18N
-        testButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testButtonActionPerformed(evt);
-            }
-        });
-        testPanel.add(testButton);
-
-        mainPanel.add(testPanel, java.awt.BorderLayout.SOUTH);
+        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        mainPanel.add(rightPanel, gridBagConstraints);
 
         treeViewScrollPane.setBorder(null);
-        mainPanel.add(treeViewScrollPane, java.awt.BorderLayout.CENTER);
+        treeViewScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        treeViewScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        mainPanel.add(treeViewScrollPane, gridBagConstraints);
 
         mainScrollPane.setViewportView(mainPanel);
 
-        add(mainScrollPane, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(mainScrollPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
-    DebuggingView view = getInstance();
-    view.setRootContext(new ElemRootNode("new root node", 6));
-}//GEN-LAST:event_testButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -135,8 +150,6 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane mainScrollPane;
     private javax.swing.JPanel rightPanel;
-    private javax.swing.JButton testButton;
-    private javax.swing.JPanel testPanel;
     private javax.swing.JScrollPane treeViewScrollPane;
     // End of variables declaration//GEN-END:variables
 
@@ -267,25 +280,46 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 leftPanel.removeAll();
+                rightPanel.removeAll();
                 for (TreePath path : treeView.getVisiblePaths()) {
-                    leftPanel.add(new JLabel(new ImageIcon(Utilities.loadImage (
-                            "org/netbeans/modules/debugger/jpda/resources/debugging.png")))
-                    );
+                    JTree tree = treeView.getTree();
+                    Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
+                    double height = rect.getHeight();
+                    ImageIcon imageIcon = new ImageIcon(Utilities.loadImage(
+                            "org/netbeans/modules/debugger/jpda/resources/debugging.png"));
+                    JLabel label = new JLabel(imageIcon);
+                    label.setBackground(Color.YELLOW);
+                    label.setPreferredSize(new Dimension(imageIcon.getIconWidth(), (int)Math.round(height)));
+                    leftPanel.add(label);
+                    label = new ClickableIcon();
+                    
+                    // [TODO] put this inside ClicableIcon constructor
+                    label.setPreferredSize(new Dimension(imageIcon.getIconWidth(), (int)Math.round(height)));
+                    rightPanel.add(label);
                 }
-                leftPanel.invalidate();
+                leftPanel.revalidate();
+                leftPanel.repaint();
+                rightPanel.revalidate();
+                rightPanel.repaint();
             }
         });
     }
     
     // **************************************************************************
-    // ElemRootNode
+    // ElemNode
     // **************************************************************************
-    static class ElemRootNode extends AbstractNode {
+    static class ElemNode extends AbstractNode {
         
         private String description;
         
-        public ElemRootNode(String description, int childrenCount) {
-            super(new ElemRootNodeChildren(childrenCount));
+        public ElemNode(String description, int childrenCount) {
+            super(childrenCount == 0 ? Children.LEAF : new ElemNodeChildren(childrenCount));
+            this.description = description;
+            setDisplayName(description); 
+        }
+        
+        public ElemNode(String description, Children children) {
+            super(children);
             this.description = description;
             setDisplayName(description); 
         }
@@ -307,11 +341,11 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
     }
 
-    static class ElemRootNodeChildren extends Children.Array {
+    static class ElemNodeChildren extends Children.Array {
 
         private int count;
         
-        ElemRootNodeChildren(int count) {
+        ElemNodeChildren(int count) {
             this.count = count;
         }
         
@@ -319,38 +353,26 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         protected Collection<Node> initCollection() {
             Collection<Node> result = new ArrayList<Node>();
             for (int x = 1; x <= count; x++) {
-                result.add(new ElemNode("node " + x));
+                result.add(new ElemNode("node " + x, 0));
             }
             return result;
         }
 
     }
-    
-    static class ElemNode extends AbstractNode {
+
+    static class ElemNodeChildren2 extends Children.Array {
+
+        private Collection<Node> children;
         
-        private String description;
-        
-        public ElemNode(String description) {
-            super(Children.LEAF);
-            this.description = description;
-            setDisplayName(description); 
+        ElemNodeChildren2(Collection<Node> children) {
+            this.children = children;
         }
         
         @Override
-        public Image getIcon(int type) {
-             return Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/class.gif");
+        protected Collection<Node> initCollection() {
+            return children;
         }
 
-//        @Override
-//        public Image getOpenedIcon(int type) {
-//            return Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/classLoaderOpen.gif");
-//        }
-
-        @Override
-        public String getDisplayName() {
-            return description;
-        }
-        
     }
-
+    
 }
