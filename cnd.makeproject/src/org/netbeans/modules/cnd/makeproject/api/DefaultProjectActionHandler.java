@@ -55,6 +55,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -363,29 +364,32 @@ public class DefaultProjectActionHandler implements ActionListener {
                     // Append compilerset base to run path. (IZ 120836)
                     ArrayList<String> env1 = new ArrayList<String>();
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
-                    if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
-                        // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        String msysBase = CppUtils.getMSysBase();
-                        if (msysBase != null && msysBase.length() > 0) {
-                            csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                    CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+                    if (cs != null) {
+                        String csdirs = cs.getDirectory();
+                        if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                            // Also add msys to path. Thet's where sh, mkdir, ... are.
+                            String msysBase = CppUtils.getMSysBase();
+                            if (msysBase != null && msysBase.length() > 0) {
+                                csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                            }
                         }
-                    }
-                    boolean gotpath = false;
-                    String pathname = Path.getPathName() + '=';
-                    int i;
-                    for (i = 0; i < env.length; i++) {
-                        if (env[i].startsWith(pathname)) {
-                            env1.add(env[i] + File.pathSeparator + csdirs); // NOI18N
-                            gotpath = true;
-                        } else {
-                            env1.add(env[i]);
+                        boolean gotpath = false;
+                        String pathname = Path.getPathName() + '=';
+                        int i;
+                        for (i = 0; i < env.length; i++) {
+                            if (env[i].startsWith(pathname)) {
+                                env1.add(env[i] + File.pathSeparator + csdirs); // NOI18N
+                                gotpath = true;
+                            } else {
+                                env1.add(env[i]);
+                            }
                         }
+                        if (!gotpath) {
+                            env1.add(pathname + Path.getPathAsString() + File.pathSeparator + csdirs);
+                        }
+                        env = env1.toArray(new String[env1.size()]);
                     }
-                    if (!gotpath) {
-                        env1.add(pathname + Path.getPathAsString() + File.pathSeparator + csdirs);
-                    }
-                    env = env1.toArray(new String[env1.size()]);
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
