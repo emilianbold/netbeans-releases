@@ -216,10 +216,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
                 badge = Utilities.loadImage(WAITING_ICON);
                 break;
             case STOPPED:
-                badge = Utilities.loadImage(SUSPENDED_ICON);
+//                badge = Utilities.loadImage(SUSPENDED_ICON);
                 break;
             case STOPPED_JVM_BP:
-                badge = Utilities.loadImage(DEBUGGING_ICON);
+                badge = Utilities.loadImage(SUSPENDED_ICON);
                 break;
             case STOPPING:
                 badge = Utilities.loadImage(WAITING_ICON);
