@@ -21,6 +21,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
+
+import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
+
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -41,7 +44,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private static final String ID = "debugging"; //NOI18N
     
     private ExplorerManager manager = new ExplorerManager();
-    //private transient ViewModelListener viewModelListener;
+    private transient ViewModelListener viewModelListener;
     
     private DebugTreeView treeView;
     
@@ -137,7 +140,7 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JScrollPane treeViewScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public void setRootContext(AbstractNode root) {
+    public void setRootContext(Node root) {
         manager.setRootContext(root);
     }
     
@@ -191,28 +194,28 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     @Override
     protected void componentShowing() {
         super.componentShowing ();
-//        if (viewModelListener != null) {
-//            viewModelListener.setUp();
-//            return;
-//        }
+        if (viewModelListener != null) {
+            viewModelListener.setUp();
+            return;
+        }
 //        if (debuggingPanel == null) {
 //            setLayout(new BorderLayout ());
 //            debuggingPanel = new DebuggingPanel();
 //            debuggingPanel.setName(NbBundle.getMessage (DebuggingView2.class, "CTL_Debugging_tooltip")); // NOI18N
 //            add(debuggingPanel, BorderLayout.CENTER);
 //        }
-//        if (viewModelListener != null)
-//            throw new InternalError ();
-//        viewModelListener = new ViewModelListener (
-//            "SourcesView",
-//            tree
-//        );
+        if (viewModelListener != null)
+            throw new InternalError ();
+        viewModelListener = new ViewModelListener (
+            "DebuggingView",
+            this
+        );
     }
     
     @Override
     protected void componentHidden() {
         super.componentHidden ();
-        // viewModelListener.destroy ();
+        viewModelListener.destroy ();
     }
     
 //    public org.openide.util.HelpCtx getHelpCtx() {
@@ -226,9 +229,9 @@ private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
     @Override
     public boolean requestFocusInWindow() {
-        return super.requestFocusInWindow();
+//        return super.requestFocusInWindow();
 //        if (debuggingPanel == null) return false;
-//        return debuggingPanel.requestFocusInWindow ();
+        return treeView.requestFocusInWindow ();
     }
     
     @Override

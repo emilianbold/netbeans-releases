@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
@@ -64,6 +65,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.nodes.Node;
 
 
 /**
@@ -75,7 +77,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author   Jan Jancura
  */
-class ViewModelListener extends DebuggerManagerAdapter {
+public class ViewModelListener extends DebuggerManagerAdapter {
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.models") != null;
@@ -85,7 +87,7 @@ class ViewModelListener extends DebuggerManagerAdapter {
     private List models = new ArrayList(11);
     
     
-    ViewModelListener (
+    public ViewModelListener (
         String viewType,
         JComponent view
     ) {
@@ -94,7 +96,7 @@ class ViewModelListener extends DebuggerManagerAdapter {
         setUp();
     }
     
-    void setUp() {
+    public void setUp() {
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
@@ -102,15 +104,19 @@ class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
 
-    void destroy () {
+    public void destroy () {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
-        Models.setModelsToView (
-            view, 
-            Models.EMPTY_MODEL
-        );
+        if (view instanceof DebuggingView) {
+            ((DebuggingView) view).setRootContext(Node.EMPTY);
+        } else {
+            Models.setModelsToView (
+                view, 
+                Models.EMPTY_MODEL
+            );
+        }
     }
 
     public void propertyChange (PropertyChangeEvent e) {
@@ -158,10 +164,15 @@ class ViewModelListener extends DebuggerManagerAdapter {
         models.add(columnModels);
         models.add(mm);
         
-        Models.setModelsToView (
-            view, 
-            Models.createCompoundModel (models)
-        );
+        if (view instanceof DebuggingView) {
+            ((DebuggingView) view).setRootContext(
+                    Models.createNodes(Models.createCompoundModel(models)));
+        } else {
+            Models.setModelsToView (
+                view, 
+                Models.createCompoundModel (models)
+            );
+        }
     }
 
     

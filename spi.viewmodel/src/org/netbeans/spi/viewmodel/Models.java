@@ -65,6 +65,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
+import org.netbeans.modules.viewmodel.TreeModelRoot;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -127,6 +128,20 @@ public final class Models {
         TreeTable tt = new TreeTable ();
         tt.setModel (compoundModel);
         return tt;
+    }
+    
+    /**
+     * Creates a root node of the nodes tree structure
+     * for given {@link org.netbeans.spi.viewmodel.Models.CompoundModel}.
+     *
+     * @param compoundModel a compound model instance
+     *
+     * @return new instance root node
+     */
+    public static Node createNodes (
+        CompoundModel compoundModel
+    ) {
+        return new TreeModelRoot (compoundModel, null).getRootNode();
     }
     
     /**
