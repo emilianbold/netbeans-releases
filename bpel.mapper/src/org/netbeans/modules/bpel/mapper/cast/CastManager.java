@@ -142,7 +142,9 @@ public class CastManager {
                     PathConverter.constructObjectLocationtList(
                     typeCast.getPathExpression());
             //
-            return addTypeCastImpl(castedCompPath, typeCast);
+            if (castedCompPath != null) {
+                return addTypeCastImpl(castedCompPath, typeCast);
+            }
         }
         //
         return false;
