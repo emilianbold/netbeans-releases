@@ -203,8 +203,11 @@ public class PhpOptionsPanel extends JPanel {
         removeButton = new javax.swing.JButton();
         moveUpButton = new javax.swing.JButton();
         moveDownButton = new javax.swing.JButton();
+        useTheFollowingPathByDefaultLabel = new javax.swing.JLabel();
+        commandLineSeparator = new javax.swing.JSeparator();
+        debuggingSeparator = new javax.swing.JSeparator();
+        globalIncludePathSeparator = new javax.swing.JSeparator();
         errorLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(commandLineLabel, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_CommandLine")); // NOI18N
 
@@ -243,55 +246,24 @@ public class PhpOptionsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_MoveDown")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " "); // NOI18N
+        useTheFollowingPathByDefaultLabel.setLabelFor(includePathList);
+        org.openide.awt.Mnemonics.setLocalizedText(useTheFollowingPathByDefaultLabel, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault")); // NOI18N
 
-        jLabel1.setLabelFor(includePathList);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_UseTheFollowingPathByDefault")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, debuggingLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(stopAtTheFirstLineCheckBox)
-                            .add(layout.createSequentialGroup()
-                                .add(debuggerPortLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(debuggerPortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(globalIncludePathLabel)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addContainerGap(365, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
-                            .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(moveDownButton)
-                            .add(moveUpButton)
-                            .add(removeButton)
-                            .add(addFolderButton)))
-                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, commandLineLabel)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(phpInterpreterLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(phpInterpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE))
+                                .add(phpInterpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(openResultInLabel)
@@ -303,8 +275,48 @@ public class PhpOptionsPanel extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(searchButton)))
+                        .add(searchButton))
+                    .add(layout.createSequentialGroup()
+                        .add(commandLineLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(commandLineSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(useTheFollowingPathByDefaultLabel)
+                                    .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(moveDownButton)
+                                    .add(moveUpButton)
+                                    .add(removeButton)
+                                    .add(addFolderButton)))
+                            .add(layout.createSequentialGroup()
+                                .add(debuggingLabel)
+                                .add(12, 12, 12)
+                                .add(debuggingSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(stopAtTheFirstLineCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(debuggerPortLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(debuggerPortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(globalIncludePathLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(globalIncludePathSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(errorLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -314,7 +326,9 @@ public class PhpOptionsPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(commandLineLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(commandLineLabel)
+                    .add(commandLineSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(phpInterpreterLabel)
@@ -326,11 +340,14 @@ public class PhpOptionsPanel extends JPanel {
                     .add(openResultInLabel)
                     .add(outputWindowCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(webBrowserCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(editorCheckBox)
-                .add(18, 18, 18)
-                .add(debuggingLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(webBrowserCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editorCheckBox)
+                        .add(23, 23, 23)
+                        .add(debuggingSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(debuggingLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(debuggerPortLabel)
@@ -338,9 +355,11 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(stopAtTheFirstLineCheckBox)
                 .add(18, 18, 18)
-                .add(globalIncludePathLabel)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(globalIncludePathLabel)
+                    .add(globalIncludePathSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1)
+                .add(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -350,11 +369,13 @@ public class PhpOptionsPanel extends JPanel {
                         .add(18, 18, 18)
                         .add(moveUpButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moveDownButton))
-                    .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
+                        .add(moveDownButton)
+                        .add(26, 26, 26))
+                    .add(layout.createSequentialGroup()
+                        .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorLabel)
-                .add(0, 0, 0))
+                .add(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -363,15 +384,17 @@ public class PhpOptionsPanel extends JPanel {
     private javax.swing.JButton addFolderButton;
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel commandLineLabel;
+    private javax.swing.JSeparator commandLineSeparator;
     private javax.swing.JLabel debuggerPortLabel;
     private javax.swing.JTextField debuggerPortTextField;
     private javax.swing.JLabel debuggingLabel;
+    private javax.swing.JSeparator debuggingSeparator;
     private javax.swing.JCheckBox editorCheckBox;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel globalIncludePathLabel;
+    private javax.swing.JSeparator globalIncludePathSeparator;
     private javax.swing.JList includePathList;
     private javax.swing.JScrollPane includePathScrollPane;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton moveDownButton;
     private javax.swing.JButton moveUpButton;
     private javax.swing.JLabel openResultInLabel;
@@ -381,6 +404,7 @@ public class PhpOptionsPanel extends JPanel {
     private javax.swing.JButton removeButton;
     private javax.swing.JButton searchButton;
     private javax.swing.JCheckBox stopAtTheFirstLineCheckBox;
+    private javax.swing.JLabel useTheFollowingPathByDefaultLabel;
     private javax.swing.JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables
 
