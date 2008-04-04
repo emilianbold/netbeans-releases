@@ -406,6 +406,9 @@ public class TopSecurityManager extends SecurityManager {
     public static void install() {
         System.setSecurityManager(new TopSecurityManager());
     }
+    static void uninstall() {
+        System.setSecurityManager(null);
+    }
     
     /** Prohibits to set another SecurityManager */
     private void checkSetSecurityManager(Permission perm) {

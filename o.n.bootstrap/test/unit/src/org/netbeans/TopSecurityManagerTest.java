@@ -51,6 +51,14 @@ public class TopSecurityManagerTest extends TestCase {
         super(testName);
         System.err.println("TopSecurityManagerTest: " + testName);
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        TopSecurityManager.uninstall();
+    }
+    
+    
     public void testCanInstallTwice() {
         TopSecurityManager.install();
         TopSecurityManager.install();
