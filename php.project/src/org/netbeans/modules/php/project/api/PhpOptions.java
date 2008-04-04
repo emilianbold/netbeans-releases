@@ -39,7 +39,12 @@
 
 package org.netbeans.modules.php.project.api;
 
+import java.io.IOException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -130,5 +135,13 @@ public final class PhpOptions {
 
     public void setPhpGlobalIncludePath(String phpGlobalIncludePath) {
         getPreferences().put(PHP_GLOBAL_INCLUDE_PATH, phpGlobalIncludePath);
+        // update global ant properties as well (global include path can be used in project's include path)
+        EditableProperties globalProperties = PropertyUtils.getGlobalProperties();
+        globalProperties.setProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH, phpGlobalIncludePath);
+        try {
+            PropertyUtils.putGlobalProperties(globalProperties);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

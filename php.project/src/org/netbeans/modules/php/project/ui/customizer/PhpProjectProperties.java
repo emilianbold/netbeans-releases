@@ -74,7 +74,7 @@ public class PhpProjectProperties {
     public static final String URL = "url"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     // XXX will be replaced with global ide include path
-    public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
+    public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
 
     private final PhpProject project;
     private final IncludePathSupport classPathSupport;
