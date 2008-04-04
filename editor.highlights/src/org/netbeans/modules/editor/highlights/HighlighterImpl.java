@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,12 +42,13 @@ package org.netbeans.modules.editor.highlights;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
@@ -77,21 +78,15 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
     private Map/*<JTextComponent, FileObject>*/ comp2FO;
     private Map/*<FileObject, Collection<JTextComponent>>*/ fo2Comp;
     
-    private Map/*<JTextComponent, Reference<HighlightLayer>>*/ comp2Layer;
+    private Object tag = new Object();
 
      public HighlighterImpl() {
         comp2FO = new WeakHashMap/*<JTextComponent, FileObject>*/();
         fo2Comp = new WeakHashMap/*<FileObject, Collection<JTextComponent>>*/();
-        comp2Layer = new WeakHashMap/*<JTextComponent, Reference<HighlightLayer>>*/();
     }
     
     private HighlightLayer getLayer(JTextComponent c) {
-        Reference r = (Reference) comp2Layer.get(c);
-        
-        if (r == null)
-            return null;
-        
-        return (HighlightLayer) r.get();
+        return (HighlightLayer) c.getClientProperty(tag);
     }
     
     synchronized void assureRegistered(JTextComponent c) {
@@ -104,7 +99,9 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
         
         HighlightLayer layer = new HighlightLayer();
         
-        comp2Layer.put(c, new WeakReference(layer));
+        c.putClientProperty(tag, layer);
+        
+//        Logger.getLogger("TIMER").log(Level.FINE, "HighlightLayer", new Object[] {"HighlightLayers", layer});
         
         EditorUI eui = Utilities.getEditorUI(c);
         
@@ -138,6 +135,31 @@ public final class HighlighterImpl implements PropertyChangeListener, ChangeList
     public void propertyChange(PropertyChangeEvent evt) {
         if ("document".equals(evt.getPropertyName())) { // NOI18N
             updateFileObjectMapping((JTextComponent) evt.getSource());
+        }
+        
+        final Object source = evt.getSource();
+        
+        if ("UI".equals(evt.getPropertyName()) && source instanceof JTextComponent) { // NOI18N
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JTextComponent comp = (JTextComponent) source;
+                    synchronized (HighlighterImpl.this) {
+                        HighlightLayer layer = getLayer(comp);
+                        
+                        if (layer == null) {
+                            return ;
+                        }
+                        
+                        EditorUI eui = Utilities.getEditorUI(comp);
+
+                        if (eui != null) {
+                            if (eui.findLayer(HighlightLayer.NAME) == null) {
+                                eui.addLayer(layer, HighlightLayer.VISIBILITY);
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
     

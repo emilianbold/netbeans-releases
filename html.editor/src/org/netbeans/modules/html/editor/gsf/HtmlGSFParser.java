@@ -138,7 +138,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
         return this;
     }
 
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object) {
+    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle handle) {
+      ElementHandle object = resolveHandle(info, handle);
         if (object instanceof HtmlElementHandle) {
             ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
             final TranslatedSource source = presult.getTranslatedSource();
@@ -150,4 +151,82 @@ public class HtmlGSFParser implements Parser, PositionManager {
                     object) != null) ? object.getClass().getName() : "null"); //NOI18N
         }
     }
+    
+    public static ElementHandle resolveHandle(CompilationInfo info, ElementHandle handle) {
+        if (handle instanceof HtmlElementHandle) {
+           HtmlElementHandle element = (HtmlElementHandle)handle;
+            CompilationInfo oldInfo = element.compilationInfo();
+            if (oldInfo == info) {
+                return element;
+            }
+            AstNode oldNode = element.node(); 
+            
+            HtmlParserResult oldResult = (HtmlParserResult)oldInfo.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
+            AstNode oldRoot = oldResult.root();
+
+            HtmlParserResult newResult = (HtmlParserResult)info.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, 0);
+            AstNode newRoot = newResult.root();
+            
+            if (newRoot == null) {
+                return null;
+            }
+
+            // Find newNode
+            AstNode newNode = find(oldRoot, oldNode, newRoot);
+
+            if (newNode != null) {
+                return new HtmlElementHandle(newNode, info);
+            }
+        }
+        
+        return null;
+    }
+
+    private static AstNode find(AstNode oldRoot, AstNode oldObject, AstNode newRoot) {
+        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
+        if (oldRoot == oldObject) {
+            // Found it!
+            return newRoot;
+        }
+
+        List<AstNode> oChildren = oldRoot.children();
+        List<AstNode> nChildren = newRoot.children();
+        
+        for(int i = 0; i < oChildren.size(); i++) {
+            
+            AstNode oCh = oChildren.get(i);
+            
+            if(i == nChildren.size()) {
+                //no more new children
+                return null;
+            }
+            AstNode nCh = nChildren.get(i);
+
+            if (oCh == oldObject) {
+                // Found it!
+                return nCh;
+            }
+
+            // Recurse
+            AstNode match = find(oCh, oldObject, nCh);
+
+            if (match != null) {
+                return match;
+            }
+            
+        }
+
+        return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

@@ -35,6 +35,8 @@
          xmlns:ns0="http://localhost/wsdl/purchase/PurchaseOrderStatus/bp4"
          xmlns:pos="http://manufacturing.org/wsdl/purchase/bp4"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp4"
          xmlns:ns1="http://manufacturing.org/xsd/inventory"
          xmlns:ns2="http://manufacturing.org/xsd/purchase">

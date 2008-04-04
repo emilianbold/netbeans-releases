@@ -529,26 +529,19 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Throwable ex) throws IOException {
         
         // PENDING: maybe we should check all nested exceptions
-        StringBuilder allStack = new StringBuilder();
         Throwable last = ex;
-        allStack.append(ContextUtil.getThrowableMessage(ex, true));
         while (ex instanceof JasperException) {
             last = ex;
             ex = ((JasperException) ex).getRootCause();
-            if (ex != null) {
-                //ErrorManager.getDefault().annotate(last, ex);
+            if (ex != null && last.getCause() == null) {
                 last.initCause(ex);
-                allStack.append(ContextUtil.getThrowableMessage(ex, true));
             }
         }
-        
+
         if (ex == null) {
             ex = last;
         }
-        
-/*System.out.println("--------STACK------");
-System.out.println(allStack.toString());
-System.out.println("--------ENDSTACK------");        */
+
         // now it can be JasperException, which starts with error location description
         String m1 = ex.getMessage();
         if (m1 == null) {
