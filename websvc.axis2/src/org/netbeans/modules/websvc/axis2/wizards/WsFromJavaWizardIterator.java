@@ -84,14 +84,8 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
     public WsFromJavaWizardIterator() {
     }
         
-//    public static WsFromJavaWizardIterator create() {
-//        return new WsFromJavaWizardIterator();
-//    }
-
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         DataObject dObj = null;
-        
-        WizardUtils.addAxis2Library(project);
         
         if (WizardProperties.JAVA_TYPE_EXISTING.equals(wiz.getProperty(WizardProperties.PROP_FROM_JAVA_TYPE))) {
             FileObject fo = (FileObject)wiz.getProperty(WizardProperties.PROP_JAVA_CLASS);

@@ -49,6 +49,8 @@ package org.netbeans.modules.gsf.api;
  * Put yet another way, the starting offset is inclusive, and the ending
  * offset is exclusive.
  *
+ * @todo This class should be final
+ * 
  * @author Tor Norbye
  */
 public class OffsetRange {
