@@ -81,45 +81,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <!--folder name="org.netbeans.modules.php">
-        <folder name="ActionsOptions">
-            <file name="CommandLine.instance">
-                <attr name="position" intvalue="100"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.CommandLineOption"/>
-            </file>
-            <file name="ProjectActionsOptions.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ProjectActionsOptions"/>
-            </file>
-        </folder>
-    </folder-->
 
-<!-- separate php category was moved into misclleaneous as one php panel
-    <folder name="OptionsDialog">
-        <file name="PhpOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.PhpOptionsCategory"/>
-            <attr name="position" intvalue="310"/>
-        </file>
-    </folder>
-    <folder name="org.netbeans.modules.php">
-        <folder name="options">
-            <file name="CommandLine.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.CommandLineOption"/>
-            </file>
-            <file name="ActionsPanel.instance">
-                <attr name="position" intvalue="160"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ActionsOptionsContainerPanel"/>
-            </file>
-        </folder>
-        <folder name="ActionsOptions">
-            <file name="ProjectActionsOptions.instance">
-                <attr name="position" intvalue="150"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ProjectActionsOptions"/>
-            </file>
-        </folder>
-    </folder>
--->
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
