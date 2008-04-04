@@ -36,72 +36,44 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
+package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-import org.netbeans.modules.spring.api.beans.SpringConstants;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 
 /**
+ * A simple completor for general attribute value items
+ * 
+ * Takes an array of strings, the even elements being the display text of the items
+ * and the odd ones being the corresponding documentation of the items
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class ResourceCompletor extends Completor {
+public class AttributeValueCompletor extends Completor {
 
-    public ResourceCompletor() {
+    private String[] itemTextAndDocs;
+
+    public AttributeValueCompletor(String[] itemTextAndDocs) {
+        this.itemTextAndDocs = itemTextAndDocs;
     }
 
     public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
         List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-        FileObject fileObject = context.getFileObject().getParent();
+        int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
 
-        int lastSlashIndex = typedChars.lastIndexOf("/"); // NOI18N
-
-        String prefix = typedChars;
-
-        if (lastSlashIndex != -1) {
-            String pathStr = typedChars.substring(0, typedChars.lastIndexOf("/")); // NOI18N
-            fileObject = fileObject.getFileObject(pathStr);
-            if (lastSlashIndex != typedChars.length() - 1) {
-                prefix = typedChars.substring(Math.min(typedChars.lastIndexOf("/") + 1, // NOI18N
-                        typedChars.length() - 1));
-            } else {
-                prefix = "";
+        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
+            if (itemTextAndDocs[i].startsWith(typedChars)) {
+                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                results.add(item);
             }
         }
 
-        if (fileObject == null) {
-            return Collections.emptyList();
-        }
-
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
-        while (folders.hasMoreElements()) {
-            FileObject fo = folders.nextElement();
-            if (fo.getName().startsWith(prefix)) {
-                results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
-                        fo));
-            }
-        }
-
-
-        Enumeration<? extends FileObject> files = fileObject.getData(false);
-        while (files.hasMoreElements()) {
-            FileObject fo = files.nextElement();
-            if (fo.getName().startsWith(prefix) && SpringConstants.CONFIG_MIME_TYPE.equals(fo.getMIMEType())) {
-                results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
-            }
-        }
-
-        setAnchorOffset(context.getCaretOffset() - prefix.length());
-
+        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
         return results;
     }
 }

@@ -36,41 +36,43 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
+package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.w3c.dom.Node;
 
 /**
- * A simple completor for general attribute value items
- * 
- * Takes an array of strings, the even elements being the display text of the items
- * and the odd ones being the corresponding documentation of the items
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class AttributeValueCompletor extends Completor {
+public class InitDestroyMethodCompletor extends JavaMethodCompletor {
 
-    private String[] itemTextAndDocs;
-
-    public AttributeValueCompletor(String[] itemTextAndDocs) {
-        this.itemTextAndDocs = itemTextAndDocs;
+    public InitDestroyMethodCompletor() {
     }
 
-    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
-        List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-        int caretOffset = context.getCaretOffset();
-        String typedChars = context.getTypedPrefix();
+    @Override
+    protected Public getPublicFlag(CompletionContext context) {
+        return Public.DONT_CARE;
+    }
 
-        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-            if (itemTextAndDocs[i].startsWith(typedChars)) {
-                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                results.add(item);
-            }
-        }
+    @Override
+    protected Static getStaticFlag(CompletionContext context) {
+        return Static.NO;
+    }
 
-        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-        return results;
+    @Override
+    protected int getArgCount(CompletionContext context) {
+        return 0;
+    }
+
+    @Override
+    protected String getTypeName(CompletionContext context) {
+        Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
+        return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
+                context.getFileObject()).findImplementationClass();
     }
 }

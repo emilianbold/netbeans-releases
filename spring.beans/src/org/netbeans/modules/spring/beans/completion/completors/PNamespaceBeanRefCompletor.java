@@ -36,21 +36,44 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
+package org.netbeans.modules.spring.beans.completion.completors;
+
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
+import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class BeansRefCompletorFactory implements CompletorFactory {
+public class PNamespaceBeanRefCompletor extends Completor {
 
-    private boolean includeGlobal;
-
-    public BeansRefCompletorFactory(boolean includeGlobal) {
-        this.includeGlobal = includeGlobal;
+    public PNamespaceBeanRefCompletor() {
     }
 
-    public Completor createCompletor() {
-        return new BeansRefCompletor(includeGlobal);
+    @Override
+    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+        TokenItem attribToken = ContextUtilities.getAttributeToken(context.getCurrentToken());
+        if (attribToken == null) {
+            return Collections.emptyList();
+        }
+
+        String attribName = attribToken.getImage();
+        if (!ContextUtilities.isPNamespaceName(context.getDocumentContext(), attribName)) {
+            return Collections.emptyList();
+        }
+
+        if (!attribName.endsWith("-ref")) { // NOI18N
+            return Collections.emptyList();
+        }
+
+        // XXX: Ideally find out the property name and it's expected type
+        // to list bean proposals intelligently
+        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
+        return beansRefCompletor.doCompletion(context);
     }
 }

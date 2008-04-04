@@ -36,8 +36,10 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
+package org.netbeans.modules.spring.beans.completion.completors;
 
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.CompletorFactory;
 import org.openide.util.Exceptions;
 
 /**

@@ -36,42 +36,25 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.completion;
+package org.netbeans.modules.spring.beans.completion.completors;
 
-import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
-import org.w3c.dom.Node;
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.CompletorFactory;
+
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class InitDestroyMethodCompletor extends JavaMethodCompletor {
+public class AttributeValueCompletorFactory implements CompletorFactory {
 
-    public InitDestroyMethodCompletor() {
+    private String[] itemTextAndDocs;
+
+    public AttributeValueCompletorFactory(String[] itemTextAndDocs) {
+        this.itemTextAndDocs = itemTextAndDocs;
     }
 
-    @Override
-    protected Public getPublicFlag(CompletionContext context) {
-        return Public.DONT_CARE;
-    }
-
-    @Override
-    protected Static getStaticFlag(CompletionContext context) {
-        return Static.NO;
-    }
-
-    @Override
-    protected int getArgCount(CompletionContext context) {
-        return 0;
-    }
-
-    @Override
-    protected String getTypeName(CompletionContext context) {
-        Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
-        return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
-                context.getFileObject()).findImplementationClass();
+    public Completor createCompletor() {
+        return new AttributeValueCompletor(itemTextAndDocs);
     }
 }

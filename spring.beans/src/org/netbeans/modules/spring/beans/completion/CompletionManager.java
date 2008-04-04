@@ -41,6 +41,15 @@
 
 package org.netbeans.modules.spring.beans.completion;
 
+import org.netbeans.modules.spring.beans.completion.completors.InitDestroyMethodCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.PNamespaceBeanRefCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.ResourceCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.PropertyCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.FactoryMethodCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.JavaClassCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.GenericCompletorFactory;
+import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletorFactory;
+import org.netbeans.modules.spring.beans.completion.completors.AttributeValueCompletorFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
