@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,6 +124,19 @@ class PhpActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup lookup) 
             throws IllegalArgumentException 
     {
+	if (ActionProvider.COMMAND_DEBUG_SINGLE.equals(command) ||
+		ActionProvider.COMMAND_RUN_SINGLE.equals(command)) {
+	    WebServerProvider pr = Utils.getProvider(getProject());
+	    if (pr != null) {
+		Command[] commands = pr.getCommandProvider().getEnabledCommands(getProject());
+		for (Command cmd : commands) {
+		    if (cmd.getId().equals(command)) {
+			return true;
+		    }		    
+		}		
+	    }
+	    return false;
+	}
         return true;
     }
 
@@ -143,7 +157,7 @@ class PhpActionProvider implements ActionProvider {
         if (provider != null) {
             CommandProvider commProvider = provider.getCommandProvider();
             
-            Command[] commands = commProvider.getCommands(getProject());
+            Command[] commands = commProvider.getAllSupportedCommands(getProject());
             if (doInvokeAction(command, commands)){
                 return true;
             }
@@ -216,7 +230,7 @@ class PhpActionProvider implements ActionProvider {
         if (provider != null) {
                 CommandProvider commProvider = provider.getCommandProvider();
                 
-                Command[] commands = commProvider.getCommands(getProject());
+                Command[] commands = commProvider.getAllSupportedCommands(getProject());
                 for (Command command : commands) {
                     if (command != null && command.isEnabled()) {
                         list.add(command.getId());

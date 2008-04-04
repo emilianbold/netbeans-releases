@@ -97,6 +97,17 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
         super(project, provider );
     }
 
+    @Override
+    public void setActionFiles(FileObject[] files) {
+	if (getId().equals(DEBUG)) {
+	    if (getProject() != null) {
+		super.setActionFiles(new FileObject[]{getProject().getProjectDirectory()});
+	    }
+	} else {
+	    super.setActionFiles(files);
+	}	
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
@@ -140,7 +151,7 @@ public class DebugCommandImpl extends AbstractCommand implements Command {
     
     private RunCommand getRunCommand() {
         Command[] commands = getProvider().getCommandProvider()
-                .getCommands(getProject());
+                .getAllSupportedCommands(getProject());
         Command runCommand = null;
         for (Command command : commands) {
             String id = command.getId();
