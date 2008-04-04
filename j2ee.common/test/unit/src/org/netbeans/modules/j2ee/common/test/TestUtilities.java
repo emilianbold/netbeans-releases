@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.modules.j2ee.common.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -52,8 +52,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Copied from java/source TestUtilities. To be removed when SourceUtils
- * is moved to java/source.
  *
  * @author Andrei Badea
  */

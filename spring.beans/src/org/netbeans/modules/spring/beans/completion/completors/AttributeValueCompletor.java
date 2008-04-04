@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.beans.completion.completors;
 
-package org.netbeans.modules.j2ee.common.source;
-
-import java.util.Enumeration;
-import org.netbeans.modules.java.JavaDataLoader;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.util.Enumerations;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 
 /**
+ * A simple completor for general attribute value items
+ * 
+ * Takes an array of strings, the even elements being the display text of the items
+ * and the odd ones being the corresponding documentation of the items
  *
- * @author Andrei Badea
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class FakeJavaDataLoaderPool extends DataLoaderPool {
+public class AttributeValueCompletor extends Completor {
 
-    public Enumeration<? extends DataLoader> loaders() {
-        return Enumerations.singleton(new JavaDataLoader());
+    private String[] itemTextAndDocs;
+
+    public AttributeValueCompletor(String[] itemTextAndDocs) {
+        this.itemTextAndDocs = itemTextAndDocs;
+    }
+
+    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+        List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+        int caretOffset = context.getCaretOffset();
+        String typedChars = context.getTypedPrefix();
+
+        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
+            if (itemTextAndDocs[i].startsWith(typedChars)) {
+                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                results.add(item);
+            }
+        }
+
+        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+        return results;
     }
 }

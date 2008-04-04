@@ -39,49 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.modules.j2ee.common.test;
 
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
+import java.util.Enumeration;
+import org.netbeans.modules.java.JavaDataLoader;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.DataLoaderPool;
+import org.openide.util.Enumerations;
 
 /**
  *
- * @author Andrei Badae
+ * @author Andrei Badea
  */
-public class RepositoryImpl extends Repository {
+public class FakeJavaDataLoaderPool extends DataLoaderPool {
 
-    private XMLFileSystem system;
-
-    public RepositoryImpl() {
-        super(new MultiFileSystemImpl());
-    }
-
-    public static final class MultiFileSystemImpl extends MultiFileSystem {
-
-        public MultiFileSystemImpl() {
-            super(createFileSystems());
-        }
-
-        public void reset() {
-            setDelegates(createFileSystems());
-        }
-
-        private static FileSystem[] createFileSystems() {
-            try {
-                FileSystem writeFs = FileUtil.createMemoryFileSystem();
-                FileSystem utilitiesFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("layer.xml"));
-                FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-                FileSystem javaProjectFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/java/project/layer.xml"));
-                return new FileSystem[] { writeFs, utilitiesFs, j2eeserverFs, javaProjectFs };
-            } catch (SAXException e) {
-                AssertionError ae = new AssertionError(e.getMessage());
-                ae.initCause(e);
-                throw ae;
-            }
-        }
+    public Enumeration<? extends DataLoader> loaders() {
+        return Enumerations.singleton(new JavaDataLoader());
     }
 }

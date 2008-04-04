@@ -335,7 +335,7 @@ public class WizardUtils {
     
     private static String createMethodBody(WsdlBindingInfo.WsdlOperationInfo wsdlOperation, Name className) {
         return wsdlOperation.isInOnly()?"{}":"{"+
-        "// TODO: To generate response you can customize the following code:\n"+
+        "// TODO: to generate response, the following code can be customized:\n"+
         "OMNode response = omFactory.createOMText(\"response text\");\n"+
         "return createResponse(\""+wsdlOperation.getOperationName()+"Response\",\"return\", response); }";                
     }
