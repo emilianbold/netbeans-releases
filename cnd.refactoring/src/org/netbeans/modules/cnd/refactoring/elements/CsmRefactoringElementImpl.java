@@ -38,6 +38,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -49,7 +50,7 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Voskresensky
  */
 public class CsmRefactoringElementImpl extends 
-                BaseRefactoringElementImpl {
+                SimpleRefactoringElementImplementation {
 
     private final CsmReference elem;
     private final PositionBounds bounds;

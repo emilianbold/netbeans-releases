@@ -543,8 +543,10 @@ public class DesignContextControllerImpl2
     
     private void checkXPathExpression(ContentElement contenElement, StringBuffer errMsgBuffer) {
         String xpathExpression = contenElement.getContent();
-        xpathExpression = (xpathExpression != null) ? xpathExpression.trim() : null;
-        if ((xpathExpression != null) && (xpathExpression.length() > 0)) {
+        if (xpathExpression == null) return;
+        
+        xpathExpression = xpathExpression.trim();
+        if (isCheckingRequired(xpathExpression)) {
             String errMsg = checkXPathExpression(contenElement, xpathExpression);                
             if (errMsg != null) {
                 errMsgBuffer.append((errMsgBuffer.length() > 0) ? 
@@ -552,6 +554,17 @@ public class DesignContextControllerImpl2
                 errMsgBuffer.append(",");
             }
         }
+    }
+    
+    private boolean isCheckingRequired(String xpathExpression) {
+        if ((xpathExpression == null) || (xpathExpression.trim().length() == 0) ||
+            // value of xpathExpression is a literal (for example, 'blah-blah-blah')
+            ((xpathExpression.startsWith("'")) && (xpathExpression.endsWith("'"))) ||
+            // xpathExpression contains a function    
+            ((xpathExpression.contains("(")) && (xpathExpression.contains(")")))) {
+            return false;
+        }
+        return true;
     }
     
     private String checkXPathExpression(ContentElement contenElement, String xpathExpression) {
