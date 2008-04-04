@@ -173,15 +173,5 @@ public class CustomJavaClientCodeGenerator extends CustomCodeGenerator {
        
         return methodBody;
     }
-    
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
-    
+ 
 }
