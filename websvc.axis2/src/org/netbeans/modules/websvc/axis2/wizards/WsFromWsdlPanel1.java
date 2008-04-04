@@ -97,7 +97,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
         return new HelpCtx(WsFromWsdlPanel1.class);
     }
 
-    public void readSettings(WizardDescriptor settings) {
+    public void readSettings(final WizardDescriptor settings) {
         File newWsdlFile = (File)settings.getProperty(WizardProperties.PROP_WSDL_URL);
         if (newWsdlFile != null && !newWsdlFile.equals(wsdlFile)) {
             wsdlFile = newWsdlFile;
@@ -107,6 +107,7 @@ public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<Wizar
                     FileObject wsdlFo = FileUtil.toFileObject(wsdlFile);
                     WSDLModel wsdlModel = WSDLUtils.getWSDLModel(wsdlFo, true);
                     if (wsdlModel != null) {
+                        settings.putProperty(WizardProperties.PROP_WSDL_NS, WSDLUtils.getTargetNamespace(wsdlModel));
                         Collection<Service> services = WSDLUtils.getServices(wsdlModel);
                         component.setServices(services);
                         if (services != null && services.size()>0) {
