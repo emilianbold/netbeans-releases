@@ -180,9 +180,10 @@ public class HTMLDocView extends JEditorPane {
         javax.swing.text.html.StyleSheet css =
                 new javax.swing.text.html.StyleSheet();
         java.awt.Font f = new EditorUI().getDefaultColoring().getFont();
-        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize() + 1) // NOI18N
                 /*.append("; font-family: ").append(f.getName())*/.append("; }").toString()); // NOI18N
-                // do not use monospced font, just adjust fontsize
+                // do not use monospaced font, just adjust fontsize
+	        // proportional fonts looks smaller, adjust by +1
         css.addStyleSheet(htmlKit.getStyleSheet());
         htmlKit.setStyleSheet(css);
 
