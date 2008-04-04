@@ -380,6 +380,8 @@ public class PHPIndex {
                 PhpSourcePath phpSourcePath = project.getLookup().lookup(PhpSourcePath.class);
                 if (phpSourcePath != null) {
                     File file = new File(new URI(url));
+                    assert file.exists() : "PHP Index is refering to a non-existing file " + url;
+                    
                     FileObject fileObject = FileUtil.toFileObject(file);
                     PhpSourcePath.FileType fileType = phpSourcePath.getFileType(fileObject);
                     if (fileType == PhpSourcePath.FileType.INTERNAL

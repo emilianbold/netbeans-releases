@@ -119,8 +119,17 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_INCLUDE = "include"; //NOI18N
     
     public boolean isIndexable(ParserFile file) {
-        if (file != null && file.getFileObject() != null 
-                && PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        // Cannot call file.getFileObject().getMIMEType() here for several reasons:
+        // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
+        //   may return "content/unknown", and in some cases, file.getFileObject() returns null
+        // (2) file.getFileObject() can be expensive during startup indexing when we're
+        //   rapidly scanning through lots of directories to determine which files are
+        //   indexable. This is done using the java.io.File API rather than the more heavyweight
+        //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
+        // Since the mime resolver for PHP is simple -- it's just based on the file extension,
+        // we perform the same check here:
+        //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
+        if (file != null && file.getFileObject() != null && "php".equals(file.getExtension())) { // NOI18N
             return true;
         }
         
@@ -142,7 +151,8 @@ public class PHPIndexer implements Indexer {
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
         PHPParseResult r = (PHPParseResult)result;
-        
+        assert factory != null;
+        assert result != null;
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
         
@@ -150,7 +160,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.3"; // NOI18N
+        return "0.2.4"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -235,7 +245,7 @@ public class PHPIndexer implements Indexer {
                 }
             }
             
-            document.addPair(FIELD_INCLUDE, includes.toString(), true);
+            document.addPair(FIELD_INCLUDE, includes.toString(), false);
         }
 
         private void indexClass(ClassDeclaration classDeclaration, IndexDocument document) {
@@ -343,8 +353,19 @@ public class PHPIndexer implements Indexer {
     public FileObject getPreindexedDb() {
         return null;
     }
-
-    public boolean acceptQueryPath(String url) {
-        return true;
-    }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * As the above documentation states, this is a temporary solution / hack
+     * for 6.1 only.
+     */
+     public boolean acceptQueryPath(String url) {
+        // Filter out JavaScript stuff
+        return url.indexOf("jsstubs") == -1 && // NOI18N
+                // Filter out Ruby stuff
+                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/gems/") == -1 &&  // NOI18N
+                url.indexOf("lib/ruby/") == -1; // NOI18N
+     }
 }
