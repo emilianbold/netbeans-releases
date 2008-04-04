@@ -40,14 +40,18 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.Color;
+import java.io.File;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * @author  Tomas Mysik
@@ -63,23 +67,9 @@ public class PhpOptionsPanel extends JPanel {
         initPhpGlobalIncludePath();
 
         // listeners
-        debuggerPortTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                processUpdate();
-            }
-
-            private void processUpdate() {
-                fireChange();
-            }
-        });
+        DocumentListener documentListener = new DefaultDocumentListener();
+        phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
+        debuggerPortTextField.getDocument().addDocumentListener(documentListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -170,7 +160,7 @@ public class PhpOptionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    private void fireChange() {
+    void fireChange() {
         changeSupport.fireChange();
     }
 
@@ -215,8 +205,18 @@ public class PhpOptionsPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(phpInterpreterLabel, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_PhpInterpreter")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_Browse")); // NOI18N
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_Search")); // NOI18N
+        searchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchButtonActionPerformed(evt);
+            }
+        });
 
         openResultInLabel.setLabelFor(outputWindowCheckBox);
         org.openide.awt.Mnemonics.setLocalizedText(openResultInLabel, org.openide.util.NbBundle.getMessage(PhpOptionsPanel.class, "LBL_OpenResultIn")); // NOI18N
@@ -379,6 +379,20 @@ public class PhpOptionsPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(PhpOptionsPanel.class, "LBL_SelectPhpInterpreter"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            phpInterpreterTextField.setText(phpInterpreter.getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFolderButton;
@@ -408,4 +422,22 @@ public class PhpOptionsPanel extends JPanel {
     private javax.swing.JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables
 
+    private final class DefaultDocumentListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            processUpdate();
+        }
+
+        private void processUpdate() {
+            fireChange();
+        }
+    }
 }
