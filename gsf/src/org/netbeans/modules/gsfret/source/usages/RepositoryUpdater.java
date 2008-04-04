@@ -153,6 +153,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     
+    private static final long STARTED = System.currentTimeMillis();
+    private static String getElapsedTime() {
+        StringBuilder sb = new StringBuilder();
+        long now = System.currentTimeMillis();
+        long elapsed = now-STARTED;
+        long seconds = elapsed/1000;
+        long minutes = seconds/60;
+        if (seconds > 400) {
+            seconds -= minutes*60;
+            sb.append(minutes + " minutes, " + seconds + " seconds");
+        } else {
+            sb.append(seconds + " seconds");
+        }
+        sb.append(": ");
+        return sb.toString();
+    }
+    
     // TODO - make delay configurable?
     private static final int DELAY = Utilities.isWindows() ? 2000 : 1000;
     
@@ -666,7 +683,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     try {
                     final WorkType type = work.getType();                        
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run - type=" + type);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +  "CompilerWorker.run - type=" + type);
 }
                     switch (type) {
                         case FILTER_CHANGED:                            
@@ -686,7 +703,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             } catch (final TopologicalSortException tse) {
                                     final IllegalStateException ise = new IllegalStateException ();                                
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker *** IllegalStateException ", tse);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +  "CompilerWorker *** IllegalStateException ", tse);
 }
                                     throw (IllegalStateException) ise.initCause(tse);
                             }
@@ -697,7 +714,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             handle.start();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - created and started handle " + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() + "CompilerWorker.run.COMPILE_BATCH - created and started handle " + handle);
 }
                             boolean completed = false;
                             try {
@@ -724,13 +741,13 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 completed = true;
                             } catch (final TopologicalSortException tse) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - THREW EXCEPTION!", tse);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - THREW EXCEPTION!", tse);
 }
                                 final IllegalStateException ise = new IllegalStateException ();                                
                                 throw (IllegalStateException) ise.initCause(tse);
                             } finally {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - completed=" + completed);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - completed=" + completed);
 }
                                 if (!completed) {
                                     resetDirty();
@@ -740,12 +757,12 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         case COMPILE_CONT:
                             boolean completed = false;
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_CONT - about to scan roots");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_CONT - about to scan roots");
 }
                             try {
                                 if (!scanRoots()) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH -failed - doing continuation!");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH -failed - doing continuation!");
 }
                                     CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
                                     SourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this, Source.Priority.MAX);
@@ -779,16 +796,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     } catch (final TopologicalSortException tse) {
                                         final IllegalStateException ise = new IllegalStateException ();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker *** IllegalStateException ", ise);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker *** IllegalStateException ", ise);
 }
                                         throw (IllegalStateException) ise.initCause(tse);
                                     }
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - tryihng scanRoots again - state=" + state + ",newBinaries=" + newBinaries + ", oldBinaries=" + oldBinaries);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - tryihng scanRoots again - state=" + state + ",newBinaries=" + newBinaries + ", oldBinaries=" + oldBinaries);
 }
                                     if (!scanRoots ()) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - scanRoots failed AGAIN!");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - scanRoots failed AGAIN!");
 }
                                         CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
                                         SourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this, Source.Priority.MAX);
@@ -799,7 +816,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 completed = true;
                             } finally {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - finally: completed=" + completed + ", continuation=" + continuation);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - finally: completed=" + completed + ", continuation=" + continuation);
 }
                                 if (!completed && !continuation) {
                                     resetDirty ();
@@ -833,32 +850,32 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 final URL file = sw.getFile();
                                 final URL root = sw.getRoot ();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE; file=" + file +", root=" + root);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE; file=" + file +", root=" + root);
 }
                                 if (sw.isFolder()) {
                                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE - created handle - " + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE - created handle - " + handle);
 }
                                     handle.start();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE - started handle - " + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE - started handle - " + handle);
 }
                                     try {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE - updating file " + file + ", root=" + root);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE - updating file " + file + ", root=" + root);
 }
                                         updateFolder (file, root, false, handle);
                                     } finally {
                                         handle.finish();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE - finished handle - " + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE - finished handle - " + handle);
 }
                                     }
                                 }
                                 else {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE - updating file");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE - updating file");
 }
                                     updateFile (file,root);
                                 }
@@ -871,7 +888,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         case DELETE:
                         {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.DELETE");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.DELETE");
 }
                             final SingleRootWork sw = (SingleRootWork) work;
                             final URL file = sw.getFile();
@@ -882,7 +899,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         case UPDATE_BINARY:
                         {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.BINARY");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.BINARY");
 }
                             SingleRootWork sw = (SingleRootWork) work;
                             final URL file = sw.getFile();
@@ -894,7 +911,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     return null;                    
                 } finally {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.finally: continuation=" + continuation);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.finally: continuation=" + continuation);
 }
                     if (!continuation) {
                         synchronized (RepositoryUpdater.this) {
@@ -911,16 +928,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             }
                         }
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.finally.after submission noSubmitted=" + RepositoryUpdater.this.noSubmited);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.finally.after submission noSubmitted=" + RepositoryUpdater.this.noSubmited);
 }
                         work.finished ();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.finally.finished -- handle=" + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.finally.finished -- handle=" + handle);
 }
                         if (handle != null) {
                             handle.finish ();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.run.COMPILE_BATCH - finished handle " + handle);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.run.COMPILE_BATCH - finished handle " + handle);
 }
                         }
                     }
@@ -1053,7 +1070,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                    }
                 } catch (Throwable e) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker *** caught exception " , e);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker *** caught exception " , e);
 }
                     if (e instanceof ThreadDeath) {
                         throw (ThreadDeath) e;
@@ -1096,7 +1113,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     }
                 } catch (Throwable e) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker *** caught exception 3 " , e);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker *** caught exception 3 " , e);
 }
                     if (e instanceof ThreadDeath) {
                         throw (ThreadDeath) e;
@@ -1169,7 +1186,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.updateFolder - updating handle " + handle + " to " + message);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder - updating handle " + handle + " to " + message + " + folderFile");
 }
                 }
 //                //Preprocessor support
@@ -1330,7 +1347,7 @@ Set added = null;
                         }
                         final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",path);
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.updateFolder2 - updating handle " + handle + " to " + message);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder2 - updating handle " + handle + " to " + message);
 }
                         handle.setDisplayName(message);
                     }
@@ -1648,7 +1665,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
             public void remove() {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker throwing exception 1 ");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker throwing exception 1 ");
 }
                 throw new UnsupportedOperationException ();
             }
@@ -1832,11 +1849,11 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 int fileNumber = 0;
                 int fileCount = toCompile.size();
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - fileCount=" + fileCount);
 }
                 if (fileCount > 0) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - switched handle " + handle + " to indeterminate");
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - switched handle " + handle + " to indeterminate");
 }
                     handle.switchToDeterminate(fileCount);
                 }       
@@ -1878,11 +1895,11 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         
                         if (handle != null && active != null) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber + ", file=" + active.getNameExt());
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - fileCount=" + fileCount + ", fileNumber=" + fileNumber + ", file=" + active.getNameExt());
 }
                             if (fileCount > 0 && fileNumber <= fileCount) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker.batchCompile - progressed handle " + handle + " to " + fileNumber);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.batchCompile - progressed handle " + handle + " to " + fileNumber);
 }
                                 handle.progress(fileNumber);
                             }
@@ -2049,7 +2066,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         state  = 0;
                     } catch (Throwable t) {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, "CompilerWorker *** caught exception 4 " , t);
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker *** caught exception 4 " , t);
 }
                         if (PREINDEXING) {
                             Exceptions.attachMessage(t, "Parsing " + active.getFile().getPath());
