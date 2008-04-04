@@ -33,6 +33,8 @@
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
          xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable" 
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:tns="tres" xmlns:tres="http://www.sun.com/javaone/05/TravelReservationService" 
          xmlns:ares="http://www.sun.com/javaone/05/AirlineReservationService" 
          xmlns:vres="http://www.sun.com/javaone/05/VehicleReservationService" 
