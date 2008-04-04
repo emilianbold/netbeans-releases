@@ -87,7 +87,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void cancel() {
-        // nothing needed
+        // nothing needed? what about some cleanup/gc??
     }
 
     @Override
@@ -98,6 +98,27 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     @Override
     public boolean isChanged() {
         if (!getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())) {
+            return true;
+        }
+        if (getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()) {
+            return true;
+        }
+        if (getPhpOptions().isOpenResultInBrowser() != phpOptionsPanel.isOpenResultInBrowser()) {
+            return true;
+        }
+        if (getPhpOptions().isOpenResultInEditor() != phpOptionsPanel.isOpenResultInEditor()) {
+            return true;
+        }
+
+        Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
+        if (debuggerPort != null && getPhpOptions().getDebuggerPort() != debuggerPort) {
+            return true;
+        }
+        if (getPhpOptions().isDebuggerStoppedAtTheFirstLine() != phpOptionsPanel.isDebuggerStoppedAtTheFirstLine()) {
+            return true;
+        }
+
+        if (!getPhpOptions().getPhpGlobalIncludePath().equals(phpOptionsPanel.getPhpGlobalIncludePath())) {
             return true;
         }
         return false;
