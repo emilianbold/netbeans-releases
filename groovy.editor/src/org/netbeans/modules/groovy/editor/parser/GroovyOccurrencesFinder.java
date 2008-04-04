@@ -61,6 +61,8 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Warning: this is very experimental!
@@ -72,7 +74,13 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private final Logger LOG = Logger.getLogger(GroovyOccurrencesFinder.class.getName());
 
+    public GroovyOccurrencesFinder() {
+        super();
+        LOG.setLevel(Level.FINEST);
+    }
+    
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         return occurrences;
     }
@@ -124,7 +132,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         AstPath path = new AstPath(root, astOffset, (BaseDocument)document);
         ASTNode closest = path.leaf();
         
-//        System.out.println("### closest: " + closest);
+        LOG.log(Level.FINEST, "### closest: " + closest);
         
         if (closest != null) {
             
@@ -134,7 +142,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
                 ModuleNode moduleNode = (ModuleNode)astRootElement.getNode();
                 ASTNode scope = AstUtilities.findVariableScope((Variable)closest, path, moduleNode);
                 
-//                System.out.println("### block: " + scope);
+                LOG.log(Level.FINEST, "### block: " + scope);
                 
                 highlightVariable(moduleNode, closest, scope, name, highlights, (BaseDocument)document);
             }

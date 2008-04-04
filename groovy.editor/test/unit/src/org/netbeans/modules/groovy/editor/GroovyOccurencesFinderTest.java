@@ -93,7 +93,35 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         String caretLine = "    Map par^ams = [:]";
         checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
+    
+    /* now test some stuff from GroovyScopeTestcase.groovy */
+    
+    String TEST_FILE = "testfiles/GroovyScopeTestcase.groovy";
+    
+    private void doTest(String caretLine) throws Exception {
+        checkOccurrences(TEST_FILE, caretLine, true);
+    }
+    
+    public void testMethod1() throws Exception {
+        doTest("new TestCase().met^hod1(1)");
+    }  
 
+    public void testClass2() throws Exception {
+        doTest("        new Test^Case()");
+    }    
+
+    public void testLocalVar3() throws Exception {
+        doTest("        int local^var1 = 3");
+    }    
+
+    public void testMemberVar4() throws Exception {
+        doTest("    int member^var1 = 2");
+    }
+    
+    public void testParameter5() throws Exception {
+        doTest("        def localvar3 = membervar1 + par^am1 + localvar1 + localvar2");
+    }
+    
     private String annotate(BaseDocument doc, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
         Set<OffsetRange> ranges = highlights.keySet();
         StringBuilder sb = new StringBuilder();
@@ -167,6 +195,8 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         finder.run(info);
         Map<OffsetRange, ColoringAttributes> occurrences = finder.getOccurrences();
 
+        assertNotNull(occurrences);
+        
         String annotatedSource = annotate((BaseDocument)info.getDocument(), occurrences, caretOffset);
 
         assertDescriptionMatches(relFilePath, annotatedSource, true, ".occurrences");
@@ -182,5 +212,7 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
             }
         }
     }
+
+
 
 }
