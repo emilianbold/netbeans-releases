@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.refactoring.support.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -61,7 +60,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Becicka
  * @author Vladimir Voskresensky
  */
-public class DiffElement extends SimpleRefactoringElementImplementation {
+public class DiffElement extends BaseRefactoringElementImpl {
     private final PositionBounds bounds;
     private final String displayText;
     private final FileObject parentFile;
@@ -154,5 +153,5 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
             bounds = new PositionBounds(start, end);
         }
         return new DiffElement(diff, bounds, fileObject, modification);
-    }    
+    }       
 }

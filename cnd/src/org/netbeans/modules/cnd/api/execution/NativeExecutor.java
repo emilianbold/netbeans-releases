@@ -72,6 +72,7 @@ public class NativeExecutor implements Runnable {
     private String rcfile;
     private boolean parseOutputForErrors;
     private boolean showInput;
+    private NativeExecution nativeExecution;
     
     private boolean showHeader = true;
     private boolean showFooter = true;
@@ -186,7 +187,8 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            rc = new NativeExecution().executeCommand(
+            nativeExecution = new NativeExecution();
+            rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
@@ -242,6 +244,10 @@ public class NativeExecutor implements Runnable {
         }
         executionFinished(rc);
         out.close();
+    }
+    
+    public void stop() {
+        nativeExecution.stop();
     }
     
     private void executionStarted() {

@@ -135,6 +135,7 @@ public class Task extends Object implements Runnable {
     }
 
     /** Wait until the task is finished, but only a given time.
+    *  waitFinished(0) means indefinite timeout (similar to wait(0))
     *  @param milliseconds time in milliseconds to wait for the result
     *  @exception InterruptedException when the waiting has been interrupted
     *  @return true if the task is really finished, or false if the time out
@@ -159,7 +160,11 @@ public class Task extends Object implements Runnable {
                     if (finished) {
                         return true;
                     }
-
+                    
+                    if (milliseconds == 0) {
+                        continue;
+                    }
+                    
                     long now = System.currentTimeMillis();
 
                     if (expectedEnd <= now) {

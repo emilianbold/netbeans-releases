@@ -237,7 +237,7 @@ public final class ModeImpl implements Mode {
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
             addClosedTopComponent(tc);
         } else {
-            if (tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED) != null) {
+            if (Boolean.TRUE.equals(tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED))) {
                 addClosedTopComponent(tc);
             } else {
                 removeTopComponent(tc);

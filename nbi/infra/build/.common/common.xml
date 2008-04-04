@@ -703,7 +703,7 @@
                     <equals arg1="Apple Inc." arg2="${java.vendor}"/>
                 </not>
         </condition>
-        <echo message="JDK HOME PROP: ${nb.jdk.home}"/>
+
         <exec executable="${ant.executable}" 
               dir="${cvs.dir}/${nbproject.path}" 
               failonerror="true"

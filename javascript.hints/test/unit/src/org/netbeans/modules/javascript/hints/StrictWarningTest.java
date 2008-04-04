@@ -56,10 +56,10 @@ public class StrictWarningTest extends HintTestBase {
 
     public void testStrict() throws Exception {
         // Add builtin wrappers for strict warnings
-        for (String key : RulesManager.KNOWN_STRICT_ERROR_KEYS) {
+        for (String key : StrictWarning.KNOWN_STRICT_ERROR_KEYS) {
             goldenfileSuffix = "." + key;
             StrictWarning rule = new StrictWarning(key);
-            if ("msg.reserved.keyword".equals(key)) {
+            if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) {
                 rule.setDefaultSeverity(HintSeverity.ERROR);
             }
             findHints(this, rule, "testfiles/prototype.js", null);
@@ -67,9 +67,20 @@ public class StrictWarningTest extends HintTestBase {
     }
     
     public void testReservedKeyword() throws Exception {
-        findHints(this, new StrictWarning("msg.reserved.keyword"), "testfiles/reserved.js", null);
+        goldenfileSuffix = "";
+        findHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
     }
 
+    public void testTrailingComma() throws Exception {
+        goldenfileSuffix = "";
+        findHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);
+    }
+    
+    public void testFixTrailingComma() throws Exception {
+        goldenfileSuffix = "";
+        applyHint(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", "600px\"^,", "Remove");
+    }
+    
     @Override
     protected String getGoldenFileSuffix() {
         return goldenfileSuffix;

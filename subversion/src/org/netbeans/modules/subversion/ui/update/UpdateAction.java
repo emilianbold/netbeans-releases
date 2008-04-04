@@ -192,13 +192,11 @@ public class UpdateAction extends ContextAction {
                 SvnUtils.refreshRecursively(root);
             } else {                
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                cache.onNotify(root, null);
+                cache.notifyChanges(root);
                 if(root.isDirectory()) {
                     File[] files = root.listFiles();
                     if(files != null) {                        
-                        for(File f : files) {
-                            cache.onNotify(f, null);
-                        }
+                        cache.notifyChanges(files);
                     }
                 }
             }

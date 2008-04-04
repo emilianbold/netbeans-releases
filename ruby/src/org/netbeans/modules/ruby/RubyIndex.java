@@ -1289,6 +1289,10 @@ public final class RubyIndex {
         }
 
         public int compareTo(RubyIndex.TableDefinition o) {
+            // See if we're comparing an old style (3-digit) version number with a new Rails 2.1 UTC version
+            if (version.length() != o.version.length()) {
+                return version.length() - o.version.length();
+            }
             // I can do string comparisons here because the strings
             // are all padded with zeroes on the left (so 100 is going
             // to be greater than 099, which wouldn't be true for "99".)

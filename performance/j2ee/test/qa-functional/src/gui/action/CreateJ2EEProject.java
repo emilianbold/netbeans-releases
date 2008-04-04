@@ -121,6 +121,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
         project_name += Utils.getTimeIndex();
         wizard_location.txtProjectName().setText(project_name);
         //project_name = wizard_location.txtProjectName().getText();
+        wizard_location.next();
         if (project.equals("Enterprise Application")) {
             JCheckBoxOperator createEjb = new JCheckBoxOperator(wizard_location, "Ejb");
             JCheckBoxOperator createWeb = new JCheckBoxOperator(wizard_location, "Web");
@@ -130,7 +131,6 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
     }
     
     public ComponentOperator open(){
-        wizard_location.next();
         wizard_location.finish();
         return null;
     }
