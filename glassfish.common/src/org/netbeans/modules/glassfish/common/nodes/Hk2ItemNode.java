@@ -63,6 +63,7 @@ import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
+import org.netbeans.spi.glassfish.ResourceDesc;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -185,6 +186,12 @@ public class Hk2ItemNode extends AbstractNode {
         setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
     }
     
+    public Hk2ItemNode(Lookup lookup, ResourceDesc resource, Decorator decorator) {
+        this(Children.LEAF, lookup, resource.getName(), decorator);
+        setDisplayName(resource.getName());
+        setShortDescription("<html>name: " + resource.getName() + "</html>");
+    }
+    
     public Hk2ItemNode(Lookup lookup, Children children, String name, Decorator type) {
         this(children, lookup, name, type);
         setDisplayName(name);
@@ -274,9 +281,17 @@ public class Hk2ItemNode extends AbstractNode {
                 getDefaultFileSystem().getRoot()).getNodeDelegate();
     }
     
+    private static final String RESOURCES_ICON = 
+            "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
+    
     public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public boolean canDeployTo() { return true; }
+    };
+    
+    public static Decorator RESOURCES_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(RESOURCES_ICON); }
     };
     
     public static Decorator J2EE_APPLICATION = new Decorator() { 

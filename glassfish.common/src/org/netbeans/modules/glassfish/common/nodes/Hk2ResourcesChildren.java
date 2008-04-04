@@ -42,15 +42,14 @@
 package org.netbeans.modules.glassfish.common.nodes;
 
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.Decorator;
 import org.netbeans.spi.glassfish.GlassfishModule;
+import org.netbeans.spi.glassfish.ResourceDesc;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -59,15 +58,14 @@ import org.openide.util.RequestProcessor;
 
 /**
  * 
- * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Refreshable {
+public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refreshable {
     
     private Lookup lookup;
     private final static Node WAIT_NODE = Hk2ItemNode.createWaitNode();
     
-    Hk2ApplicationsChildren(Lookup lookup) {
+    Hk2ResourcesChildren(Lookup lookup) {
         this.lookup = lookup;
     }
 
@@ -83,12 +81,20 @@ public class Hk2ApplicationsChildren extends Children.Keys<Object> implements Re
                     try {
                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                         CommandRunner mgr = new CommandRunner(ip);
-                        java.util.Map<String, List<AppDesc>> appMap = mgr.getApplications(null);
-                        for(Entry<String, List<AppDesc>> entry: appMap.entrySet()) {
-                            List<AppDesc> apps = entry.getValue();
-                            Decorator decorator = DecoratorManager.findDecorator(entry.getKey(), Hk2ItemNode.J2EE_APPLICATION);
-                            for(AppDesc app: apps) {
-                                keys.add(new Hk2ItemNode(lookup, app, decorator));
+                        
+                        Decorator decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_CONNECTION_POOL, null);
+                        if(decorator != null) {
+                            List<ResourceDesc> cpList = mgr.getResources(GlassfishModule.JDBC_CONNECTION_POOL);
+                            for(ResourceDesc resource: cpList) {
+                                keys.add(new Hk2ItemNode(lookup, resource, decorator));
+                            }
+                        }
+                        
+                        decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_RESOURCE, null);
+                        if(decorator != null) {
+                            List<ResourceDesc> jdbcList = mgr.getResources(GlassfishModule.JDBC_RESOURCE);
+                            for(ResourceDesc resource: jdbcList) {
+                                keys.add(new Hk2ItemNode(lookup, resource, decorator));
                             }
                         }
                     } catch (Exception ex) {

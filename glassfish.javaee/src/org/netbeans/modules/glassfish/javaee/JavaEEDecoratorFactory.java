@@ -85,9 +85,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     // ------------------------------------------------------------------------
     
     private static final String JDBC_RESOURCE_ICON = 
-            "org/netbeans/modules/j2ee/hk2/resources/JDBCResource.gif"; // NOI18N
-    private static final String CONNECTION_POOL_ICON = 
-            "org/netbeans/modules/j2ee/hk2/resources/ConnectionPool.gif"; // NOI18N
+            "org/netbeans/modules/glassfish/javaee/resources/jdbc.gif"; // NOI18N
     
     public static Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
@@ -126,7 +124,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static Decorator CONNECTION_POOLS = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
-        @Override public Image getIcon(int type) { return Utilities.loadImage(CONNECTION_POOL_ICON); }
+        @Override public Image getIcon(int type) { return Utilities.loadImage(JDBC_RESOURCE_ICON); }
     };
 
     private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
@@ -137,8 +135,8 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         decoratorMap.put(GlassfishModule.WEB_CONTAINER, WEB_APPLICATION);
         decoratorMap.put("ejb_ContractProvider", EJB_JAR);
         decoratorMap.put("ear_ContractProvider", J2EE_APPLICATION);
-        decoratorMap.put("JDBC Resource", JDBC_MANAGED_DATASOURCES);
-        decoratorMap.put("JDBC Connection Pool", CONNECTION_POOLS);
+        decoratorMap.put(GlassfishModule.JDBC_RESOURCE, JDBC_MANAGED_DATASOURCES);
+        decoratorMap.put(GlassfishModule.JDBC_CONNECTION_POOL, CONNECTION_POOLS);
     };
     
 }

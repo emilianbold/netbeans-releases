@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.Vector;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -74,10 +74,10 @@ public class Hk2InstanceChildren extends Children.Keys<Hk2ItemNode> implements R
                     new Hk2ApplicationsChildren(serverInstance.getLookup()),
                     NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Apps"),
                     Hk2ItemNode.J2EE_APPLICATION_FOLDER));
-//            keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
-//                    new Hk2ResourcesChildren(serverInstance.getLookup()),
-//                    NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources),
-//                    Hk2ItemNode.J2EE_APPLICATION_FOLDER));
+            keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
+                    new Hk2ResourcesChildren(serverInstance.getLookup()),
+                    NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources"),
+                    Hk2ItemNode.RESOURCES_FOLDER));
         }
         setKeys(keys);
     }
@@ -89,7 +89,8 @@ public class Hk2InstanceChildren extends Children.Keys<Hk2ItemNode> implements R
     
     @Override
     protected void removeNotify() {
-        setKeys((Set<? extends Hk2ItemNode>) java.util.Collections.EMPTY_SET);
+        Collection<Hk2ItemNode> noKeys = java.util.Collections.emptySet();
+        setKeys(noKeys);
     }
     
     protected org.openide.nodes.Node[] createNodes(Hk2ItemNode key) {

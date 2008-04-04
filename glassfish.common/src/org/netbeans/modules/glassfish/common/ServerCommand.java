@@ -52,6 +52,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.glassfish.AppDesc;
+import org.netbeans.spi.glassfish.ResourceDesc;
 
 
 /**
@@ -196,17 +197,17 @@ public abstract class ServerCommand {
     /**
      * Command to list applications current deployed on the server.
      */
-    public static final class ListCommand extends ServerCommand {
+    public static final class ListAppsCommand extends ServerCommand {
         
         private final String container;
-        private Manifest list = null;
-        private Map<String, List<AppDesc>> appMap = null; 
+        private Manifest list;
+        private Map<String, List<AppDesc>> appMap; 
         
-        public ListCommand() {
+        public ListAppsCommand() {
             this(null);
         }
         
-        public ListCommand(final String container) {
+        public ListAppsCommand(final String container) {
             this.container = container;
         }
         
@@ -298,8 +299,78 @@ public abstract class ServerCommand {
             return container != null ? !container.equals(currentContainer) :
                 "security_ContractProvider".equals(currentContainer);
         }
-    
         
+    };
+    
+    /**
+     * Command to list resources of various types currently available on the server.
+     */
+    public static final class ListResourcesCommand extends ServerCommand {
+
+        private final String command;
+        private Manifest list;
+        private List<ResourceDesc> resList;
+
+        public ListResourcesCommand(String resourceCommandSuffix) {
+            command = "list-" + resourceCommandSuffix + "s"; // NOI18N
+        }
+        
+        public List<ResourceDesc> getResourceList() {
+            if(resList != null) {
+                return Collections.unmodifiableList(resList);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+        
+        @Override
+        public String getCommand() { 
+            return command;
+        }
+        
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            list = manifest;
+        }
+        
+        @Override
+        public boolean processResponse() {
+            if(list == null) {
+                return false;
+            }
+            
+            String resourceList = list.getMainAttributes().getValue("children"); // NOI18N
+            if(resourceList == null || resourceList.length() == 0) {
+                // no resources running...
+                return true;
+            }
+
+            String [] resources = resourceList.split(","); // NOI18N
+            for(String r: resources) {
+                if(skipResource(r)) {
+                    continue;
+                }
+
+                // get container attributes
+                Attributes resourceAttr = list.getAttributes(r);
+                String name = resourceAttr.getValue("message"); // NOI18N
+
+                if(name != null && name.length() > 0) {
+                    if(resList == null) {
+                        resList = new ArrayList<ResourceDesc>();
+                    }
+
+                    resList.add(new ResourceDesc(name));
+                }
+            }
+            
+            return true;
+        }
+
+        private boolean skipResource(String r) {
+            return false;
+        }
+    
     };
     
     /**

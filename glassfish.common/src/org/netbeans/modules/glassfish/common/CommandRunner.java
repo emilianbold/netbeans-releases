@@ -66,6 +66,7 @@ import org.netbeans.spi.glassfish.AppDesc;
 import org.netbeans.spi.glassfish.GlassfishModule;
 import org.netbeans.spi.glassfish.GlassfishModule.OperationState;
 import org.netbeans.spi.glassfish.OperationStateListener;
+import org.netbeans.spi.glassfish.ResourceDesc;
 
 
 /** 
@@ -119,12 +120,30 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Map<String, List<AppDesc>> getApplications(String container) {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
-            ServerCommand.ListCommand cmd = new ServerCommand.ListCommand(container);
+            ServerCommand.ListAppsCommand cmd = new ServerCommand.ListAppsCommand(container);
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
                 result = cmd.getApplicationMap();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
+        }
+        return result;
+    }
+    
+    public List<ResourceDesc> getResources(String type) {
+        List<ResourceDesc> result = Collections.emptyList();
+        try {
+            ServerCommand.ListResourcesCommand cmd = new ServerCommand.ListResourcesCommand(type);
+            serverCmd = cmd;
+            Future<OperationState> task = executor().submit(this);
+            OperationState state = task.get();
+            if (state == OperationState.COMPLETED) {
+                result = cmd.getResourceList();
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);
