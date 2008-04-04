@@ -86,6 +86,10 @@ public class Components2 extends HttpServlet {
                 "nb-platform",
                 "nb-base",
                 "nb-cnd");
+        final List<String> php = Arrays.asList(
+                "nb-platform",
+                "nb-base",
+                "nb-php");
         
         final List<String> full = Arrays.asList(
                 "nb-platform",
@@ -97,7 +101,7 @@ public class Components2 extends HttpServlet {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
-                "nb-php",
+                //"nb-php",
                 "glassfish",
                 "openesb",
                 "sjsam",
@@ -197,6 +201,9 @@ public class Components2 extends HttpServlet {
                 }
 		if (cnd.contains(product.getUid())) {
                     properties += " | PROPERTY_CND";
+                }
+		if (php.contains(product.getUid())) {
+                    properties += " | PROPERTY_PHP";
                 }
                 if (full.contains(product.getUid())) {
                     properties += " | PROPERTY_FULL";

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.options;
 
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 
@@ -112,6 +113,16 @@ public class HintsSettings {
     
     public static String[] getSuppressedBy(AbstractHint ah) {
         return HINTS_ACCESSOR.getSuppressBy(ah);
+    }
+    
+    private static Map<String, Preferences> preferencesOverride;
+    
+    public static void setPreferencesOverride(Map<String, Preferences> preferencesOverride) {
+        HintsSettings.preferencesOverride = preferencesOverride;
+    }
+    
+    public static Map<String, Preferences> getPreferencesOverride() {
+        return preferencesOverride;
     }
     
     public static interface HintsAccessor {

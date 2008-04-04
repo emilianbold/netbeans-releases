@@ -57,7 +57,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -157,11 +157,11 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     private void annotate(Node node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
-        case NodeTypes.ARGSNODE: {
+        case ARGSNODE: {
             isParameter = true;
             break;
         }
-        case NodeTypes.LOCALASGNNODE: {
+        case LOCALASGNNODE: {
             LocalAsgnNode lasgn = (LocalAsgnNode)node;
             Node method = AstUtilities.findLocalScope(node, path);
 
@@ -182,7 +182,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             break;
         }
-        case NodeTypes.DASGNNODE: {
+        case DASGNNODE: {
             DAsgnNode dasgn = (DAsgnNode)node;
 
             Node method = AstUtilities.findLocalScope(node, path);
@@ -197,8 +197,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             break;
         }
         
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE: {
+        case DEFNNODE:
+        case DEFSNODE: {
             MethodDefNode def = (MethodDefNode)node;
             parameters = AstUtilities.getDefArgs(def, true);
 
@@ -231,7 +231,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             break;
         }
         
-        case NodeTypes.LOCALVARNODE: {
+        case LOCALVARNODE: {
             if (parameters != null) {
                 if (parameters.contains(((LocalVarNode)node).getName())) {
                     OffsetRange range = AstUtilities.getRange(node);
@@ -241,9 +241,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             break;
         }
         
-        case NodeTypes.FCALLNODE:
-        //case NodeTypes.CALLNODE:
-        case NodeTypes.VCALLNODE: {
+        case FCALLNODE:
+        //case CALLNODE:
+        case VCALLNODE: {
             // CallNode seems overly aggressive - it will show all operators for example
             OffsetRange range = AstUtilities.getCallRange(node);
             highlights.put(range, ColoringAttributes.METHOD);
@@ -266,10 +266,10 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         List<Node> nodes = (List<Node>)node.childNodes();
 
         for (Node c : nodes) {
-            if (c.nodeId == NodeTypes.ARGSNODE) {
+            if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
-                if (an.getArgsCount() > 0) {
+                if (an.getRequiredArgsCount() > 0) {
                     List<Node> args = (List<Node>)an.childNodes();
 
                     for (Node arg : args) {
@@ -277,12 +277,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                             List<Node> args2 = (List<Node>)arg.childNodes();
 
                             for (Node arg2 : args2) {
-                                if (arg2.nodeId == NodeTypes.ARGUMENTNODE) {
+                                if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                     if (usedParameterNames.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.PARAMETER);
                                     }
-                                } else if (arg2.nodeId == NodeTypes.LOCALASGNNODE) {
+                                } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                     if (usedParameterNames.contains(((LocalAsgnNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.PARAMETER);
@@ -332,10 +332,10 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         List<Node> nodes = (List<Node>)node.childNodes();
 
         for (Node c : nodes) {
-            if (c.nodeId == NodeTypes.ARGSNODE) {
+            if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
-                if (an.getArgsCount() > 0) {
+                if (an.getRequiredArgsCount() > 0) {
                     List<Node> args = (List<Node>)an.childNodes();
 
                     for (Node arg : args) {
@@ -343,12 +343,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                             List<Node> args2 = (List<Node>)arg.childNodes();
 
                             for (Node arg2 : args2) {
-                                if (arg2.nodeId == NodeTypes.ARGUMENTNODE) {
+                                if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                     if (names.contains(((ArgumentNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.UNUSED);
                                     }
-                                } else if (arg2.nodeId == NodeTypes.LOCALASGNNODE) {
+                                } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                     if (names.contains(((LocalAsgnNode)arg2).getName())) {
                                         OffsetRange range = AstUtilities.getRange(arg2);
                                         highlights.put(range, ColoringAttributes.UNUSED);
@@ -384,8 +384,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     @SuppressWarnings("unchecked")
     private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
         switch (node.nodeId) {
-        case NodeTypes.LOCALVARNODE: {
-            if (node.nodeId == NodeTypes.LOCALVARNODE) {
+        case LOCALVARNODE: {
+            if (node.nodeId == NodeType.LOCALVARNODE) {
                 String name = ((LocalVarNode)node).getName();
 
                 if (targetName.equals(name)) {
@@ -394,7 +394,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             break;
         }
-        case NodeTypes.FORNODE: {
+        case FORNODE: {
             // XXX This is no longer necessary, right?
             // Workaround for the fact that ForNode's childNodes implementation
             // is wrong - Tom is committing a fix; this is until we pick that
@@ -407,12 +407,12 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             break;
         }
-        case NodeTypes.DVARNODE:
+        case DVARNODE:
             if (targetName.equals(((DVarNode)node).getName())) {
                 return true;
             }
             break;
-        case NodeTypes.ALIASNODE: {
+        case ALIASNODE: {
             AliasNode an = (AliasNode)node;
 
             if (an.getOldName().equals(targetName)) {
@@ -420,7 +420,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             break;
         }
-        case NodeTypes.ZSUPERNODE:
+        case ZSUPERNODE:
             // Super with no arguments passes arguments to parent so consider
             // the parameters used
             if (isParameter) {
@@ -435,7 +435,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             // The "outer" foo here is unused - we shouldn't
             // recurse into method bodies when doing unused detection
             // foo = 1; def bar; foo = 2; print foo; end;
-            if (child.nodeId == NodeTypes.DEFSNODE || child.nodeId == NodeTypes.DEFNNODE) {
+            if (child.nodeId == NodeType.DEFSNODE || child.nodeId == NodeType.DEFNNODE) {
                 continue;
             }
 

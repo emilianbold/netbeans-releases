@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -50,7 +50,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,7 +93,9 @@ public final class Search extends Dialog {
   @Override
   protected void updated()
   {
+//out("UPDATED");
     setItems(myTarget, myTargets);
+    myTarget.init();
   }
 
   private JPanel createPanel() {
@@ -141,14 +142,14 @@ public final class Search extends Dialog {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
     c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
-    label = createLabel(i18n("LBL_Type")); // NOI18N
+    label = createLabel(i18n("LBL_Target")); // NOI18N
     panel.add(label, c);
 
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(myTargets);
-    a11y(myTarget, i18n("ACS_Type")); // NOI18N
+    myTarget = createComboBox(myTargets);
+    a11y(myTarget, i18n("ACS_Target")); // NOI18N
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);
 
@@ -290,13 +291,13 @@ public final class Search extends Dialog {
     };
   }
 
-  private Object mySource;
   private Field myName;
+  private Object mySource;
   private JButton mySearchButton;
-  private JComboBox myTarget;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
+  private MyComboBox myTarget;
   private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;

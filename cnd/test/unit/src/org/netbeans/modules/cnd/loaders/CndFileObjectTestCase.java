@@ -67,7 +67,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
     }
 
     public void testCFileObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.c");
+        File newFile = new File(super.getWorkDir(), "file.c"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
@@ -76,7 +76,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
     }
     
     public void testCCFileObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.cc");
+        File newFile = new File(super.getWorkDir(), "file.cc"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);
@@ -85,7 +85,7 @@ public class CndFileObjectTestCase extends BaseTestCase {
     }
 
     public void testHFileObject() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.h");
+        File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);

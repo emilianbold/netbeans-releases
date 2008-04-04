@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.db.mysql;
 
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.DatabaseUtils.ConnectStatus;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -80,19 +78,16 @@ public class ConnectServerAction extends CookieAction {
         
         ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
         
-        return server != null && (!server.isConnected()) && server.isRunning();
+        return server != null && !server.isConnected();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         ServerInstance server = activatedNodes[0].getCookie(ServerInstance.class);
-        try { 
-            server.connect();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(NbBundle.getMessage(ConnectServerAction.class,
-                        "MSG_UnableToConnect"), 
-                    dbe);
-        }
+
+        // Run this on a separate thread so that we don't hang up the AWT 
+        // thread if the database server is not responding
+        server.connectAsync();
     }
     
     @Override

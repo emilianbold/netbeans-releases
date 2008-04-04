@@ -38,14 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -69,11 +69,12 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
+import org.netbeans.modules.websvc.rest.codegen.model.RuntimeJpaEntity;
 import org.netbeans.modules.websvc.rest.support.MetadataModelReadHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -142,11 +143,6 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
         listAvailable.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_AvailableEntityClasses")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
-        listSelected.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                listSelectedPropertyChange(evt);
-            }
-        });
         listSelected.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 listSelectedValueChanged(evt);
@@ -216,7 +212,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                 .add(buttonAddAll)
                 .add(18, 18, 18)
                 .add(buttonRemoveAll)
-                .addContainerGap(131, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         buttonAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AddEntityClass")); // NOI18N
@@ -279,7 +275,7 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     EntityListModel destModel = (EntityListModel) listAvailable.getModel();
     for (Object entity : listSelected.getSelectedValues()) {
         sourceModel.removeElement((Entity) entity);
-        if (! destModel.contains(entity)) {
+        if (!destModel.contains(entity)) {
             destModel.addElement(entity);
         }
     }
@@ -299,7 +295,7 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
         for (EntityClassInfo e : closure) {
             sourceModel.removeElement(e.getEntity());
-            if (! destModel.contains(e.getEntity())) {
+            if (!destModel.contains(e.getEntity())) {
                 destModel.addElement(e.getEntity());
             }
         }
@@ -307,10 +303,6 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         updateButtons();
         fireChange();
 }//GEN-LAST:event_addActionPerformed
-
-private void listSelectedPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_listSelectedPropertyChange
-    fireChange();
-}//GEN-LAST:event_listSelectedPropertyChange
 
 private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listSelectedValueChanged
     fireChange();
@@ -389,7 +381,10 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
             EntityListModel availableModel = new EntityListModel(true);
             listAvailable.setModel(availableModel);
-            this.addChangeListener(availableModel);
+            addChangeListener(availableModel);
+
+            availableModel.addElement(MSG_RETRIEVING);
+            listAvailable.ensureIndexIsVisible(0);
 
             entitiesHelper.addChangeListener(availableModel);
             entitiesHelper.start();
@@ -452,9 +447,6 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
         EntityListModel(boolean available) {
             this.available = available;
-            if (available) {
-                addElement(MSG_RETRIEVING);
-            }
         }
 
         public void stateChanged(ChangeEvent e) {
@@ -467,26 +459,44 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                                 mappings = entitiesHelper.getResult();
                             } catch (ExecutionException ex) {
                                 Logger.getLogger(getClass().getName()).log(Level.ALL, "stateChanged", ex); //NOI18N
+
                                 throw new IllegalStateException(ex);
                             }
 
-                            SwingUtilities.invokeLater(new Runnable() {
+                            RequestProcessor.getDefault().post(new Runnable() {
+
                                 public void run() {
-                                    removeElement(MSG_RETRIEVING);
-                                    List<Entity> entities = getAllEntities();
-                                    builder = new EntityResourceModelBuilder(project, entities);
-                                    
-                                    for (Entity entity : entities) {
-                                        addElement(entity);
+                                    final Map<String, Entity> entities = new HashMap<String, Entity>();
+                                    for (Entity e : RuntimeJpaEntity.getEntityFromClasspath(project)) {
+                                        if (entities.get(e.getClass2()) == null) {
+                                            entities.put(e.getClass2(), e);
+                                        }
                                     }
 
-                                    updateButtons();
+                                    for (Entity e : mappings.getEntity()) {
+                                        if (entities.get(e.getClass2()) == null) {
+                                            entities.put(e.getClass2(), e);
+                                        }
+                                    }
+
+                                    builder = new EntityResourceModelBuilder(project, entities.values());
+
+                                    // Update the ListModel on the AWT thread.
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        public void run() {
+                                            removeElement(MSG_RETRIEVING);
+                                            for (Map.Entry<String, Entity> entry : entities.entrySet()) {
+                                                addElement(entry.getValue());
+                                            }
+                                            updateButtons();
+                                        }
+                                    });
                                 }
                             });
                         }
                         break;
                     default:
-                //Already displaying in available list.
+                    //Already displaying in available list.
                 }
             }
         }
@@ -531,7 +541,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
             return false;
         }
 
-        if (entitiesHelper.isReady() && mappings != null && mappings.getEntity().length == 0) {
+        if (entitiesHelper.isReady() && (listAvailable.getModel().getSize() + listSelected.getModel().getSize()) == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_NoEntities");
             return false;
         }
@@ -549,10 +559,6 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
         AbstractPanel.clearErrorMessage(wizard);
         return true;
-    }
-
-    public List<Entity> getAllEntities() {
-        return new ArrayList<Entity>(Arrays.asList(mappings.getEntity()));
     }
 
     private EntityResourceBeanModel getResourceModel() {

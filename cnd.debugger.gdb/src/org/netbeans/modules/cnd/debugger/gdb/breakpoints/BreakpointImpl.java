@@ -73,6 +73,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     private BreakpointsReader reader;
     private final Session session;
     private String err;
+    private boolean runWhenValidated;
     
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader, GdbDebugger debugger, Session session) {
         this.debugger = debugger;
@@ -82,6 +83,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.state = BPSTATE_UNVALIDATED;
         this.breakpointNumber = -1;
         this.err = null;
+        runWhenValidated = false;
     }
 
     public void completeValidation(Map<String, String> map) {
@@ -219,7 +221,10 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         } else if (pname.equals(GdbBreakpoint.PROP_FUNCTION_NAME) && getState().equals(BPSTATE_VALIDATED)) {
             setState(BPSTATE_REVALIDATE);
             update();
-        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER)) {
+        } else if (pname.equals(AddressBreakpoint.PROP_ADDRESS_VALUE) && getState().equals(BPSTATE_VALIDATED)) {
+            setState(BPSTATE_REVALIDATE);
+            update();
+        } else if (!pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && !AddressBreakpoint.PROP_REFRESH.equals(pname)) {
             update();
         }
     }
@@ -259,6 +264,14 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
         return resume;
     }
+    
+    public void setRunWhenValidated(boolean runWhenValidated) {
+        this.runWhenValidated = runWhenValidated;
+    }
+    
+    public boolean isRunWhenValidated() {
+        return runWhenValidated;
+    }
         
     private static final class ValidityChangeEvent extends ChangeEvent {
         
@@ -269,6 +282,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             this.reason = reason;
         }
         
+        @Override
         public String toString() {
             return reason;
         }

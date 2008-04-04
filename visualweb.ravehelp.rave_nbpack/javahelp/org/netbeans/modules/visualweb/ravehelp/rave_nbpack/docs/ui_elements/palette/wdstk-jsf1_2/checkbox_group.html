@@ -13,7 +13,7 @@
 <body>
 
 <h2>JSF 1.2 Checkbox Group Component</h2>
-<p><small><a href="#seealso">See Also  </a></small><small><a href="#tutorials"></a></small></p>
+<p><small><a href="#seealso">See Also  </a></small></p>
 
 <p>You can drag the Checkbox Group  component <img src="../../../images/checkboxlisticon.gif" alt="checkbox list icon">&nbsp;from the Palette's Woodstock Basic category to the Visual Designer to create a table of labeled checkboxes. </p>
    <ul class="note">
@@ -53,7 +53,12 @@ one or more checkboxes, the component's  <code>selected</code> property contains
       </li>
       <li><b>Property Bindings.</b> Bind the component's properties to an object or data provider. A typical property to bind is the <code>selected</code> property, which you can bind to an <code>Object</code> array, or an array of primitives. You must have added the array to a managed bean, such as the session bean, as a property. You can use this  bean property to evaluate what the user chose after the page is submitted.</li>
       <li><b>Configure Default Options.</b> Enables you to edit the default <code>checkboxgroup#defaultOptions</code> object and change the displayed checkboxes. It is more likely that you will want to bind the <code>items</code> property to a database or object to use to set checkbox list items, as described above under Bind to Data. </li>
-      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>.</li>
+      <li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li><li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>.</li>
 	</ul>
 	</li>
   <li>Select the Checkbox Group component on the page in the Visual Designer and edit its properties in the Checkbox Group <a href="propsheets/checkbox_group_props.html">Properties window</a>. These properties affect the overall style and behavior of the list. Some typical properties you might set are:
@@ -75,26 +80,6 @@ Indicates the number of columns to use to lay out the checkboxes. </li>
 	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
 	
 	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
-</dl>
-<dl>     <dt>
-         <a name="tutorials">Tutorials</a>
-      </dt>
-      <dd>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value="http://www.netbeans.org/kb/60/web/about_components.html">
-          <param name="text" value="Delving Into Components"></object>
-      </dd>
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
-<dd> <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                <param name="content" value="http://www.netbeans.org/kb/60/web/listbox_components.html">
-                <param name="text" value="Using Listbox Components"></object></dd>
-
-
 </dl>
 
 <hr>

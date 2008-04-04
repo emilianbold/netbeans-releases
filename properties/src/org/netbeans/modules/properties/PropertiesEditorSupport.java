@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -278,7 +278,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
     throws IOException, BadLocationException {
         final PropCharsetDecoder decoder
-                = new PropCharsetDecoder(new PropCharset());
+                = new PropCharsetDecoder(new PropCharset(),
+                                         myEntry.getFile().getSize());
         final Reader reader
                 = new BufferedReader(new InputStreamReader(inputStream, decoder));
         

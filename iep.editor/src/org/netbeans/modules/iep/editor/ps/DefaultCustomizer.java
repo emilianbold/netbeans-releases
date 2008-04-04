@@ -121,7 +121,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // by createPropertyPanel()
             IEPModel model = getOperatorComponent().getModel();
             
-            mSelectPanel = new SelectPanel(model, mComponent);
+            mSelectPanel = createSelectPanel(model, mComponent);
             
             ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
             mSelectPanel.addAttributeDropNotificationListener(listener);
@@ -187,7 +187,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             rightPane.add(mSelectPanel, gbc);
             
             if (mHasExpressionColumn) {
-                if (mHasFromClause) {
+                if (mHasFromClause && isShowFromClause()) {
                     gbc.gridx = 0;
                     gbc.gridy = rightPaneGridY++;
                     gbc.gridwidth = 1;
@@ -250,6 +250,9 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         }
     }
     
+    protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
+    	return new SelectPanel(model, component);
+    }
     protected JPanel createPropertyPanel() throws Exception {
         JPanel pane = new JPanel();
         String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.DETAILS");
@@ -383,7 +386,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 mSelectPanel.validateContent(evt);
                 
                 if (mHasExpressionColumn) {
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.validateContent(evt);
                         String from = mFromPanel.getStringValue();
@@ -547,7 +550,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     mModel.endTransaction();
                     //ritmComponent.getProperty(TO_COLUMN_LIST_KEY).setValue(toList);
                     
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.store();
                     }
@@ -572,6 +575,12 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             NotifyHelper.reportError(e.getMessage());
         }
     }
+    
+    protected boolean isShowFromClause() {
+        return true;
+    }
+    
+    
     
     class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
 

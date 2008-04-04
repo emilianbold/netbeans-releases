@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -87,12 +86,8 @@ public class DoubleFileStorage extends FileStorage {
         return (cache_1_dataFileIsActive.get() ? cache_0_dataFile : cache_1_dataFile) ;
     }
     
-    public DoubleFileStorage(final String unitName) throws IOException {
-        this(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));        
-    }
-    
     // package-local - for test purposes
-    DoubleFileStorage(final File basePath) throws IOException {
+    public DoubleFileStorage(final File basePath) throws IOException {
         this (basePath, false);
     }
     /**
@@ -126,15 +121,15 @@ public class DoubleFileStorage extends FileStorage {
        cache_1_dataFile.close();
     }
     
-    public Persistent get(final Key key) throws IOException {
+    public Persistent read(final Key key) throws IOException {
         if( Stats.hardFickle && key.getBehavior() == Key.Behavior.LargeAndMutable ) {
             return fickleMap.get(key);
         }
         
         boolean activeFlag = getFlag();
-        Persistent object = getFileByFlag(activeFlag).get(key);
+        Persistent object = getFileByFlag(activeFlag).read(key);
         if( object == null ) {
-            object = getFileByFlag(!activeFlag).get(key);
+            object = getFileByFlag(!activeFlag).read(key);
         }
         return object;
         
@@ -163,7 +158,7 @@ public class DoubleFileStorage extends FileStorage {
         getFileByFlag(!activeFlag).remove(key);
     }
     
-    public boolean maintenance(final long timeout) throws IOException {
+    public boolean defragment(final long timeout) throws IOException {
         
         boolean needMoreTime = false;
         

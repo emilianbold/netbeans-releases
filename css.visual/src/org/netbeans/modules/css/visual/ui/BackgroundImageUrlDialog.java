@@ -67,9 +67,9 @@ import org.openide.util.NbBundle;
 public class BackgroundImageUrlDialog { //extends URLPanel{
 
     private static final Logger LOGGER = Logger.getLogger(BackgroundImageUrlDialog.class.getName());
-    private FileObject base;
+    private File base;
 
-    public BackgroundImageUrlDialog(FileObject base) {
+    public BackgroundImageUrlDialog(File base) {
         this.base = base;
     }
     private String imageUrl = null;
@@ -87,7 +87,7 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             FileObject webModuleDocumentBase = null;
             
             //identify a starting directory for the file chooser
-            FileObject currDir = base.getParent();
+            FileObject currDir = FileUtil.toFileObject(base);
 
             if (currDir != null) {
                 fileChooser.setCurrentDirectory(FileUtil.toFile(currDir));
@@ -113,8 +113,8 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
                 //assert webModuleDocumentBase is parent/ancestor of base
                 
                 String path = null;
-                FileObject dir = base;
-                int level = -1;
+                FileObject dir = currDir;
+                int level = 0;
                 do {
                     level++;
                     

@@ -52,7 +52,8 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * Encapsulate often reused and sometimes expensive to calculate
  * properties of the class being examined
- *
+ * This class is not thread safe and 
+ * one instance should not be passed among multiple threads.
  * @author Ajit.Bhate@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
@@ -108,7 +109,7 @@ public class ProblemContext implements Lookup.Provider {
         this.javaClass = element;
     }
 
-    public Lookup getLookup() {
+    public synchronized Lookup getLookup() {
         if(lookup == null) {
             if (ic == null) ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
@@ -116,12 +117,12 @@ public class ProblemContext implements Lookup.Provider {
         return lookup;
     }
     
-    public void addUserObject(Object info) {
+    public synchronized void addUserObject(Object info) {
         if (ic == null) ic = new InstanceContent();
         ic.add(info);
     }
 
-    public void removeUserObject(Object info) {
+    public synchronized void removeUserObject(Object info) {
         if (ic == null) return;
         ic.remove(info);
     }

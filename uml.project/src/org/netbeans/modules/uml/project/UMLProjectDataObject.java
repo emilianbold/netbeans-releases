@@ -64,6 +64,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -140,6 +141,10 @@ public class UMLProjectDataObject extends MultiDataObject
         getCookieSet().remove(save);
     }
     
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
     private String getDisplayName()
     {
         Project proj = FileOwnerQuery.getOwner(getFileObject());

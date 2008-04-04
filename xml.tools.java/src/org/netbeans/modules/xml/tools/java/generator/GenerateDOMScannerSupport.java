@@ -123,8 +123,8 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
                
             }
             GuiUtil.performDefaultAction (generFile);
-
-            } catch (TreeException e) {
+        } catch (UserCancelException e) {            
+        } catch (TreeException e) {
             // can not get tree representaion
            GuiUtil.notifyError(NbBundle.getMessage(GenerateDOMScannerSupport.class, "MSG_DOM_ERR_1"));
         } catch (IOException e) {

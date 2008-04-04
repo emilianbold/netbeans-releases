@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +119,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -296,6 +298,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -317,7 +320,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
             buildExtender,
@@ -762,6 +766,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesClientSupport.isBroken(AppClientProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(AppClientProject.this);
+            }
         }
         
         private void updateProject() {
@@ -773,6 +780,17 @@ public final class AppClientProject implements Project, AntProjectListener, File
             // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
+            //update lib references in project properties
+            EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
+            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            
+            // #129316
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+            
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
             // update a dual build directory project to use a single build directory

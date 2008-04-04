@@ -224,7 +224,7 @@ Object.extend(String.prototype, {
     div.innerHTML = this.stripTags();
     return div.childNodes[0] ? (div.childNodes.length > 1 ?
       $A(div.childNodes).inject('',function(memo,node){ return memo+node.nodeValue }) :
-    div.childNodes[0].nodeValue) : '';
+      div.childNodes[0].nodeValue) : '';
   },
 
   toQueryParams: function(separator) {
@@ -1547,16 +1547,16 @@ if (document.all && !window.opera){
       switch (tagName) {
         case 'THEAD':
         case 'TBODY':
-        div.innerHTML = '<table><tbody>' +  html.stripScripts() + '</tbody></table>';
-        depth = 2;
-        break;
+          div.innerHTML = '<table><tbody>' +  html.stripScripts() + '</tbody></table>';
+          depth = 2;
+          break;
         case 'TR':
-        div.innerHTML = '<table><tbody><tr>' +  html.stripScripts() + '</tr></tbody></table>';
-        depth = 3;
-        break;
+          div.innerHTML = '<table><tbody><tr>' +  html.stripScripts() + '</tr></tbody></table>';
+          depth = 3;
+          break;
         case 'TD':
-        div.innerHTML = '<table><tbody><tr><td>' +  html.stripScripts() + '</td></tr></tbody></table>';
-        depth = 4;
+          div.innerHTML = '<table><tbody><tr><td>' +  html.stripScripts() + '</td></tr></tbody></table>';
+          depth = 4;
       }
       $A(element.childNodes).each(function(node){
         element.removeChild(node)
@@ -1802,8 +1802,8 @@ Selector.prototype = {
           case '=':       conditions.push(value + ' == ' + attribute.value.inspect()); break;
           case '~=':      conditions.push(splitValueBy(' ') + '.include(' + attribute.value.inspect() + ')'); break;
           case '|=':      conditions.push(
-          splitValueBy('-') + '.first().toUpperCase() == ' + attribute.value.toUpperCase().inspect()
-        ); break;
+            splitValueBy('-') + '.first().toUpperCase() == ' + attribute.value.toUpperCase().inspect()
+          ); break;
           case '!=':      conditions.push(value + ' != ' + attribute.value.inspect()); break;
           case '':
           case undefined: conditions.push('element.hasAttribute(' + attribute.name.inspect() + ')'); break;
@@ -2036,9 +2036,9 @@ Form.Element.Serializers = {
     switch (element.type.toLowerCase()) {
       case 'checkbox':
       case 'radio':
-      return Form.Element.Serializers.inputSelector(element);
+        return Form.Element.Serializers.inputSelector(element);
       default:
-      return Form.Element.Serializers.textarea(element);
+        return Form.Element.Serializers.textarea(element);
     }
   },
 
@@ -2151,11 +2151,11 @@ Abstract.EventObserver.prototype = {
       switch (element.type.toLowerCase()) {
         case 'checkbox':
         case 'radio':
-        Event.observe(element, 'click', this.onElementEvent.bind(this));
-        break;
+          Event.observe(element, 'click', this.onElementEvent.bind(this));
+          break;
         default:
-        Event.observe(element, 'change', this.onElementEvent.bind(this));
-        break;
+          Event.observe(element, 'change', this.onElementEvent.bind(this));
+          break;
       }
     }
   }

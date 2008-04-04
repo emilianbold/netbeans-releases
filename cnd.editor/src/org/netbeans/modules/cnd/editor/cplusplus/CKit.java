@@ -83,7 +83,7 @@ public class CKit extends CCKit {
     
     @Override
     protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getStdCFilter();
+        return CndLexerUtilities.getGccCFilter();
     }
     
     @Override

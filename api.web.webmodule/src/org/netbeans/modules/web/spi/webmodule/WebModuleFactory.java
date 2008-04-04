@@ -62,6 +62,6 @@ public final class WebModuleFactory {
      * @return an instance of a API web module.
      */
     public static WebModule createWebModule(WebModuleImplementation spiWebmodule) {
-        return WebModuleAccessor.DEFAULT.createWebModule (spiWebmodule);
+        return WebModuleAccessor.getDefault().createWebModule (spiWebmodule);
     }
 }

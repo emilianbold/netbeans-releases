@@ -76,42 +76,6 @@ public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
         buildProject("PerformanceTestFolderWebApp");
     }
 
-    public void testAddAppServer() {
-
-        String appServerPath = System.getProperty("com.sun.aas.installRoot");
-        String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
-        String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String serverItem = "Tomcat 6.0";
-        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
-        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
-
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
-        JTreeOperator runtimeTree = rto.tree();
-        
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
-        
-        TreePath path = runtimeTree.findPath("Servers");
-        runtimeTree.selectPath(path);
-        
-        try {
-            //log("Let's check whether GlassFish V2 is already added");
-            runtimeTree.findPath("Servers|Tomcat 6.0");
-        } catch (TimeoutExpiredException tee) {
-            //log("There is no GlassFish V2 node so we'll add it");
-            
-            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
-            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-            new JTextFieldOperator(addServerInstanceDialog,1).enterText(appServerPath);
-            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
-            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
-        }
-        
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-
-    }
     
     private void buildProject(String name) {
         new BuildProjectAction().perform(new ProjectsTabOperator().

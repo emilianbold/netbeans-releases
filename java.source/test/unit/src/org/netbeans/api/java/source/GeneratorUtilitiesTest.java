@@ -362,6 +362,22 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test {\nprivate static boolean test;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, false), new GetterSetterValidator(false));
     }
     
+    public void testCreateMethod() throws Exception {
+        performTest("package test;\npublic class Test { }\n", "1.5", new CreateMethodTask(34), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(1, info.getDiagnostics().size());
+                
+                for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getTypeElement("test.Test").getEnclosedElements())) {
+                    assertEquals("toArray", ee.getSimpleName().toString());
+                    assertEquals(1, ee.getTypeParameters().size());
+                    return ;
+                }
+                
+                fail("toArray method not found");
+            }
+        }, false);
+    }
+    
     public static interface Validator {
         
         public void validate(CompilationInfo info);
@@ -804,11 +820,48 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         
     }
     
+    private static class CreateMethodTask implements CancellableTask<WorkingCopy> {        
+    
+        private int offset;
+        
+        public CreateMethodTask(int offset) {
+            this.offset = offset;
+        }
+
+        public void cancel() {
+        }
+    
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            TreePath tp = copy.getTreeUtilities().pathFor(offset);
+            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            ClassTree ct = (ClassTree)tp.getLeaf();
+            TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
+            DeclaredType dt = (DeclaredType) copy.getTreeUtilities().parseType("java.util.List<java.lang.String>", te);
+            TypeElement list = copy.getElements().getTypeElement("java.util.List");
+            ExecutableElement ee = null;
+            for (ExecutableElement m : ElementFilter.methodsIn(list.getEnclosedElements())) {
+                if (m.getSimpleName().contentEquals("toArray") && !m.getTypeParameters().isEmpty()) {
+                    ee = m;
+                }
+            }
+            assertNotNull(ee);
+            GeneratorUtilities utilities = GeneratorUtilities.get(copy);
+            assertNotNull(utilities);
+            ClassTree newCt = utilities.insertClassMembers(ct, Collections.singletonList(utilities.createMethod(dt, ee)));
+            copy.rewrite(ct, newCt);
+        }
+    }
+    
     private void performTest(String sourceCode, final Task<WorkingCopy> task, final Validator validator) throws Exception {
         performTest(sourceCode, "1.5", task, validator);
     }
     
     private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator) throws Exception {
+        performTest(sourceCode, sourceLevel, task, validator, true);
+    }
+    
+    private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator, final boolean requireNoErrors) throws Exception {
         FileObject root = makeScratchDir(this);
         
         FileObject sourceDir = root.createFolder("src");
@@ -836,7 +889,9 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 System.err.println(controller.getText());
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 
-                assertEquals(controller.getDiagnostics().toString(), 0, controller.getDiagnostics().size());
+                if (requireNoErrors) {
+                    assertEquals(controller.getDiagnostics().toString(), 0, controller.getDiagnostics().size());
+                }
                 
                 if (validator != null)
                     validator.validate(controller);

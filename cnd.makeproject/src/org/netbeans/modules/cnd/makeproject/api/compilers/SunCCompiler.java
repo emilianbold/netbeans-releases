@@ -100,6 +100,13 @@ public class SunCCompiler extends SunCCCCompiler {
     }
     
     @Override
+    public SunCCompiler createCopy() {
+        SunCCompiler copy = new SunCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
+    
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }

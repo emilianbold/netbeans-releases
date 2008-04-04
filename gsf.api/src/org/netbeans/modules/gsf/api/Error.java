@@ -111,13 +111,4 @@ public interface Error  {
      * etc.
      */
     Object[] getParameters();
-
-    /**
-     * Set optional parameters for this message.
-     *
-     * @see #getParameters
-     *
-     * @param parameters The array of parameters
-     */
-    void setParameters(Object[] parameters);
 }

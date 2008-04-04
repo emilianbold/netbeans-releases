@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -128,8 +128,8 @@ public class RailsDeprecations implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.ROOTNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.ROOTNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -165,7 +165,7 @@ public class RailsDeprecations implements AstRule {
 
     private void scan(CompilationInfo info, Node node, List<Description> result) {
         // Look for use of deprecated fields
-        if (node.nodeId == NodeTypes.INSTVARNODE || node.nodeId == NodeTypes.INSTASGNNODE) {
+        if (node.nodeId == NodeType.INSTVARNODE || node.nodeId == NodeType.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
 
             // Skip matches in _test files, since the standard code generator still
@@ -197,10 +197,10 @@ public class RailsDeprecations implements AstRule {
                 // make sure that the class on the left is actually a model,
                 // but that's costly and much less likely to be a problem
                 if (name.startsWith("find_")) { // NOI18N
-                    if (node.nodeId == NodeTypes.CALLNODE) {    
+                    if (node.nodeId == NodeType.CALLNODE) {    
                         Node receiver = ((CallNode)node).getReceiverNode();
-                        if (receiver.nodeId != NodeTypes.CONSTNODE && 
-                                receiver.nodeId != NodeTypes.COLON2NODE) {
+                        if (receiver.nodeId != NodeType.CONSTNODE && 
+                                receiver.nodeId != NodeType.COLON2NODE) {
                             return;
                         }
                     }

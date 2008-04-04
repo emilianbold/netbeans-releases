@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -53,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -118,10 +118,16 @@ public class CompletionTestPerformer {
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
     
+    private final CsmCompletionQuery.QueryScope queryScope;
     /**
      * Creates new CompletionTestPerformer
      */
     public CompletionTestPerformer() {
+        this(CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+    }
+    
+    public CompletionTestPerformer(CsmCompletionQuery.QueryScope queryScope) {
+        this.queryScope = queryScope;
     }
     
     protected CompletionItem[] completionQuery(
@@ -129,12 +135,12 @@ public class CompletionTestPerformer {
             JEditorPane  editor,
             BaseDocument doc,
             int caretOffset,
-            boolean      unsorted,
-            int queryType
-            ) {
+            boolean      unsorted) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         SyntaxSupport support = doc.getSyntaxSupport();
-        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery();
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        assert csmFile != null : "Must be csmFile for document " + doc;        
+        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope);
         CsmCompletionQuery.CsmCompletionResult res = (CsmCompletionQuery.CsmCompletionResult)query.query(editor, doc, caretOffset, support, false, !unsorted);
         
         CompletionItem[] array =  res == null ? new CompletionItem[0] : (CompletionItem[])res.getData().toArray(new CompletionItem[res.getData().size()]);
@@ -157,8 +163,7 @@ public class CompletionTestPerformer {
             boolean unsorted,
             String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
-            int colIndex,
-            int queryType) throws BadLocationException, IOException {
+            int colIndex) throws BadLocationException, IOException {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }
@@ -175,25 +180,19 @@ public class CompletionTestPerformer {
                 doc.atomicUnlock();
             }
             String text = doc.getText(0, doc.getLength());
-            saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);
+            parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);
             offset += textToInsert.length() + offsetAfterInsertion;
         }
         if (editor != null) {
             editor.grabFocus();
             editor.getCaret().setDot(offset);
         }        
-        return completionQuery(log, editor, doc, offset, unsorted, queryType);
+        return completionQuery(log, editor, doc, offset, unsorted);
     }
     
     public CompletionItem[] test(final PrintWriter log,
-            final String textToInsert, int offsetAfterInsertion, final boolean unsorted,
-            final File testSourceFile, final int line, final int col) throws Exception {
-        return test(log, textToInsert, offsetAfterInsertion, unsorted, testSourceFile, line, col, CompletionProvider.COMPLETION_QUERY_TYPE);
-    }
-    
-    private CompletionItem[] test(final PrintWriter log,
             final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
-            final File testSourceFile, final int line, final int col, final int queryType) throws Exception {
+            final File testSourceFile, final int line, final int col) throws Exception {
         try {
             final CompletionItem[][] array = new CompletionItem[][] {null};
             log.println("Completion test start.");
@@ -209,7 +208,7 @@ public class CompletionTestPerformer {
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
-                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col, queryType);
+                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col);
                         } catch (IOException ex) {
                             ex.printStackTrace(log);
                         } catch (BadLocationException ex) {
@@ -220,7 +219,13 @@ public class CompletionTestPerformer {
                 if (SwingUtilities.isEventDispatchThread()) {
                     run.run();
                 } else {
-                    SwingUtilities.invokeAndWait(run);
+                    try {
+                        SwingUtilities.invokeAndWait(run);
+                    } catch (InvocationTargetException invocationTargetException) {
+                        if (invocationTargetException.getCause() != null) {
+                            invocationTargetException.getCause().printStackTrace(System.err);
+                        }
+                    }
                 }
             } finally {
                 testFile.setModified(false);
@@ -244,32 +249,33 @@ public class CompletionTestPerformer {
         return test;
     }
     
-    private static void saveDocument(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
-        SaveCookie sc = dob.getCookie(SaveCookie.class);
-        if (sc != null) {
-            sc.save();
-        }
-        FileObject fo = dob.getPrimaryFile();
-        if (fo != null) {
-            InputStream is = fo.getInputStream();
-            int ch;
-            StringBuilder fileText = new StringBuilder();
-            while ((ch = is.read()) != -1) {
-                fileText.append((char)ch);
-            }
-            is.close();
-            String text = fileText.toString();
-            if (!text.equals(docText) && false) {
-                System.err.println("file after cookie saving " + fo.getPath() + "\ntext:\n" + fileText);
-                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
-            }
-        }
+    private static void parseModifiedFile(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
+//        SaveCookie sc = dob.getCookie(SaveCookie.class);
+//        assert sc != null : "document must have save cookie " + dob;
+//        if (sc != null) {
+//            sc.save();
+//        }
+//        FileObject fo = dob.getPrimaryFile();
+//        if (fo != null) {
+//            InputStream is = fo.getInputStream();
+//            int ch;
+//            StringBuilder fileText = new StringBuilder();
+//            while ((ch = is.read()) != -1) {
+//                fileText.append((char)ch);
+//            }
+//            is.close();
+//            String text = fileText.toString();
+//            if (!text.equals(docText) && false) {
+//                System.err.println("file after cookie saving " + fo.getPath() + "\ntext:\n" + fileText);
+//                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
+//            }
+//        }
         CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
         assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();
         assert prj != null : "Must be project for csm file " + csmFile;
         prj.waitParse();
-        assert csmFile.isParsed() : " file must be parsed";
-        assert prj.isStable(null) : " full project must be parsed";
+        assert csmFile.isParsed() : " file must be parsed: " + csmFile;
+        assert prj.isStable(null) : " full project must be parsed" + prj;
     }
 }

@@ -80,6 +80,8 @@ public class BaseSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(SettingsNames.SPACES_PER_TAB, SettingsDefaults.defaultSpacesPerTab);
 
             settingsMap.put(SettingsNames.CARET_TYPE_INSERT_MODE, SettingsDefaults.defaultCaretTypeInsertMode);
+            settingsMap.put(SettingsNames.THICK_CARET_WIDTH, SettingsDefaults.defaultThickCaretWidth);
+            
             settingsMap.put(SettingsNames.CARET_TYPE_OVERWRITE_MODE, SettingsDefaults.defaultCaretTypeOverwriteMode);
             settingsMap.put(SettingsNames.CARET_ITALIC_INSERT_MODE, SettingsDefaults.defaultCaretItalicInsertMode);
             settingsMap.put(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, SettingsDefaults.defaultCaretItalicOverwriteMode);

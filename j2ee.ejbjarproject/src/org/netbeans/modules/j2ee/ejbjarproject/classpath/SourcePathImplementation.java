@@ -169,6 +169,15 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             }
                             result.add(ClassPathSupport.createResource(url));
                             
+                            // generated/wsclient
+                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
+                            url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+
                             // generated/addons/<subDirs>
                             result.addAll(getAddOnGeneratedSrcRoots(buildDir, 
                                     new String[] {DIR_GEN_BINDINGS}));

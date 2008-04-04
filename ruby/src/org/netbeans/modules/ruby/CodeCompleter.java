@@ -72,7 +72,7 @@ import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -1368,7 +1368,7 @@ public class CodeCompleter implements Completable {
                     Node node = it.next();
                     if (AstUtilities.isCall(node) &&
                             name.equals(AstUtilities.getCallName(node))) {
-                        if (node.nodeId == NodeTypes.CALLNODE) {
+                        if (node.nodeId == NodeType.CALLNODE) {
                             Node argsNode = ((CallNode)node).getArgsNode();
 
                             if (argsNode != null) {
@@ -1383,7 +1383,7 @@ public class CodeCompleter implements Completable {
                                     anchorOffset = argsNode.getPosition().getStartOffset();
                                 }
                             }
-                        } else if (node.nodeId == NodeTypes.FCALLNODE) {
+                        } else if (node.nodeId == NodeType.FCALLNODE) {
                             Node argsNode = ((FCallNode)node).getArgsNode();
 
                             if (argsNode != null) {
@@ -1398,7 +1398,7 @@ public class CodeCompleter implements Completable {
                                     anchorOffset = argsNode.getPosition().getStartOffset();
                                 }
                             }
-                        } else if (node.nodeId == NodeTypes.VCALLNODE) {
+                        } else if (node.nodeId == NodeType.VCALLNODE) {
                             // We might be completing at the end of a method call
                             // and we don't have parameters yet so it just looks like
                             // a vcall, e.g.
@@ -1441,7 +1441,7 @@ public class CodeCompleter implements Completable {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.nodeId == NodeTypes.CALLNODE) {
+                    if (node.nodeId == NodeType.CALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
                             for (int i = 0; i < 3; i++) {
@@ -1482,7 +1482,7 @@ public class CodeCompleter implements Completable {
                                 break;
                             }
                         }
-                    } else if (node.nodeId == NodeTypes.FCALLNODE) {
+                    } else if (node.nodeId == NodeType.FCALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
                             for (int i = 0; i < 3; i++) {
@@ -1516,7 +1516,7 @@ public class CodeCompleter implements Completable {
                                 break;
                             }
                         }
-                    } else if (node.nodeId == NodeTypes.VCALLNODE) {
+                    } else if (node.nodeId == NodeType.VCALLNODE) {
                         // We might be completing at the end of a method call
                         // and we don't have parameters yet so it just looks like
                         // a vcall, e.g.
@@ -1553,13 +1553,13 @@ public class CodeCompleter implements Completable {
 
             if (index != -1 && haveSanitizedComma && call != null) {
                 Node an = null;
-                if (call.nodeId == NodeTypes.FCALLNODE) {
+                if (call.nodeId == NodeType.FCALLNODE) {
                     an = ((FCallNode)call).getArgsNode();
-                } else if (call.nodeId == NodeTypes.CALLNODE) {
+                } else if (call.nodeId == NodeType.CALLNODE) {
                     an = ((CallNode)call).getArgsNode();
                 }
                 if (an != null && index < an.childNodes().size() &&
-                        ((Node)an.childNodes().get(index)).nodeId == NodeTypes.HASHNODE) {
+                        ((Node)an.childNodes().get(index)).nodeId == NodeType.HASHNODE) {
                     // We should stay within the hashnode, so counteract the
                     // index++ which follows this if-block
                     index--;
@@ -2670,7 +2670,7 @@ public class CodeCompleter implements Completable {
     @SuppressWarnings("unchecked")
     static void addLocals(Node node, Map<String, Node> variables) {
         switch (node.nodeId) {
-        case NodeTypes.LOCALASGNNODE: {
+        case LOCALASGNNODE: {
             String name = ((INameNode)node).getName();
 
             if (!variables.containsKey(name)) {
@@ -2678,13 +2678,13 @@ public class CodeCompleter implements Completable {
             }
             break;
         }
-        case NodeTypes.ARGSNODE: {
+        case ARGSNODE: {
             // TODO - use AstUtilities.getDefArgs here - but avoid hitting them twice!
             //List<String> parameters = AstUtilities.getDefArgs(def, true);
             // However, I've gotta find the parameter nodes themselves too!
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getArgsCount() > 0) {
+            if (an.getRequiredArgsCount() > 0) {
                 List<Node> args = (List<Node>)an.childNodes();
 
                 for (Node arg : args) {
@@ -2737,11 +2737,11 @@ public class CodeCompleter implements Completable {
 
         for (Node child : list) {
             switch (child.nodeId) {
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 // Don't look in nested context for local vars
                 continue;
             }
@@ -2751,7 +2751,7 @@ public class CodeCompleter implements Completable {
     }
 
     static void addDynamic(Node node, Map<String, Node> variables) {
-        if (node.nodeId == NodeTypes.DASGNNODE) {
+        if (node.nodeId == NodeType.DASGNNODE) {
             String name = ((INameNode)node).getName();
 
             if (!variables.containsKey(name)) {
@@ -2799,13 +2799,13 @@ public class CodeCompleter implements Completable {
 
         for (Node child : list) {
             switch (child.nodeId) {
-            case NodeTypes.ITERNODE:
-            //case NodeTypes.BLOCKNODE:
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case ITERNODE:
+            //case BLOCKNODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 continue;
             }
 
@@ -2814,7 +2814,7 @@ public class CodeCompleter implements Completable {
     }
 
     private void addGlobals(Node node, Map<String, Node> globals) {
-        if (node.nodeId == NodeTypes.GLOBALASGNNODE) {
+        if (node.nodeId == NodeType.GLOBALASGNNODE) {
             String name = ((INameNode)node).getName();
 
             if (!globals.containsKey(name)) {
@@ -2831,7 +2831,7 @@ public class CodeCompleter implements Completable {
     }
 
     private void addConstants(Node node, Map<String, Node> constants) {
-        if (node.nodeId == NodeTypes.CONSTDECLNODE) {
+        if (node.nodeId == NodeType.CONSTDECLNODE) {
             constants.put(((INameNode)node).getName(), node);
         }
 

@@ -89,20 +89,29 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return super.visitNewClass(tree, p);
     }
     
-    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
+    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> originalArguments) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = refactoring.getParameterInfo();
-        for (int i=0; i<pi.length; i++) {
-            int originalIndex = pi[i].getOriginalIndex();
+        int origArgsCount = originalArguments.size();
+        int maxOrigIndex = -1;
+        for (int index = 0; index < pi.length; index++) {
+            int originalIndex = pi[index].getOriginalIndex();
+            if (originalIndex >= origArgsCount) {
+                break;
+            }
             ExpressionTree vt;
             if (originalIndex <0) {
-                String value = pi[i].getDefaultValue();
+                String value = pi[index].getDefaultValue();
                 SourcePositions pos[] = new SourcePositions[1];
                 vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
             } else {
-                vt = currentArguments.get(pi[i].getOriginalIndex());
+                maxOrigIndex = Math.max(originalIndex, maxOrigIndex);
+                vt = originalArguments.get(originalIndex);
             }
             arguments.add(vt);
+        }
+        for (int index = maxOrigIndex + 1; index < origArgsCount; index++) {
+            arguments.add(originalArguments.get(index));
         }
         return arguments;
     }

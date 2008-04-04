@@ -1417,16 +1417,16 @@
        * onload calls bootstrap function to initialize and load all registered widgets
        * override initial onload.
        */
-+     window.onload = function() {
-|         if (!jmaki.initialized) {
-|             jmaki.initialize();
-|         } else {
-|             jmaki.bootstrapWidgets();
-|             return;
-|         }
-|         if (typeof oldLoad  == 'function') {
-|             oldLoad();
-|         }
--     }
+      window.onload = function() {
+          if (!jmaki.initialized) {
+              jmaki.initialize();
+          } else {
+              jmaki.bootstrapWidgets();
+              return;
+          }
+          if (typeof oldLoad  == 'function') {
+              oldLoad();
+          }
+      }
   }
   

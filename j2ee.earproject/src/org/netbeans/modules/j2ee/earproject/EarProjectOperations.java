@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -58,7 +59,9 @@ import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -68,6 +71,14 @@ import org.openide.util.lookup.Lookups;
 public class EarProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private final EarProject project;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String libraryPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private File libraryFile;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private boolean libraryWithinProject;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String absolutesRelPath;    
     
     public EarProjectOperations(EarProject project) {
         this.project = project;
@@ -117,7 +128,7 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
     }
    
     public void notifyCopying() {
-        //nothing.
+        rememberLibraryLocation();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -126,10 +137,14 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
             return ;
         }
         
+        EarProjectOperations origOperations = original.getLookup().lookup(EarProjectOperations.class);
+        fixLibraryLocation(origOperations);
+        
         project.setName(nueName);
     }
     
     public void notifyMoving() throws IOException {
+        rememberLibraryLocation();
         notifyDeleting();
     }
     
@@ -138,6 +153,9 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }
+        
+        EarProjectOperations origOperations = original.getLookup().lookup(EarProjectOperations.class);
+        fixLibraryLocation(origOperations);
 	
 	final String oldProjectName = project.getName();
         
@@ -159,5 +177,62 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
         });
 
     }
+    
+    private void fixLibraryLocation(EarProjectOperations original) throws IllegalArgumentException {
+        String libPath = original.libraryPath;
+        if (libPath != null) {
+            if (!new File(libPath).isAbsolute()) {
+                //relative path to libraries
+                if (!original.libraryWithinProject) {
+                    File file = original.libraryFile;
+                    if (file == null) {
+                        // could happen in some rare cases, but in that case the original project was already broken, don't fix.
+                        return;
+                    }
+                    String relativized = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+                    if (relativized != null) {
+                        project.getAntProjectHelper().setLibrariesLocation(relativized);
+                    } else {
+                        //cannot relativize, use absolute path
+                        project.getAntProjectHelper().setLibrariesLocation(file.getAbsolutePath());
+                    }
+                } else {
+                    //got copied over to new location.. the relative path is the same..
+                }
+            } else {
+
+                //absolute path to libraries..
+                if (original.libraryWithinProject) {
+                    if (original.absolutesRelPath != null) {
+                        project.getAntProjectHelper().setLibrariesLocation(PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), original.absolutesRelPath).getAbsolutePath());
+                    }
+                } else {
+                    // absolute path to an external folder stays the same.
+                }
+            }
+        }
+    }
+    
+    
+    private void rememberLibraryLocation() {
+     libraryWithinProject = false;
+        absolutesRelPath = null;
+        libraryPath = project.getAntProjectHelper().getLibrariesLocation();
+        if (libraryPath != null) {
+            File prjRoot = FileUtil.toFile(project.getProjectDirectory());
+            libraryFile = PropertyUtils.resolveFile(prjRoot, libraryPath);
+            if (FileOwnerQuery.getOwner(libraryFile.toURI()) == project && 
+                    libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
+                //do not update the relative path if within the project..
+                libraryWithinProject = true;
+                FileObject fo = FileUtil.toFileObject(libraryFile);
+                if (new File(libraryPath).isAbsolute() && fo != null) {
+                    // if absolte path within project, it will get moved/copied..
+                    absolutesRelPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
+                }
+            }
+        }
+    }
+    
         
 }

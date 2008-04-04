@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -25,14 +25,26 @@
         <param name="textColor" value="blue">
     </object>&nbsp;and choosing Properties. 
     The Libraries page lets you define the 
-    JARs, folders, libraries, and projects that are added to the runtime classpath of the enterprise application.
-    The libraries that you add are then available to all the modules in the project.
-    </p>
-    <p>Use the buttons to add JAR files,
-    projects or libraries to the classpath.</p>
- 
+    JARs, folders, libraries, and projects that are added to the and runtime classpath of the enterprise application.
+    The libraries that you add are then available to all the modules in the project.</p>
+
 <p>In the Libraries page, you can set the following properties:</p>
 <ul>
+    <li><b>Libraries Folder. </b>To make it easier to 
+    <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">share libraries</a> among different 
+    users and projects, you can set a folder to hold those libraries (or references to 
+    those libraries). You can create a new folder or specify an existing folder that 
+    already contains copies of the libraries on which your project depends. 
+    
+    <p>To specify the folder, click Browse. If there is already a libraries folder, a 
+    file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. 
+    In the New Libraries wizard, you set a libraries folder and then specify how to reference 
+    each library. The simplest case is to have the libraries copied to that folder. 
+    You can also refer to the libraries in their existing location 
+    (with a relative path or an absolute path). If you have specified an existing folder, 
+    you also have the option of using copies of libraries that are already in that folder 
+    instead of the copies that are contained in the IDE's Library Manager.</p>
+    </li>
     <li><b>Embedded Classpath Elements.</b> You use this page to specify any projects, subprojects or libraries 
     not listed in the Packaging page that you want the IDE to include in the classpath of the enterprise application when you debug the application.
     <p>You use the Packaging page to specify the libraries that are packaged 
@@ -49,12 +61,14 @@
     If you want to be able to step through the subproject when debugging the enterprise application, 
     you need to explicitly specify the subproject in the Libraries page.</p>
 
+    <p>Use the buttons to add JAR files, projects or libraries to the classpath.</p>
     </li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="../../ejb/debug/debug_ejb.html">Debugging an EJB Module</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">Sharing Libraries in a Java Project</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_classpath.html">Managing the Classpath</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Creating Dependencies Between Projects</a></dd>
       <dd>Standard Enterprise Application Properties Dialog Box:</dd>

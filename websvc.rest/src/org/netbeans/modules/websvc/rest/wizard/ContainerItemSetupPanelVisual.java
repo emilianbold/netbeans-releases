@@ -68,9 +68,9 @@ import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -408,7 +408,7 @@ private void selectClassButton1ActionPerformed(java.awt.event.ActionEvent evt) {
 private void selectClassButtonMouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectClassButtonMouseClickHandler
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(Util.getClasspathInfo(project), new TypeElementFinder.Customizer() {
 
                             public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
@@ -489,7 +489,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(Util.getClasspathInfo(project), new TypeElementFinder.Customizer() {
 
                             public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
@@ -733,7 +733,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         try {            
             Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 

@@ -510,4 +510,8 @@ public class DeploymentManagerProperties {
     public void setDatabaseStartEnabled(boolean startEnabled) {
         instanceProperties.setProperty(DATABASE_START_ATTR, Boolean.toString(startEnabled));
     }
+    
+    public SunDeploymentManagerInterface getSunDeploymentManager(){
+        return sunDM;
+    }
 }

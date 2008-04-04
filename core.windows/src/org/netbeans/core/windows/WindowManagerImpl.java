@@ -1229,8 +1229,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return false;
         //check opened TopComponents first to avoid AWT assertion if possible
         for(ModeImpl mode: getModes()) {
+            if( mode.getKind() != Constants.MODE_KIND_EDITOR )
+                continue;
             if( mode.containsTopComponent( tc ) ) {
-                return mode.getKind() == Constants.MODE_KIND_EDITOR;
+                return true;
             }
         }
 
@@ -1243,8 +1245,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if( null == tc )
             return false;
         for(ModeImpl mode: getModes()) {
+            if( mode.getKind() != Constants.MODE_KIND_EDITOR )
+                continue;
             if( mode.getOpenedTopComponents().contains( tc ) ) {
-                return mode.getKind() == Constants.MODE_KIND_EDITOR;
+                return true;
             }
         }
 

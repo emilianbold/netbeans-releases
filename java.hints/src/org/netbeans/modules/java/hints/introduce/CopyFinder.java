@@ -50,8 +50,6 @@ import com.sun.source.util.TreePathScanner;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CompilationInfo;
 

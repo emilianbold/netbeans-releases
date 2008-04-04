@@ -56,6 +56,7 @@ import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -624,6 +625,17 @@ public class GlassFishPanel extends DestinationPanel {
                 return StringUtils.format(
                         panel.getProperty(ERROR_HTTPS_EQUALS_ADMIN_PROPERTY),
                         httpsPort, adminPort);
+            }
+
+            //#128991: Installation not recognized not empty dir for GF
+            File f = FileUtils.eliminateRelativity(getDestinationField().getText().trim());
+            if(FileUtils.exists(f)) {
+                File [] list = f.listFiles();
+                if (list!= null && list.length > 0) {
+                    return StringUtils.format(
+                            component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
+                            f.getAbsolutePath());
+                }
             }
             
             return null;

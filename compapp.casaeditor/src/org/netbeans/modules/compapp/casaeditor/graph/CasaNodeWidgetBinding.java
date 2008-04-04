@@ -87,13 +87,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
     private Widget mHeaderHolder;
     
     
-    public CasaNodeWidgetBinding(Scene scene) {
+    public CasaNodeWidgetBinding(Scene scene, String bindingType) {
         super(scene);
         setOpaque(true);
         setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
         setLayout(LayoutFactory.createVerticalFlowLayout());
         
-        mBadges = new CasaBindingBadges(scene);
+        mBadges = new CasaBindingBadges(scene, bindingType);
         mVerticalTextImageWidget = new ImageWidget(scene);
         mVerticalTextImageWidget.setMinimumSize(new Dimension(VERT_TEXT_BAR_WIDTH, 0));
         
@@ -343,6 +343,13 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         return mBadges;
     }
     
+    public void updatePinImage() {
+        for (Widget child : mPinsHolderWidget.getChildren()) {
+            if (child instanceof CasaPinWidget) {
+                ((CasaPinWidget)child).updatePinImage();
+            }
+        }
+    }
     
         
     private static class BindingPinsLayout implements Layout {

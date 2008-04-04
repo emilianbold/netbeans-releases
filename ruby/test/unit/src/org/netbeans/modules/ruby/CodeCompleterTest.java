@@ -189,8 +189,6 @@ public class CodeCompleterTest extends RubyTestBase {
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
         assertNotNull(text);
-        assertNotNull(AstUtilities.getParseResult(ci));
-        assertEquals(0, ci.getErrors().size());
         
         int caretOffset = -1;
         if (caretLine != null) {
@@ -201,8 +199,11 @@ public class CodeCompleterTest extends RubyTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
+            ((TestCompilationInfo)ci).setCaretOffset(caretOffset);
         }
 
+        assertNotNull(AstUtilities.getParseResult(ci));
+        assertEquals(0, ci.getErrors().size());
         
         CodeCompleter cc = new CodeCompleter();
         
@@ -220,10 +221,10 @@ public class CodeCompleterTest extends RubyTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                sb.append(text);
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                sb.append(text, fromInclusive, toExclusive);
             }
-
+            
             @Override
             public void emphasis(boolean start) {
             }
@@ -486,6 +487,7 @@ public class CodeCompleterTest extends RubyTestBase {
             assertTrue(lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
+            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
         }
 
         info.setCaretOffset(caretOffset);

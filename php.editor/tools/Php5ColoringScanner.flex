@@ -44,7 +44,6 @@ import org.netbeans.modules.php.editor.PHPVersion;
 
 %public
 %class PHP5ColoringLexer
-%implements PHPScanner
 %type PHPTokenId
 %function nextToken
 %unicode
@@ -228,13 +227,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 %%
 
-<YYINITIAL>(([^<]|"<"[^?%s<])+)|"<s"|"<" {
+<YYINITIAL>(([^<]|"<"[^?%(script)<])+)|"<script"|"<" {
     return PHPTokenId.T_INLINE_HTML;
 }
 
-<YYINITIAL>"<?"|"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
-    if (short_tags_allowed || yylength()>2) { /* yyleng>2 means it's not <? but <script> */
-        yybegin(ST_PHP_IN_SCRIPTING);
+<YYINITIAL>"<script"{WHITESPACE}+"language"{WHITESPACE}*"="{WHITESPACE}*("php"|"\"php\""|"\'php\'"){WHITESPACE}*">" {
+    pushState(ST_PHP_IN_SCRIPTING);
+    return PHPTokenId.T_INLINE_HTML;
+}
+
+<YYINITIAL>"<?" {
+    if (short_tags_allowed ) {
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -247,7 +252,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
         || (text.charAt(1)=='?' && short_tags_allowed)) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.T_OPEN_TAG_WITH_ECHO;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -258,7 +264,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <YYINITIAL>"<%" {
     if (asp_tags) {
-        yybegin(ST_PHP_IN_SCRIPTING);
+        //yybegin(ST_PHP_IN_SCRIPTING);
+        pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
         //return createSymbol(ASTSymbol.T_OPEN_TAG);
     } else {
@@ -268,7 +275,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <YYINITIAL>"<?php" {
-    yybegin(ST_PHP_IN_SCRIPTING);
+    pushState(ST_PHP_IN_SCRIPTING);
+    //yybegin(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_OPENTAG;
     //return createSymbol(ASTSymbol.T_OPEN_TAG);
 }
@@ -606,6 +614,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"{" {
+    pushState(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CURLY_OPEN;
 }
 
@@ -615,8 +624,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"}" {
-    if (!stack.isEmpty()) {
-        popState();
+             //  if (!stack.isEmpty()) {
+            
+            //we are pushing state when we enter the PHP code,
+            //so we need to ensure we do not pop the top most state
+            if(stack.size() > 1) {
+                popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
 }
@@ -692,7 +705,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_VAR_OFFSET>[ \n\r\t\\'#] {
 	yypushback(1);
 	popState();
-	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+        if (yylength() > 0)
+            return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_VAR_OFFSET>{LABEL} {
@@ -746,42 +760,42 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 
 <ST_PHP_DOC_COMMENT> {
-    "@access"        {return PHPTokenId.PHPDOC_ACCESS;}
-    "@abstract"      {return PHPTokenId.PHPDOC_ABSTRACT;}
-    "@author"        {return PHPTokenId.PHPDOC_AUTHOR;}
-    "@category"      {return PHPTokenId.PHPDOC_CATEGORY;}
-    "@copyright"     {return PHPTokenId.PHPDOC_COPYRIGHT;}
-    "@deprecated"    {return PHPTokenId.PHPDOC_DEPRECATED;}
-    "@desc"          {return PHPTokenId.PHPDOC_DESC;}
-    "@example"       {return PHPTokenId.PHPDOC_EXAMPLE;}
-    "@exception"     {return PHPTokenId.PHPDOC_EXCEPTION;}
-    "@final"         {return PHPTokenId.PHPDOC_FINAL;}
-    "@filesource"    {return PHPTokenId.PHPDOC_FILESOURCE;}
-    "@global"        {return PHPTokenId.PHPDOC_GLOBAL;}
-    "@ignore"        {return PHPTokenId.PHPDOC_IGNORE;}
-    "@internal"      {return PHPTokenId.PHPDOC_INTERNAL;}
-    "@license"       {return PHPTokenId.PHPDOC_LICENSE;}
-    "@link"          {return PHPTokenId.PHPDOC_LINK;}
-    "@magic"         {return PHPTokenId.PHPDOC_MAGIC;}
-    "@method"        {return PHPTokenId.PHPDOC_METHOD;}    
-    "@name"          {return PHPTokenId.PHPDOC_NAME;}
-    "@package"       {return PHPTokenId.PHPDOC_PACKAGE;}
-    "@param"         {return PHPTokenId.PHPDOC_PARAM;}
-    "@property"      {return PHPTokenId.PHPDOC_PROPERTY;}
-    "@return"        {return PHPTokenId.PHPDOC_RETURN;}
-    "@see"           {return PHPTokenId.PHPDOC_SEE;}
-    "@since"         {return PHPTokenId.PHPDOC_SINCE;}
-    "@static"        {return PHPTokenId.PHPDOC_STATIC;}
-    "@staticvar"     {return PHPTokenId.PHPDOC_STATICVAR;}
-    "@subpackage"    {return PHPTokenId.PHPDOC_SUBPACKAGE;}
-    "@throws"        {return PHPTokenId.PHPDOC_THROWS;}
-    "@todo"          {return PHPTokenId.PHPDOC_TODO;}
-    "@tutorial"      {return PHPTokenId.PHPDOC_TUTORIAL;}
-    "@uses"          {return PHPTokenId.PHPDOC_USES;}
-    "@var"           {return PHPTokenId.PHPDOC_VAR;}
-    "@version"       {return PHPTokenId.PHPDOC_VERSION;}
+//    "@access"        {return PHPTokenId.PHPDOC_ACCESS;}
+//    "@abstract"      {return PHPTokenId.PHPDOC_ABSTRACT;}
+//    "@author"        {return PHPTokenId.PHPDOC_AUTHOR;}
+//    "@category"      {return PHPTokenId.PHPDOC_CATEGORY;}
+//    "@copyright"     {return PHPTokenId.PHPDOC_COPYRIGHT;}
+//    "@deprecated"    {return PHPTokenId.PHPDOC_DEPRECATED;}
+//    "@desc"          {return PHPTokenId.PHPDOC_DESC;}
+//    "@example"       {return PHPTokenId.PHPDOC_EXAMPLE;}
+//    "@exception"     {return PHPTokenId.PHPDOC_EXCEPTION;}
+//    "@final"         {return PHPTokenId.PHPDOC_FINAL;}
+//    "@filesource"    {return PHPTokenId.PHPDOC_FILESOURCE;}
+//    "@global"        {return PHPTokenId.PHPDOC_GLOBAL;}
+//    "@ignore"        {return PHPTokenId.PHPDOC_IGNORE;}
+//    "@internal"      {return PHPTokenId.PHPDOC_INTERNAL;}
+//    "@license"       {return PHPTokenId.PHPDOC_LICENSE;}
+//    "@link"          {return PHPTokenId.PHPDOC_LINK;}
+//    "@magic"         {return PHPTokenId.PHPDOC_MAGIC;}
+//    "@method"        {return PHPTokenId.PHPDOC_METHOD;}    
+//    "@name"          {return PHPTokenId.PHPDOC_NAME;}
+//    "@package"       {return PHPTokenId.PHPDOC_PACKAGE;}
+//    "@param"         {return PHPTokenId.PHPDOC_PARAM;}
+//    "@property"      {return PHPTokenId.PHPDOC_PROPERTY;}
+//    "@return"        {return PHPTokenId.PHPDOC_RETURN;}
+//    "@see"           {return PHPTokenId.PHPDOC_SEE;}
+//    "@since"         {return PHPTokenId.PHPDOC_SINCE;}
+//    "@static"        {return PHPTokenId.PHPDOC_STATIC;}
+//    "@staticvar"     {return PHPTokenId.PHPDOC_STATICVAR;}
+//    "@subpackage"    {return PHPTokenId.PHPDOC_SUBPACKAGE;}
+//    "@throws"        {return PHPTokenId.PHPDOC_THROWS;}
+//    "@todo"          {return PHPTokenId.PHPDOC_TODO;}
+//    "@tutorial"      {return PHPTokenId.PHPDOC_TUTORIAL;}
+//    "@uses"          {return PHPTokenId.PHPDOC_USES;}
+//    "@var"           {return PHPTokenId.PHPDOC_VAR;}
+//    "@version"       {return PHPTokenId.PHPDOC_VERSION;}
     
-    [^/@]* {
+    ([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
     int len = yylength();
         if (len > 1 && (yycharat(len-1) == '*')) {
             yypushback(1); // go back to mark end of comment in the next token
@@ -801,35 +815,33 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_COMMENT_END;
 }
 
-<ST_PHP_COMMENT>(.|[\r\n])*?\*[/] {
-//<ST_PHP_COMMENT>((.|[\r\n])*\*[/])?? {
-//<ST_PHP_COMMENT>([^*]|[\r\n]|(\*([^/]|[\r\n])))*\*[/] {
-//<ST_PHP_COMMENT> ([/][*][.]*?[*][/])|([/][*][.]*) {
-//<ST_PHP_COMMENT>[^*]+ {
+<ST_PHP_COMMENT>([^*/]|[*][^/]|[^*][/]|{NEWLINE})* {
     int len = yylength();
     
-    if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '/')) {
-        yypushback(2);
+    // if there are two '*' as last two characters, it means that the last
+    // '*' belongs to "*/"
+    if (len > 1 && (yycharat(len-2) == '*') && (yycharat(len-1) == '*')) {
+        yypushback(1);
     }
     return PHPTokenId.PHP_COMMENT;
 }
 
-//<ST_PHP_COMMENT>[^/]* {
-//    int len = yylength();
-//    if (len > 1 && (yycharat(len-1) == '*')) {
-//        yypushback(1); // go back to mark end of comment in the next token
-//    }
-//    return PHPTokenId.PHP_COMMENT;
-//}
-
-
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();
+        yybegin(YYINITIAL);
+        stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
+}
+
+<ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"</script>"{WHITESPACE}? {
+        popState();
+	return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	return  PHPTokenId.UNKNOWN_TOKEN;
@@ -837,6 +849,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_LINE_COMMENT>"%>"{WHITESPACE}? {
 	if (asp_tags) {
+            yybegin(YYINITIAL);
+            stack.clear();
 	    return PHPTokenId.PHP_CLOSETAG;
 	}
 	String text = yytext();
@@ -915,7 +929,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_END_HEREDOC>{ANY_CHAR} {
     heredoc=null;
     heredoc_len=0;
-    yybegin(ST_PHP_IN_SCRIPTING);
+    (ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 

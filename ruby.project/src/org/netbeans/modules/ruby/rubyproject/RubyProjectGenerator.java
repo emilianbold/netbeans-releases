@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -72,7 +74,7 @@ import org.w3c.dom.NodeList;
 /**
  * Creates a RubyProject from scratch according to some initial configuration.
  */
-public class RubyProjectGenerator {
+public final class RubyProjectGenerator {
     
     public static final String DEFAULT_SRC_NAME = "src.dir"; // NOI18N
     public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
@@ -88,7 +90,7 @@ public class RubyProjectGenerator {
      */
     public static RakeProjectHelper createProject(File dir, String name, String mainClass, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(dir);
-        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false, platform); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, platform); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
@@ -96,9 +98,15 @@ public class RubyProjectGenerator {
         if ( mainClass != null ) {
             createFromTemplate( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile"); // NOI18N
-        FileObject readme = dirFO.createData("README"); // NOI18N
-        writeLines(readme, NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
+        
+        // Rakefile
+        final Map<String, String> rakeProps = new HashMap<String, String>();
+        rakeProps.put("PROJECT_NAME", dir.getName());
+        
+        createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
+        
+        createFileWithContent(dirFO, "README", "TXT_README_Content", name); // NOI18N
+        createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", name); // NOI18N
         
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
@@ -110,13 +118,12 @@ public class RubyProjectGenerator {
             final File[] sourceFolders, final File[] testFolders, final RubyPlatform platform) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
-        // this constructor creates only java application type
-        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false, platform);
+        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, platform);
         final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
+            public Void run() throws IOException {
                 Element data = h.getPrimaryConfigurationData(true);
                 Document doc = data.getOwnerDocument();
                 NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
@@ -189,7 +196,7 @@ public class RubyProjectGenerator {
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, String name,
-            String srcRoot, String testRoot, String mainClass, boolean isLibrary,
+            String srcRoot, String testRoot, String mainClass,
             final RubyPlatform platform) throws IOException {
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -197,9 +204,6 @@ public class RubyProjectGenerator {
         Element nameEl = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-//        Element minant = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-//        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
-//        data.appendChild(minant);
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
@@ -220,84 +224,21 @@ public class RubyProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());        
-//        ep.setProperty("dist.dir", "dist"); // NOI18N
-//        ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-//        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
-//        ep.setProperty("javac.classpath", new String[0]); // NOI18N
-//        ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
-//        ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
-//        ep.setProperty("run.classpath", new String[] { // NOI18N
-//            "${javac.classpath}:", // NOI18N
-//            "${build.classes.dir}", // NOI18N
-//        });
-//        ep.setProperty("debug.classpath", new String[] { // NOI18N
-//            "${run.classpath}", // NOI18N
-//        });        
-//        ep.setProperty("jar.compress", "false"); // NOI18N
-        if (!isLibrary) {
-            ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
-        }
-        
-//        ep.setProperty("javac.compilerargs", ""); // NOI18N
-//        ep.setComment("javac.compilerargs", new String[] {
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
-//        }, false);
-//        SpecificationVersion sourceLevel = getDefaultSourceLevel();
-//        ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
-//        ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
-//        ep.setProperty("javac.deprecation", "false"); // NOI18N
-//        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
-//            "${javac.classpath}:", // NOI18N
-//            "${build.classes.dir}:", // NOI18N
-//            "${libs.junit.classpath}", // NOI18N
-//        });
-//        ep.setProperty("run.test.classpath", new String[] { // NOI18N
-//            "${javac.test.classpath}:", // NOI18N
-//            "${build.test.classes.dir}", // NOI18N
-//        });
-//        ep.setProperty("debug.test.classpath", new String[] { // NOI18N
-//            "${run.test.classpath}", // NOI18N
-//        });
-//
-//        ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
-//        ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
-//        
-//        ep.setProperty("build.dir", "build"); // NOI18N
-//        ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
-//        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
-//        ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
-//        ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
-//        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
-//        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
+        ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());
+        ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
         RubyProjectProperties.storePlatform(ep, platform);
-
-//
-//        ep.setProperty("run.jvmargs", ""); // NOI18N
-//        ep.setComment("run.jvmargs", new String[] {
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
-//        }, false);
-
-//        ep.setProperty(RubyProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_USE, "true"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
-        
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
 
-    private static DataObject createFromTemplate( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
-        int lastDotIdx = mainClassName.lastIndexOf( '/' );
+    private static DataObject createFromTemplate(String mainClassName, FileObject srcFolder, String templateName) throws IOException {
+        return createFromTemplate(mainClassName, srcFolder, templateName, null);
+    }
+            
+    private static DataObject createFromTemplate(String mainClassName,
+            FileObject srcFolder, String templateName,
+            final Map<String, ? extends Object> props) throws IOException {
+        int lastDotIdx = mainClassName.lastIndexOf('/');
         String mName, pName;
         if ( lastDotIdx == -1 ) {
             mName = mainClassName.trim();
@@ -326,13 +267,20 @@ public class RubyProjectGenerator {
             pkgFolder = FileUtil.createFolder( srcFolder, fName );        
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );
-        // BEGIN SEMPLICE MODIFICATIONS
-        int extension = mName.lastIndexOf('.');
-        if (extension != -1) {
-            mName = mName.substring(0, extension);
+        
+        mName = Util.stripExtension(mName, ".rb");
+        
+        if (props != null) {
+            return mt.createFromTemplate(pDf, mName, props);
+        } else {
+            return mt.createFromTemplate(pDf, mName);
         }
-        // END SEMPLICE MODIFICATIONS
-        return mt.createFromTemplate(pDf, mName);
+    }
+
+    private static void createFileWithContent(final FileObject dirFO, final String fileName,
+            final String contentKey, final String prjName) throws IOException {
+        FileObject newFile = dirFO.createData(fileName); // NOI18N
+        writeLines(newFile, NbBundle.getMessage(RubyProjectGenerator.class, contentKey, prjName));
     }
 
     // TODO: use FileUtils when #118087 is fixed
@@ -343,5 +291,4 @@ public class RubyProjectGenerator {
         }
         readmeW.close();
     }
-    
 }

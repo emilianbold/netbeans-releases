@@ -63,15 +63,15 @@ public class CndDocumentProviderTestCase extends BaseTestCase {
     }
     
     public void testHeaderDocument() throws Exception {
-        testBaseDocumentInitialized("file.h", HDataObject.class);
+        testBaseDocumentInitialized("file.h", HDataObject.class); // NOI18N
     }
     
     public void testCSourceDocument() throws Exception {
-        testBaseDocumentInitialized("file.c", CDataObject.class);
+        testBaseDocumentInitialized("file.c", CDataObject.class); // NOI18N
     }
 
     public void testCppSourceDocument() throws Exception {
-        testBaseDocumentInitialized("file.cc", CCDataObject.class);
+        testBaseDocumentInitialized("file.cc", CCDataObject.class); // NOI18N
     }
 
     private void testBaseDocumentInitialized(String file, Class clazz) throws Exception {

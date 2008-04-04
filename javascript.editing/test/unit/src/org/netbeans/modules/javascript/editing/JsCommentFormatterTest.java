@@ -70,10 +70,10 @@ public class JsCommentFormatterTest extends JsTestBase {
         
         List<String> tags = jsComment.getParams();
         List<String> expected = Arrays.asList(
-                "{Mixed} el The bla bla bla",
-                "{Object/Array} values The bla bla bloo (i.e. {0}) or an\n" +
+                "<i>{Mixed}</i> <b>el</b> The bla bla bla",
+                "<i>{Object/Array}</i> <b>values</b> The bla bla bloo (i.e. {0}) or an\n" +
                 "object (i.e. {foo: 'bar'})",
-                "{Boolean} returnElement (optional) true to return a Axt.Element (defaults to blii)"
+                "<i>{Boolean}</i> <b>returnElement</b> (optional) true to return a Axt.Element (defaults to blii)"
                 );
         
         assertEquals(expected, tags);
@@ -91,5 +91,12 @@ public class JsCommentFormatterTest extends JsTestBase {
         FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(info, caretLine);
         return ElementUtilities.getComments(info, element);
     }
-    
+
+    /* TODO: Test formatting this - it currently ends up with @return on the same line!
+ * Create a new table caption object or return an
+ * existing one.
+ * @return HTMLElement A CAPTION element.
+ * @type HTMLElement
+createCaption: function() {
+        */
 }

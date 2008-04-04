@@ -41,6 +41,7 @@
 package org.netbeans.modules.javascript.editing.lexer;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,7 +60,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
+import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -100,6 +101,23 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.WHILE);
     }
 
+    public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
+        try {
+            if (info == null) {
+                return null;
+            }
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            if (doc == null && forceOpen) {
+                doc = NbUtilities.getBaseDocument(info.getFileObject(), true);
+            }
+            
+            return doc;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+
     private LexUtilities() {
     }
     
@@ -127,7 +145,7 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -139,7 +157,7 @@ public class LexUtilities {
     }
     
     public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -200,6 +218,10 @@ public class LexUtilities {
     }
 
     public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset) {
+        return getPositionedSequence(doc, offset, true);
+    }
+    
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(BaseDocument doc, int offset, boolean lookBack) {
         TokenSequence<?extends JsTokenId> ts = getJsTokenSequence(doc, offset);
 
         if (ts != null) {
@@ -215,7 +237,9 @@ public class LexUtilities {
                 throw e;
             }
 
-            if (!ts.moveNext() && !ts.movePrevious()) {
+            if (!lookBack && !ts.moveNext()) {
+                return null;
+            } else if (lookBack && !ts.moveNext() && !ts.movePrevious()) {
                 return null;
             }
             
@@ -251,10 +275,47 @@ public class LexUtilities {
         return 0;
     }
 
+    
+    public static Token<?extends JsTokenId> findNextNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
+        return findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+    }
+
+    public static Token<?extends JsTokenId> findPreviousNonWsNonComment(TokenSequence<?extends JsTokenId> ts) {
+        return findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.LINE_COMMENT, JsTokenId.BLOCK_COMMENT));
+    }
+    
+    public static Token<?extends JsTokenId> findNext(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findNextIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+        while (ts.moveNext() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPreviousIncluding(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> includes) {
+            while (ts.movePrevious() && !includes.contains(ts.token().id())) {}
+        return ts.token();
+    }
+    
+    public static Token<?extends JsTokenId> findPrevious(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+    
+    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+        return skipParenthesis(ts, false);
+    }
+    
     /**
      * Tries to skip parenthesis 
      */
-    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
+    public static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts, boolean back) {
         int balance = 0;
 
         Token<?extends JsTokenId> token = ts.token();
@@ -269,11 +330,11 @@ public class LexUtilities {
 //            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
 //        }
         if (id == JsTokenId.WHITESPACE || id == JsTokenId.EOL) {
-            while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
+            while ((back ? ts.movePrevious() : ts.moveNext()) && (ts.token().id() == JsTokenId.WHITESPACE || ts.token().id() == JsTokenId.EOL)) {}
         }
 
         // if current token is not left parenthesis
-        if (ts.token().id() != JsTokenId.LPAREN) {
+        if (ts.token().id() != (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
             return false;
         }
 
@@ -281,20 +342,24 @@ public class LexUtilities {
             token = ts.token();
             id = token.id();
 
-            if (id == JsTokenId.LPAREN) {
+            if (id == (back ? JsTokenId.RPAREN : JsTokenId.LPAREN)) {
                 balance++;
-            } else if (id == JsTokenId.RPAREN) {
+            } else if (id == (back ? JsTokenId.LPAREN : JsTokenId.RPAREN)) {
                 if (balance == 0) {
                     return false;
                 } else if (balance == 1) {
                     int length = ts.offset() + token.length();
-                    ts.moveNext();
+                    if (back) {
+                        ts.movePrevious();
+                    } else {
+                        ts.moveNext();
+                    }
                     return true;
                 }
 
                 balance--;
             }
-        } while (ts.moveNext());
+        } while (back ? ts.movePrevious() : ts.moveNext());
 
         return false;
     }
@@ -463,7 +528,7 @@ public class LexUtilities {
             case FOR:
             case WHILE:
                 ts.moveNext();
-                if (!skipParenthesis(ts)) {
+                if (!skipParenthesis(ts, false)) {
                     return OffsetRange.NONE;
                 }
                 id = ts.token().id();
@@ -499,9 +564,12 @@ public class LexUtilities {
         return  OffsetRange.NONE;
     }
     
-    public static OffsetRange getMultilineRange(BaseDocument doc, int offset) {
-        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
-        return findMultilineRange(ts);
+    public static OffsetRange getMultilineRange(BaseDocument doc, TokenSequence<? extends JsTokenId> ts) {
+        int index = ts.index();
+        OffsetRange offsetRange = findMultilineRange(ts);
+        ts.moveIndex(index);
+        ts.moveNext();
+        return offsetRange;
     }
     
     /**

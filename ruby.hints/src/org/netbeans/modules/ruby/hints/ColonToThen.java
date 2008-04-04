@@ -48,7 +48,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.WhenNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -81,8 +81,8 @@ import org.openide.util.NbBundle;
  */
 public class ColonToThen implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.WHENNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.WHENNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -100,10 +100,19 @@ public class ColonToThen implements AstRule {
         try {
             // (1) make sure the body is on the same line as the when, and
             // (2) the separator is ":", not "then" or something else
-            int whenStart = when.getPosition().getStartOffset();
-            int bodyStart = body.getPosition().getStartOffset();
-            if (Utilities.getRowEnd(doc, bodyStart) !=
-                    Utilities.getRowEnd(doc, whenStart)) {
+            int astWhenStart = when.getPosition().getStartOffset();
+            int astBodyStart = body.getPosition().getStartOffset();
+            int lexWhenStart = LexUtilities.getLexerOffset(info, astWhenStart);
+            int lexBodyStart = LexUtilities.getLexerOffset(info, astBodyStart);
+            if (lexWhenStart == -1 || lexBodyStart == -1) {
+                return;
+            }
+            int docLength = doc.getLength();
+            if (lexWhenStart > docLength || lexBodyStart > docLength) {
+                return;
+            }
+            if (Utilities.getRowEnd(doc, lexBodyStart) !=
+                    Utilities.getRowEnd(doc, lexWhenStart)) {
                 return;
             }
 
@@ -112,11 +121,11 @@ public class ColonToThen implements AstRule {
                 // Check tokens - look for ":" as opposed to then
                 doc.readLock();
                 TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc,
-                        bodyStart);
+                       lexBodyStart);
                 if (ts == null) {
                     return;
                 }
-                ts.move(bodyStart);
+                ts.move(lexBodyStart);
                 while (ts.movePrevious()) {
                     Token<? extends RubyTokenId> token = ts.token();
                     TokenId id = token.id();
@@ -138,6 +147,9 @@ public class ColonToThen implements AstRule {
                 doc.readUnlock();
             }
             
+            if (offset == -1) {
+                return;
+            }
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
             List<Fix> fixes = new ArrayList<Fix>(2);

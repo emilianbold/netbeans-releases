@@ -592,7 +592,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         }
 
         void setNiSetter( boolean niSetter ) {
-            this.niGetter = hasNiSetter() ? niSetter : false;
+            this.niSetter = hasNiSetter() ? niSetter : false;
             setModified();
         }
 
@@ -602,7 +602,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         }
 
         boolean hasNiSetter() {
-            return pattern.getGetterMethod() != null;
+            return pattern.getSetterMethod() != null;
         }
 
         /** Returns the call to constructor of IndexedPropertyDescriptor */
@@ -664,9 +664,9 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                     setMode( PropertyPattern.READ_ONLY );
 
                 // Analayses if there is restriction on non indexed getter or setter
-                if ( hasNiGetter() && params[2].equals( null ) )
+                if ( hasNiGetter() && params[2].equals( "null" ) ) // NOI18N
                     niGetter = false;
-                if ( hasNiGetter() && params[3].equals( null ) )
+                if ( hasNiGetter() && params[3].equals( "null" ) ) // NOI18N
                     niSetter = false;
 
             }
@@ -828,8 +828,10 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                 return resolveArrayClass((ArrayType) type);
             } else if (kind == TypeKind.DECLARED) {
                 return ((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName().toString();
+            } else if (kind == TypeKind.ERROR) {
+                return type.toString();
             } else {
-                throw new IllegalStateException("Unknown type" + type); // NOI18N
+                throw new IllegalStateException("Unknown type: " + type + ", " + type.getKind()); // NOI18N
             }
         }
 

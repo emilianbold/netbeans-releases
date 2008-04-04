@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -64,11 +64,10 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -185,11 +184,11 @@ public final class TreeUtilities {
             assert assertsEnabled = true;
             
             if (assertsEnabled) {
-                TreePath tp = TreePath.getPath(info.getCompilationUnit(), tree);
+                TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
                 
                 if (tp == null) {
                     Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
-                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Caller", new Exception());
+                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.INFO, "Caller", new Exception());
                     automap = false;
                 }
             }
@@ -535,7 +534,7 @@ public final class TreeUtilities {
     /**Returns uncaught exceptions inside the given tree path.
      */
     public Set<TypeMirror> getUncaughtExceptions(TreePath path) {
-        HashSet<TypeMirror> set = new HashSet<TypeMirror>();
+        Set<TypeMirror> set = new UnrelatedTypeMirrorSet(info.getTypes());
         new UncaughtExceptionsVisitor(info).scan(path, set);
         return set;
     }
@@ -784,6 +783,38 @@ public final class TreeUtilities {
             }
             p.addAll(s);
             return null;
+        }
+    }
+    
+    private static class UnrelatedTypeMirrorSet extends AbstractSet<TypeMirror> {
+
+        private Types types;
+        private LinkedList<TypeMirror> list = new LinkedList<TypeMirror>();
+
+        public UnrelatedTypeMirrorSet(Types types) {
+            this.types = types;
+        }
+
+        @Override
+        public boolean add(TypeMirror typeMirror) {
+            for (ListIterator<TypeMirror> it = list.listIterator(); it.hasNext(); ) {
+                TypeMirror tm = it.next();
+                if (types.isSubtype(typeMirror, tm))
+                    return false;
+                if (types.isSubtype(tm, typeMirror))
+                    it.remove();                    
+            }
+            return list.add(typeMirror);
+        }
+                
+        @Override
+        public Iterator<TypeMirror> iterator() {
+            return list.iterator();
+        }
+
+        @Override
+        public int size() {
+            return list.size();
         }
     }
 }

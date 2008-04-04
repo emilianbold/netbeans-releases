@@ -240,9 +240,32 @@ public final class ElementUtilities {
             Elements elements = JavacElements.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
-                    for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
-                        if (acceptor == null || acceptor.accept(member, type))
-                            members.add(member);
+                    HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
+                    Types types = JavacTypes.instance(ctx);
+                    TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+                    for (Element member : elements.getAllMembers(te)) {
+                        if (acceptor == null || acceptor.accept(member, type)) {
+                            CharSequence name = member.getSimpleName();
+                            ArrayList<Element> h = hiders.get(name);
+                            if (!isHidden(member, h, types)) {
+                                members.add(member);
+                                if (h == null) {
+                                    h = new ArrayList<Element>();
+                                    hiders.put(name, h);
+                                }
+                                h.add(member);
+                            }
+                        }
+                    }
+                    if (te.getKind().isClass()) {
+                        VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
+                        if (acceptor == null || acceptor.accept(thisPseudoMember, type))
+                            members.add(thisPseudoMember);
+                        if (te.getSuperclass().getKind() == TypeKind.DECLARED) {
+                            VarSymbol superPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Name.Table.instance(ctx)._super, (ClassType)te.getSuperclass(), (ClassSymbol)te);
+                            if (acceptor == null || acceptor.accept(superPseudoMember, type))
+                                members.add(superPseudoMember);
+                        }
                     }
                 case BOOLEAN:
                 case BYTE:
@@ -536,7 +559,7 @@ public final class ElementUtilities {
                                     undef.add(ee);
                                 } else if (existingReturnType.getKind() == TypeKind.DECLARED && eeReturnType.getKind() == TypeKind.DECLARED) {
                                     Env<AttrContext> env = Enter.instance(ctx).getClassEnv((TypeSymbol)impl);
-                                    DeclaredType subType = findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env);
+                                    DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
                                     if (subType != null) {
                                         undef.remove(existing);
                                         MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);

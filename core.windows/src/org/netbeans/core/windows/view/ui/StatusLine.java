@@ -155,13 +155,13 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     /** #62967: Pref size so that status line is able to shrink as much as possible.
      */
     public Dimension getPreferredSize() {
-        return new Dimension(100, 0);
+        return new Dimension(100, super.getPreferredSize().height);
     }
     
     /** #62967: Minimum size so that status line is able to shrink as much as possible.
      */
     public Dimension getMinimumSize() {
-        return new Dimension(0, 0);
+        return new Dimension(0, super.getMinimumSize().height);
     }
 
 }

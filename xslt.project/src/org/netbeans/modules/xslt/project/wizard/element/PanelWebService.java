@@ -57,7 +57,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -89,7 +88,7 @@ final class PanelWebService<T> extends Panel<T> {
   @Override
   protected Object getResult()
   {
-    return WSDLUtilities.getWSDLModel(myFile);
+    return PanelUtil.getWSDLModel(myFile);
   }
 
   @Override

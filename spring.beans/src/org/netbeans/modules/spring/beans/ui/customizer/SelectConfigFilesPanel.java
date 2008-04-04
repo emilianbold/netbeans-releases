@@ -131,7 +131,7 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
             configFileTable.setEnabled(true);
             progressBar.setIndeterminate(true);
             detectTask = rp.create(new FileDetector());
-            rp.post(detectTask);
+            detectTask.schedule(0);
         } else {
             updateAvailableFiles(availableFiles);
         }

@@ -226,6 +226,10 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         spacesPerTab = IndentUtils.indentLevelSize(doc);
         doc.atomicLock();
         try {
+            //buffer doc used as a worksheet
+            BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
+            bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
+            
             List<TokenElement> tags = getTags(doc);
             for (int i = tags.size() - 1; i >= 0; i--) {
                 TokenElement tag = tags.get(i);
@@ -248,19 +252,21 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         lineStr = lineStr.substring(0, ndx);
                         int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) + ">");
                         if (ndx2 == -1) {//no start found in this line, so indent this tag
-                            changePrettyText(doc, tag, so);
+                            changePrettyText(bufDoc, tag, so);
                         } else {
                             lineStr = lineStr.substring(ndx2 + 1);
                             ndx2 = lineStr.indexOf("<");
                             if (ndx2 != -1) {//indent this tag if it contains another tag
-                                changePrettyText(doc, tag, so);
+                                changePrettyText(bufDoc, tag, so);
                             }
                         }
                     }
                 } else {
-                    changePrettyText(doc, tag, so);
+                    changePrettyText(bufDoc, tag, so);
                 }
             }
+            //Now do the actual replacement in the document with the pretty text
+            doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
         } catch (BadLocationException ble) {
             //ignore exception
         } catch (IOException iox) {

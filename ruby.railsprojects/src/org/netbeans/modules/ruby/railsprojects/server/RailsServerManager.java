@@ -165,7 +165,9 @@ public final class RailsServerManager {
         }
         if (debugSemaphore != null) {
             try {
-                execution.kill();
+                if(execution != null) {
+                    execution.kill();
+                }
                 debugSemaphore.acquire();
                 debugSemaphore = null;
             } catch (InterruptedException ex) {
@@ -264,7 +266,10 @@ public final class RailsServerManager {
                 
             return;
         }
-        server = (RubyServer) instance;
+        // check whether the user has modified script/server to use another server
+        RubyInstance explicitlySpecified = ServerResolver.getExplicitlySpecifiedServer(project);
+        server = (RubyServer) (explicitlySpecified != null ? explicitlySpecified : instance);
+        
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);

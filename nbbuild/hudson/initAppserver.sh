@@ -12,7 +12,7 @@ set -x
 # Initialization
 
 AS_ROOT=/hudson/workdir/jobs/trunk/testappsrv
-AS_BINARY=/hudson/glassfish-installer-v2-b52.jar
+AS_BINARY=/hudson/glassfish-installer-v2ur1-b09d-linux.jar
 AS_HOME=${AS_ROOT}/glassfish
 AS_DOMAIN=domain1
 AS_PORT=8080
@@ -40,6 +40,13 @@ cleanup() {
     if [ "$COUNT" -eq 1 ]; then
         echo "Deleting domain $AS_DOMAIN."
         $AS_HOME/bin/asadmin delete-domain $AS_DOMAIN
+        ERROR_CODE=$?
+        if [ $ERROR_CODE != 0 ]; then
+            echo "ERROR: $ERROR_CODE - Can't delete domain $AS_DOMAIN - trying to uninstall and install Glassfish."
+            uninstall
+            install
+            $AS_HOME/bin/asadmin delete-domain domain1
+        fi
     fi
     echo "Creating domain $AS_DOMAIN."
     echo AS_ADMIN_PASSWORD=adminadmin > $AS_HOME/passwd

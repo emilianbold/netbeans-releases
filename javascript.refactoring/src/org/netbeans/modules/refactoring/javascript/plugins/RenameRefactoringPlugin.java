@@ -449,6 +449,9 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
+        if (treePathHandle == null) {
+            return null;
+        }
         if (!treePathHandle.getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
         }
@@ -1037,7 +1040,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             case Token.NAME:
-                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL) {
+                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                        node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
                 }

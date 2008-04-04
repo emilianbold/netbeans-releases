@@ -73,6 +73,7 @@ public class BackoutAction extends ContextAction {
     private final VCSContext context;
     private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}";
     public static final String HG_BACKOUT_REVISION = " {revision}";
+    private static String HG_TIP = "tip"; // NOI18N
             
     public BackoutAction(String name, VCSContext context) {
         this.context = context;
@@ -92,6 +93,7 @@ public class BackoutAction extends ContextAction {
 
     public static void backout(final VCSContext ctx, final RepositoryRevision repoRev){
         final File root;        
+        File[] files = ctx != null? ctx.getFiles().toArray(new File[0]): null;
         if(repoRev != null){
             if(repoRev.getRepositoryRootUrl() == null || repoRev.getRepositoryRootUrl().equals("")){
                 return;
@@ -106,11 +108,12 @@ public class BackoutAction extends ContextAction {
         String rev = null;
         String commitMsg = null;
 
-        final Backout backout = new Backout(root, repoRev);
+        final Backout backout = new Backout(root, repoRev, files);
         if (!backout.showDialog()) {
             return;
         }
         rev = backout.getSelectionRevision();
+        if(rev == null) rev = HG_TIP;
         commitMsg = backout.getCommitMessage();
         final boolean doMerge = false; // Now handling this using our own merge mechanism, not backout's
         final String revStr = rev;

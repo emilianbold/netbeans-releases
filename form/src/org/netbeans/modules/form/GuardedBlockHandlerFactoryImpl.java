@@ -95,6 +95,10 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             }
 
             FileObject changedFile = proposedChange.getParentFile();
+            if (!RefactoringInfo.isJavaFileOfForm(changedFile)) {
+                // This guarded block does not belong to form.
+                return null;
+            }
             FormRefactoringUpdate update = refInfo.getUpdateForFile(changedFile);
             update.setGaurdedCodeChanging(true);
 

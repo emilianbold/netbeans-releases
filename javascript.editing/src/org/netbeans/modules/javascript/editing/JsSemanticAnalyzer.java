@@ -56,6 +56,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  * 
  * @todo E4X XML nodes
  * 
+ * @todo Produce a function call hashmap of bad browser calls, and look up calls in semantic highlighting
+ *   against the name map. Only if it matches, do a full FQN check and if so, do a browser delta.
+ *
  * @author Tor Norbye
  */
 public class JsSemanticAnalyzer implements SemanticAnalyzer {
@@ -106,9 +109,14 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         Collection<Node> globalVars = visitor.getGlobalVars(false);
+        OffsetRange sanitizedRange = rpr.getSanitizedRange();
+        boolean checkRange = sanitizedRange != OffsetRange.NONE && sanitizedRange.getLength() == 1;
         for (Node node : globalVars) {
             String s = node.getString();
             OffsetRange range = AstUtilities.getNameRange(node);
+            if (checkRange && range.getEnd() == sanitizedRange.getStart()) {
+                continue;
+            }
             if (Character.isUpperCase(s.charAt(0))) {
                 // A property which mimics a class
                 highlights.put(range, ColoringAttributes.CLASS);

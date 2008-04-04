@@ -52,7 +52,7 @@
 
     <description>Amazon Electronic Commerce Service</description>
     
-    <display-name>AmazonECS</display-name>
+    <display-name>Associates Service</display-name>
 
     <saas-metadata>
 
@@ -61,14 +61,16 @@
         <group name="Amazon">
         </group>
 
-        <authentication profile="SaaSServices/Amazon/profile.properties">
-            <api-key id="dev_id"/>
+        <authentication profile="Templates/SaaSServices/apikey.properties">
+            <api-key id="AWSAccessKeyId"/>
         </authentication>
 
     </saas-metadata>
 
+    <!--
     <methods>
         <method name="searchItem" href="#amazonecs.ItemSearch"/>
     </methods>
+    -->
 
 </saas-services>

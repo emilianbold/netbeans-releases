@@ -121,20 +121,22 @@ public abstract class BasicVisualPanel extends JPanel {
             super(data.getSettings());
             this.data = data;
             String resource;
-            int wizardType = data.getWizardType();
             switch (data.getWizardType()) {
-                case NewNbModuleWizardIterator.TYPE_SUITE:
+                case SUITE:
                     resource = "emptySuite"; // NOI18N
                     break;
-                case NewNbModuleWizardIterator.TYPE_MODULE:
-                case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                case APPLICATION:
+                    resource = "emptyApplication"; // NOI18N
+                    break;
+                case MODULE:
+                case SUITE_COMPONENT:
                     resource = "emptyModule"; // NOI18N
                     break;
-                case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                case LIBRARY_MODULE:
                     resource = "libraryModule"; // NOI18N
                     break;
                 default:
-                    assert false : "Unknown wizard type = " + wizardType;
+                    assert false : "Unknown wizard type = " + data.getWizardType();
                     resource = "";
             }
             data.getSettings().putProperty("NewProjectWizard_Title", // NOI18N
@@ -146,15 +148,15 @@ public abstract class BasicVisualPanel extends JPanel {
         }
         
         protected boolean isSuiteWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_SUITE;
+            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE || getData().getWizardType() == NewNbModuleWizardIterator.Type.APPLICATION;
         }
         
         protected boolean isSuiteComponentWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT;
+            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE_COMPONENT;
         }
 
         protected boolean isLibraryWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE;
+            return getData().getWizardType() == NewNbModuleWizardIterator.Type.LIBRARY_MODULE;
         }
         
     }

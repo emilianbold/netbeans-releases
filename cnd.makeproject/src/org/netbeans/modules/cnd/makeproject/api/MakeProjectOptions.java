@@ -48,12 +48,18 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 
 public class MakeProjectOptions {
 
+    /**
+     * @deprecated 
+     */
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        CppSettings.getDefault().setMakeName(defaultMakeCommand);
+        //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
+    /**
+     * @deprecated 
+     */
     public static String getDefaultMakeCommand() {
-        return CppSettings.getDefault().getMakeName();
+        return null; //CppSettings.getDefault().getMakeName();
     }
     
     /**

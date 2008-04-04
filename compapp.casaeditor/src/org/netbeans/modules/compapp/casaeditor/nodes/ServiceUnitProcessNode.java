@@ -42,15 +42,18 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -62,6 +65,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
 /**
  *
@@ -71,7 +76,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.GoToSourceAction;
 // we use the endpoint instead. 
 public class ServiceUnitProcessNode extends CasaNode {
     
-    private static final Image ICON = Utilities.loadImage(
+    public static final Image DEFAULT_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N
@@ -82,7 +87,7 @@ public class ServiceUnitProcessNode extends CasaNode {
         assert component != null;
         //System.out.println("***CREATING SERVICE_UNIT_PROCESS_NODE: " + this + "  component=" + component);
     }
-    
+        
     public String getProcessName() {
         return ((CasaEndpoint)getData()).getProcessName();
     }
@@ -113,13 +118,17 @@ public class ServiceUnitProcessNode extends CasaNode {
 
     @Override
     public String getName() {
+        /*
         CasaServiceEngineServiceUnit su = getServiceEngineServiceUnit();
         if (su != null) {
             return NbBundle.getMessage(getClass(), "LBL_Process");      // NOI18N
         }
         return super.getName();
+        */
+        return getProcessName();
     }
 
+    /*
     @Override
     public String getHtmlDisplayName() {
         try {
@@ -139,6 +148,7 @@ public class ServiceUnitProcessNode extends CasaNode {
             return getBadName();
         }
     }
+    */
 
     @Override
     protected void setupPropertySheet(Sheet sheet) {
@@ -241,12 +251,12 @@ public class ServiceUnitProcessNode extends CasaNode {
     
     @Override
     public Image getIcon(int type) {
-        return ICON;
+        return getFileIconImage((CasaEndpoint) getData());
     }
     
     @Override
     public Image getOpenedIcon(int type) {
-        return ICON;
+        return getIcon(type);
     }
     
     @Override
@@ -257,5 +267,31 @@ public class ServiceUnitProcessNode extends CasaNode {
     @Override
     public boolean isDeletable() {
         return false;
+    }
+        
+    public static Image getFileIconImage(CasaEndpoint endpoint) {
+        Image ret = DEFAULT_ICON;
+        
+        CasaWrapperModel model = (CasaWrapperModel) endpoint.getModel();
+        CasaEndpointRef endpointRef = model.getServiceEngineEndpointRef((CasaEndpoint)endpoint);
+        CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) endpointRef.getParent();
+        String compName = sesu.getComponentName();
+        JbiDefaultComponentInfo defaultCompInfo = 
+                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+        JBIComponentStatus compStatus = defaultCompInfo.getComponentHash().get(compName);
+        
+        URL fileIconURL = null;        
+        if (compStatus != null) {
+            fileIconURL = compStatus.getFileIconURL();
+            if (fileIconURL != null) {
+                try {
+                    ret = ImageIO.read(fileIconURL);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        return ret;
     }
 }

@@ -479,7 +479,7 @@ public class BackgroundStyleEditor extends StyleEditor {
     }//GEN-LAST:event_imageFileFieldActionPerformed
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog(content().fileObject());
+        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog(content().base());
         if(imageUrlDialog.show(this)){
             imageFileField.setText(imageUrlDialog.getImageUrl());
         }

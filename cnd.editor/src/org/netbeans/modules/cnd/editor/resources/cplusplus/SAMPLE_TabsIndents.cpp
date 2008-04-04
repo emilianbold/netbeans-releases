@@ -1,13 +1,17 @@
 #include <Map>
 /*
  */
+namespace A{
 class ClassA : InterfaceA, InterfaceB, IntefaceC {
 public:
 int number;
+enum inner {
+    PLUS, MINUS
+};
 private:
 char** cc;
 public:
-ClassA():cc({ "A", "B", "C", "D" }), number(2){
+ClassA():cc({ "A", "B", "C", "D"}), number(2){
 }
 int method(char* text, int number) {
 if ( text == NULL ) {
@@ -20,14 +24,7 @@ if ( text == NULL ) {
 #else
 #define C2
 #endif
-}
-else if (text[0] == 0) {
-    text = "empty";
-}
-else {
-    number++;
-}
-//label:
+label:
 switch(number) {
 case 1:
     return method("text", 22);
@@ -37,4 +34,12 @@ default:
     return -1;
 }
 }
+else if (text[0] == 0) {
+    text = "empty";
+}
+else {
+    number++;
+}
+}
 };
+}

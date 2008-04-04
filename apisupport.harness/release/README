@@ -752,6 +752,9 @@ interdependent modules can be published to users at once on an update center.
 
 src.dir - "src", module source directory. Avoid overriding.
 
+test.timeout [since 6.1] - timeout (in msec) for unit tests, default 600000 (10
+minutes). A test running longer than this will be halted.
+
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
 in nbjunit.jar; your module; and anything your module compiled against (since

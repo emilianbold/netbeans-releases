@@ -1374,7 +1374,7 @@ made subject to such option by the copyright holder.
 	Tutorial: Developing Application section
    -->
    
-   <testbag testattribs="all,tutorials" executor="ide" name="Tutorial: Developing Application">
+   <testbag testattribs="all,tutorials,dev" executor="ide" name="Tutorial: Developing Application">
         <testset dir="qa-functional/src">
             <patternset>               
               <include name="**/tutorial/developapp/DevelopingApplication*"/>

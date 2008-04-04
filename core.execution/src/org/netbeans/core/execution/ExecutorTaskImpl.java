@@ -78,6 +78,7 @@ final class ExecutorTaskImpl extends ExecutorTask {
     /** @return result 0 means success. Blocking operation. */
     public int result() {
         waitFinished();
+        proc.stop();
         return result;
     }
     // hack off

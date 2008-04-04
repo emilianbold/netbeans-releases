@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.ruby.AstPath;
@@ -66,8 +66,8 @@ import org.openide.util.NbBundle;
  */
 public class RetryOutsideRescue implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.RETRYNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.RETRYNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -75,7 +75,7 @@ public class RetryOutsideRescue implements AstRule {
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
 
-        if (!path.contains(NodeTypes.RESCUEBODYNODE)) {
+        if (!path.contains(NodeType.RESCUEBODYNODE)) {
             OffsetRange range = AstUtilities.getNameRange(node);
 
             range = LexUtilities.getLexerOffsets(info, range);

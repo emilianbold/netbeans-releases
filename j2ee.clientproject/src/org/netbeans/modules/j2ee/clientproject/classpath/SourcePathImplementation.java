@@ -135,6 +135,13 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                                 url = new URL (url.toExternalForm()+'/');   //NOI18N
                             }
                             result.add(ClassPathSupport.createResource(url));
+                             f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/binaries"); //NOI18N
+                            url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
                         }
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);

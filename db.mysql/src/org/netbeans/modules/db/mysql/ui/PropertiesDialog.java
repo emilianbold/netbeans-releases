@@ -44,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.ServerInstance;
 import org.netbeans.modules.db.mysql.ServerNodeProvider;
 import org.netbeans.modules.db.mysql.Utils;
@@ -58,7 +57,8 @@ import org.openide.util.NbBundle;
  * @author David
  */
 public class PropertiesDialog  {
-    private static Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final String HELP_CTX = PropertiesDialog.class.getName();
     
     public enum Tab { BASIC, ADMIN };
     
@@ -75,7 +75,7 @@ public class PropertiesDialog  {
         
         tabbedPane = createTabbedPane(basePanel, adminPanel);
     }
-     
+    
     /**
      * Display the properties dialog
      * 
@@ -133,7 +133,7 @@ public class PropertiesDialog  {
         DialogDescriptor descriptor = new DialogDescriptor(
                 tabbedPane, 
                 getMessage("PropertiesDialog.Title"));
-        descriptor.setHelpCtx(new HelpCtx("MySQL properties"));
+        descriptor.setHelpCtx(new HelpCtx(HELP_CTX));
         
         basePanel.setDialogDescriptor(descriptor);
         adminPanel.setDialogDescriptor(descriptor);
@@ -160,6 +160,8 @@ public class PropertiesDialog  {
     }
 
     private void updateServer() {
+        boolean needsReconnect = needsReconnect();
+        
         server.setHost(basePanel.getHost());
         server.setPort(basePanel.getPort());
         server.setUser(basePanel.getUser());
@@ -173,19 +175,25 @@ public class PropertiesDialog  {
         server.setStopPath(adminPanel.getStopPath());
         server.setStopArgs(adminPanel.getStopArgs());
 
-        // Register the node provider in case it isn't currently registered
-        ServerNodeProvider.getDefault().setRegistered(true);
-        
-
-        try {
-            server.reconnect();
-        } catch ( DatabaseException e ) {
-            Utils.displayError(NbBundle.getMessage(PropertiesDialog.class,
-                    "PropertiesDialog.MSG_UnableToConnect"), e);
+        ServerNodeProvider provider = ServerNodeProvider.getDefault();
+        if ( ! provider.isRegistered() ) {
+            // setRegistered will connect the server
+            provider.setRegistered(true);
+            
+        } else if ( needsReconnect ) {
+            server.connectAsync();
         }
-
     }
 
+    public boolean needsReconnect() {
+        return ( ! Utils.stringEquals(server.getHost(), basePanel.getHost()) ||
+                 ! Utils.stringEquals(server.getPort(), basePanel.getPort()) ||
+                 ! Utils.stringEquals(server.getUser(), basePanel.getUser()) ||
+                 ! Utils.stringEquals(server.getPassword(), 
+                                        basePanel.getPassword()) );
+    }
+
+        
     private static String getMessage(String id) {
         return NbBundle.getMessage(PropertiesDialog.class, id);
     }

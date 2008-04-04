@@ -63,6 +63,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     private final String userName;
     private final String password;
     private final String database;
+    private final boolean jdbc;
 
     /**
      * Creates a new instance of ConfigurableRailsAdapter.
@@ -74,12 +75,16 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
      * i.e. value for the <code>password:</code> attribute.
      * @param database the name of the database to be put into the generated configuration, 
      * i.e. value for the <code>database:</code> attribute.
+     * @param jdbc specifies whether the generated configuration should use JDBC
+     * to access the database. 
      */
-    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, String userName, String password, String database) {
+    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, 
+            String userName, String password, String database, boolean jdbc) {
         this.delegate = delegate;
         this.userName = userName;
         this.password = password;
         this.database = database;
+        this.jdbc = jdbc;
     }
 
     public String railsGenerationParam() {
@@ -89,8 +94,17 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     public void editConfig(RailsProject project) {
         delegate.editConfig(project);
         edit(project.getProjectDirectory());
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (jdbc && jdbcInfo != null) {
+            // try to bundle a driver
+            RailsJdbcConnection.bundleDrivers(project, jdbcInfo.getDriverClass());
+        }
     }
 
+    public String getDisplayName() {
+        return delegate.getDisplayName();
+    }
+    
     private void changeAttribute(Document doc, String attributeName, String attributeValue) throws BadLocationException {
         Parameters.notWhitespace("attributeName", attributeName); //NOI18N
         if (attributeValue == null || "".equals(attributeValue.trim())) {
@@ -125,7 +139,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
                     Document doc = ec.openDocument();
-                    changeAttribute(doc, "database:", database); //NOI18N
+                    setDatabase(doc);
                     changeAttribute(doc, "username:", userName); //NOI18N
                     changeAttribute(doc, "password:", password); //NOI18N
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
@@ -143,5 +157,35 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(ioe);
             }
         }
+    }
+    
+    private void setDatabase(Document databaseYml) throws BadLocationException {
+
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (!jdbc || jdbcInfo == null) {
+            // not using jdbc, so just set the database
+            changeAttribute(databaseYml, "database:", database); //NOI18N
+            return;
+        }
+        // use the default database name if none was specified
+        String dbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:");
+
+        // change the adapter
+        changeAttribute(databaseYml, "adapter:", "jdbc"); //NOI18N
+        // add url and driver
+        RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:");
+        RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:");
+
+        // remove database, since we now have url and driver
+        RailsAdapters.removeProperty(databaseYml, "database:");
+
+    }
+
+    private boolean isEmpty(String str) {
+        return str == null || "".equals(str.trim());
+    }
+    
+    public JdbcInfo getJdbcInfo() {
+        return delegate.getJdbcInfo();
     }
 }

@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestResult;
@@ -81,7 +82,10 @@ import junit.framework.TestResult;
  * @since 1.46
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public final class NbModuleSuite extends Object {
+public class NbModuleSuite {
+
+    private NbModuleSuite() {}
+
     /** Factory method to create wrapper test that knows how to setup proper
      * NetBeans Runtime Container environment. 
      * Wraps the provided class into a test that set ups properly the
@@ -190,9 +194,26 @@ public final class NbModuleSuite extends Object {
 
             URL[] testCP = preparePath(clazz);
             JUnitLoader testLoader = new JUnitLoader(testCP, global, NbTestSuite.class.getClassLoader());
-            Class<?> sndClazz = testLoader.loadClass(clazz.getName());
-
-            new NbTestSuite(sndClazz).run(result);
+            try {
+                testLoader.loadClass("junit.framework.Test");
+                Class<?> sndClazz = testLoader.loadClass(clazz.getName());
+                new NbTestSuite(sndClazz).run(result);
+            } catch (ClassNotFoundException ex) {
+                result.addError(this, ex);
+            }
+            
+            Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
+            Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
+            Method exit = lifeClazz.getMethod("exit");
+            Object life = getDefault.invoke(null);
+            if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
+                System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
+                exit.invoke(life);
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                    }
+                });
+            }
         }
 
         private URL[] preparePath(Class<?>... classes) {

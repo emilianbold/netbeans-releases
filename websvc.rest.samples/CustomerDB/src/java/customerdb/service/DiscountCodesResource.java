@@ -48,11 +48,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
-import javax.ws.rs.UriParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import customerdb.Customer;
 import customerdb.converter.DiscountCodesConverter;
@@ -61,12 +61,12 @@ import customerdb.converter.DiscountCodeConverter;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @Path("/discountCodes/")
 public class DiscountCodesResource {
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of DiscountCodesResource */
@@ -128,7 +128,7 @@ public class DiscountCodesResource {
      * @return an instance of DiscountCodeResource
      */
     @Path("{discountCode}/")
-    public DiscountCodeResource getDiscountCodeResource(@UriParam("discountCode")
+    public DiscountCodeResource getDiscountCodeResource(@PathParam("discountCode")
     String id) {
         return new DiscountCodeResource(id, context);
     }

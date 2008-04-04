@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
@@ -371,6 +372,68 @@ public class ActionsTest extends NbTestCase {
         Actions.connect(jmi, action, false);
         assertEquals(3, tc.getConnectCalled());
         tc.setActive(false);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Object peer(Component menu) {
+        return menu.getPeer();
+    }
+    
+    public void testPopupTextIsTaken() throws Exception {
+        Action action = new ActionsTest.TestAction();
+        JMenuItem item = new JMenuItem();
+        JMenu jmenu = new JMenu();
+        jmenu.addNotify();
+        assertNotNull("Peer created", peer(jmenu));
+        jmenu.getPopupMenu().addNotify();
+        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+
+        action.putValue("popupText", "&Ahoj");
+        action.putValue("menuText", "&Ble");
+        action.putValue(action.NAME, "&Mle");
+        
+        Actions.connect(item, action, true);
+        
+        assertEquals('A', item.getMnemonic());
+        assertEquals("Ahoj", item.getText());
+    }
+
+    public void testMenuTextIsTaken() throws Exception {
+        Action action = new ActionsTest.TestAction();
+        JMenuItem item = new JMenuItem();
+        JMenu jmenu = new JMenu();
+        jmenu.addNotify();
+        assertNotNull("Peer created", peer(jmenu));
+        jmenu.getPopupMenu().addNotify();
+        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+
+        //action.putValue("popupText", "&Ahoj");
+        action.putValue("menuText", "&Ble");
+        action.putValue(action.NAME, "&Mle");
+        
+        Actions.connect(item, action, true);
+        
+        assertEquals('B', item.getMnemonic());
+        assertEquals("Ble", item.getText());
+    }
+    
+    public void testActionNameIsTaken() throws Exception {
+        Action action = new ActionsTest.TestAction();
+        JMenuItem item = new JMenuItem();
+        JMenu jmenu = new JMenu();
+        jmenu.addNotify();
+        assertNotNull("Peer created", peer(jmenu));
+        jmenu.getPopupMenu().addNotify();
+        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+
+        //action.putValue("popupText", "&Ahoj");
+        //action.putValue("menuText", "&Ble");
+        action.putValue(action.NAME, "&Mle");
+        
+        Actions.connect(item, action, true);
+        
+        assertEquals('M', item.getMnemonic());
+        assertEquals("Mle", item.getText());
     }
     
     

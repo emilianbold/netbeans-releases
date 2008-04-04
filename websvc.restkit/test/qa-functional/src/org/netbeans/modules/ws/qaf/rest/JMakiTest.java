@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ws.qaf.rest;
@@ -51,19 +51,17 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Test jMaki client stub.
- * 
+ *
  * Running of this test suite can be influenced by following system properties:
  * "plugins.jmaki.skip=true"
  *    - skipping this suite and related preparation steps (un/installing of the jMaki plugin)
  * "plugins.jmaki.nbm=/path/to/jmaki.nbm"
  *    - where to find jmaki.nbm (default is to download nbm from:
- *      https://ajax.dev.java.net/files/documents/3115/86078/org-netbeans-modules-sun-jmaki.nbm)
- * "plugins.rest.forceUninstall=true"
- *    - unistall jMaki plugin even if it has not been installed by tests
- * 
+ *      https://ajax.dev.java.net/files/documents/3115/90944/org-netbeans-modules-sun-jmaki.nbm)
+ *
  * @author lukas
  */
-public class JMakiTest extends CStubsTSuite {
+public class JMakiTest extends CStubsTest {
 
     public JMakiTest(String name) {
         super(name);
@@ -71,11 +69,13 @@ public class JMakiTest extends CStubsTSuite {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
-        try {
-            Class.forName("org.netbeans.modules.sun.jmaki.Installer");
-        } catch (ClassNotFoundException ex) {
-            fail("jMaki is not installed.");
+        if (!Boolean.getBoolean("plugins.jmaki.skip")) {
+            super.setUp();
+            try {
+                Class.forName("org.netbeans.modules.sun.jmaki.Installer");
+            } catch (ClassNotFoundException ex) {
+                fail("jMaki is not installed.");
+            }
         }
     }
 
@@ -96,11 +96,14 @@ public class JMakiTest extends CStubsTSuite {
         addJMakiFrameWork();
         createStubs("FromEntities"); //NOI18N
     }
-    
+
+    /**
+     * Dummy test for the case when we know that jMaki related tests will not run
+     */
     public void testJMakiTestsSkipped() {
         //nothing to do
     }
-    
+
     private void addJMakiFrameWork() {
         // open project properties
         getProjectRootNode().properties();

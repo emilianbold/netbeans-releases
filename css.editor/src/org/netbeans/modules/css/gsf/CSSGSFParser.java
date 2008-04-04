@@ -57,6 +57,7 @@ import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
 
@@ -143,6 +144,15 @@ public class CSSGSFParser implements Parser, PositionManager {
 
                 result = new CSSParserResult(this, file, null);
 
+                job.listener.error(error);
+            } catch (TokenMgrError tme) {
+                //a bad things happened during the lexical analysis -> report lexical analysis error
+                Error error =
+                        new DefaultError(tme.getMessage(), tme.getLocalizedMessage(), null, file.getFileObject(),
+                        0, 0, Severity.ERROR);
+                
+                result = new CSSParserResult(this, file, null);
+                
                 job.listener.error(error);
             } catch (IOException ioe) {
                 job.listener.exception(ioe);

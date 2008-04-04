@@ -38,7 +38,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditRegions;
@@ -76,8 +76,8 @@ public class NestedLocal implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.FORNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.FORNODE);
     }
 
     public void cancel() {
@@ -101,7 +101,7 @@ public class NestedLocal implements AstRule {
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
 
-        if (node.nodeId == NodeTypes.FORNODE) {
+        if (node.nodeId == NodeType.FORNODE) {
             // Check the children and see if we have a LocalAsgnNode; tbese are the
             // loop variables which are NOT local to the for block; if found, go and see
             // if it's a reuse!
@@ -142,7 +142,7 @@ public class NestedLocal implements AstRule {
             return false;
         }
 
-        if (node.nodeId == NodeTypes.LOCALVARNODE || node.nodeId == NodeTypes.LOCALASGNNODE) {
+        if (node.nodeId == NodeType.LOCALVARNODE || node.nodeId == NodeType.LOCALASGNNODE) {
             if (name.equals(((INameNode)node).getName())) {
                 return true;
             }

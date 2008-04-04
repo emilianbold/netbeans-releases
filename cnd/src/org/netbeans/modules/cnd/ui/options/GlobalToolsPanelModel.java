@@ -66,21 +66,28 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
 //    protected void setFortranCompilerName(String name) {
 //        CppSettings.getDefault().setFortranCompilerName(name);
 //    }
+    public void setMakeRequired(boolean value) {
+        
+    }
+    
+    public boolean isMakeRequired() {
+        return true;
+    }
     
     public boolean isGdbRequired() {
-        return CppSettings.getDefault().isGdbRequired();
+        return true;
     }
     
     public void setGdbRequired(boolean value) {
-        CppSettings.getDefault().setGdbRequired(value);
+//        CppSettings.getDefault().setGdbRequired(value);
     }
-    
-    public void setGdbEnabled(boolean enabled) {
-        // Do nothing
-    }
+//    
+//    public void setGdbEnabled(boolean enabled) {
+//        // Do nothing
+//    }
     
     public boolean isCRequired() {
-        return false; //return CppSettings.getDefault().isCRequired();
+        return true; //return CppSettings.getDefault().isCRequired();
     }
     
     public void setCRequired(boolean value) {
@@ -88,7 +95,7 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isCppRequired() {
-        return false; //return CppSettings.getDefault().isCppRequired();
+        return true; //return CppSettings.getDefault().isCppRequired();
     }
     
     public void setCppRequired(boolean value) {
@@ -96,7 +103,8 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean isFortranRequired() {
-        return false; //return CppSettings.getDefault().isFortranRequired();
+        return CppSettings.getDefault().isFortranEnabled();
+        //return CppSettings.getDefault().isFortranRequired();
     }
     
     public void setFortranRequired(boolean value) {
@@ -104,6 +112,26 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     }
     
     public boolean showRequiredTools() {
+        return false;
+    }
+    
+    public void setRequiredBuildTools(boolean enabled) {
+ 
+    }
+    
+    public void setShowRequiredBuildTools(boolean enabled) {
+        
+    }
+    
+    public boolean showRequiredBuildTools() {
+        return false;
+    }
+    
+    public void setShowRequiredDebugTools(boolean enabled) {
+        
+    }
+    
+    public boolean showRequiredDebugTools() {
         return false;
     }
 }

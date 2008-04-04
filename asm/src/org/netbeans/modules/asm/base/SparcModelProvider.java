@@ -55,11 +55,11 @@ public class SparcModelProvider extends BaseModelProvider {
     }
     
     private SparcModelProvider() {   
-        super("sparc5.xml");
+        super("sparc5.xml"); // NOI18N
     }
                
     @Override
     public String toString() {
-        return "SPARC";
+        return "SPARC"; // NOI18N
     }
 }

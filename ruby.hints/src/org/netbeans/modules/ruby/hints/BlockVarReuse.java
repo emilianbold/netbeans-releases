@@ -36,7 +36,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditRegions;
@@ -76,8 +76,8 @@ public class BlockVarReuse implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.ITERNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.ITERNODE);
     }
 
     public void cancel() {
@@ -100,14 +100,14 @@ public class BlockVarReuse implements AstRule {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
-        if (node.nodeId == NodeTypes.ITERNODE) {
+        if (node.nodeId == NodeType.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
             @SuppressWarnings(value = "unchecked")
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child.nodeId == NodeTypes.LOCALASGNNODE) {
+                if (child.nodeId == NodeType.LOCALASGNNODE) {
 
                     OffsetRange range = AstUtilities.getNameRange(child);
                     List<Fix> fixList = new ArrayList<Fix>(2);
@@ -167,7 +167,7 @@ public class BlockVarReuse implements AstRule {
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
-            if ((node.nodeId == NodeTypes.LOCALASGNNODE || node.nodeId == NodeTypes.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
+            if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
@@ -181,12 +181,12 @@ public class BlockVarReuse implements AstRule {
             for (Node child : list) {
 
                 // Skip inline method defs
-                if (child.nodeId == NodeTypes.DEFNNODE || child.nodeId == NodeTypes.DEFSNODE) {
+                if (child.nodeId == NodeType.DEFNNODE || child.nodeId == NodeType.DEFSNODE) {
                     continue;
                 }
 
                 // Skip SOME blocks:
-                if (child.nodeId == NodeTypes.ITERNODE) {
+                if (child.nodeId == NodeType.ITERNODE) {
                     // Skip only the block which the fix is applying to;
                     // the local variable could be aliased in other blocks as well
                     // and we need to keep the program correct!

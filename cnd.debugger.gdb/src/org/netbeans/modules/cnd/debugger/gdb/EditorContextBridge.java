@@ -89,8 +89,8 @@ public class EditorContextBridge {
         return getContext().showSource(url, lineNumber, timeStamp);
     }
     
-    public static boolean showSource(CallStackFrame csf) {
-        if (Disassembly.isInDisasm()) {
+    public static boolean showSource(CallStackFrame csf, boolean inDis) {
+        if (inDis) {
             return showDis(csf);
         } else {
             return showCode(csf);
@@ -103,7 +103,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
@@ -200,7 +200,7 @@ public class EditorContextBridge {
         if (fullname != null) {
             File file = new File(fullname);
 	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 if (fo != null) {
                     try {
                         return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
@@ -370,11 +370,31 @@ public class EditorContextBridge {
     }
 
     
-    public static boolean showSource(LineBreakpoint b, Object timeStamp) {
-        if (b.getLineNumber() < 1) {
-            return EditorContextBridge.showSource(b.getURL(), 1, timeStamp);
+    public static boolean showSource(GdbBreakpoint b, Object timeStamp) {
+        if (b instanceof LineBreakpoint) {
+            if (b.getLineNumber() < 1) {
+                return EditorContextBridge.showSource(b.getURL(), 1, timeStamp);
+            }
+            return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
+        } else if (b instanceof AddressBreakpoint) {
+            FileObject fo = Disassembly.getFileObject();
+            if (fo != null) {
+                try {
+                    Disassembly dis = Disassembly.getCurrent();
+                    if (dis != null) {
+                        int line = dis.getAddressLine(((AddressBreakpoint)b).getAddress());
+                        if (line != -1) {
+                            return getContext().showSource(DataObject.find(fo), dis.getAddressLine(((AddressBreakpoint)b).getAddress()), null);
+                        } else {
+                            Disassembly.open();
+                        }
+                    }
+                } catch (DataObjectNotFoundException dex) {
+                    // do nothing
+                }
+            }
         }
-        return EditorContextBridge.showSource(b.getURL(), b.getLineNumber(), timeStamp);
+        return false;
     }
 
     public static String getDefaultType() {
@@ -415,7 +435,7 @@ public class EditorContextBridge {
                              EditorContext.DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE;
             }
             try {
-                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, null);
+                return annotate(DataObject.find(Disassembly.getFileObject()), lineNumber, annotationType, b);
             } catch (DataObjectNotFoundException doe) {
                 doe.printStackTrace();
                 return null;
@@ -430,7 +450,7 @@ public class EditorContextBridge {
             }
         }
 
-        return annotate(url, lineNumber, annotationType, null);
+        return annotate(url, lineNumber, annotationType, b);
     }
 
     public static String getRelativePath(String className) {

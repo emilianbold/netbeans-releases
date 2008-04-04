@@ -50,7 +50,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -61,12 +60,12 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
+import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -129,7 +128,6 @@ import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -138,6 +136,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -425,6 +424,7 @@ public final class WebProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -468,8 +468,8 @@ public final class WebProject implements Project, AntProjectListener {
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
-            QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING),
-            new WebTemplateAttributesProvider(this.helper),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -740,7 +740,7 @@ public final class WebProject implements Project, AntProjectListener {
                     }
                 });
             } else {
-                genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
                                                   false);
             }
@@ -880,6 +880,12 @@ public final class WebProject implements Project, AntProjectListener {
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesSupport.isBroken(WebProject.this)) {
+                apiWebServicesSupport.showBrokenAlert(WebProject.this);
+            }
+            else if(apiWebServicesClientSupport.isBroken(WebProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(WebProject.this);
+            }
             webPagesFileWatch.init();
             webInfFileWatch.init();
         }
@@ -897,11 +903,16 @@ public final class WebProject implements Project, AntProjectListener {
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
 
-            //update lib references in private properties
-            ArrayList l = new ArrayList();
+            //update lib references in project properties
+            ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            
+            // #129316
+            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+            ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), WebProjectProperties.WAR_CONTENT_ADDITIONAL,  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -1002,7 +1013,7 @@ public final class WebProject implements Project, AntProjectListener {
             // unregister project's classpaths to GlobalPathRegistry
             GsfClassPathProviderImpl gsfCpProvider = lookup.lookup(GsfClassPathProviderImpl.class);
             if (gsfCpProvider != null) {
-                //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
+                org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.BOOT));
                 org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE));
                 //org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry.getDefault().unregister(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE, gsfCpProvider.getProjectClassPaths(org.netbeans.modules.gsfpath.api.classpath.ClassPath.COMPILE));
             }
@@ -1112,7 +1123,9 @@ public final class WebProject implements Project, AntProjectListener {
         "Templates/Persistence/JsfFromDB", // NOI18N                    
         "Templates/WebServices/WebService.java",    // NOI18N
         "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
-        "Templates/WebServices/WebServiceClient",   // NOI18N                    
+        "Templates/WebServices/WebServiceClient",   // NOI18N  
+        "Templates/WebServices/RestServicesFromEntities", // NOI18N
+        "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
         "Templates/Other/Folder",                   // NOI18N
     };
 

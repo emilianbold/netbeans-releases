@@ -48,14 +48,13 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
@@ -82,8 +81,8 @@ import org.openide.util.NbBundle;
  */
 public class ConvertIfToUnless implements AstRule {
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.IFNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.IFNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -103,14 +102,14 @@ public class ConvertIfToUnless implements AstRule {
         }
         
         // Can't convert if !x/elseif blocks
-        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeTypes.IFNODE) {
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeType.IFNODE) {
             return;
         }
         
-        if (condition.nodeId == NodeTypes.NOTNODE ||
-                (condition.nodeId == NodeTypes.NEWLINENODE &&
+        if (condition.nodeId == NodeType.NOTNODE ||
+                (condition.nodeId == NodeType.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
-                ((Node)condition.childNodes().get(0)).nodeId == NodeTypes.NOTNODE)) {
+                ((Node)condition.childNodes().get(0)).nodeId == NodeType.NOTNODE)) {
             try {
                 BaseDocument doc = (BaseDocument) info.getDocument();
                 int keywordOffset = findKeywordOffset(info, ifNode);
@@ -278,11 +277,11 @@ public class ConvertIfToUnless implements AstRule {
                 BaseDocument doc = (BaseDocument) info.getDocument();
 
                 Node notNode = ifNode.getCondition();
-                if (notNode.nodeId != NodeTypes.NOTNODE) {
-                    assert notNode.nodeId == NodeTypes.NEWLINENODE;
+                if (notNode.nodeId != NodeType.NOTNODE) {
+                    assert notNode.nodeId == NodeType.NEWLINENODE;
                     Node firstChild = notNode.childNodes().size() == 1 ?
                         ((Node)notNode.childNodes().get(0)) : null;
-                    if (firstChild != null && firstChild.nodeId == NodeTypes.NOTNODE) {
+                    if (firstChild != null && firstChild.nodeId == NodeType.NOTNODE) {
                         notNode = firstChild;
                     } else {
                         // Unexpected!
@@ -291,6 +290,8 @@ public class ConvertIfToUnless implements AstRule {
                     }
 
                 }
+                
+                int deleteSize = 1;
 
                 int astNotOffset = AstUtilities.getRange(notNode).getStart();
                 int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
@@ -313,8 +314,29 @@ public class ConvertIfToUnless implements AstRule {
                     String line = doc.getText(lexNotOffset, lineEnd-lexNotOffset);
                     int lineOffset = line.indexOf("!=");
                     if (lineOffset == -1) {
-                        assert false : line;
-                        return null;
+                        lineOffset = line.indexOf("!~");
+                        if (lineOffset != -1) {
+                            lexNotOffset += lineOffset;
+                        } else {
+                            boolean ok = false;
+                            if (lexNotOffset < doc.getLength()-3) {
+                                String not = doc.getText(lexNotOffset, 3);
+                                if ("not".equals(not)) { // NOI18N
+                                    deleteSize = 3;
+                                    if (lexNotOffset < doc.getLength()-4) {
+                                        not = doc.getText(lexNotOffset, 4);
+                                        if ("not ".equals(not)) {
+                                            deleteSize = 4;
+                                        }
+                                    }
+                                    ok = true;
+                                }
+                            }
+                            if (!ok) {
+                                assert false : line;
+                                return null;
+                            }
+                        }
                     } else {
                         lexNotOffset += lineOffset;
                         isEqualComparison = true;
@@ -337,8 +359,8 @@ public class ConvertIfToUnless implements AstRule {
                     // Convert != into ==
                     edits.replace(lexNotOffset, 1, "=", false, 0);
                 } else {
-                    // Just remove ! from the expression
-                    edits.replace(lexNotOffset, 1, null, false, 0);
+                    // Just remove ! from the expression (or "not ")
+                    edits.replace(lexNotOffset, deleteSize, null, false, 0);
                 }
                 if (isIf) {
                     edits.replace(keywordOffset, 2, "unless", false, 1);

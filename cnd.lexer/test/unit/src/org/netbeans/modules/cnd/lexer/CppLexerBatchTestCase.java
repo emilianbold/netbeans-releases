@@ -453,7 +453,7 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZNED, "signed");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -594,7 +594,7 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZNED, "signed");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");

@@ -8,6 +8,8 @@ package org.netbeans.modules.db.mysql.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -40,20 +42,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     final ServerInstance server;
     private Color nbErrorForeground;
 
-    private void validatePanel() {
+    private void validatePanel(String databaseName) {
         if (descriptor == null) {
             return;
         }
         
         String error = null;
-        
+
         comboUsers.setEnabled(this.isGrantAccess());
-        
-        if ( getDatabaseName() == null || getDatabaseName().equals("")) {
+                
+        if ( Utils.isEmpty(databaseName) ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
                         "CreateDatabasePanel.MSG_SpecifyDatabase");
         }
-        
+
         if (error != null) {
             messageLabel.setText(error);
             descriptor.setValid(false);
@@ -62,8 +64,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             descriptor.setValid(true);
         }
     }
-    
-    public static boolean showCreateDatabaseDialog(ServerInstance server) {
+        
+    public static DatabaseConnection showCreateDatabaseDialog(ServerInstance server) {
         assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
@@ -83,7 +85,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
             // The user cancelled
             if (!DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                return false;
+                return null;
+            }
+            
+            if ( Utils.isEmpty(panel.getDatabaseName())) {
+                Utils.displayErrorMessage(
+                    NbBundle.getMessage(CreateDatabasePanel.class,
+                    "CreateDatabasePanel.MSG_EmptyDatabaseName"));
+                continue;
             }
                         
             return createDatabase(panel.getServer(), panel.getDatabaseName(),
@@ -102,44 +111,48 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
      *      set to true if the user wants to create and register a
      *      DatabaseConnection for this database in the Database Explorer
      * 
-     * @return true to indicate the dialog can be exited, false to indicate
-     *      that the dialog should stay displayed (e.g. we want the user
-     *      to be able to try again).
+     * @return the database connection to the newly created database or 
+     *         <code>null</code> if a connection to the database was not created.
      */
-    private static boolean createDatabase(ServerInstance server,
+    private static DatabaseConnection createDatabase(ServerInstance server,
             String dbname, DatabaseUser grantUser) {
         
         boolean dbCreated = false;
+        DatabaseConnection result = null;
         try {
             if ( ! checkDeleteExistingDatabase(server, dbname) ) {
-                return true;
+                return null;
             }
             
             server.createDatabase(dbname);
             
             dbCreated = true;
             
+            String user;
             if ( grantUser != null ) {
                 server.grantFullDatabaseRights(dbname, grantUser);
+                user = grantUser.getUser();
+            } else {
+                user = server.getUser();
             }
                
-            DatabaseConnection dbconn = 
-                    createConnection(server, dbname, grantUser.getUser());
+            result = createConnection(server, dbname, user);
             
-            if ( dbconn != null && ServerInstance.isSampleName(dbname) ) {
-                server.createSample(dbname, dbconn);
+            if ( result != null && ServerInstance.isSampleName(dbname) ) {
+                server.createSample(dbname, result);
             }
         } catch ( DatabaseException ex ) {
             displayCreateFailure(server, ex, dbname, dbCreated);
-            return false;
+            return null;
         }
         
-        return true;
+        return result;
     }
         
     private static void displayCreateFailure(ServerInstance server,
             DatabaseException ex, String dbname, boolean dbCreated) {
-        Utils.displayError("CreateDatabasePanel.MSG_CreateFailed", ex);
+        Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
+                "CreateDatabasePanel.MSG_CreateFailed"), ex);
 
         if ( dbCreated ) {
             NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
@@ -184,17 +197,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     dbname),
                 NbBundle.getMessage(CreateDatabasePanel.class,
                     "CreateDatabasePanel.STR_DatabaseExistsTitle"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                NotifyDescriptor.YES_NO_OPTION);
         
         Object response =  DialogDisplayer.getDefault().notify(ndesc);
         
-        if ( response == NotifyDescriptor.CANCEL_OPTION ) {
+        if ( response == NotifyDescriptor.NO_OPTION ) {
             return false;
-        } else if ( response == NotifyDescriptor.YES_OPTION) {
+        } else {
             server.dropDatabase(dbname);
+            return true;
         }
-        
-        return true;        
     }
     
     private static DatabaseConnection createConnection(
@@ -237,6 +249,31 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         comboDatabaseName.setModel(new DatabaseComboModel());
         
+        comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
+            new KeyListener() {
+
+            public void keyTyped(KeyEvent event) {
+                // Get the actual key.  apparently getItem() doesn't return the current
+                // string typed until *after* this event finishes :(
+                String keyStr = Character.toString(event.getKeyChar()).trim();
+                String dbname;
+                if ( Utils.isEmpty(keyStr)) {
+                    dbname = comboDatabaseName.getEditor().getItem().toString().trim();
+                } else {
+                    // We know the database name has at least this character in it
+                    dbname = keyStr;
+                }
+                
+                validatePanel(dbname);
+            }
+
+            public void keyPressed(KeyEvent event) {
+            }
+
+            public void keyReleased(KeyEvent event) {
+            }
+        });
+                        
         comboUsers.setModel(new UsersComboModel(server));
         
         if ( comboUsers.getItemCount() == 0 ) {
@@ -267,7 +304,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private void setDialogDescriptor(DialogDescriptor desc) {
         this.descriptor = desc;
-        validatePanel();
+        validatePanel("");
     }
     
     private void setGrantAccess(boolean grant) {
@@ -300,7 +337,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         comboUsers = new javax.swing.JComboBox();
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
 
         comboDatabaseName.setEditable(true);
         comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -319,9 +356,19 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 comboDatabaseNameFocusLost(evt);
             }
         });
+        comboDatabaseName.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                comboDatabaseNameInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
         comboDatabaseName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 comboDatabaseNameKeyTyped(evt);
+            }
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                comboDatabaseNameKeyPressed(evt);
             }
         });
         comboDatabaseName.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -330,9 +377,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.jLabel1.text")); // NOI18N
 
-        chkGrantAccess.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(chkGrantAccess, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.text")); // NOI18N
         chkGrantAccess.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chkGrantAccessItemStateChanged(evt);
@@ -376,14 +423,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         );
 
         messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
+        chkGrantAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-    validatePanel();
+
 }//GEN-LAST:event_comboDatabaseNameActionPerformed
 
 private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
-    validatePanel();
+    validatePanel(evt.getItem().toString().trim());
 }//GEN-LAST:event_comboDatabaseNameItemStateChanged
 
 private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_comboDatabaseNameMouseReleased
@@ -405,6 +453,14 @@ private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN
         comboUsers.setEnabled(false);
     }
 }//GEN-LAST:event_chkGrantAccessItemStateChanged
+
+private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_comboDatabaseNameKeyPressed
+
+}//GEN-LAST:event_comboDatabaseNameKeyPressed
+
+private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_comboDatabaseNameInputMethodTextChanged
+
+}//GEN-LAST:event_comboDatabaseNameInputMethodTextChanged
 
 
 
@@ -483,9 +539,10 @@ private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN
                     users.remove(rootUser);
                 }
             } catch ( DatabaseException dbe )  {
-                LOGGER.log(Level.WARNING, null, dbe);
-                Utils.displayError("CreateDatabasePanel.MSG_UnableToGetUsers", 
-                        dbe);
+                // This can be caused by permission problems.  Log the error
+                // and continue with an empty user list
+                LOGGER.log(Level.INFO, null, dbe);
+                users.clear();
             }
         }
 

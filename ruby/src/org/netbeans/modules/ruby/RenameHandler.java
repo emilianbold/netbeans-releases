@@ -53,7 +53,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -121,13 +121,13 @@ public class RenameHandler implements InstantRenamer {
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
 
-        if (closest.nodeId == NodeTypes.LOCALVARNODE || closest.nodeId == NodeTypes.LOCALASGNNODE ||
-                closest.nodeId == NodeTypes.DVARNODE || closest.nodeId == NodeTypes.DASGNNODE ||
-                closest.nodeId == NodeTypes.BLOCKARGNODE) {
+        if (closest.nodeId == NodeType.LOCALVARNODE || closest.nodeId == NodeType.LOCALASGNNODE ||
+                closest.nodeId == NodeType.DVARNODE || closest.nodeId == NodeType.DASGNNODE ||
+                closest.nodeId == NodeType.BLOCKARGNODE) {
             return true;
         }
 
-        if (closest.nodeId == NodeTypes.ARGUMENTNODE) {
+        if (closest.nodeId == NodeType.ARGUMENTNODE) {
             Node parent = path.leafParent();
 
             if (parent != null) {
@@ -141,25 +141,25 @@ public class RenameHandler implements InstantRenamer {
         //explanationRetValue[0] = NbBundle.getMessage(RenameHandler.class, "NoRename");
         //return false;
         switch (closest.nodeId) {
-        case NodeTypes.INSTASGNNODE:
-        case NodeTypes.INSTVARNODE:
-        case NodeTypes.CLASSVARDECLNODE:
-        case NodeTypes.CLASSVARNODE:
-        case NodeTypes.CLASSVARASGNNODE:
-        case NodeTypes.GLOBALASGNNODE:
-        case NodeTypes.GLOBALVARNODE:
-        case NodeTypes.CONSTDECLNODE:
-        case NodeTypes.CONSTNODE:
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE:
-        case NodeTypes.FCALLNODE:
-        case NodeTypes.CALLNODE:
-        case NodeTypes.VCALLNODE:
-        case NodeTypes.ARGUMENTNODE:
-        case NodeTypes.COLON2NODE:
-        case NodeTypes.COLON3NODE:
-        case NodeTypes.ALIASNODE:
-        case NodeTypes.SYMBOLNODE:
+        case INSTASGNNODE:
+        case INSTVARNODE:
+        case CLASSVARDECLNODE:
+        case CLASSVARNODE:
+        case CLASSVARASGNNODE:
+        case GLOBALASGNNODE:
+        case GLOBALVARNODE:
+        case CONSTDECLNODE:
+        case CONSTNODE:
+        case DEFNNODE:
+        case DEFSNODE:
+        case FCALLNODE:
+        case CALLNODE:
+        case VCALLNODE:
+        case ARGUMENTNODE:
+        case COLON2NODE:
+        case COLON3NODE:
+        case ALIASNODE:
+        case SYMBOLNODE:
             // TODO - what about the string arguments in an alias node? Gotta check those
             return true;
         }
@@ -197,7 +197,7 @@ public class RenameHandler implements InstantRenamer {
                 // Use parent, possibly Grand Parent if we have a newline node in the way
                 method = path.leafParent();
 
-                if (method.nodeId == NodeTypes.NEWLINENODE) {
+                if (method.nodeId == NodeType.NEWLINENODE) {
                     method = path.leafGrandParent();
                 }
 
@@ -207,14 +207,14 @@ public class RenameHandler implements InstantRenamer {
             }
 
             addLocals(info, method, name, regions);
-        } else if (closest.nodeId == NodeTypes.DVARNODE || closest.nodeId == NodeTypes.DASGNNODE) {
+        } else if (closest.nodeId == NodeType.DVARNODE || closest.nodeId == NodeType.DASGNNODE) {
             // A dynamic variable read or assignment
             String name = ((INameNode)closest).getName();
             List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
             for (Node block : applicableBlocks) {
                 addDynamicVars(info, block, name, regions);
             }
-        } else if (closest.nodeId == NodeTypes.ARGUMENTNODE || closest.nodeId == NodeTypes.BLOCKARGNODE) {
+        } else if (closest.nodeId == NodeType.ARGUMENTNODE || closest.nodeId == NodeType.BLOCKARGNODE) {
             // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
             String name = ((INameNode)closest).getName();
 
@@ -234,7 +234,7 @@ public class RenameHandler implements InstantRenamer {
                         // Use parent, possibly Grand Parent if we have a newline node in the way
                         method = path.leafParent();
 
-                        if (method.nodeId == NodeTypes.NEWLINENODE) {
+                        if (method.nodeId == NodeType.NEWLINENODE) {
                             method = path.leafGrandParent();
                         }
 
@@ -253,7 +253,7 @@ public class RenameHandler implements InstantRenamer {
 
     @SuppressWarnings("unchecked")
     private void addLocals(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
-        if (node.nodeId == NodeTypes.LOCALVARNODE) {
+        if (node.nodeId == NodeType.LOCALVARNODE) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -261,7 +261,7 @@ public class RenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
-        } else if (node.nodeId == NodeTypes.LOCALASGNNODE) {
+        } else if (node.nodeId == NodeType.LOCALASGNNODE) {
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 // Adjust end offset to only include the left hand size
@@ -271,10 +271,10 @@ public class RenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
-        } else if (node.nodeId == NodeTypes.ARGSNODE) {
+        } else if (node.nodeId == NodeType.ARGSNODE) {
             ArgsNode an = (ArgsNode)node;
 
-            if (an.getArgsCount() > 0) {
+            if (an.getRequiredArgsCount() > 0) {
                 List<Node> args = (List<Node>)an.childNodes();
 
                 for (Node arg : args) {
@@ -282,7 +282,7 @@ public class RenameHandler implements InstantRenamer {
                         List<Node> args2 = (List<Node>)arg.childNodes();
 
                         for (Node arg2 : args2) {
-                            if (arg2.nodeId == NodeTypes.ARGUMENTNODE) {
+                            if (arg2.nodeId == NodeType.ARGUMENTNODE) {
                                 if (((ArgumentNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
                                     range = LexUtilities.getLexerOffsets(info, range);
@@ -290,7 +290,7 @@ public class RenameHandler implements InstantRenamer {
                                         ranges.add(range);
                                     }
                                 }
-                            } else if (arg2.nodeId == NodeTypes.LOCALASGNNODE) {
+                            } else if (arg2.nodeId == NodeType.LOCALASGNNODE) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
                                     OffsetRange range = AstUtilities.getRange(arg2);
                                     range = LexUtilities.getLexerOffsets(info, range);
@@ -359,7 +359,7 @@ public class RenameHandler implements InstantRenamer {
     @SuppressWarnings("unchecked")
     private void addDynamicVars(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
         switch (node.nodeId) {
-        case NodeTypes.DVARNODE:
+        case DVARNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -368,7 +368,7 @@ public class RenameHandler implements InstantRenamer {
                 }
             }
             break;
-        case  NodeTypes.DASGNNODE:
+        case DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 // TODO - AstUtility for this
@@ -386,13 +386,13 @@ public class RenameHandler implements InstantRenamer {
 
         for (Node child : list) {
             switch (child.nodeId) {
-            case NodeTypes.ITERNODE:
-            //case NodeTypes.BLOCKNODE:
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case ITERNODE:
+            //case BLOCKNODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 continue;
             }
 

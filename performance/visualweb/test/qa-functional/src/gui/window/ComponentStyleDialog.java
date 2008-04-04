@@ -68,7 +68,7 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -81,7 +81,7 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Button"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -95,19 +95,19 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
     }
     
     public void testButtonStyleDialog() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "woodstock Basic"; // NOI18N
         componentName = "Button"; // NOI18N
         doMeasurement();
     }
     
     public void testTableStyleDialog() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Table"; // NOI18N
         doMeasurement();
     }
     
     public void testLisbBoxStyleDialog() {
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
         doMeasurement();
     }
@@ -120,6 +120,7 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
         property = new Property(pto,"style"); // NOI18N
     }
     
+    @Override
     public ComponentOperator open() {
         log(":: open");
         property.openEditor();

@@ -98,6 +98,10 @@ public class ThreadsTableModel implements TableModel, Constants {
             final Object object, 
             final String column) throws UnknownTypeException {
         
+        if (object instanceof ThreadsTreeModel.Dummy) {
+            return true;
+        }
+        
         if (column.equals(ThreadsColumnModel_State.COLUMN_ID)) {
             if (object instanceof Branch) {
                 return true;

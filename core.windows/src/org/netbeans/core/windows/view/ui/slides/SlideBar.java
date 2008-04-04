@@ -263,8 +263,9 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }
     
     public void userToggledTransparency(int tabIndex) {
-        if( tabIndex == getSelectionModel().getSelectedIndex() )
-            commandMgr.toggleTransparency();
+        if( tabIndex != getSelectionModel().getSelectedIndex() )
+            getSelectionModel().setSelectedIndex( tabIndex );
+        commandMgr.toggleTransparency( tabIndex );
     }
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {

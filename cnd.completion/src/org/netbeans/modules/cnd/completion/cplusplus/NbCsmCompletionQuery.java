@@ -71,11 +71,11 @@ import org.openide.loaders.DataObject;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
-    private final boolean localContext;
+    private final QueryScope queryScope;
     
-    protected NbCsmCompletionQuery(CsmFile csmFile, boolean localContext) {
+    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext) {
         this.csmFile = csmFile;
-        this.localContext = localContext;
+        this.queryScope = localContext;
     }
     
     protected CsmFinder getFinder() {
@@ -96,18 +96,23 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         }
         return this.csmFile;
     }
+
+    @Override
+    protected QueryScope getCompletionQueryScope() {
+        return this.queryScope;
+    }
     
     protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort) {
-	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, localContext);
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope);
     }
 
     private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
-            boolean openingSource, boolean sort, boolean localContext) {
+            boolean openingSource, boolean sort, QueryScope queryScope) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
             Class kit = bDoc.getKitClass();
             resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
-            ((CompletionResolverImpl)resolver).setResolveLocalContextOnly(localContext);
+            ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
         }
         return resolver;
     }    

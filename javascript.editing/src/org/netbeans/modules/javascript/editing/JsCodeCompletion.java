@@ -245,6 +245,130 @@ public class JsCodeCompletion implements Completable {
             "\\c", "\\c<i>X</i>: The control character ^<i>X</i>",
             
         };
+
+    private static final String[] CSS_WORDS =
+        new String[] {
+            // Dbl-space lines to keep formatter from collapsing pairs into a block
+        
+            // Source: http://docs.jquery.com/DOM/Traversing/Selectors
+            "nth-child()", "The n-th child of its parent",
+
+            "first-child",  "First child of its parent",
+
+            "last-child", "Last child of its parent",
+
+            "only-child", "Only child of its parent",
+
+            "empty", "Has no children (including text nodes)",
+
+            "enabled", "Element which is not disabled",
+
+            "disabled", "Element which is disabled",
+
+            "checked", "Element which is checked (checkbox, ...)",
+
+            "selected", "Element which is selected (e.g. in a select)",
+        
+            "link", "Not yet visited hyperlink",
+            
+            "visited", "Already visited hyperlink",
+            
+            "active", "",
+            
+            "hover", "",
+            
+            "focus", "Element during user actions",
+            
+            "target", "Target of the referring URI",
+            
+            "lang()", "Element in given language",
+            
+            ":first-line", "The first formatted line",
+            
+            ":first-letter", "The first formatted letter",
+            
+            ":selection", "Portion currently highlighted by the user",
+            
+            ":before", "Generated content before an element",
+
+            ":after", "Generated content after an element",
+            
+            // Custom Selectors
+            "even", "Selects every other (even) element",
+
+            "odd", "Selects every other (odd) element",
+            
+            "eq()", "Selects the Nth element",
+            
+            "nth()", "Selects the Nth element",
+            
+            "gt()", "Selects elements whose index is greater than N",
+            
+            "lt()", "Selects elements whose index is less than N",
+            
+            "first", "Equivalent to :eq(0)",
+            
+            "last", "Selects the last matched element",
+            
+            "parent", "Elements that have children (including text)",
+            
+            "contains('", "Elements which contain the specified text",
+            
+            "visible", "Selects all visible elements",
+            
+            "hidden", "Selects all hidden elements",
+            
+            // Form Selectors
+            "input", "All form elements",
+            
+            "text", "All text fields (type=\"text\")",
+            
+            "password", "All password fields (type=\"password\")",
+            
+            "radio", "All radio fields (type=\"radio\")",
+            
+            "checkbox", "All checkbox fields (type=\"checkbox\")",
+            
+            "submit", "All submit buttons (type=\"submit\")",
+            
+            "image", "All form images (type=\"image\")",
+            
+            "reset", "All reset buttons (type=\"reset\")",
+            
+            "button", "All other buttons (type=\"button\")",
+            
+            "file", "All file uploads (type=\"file\")",
+    };
+    
+    // From http://code.google.com/p/jsdoc-toolkit/wiki/TagReference
+    private static final String[] JSDOC_WORDS =
+            new String[]{
+        "@augments",
+        "@class",
+        "@config",
+        "@constructor",
+        "@deprecated",
+        "@description",
+        "@event",
+        "@example",
+        "@exception",
+        "@fileOverview",
+        "@function",
+        "@ignore",
+        "@inherits",
+        "@memberOf",
+        "@name",
+        "@namespace",
+        "@param",
+        "@param",
+        "@private",
+        "@property",
+        "@return",
+        "@scope",
+        "@scope",
+        "@static",
+        "@type",
+    };
     
     public JsCodeCompletion() {
         
@@ -283,6 +407,7 @@ public class JsCodeCompletion implements Completable {
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
+            Call call = Call.getCallType(doc, th, lexOffset);
 
             // Carry completion context around since this logic is split across lots of methods
             // and I don't want to pass dozens of parameters from method to method; just pass
@@ -292,7 +417,7 @@ public class JsCodeCompletion implements Completable {
             request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            request.index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+            request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
             request.doc = doc;
             request.info = info;
             request.prefix = prefix;
@@ -301,7 +426,7 @@ public class JsCodeCompletion implements Completable {
             request.queryType = queryType;
             request.fileObject = fileObject;
             request.anchor = lexOffset - prefix.length();
-            request.call = Call.getCallType(doc, th, lexOffset);
+            request.call = call;
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
@@ -312,6 +437,13 @@ public class JsCodeCompletion implements Completable {
             if (id == JsTokenId.LINE_COMMENT) {
                 // TODO - Complete symbols in comments?
                 return proposals;
+            } else if (id == JsTokenId.BLOCK_COMMENT) {
+                try {
+                    completeComments(proposals, request);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return proposals;
             } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
                 completeStrings(proposals, request);
                 return proposals;
@@ -321,27 +453,41 @@ public class JsCodeCompletion implements Completable {
             }
             
             if (root != null) {
-                final AstPath path = new AstPath(root, astOffset);
+                int offset = astOffset;
+                
+                OffsetRange sanitizedRange = parseResult.getSanitizedRange();
+                if (sanitizedRange != OffsetRange.NONE && sanitizedRange.containsInclusive(offset)) {
+                    offset = sanitizedRange.getStart();
+                }
+
+                final AstPath path = new AstPath(root, offset);
                 request.path = path;
-                request.fqn = AstUtilities.getFqn(path);
+                request.fqn = AstUtilities.getFqn(path, null, null);
 
                 final Node closest = path.leaf();
                 request.root = root;
                 request.node = closest;
-                
-                addLocals(proposals, request);
             }
-
-            completeKeywords(proposals, request);
 
             if (root == null) {
+                completeKeywords(proposals, request);
                 return proposals;
             }
+
             // Try to complete "new" RHS
             if (completeNew(proposals, request)) {
                return proposals;
             }
 
+            if (call.getLhs() != null || request.call.getPrevCallParenPos() != -1) {
+                completeObjectMethod(proposals, request);
+                return proposals;
+            }
+
+            completeKeywords(proposals, request);
+
+            addLocals(proposals, request);
+            
             if (completeObjectMethod(proposals, request)) {
                 return proposals;
             }
@@ -474,6 +620,41 @@ public class JsCodeCompletion implements Completable {
         return true;
     }
     
+    private boolean completeComments(List<CompletionProposal> proposals, CompletionRequest request) throws BadLocationException {
+        String prefix = request.prefix;
+
+        BaseDocument doc = request.doc;
+        int rowStart = Utilities.getRowFirstNonWhite(doc, request.lexOffset);
+        if (rowStart == -1) {
+            return false;
+        }
+        String line = doc.getText(rowStart, Utilities.getRowEnd(doc, request.lexOffset)-rowStart);
+        int delta = request.lexOffset-rowStart;
+        
+        int i = delta-1;
+        for (; i >= 0; i--) {
+            char c = line.charAt(i);
+            if (Character.isWhitespace(c) || (!Character.isLetterOrDigit(c) && c != '@' && c != '.' && c != '_')) {
+                break;
+            }
+        }
+        i++;
+        prefix = line.substring(i, delta);
+        request.anchor = rowStart+i;
+        
+        // Regular expression matching.  {
+        for (int j = 0, n = JSDOC_WORDS.length; j < n; j++) {
+            String word = JSDOC_WORDS[j];
+            if (startsWith(word, prefix)) {
+                //KeywordItem item = new KeywordItem(word, desc, request);
+                KeywordItem item = new KeywordItem(word, null, request);
+                proposals.add(item);
+            }
+        }
+        
+        return true;
+    }
+    
     private boolean completeStrings(List<CompletionProposal> proposals, CompletionRequest request) {
         String prefix = request.prefix;
 
@@ -490,41 +671,122 @@ public class JsCodeCompletion implements Completable {
             TokenId id = token.id();
             if (id == JsTokenId.IDENTIFIER) {
                 String text = token.text().toString();
-                if ("$".equals(text) || "$F".equals(text)) { // NOI18N
-                    String HTML_MIME_TYPE = "text/html"; // NOI18N
-                    ParserResult result = request.info.getEmbeddedResult(HTML_MIME_TYPE, 0);
-                    if (result != null) {
-                        HtmlParserResult htmlResult = (HtmlParserResult)result;
-                        Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
-                        
-                        if (elementIds.size() > 0) {
-                            // Compute a custom prefix
-                            int lexOffset = request.lexOffset;
-                            if (lexOffset > stringOffset) {
-                                try {
-                                    prefix = request.doc.getText(stringOffset, lexOffset - stringOffset);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            } else {
-                                prefix = "";
+                
+                if (text.startsWith("$") || text.equals("getElementById") ||  // NOI18N
+                        text.startsWith("getElementsByTagName") || text.equals("getElementsByName") || // NOI18N
+                        "addClass".equals(text) || "toggleClass".equals(text)) { // NOI18N
+                    
+                    // Compute a custom prefix
+                    int lexOffset = request.lexOffset;
+                    if (lexOffset > stringOffset) {
+                        try {
+                            prefix = request.doc.getText(stringOffset, lexOffset - stringOffset);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else {
+                        prefix = "";
+                    }
+                    // Update anchor
+                    request.anchor = stringOffset;
+                    
+                    boolean jQuery = false;
+                    if (text.equals("$")) {
+                        for (String imp : request.result.getStructure().getImports()) {
+                            if (imp.indexOf("jquery") != -1) { // NOI18N
+                                jQuery = true;
                             }
-                            
-                            String filename = request.fileObject.getNameExt();
+                        }
+                        if (!jQuery) {
+                            jQuery = request.index.getType("jQuery") != null;
+                        }
+                    }
 
-                            for (SyntaxElement.TagAttribute tag : elementIds) {
-                                String elementId = tag.getValue();
-                                // Strip "'s surrounding value, if any
-                                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-                                        elementId.endsWith("\"")) { // NOI18N
-                                    elementId = elementId.substring(1, elementId.length()-1);
+                    if ("getElementById".equals(text) || (!jQuery && ("$".equals(text) || "$F".equals(text)))) { // NOI18N
+                        addElementIds(proposals, request, prefix);
+                        
+                    } else if ("getElementsByName".equals(text)) { // NOI18N
+                        addElementClasses(proposals, request, prefix);
+                    } else if ("addClass".equals(text) || "toggleClass".equals(text)) { // NOI18N
+                        // From jQuery
+                        addElementClasses(proposals, request, prefix);
+                    } else if (text.startsWith("getElementsByTagName")) { // NOI18N
+                        addTagNames(proposals, request, prefix);
+                    } else if ("$$".equals(text) || (jQuery && "$".equals(text) && jQuery)) { // NOI18N
+                        // Selectors
+                        // Determine whether we want to include elements or classes
+                        // Classes after [ and .
+                        
+                        int showClasses = 1;
+                        int showElements = 2;
+                        int showIds = 3;
+                        int showSpecial = 4;
+                        int expect = showElements;
+                        int i = prefix.length()-1;
+                     findEnd:   
+                        for (; i >= 0; i--) {
+                            char c = prefix.charAt(i);
+                            switch (c) {
+                            case '.':
+                            case '[':
+                                expect = showClasses;
+                                break findEnd;
+                            case '#':
+                                expect = showIds;
+                                break findEnd;
+                            case ':':
+                                expect = showSpecial;
+                                if (i > 0 && prefix.charAt(i-1) == ':') {
+                                    // Handle ::'s
+                                    i--;
                                 }
-
-                                if (startsWith(elementId, prefix)) {
-                                    TagItem item = new TagItem(elementId, filename, request);
+                                break findEnd;
+                            case ' ':
+                            case '/':
+                            case '>':
+                            case '+':
+                            case '~':
+                            case ',':
+                                expect = showElements;
+                                break findEnd;
+                            default:
+                                if (!Character.isLetter(c)) {
+                                    expect = showElements;
+                                    break findEnd;
+                                }
+                            }
+                        }
+                        if (i >= 0) {
+                            prefix = prefix.substring(i+1);
+                        }
+                        // Update anchor
+                        request.anchor = stringOffset+i+1;
+                            
+                        if (expect == showElements) {
+                            addTagNames(proposals, request, prefix);
+                        } else if (expect == showIds) {
+                            addElementIds(proposals, request, prefix);
+                        } else if (expect == showSpecial) {
+                            // Regular expression matching.  {
+                            for (int j = 0, n = CSS_WORDS.length; j < n; j += 2) {
+                                String word = CSS_WORDS[j];
+                                String desc = CSS_WORDS[j + 1];
+                                if (word.startsWith(":") && prefix.length() == 0) {
+                                    // Filter out the double words
+                                    continue;
+                                }
+                                if (startsWith(word, prefix)) {
+                                    if (word.startsWith(":")) { // NOI18N
+                                        word = word.substring(1);
+                                    }
+                                    //KeywordItem item = new KeywordItem(word, desc, request);
+                                    TagItem item = new TagItem(word, desc, request, ElementKind.RULE);
                                     proposals.add(item);
                                 }
                             }
+                        } else {
+                            assert expect == showClasses;
+                            addElementClasses(proposals, request, prefix);
                         }
                     }
                 }
@@ -549,6 +811,88 @@ public class JsCodeCompletion implements Completable {
         }
 
         return true;
+    }
+
+    private void addElementClasses(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> classes = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int classIdx = element.indexOf("class=\""); // NOI18N
+                    if (classIdx != -1) {
+                        int classIdxEnd = element.indexOf('"', classIdx+7);
+                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
+                            String clz = element.substring(classIdx+7, classIdxEnd);
+                            classes.add(clz);
+                        }
+                    }
+                }
+            }
+            
+            String filename = request.fileObject.getNameExt();
+            for (String tag : classes) {
+                if (startsWith(tag, prefix)) {
+                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
+    }
+    
+    private void addTagNames(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            List<SyntaxElement> elementsList = htmlResult.elementsList();
+            Set<String> tagNames = new HashSet<String>();
+            for (SyntaxElement s : elementsList) {
+                if (s.type() == SyntaxElement.TYPE_TAG) {
+                    String element = s.text();
+                    int start = 1;
+                    int end = element.indexOf(' ');
+                    if (end == -1) {
+                        end = element.length()-1;
+                    }
+                    String tag = element.substring(start, end);
+                    tagNames.add(tag);
+                }
+            }
+
+            String filename = request.fileObject.getNameExt();
+            
+            for (String tag : tagNames) {
+                if (startsWith(tag, prefix)) {
+                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
+    }
+    
+    private void addElementIds(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
+        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+        if (result != null) {
+            HtmlParserResult htmlResult = (HtmlParserResult)result;
+            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
+            String filename = request.fileObject.getNameExt();
+            for (SyntaxElement.TagAttribute tag : elementIds) {
+                String elementId = tag.getValue();
+                // Strip "'s surrounding value, if any
+                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
+                        elementId.endsWith("\"")) { // NOI18N
+                    elementId = elementId.substring(1, elementId.length()-1);
+                }
+
+                if (startsWith(elementId, prefix)) {
+                    TagItem item = new TagItem(elementId, filename, request, ElementKind.TAG);
+                    proposals.add(item);
+                }
+            }
+        }
     }
 
 
@@ -834,10 +1178,6 @@ public class JsCodeCompletion implements Completable {
         return null;
     }
     
-    /** Determine if we're trying to complete the name for a "def" (in which case
-     * we'd show the inherited methods).
-     * This needs to be enhanced to handle "Foo." prefixes, e.g. def self.foo
-     */
     private boolean completeFunctions(List<CompletionProposal> proposals, CompletionRequest request) {
         JsIndex index = request.index;
         String prefix = request.prefix;
@@ -846,19 +1186,46 @@ public class JsCodeCompletion implements Completable {
         String fqn = request.fqn;
         JsParseResult result = request.result;
         
+        boolean includeNonFqn = true;
+        
+        // Add in inherited properties, if any...
+        // DEMO HACK, NOT YET FULLY IMPLEMENTED
+        if (request.fileObject.getName().equals("test") && request.path.contains(org.mozilla.javascript.Token.OBJECTLIT)) {
+//            String type = "YAHOO.widget.Editor";
+//            // Demo HACK
+//            Set<IndexedElement> inherited = index.getElements(prefix, type, kind, JsIndex.ALL_SCOPE, result);
+//            if (inherited.size() > 0) {
+//                matches.addAll(inherited);
+//            }
+            fqn = "YAHOO.widget.Editor";
+            includeNonFqn = false;
+        }
+        
         Set<IndexedElement> matches;
         if (fqn != null) {
             matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
         } else {
-            matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            if (prefix.length() == 0) {
+//                proposals.clear();
+//                proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                return true;
+//            } else {
+                matches = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//            }
         }
         // Also add in non-fqn-prefixed elements
-        Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
-        if (top.size() > 0) {
-            matches.addAll(top);
+        if (includeNonFqn) {
+            Set<IndexedElement> top = index.getElements(prefix, null, kind, JsIndex.ALL_SCOPE, result);
+            if (top.size() > 0) {
+                matches.addAll(top);
+            }
         }
 
         for (IndexedElement element : matches) {
+            if (element.isNoDoc()) {
+                continue;
+            }
+            
             JsCompletionItem item;
             if (element instanceof IndexedFunction) {
                 item = new FunctionItem((IndexedFunction)element, request);
@@ -885,6 +1252,7 @@ public class JsCodeCompletion implements Completable {
         String prefix = request.prefix;
         int astOffset = request.astOffset;
         int lexOffset = request.lexOffset;
+        Node root = request.root;
         TokenHierarchy<Document> th = request.th;
         BaseDocument doc = request.doc;
         AstPath path = request.path;
@@ -911,7 +1279,7 @@ public class JsCodeCompletion implements Completable {
             if ((call == Call.LOCAL) || (call == Call.NONE)) {
                 return false;
             }
-
+            
             // If we're not sure we're only looking for a method, don't abort after this
             boolean done = call.isMethodExpected();
 
@@ -921,6 +1289,61 @@ public class JsCodeCompletion implements Completable {
 
             String type = call.getType();
             String lhs = call.getLhs();
+
+            if (type == null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+                if (method != null) {
+                    List<Node> nodes = new ArrayList<Node>();
+                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.javascript.Token.MISSING_DOT }, nodes);
+                    if (nodes.size() > 0) {
+                        Node exprNode = nodes.get(0);
+                        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                        type = analyzer.getType(exprNode.getParentNode());
+                    }
+                }
+            }
+            
+            if (type == null && call.getPrevCallParenPos() != -1) {
+                // It's some sort of call
+                assert call.getType() == null;
+                assert call.getLhs() == null;
+                
+                // Try to figure out the call in question
+                int callEndAstOffset = AstUtilities.getAstOffset(info, call.getPrevCallParenPos());
+                if (callEndAstOffset != -1) {
+                    AstPath callPath = new AstPath(root, callEndAstOffset);
+                    Iterator<Node> it = callPath.leafToRoot();
+                    while (it.hasNext()) {
+                        Node callNode = it.next();
+                        if (callNode.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                            break;
+                        } else if (callNode.getType() == org.mozilla.javascript.Token.CALL) {
+                            Node method = AstUtilities.findLocalScope(node, path);
+
+                            if (method != null) {
+                                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                                type = analyzer.getType(callNode);
+                            }
+                            break;
+                        } else if (callNode.getType() == org.mozilla.javascript.Token.GETELEM) {
+                            Node method = AstUtilities.findLocalScope(node, path);
+
+                            if (method != null) {
+                                JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                                type = analyzer.getType(callNode);
+                            }
+                            break;
+                        }
+                    }
+                }
+            } else if (type == null && lhs != null && node != null) {
+                Node method = AstUtilities.findLocalScope(node, path);
+
+                if (method != null) {
+                    JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
+                    type = analyzer.getType(node);
+                }
+            }
 
             if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
                 Node method = AstUtilities.findLocalScope(node, path);
@@ -995,7 +1418,13 @@ public class JsCodeCompletion implements Completable {
             // Try just the method call (e.g. across all classes). This is ignoring the 
             // left hand side because we can't resolve it.
             if ((elements.size() == 0) && (prefix.length() > 0 || type == null)) {
-                elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                if (prefix.length() == 0) {
+//                    proposals.clear();
+//                    proposals.add(new KeywordItem("", "Type more characters to see matches", request));
+//                    return true;
+//                } else {
+                    elements = index.getAllNames(prefix, kind, JsIndex.ALL_SCOPE, result);
+//                }
             }
 
             for (IndexedElement element : elements) {
@@ -1005,12 +1434,10 @@ public class JsCodeCompletion implements Completable {
 //                    continue;
 //                }
                 
-//                // Don't include private or protected methods on other objects
-//                if (skipPrivate && (method.isPrivate() && !"new".equals(method.getName()))) {
-//                    // TODO - "initialize" removal here should not be necessary since they should
-//                    // be marked as private, but index doesn't contain that yet
-//                    continue;
-//                }
+                // Don't include private or protected methods on other objects
+                if (skipPrivate && element.isPrivate()) {
+                    continue;
+                }
 //
 //                // We can only call static methods
 //                if (skipInstanceMethods && !method.isStatic()) {
@@ -1081,7 +1508,7 @@ public class JsCodeCompletion implements Completable {
                 }
 
                 // If we're not in the identifier we need to be in the whitespace after "def"
-                if (id != JsTokenId.WHITESPACE) {
+                if (id != JsTokenId.WHITESPACE && id != JsTokenId.EOL) {
                     // Do something about http://www.netbeans.org/issues/show_bug.cgi?id=100452 here
                     // In addition to checking for whitespace I should look for "Foo." here
                     return false;
@@ -1130,13 +1557,15 @@ public class JsCodeCompletion implements Completable {
                         if ((prefix.length() > 0) && !element.getName().startsWith(prefix)) {
                             continue;
                         }
+                        
+                        if (element.isNoDoc()) {
+                            continue;
+                        }
+
+                        
 
 //                        // For def completion, skip local methods, only include superclass and included
 //                        if ((fqn != null) && fqn.equals(method.getClz())) {
-//                            continue;
-//                        }
-//                        
-//                        if (method.isNoDoc()) {
 //                            continue;
 //                        }
 
@@ -1274,6 +1703,10 @@ public class JsCodeCompletion implements Completable {
         if (element == null) {
             return null;
         }
+        if (element instanceof IndexedPackage) {
+            return null;
+        }
+        
         if (element instanceof KeywordElement) {
             return null; //getKeywordHelp(((KeywordElement)element).getName());
         } else if (element instanceof CommentElement) {
@@ -1300,6 +1733,14 @@ public class JsCodeCompletion implements Completable {
             }
             String html = sb.toString();
             return html;
+        } else if (element instanceof IndexedElement) {
+            IndexedElement ie = (IndexedElement)element;
+            if (!ie.isDocumented()) {
+                IndexedElement e = ie.findDocumentedSibling();
+                if (e != null) {
+                    element = e;
+                }
+            }
         }
 
         List<String> comments = ElementUtilities.getComments(info, element);
@@ -1310,12 +1751,6 @@ public class JsCodeCompletion implements Completable {
         }
 
         JsCommentFormatter formatter = new JsCommentFormatter(comments);
-        if (element instanceof IndexedElement) {
-            String url = ((IndexedElement)element).getFilenameUrl();
-            if (url.indexOf("jsstubs/") != -1) { // NOI18N
-                formatter.setFormattedComment(true);
-            }
-        }
         String name = element.getName();
         if (name != null && name.length() > 0) {
             formatter.setSeqName(name);
@@ -1761,11 +2196,26 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(true);
             }
+            boolean strike = indexedElement != null && indexedElement.isDeprecated();
+            if (strike) {
+                formatter.deprecated(true);
+            }
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
+            if (strike) {
+                formatter.deprecated(false);
+            }
             if (emphasize) {
                 formatter.emphasis(false);
+            }
+
+            if (indexedElement != null) {
+                String type = indexedElement.getType();
+                if (type != null && type != Node.UNKNOWN_TYPE) {
+                    formatter.appendHtml(" : "); // NOI18N
+                    formatter.appendText(JsUtils.normalizeTypeString(type));
+                }
             }
 
             return formatter.getText();
@@ -1775,6 +2225,18 @@ public class JsCodeCompletion implements Completable {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
 
+            if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
+                if (element instanceof IndexedElement) {
+                    String origin = ((IndexedElement)element).getOrigin();
+                    if (origin != null) {
+                        formatter.appendText(origin);
+                        return formatter.getText();
+                    }
+                }
+                
+                return null;
+            }
+            
             String in = element.getIn();
 
             if (in != null) {
@@ -1791,12 +2253,12 @@ public class JsCodeCompletion implements Completable {
                         }
                         formatter.appendText(filename);
                         return formatter.getText();
-                    } else if (filename.indexOf("/stub_core_") != -1) { // NOI18N
-                        formatter.appendText("Core JS");
-                        return formatter.getText();
-                    } else if (filename.indexOf("/stub_") != -1) { // NOI18N
-                        formatter.appendText("DOM");
-                        return formatter.getText();
+                    } else {
+                        String origin = ie.getOrigin();
+                        if (origin != null) {
+                            formatter.appendText(origin);
+                            return formatter.getText();
+                        }
                     }
                 }
                 
@@ -1853,6 +2315,9 @@ public class JsCodeCompletion implements Completable {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
             boolean strike = !SupportedBrowsers.getInstance().isSupported(function.getCompatibility());
+            if (!strike && function.isDeprecated()) {
+                strike = true;
+            }
             if (strike) {
                 formatter.deprecated(true);
             }
@@ -1866,7 +2331,10 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(false);
             }
-
+            if (strike) {
+                formatter.deprecated(false);
+            }
+            
             Collection<String> parameters = function.getParameters();
 
             formatter.appendHtml("("); // NOI18N
@@ -1876,7 +2344,19 @@ public class JsCodeCompletion implements Completable {
 
                 while (it.hasNext()) { // && tIt.hasNext()) {
                     formatter.parameters(true);
-                    formatter.appendText(it.next());
+                    String param = it.next();
+                    int typeIndex = param.indexOf(':');
+                    if (typeIndex != -1) {
+                        formatter.type(true);
+                        // TODO - call JsUtils.normalizeTypeString() on this string?
+                        formatter.appendText(param, typeIndex+1, param.length());
+                        formatter.type(false);
+                        formatter.appendHtml(" ");
+                        
+                        formatter.appendText(param, 0, typeIndex);
+                    } else {
+                        formatter.appendText(param);
+                    }
                     formatter.parameters(false);
 
                     if (it.hasNext()) {
@@ -1886,11 +2366,13 @@ public class JsCodeCompletion implements Completable {
 
             }
             formatter.appendHtml(")"); // NOI18N
-            
-            if (strike) {
-                formatter.deprecated(false);
+
+            if (indexedElement != null && indexedElement.getType() != null && 
+                    indexedElement.getType() != Node.UNKNOWN_TYPE &&
+                    indexedElement.getKind() != ElementKind.CONSTRUCTOR) {
+                formatter.appendHtml(" : ");
+                formatter.appendText(JsUtils.normalizeTypeString(indexedElement.getType()));
             }
-            
             
             return formatter.getText();
         }
@@ -1922,7 +2404,12 @@ public class JsCodeCompletion implements Completable {
                 sb.append("js-cc-"); // NOI18N
                 sb.append(Integer.toString(id++));
                 sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc);
+                int typeIndex = paramDesc.indexOf(':');
+                if (typeIndex != -1) {
+                    sb.append(paramDesc, 0, typeIndex);
+                } else {
+                    sb.append(paramDesc);
+                }
                 sb.append("\""); // NOI18N
                 sb.append("}"); //NOI18N
                 if (i < paramCount-1) {
@@ -2023,11 +2510,13 @@ public class JsCodeCompletion implements Completable {
     private class TagItem extends JsCompletionItem {
         private final String tag;
         private final String description;
+        private final ElementKind kind;
 
-        TagItem(String keyword, String description, CompletionRequest request) {
+        TagItem(String keyword, String description, CompletionRequest request, ElementKind kind) {
             super(null, request);
             this.tag = keyword;
             this.description = description;
+            this.kind = kind;
         }
 
         @Override
@@ -2037,7 +2526,7 @@ public class JsCodeCompletion implements Completable {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.TAG;
+            return kind;
         }
 
         //@Override

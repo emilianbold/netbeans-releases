@@ -1,8 +1,8 @@
 package test;
 
-public class OverrideInInnerClassUnresolvable {
+public class Test {
     
-    public OverrideInInnerClassUnresolvable() {}
+    public Test() {}
     
     public static void main(String[] args) {
         JFrame f = new JFrame() {

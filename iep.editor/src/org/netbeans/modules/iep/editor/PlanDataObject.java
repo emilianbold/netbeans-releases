@@ -102,7 +102,7 @@ public class PlanDataObject extends MultiDataObject {
     }
 
     private SaveCookie getSaveCookie() {
-    	if(mSaveCookie == null) {
+    	if(mSaveCookie == null && getPlanEditorSupport() != null) {
     		mSaveCookie = new IEPSaveCookie(getPlanEditorSupport());
     	}
     	

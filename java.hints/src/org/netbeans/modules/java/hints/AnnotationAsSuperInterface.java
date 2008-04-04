@@ -33,7 +33,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;

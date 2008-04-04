@@ -45,6 +45,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -127,11 +128,15 @@ public final class CssModel {
         return model;
     }
 
-    /** Winston's workaround. */
-    public static CssModel get(InputStream source) {
+     /** Gets a private instance of CssModel for the given source. 
+     * 
+     * @return instance of {@link CssModel}
+     * @param source an instance of Reader for the source
+     */
+    public static CssModel get(Reader source) {
         try {
             CSSParser parser = new CSSParser();
-            parser.ReInit(new ASCII_CharStream(new InputStreamReader(source)));
+            parser.ReInit(new ASCII_CharStream(source));
             SimpleNode node = parser.styleSheet();
             return new CssModel(node);
         } catch (ParseException pe) {
@@ -139,6 +144,7 @@ public final class CssModel {
         }
         return null;
     }
+    
     private Document doc;
     private List<CssRule> rules = new ArrayList<CssRule>(10);
     private PropertyChangeSupport support = new PropertyChangeSupport(this);

@@ -45,7 +45,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.openide.loaders.ExtensionList;
 import org.openide.util.NbPreferences;
 
 /**
@@ -55,25 +54,31 @@ import org.openide.util.NbPreferences;
  */
 public class ExtensionsSettings {
     private final String name;
-    private final String defaultExtension;
-    private final ExtensionList defaultExtensionsList;
-    private ExtensionList savedExtensionsList;
+    private CndExtensionList savedExtensionsList;
     
     private ExtensionsSettings(String name, CndHandlableExtensions che) {
-        DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
-        defaultExtensionsList = che.getDefaultExtensionList();
-        assert defaultExtensionsList.extensions().hasMoreElements();
-        this.defaultExtension = che.getDefaultDefaultExtension();
-        assert defaultExtensionsList.isRegistered("." + defaultExtension);
         this.name = name;
+        DEFAULT_EXTENSION_PREFIX = "def-ext-"; //NOI18N
+
+        String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
+        if (extensions == null) {
+            savedExtensionsList =  (CndExtensionList)che.getDefaultExtensionList();
+        } else {
+            savedExtensionsList = new CndExtensionList(extensions.split(DELIMITER));
+        }
+        assert savedExtensionsList.extensions().hasMoreElements();
+        String dext = che.getDefaultDefaultExtension();
+        assert savedExtensionsList.isRegistered(dext);
+        setDefaultExtension( dext, false );
+
     }
     
     private ExtensionsSettings(ExtensionsSettings es, String newDefExtPrefix) {
         DEFAULT_EXTENSION_PREFIX = newDefExtPrefix;
-        this.defaultExtensionsList = es.defaultExtensionsList;
         this.name = es.name;
-        this.defaultExtension = preferences.get(newDefExtPrefix + name, es.defaultExtension);
         this.savedExtensionsList = es.savedExtensionsList;
+        String dext = getDefaultExtension(es.getDefaultExtension());
+        setDefaultExtension(isKnownExtension(dext) ? dext : es.getDefaultExtension());
     }
     
     public static synchronized ExtensionsSettings getInstance(CndHandlableExtensions che) {
@@ -90,48 +95,47 @@ public class ExtensionsSettings {
     private static final Preferences preferences = NbPreferences.forModule(ExtensionsSettings.class);
     private final String DEFAULT_EXTENSION_PREFIX;
     private static final String EXTENSIONS_LIST_PREFIX = "ext-list-"; //NOI18N
+    private static final String DELIMITER = ","; //NOI18N
     
     public String getDefaultExtension() {
-        return preferences.get(DEFAULT_EXTENSION_PREFIX + name, defaultExtension);
+        String ext = getDefaultExtension("");
+        assert ext.length() > 0; // def ext must be set
+        return ext;
+    }
+    
+    private String getDefaultExtension(String def) {
+        return preferences.get(DEFAULT_EXTENSION_PREFIX + name, def);
     }
 
     public synchronized void setDefaultExtension(String value) {
-        if (!isKnownExtension(value)) {
-            ExtensionList current = getExtensionList();
-            current.addExtension(value);
-            setExtensionList(current);
+        setDefaultExtension(value, true);
+    }
+    
+    private void setDefaultExtension(String value, boolean addIfMissed) {
+        if (addIfMissed && !isKnownExtension(value)) {
+            getExtensionList().addExtension(value);
         }
         preferences.put(DEFAULT_EXTENSION_PREFIX + name, value);
     }
 
-    public synchronized ExtensionList getExtensionList() {
-        if (savedExtensionsList == null) {
-            String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
-            if (extensions == null) {
-                savedExtensionsList = defaultExtensionsList;
-                return defaultExtensionsList;
-            } else {
-                ExtensionList l = new ExtensionList();
-                String[] e = extensions.split(",");
-                for (int i = 0; i < e.length; i++) {
-                    l.addExtension(e[i]);
-                }
-                savedExtensionsList = l;
-            }
-        }
+    public synchronized CndExtensionList getExtensionList() {
         return savedExtensionsList;
     }
 
-    public synchronized void setExtensionList(ExtensionList value) {
+    public synchronized void setExtensionList(CndExtensionList value) {
         String st = "";
         Enumeration<String> list = value.extensions();
+        assert list.hasMoreElements(); // setting empty extension list is an error and should be verified on higher level
         while(list.hasMoreElements()) {
             if (st.length() > 0) {
-                st += ",";
+                st += DELIMITER;
             }
             st += list.nextElement();
         }
         savedExtensionsList = value;
+        if (!isKnownExtension(getDefaultExtension())) {
+            setDefaultExtension(savedExtensionsList.extensions().nextElement(), false);
+        }
         preferences.put(EXTENSIONS_LIST_PREFIX + name, st);
     }
 
@@ -139,13 +143,7 @@ public class ExtensionsSettings {
         if (ext == null) {
             return false;
         }
-        Enumeration<String> list = getExtensionList().extensions();
-        while(list.hasMoreElements()) {
-            if (ext.equals(list.nextElement())) {
-                return true;
-            }
-        }
-        return false;
+        return getExtensionList().isRegistered(ext);
     }
 
     ExtensionsSettings getSpecializedInstance(String newDefExtPrefix) {

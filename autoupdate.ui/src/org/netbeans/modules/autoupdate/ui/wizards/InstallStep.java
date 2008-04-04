@@ -76,7 +76,10 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
+import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -92,6 +95,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private OperationPanel panel;
     private PanelBodyContainer component;
     private InstallUnitWizardModel model = null;
+    private boolean clearLazyUnits = false;
     private WizardDescriptor wd = null;
     private Restarter restarter = null;
     private ProgressHandle systemHandle = null;
@@ -125,7 +129,11 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
+        this (model, false);
+    }
+    public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits) {
         this.model = model;
+        this.clearLazyUnits = clearLazyUnits;
     }
     
     public boolean isFinishPanel() {
@@ -530,6 +538,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             } catch (OperationException x) {
                 log.log (Level.INFO, x.getMessage (), x);
             }
+            if (clearLazyUnits) {
+                LazyUnit.storeLazyUnits (model.getOperation (), null);
+                AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
+            }
             notifyInstallRestartNeeded (support, r, true); // NOI18N
         }
     }
@@ -649,6 +661,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                }
                 try {
                     support.doRestart (restarter, null);
                 } catch (OperationException x) {
@@ -657,6 +672,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 
             } else {
                 support.doRestartLater (restarter);
+                if (clearLazyUnits) {
+                    LazyUnit.storeLazyUnits (model.getOperation (), null);
+                    AutoupdateCheckScheduler.notifyAvailable (null, OperationType.UPDATE);
+                }
                 try {
                     model.doCleanup (false);
                 } catch (OperationException x) {

@@ -154,6 +154,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                             return result;
 
                         ColoringAttributes colors = highlights.get(range);
+                        if (colors == null) {
+                            continue;
+                        }
                         Collection<ColoringAttributes> c = Collections.singletonList(colors);
                         Highlight h = Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);
 

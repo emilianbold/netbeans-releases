@@ -47,8 +47,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -61,7 +64,12 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
     
     public JaxRsJavaClientCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        this(targetComponent, targetFile, new WadlSaasBean(m));
+    }
+    
+    public JaxRsJavaClientCodeGenerator(JTextComponent targetComponent,
+            FileObject targetFile, WadlSaasBean bean) throws IOException {
+        super(targetComponent, targetFile, bean);
     }
     
     @Override
@@ -70,12 +78,23 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
 
         preGenerate();
         
-        createAuthenticatorClass();
+        //Create Authenticator classes
+        getAuthenticationGenerator().createAuthenticatorClass();
         
+        //Create Authorization classes
+        getAuthenticationGenerator().createAuthorizationClasses();
+  
         createSaasServiceClass();
         addSaasServiceMethod();
         addImportsToSaasService();
+                
+        //Modify Authenticator class
+        getAuthenticationGenerator().modifyAuthenticationClass(); 
         
+        //execute this block before insertSaasServiceAccessCode() 
+        setJaxbWrapper();
+        //No need to check scanning, since we are not locking document
+        //Util.checkScanning();
         insertSaasServiceAccessCode(isInBlock(getTargetComponent()));
         addImportsToTargetFile();
         
@@ -84,39 +103,57 @@ public class JaxRsJavaClientCodeGenerator extends JaxRsCodeGenerator {
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
     
+    private void setJaxbWrapper() {
+        List<QName> repTypesFromWadl = getBean().findRepresentationTypes(getBean().getMethod());
+        if(!repTypesFromWadl.isEmpty()) {
+            QName qName = repTypesFromWadl.get(0);
+            String nsUri = qName.getNamespaceURI();
+            getBean().setOutputWrapperName(qName.getLocalPart());        
+            getBean().setOutputWrapperPackageName(
+                    (getBean().getGroupName()+"."+
+                        getBean().getDisplayName()).toLowerCase() + 
+                        "." + nsUri.substring(nsUri.lastIndexOf(":")+1).toLowerCase());
+        }
+    }
+    
+    @Override 
+    public void preGenerate() throws IOException {
+        addJaxbLib();
+        
+        super.preGenerate();
+    }
+    
+    protected void addJaxbLib() throws IOException {
+        Util.addJaxbLib(getProject());
+    }
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = filterParameters();
-        paramUse += getHeaderOrParameterUsage(filterParams);
-        paramDecl += getHeaderOrParameterDeclaration(filterParams);
-
-        if(paramUse.endsWith(", "))
-            paramUse = paramUse.substring(0, paramUse.length()-2);
+        String indent = "        ";
+        String indent2 = "             ";
+        List<ParameterInfo> filterParams = getServiceMethodParameters();
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
         
-        String methodBody = "try {\n";
+        String methodBody = indent+"try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += "             String result = " + getSaasServiceName() + "." + getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += "             System.out.println(\"The SaasService returned: \"+result);\n";
-        methodBody += "        } catch (java.io.IOException ex) {\n";
-        methodBody += "             //java.util.logging.Logger.getLogger(this.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);\n";
-        methodBody += "             ex.printStackTrace();\n";
-        methodBody += "        }\n";
+        methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
        
         return methodBody;
     }
-    
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
-    
+ 
 }

@@ -41,11 +41,15 @@ package org.netbeans.modules.websvc.saas.codegen.java.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
 import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
@@ -62,29 +66,33 @@ public class CustomSaasBean extends SaasBean {
     public static final String ARTIFACT_TYPE_TEMPLATE = "template";
     private String url;
     private CustomSaasMethod m;
-    private List<ParameterInfo> inputParams;
-    private List<String> templates;
-    private List<String> libs;
+    private Map<String, String> templates;
+    private Map<String, String> libs;
+    private boolean canGenerateJaxb;
+    private String serviceMethodName;
     
     public CustomSaasBean(CustomSaasMethod m)  throws IOException {
-        super(deriveResourceName(m), null, 
+        super(m.getSaas(), deriveResourceName(m), null, 
                 deriveUriTemplate(m), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
+
+        init();
+    }
+    
+    private void init() throws IOException {
+        
+        setHttpMethod(HttpMethodType.GET);
         
         if(m.getHref() != null)
             setResourceClassTemplate(m.getHref());
         
-        inputParams = new ArrayList<ParameterInfo>();
+        findAuthentication(m);
+        
         List<MimeType> mimeTypes = new ArrayList<MimeType>();
         try {
-            Input in = m.getInput();
-            if(in != null && in.getParams() != null && in.getParams().getParam() != null) {
-                List<Param> params = in.getParams().getParam();
-                findSaasParams(inputParams, params);
-            }
             Output out = m.getOutput();
             findSaasMediaType(mimeTypes, out.getMedia());
 
@@ -94,8 +102,8 @@ public class CustomSaasBean extends SaasBean {
             throw new IOException(ex.getMessage());
         } 
         
-        templates = new ArrayList<String>();
-        libs = new ArrayList<String>();
+        templates = new HashMap<String, String>();
+        libs = new HashMap<String, String>();
         CodeGen codegen = m.getSaas().getSaasMetadata().getCodeGen();
         if(codegen != null) {
             List<Artifacts> artifactsList = codegen.getArtifacts();
@@ -110,15 +118,16 @@ public class CustomSaasBean extends SaasBean {
                             String type = artifact.getType();
                             if(type == null)
                                 throw new IOException("saas-metadata/code-gen/artifacts/artifact/@type value is null.");
+                            String id = artifact.getId();
                             String artifactUrl = artifact.getUrl();
-                            if(artifactUrl == null)
-                                throw new IOException("saas-metadata/code-gen/artifacts/artifact/@url value is null.");
+                            if(id == null || artifactUrl == null)
+                                throw new IOException("saas-metadata/code-gen/artifacts/artifact/@id|@url value is null.");
                             if(type.equals(ARTIFACT_TYPE_TEMPLATE)) {
-                                templates.add(artifactUrl);
+                                templates.put(id, artifactUrl);
                                 if(getResourceClassTemplate().equals(artifact.getId()))
                                     setResourceClassTemplate(artifactUrl);
                             } else if(type.equals(ARTIFACT_TYPE_TEMPLATE)) {
-                                libs.add(artifactUrl);
+                                libs.put(id, artifactUrl);
                             }
                         }
                     }
@@ -127,7 +136,28 @@ public class CustomSaasBean extends SaasBean {
         }
     }
 
+    public String getSaasServiceMethodName() {
+        if(serviceMethodName == null) {
+            serviceMethodName = Util.deriveMethodName(getMethod().getName());
+            serviceMethodName = serviceMethodName.substring(0, 1).toLowerCase() + serviceMethodName.substring(1);
+        }
+        return serviceMethodName;
+    }
+    
+    public CustomSaasMethod getMethod() {
+        return m;
+    }
+    
     protected List<ParameterInfo> initInputParameters() {
+        List<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
+        Input in = m.getInput();
+        if(in != null && in.getParams() != null && in.getParams().getParam() != null) {
+            List<Param> params = in.getParams().getParam();
+            findSaasParams(inputParams, params);
+            for(ParameterInfo p:inputParams) {
+                p.setStyle(ParamStyle.QUERY);
+            }
+        }
         return inputParams;
     }
     
@@ -149,19 +179,27 @@ public class CustomSaasBean extends SaasBean {
         return Inflector.getInstance().camelize(name, true) + "/"; //NOI18N
     }
     
-    public List<String> getArtifactLibs() {
+    public Map<String, String> getArtifactLibs() {
         return libs;
     }
     
-    public void setArtifactLibs(List<String> libs) {
+    public void setArtifactLibs(Map<String, String> libs) {
         this.libs = libs;
     }
     
-    public List<String> getArtifactTemplates() {
+    public Map<String, String> getArtifactTemplates() {
         return templates;
     }
     
-    public void setArtifactTemplates(List<String> templates) {
+    public void setArtifactTemplates(Map<String, String> templates) {
         this.templates = templates;
+    }
+    
+    public boolean canGenerateJAXBUnmarshaller() {
+        return canGenerateJaxb;
+    }
+    
+    public void setCanGenerateJAXBUnmarshaller(boolean canGenerateJaxb) {
+        this.canGenerateJaxb = canGenerateJaxb;
     }
 }

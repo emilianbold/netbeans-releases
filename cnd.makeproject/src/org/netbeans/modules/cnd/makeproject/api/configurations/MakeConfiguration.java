@@ -105,7 +105,7 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        compilerSet = new CompilerSet2Configuration(this, null);
+        compilerSet = new CompilerSet2Configuration();
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
@@ -572,7 +572,7 @@ public class MakeConfiguration extends Configuration {
                 if (IpeUtils.isPathAbsolute(outputLocation)) {
                     subProjectOutputLocations.add(outputLocation);
                 } else {
-                    subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation);
+                    subProjectOutputLocations.add(projectItem.getMakeArtifact().getProjectLocation() + "/" + outputLocation); // NOI18N
                 } // NOI18N
             }
         }
@@ -599,34 +599,34 @@ public class MakeConfiguration extends Configuration {
             return output;
         }
     }
-
-    private String[] getCompilerSetDisplayNames() {
-        ArrayList<String> names = new ArrayList();
-        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
-            names.add(cs.getDisplayName());
-        }
-        return names.toArray(new String[0]);
-    }
-
-    private String[] getCompilerSetNames() {
-        ArrayList<String> names = new ArrayList();
-        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
-            names.add(cs.getName());
-        }
-        return names.toArray(new String[0]);
-    }
-
-    private int getDefaultCompilerSetIndex() {
-        String name = CppSettings.getDefault().getCompilerSetName();
-        int i = 0;
-        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
-            if (name.equals(cs.getName())) {
-                return i;
-            }
-            i++;
-        }
-        return 0; // shouldn't happen
-    }
+//
+//    private String[] getCompilerSetDisplayNames() {
+//        ArrayList<String> names = new ArrayList();
+//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//            names.add(cs.getDisplayName());
+//        }
+//        return names.toArray(new String[0]);
+//    }
+//
+//    private String[] getCompilerSetNames() {
+//        ArrayList<String> names = new ArrayList();
+//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//            names.add(cs.getName());
+//        }
+//        return names.toArray(new String[0]);
+//    }
+//
+//    private int getDefaultCompilerSetIndex() {
+//        String name = CppSettings.getDefault().getCompilerSetName();
+//        int i = 0;
+//        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
+//            if (name.equals(cs.getName())) {
+//                return i;
+//            }
+//            i++;
+//        }
+//        return 0; // shouldn't happen
+//    }
 
     /** Look up i18n strings here */
     private static String getString(String s) {

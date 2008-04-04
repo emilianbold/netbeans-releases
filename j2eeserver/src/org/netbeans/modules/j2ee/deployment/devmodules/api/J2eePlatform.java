@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -486,64 +487,65 @@ public final class J2eePlatform {
     public Library createLibrary(File location, String libraryName) throws IOException {
         Parameters.notNull("location", location); // NOI18N
 
-        FileObject libraries = FileUtil.toFileObject(FileUtil.normalizeFile(location));
-        if (libraries == null) {
-            throw new IOException("Library folder does not exist"); // NOI18N
+        File parent = location.getAbsoluteFile().getParentFile();
+        if (parent == null) {
+            throw new IOException("Wrong library location " + location); // NOI18N
+        }
+        FileObject baseFolder = FileUtil.toFileObject(parent);
+        if (baseFolder == null) {
+            baseFolder = FileUtil.createFolder(parent);
         }
 
-        URL url = URLMapper.findURL(libraries, URLMapper.EXTERNAL);
+        LibraryManager manager = LibraryManager.forLocation(location.toURI().toURL());
+        Map<String, List<URI>> content = new HashMap<String, List<URI>>();
 
-        LibraryManager manager = LibraryManager.forLocation(url);
-        Map<String, List<URL>> content = new HashMap<String, List<URL>>();
-
-        FileObject baseFolder = libraries.getParent();
         String folderName = getFolderName(baseFolder, libraryName);
         FileObject jarFolder = FileUtil.createFolder(baseFolder, folderName);
 
         Map<String, Integer> usedNames = new  HashMap<String, Integer>();
         Map<FileObject, String> copied = new  HashMap<FileObject, String>();
 
-        List<URL> contentItem = new ArrayList<URL>();
+        List<URI> contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_COMPILE_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSCOMPILE), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_GENERATE_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSGEN), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_IMPORT_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSIMPORT), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_INTEROP_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSIT), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_JWSDP_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_JWSDP), contentItem);
 
-        contentItem = new ArrayList<URL>();
+        contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_JAVADOC, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC), contentItem);
 
-        contentItem = new ArrayList<URL>();
+        contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_SOURCE, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC), contentItem);
 
-        return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
+        return manager.createURILibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
     }
 
     private FileObject[] getVolumeContent(J2eePlatform platform, String volumeType) {
@@ -564,7 +566,7 @@ public final class J2eePlatform {
     }
 
     private void copyFiles(Map<FileObject, String> copied, Map<String, Integer> usedNames,
-            FileObject jarFolder, String folderName, File[] files, List<URL> content) throws IOException {
+            FileObject jarFolder, String folderName, File[] files, List<URI> content) throws IOException {
 
         if (files == null) {
             return;
@@ -585,7 +587,7 @@ public final class J2eePlatform {
     }
 
     private void copyFiles(Map<FileObject, String> copied, Map<String, Integer> usedNames,
-            FileObject jarFolder, String folderName, FileObject[] files, List<URL> content) throws IOException {
+            FileObject jarFolder, String folderName, FileObject[] files, List<URI> content) throws IOException {
 
         if (files == null) {
             return;
@@ -602,8 +604,15 @@ public final class J2eePlatform {
                 }
                 copied.put(jarObject, jarObject.getNameExt().replace(jarObject.getName(), name));
             }
-            URL u = LibrariesSupport.convertFilePathToURL(folderName
+
+            FileObject fresh = jarFolder.getFileObject(copied.get(jarObject));
+            URI u = LibrariesSupport.convertFilePathToURI(folderName
                     + File.separator + copied.get(jarObject));
+
+            if (FileUtil.isArchiveFile(fresh)) {
+                u = LibrariesSupport.getArchiveRoot(u);
+            }
+
             if (!content.contains(u)) {
                 content.add(u);
             }

@@ -72,9 +72,10 @@ public class AsmLexer implements Lexer<AsmTokenId> {
     }
     
     public Token<AsmTokenId> nextToken() {        
-        if (lexer == null)
+        if (lexer == null) {
             lexer = syntax.createHighlightLexer(new LexerInputReader(input), 
-                                                info.state());      
+                                                info.state());
+        }
                 
         AsmTokenId tokId = lexer.nextToken();
         int length = lexer.getLastLength();

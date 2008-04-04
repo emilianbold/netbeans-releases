@@ -63,6 +63,12 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
         mValidFunctions.put(DO_UNMARSHAL_METADATA.getName(), 
                 DO_UNMARSHAL_METADATA);
         //
+        // Another runtime specific extensions
+        // These functions are not going to be supported by the runtime
+        // mValidFunctions.put(GET_GUID_METADATA.getName(), GET_GUID_METADATA);
+        // mValidFunctions.put(GET_BPID_METADATA.getName(), GET_BPID_METADATA);
+        // mValidFunctions.put(EXIST_METADATA.getName(), EXIST_METADATA);
+        //
     }
     
     public BpelXpathExtFunctionResolver() {
@@ -80,17 +86,14 @@ public class BpelXpathExtFunctionResolver implements ExtensionFunctionResolver,
         return null;
     }
 
-    public void validateFunction(XPathExtensionFunction function, 
-            XPathValidationContext context) {
-        assert context != null && context instanceof PathValidationContext;
+    public void validateFunction(XPathExtensionFunction function, XPathValidationContext context) {
+        assert context != null;
         QName funcQName = function.getMetadata().getName();
         if (GET_VARIABLE_PROPERTY_METADATA.getName().equals(funcQName)) {
             String funcName = funcQName.getLocalPart();
-            PathValidationContext vContext = (PathValidationContext)context;
-            vContext.addResultItem(ResultType.WARNING, 
+            context.addResultItem(ResultType.WARNING, 
                     NbBundle.getMessage(BpelVariableResolver.class,
                                     "RUNTIME_NOT_SUPPORT_EXT_FUNC"), funcName); // NOI18N
         }
     }
-
 }

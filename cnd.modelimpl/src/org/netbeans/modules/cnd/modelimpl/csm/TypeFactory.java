@@ -62,6 +62,10 @@ public class TypeFactory {
     }
 
     public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
+        return createType(classifier, ptrOperator, arrayDepth, ast, file, null);
+    }
+    
+    public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
         boolean pointer = false;
         boolean refence = false;
         int pointerDepth = 0;
@@ -115,7 +119,11 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file);
+        if(offset == null) {
+            return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file);
+        } else {
+            return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file, offset);
+        }
     }
    
     

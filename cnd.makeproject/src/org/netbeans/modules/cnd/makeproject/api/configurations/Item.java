@@ -325,7 +325,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor == null)
             return null;
-        return (MakeConfiguration)makeConfigurationDescriptor.getConfs().getActive();
+        Configurations confs = makeConfigurationDescriptor.getConfs();
+        if( confs == null )
+            return null;
+        return (MakeConfiguration)confs.getActive();
     }
     
     public NativeProject getNativeProject() {
@@ -344,6 +347,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        if (compilerSet == null)
+            return vec;
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -362,6 +367,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
             return vec;
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        if (compilerSet == null)
+            return vec;
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -393,6 +400,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        if (compilerSet == null)
+            return vec;
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
@@ -411,6 +420,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
             return vec;
         CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        if (compilerSet == null)
+            return vec;
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {

@@ -65,7 +65,6 @@ import com.sun.appserv.management.client.AppserverConnectionSource;
 import com.sun.appserv.management.client.ProxyFactory;
 import com.sun.appserv.management.config.RARModuleConfig;
 import com.sun.appserv.management.config.ResourceConfig;
-import com.sun.appserv.management.config.ServerConfig;
 import com.sun.appserv.management.j2ee.J2EEManagedObject;
 import com.sun.appserv.management.j2ee.J2EEDomain;
 import com.sun.appserv.management.j2ee.ResourceAdapterModule;
@@ -80,7 +79,6 @@ import com.sun.enterprise.deployment.client.ServerConnectionIdentifier;
 import com.sun.enterprise.deployment.client.DeploymentFacilityFactory;
 import com.sun.enterprise.deployment.client.JESProgressObject;
 import java.util.Properties;
-import java.util.Vector;
 import org.netbeans.modules.j2ee.sun.ide.controllers.ControllerUtil;
 
 /**
@@ -471,10 +469,10 @@ public abstract class AppserverMgmtControllerBase
         }
         
         if (df.isConnected()) {
-            String[] instances = getRelevantTargets();
-            Target[] targets = df.createTargets(instances);
-            progressObject = df.undeploy(targets, getName(), props);
-            df.waitFor(progressObject);
+                String[] targetNames = getRelevantTargets(true);
+                Target[] targets = df.createTargets(targetNames);
+                progressObject = df.undeploy(targets, getName(), props);
+                df.waitFor(progressObject);
         }
         // TODO : this looks suspect. resolve
         if (null != progressObject) {
@@ -490,7 +488,7 @@ public abstract class AppserverMgmtControllerBase
         Properties props = null;    
         
         if (df.isConnected()) {
-            String[] targetNames = new String[] {"server"};
+            String[] targetNames = getRelevantTargets(true);
             Target[] targets = df.createTargets(targetNames);
             progressObject = df.undeploy(targets, name, props);
             df.waitFor(progressObject);
@@ -502,21 +500,17 @@ public abstract class AppserverMgmtControllerBase
         }
     }
     
-    private String[] getRelevantTargets(){
-        Map serverConfigs = ControllerUtil.getServerInstancesMap(getAMXObject());
-        Vector instances = new Vector();
-        for(Iterator itr = serverConfigs.values().iterator(); itr.hasNext(); ) {
-            ServerConfig config = (ServerConfig)itr.next();
-            boolean contains = config.getDeployedItemRefConfigMap().containsKey(getName());
-            if(contains){
-                instances.add(config.getName());
+    private String[] getRelevantTargets(boolean isApp) {
+        String[] targetNames = new String[]{"domain"};
+        try {
+            List<String> instances = ControllerUtil.getDeployedTargets(getAMXObject(), isApp, getMBeanServerConnection());
+            if (instances.size() > 0) {
+                targetNames = instances.toArray(new String[instances.size()]);
             }
+        } catch (Exception ex) {
+            getLogger().log(Level.FINE, ex.getMessage(), ex);
         }
-        String[] targets = new String[instances.size()];
-        for(int i=0; i<instances.size(); i++){
-            targets[i] = instances.get(i).toString();
-        }
-        return targets;
+        return targetNames;
     }
     
     private DeploymentFacility createDeploymentFacility(){

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -120,7 +120,7 @@ public interface SearchEngine {
         createSearchPattern(option);
       }
       catch (PatternSyntaxException e) {
-        throw new SearchException(e);
+        throw new SearchException(e.getMessage());
       }
       SearchEvent event = new SearchEvent.Adapter(option, null);
 
@@ -146,9 +146,6 @@ public interface SearchEngine {
     }
 
     protected boolean accepts(String text) {
-      if (text == null) {
-        return false;
-      }
       return mySearchPattern.accepts(text);
     }
 

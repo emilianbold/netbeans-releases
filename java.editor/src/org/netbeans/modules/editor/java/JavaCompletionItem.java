@@ -162,10 +162,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case METHOD:
                 return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
             case CONSTRUCTOR:
-                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType);
+                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType, null);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
+    }
+    
+    public static final JavaCompletionItem createThisOrSuperConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name) {
+        if (elem.getKind() == ElementKind.CONSTRUCTOR)
+            return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, false, name);
+        throw new IllegalArgumentException("kind=" + elem.getKind());
     }
 
     public static final JavaCompletionItem createOverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
@@ -323,7 +329,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (prefix == null)
             return;
         StringBuilder text = new StringBuilder(prefix);
-        boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
         int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
         if (semiPos > -2)
             toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -381,8 +386,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.insertString(position.getOffset(), text.toString(), null);
             if (semiPosition != null)
                 doc.insertString(semiPosition.getOffset(), ";", null);
-            else if (completeMethod)
-                c.setCaretPosition(c.getCaretPosition() - 1);
         } catch (BadLocationException e) {
             // Can't update
         } finally {
@@ -1339,6 +1342,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 super.substituteText(c, offset, len, add);
+                if ("(".equals(toAdd)) //NOI18N
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } else {
                 String add = "()"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
@@ -1382,10 +1387,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                     if (len > 0)
                         doc.remove(offset, len);
+                    doc.insertString(offset, getInsertPrefix().toString(), null);                    
                     if (semiPosition != null)
                         doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                    else if (params.isEmpty() && "(".equals(toAdd)) //NOI18N
-                        c.setCaretPosition(c.getCaretPosition() - 1);
                 } catch (BadLocationException e) {
                     // Can't update
                 } finally {
@@ -1394,7 +1398,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(getInsertPrefix());
+                    boolean guessArgs = Utilities.guessMethodArguments();
                     if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
                     sb.append(' '); //NOI18N
                     sb.append('('); //NOI18N
@@ -1403,8 +1407,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             ParamDesc paramDesc = it.next();
                             sb.append("${"); //NOI18N
                             sb.append(paramDesc.name);
-                            sb.append(" named instanceof="); //NOI18N
-                            sb.append(paramDesc.fullTypeName);
+                            if (guessArgs) {
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
+                            }
                             sb.append('}'); //NOI18N
                             if (it.hasNext())
                                 sb.append(", "); //NOI18N
@@ -1738,15 +1744,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private boolean isAbstract;
+        private boolean insertName;
         private String sortText;
         private String leftText;
         
-        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
+        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
-            this.simpleName = elem.getEnclosingElement().getSimpleName().toString();
+            this.simpleName = name != null ? name : elem.getEnclosingElement().getSimpleName().toString();
+            this.insertName = name != null;
             this.modifiers = elem.getModifiers();
             this.params = new ArrayList<ParamDesc>();
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
@@ -1759,7 +1767,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
-            return smartType ? 650 - SMART_TYPE : 650;
+            return insertName ? 550 : smartType ? 650 - SMART_TYPE : 650;
         }
         
         public CharSequence getSortText() {
@@ -1849,8 +1857,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            offset += len;
-            len = 0;
+            if (!insertName) {
+                offset += len;
+                len = 0;
+            }
             int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -1902,8 +1912,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             try {
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
-                doc.insertString(offset, text, null);
-                position = doc.createPosition(offset + text.indexOf('('));
+                if (insertName) {
+                    doc.insertString(offset, simpleName + text, null);
+                    position = doc.createPosition(offset + simpleName.length() + text.indexOf('('));
+                } else {
+                    doc.insertString(offset, text, null);
+                    position = doc.createPosition(offset + text.indexOf('('));
+                }
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                 else if (!isAbstract && params.isEmpty() && "(".equals(toAdd)) //NOI18N
@@ -1949,13 +1964,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     else
                         c.setCaretPosition(offset);
                     StringBuilder sb = new StringBuilder();
+                    boolean guessArgs = Utilities.guessMethodArguments();
                     sb.append("("); //NOI18N
                     for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                         ParamDesc paramDesc = it.next();
                         sb.append("${"); //NOI18N
                         sb.append(paramDesc.name);
-                        sb.append(" named instanceof="); //NOI18N
-                        sb.append(paramDesc.fullTypeName);
+                        if (guessArgs) {
+                            sb.append(" named instanceof="); //NOI18N
+                            sb.append(paramDesc.fullTypeName);
+                        }
                         sb.append("}"); //NOI18N
                         if (it.hasNext())
                             sb.append(", "); //NOI18N
@@ -2290,12 +2308,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
+                    boolean guessArgs = Utilities.guessMethodArguments();
                     for (int i = activeParamsIndex; i < params.size(); i++) {
                         ParamDesc paramDesc = params.get(i);
                         sb.append("${"); //NOI18N
                         sb.append(paramDesc.name);
-                        sb.append(" named instanceof="); //NOI18N
-                        sb.append(paramDesc.fullTypeName);
+                        if (guessArgs) {
+                            sb.append(" named instanceof="); //NOI18N
+                            sb.append(paramDesc.fullTypeName);
+                        }
                         sb.append("}"); //NOI18N
                         if (i < params.size() - 1)
                             sb.append(", "); //NOI18N
@@ -2323,7 +2344,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(", "); //NOI18N
                 }
             }
-            sb.append(')');
+            sb.append(") - parameters"); //NOI18N
             return sb.toString();
         }
     }
@@ -2744,13 +2765,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         sb.append('.'); //NOI18N
                         sb.append(memberName);
                         if (params != null) {
+                            boolean guessArgs = Utilities.guessMethodArguments();
                             sb.append("("); //NOI18N
                             for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                                 ParamDesc paramDesc = it.next();
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
-                                sb.append(" named instanceof="); //NOI18N
-                                sb.append(paramDesc.fullTypeName);
+                                if (guessArgs) {
+                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(paramDesc.fullTypeName);
+                                }
                                 sb.append("}"); //NOI18N
                                 if (it.hasNext())
                                     sb.append(", "); //NOI18N

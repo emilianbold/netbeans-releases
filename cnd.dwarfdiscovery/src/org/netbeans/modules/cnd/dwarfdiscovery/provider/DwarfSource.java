@@ -363,6 +363,14 @@ public class DwarfSource implements SourceFileProperties{
             if (sourceName.startsWith("/")) { // NOI18N
                 sourceName = getRelativePath(compilePath, sourceName);
             }
+            if (compilePath == null) {
+                if (fullName != null && fullName.lastIndexOf('/')>0) {
+                    int i = fullName.lastIndexOf('/');
+                    compilePath = fullName.substring(0,i);
+                } else {
+                    compilePath = ""; // NOI18N
+                }
+            }
         }
         if (isCPP) {
             language = ItemProperties.LanguageKind.CPP;
@@ -383,7 +391,9 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     private void addUserIncludePath(String path){
-        userIncludes.add(path);
+        if (!userIncludes.contains(path)) {
+            userIncludes.add(path);
+        }
     }
 
     // public because method is used in unit tests.
@@ -508,6 +518,8 @@ public class DwarfSource implements SourceFileProperties{
     private void addpath(String path){
         if (haveSystemIncludes) {
             if (!isSystemPath(path)){
+                path = fixCygwinPath(path);
+                path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
                 if (FULL_TRACE) System.out.println("\tuser:"+path); // NOI18N
             }
@@ -515,7 +527,10 @@ public class DwarfSource implements SourceFileProperties{
             if (path.startsWith("/usr")) { // NOI18N
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
-                systemIncludes.add(PathCache.getString(path));
+                path = PathCache.getString(path);
+                if (!systemIncludes.contains(path)) {
+                    systemIncludes.add(path);
+                }
                 if (FULL_TRACE) System.out.println("\tsystem:"+path); // NOI18N
             } else {
                 path = fixCygwinPath(path);
@@ -571,6 +586,11 @@ public class DwarfSource implements SourceFileProperties{
                 list = grepSourceFile(includeFullName);
                 for(String included : list){
                     cutFolderPrefix(included, dwarfTable);
+                }
+                int i = includeFullName.lastIndexOf('/');
+                if (i > 0) {
+                    String userPath = includeFullName.substring(0,i);
+                    addpath(userPath);
                 }
             }
             includedFiles.add(PathCache.getString(includeFullName));
@@ -697,7 +717,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         res = new ArrayList<String>();
         File file = new File(fileName);
-        if (file.exists() && file.canRead()){
+        if (file.exists() && file.canRead() && !file.isDirectory()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 while(true){

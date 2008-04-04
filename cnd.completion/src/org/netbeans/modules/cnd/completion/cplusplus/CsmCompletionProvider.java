@@ -84,8 +84,13 @@ import org.openide.util.NbBundle;
  */
 public class CsmCompletionProvider implements CompletionProvider {
 
+    private static final boolean TRACE = false;
+    
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport) Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+        if (sup == null) {
+            return 0;
+        }
         final int dot = component.getCaret().getDot();
         if (CsmCompletionQuery.checkCondition(sup, dot)) {
             try {
@@ -105,6 +110,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
         CsmResultItem.setEnableInstantSubstitution(true);
+        if (TRACE) System.err.println("createTask called on " + dot); // NOI18N
 
         // do not work together with include completion
         if (CsmCompletionQuery.checkCondition(sup, dot)) {
@@ -120,11 +126,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
 
     public static final CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null, false);
+        return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
     }
-
-    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, boolean localContext) {
-        return new NbCsmCompletionQuery(csmFile, localContext);
+    
+    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope) {
+        return new NbCsmCompletionQuery(csmFile, queryScope);
     }
 
     static final class Query extends AsyncCompletionQuery {
@@ -135,16 +141,39 @@ public class CsmCompletionProvider implements CompletionProvider {
         private int queryAnchorOffset;
         private String filterPrefix;
         private boolean caseSensitive = false;
-        private boolean localContext;
+        private CsmCompletionQuery.QueryScope queryScope;
 
         Query(int caretOffset, int queryType) {
+            if (TRACE) System.err.println("Query started creating");
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
-            this.localContext = ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE);
+            if ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE) {
+                this.queryScope = CsmCompletionQuery.QueryScope.SMART_QUERY;
+            } else {
+                this.queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+            }
+            if (TRACE) System.err.println("Query created " + getTestState());
         }
 
+        private String getTestState() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(" creationCaretOffset = " + creationCaretOffset); // NOI18N
+            builder.append(" queryAnchorOffset = " + queryAnchorOffset); // NOI18N
+            builder.append(" queryScope = " + queryScope); // NOI18N
+            builder.append(" filterPrefix = " + filterPrefix); // NOI18N
+            if (queryResult == null) {
+                builder.append(" no queryResult"); // NOI18N
+            } else if (queryResult.isSimpleVariableExpression()) {
+                builder.append(" queryResult is simple"); // NOI18N
+            } else {
+                builder.append(" queryResult is not simple"); // NOI18N
+            }
+            return builder.toString();
+        }
+        
         @Override
         protected void preQueryUpdate(JTextComponent component) {
+            if (TRACE) System.err.println("preQueryUpdate" + getTestState());
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
             Class kitClass = Utilities.getKitClass(component);
@@ -152,11 +181,13 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isCppIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset))) {
+                        if (TRACE) System.err.println("preQueryUpdate return" + getTestState());
                         return;
                     }
                 } catch (BadLocationException e) {
                 }
             }
+            if (TRACE) System.err.println("preQueryUpdate hide completion" + getTestState());
             Completion.get().hideCompletion();
         }
         private static final int MAX_ITEMS_TO_DISPLAY;
@@ -175,9 +206,11 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
 
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
-            boolean limit = !localContext && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
+            if (TRACE) System.err.println("adding items " + getTestState());
+            boolean limit = (queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY) && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
             if (!limit) {
-                CsmResultItem.setEnableInstantSubstitution(!localContext);
+                resultSet.setHasAdditionalItems(queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY);
+                CsmResultItem.setEnableInstantSubstitution(queryScope == CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             } else {
@@ -201,44 +234,52 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            boolean hide = (caretOffset > creationCaretOffset) && (filterPrefix == null);
+            if (TRACE) System.err.println("query begin" + getTestState());
+            boolean hide = (caretOffset <= queryAnchorOffset) && (filterPrefix == null);
             if (!hide) {
+                creationCaretOffset = caretOffset;
                 SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
                 if (syntSupp != null) {
                     CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
+                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
-                    if (res != null && res.getData().isEmpty() && localContext) {
+                    if (res == null || (res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
                         // switch to global context
-                        localContext = false;
-                        if (res.isSimpleVariableExpression()) {
+                        if (TRACE) System.err.println("query switch to global" + getTestState());
+                        queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
+                        if (res == null || res.isSimpleVariableExpression()) {
                             // try once more for non dereferenced expressions
-                            query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
+                            query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope);
                             res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
                         }
+                        if (TRACE) System.err.println("query switched to global" + getTestState());
                     }
                     if (res != null) {
-                        if (localContext) {
-                            localContext = res.isSimpleVariableExpression();
+                        if (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY && 
+                                !res.isSimpleVariableExpression()) {
+                            // change to global mode
+                            queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         }
                         queryAnchorOffset = res.getSubstituteOffset();
                         Collection items = res.getData();
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
-                        resultSet.setHasAdditionalItems(localContext);
                         queryResult = res;
                         addItems(resultSet, items);
                     }
                 }
             } else {
+                if (TRACE) System.err.println("query hide completion" + getTestState());
                 Completion.get().hideCompletion();
             }
+            if (TRACE) System.err.println("query end" + getTestState());
             resultSet.finish();
         }
 
         @Override
         protected void prepareQuery(JTextComponent component) {
+            if (TRACE) System.err.println("prepareQuery" + getTestState());
             this.component = component;
         }
 
@@ -246,15 +287,28 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected boolean canFilter(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
+            if (TRACE) System.err.println("canFilter on " + caretOffset + getTestState());
             filterPrefix = null;
-            if (queryAnchorOffset > -1 && caretOffset > queryAnchorOffset) {
+            if (queryAnchorOffset > -1 && caretOffset >= creationCaretOffset) {
                 try {
                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                    if (!isCppIdentifierPart(filterPrefix)) {
+                    if (queryResult == null || !isCppIdentifierPart(filterPrefix)) {
                         filterPrefix = null;
+                    } else {
+                        Collection items = getFilteredData(queryResult.getData(), filterPrefix);
+                        if (items.isEmpty()) {
+                            filterPrefix = null;
+                        }
                     }
                 } catch (BadLocationException e) {
                     // filterPrefix stays null -> no filtering
+                }
+            }
+            if (TRACE) {
+                if (filterPrefix == null) {
+                    System.err.println("canFilter ended with false:" + getTestState());
+                } else {
+                    System.err.println("canFilter ended with true:" + getTestState());
                 }
             }
             return (filterPrefix != null);
@@ -262,13 +316,16 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         protected void filter(CompletionResultSet resultSet) {
+            if (TRACE) System.err.println("filter begin" + getTestState());
             if (filterPrefix != null && queryResult != null) {
                 // no more title in NB 6 in completion window
                 //resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection items = getFilteredData(queryResult.getData(), filterPrefix);
+                if (TRACE) System.err.println("filter with prefix" + getTestState());
                 addItems(resultSet, items);
             }
+            if (TRACE) System.err.println("filter end"+ getTestState());
             resultSet.finish();
         }
 
@@ -282,7 +339,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
 
         private Collection getFilteredData(Collection data, String prefix) {
-            List ret = new ArrayList();
+            List ret = new ArrayList(1024);
             boolean camelCase = prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
             for (Iterator it = data.iterator(); it.hasNext();) {
                 CompletionQuery.ResultItem itm = (CompletionQuery.ResultItem) it.next();
@@ -303,10 +360,9 @@ public class CsmCompletionProvider implements CompletionProvider {
         private String getFilteredTitle(String title, String prefix) {
             int lastIdx = title.lastIndexOf('.');
             String ret = lastIdx == -1 ? prefix : title.substring(0, lastIdx + 1) + prefix;
-            if (title.endsWith("*")) // NOI18N
-            {
-                ret += "*";
-            } // NOI18N
+            if (title.endsWith("*")) {// NOI18N
+                ret += "*"; // NOI18N
+            }
             return ret;
         }
     }

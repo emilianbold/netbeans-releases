@@ -42,13 +42,13 @@
 package org.netbeans.modules.editor.completion;
 
 import java.awt.Dimension;
-import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
@@ -80,8 +80,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     private boolean displayAboveCaret;
     
-    private Rectangle screenBounds;
-    
     private boolean preferDisplayAboveCaret;
     
     private boolean showRetainedPreferredSize;
@@ -108,7 +106,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
             contentComponent = null;
             anchorOffset = -1;
             // Reset screen bounds as well to not cache too long
-            screenBounds = null;
+            ScreenBoundsProvider.clear();
         }
     }
     
@@ -155,17 +153,6 @@ abstract class CompletionLayoutPopup implements FocusListener {
         anchorOffsetBounds = null;
     }
     
-    final Rectangle getScreenBounds() {
-        if (screenBounds == null) {
-	    JTextComponent editorComponent = getEditorComponent();
-            GraphicsConfiguration configuration = editorComponent != null
-                    ? editorComponent.getGraphicsConfiguration() : null;
-            screenBounds = configuration != null
-                    ? configuration.getBounds() : new Rectangle();
-        }
-        return screenBounds;
-    }
-    
     final int getAnchorOffset() {
 	int offset = anchorOffset;
 	if (offset == -1) {
@@ -184,7 +171,33 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     final Dimension getPreferredSize() {
         JComponent comp = getContentComponent();
+        
+        int screenWidth = ScreenBoundsProvider.getScreenBounds(layout).width;
+        
+        Dimension maxSize = new Dimension((int) (screenWidth *
+                ScreenBoundsProvider.MAX_COMPL_COVERAGE),
+                comp.getMaximumSize().height); //set maximum part of screen covered
+        setMaxSize(comp, maxSize);
+        
+        // if there is space between right CC border and right screen edge,
+        // add this gap to maximum width
+        int gap = screenWidth - (getAnchorOffsetBounds().x + comp.getPreferredSize().width);
+        if(gap > 0) maxSize.width += gap;
+
+        setMaxSize(comp, maxSize);
         return (comp == null) ? new Dimension(0,0) : comp.getPreferredSize();
+    }
+    
+    /** 
+     * Sets maximum size for appropriate JComponent, depending on
+     * wheteher additional items are present
+     */
+    private final void setMaxSize(JComponent comp, Dimension maxSize) {
+        if (comp instanceof JPanel) {
+            comp.getComponent(0).setMaximumSize(maxSize); // JScrollPane
+        } else {
+            comp.setMaximumSize(maxSize);
+        }
     }
     
     final void resetPreferredSize() {
@@ -251,8 +264,8 @@ abstract class CompletionLayoutPopup implements FocusListener {
      * @return rectangle with absolute screen bounds of the popup.
      */
     private Rectangle findPopupBounds(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
         Dimension prefSize = getPreferredSize();
-        Rectangle screen = getScreenBounds();
         Rectangle popupBounds = new Rectangle();
         
         popupBounds.x = Math.min(occupiedBounds.x,
@@ -355,7 +368,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
     }
     
     boolean isMoreSpaceAbove(Rectangle bounds) {
-        Rectangle screen = getScreenBounds();
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
         int above = bounds.y - screen.y;
         int below = (screen.y + screen.height) - (bounds.y + bounds.height);
         return (above > below);
@@ -381,7 +394,8 @@ abstract class CompletionLayoutPopup implements FocusListener {
      *  on the requested side or false if not.
      */
     boolean isEnoughSpace(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
-        Rectangle screen = getScreenBounds();
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(layout);
+        
         int freeHeight = aboveOccupiedBounds
             ? occupiedBounds.y - screen.y
             : (screen.y + screen.height) - (occupiedBounds.y + occupiedBounds.height);

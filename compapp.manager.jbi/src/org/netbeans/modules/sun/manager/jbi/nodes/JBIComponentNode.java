@@ -94,7 +94,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigu
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.NewSchemaBasedConfigPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainConfirmation;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
@@ -247,7 +247,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         "LBL_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
                         "DSC_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
                         getComponentStatisticsSheetSetProperties());
-            } catch (ManagementRemoteException e) {
+            } catch (Exception e) {
                 logger.warning(e.getMessage());
             }
         }
@@ -276,7 +276,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             for (Attribute attr : attrMap.keySet()) {
                 JBIComponentConfigurationMBeanAttributeInfo info = attrMap.get(attr);
 
-                PropertySupport support = NewSchemaBasedConfigPropertySupportFactory.getPropertySupport(this, attr, info);
+                PropertySupport support = SchemaBasedConfigPropertySupportFactory.getPropertySupport(this, attr, info);
 
                 if (support == null) {
 
@@ -802,9 +802,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Shutdownable ==================================
-    public boolean canShutdown() {
+    public boolean canShutdown(boolean force) {
         return canStop() ||
-                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState());
+                !busy && JBIComponentInfo.STOPPED_STATE.equals(getState()) ||
+                force && !JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
     public void shutdown(boolean force) {
@@ -857,8 +858,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
 
     //========================== Uninstallable =================================
-    public boolean canUninstall() {
-        return canShutdown() ||
+    public boolean canUninstall(boolean force) {
+        return force || canShutdown(force) ||
                 !busy && JBIComponentInfo.SHUTDOWN_STATE.equals(getState());
     }
 
@@ -883,7 +884,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
-        if (canUndeploy()) {
+        if (canUndeploy(force)) {
             if (!undeploy(force)) { // undeployment cancelled or failed
                 return;
             }
@@ -894,7 +895,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             return;
         }
 
-        if (canShutdown()) {
+        if (canShutdown(force)) {
             shutdown(force);
         }
 
@@ -1269,17 +1270,19 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     new TreeMap<Attribute, MBeanAttributeInfo>();
 
             ConfigurationService configService = getConfigurationService();
+            String componentName = getName();
             Map<String, Level> loggerMap = configService.getComponentLoggerLevels(
-                    getName(), SERVER_TARGET, null); // NULL?    
+                    componentName, SERVER_TARGET, null);  
+            Map<String, String> loggerDisplayNameMap = configService.getComponentLoggerDisplayNames(
+                    componentName, SERVER_TARGET, null);  
 
             for (String loggerCustomName : loggerMap.keySet()) {
                 Level logLevel = loggerMap.get(loggerCustomName);
-                int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
-                String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
-
+                String displayName = loggerDisplayNameMap.get(loggerCustomName);
+                
                 Attribute attr = new Attribute(loggerCustomName, logLevel);
                 MBeanAttributeInfo info = new MBeanAttributeInfo(
-                        shortName,
+                        displayName,
                         "java.util.logging.Level", // NOI18N
                         loggerCustomName,
                         true, true, false);
@@ -1304,7 +1307,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             RuntimeManagementServiceWrapper mgmtService =
                     getRuntimeManagementServiceWrapper();
             if (mgmtService == null) {
@@ -1352,19 +1355,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (saNames.size() > 0) {
 
                 JBINode jbiNode = (JBINode) getParentNode().getParentNode();
+                Node[] jbiNodeChildren = jbiNode.getChildren().getNodes();
 
-                JBIComponentContainerNode sesNode =
-                        (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
-                // Can't do refresh: NPE while invoking undeployment on multiple components.
-                sesNode.refresh();
-
-                JBIComponentContainerNode bcsNode =
-                        (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
-                bcsNode.refresh();
-
-                JBIServiceAssembliesNode sasNode =
-                        (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
-                sasNode.refresh();
+                Node sesNode = jbiNodeChildren[0];
+                Node bcsNode = jbiNodeChildren[1];
+                Node sasNode = jbiNodeChildren[3];
 
                 try {
                     List<String> componentsNeedingStart =
@@ -1430,7 +1425,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                             }
                         }
 
-                        Node startableNode = isBC ? getChildNode(bcsNode, componentNeedingStart) : getChildNode(sesNode, componentNeedingStart);
+                        Node startableNode = isBC ? 
+                            getChildNode(bcsNode, componentNeedingStart) : 
+                            getChildNode(sesNode, componentNeedingStart);
                         ((Startable) startableNode).start();
                     }
                 } catch (ManagementRemoteException e) {
@@ -1447,8 +1444,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         success = success && ((Undeployable) saNode).undeploy(force);
                     }
                 }
-
-                sasNode.refresh();
             }
 
             return success;
@@ -1778,7 +1773,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         //========================== Undeployable =================================
-        public boolean canUndeploy() {
+        public boolean canUndeploy(boolean force) {
             return false;
         }
 

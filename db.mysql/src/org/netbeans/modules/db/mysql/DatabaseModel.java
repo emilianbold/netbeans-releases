@@ -74,4 +74,15 @@ public class DatabaseModel implements Node.Cookie {
     ServerInstance getServer() {
         return server;
     }
+    
+    @Override
+    public boolean equals(Object other) {
+        return other != null && other instanceof DatabaseModel &&
+                ((DatabaseModel)other).getDbName().equals(getDbName());
+    }
+    
+    @Override
+    public int hashCode() {
+        return getDbName().hashCode();
+    }
 }

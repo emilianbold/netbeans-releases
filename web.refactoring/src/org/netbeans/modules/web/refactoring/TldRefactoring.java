@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -52,6 +54,8 @@ import org.openide.util.Lookup;
  */
 public abstract class TldRefactoring implements WebRefactoring{
     
+    private static final Logger LOGGER = Logger.getLogger(TldRefactoring.class.getName());
+    
     public Problem preCheck() {
         return null;
     }
@@ -66,10 +70,18 @@ public abstract class TldRefactoring implements WebRefactoring{
         Enumeration<? extends FileObject> children = webInf.getChildren(true);
         while(children.hasMoreElements()){
             FileObject child = children.nextElement();
-            Taglib taglib = getTaglib(child);
-            if (taglib != null){
-                result.add(new TaglibHandle(taglib, child));
+            if (!isTld(child)) {
+                continue;
             }
+            Taglib taglib = null;
+            try {
+                taglib = getTaglib(child);
+            } catch (IOException ioe) {
+                // just log it - s2b could not create a graph for the file, probably not a valid file
+                // user is notified about it in the refactoring dialog
+                LOGGER.log(Level.FINE, "Failed to create Taglib graph for " + child, ioe);
+            }
+            result.add(new TaglibHandle(taglib, child));
         }
         return result;
     }
@@ -78,10 +90,7 @@ public abstract class TldRefactoring implements WebRefactoring{
         return TLDLoader.tldExt.equalsIgnoreCase(fo.getExt());
     }
     
-    private Taglib getTaglib(FileObject tld) {
-        if (!isTld(tld)){
-            return null;
-        }
+    private Taglib getTaglib(FileObject tld) throws IOException {
         DataObject tldData = null;
         try {
             tldData = DataObject.find(tld);
@@ -90,24 +99,28 @@ public abstract class TldRefactoring implements WebRefactoring{
         }
         Taglib result = null;
         if (tldData instanceof TLDDataObject) {
-            try {
-                result = ((TLDDataObject)tldData).getTaglib();
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+            result = ((TLDDataObject) tldData).getTaglib();
         }
         return result;
     }
     
+    
     protected static class TaglibHandle {
+        
         private final Taglib taglib;
         private final FileObject tldFile;
+        private final boolean valid;
         
-        public TaglibHandle(Taglib taglib, FileObject tldFile) {
+        private TaglibHandle(Taglib taglib, FileObject tldFile) {
             this.taglib = taglib;
             this.tldFile = tldFile;
+            this.valid = taglib != null;
         }
         
+        /**
+         * @return the taglib represented by <code>tldFile</code> or <code>null</code>
+         * if it was not valid (see {@link #isValid}).
+         */
         public Taglib getTaglib() {
             return taglib;
         }
@@ -115,9 +128,16 @@ public abstract class TldRefactoring implements WebRefactoring{
         public FileObject getTldFile() {
             return tldFile;
         }
+
+        /**
+         * @return true if the encapsulated taglib is valid, false otherwise (meaning
+         * that can't be refactored).
+         */
+        public boolean isValid() {
+            return valid;
+        }
         
     }
-    
     
     protected abstract static class TldRefactoringElement extends SimpleRefactoringElementImplementation{
         

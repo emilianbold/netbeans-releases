@@ -56,7 +56,6 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
-import org.netbeans.modules.php.lexer.PhpTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -72,6 +71,8 @@ import org.openide.windows.TopComponent;
  *
  */
 public class Utils {
+    
+    private final static String  MIME_TYPE = "text/x-php5"; //NOI18N
     
     private Utils(){
         // avoid inst-ion
@@ -264,7 +265,7 @@ public class Utils {
         }
         else {
             String mimeType = fileObject.getMIMEType();
-            return PhpTokenId.MIME_TYPE.equals(mimeType);
+            return MIME_TYPE.equals(mimeType);
         }
     }
 

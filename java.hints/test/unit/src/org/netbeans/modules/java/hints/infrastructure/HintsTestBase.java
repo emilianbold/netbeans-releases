@@ -46,7 +46,6 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +53,6 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -64,27 +62,21 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.JavaDataObject.JavaEditorSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.java.source.TestUtil;
-import org.netbeans.modules.java.source.usages.BinaryAnalyser;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
@@ -95,7 +87,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -156,29 +147,7 @@ public class HintsTestBase extends NbTestCase {
             IndexUtil.setCacheFolder(cache);
             
             if (createCaches()) {
-                for (URL u : SourceUtilsTestUtil.getBootClassPath()) {
-                    FileObject file = URLMapper.findFileObject(u);
-                    
-                    if (file == null)
-                        continue;
-                    
-                    file = FileUtil.getArchiveFile(file);
-                    
-                    if (file == null)
-                        continue;
-                    
-                    File jioFile = FileUtil.toFile(file);
-                    
-                    if (jioFile == null)
-                        continue;
-                    
-                    final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(u, false);
-                    ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
-                    BinaryAnalyser ba = ci.getBinaryAnalyser();
-                    
-                    ba.start(u, handle, new AtomicBoolean(false), new AtomicBoolean(false));
-                    ba.finish();
-                }
+                TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
             }
         }
     }

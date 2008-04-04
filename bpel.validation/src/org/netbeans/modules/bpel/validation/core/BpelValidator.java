@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -68,9 +67,6 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
 public abstract class BpelValidator extends CoreValidator {
 
   public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    setParam(validation, type);
-    init();
-
     if ( !(model instanceof BpelModel)) {
       return null;
     }
@@ -79,6 +75,8 @@ public abstract class BpelValidator extends CoreValidator {
     if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
+    init(validation, type);
+
     Runnable run = new Runnable() {
       public void run() {
         startTime();
@@ -91,15 +89,27 @@ public abstract class BpelValidator extends CoreValidator {
       }
     };
     bpelModel.invoke(run);
+//if (getName().contains("custom")) {
 //out();
 //out();
 //out("!!! ERRORS: " + getResultItems().size());
 //out();
 //out();
+//}
     return new ValidationResult(getResultItems(), Collections.singleton(model));
   }
 
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {
     return activity != null && activity.getCreateInstance() == TBoolean.YES;
+  }
+
+  protected final CreateInstanceActivity getCreateInstanceActivity(Component component) {
+    if (component instanceof CreateInstanceActivity) {
+      return (CreateInstanceActivity) component;
+    }
+    if (component.getParent() instanceof CreateInstanceActivity) {
+      return (CreateInstanceActivity) component.getParent();
+    }
+    return null;
   }
 }

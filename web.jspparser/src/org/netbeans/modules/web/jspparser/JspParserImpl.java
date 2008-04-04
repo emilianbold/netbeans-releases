@@ -56,6 +56,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsps.parserapi.TldChangeListener;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 
 import org.openide.filesystems.FileObject;
@@ -72,6 +73,7 @@ public class JspParserImpl implements JspParserAPI {
     
     // @GuardedBy(this)
     final Map<WebModule, WebAppParseProxy> parseSupports = new WeakHashMap<WebModule, WebAppParseProxy>();
+    private final TldChangeSupport tldChangeSupport;
     
     private static final Logger LOGGER = Logger.getLogger(JspParserImpl.class.getName());
     private static Constructor webAppParserImplConstructor;
@@ -84,6 +86,7 @@ public class JspParserImpl implements JspParserAPI {
     public JspParserImpl() {
         // PENDING - we are preventing the garbage collection of
         // Project-s and FileObject-s (wmRoots)
+        tldChangeSupport = new TldChangeSupport(this);
     }
     
     private static void initReflection() {
@@ -104,7 +107,7 @@ public class JspParserImpl implements JspParserAPI {
                 }
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
                 Class<?> cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport"); // NOI18N
-                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
+                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {JspParserImpl.class, WebModule.class});
             } catch (NoSuchMethodException e) {
                 LOGGER.log(Level.INFO, null, e);
             } catch (MalformedURLException e) {
@@ -192,7 +195,7 @@ public class JspParserImpl implements JspParserAPI {
         // PENDING - do caching for individual JSPs
         try {
             initReflection();
-            return (WebAppParseProxy) webAppParserImplConstructor.newInstance(new Object[] {wm});
+            return (WebAppParseProxy) webAppParserImplConstructor.newInstance(new Object[] {this, wm});
         } catch (IllegalAccessException e) {
             LOGGER.log(Level.INFO, null, e);
         } catch (InstantiationException e) {
@@ -213,7 +216,19 @@ public class JspParserImpl implements JspParserAPI {
                 NbBundle.getMessage(JspParserImpl.class, "MSG_webModuleNotFound", jspFile.getNameExt()), ""); // NOI18N
         return new JspParserAPI.ParseResult(new JspParserAPI.ErrorDescriptor[] {error});
     }
-    
+
+    public void addTldChangeListener(TldChangeListener listener) {
+        tldChangeSupport.addTldChangeListener(listener);
+    }
+
+    public void removeTldChangeListener(TldChangeListener listener) {
+        tldChangeSupport.removeTldChangeListener(listener);
+    }
+
+    public void fireChange(WebModule webModule) {
+        tldChangeSupport.fireChange(webModule);
+    }
+
     private static class ExtClassLoader extends URLClassLoader {
         
         private static final AllPermission ALL_PERM = new AllPermission();

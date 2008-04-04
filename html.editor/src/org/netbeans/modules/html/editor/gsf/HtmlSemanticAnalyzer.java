@@ -78,13 +78,15 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
         ParserResult presult = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
         final TranslatedSource source = presult.getTranslatedSource();
         
+        HtmlParserResult htmlResult = (HtmlParserResult) presult;
+        
         //just a test - highlight all tags' ids
-        Set<TagAttribute> ids = ((HtmlParserResult) presult).elementsIds();
+        Set<TagAttribute> ids = htmlResult.elementsIds();
         for(TagAttribute ta : ids) {
             OffsetRange range = new AstOffsetRange(ta.getValueOffset(), ta.getValueOffset() + ta.getValueLength(), source);
                 highlights.put(range, ColoringAttributes.METHOD);
         }    
-
+        
         semanticHighlights = highlights;
 
     }

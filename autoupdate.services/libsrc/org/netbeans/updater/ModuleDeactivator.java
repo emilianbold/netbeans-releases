@@ -64,8 +64,8 @@ public final class ModuleDeactivator extends Object {
         Collection<File> allFiles = new HashSet<File> ();
         for (File cluster : UpdateTracking.clusters (true)) {
             boolean modified = allFiles.addAll (readFilesMarkedForDeleteInCluster (cluster));
-            modified = modified || allFiles.add (getControlFileForMarkedForDelete (cluster));
-            modified = modified || allFiles.add (getDeactivateLater (cluster));
+            modified = allFiles.add (getControlFileForMarkedForDelete (cluster)) || modified;
+            modified = allFiles.add (getDeactivateLater (cluster)) || modified;
             if (modified) {
                 UpdaterDispatcher.touchLastModified (cluster);
             }
@@ -177,7 +177,8 @@ public final class ModuleDeactivator extends Object {
     private static void doDelete (File f) {
         assert f != null : "Invalid file " + f + " for delete.";
         if (f.exists () && ! f.delete ()) {
-            assert false : f + " cannot be deleted";
+            // updater_nb.jar is locked on windows, don't throw AE here
+            //assert false : f + " cannot be deleted";
             f.deleteOnExit ();
         }
         f = f.getParentFile ();

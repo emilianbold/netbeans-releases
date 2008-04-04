@@ -43,27 +43,29 @@ public class XORIcon2D extends Icon2D {
     private static final Shape SHAPE;
     
     static {
-        float  x1 = -9;
-        float  x2 = 9;
+        float  x1 = -6;
+        float  x2 = 6;
         
-        float  y1 = -9.5f;
-        float  y2 = +9.5f;
+        float  y1 = -6.5f;
+        float  y2 = +6.5f;
+        
+        float w = 3.5f;
         
         GeneralPath gp;
         
         gp = new GeneralPath();
         gp.moveTo(x1, y1);
-        gp.lineTo(x1 + 5, y1);
+        gp.lineTo(x1 + w, y1);
         gp.lineTo(x2, y2);
-        gp.lineTo(x2 - 5, y2);
+        gp.lineTo(x2 - w, y2);
         gp.closePath();
         
         Area a = new Area(gp);
 
         gp.reset();
-        gp.moveTo(x2 - 5, y1);
+        gp.moveTo(x2 - w, y1);
         gp.lineTo(x2, y1);
-        gp.lineTo(x1 + 5, y2);
+        gp.lineTo(x1 + w, y2);
         gp.lineTo(x1, y2);
         gp.closePath();
         

@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -105,41 +105,50 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     myValidation.validate(model, myType);
   }
 
-  protected final void setParam(Validation validation, ValidationType type) {
-    myValidation = validation;
+  protected final void init(Validation validation, ValidationType type) {
     myType = type;
+    myValidation = validation;
     myResultItems = new HashSet<ResultItem>();
+    init();
   }
 
-  public final void addWarning(String key, Component component) {
-    addMessage(i18n(getClass(), key), ResultType.WARNING, component);
-  }
-
-  public final void addError(String key, Component component) {
+  protected final void addError(String key, Component component) {
 //out("add error: " + key + " " + component);
     addMessage(i18n(getClass(), key), ResultType.ERROR, component);
   }
 
-  public final void addError(String key, Component component, String param) {
+  protected final void addError(String key, Component component, String param) {
     addMessage(i18n(getClass(), key, param), ResultType.ERROR, component);
   }
 
-  public final void addError(String key, Component component, String param1, String param2) {
+  protected final void addError(String key, Component component, String param1, String param2) {
 //out("add error: " + key + " " + param1 + " " + param2);
 //out("      msg: " + i18n(getClass(), key, param1, param2));
     addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
   }
 
-  protected final void addQuickFix(Outcome outcome) {
-    myResultItems.add(outcome);
+  protected final void addWarning(String key, Component component) {
+    addMessage(i18n(getClass(), key), ResultType.WARNING, component);
   }
 
-  protected final void addErrorMessage(String message, Component component) {
-    myResultItems.add(new ResultItem(this, ResultType.ERROR, component, message));
+  protected final void addWarning(String key, Component component, String param) {
+    addMessage(i18n(getClass(), key, param), ResultType.WARNING, component);
+  }
+
+  protected final void addWarning(String key, Component component, String param1, String param2) {
+    addMessage(i18n(getClass(), key, param1, param2), ResultType.WARNING, component);
   }
 
   protected final void addMessage(String message, ResultType type, Component component) {
-    myResultItems.add(new ResultItem(this, type, component, message));
+    addQuickFixable(component, type, message, null);
+  }
+
+  protected final void addQuickFix(String key, Component component, String param1, String param2, QuickFix quickFix) {
+    addQuickFixable(component, ResultType.ERROR, i18n(getClass(), key, param1, param2), quickFix);
+  }
+
+  private void addQuickFixable(Component component, ResultType type, String message, QuickFix quickFix) {
+    myResultItems.add(new QuickFixable(this, type, component, message, quickFix));
   }
 
   protected final boolean isValidationComplete() {
@@ -160,14 +169,21 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     if (component == null) {
       return null;
     }
+    String name;
     if (component instanceof Named) {
-      String name = ((Named) component).getName();
+      name = ((Named) component).getName();
 
       if (name != null) {
         return name;
       }
     }
-    return component.getClass().getName();
+    name = component.getClass().getName();
+    int k = name.lastIndexOf(".");
+
+    if (k == -1) {
+      return name;
+    }
+    return name.substring(k + 1);
   }
 
   protected final Component getTypeOfElement(Component component) {
@@ -260,7 +276,7 @@ public abstract class CoreValidator extends SimpleBpelModelVisitorAdaptor implem
     return value.substring(k + 1);
   }
 
-  private static void out() {
+  private void out() {
     System.out.println();
   }
 

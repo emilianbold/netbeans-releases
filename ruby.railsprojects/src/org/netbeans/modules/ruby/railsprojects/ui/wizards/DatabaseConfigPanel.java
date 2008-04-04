@@ -66,7 +66,7 @@ public class DatabaseConfigPanel implements
     }
 
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(DatabaseConfigPanel.class);
     }
 
     public void readSettings(Object settings) {

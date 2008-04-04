@@ -40,14 +40,19 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.net.URL;
+import javax.imageio.ImageIO;
 import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitProcessNode;
 
 /**
  * Widget for CASA service engine service unit's process title.
@@ -57,17 +62,24 @@ import org.netbeans.api.visual.widget.Widget;
 public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
 
     private static final boolean DEBUG = false;
-    
+        
+    private Widget leftEmptyWidget;
+    private ImageWidget imageWidget;
     private LabelWidget titleWidget;
+    private Widget rightEmptyWidget;
 
-    public CasaProcessTitleWidget(Scene scene, String processName) {
+    public CasaProcessTitleWidget(Scene scene, String processName, Image image) {
         super(scene);
 
         setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.CENTER, 5));
 
-        Widget leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
+        leftEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
         leftEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
-        Widget rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
+        
+        imageWidget = new ImageWidget(scene);
+        imageWidget.setImage(image);
+        
+        rightEmptyWidget = new Widget(getScene()); //Placeholder to place MinimizeIcon inside rounded rectangle
         rightEmptyWidget.setPreferredBounds(new Rectangle(CasaNodeWidgetEngine.ARROW_PIN_WIDTH, 2));
 
         titleWidget = new LabelWidget(getScene(), processName);
@@ -76,6 +88,7 @@ public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
         titleWidget.setFont(getScene().getDefaultFont().deriveFont(Font.BOLD));
 
         addChild(leftEmptyWidget);
+        addChild(imageWidget);
         addChild(titleWidget);
         addChild(rightEmptyWidget);
 
@@ -115,8 +128,14 @@ public class CasaProcessTitleWidget extends Widget implements CasaMinimizable {
     }
     
     public void setMinimized(boolean isMinimized) {
-        Rectangle rect = isMinimized ? new Rectangle() : null;
-        titleWidget.setPreferredBounds(rect);
-        setPreferredBounds(rect);
+        if (isMinimized) {            
+            imageWidget.removeFromParent();
+            titleWidget.removeFromParent();
+            rightEmptyWidget.removeFromParent();
+        } else {
+            addChild(imageWidget);
+            addChild(titleWidget);
+            addChild(rightEmptyWidget);
+        }
     }
 }

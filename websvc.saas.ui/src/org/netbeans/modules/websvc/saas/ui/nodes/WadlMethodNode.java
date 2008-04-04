@@ -91,7 +91,7 @@ public class WadlMethodNode extends AbstractNode {
         if (method.getWadlMethod().getId() != null) {
             return method.getWadlMethod().getId();
         }
-        String name = method.getName();
+        String name = method.getWadlMethod().getName();
         String displayName = name;
         if (GET.equals(name)) {
             Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(

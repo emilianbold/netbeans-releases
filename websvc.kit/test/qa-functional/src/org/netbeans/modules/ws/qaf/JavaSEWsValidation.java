@@ -82,7 +82,7 @@ public class JavaSEWsValidation extends WsValidation {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new JavaSEWsValidation("testCreateWsClient")); //NOI18N   
         suite.addTest(new JavaSEWsValidation("testCallWsOperationInJavaMainClass")); //NOI18N

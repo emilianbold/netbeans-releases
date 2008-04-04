@@ -145,19 +145,25 @@ public class CallTest extends JsTestBase {
         assertFalse(call.isStatic());
     }
 
-    public void testCall5() throws Exception {
-        Call call = getCall("[1,2,3].each^");
-        assertEquals("Array", call.getType());
-        assertFalse(call.isSimpleIdentifier());
-        assertFalse(call.isStatic());
-    }
-
-    public void testCall5b() throws Exception {
-        Call call = getCall("[1,2,3].^");
-        assertEquals("Array", call.getType());
-        assertFalse(call.isSimpleIdentifier());
-        assertFalse(call.isStatic());
-    }
+// This test no longer applies; it's not common to call methods on
+// array literals in JavaScript and it's a lot more likely
+// you're trying to access an array -element-    
+//    public void testCall5() throws Exception {
+//        Call call = getCall("[1,2,3].each^");
+//        assertEquals("Array", call.getType());
+//        assertFalse(call.isSimpleIdentifier());
+//        assertFalse(call.isStatic());
+//    }
+//
+// This test no longer applies; it's not common to call methods on
+// array literals in JavaScript and it's a lot more likely
+// you're trying to access an array -element-    
+//    public void testCall5b() throws Exception {
+//        Call call = getCall("[1,2,3].^");
+//        assertEquals("Array", call.getType());
+//        assertFalse(call.isSimpleIdentifier());
+//        assertFalse(call.isStatic());
+//    }
 
 //    public void testCall6() throws Exception {
 //        Call call = getCall("{:x=>:y}.foo^");
@@ -336,7 +342,9 @@ public class CallTest extends JsTestBase {
 
     public void testCallUnknown() throws Exception {
         Call call = getCall("getFoo().x^");
-        assertSame(Call.UNKNOWN, call);
+        assertNull(call.getType());
+        assertNull(call.getLhs());
+        assertEquals(6, call.getPrevCallParenPos());
     }
 
     public void testCallLocal() throws Exception {

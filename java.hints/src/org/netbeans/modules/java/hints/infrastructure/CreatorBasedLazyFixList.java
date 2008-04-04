@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.modules.java.hints.infrastructure.LazyHintComputationFactory;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

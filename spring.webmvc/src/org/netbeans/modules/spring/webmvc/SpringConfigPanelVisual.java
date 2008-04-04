@@ -83,6 +83,15 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         // fired while initializing the UI.
         changeSupport.addChangeListener(extender);
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        tabbedPanel.setEnabled(enabled);
+        dispatcherNameText.setEnabled(enabled);
+        dispatcherMappingText.setEnabled(enabled);
+        includeJstlCheckBox.setEnabled(enabled);
+        super.setEnabled(enabled);
+    }
     
     public String getDispatcherName() {
         return dispatcherNameText.getText();
@@ -181,9 +190,12 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                 .addContainerGap(351, Short.MAX_VALUE))
         );
 
+        includeJstlCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.includeJstlCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
 
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
+        tabbedPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.tabbedPanel.AccessibleContext.accessibleName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void includeJstlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeJstlCheckBoxActionPerformed

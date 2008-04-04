@@ -38,58 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
-import java.util.Enumeration;
-import java.util.Vector;
-import org.openide.util.Utilities;
+import java.util.ArrayList;
 
 public class Platforms {
-    private static Vector platforms;
 
-    public static void checkInitialized() {
-        if (platforms == null) {
-            platforms = new Vector();
-            platforms.add(new PlatformSolarisSparc());
-            platforms.add(new PlatformSolarisIntel());
-            platforms.add(new PlatformLinux());
-            platforms.add(new PlatformWindows());
-            platforms.add(new PlatformMacOSX());
-            platforms.add(new PlatformGeneric());
+    private static ArrayList<Platform> platforms = null;
+    private static Object lock = new Object();
+
+    public static ArrayList<Platform> getPlatforms() {
+        synchronized (lock) {
+            if (platforms == null) {
+                platforms = new ArrayList<Platform>();
+                platforms.add(new PlatformSolarisSparc());
+                platforms.add(new PlatformSolarisIntel());
+                platforms.add(new PlatformLinux());
+                platforms.add(new PlatformWindows());
+                platforms.add(new PlatformMacOSX());
+                platforms.add(new PlatformGeneric());
+            }
+            return platforms;
         }
     }
-    
+
     public static Platform getPlatform(String name) {
-        checkInitialized();
-        Enumeration e = platforms.elements();
-        for (; e.hasMoreElements(); ) {
-            Platform pl = (Platform)e.nextElement();
-            if (pl.getName().equals(name))
+        for (Platform pl : getPlatforms()) {
+            if (pl.getName().equals(name)) {
                 return pl;
+            }
         }
         return null;
     }
-    
+
     public static Platform getPlatform(int id) {
-        checkInitialized();
-        Enumeration e = platforms.elements();
-        for (; e.hasMoreElements(); ) {
-            Platform pl = (Platform)e.nextElement();
-            if (pl.getId() == id)
+        for (Platform pl : getPlatforms()) {
+            if (pl.getId() == id) {
                 return pl;
+            }
         }
         return null;
     }
-    
+
     public static String[] getPlatformDisplayNames() {
-        checkInitialized();
-        String[] ret = new String[platforms.size()];
-        Enumeration e = platforms.elements();
+        String[] ret = new String[getPlatforms().size()];
         int index = 0;
-        for (; e.hasMoreElements(); ) {
-            Platform cs = (Platform)e.nextElement();
-            ret[index++] = cs.getDisplayName();
+        for (Platform pl : getPlatforms()) {
+            ret[index++] = pl.getDisplayName();
         }
         return ret;
     }

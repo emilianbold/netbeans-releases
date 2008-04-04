@@ -41,6 +41,7 @@ package org.netbeans.modules.java.editor.javadoc;
 
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestSuite;
@@ -61,6 +62,12 @@ public class DocPositionsTest extends JavadocTestSupport {
 //        suite.addTest(new DocPositionsTest("testGetTag"));
 //        suite.addTest(new DocPositionsTest("getTagSpan"));
         return suite;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        DocPositions.isTestMode = true;
     }
     
     public void testGetTag() throws Exception {
@@ -86,13 +93,15 @@ public class DocPositionsTest extends JavadocTestSupport {
         int offset = code.indexOf(what) + what.length();
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
-        assertTrue(jdts.moveNext());
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
         
         DocPositions positions = DocPositions.get(info, javadoc, jdts);
         Tag[] inlineTags = javadoc.inlineTags();
         Tag[] tags = javadoc.tags();
+        // enforce GC
+        assertGC("", new WeakReference<Object>(new Object()));
         
         what = "{@link String} GUG";
         offset = code.indexOf(what);
@@ -110,10 +119,10 @@ public class DocPositionsTest extends JavadocTestSupport {
         offset = code.indexOf(what);
         offsetEnd = code.indexOf("@param m1");
         tag = positions.getTag(offset);
-        assertNotNull(insertPointer(code, offset), tag);
-        assertEquals(insertPointer(code, offset), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
+        assertNotNull(logPositions(code, offset, positions), tag);
+        assertEquals(logPositions(code, offset, positions), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
         int[] span = positions.getTagSpan(tag);
-        assertNotNull(insertPointer(code, offset), span);
+        assertNotNull(logPositions(code, offset, positions), span);
         assertTrue(logPositions(code, offset, offsetEnd, span), offset == span[0] && offsetEnd == span[1]);
         
         what = "@param m1";
@@ -153,8 +162,102 @@ public class DocPositionsTest extends JavadocTestSupport {
         offsetEnd = offset + what.length();
         tag = positions.getTag(offset + 2);
 //        assertEquals(logPositions(code, offset, offsetEnd, inlineTags[1], tag), inlineTags[1], tag);
-        assertNotNull(insertPointer(code, offset), tag);
-        assertEquals(insertPointer(code, offset), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
+        assertNotNull(logPositions(code, offset, positions), tag);
+        assertEquals(logPositions(code, offset, positions), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
+    }
+    
+    public void testGetTag_131826() throws Exception {
+        String code = 
+                "/** * @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "@author";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] tags = javadoc.tags();
+        
+        // @author
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+    }
+    
+    public void testGetTagIn1LineJavadoc() throws Exception {
+        String code = 
+                "package p;\n" +
+                "/** @deprecated this class {@link C} is deprecated. */" +
+                "class C {}";
+        prepareTest(code);
+        String what = "@deprecated this class {@link C} is deprecated.";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] inlineTags = javadoc.inlineTags();
+        Tag[] tags = javadoc.tags();
+
+        // @deprecated block tag
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+        
+        //{@link} tag
+        what = "{@link C}";
+        offset = code.indexOf(what);
+        offsetEnd = offset + what.length();
+        tag = positions.getTag(offset);
+        inlineTags = tags[0].inlineTags();
+        assertEquals(logPositions(code, offset, offsetEnd, inlineTags[1], tag), inlineTags[1], tag);
+    }
+
+    public void testGarbageCollection() throws Exception {
+        String code = 
+                "package p;\n" +
+                "class C {\n" +
+                "    /**\n" +
+                "     * @return return description {@code unclosed in return\n" +
+                "     */\n" +
+                "    int m(int m1) {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n";
+        prepareTest(code);
+        
+        String what = "@return";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        Tag tag = positions.getTag(offset);
+        assertNotNull(tag);
+        WeakReference<Tag> wtag = new WeakReference<Tag>(tag);
+        
+        tag = null;
+        javadoc = null;
+        jdts = null;
+        positions = null;
+        info = null;
+        assertGC("tag", wtag);
+        
     }
     
     private static String logPositions(String code, int begin, int end, Tag exp, Tag found) {
@@ -188,4 +291,7 @@ public class DocPositionsTest extends JavadocTestSupport {
                 "\nexpected: '" + expSnipped + "', result: '" + resSnipped + "'";
     }
 
+    private static String logPositions(String code, int offset, DocPositions dp) {
+        return insertPointer(code, offset) + '\n' + dp;
+    }
 }

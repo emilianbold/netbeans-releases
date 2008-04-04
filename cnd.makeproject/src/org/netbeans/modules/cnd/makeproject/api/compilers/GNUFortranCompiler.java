@@ -73,6 +73,13 @@ public class GNUFortranCompiler extends BasicCompiler {
     }
     
     @Override
+    public GNUFortranCompiler createCopy() {
+        GNUFortranCompiler copy = new GNUFortranCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
+    
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];

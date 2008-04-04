@@ -30,13 +30,13 @@ public class XMLContentPanel extends AbstractPanel {
     /** Creates new form XMLContentPanel */
     public XMLContentPanel() {
         initComponents(); 
+        initAccessibility();
     }
-    
+        
     public XMLContentPanel(boolean value) {
-        visible = value;
+        this.visible = value;
         initComponents(); 
         initAccessibility();
-        
     }
 
     private void initAccessibility() {
@@ -282,7 +282,7 @@ public class XMLContentPanel extends AbstractPanel {
             while (it.hasNext()) {
                  String next = (String) it.next();
                  rootModel.addElement(next);
-            }        
+            }    
     }
 
     @Override

@@ -141,13 +141,12 @@ public class JsAnalyzerTest extends JsTestBase {
             }
 
             @Override
-            public void appendText(String text) {
-                // TODO escaped
+            public void appendText(String text, int fromInclusive, int toExclusive) {
                 sb.append("ESCAPED{");
-                sb.append(text);
+                sb.append(text, fromInclusive, toExclusive);
                 sb.append("}");
             }
-
+            
             @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {
@@ -240,7 +239,7 @@ public class JsAnalyzerTest extends JsTestBase {
     }
 
     public void testAnalysis4() throws Exception {
-        checkStructure("testfiles/dojo.js.uncompressed.js");
+        checkStructure("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testAnalysis5() throws Exception {
@@ -375,7 +374,7 @@ public class JsAnalyzerTest extends JsTestBase {
     }
 
     public void testFolds4() throws Exception {
-        checkFolds("testfiles/dojo.js.uncompressed.js");
+        checkFolds("testfiles/orig-dojo.js.uncompressed.js");
     }
 
     public void testFolds5() throws Exception {
@@ -388,5 +387,10 @@ public class JsAnalyzerTest extends JsTestBase {
 
     public void testImports2() throws Exception {
         checkImports("testfiles/dragdrop.js");
+    }
+
+    public void testClasses() throws Exception {
+        checkStructure("testfiles/classes.js");
+        checkFolds("testfiles/classes.js");
     }
 }

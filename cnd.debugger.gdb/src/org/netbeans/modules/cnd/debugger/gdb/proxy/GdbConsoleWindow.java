@@ -88,7 +88,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
         debugger.addPropertyChangeListener(this);
-        ProjectActionEvent pae = debugger.getLookup().lookupFirst(null, ProjectActionEvent.class);
+        ProjectActionEvent pae = (ProjectActionEvent) debugger.getLookup().lookupFirst(null, ProjectActionEvent.class);
         programName.setText(pae.getExecutable());
     }
     

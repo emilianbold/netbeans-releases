@@ -43,6 +43,7 @@ package org.netbeans.modules.visualweb.test.components.composite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
@@ -52,7 +53,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.visualweb.gravy.Action;
 import org.netbeans.modules.visualweb.gravy.EditorOperator;
-import org.netbeans.modules.visualweb.gravy.RaveTestCase;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.Util;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -66,7 +66,7 @@ import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator
 /**
  * @author Martin Schovanek (Martin.Schovanek@sun.com)
  */
-public class CompositeComponentsTest extends RaveTestCase {
+public class CompositeComponentsTest extends JellyTestCase {
 
     private String projectName;
     private boolean projectDeployed;
@@ -124,40 +124,36 @@ public class CompositeComponentsTest extends RaveTestCase {
     }
 
     public void testAccordion() {
-        try {
-            // Add Accordion component
-            PaletteHelper.COMPOSITE.addComponent("Accordion", 50, 50, "id=testAcrd");
-            // Add Accordion Tab component
-            PaletteHelper.COMPOSITE.addComponent("AccordionTab", 75, 100,
-                    "id=testAccrdTab\n" +
-                    "contentHeight=133px");
-            // Add a Static Text into the tab
-            PaletteHelper.BASIC.addComponent("StaticText", 75, 150,
-                    "id=stext1\n" +
-                    "text=Accordion Tab Text\n" +
-                    "toolTip=Accordion Tab Text Tooltip");
-            new SaveAllAction().perform();
-            // Verify JSP source
-            switchToJSPSource();
-            assertEditorContains(getEditorOperator("Page1"), new String[]{
-                        "<webuijsf:accordion ",
-                        "<webuijsf:accordionTab ",
-                        "<webuijsf:staticText ",
-                        " id=\"testAcrd\"",
-                        " id=\"testAccrdTab\"",
-                        " id=\"stext1\"",
-                        " contentHeight=\"133px\""
-                    });
-            switchToDesignerPane();
-            deployProject(projectName);
-        } catch (Exception ex) {
-            fail(ex);
-        }
+        // Add Accordion component
+        PaletteHelper.COMPOSITE.addComponent("Accordion", 50, 50, "id=testAcrd");
+        // Add Accordion Tab component
+        PaletteHelper.COMPOSITE.addComponent("AccordionTab", 75, 100,
+                "id=testAccrdTab\n" +
+                "contentHeight=133px");
+        // Add a Static Text into the tab
+        PaletteHelper.BASIC.addComponent("StaticText", 75, 150,
+                "id=stext1\n" +
+                "text=Accordion Tab Text\n" +
+                "toolTip=Accordion Tab Text Tooltip");
+        new SaveAllAction().perform();
+        // Verify JSP source
+        switchToJSPSource();
+        assertEditorContains(getEditorOperator("Page1"), new String[]{
+                    "<webuijsf:accordion ",
+                    "<webuijsf:accordionTab ",
+                    "<webuijsf:staticText ",
+                    " id=\"testAcrd\"",
+                    " id=\"testAccrdTab\"",
+                    " id=\"stext1\"",
+                    " contentHeight=\"133px\""
+                });
+        switchToDesignerPane();
+        deployProject(projectName);
     }
 
     public void testBubbleHelp() {
         // Add Bubble Help component
-        PaletteHelper.COMPOSITE.addComponent("BubbleHelp", 50, 50,
+        PaletteHelper.COMPOSITE.addComponent("Bubble", 50, 50,
                 "id=testBubble\n" +
                 "title=Bubble Help Test");
         // Add a Static Text into the component
@@ -238,7 +234,6 @@ public class CompositeComponentsTest extends RaveTestCase {
                     editor.contains(str));
         }
     }
-
     private static final String UNDEPLOY_AND_DEPLOY = Bundle.getStringTrimmed(
             "org.netbeans.modules.web.project.ui.Bundle",
             "LBL_RedeployAction_Name");

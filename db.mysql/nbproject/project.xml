@@ -158,7 +158,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <package>org.netbeans.modules.db.mysql</package>
+                <package>org.netbeans.modules.db.mysql.ui</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

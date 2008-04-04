@@ -162,7 +162,7 @@ public final class ImportUtils {
             if (!isDependency) {
                 addProgresInfo(projectDefinition.getName());
             }
-            AntProjectHelper helper = J2SEProjectGenerator.createProject(destination, projectDefinition.getName(), srcFiles, new File[]{}, null, null);
+            AntProjectHelper helper = J2SEProjectGenerator.createProject(destination, projectDefinition.getName(), srcFiles, new File[]{}, null, null, null);
             
             assert helper != null;
             nbProject = (J2SEProject)ProjectManager.getDefault().findProject(projectDirectory);

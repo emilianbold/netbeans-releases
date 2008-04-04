@@ -104,6 +104,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -253,6 +254,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(final AuxiliaryConfiguration aux,
             final ActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
@@ -285,9 +287,9 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
-            QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
             new J2SEPropertyEvaluatorImpl(evaluator()),
-            new J2SETemplateAttributesProvider(this.helper),
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -458,12 +460,11 @@ public final class J2SEProject implements Project, AntProjectListener {
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
                     false);
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                     J2SEProject.class.getResource("resources/build.xsl"),
                     false);
             }
-        }
-        
+        }    
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
@@ -483,7 +484,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
                         true);
                     genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                         J2SEProject.class.getResource("resources/build.xsl"),
                         true);
                 }                
@@ -628,7 +629,9 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
+                new J2SEProjectAntArtifact (J2SEProject.this,
+                        JavaProjectConstants.ARTIFACT_TYPE_JAR,
+                        "dist.jar", "jar", "clean"), // NOI18N
             };
         }
 
@@ -660,7 +663,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files"          // NOI18N
+            "simple-files"          // NOI18N        
         };
         
         private static final String[] LIBRARY_TYPES = new String[] { 

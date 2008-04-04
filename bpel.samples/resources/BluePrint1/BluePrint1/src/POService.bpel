@@ -32,6 +32,8 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:pos="http://manufacturing.org/wsdl/purchase/bp1"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp1"
          targetNamespace="http://manufacturing.org/wsdl/purchase/bp1"
          xmlns:inv="http://manufacturing.org/xsd/inventory"
@@ -61,20 +63,16 @@
                      partnerLinkType="invs:inventoryRequestingLT"
                      partnerRole="inventoryService"/>
     </partnerLinks>
+    
     <variables>
-        <variable name="purchaseOrderRequest"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply"
-                  messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderFault"
-                  messageType="pos:orderFaultType"></variable>
-        <variable name="inventoryServiceRequest"
-                  messageType="invs:POMessage"></variable>
-        <variable name="inventoryServiceReply"
-                  messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryServiceFault"
-                  messageType="invs:inventoryFault"></variable>
+        <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
+        <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
+        <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
+        <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
+        <variable name="inventoryServiceFault" messageType="invs:inventoryFault"></variable>
     </variables>
+
     <sequence>
         <receive name="sendPurchaseOrder"
                  partnerLink="POServicePLink"

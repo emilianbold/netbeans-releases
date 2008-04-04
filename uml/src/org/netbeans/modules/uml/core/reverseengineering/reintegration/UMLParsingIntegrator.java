@@ -832,10 +832,11 @@ public class UMLParsingIntegrator
         Node foundNode = null;
         try
         {
+
             // Attempt to get the value of the @name attribute. It QUITE possible that xml attribute
             // doesn't exist...
             String value = XMLManip.getAttributeValue(prototypeNode, "name"); // NOI18N
-            if (value != null)
+             if (value != null)
             {
                 // We've got a name, so let's see if we get lucky...
                 String query = ".//*[@name=\""; // NOI18N
@@ -878,7 +879,7 @@ public class UMLParsingIntegrator
         }
         return foundNode;
     }
-    
+
     public void ensureXMLAttrValues(String query, Node childInDestinationNamespace, Node elmentBeingInjected, String attrName)
     {
         try
@@ -917,7 +918,26 @@ public class UMLParsingIntegrator
             String query = ".//"; // NOI18N
             query += elementName;
             query += "/ancestor::*[2]"; // NOI18N
-            List nodes = childInDestinationNamespace.selectNodes(query);
+  
+            Element destination = (childInDestinationNamespace instanceof Element) 
+                                  ? (Element) childInDestinationNamespace 
+                                    : null;
+            String destNodeName = "";
+            if (destination != null) 
+            {
+                destNodeName = destination.getQualifiedName();
+            }
+            List nodes;
+            if (destination != null && isNodeContainer(destNodeName)) 
+            {
+                nodes = new ArrayList();
+                nodes.add(childInDestinationNamespace);
+            }
+            else
+            {
+                nodes = childInDestinationNamespace.selectNodes(query);
+            }
+            //List nodes = childInDestinationNamespace.selectNodes(query);
             if (nodes != null)
             {
                 int num = nodes.size();
@@ -926,7 +946,17 @@ public class UMLParsingIntegrator
                     Node node = (Node) nodes.get(x);
                     if (node != null)
                     {
-                        Node foundNode = findElement(node, elementBeingInjected);
+                        //Node foundNode = findElement(node, elementBeingInjected);
+                        Node foundNode;
+                        if (destination != null && isNodeContainer(destNodeName)) 
+                        {
+                            foundNode = elementBeingInjected;
+                        }
+                        else 
+                        {
+                            foundNode = findElement(node, elementBeingInjected);
+                        }
+
                         if (foundNode != null)
                         {
                             // Now get the owned element and move it to the foundNode
@@ -993,13 +1023,18 @@ public class UMLParsingIntegrator
             query += attrName;
             query += "]";
             
-            ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
-            
-            // Make sure to check the current element as well
-            
             Element element = (childInDestinationNamespace instanceof Element) ? (Element) childInDestinationNamespace : null;
-            ;
-            
+            String destNodeName = "";
+            if (element != null) 
+            {
+                destNodeName = element.getQualifiedName();
+            }
+            if ( ! (element != null && isNodeContainer(destNodeName))) 
+            {
+                ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
+            }
+
+            // Make sure to check the current element as well                        
             if (element != null)
             {
                 Attribute attr = element.attribute(attrName);
@@ -1872,19 +1907,45 @@ public class UMLParsingIntegrator
         if ((parent != null) && (elementBeingInjected != null))
         {
             ok = true;
-            String childName =
+            Node childInDestinationNamespace = null;
+
+            // look up by MarkerId             
+            String markerID = XMLManip.retrieveNodeTextValue(elementBeingInjected, 
+                "./UML:Element.ownedElement/UML:TaggedValue[@name='MarkerID']/UML:TaggedValue.dataValue");
+            if (markerID != null) 
+            {
+                Node guess = parent.getDocument().elementByID(markerID);  
+                if (guess != null && (guess instanceof Element) && (elementBeingInjected instanceof Element)) 
+                {
+                    String gType = ((Element)guess).getQualifiedName();
+                    String injType = ((Element)elementBeingInjected).getQualifiedName();
+                    if ( (  gType != null 
+                            && ( gType.equals("UML:Class") || gType.equals("UML:Interface") || gType.equals("UML:Enumeration")))
+                         && (injType != null
+                             && ( injType.equals("UML:Class") || injType.equals("UML:Interface") || injType.equals("UML:Enumeration"))))
+                    {
+                        childInDestinationNamespace = guess;  
+                    }
+                }                  
+            }
+
+            Element injected = (Element) elementBeingInjected;
+            String injectNodeName = injected.getQualifiedName();
+            if (childInDestinationNamespace == null) 
+            {
+                // now let's try by name
+                String childName =
                     XMLManip.getAttributeValue(elementBeingInjected, "name");
             
-            ETList<Node> temp = namedNodes.get(childName);
-            
-            if (temp != null)
-            {
-                Element injected = (Element) elementBeingInjected;
-                String injectNodeName = injected.getQualifiedName();
-                Node childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                ETList<Node> temp = namedNodes.get(childName);            
+                if (temp != null)
+                {
+                    childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                }
+            }
                 
                 if ((childInDestinationNamespace != null) &&
-                        !m_CancelDueToConflict)
+                    !m_CancelDueToConflict)
                 {
                     boolean overwrite = true;
                     
@@ -1925,7 +1986,7 @@ public class UMLParsingIntegrator
                     //ok = false;
                     ok = true;
                 }
-            }
+
         }
         
         return ok;
@@ -4772,12 +4833,14 @@ public class UMLParsingIntegrator
             
             if (element != null)
             {
+                UMLXMLManip.replaceReferencesIndexCreate(m_FragDocument);
                 Element docElement = m_FragDocument.getRootElement();
                 
                 if (docElement != null)
                 {
                     injectElementsIntoNamespace(element, docElement);
                 }
+                UMLXMLManip.replaceReferencesIndexDrop(m_FragDocument);
             }
         }
         
@@ -5606,7 +5669,7 @@ public class UMLParsingIntegrator
             }
             else
             {
-                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency')]");
+                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency' or @type='Marker-id')]");
             }
             if (descriptors != null)
             {
@@ -7074,7 +7137,7 @@ public class UMLParsingIntegrator
         
         try
         {
-            
+
             String value = XMLManip.retrieveNodeTextValue(node, "./UML:Element.ownedElement/UML:TaggedValue[@name='documentation']/UML:TaggedValue.dataValue");
             
             if (value.length() > 0)

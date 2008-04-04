@@ -70,6 +70,7 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -96,8 +97,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         if (panels == null) {
             Project p = Templates.getProject(wizard);
             SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            List<ConfigFileGroup> configFileGroups = getConfigFileManager(p).getConfigFileGroups();
-            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups.isEmpty() ? null : new SpringXMLConfigGroupPanel(configFileGroups);
+            ConfigFileManager manager = getConfigFileManager(p);
+            List<ConfigFileGroup> configFileGroups = manager != null ? manager.getConfigFileGroups() : null;
+            SpringXMLConfigGroupPanel configGroupPanel = configFileGroups != null && !configFileGroups.isEmpty() ? new SpringXMLConfigGroupPanel(configFileGroups) : null;
             WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups, configGroupPanel);
 
             panels = new WizardDescriptor.Panel[] {
@@ -206,6 +208,14 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        if (Templates.getTargetFolder(wizard) == null) {
+            Project project = Templates.getProject(wizard);
+            SpringConfigFileLocationProvider provider = project != null ? project.getLookup().lookup(SpringConfigFileLocationProvider.class) : null;
+            FileObject location = provider != null ? provider.getLocation() : null;
+            if (location != null) {
+                Templates.setTargetFolder(wizard, location);
+            }
+        }
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -350,8 +360,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
     
     static ConfigFileManager getConfigFileManager(Project p) {
         ProjectSpringScopeProvider scopeProvider = p.getLookup().lookup(ProjectSpringScopeProvider.class);
-        ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
-        return manager;
+        return scopeProvider != null ?  scopeProvider.getSpringScope().getConfigFileManager() : null;
     }
     
     static FileObject getSourceGroupArtifact(Project project, FileObject preferredArtifact) {

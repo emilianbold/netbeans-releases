@@ -60,7 +60,7 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
     private volatile boolean disabled;
     
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
     }
     

@@ -527,7 +527,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return walker.getFilteredTokenStream(getLanguageFilter());        
     }
     
-    private final String tokStreamLock = new String("TokenStream lock");
+    private final String tokStreamLock = new String("TokenStream lock"); // NOI18N
     private Reference<OffsetTokenStream> ref = new SoftReference(null);
     
     public TokenStream getTokenStream(int startOffset, int endOffset) {
@@ -939,7 +939,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( staticFunctionDeclarationUIDs == null ) {
             return Collections.<CsmFunction>emptyList();
         } else {
-            return new LazyCsmCollection<CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
+            return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
         }
     }
     

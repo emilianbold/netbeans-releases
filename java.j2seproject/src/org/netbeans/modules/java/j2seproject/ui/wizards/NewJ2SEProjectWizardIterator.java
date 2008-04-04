@@ -156,7 +156,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition);
+            String buildScriptName = (String) wiz.getProperty("buildScriptName");//NOI18N
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
             EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String includes = (String) wiz.getProperty(J2SEProjectProperties.INCLUDES);
             if (includes == null) {
@@ -200,8 +201,11 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         FileObject dir = FileUtil.toFileObject(dirF);
         switch (type) {
             case APP:
+                createManifest(dir, false);
+                break;
             case EXT:
-                createManifest(dir);
+                createManifest(dir, true);
+                break;
         }
         handle.progress (3);
 
@@ -334,22 +338,27 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
      * @param dir the directory to create it in
      * @throws IOException in case of problems
      */
-    private static void createManifest(final FileObject dir) throws IOException {
-        FileObject manifest = dir.createData(MANIFEST_FILE);
-        FileLock lock = manifest.lock();
-        try {
-            OutputStream os = manifest.getOutputStream(lock);
+    private static void createManifest(final FileObject dir, final boolean skeepIfExists) throws IOException {
+        if (skeepIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
+            return;
+        }
+        else {
+            FileObject manifest = dir.createData(MANIFEST_FILE);
+            FileLock lock = manifest.lock();
             try {
-                PrintWriter pw = new PrintWriter(os);
-                pw.println("Manifest-Version: 1.0"); // NOI18N
-                pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
-                pw.println(); // safest to end in \n\n due to JRE parsing bug
-                pw.flush();
+                OutputStream os = manifest.getOutputStream(lock);
+                try {
+                    PrintWriter pw = new PrintWriter(os);
+                    pw.println("Manifest-Version: 1.0"); // NOI18N
+                    pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
+                    pw.println(); // safest to end in \n\n due to JRE parsing bug
+                    pw.flush();
+                } finally {
+                    os.close();
+                }
             } finally {
-                os.close();
+                lock.releaseLock();
             }
-        } finally {
-            lock.releaseLock();
         }
     }
 

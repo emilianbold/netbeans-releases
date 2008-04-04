@@ -113,6 +113,7 @@ import org.netbeans.modules.gsfret.source.util.LowMemoryEvent;
 import org.netbeans.modules.gsfret.source.util.LowMemoryListener;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifier;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -853,6 +854,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 EmbeddingModel model = registry.getEmbedding(language.getMimeType(), mimeType);
                 assert language != null;
                 Parser parser = language.getParser(); // Todo - call createParserTask here?
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                 
                 if (parser != null) {
                     if (model != null) {
@@ -874,13 +880,28 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                             // TODO - log problem
                             continue;
                         }
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         
                         Collection<? extends TranslatedSource> translations = model.translate(document);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         for (TranslatedSource translatedSource : translations) {
                             String buffer = translatedSource.getSource();
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                             Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
                             parser.parseFiles(job);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                             ParserResult result = resultHolder[0];
                             result.setTranslatedSource(translatedSource);
                             assert result != null;
@@ -891,6 +912,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                         Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
                         parser.parseFiles(job);
+if (cancellable && currentRequest.isCanceled()) {
+    // Keep the currentPhase unchanged, it may happen that an userActionTask
+    // running after the phace completion task may still use it.
+    return Phase.MODIFIED;
+}
                         ParserResult result = resultHolder[0];
                         assert result != null;
                         currentInfo.addEmbeddingResult(language.getMimeType(), result);
@@ -1336,27 +1362,43 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
     }
 
-    private static class EditorRegistryListener implements ChangeListener, CaretListener {
-
+    private static class EditorRegistryListener implements CaretListener/*, PropertyChangeListener*/ {
+                        
+        private Request request;
         private JTextComponent lastEditor;
-
-        public EditorRegistryListener () {
-            Registry.addChangeListener(this);
+        
+        public EditorRegistryListener() {
+            EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    editorRegistryChanged();
+                }
+            });
+            editorRegistryChanged();
         }
-
-        public void stateChanged(ChangeEvent event) {
-            final JTextComponent editor = Registry.getMostActiveComponent();
+                
+        public void editorRegistryChanged() {
+            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
+                    //lastEditor.removePropertyChangeListener(this);
+                    final Document doc = lastEditor.getDocument();
+                    Source js = null;
+                    if (doc != null) {
+                        js = forDocument(doc);
+                    }
+                    //if (js != null) {
+                    //    js.k24 = false;
+                    //}                   
                 }
                 lastEditor = editor;
-                if (lastEditor != null) {
+                if (lastEditor != null) {                    
                     lastEditor.addCaretListener(this);
+                    //lastEditor.addPropertyChangeListener(this);
                 }
             }
         }
-
+        
         public void caretUpdate(CaretEvent event) {
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument();
@@ -1368,6 +1410,39 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 }
             }
         }
+
+//        public void propertyChange(final PropertyChangeEvent evt) {
+//            String propName = evt.getPropertyName();
+//            if ("completion-active".equals(propName)) {
+//                Source js = null;
+//                final Document doc = lastEditor.getDocument();
+//                if (doc != null) {
+//                    js = forDocument(doc);
+//                }
+//                if (js != null) {
+//                    Object rawValue = evt.getNewValue();
+//                    assert rawValue instanceof Boolean;
+//                    if (rawValue instanceof Boolean) {
+//                        final boolean value = (Boolean)rawValue;
+//                        if (value) {
+//                            assert this.request == null;
+//                            this.request = currentRequest.getTaskToCancel(false);
+//                            if (this.request != null) {
+//                                this.request.task.cancel();
+//                            }
+//                            js.k24 = true;
+//                        }
+//                        else {                    
+//                            Request _request = this.request;
+//                            this.request = null;                            
+//                            js.k24 = false;
+//                            js.resetTask.schedule(js.reparseDelay);
+//                            currentRequest.cancelCompleted(_request);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     private class FileChangeListenerImpl extends FileChangeAdapter {

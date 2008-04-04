@@ -1,7 +1,7 @@
 package test;
 
-public class OverridePrivateMethod extends SecurityManager {
+public class Test extends SecurityManager {
     
-    public OverridePrivateMethod() {}
+    public Test() {}
     
 }

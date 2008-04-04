@@ -14,6 +14,8 @@ public interface IEPVisitor {
         
         void visitProperty(Property property);
         
+        void visitImport(Import imp);
+        
         void visitDocumentation(Documentation doc);
         
         void visitPlanComponent(PlanComponent component);

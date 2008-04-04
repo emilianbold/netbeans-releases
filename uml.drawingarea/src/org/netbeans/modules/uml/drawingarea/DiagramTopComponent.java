@@ -200,36 +200,40 @@ public class DiagramTopComponent extends CloneableTopComponent
     {  
         if (diagramDO == null)
         {
-            String file = getDrawingAreaControl().getFilename();   
-            String etld = file;
-            String etlp = file;
-            try
+            IDrawingAreaControl ctrl = getDrawingAreaControl();
+            if (ctrl != null) 
             {
-                if (file != null && !file.equals(""))
+                String file = ctrl.getFilename();   
+                String etld = file;
+                String etlp = file;
+                try
                 {
-                    int index = file.lastIndexOf(".");
-                    if (index > -1)
+                    if (file != null && !file.equals(""))
                     {
-                        etlp = file.substring(0, index) +
+                        int index = file.lastIndexOf(".");
+                        if (index > -1)
+                        {
+                            etlp = file.substring(0, index) +
                                 FileExtensions.DIAGRAM_PRESENTATION_EXT;
-                        etld = file.substring(0, index) +
+                            etld = file.substring(0, index) +
                                 FileExtensions.DIAGRAM_LAYOUT_EXT;
+                        }
+                        
+                        File etlpF = new File(etlp);
+                        File etldF = new File(etld);
+                        
+                        
+                        FileObject etlpFO = FileUtil.createData(etlpF);
+                        FileUtil.createData(etldF);
+                        
+                        if (etlpFO != null)
+                            diagramDO = (DiagramDataObject) DataObject.find(etlpFO);                    
                     }
-                    
-                    File etlpF = new File(etlp);
-                    File etldF = new File(etld);
-                    
-                    
-                    FileObject etlpFO = FileUtil.createData(etlpF);
-                    FileUtil.createData(etldF);
-
-                    if (etlpFO != null)
-                        diagramDO = (DiagramDataObject) DataObject.find(etlpFO);
+                }   
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
                 }
-            }   
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
             }
         }
         

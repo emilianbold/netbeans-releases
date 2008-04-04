@@ -69,10 +69,10 @@ public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
         assert out != null;
         int i = 1;
         for (CsmOffsetable b : out) {
-            System.out.println( "Block " + (i++) + ": Lines " +
-                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] +
-                    "\tOffsets " +
-                    b.getStartOffset() + "-" + b.getEndOffset());
+            System.out.println( "Block " + (i++) + ": Lines " +  // NOI18N
+                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] + // NOI18N
+                    "\tOffsets " + // NOI18N
+                    b.getStartOffset() + "-" + b.getEndOffset()); // NOI18N
         }
     }
 }

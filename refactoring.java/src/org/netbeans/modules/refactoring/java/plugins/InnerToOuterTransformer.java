@@ -266,7 +266,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                 rewrite(memberSelect, m);
             } else {
-                problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(PushDownTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+                problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+                isThisReferenceToOuter();
             }
         }
         
@@ -285,12 +286,14 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     }
     
     private TypeElement getCurrentClass() {
-        TreePath tp = getCurrentPath().getParentPath();
-        while (tp!=null) {
-            if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                return (TypeElement) workingCopy.getTrees().getElement(tp);
+        TreePath treePath = getCurrentPath();
+        while (treePath != null) {
+            if (treePath.getLeaf().getKind() == Tree.Kind.CLASS) {
+                return (TypeElement) workingCopy.getTrees().getElement(treePath);
+            } else if (treePath.getLeaf().getKind() == Tree.Kind.IMPORT) {
+                return (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
             }
-            tp = tp.getParentPath();
+            treePath = treePath.getParentPath();
         }
         throw new IllegalStateException();
     }

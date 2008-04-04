@@ -21,11 +21,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 public final class TableDetailsVisualPanel extends JPanel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(TableDetailsVisualPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(TableDetailsVisualPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private TableDetailsPanel owner;
     private FlatfileDatabaseModel currentModel;
@@ -69,8 +69,8 @@ public final class TableDetailsVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        String nbBundle1 = mLoc.t("PRSR001: Enter Table Details");
-        return Localizer.parse(nbBundle1);
+        String nbBundle1 = mLoc.t("BUND296: Enter Table Details");
+        return nbBundle1.substring(15);
     }
 
     /*

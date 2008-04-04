@@ -2403,6 +2403,8 @@ public class LayoutDesigner implements LayoutConstants {
      * (canBeChangedToTrailing ? 2 : 0) as the second item.
      */
     public int[] getAdjustableComponentAlignment(LayoutComponent comp, int dimension) {
+        // Desperate workaround for issue 121243 - do not throw exception if something went wrong
+        if (comp == null) return new int[] {-1, 0};
         LayoutInterval interval = comp.getLayoutInterval(dimension);
         boolean leadingFixed = true;
         boolean trailingFixed = true;
@@ -2801,6 +2803,33 @@ public class LayoutDesigner implements LayoutConstants {
         } else {
             return interval.hasAttribute(LayoutInterval.ATTRIBUTE_FILL);
         }
+    }
+
+    /**
+     * Checks if given components can be aligned together in a parallel group
+     * using the 'align' method. For now it is enough if the components are in
+     * the same container and layer (under same layout roots).
+     * @param componentIds IDs of components that should be aligned
+     * @return true if the components can be aligned in a parallel group
+     */
+    public boolean canAlign(Collection<String> componentIds) {
+        if (componentIds != null && componentIds.size() > 1) {
+            LayoutInterval commonRoot = null;
+            for (String id : componentIds) {
+                LayoutComponent component = layoutModel.getLayoutComponent(id);
+                if (component == null || component.getParent() == null) {
+                    return false;
+                }
+                LayoutInterval root = LayoutInterval.getRoot(component.getLayoutInterval(HORIZONTAL));
+                if (commonRoot == null) {
+                    commonRoot = root;
+                } else if (root != commonRoot) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -35,6 +35,8 @@
          xmlns:ns0="http://localhost/BluePrint5/Reservation"
          xmlns:ns1="http://localhost/BluePrint5/AirLineReservation"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:ns3="http://localhost/BluePrint5/HotelReservation"
          xmlns:ns2="http://localhost/BluePrint5/CarReservation"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
@@ -98,8 +100,7 @@
     </variables>
 
     <correlationSets>
-        <correlationSet name="reservationCorrelationSet"
-                        properties="ns0:reservationID "/>
+        <correlationSet name="reservationCorrelationSet" properties="ns0:reservationID "/>
     </correlationSets>
     
     <sequence>
@@ -110,8 +111,7 @@
                  variable="reserve"
                  createInstance="yes">
             <correlations>
-                <correlation set="reservationCorrelationSet"
-                             initiate="yes"/>
+                <correlation set="reservationCorrelationSet" initiate="yes"/>
             </correlations>
         </receive>
         
@@ -167,8 +167,7 @@
                            operation="sendHotelStatus"
                            variable="hotelStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet"
-                                     initiate="no"/>
+                        <correlation set="reservationCorrelationSet" initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty3"></empty>
@@ -197,8 +196,7 @@
                            operation="sendCarStatus"
                            variable="carStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet"
-                                     initiate="no"/>
+                        <correlation set="reservationCorrelationSet" initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty_2"></empty>
@@ -226,8 +224,7 @@
                            operation="sendAirlineStatus"
                            variable="airlineStatusVar">
                     <correlations>
-                        <correlation set="reservationCorrelationSet"
-                                     initiate="no"/>
+                        <correlation set="reservationCorrelationSet" initiate="no"/>
                     </correlations>
                     <sequence>
                         <empty name="Empty"></empty>

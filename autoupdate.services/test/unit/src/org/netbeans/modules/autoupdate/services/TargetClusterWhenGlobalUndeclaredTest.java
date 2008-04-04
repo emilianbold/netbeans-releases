@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
-import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
  *
@@ -54,25 +53,14 @@ public class TargetClusterWhenGlobalUndeclaredTest extends TargetClusterTestCase
         super (testName);
     }
     
-    private static UpdateElement installed = null;
-    
     @Override
     protected String getCodeName (String target, Boolean global) {
         return "org.yourorghere.testupdatemodule";
     }
     
-    @Override
-    protected UpdateElement getInstalledUpdateElement () throws IOException {
-        if (installed == null) {
-            // !!! origin module is installed in platformDir
-            installed = installModule (getCodeName (null, null));
-        }
-        return installed;
-    }
-    
     public void testUpdateGlobalUndeclared () throws IOException {
-        // If an update, overwrite the existing location, wherever that is.
-        assertEquals ("Goes into platformDir", platformDir.getName (), getTargetCluster (null, null).getName ());
+        // Otherwise (no cluster name specified), if marked global, maybe put it into an "extra" cluster
+        assertEquals ("Goes into extraDir", "extra", getTargetCluster (null, Boolean.TRUE).getName ());
     }
     
 }

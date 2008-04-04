@@ -43,7 +43,9 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Set;
+import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.ruby.RubyParser.RubyError;
 
 /** 
  * Represents a rule to be run on the java source in case the compiler 
@@ -58,11 +60,11 @@ public interface ErrorRule extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Get the diagnostic codes this rule should run on
      */
-    public Set<String> getCodes();
+    public Set<ID> getCodes();
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public void run(RuleContext context, Error error,
+    public void run(RuleContext context, RubyError error,
              List<Description> result);
 
 }

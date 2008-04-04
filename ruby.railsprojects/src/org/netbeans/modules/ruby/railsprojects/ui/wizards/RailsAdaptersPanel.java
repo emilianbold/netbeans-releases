@@ -120,13 +120,16 @@ public class RailsAdaptersPanel extends SettingsPanel {
                     .add(databaseNameLabel)
                     .add(userNameLabel)
                     .add(passwordLabel))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
-                    .add(userNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
-                    .add(databaseNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
-                    .add(developmentComboBox, 0, 356, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(developmentComboBox, 0, 374, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, userNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                            .add(databaseNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -176,17 +179,17 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     // End of variables declaration//GEN-END:variables
     @Override
     void store( WizardDescriptor settings) {
-        Boolean jdbc = (Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN);
+        boolean jdbc = settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN) != null 
+                ? ((Boolean) settings.getProperty(NewRailsProjectWizardIterator.JDBC_WN)).booleanValue()
+                : false;
         RailsDatabaseConfiguration databaseConfiguration = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
-        if (jdbc != null && jdbc.booleanValue()) {
-            // TODO: try at least to bundle jdbc drives if possible
-        } else {
-            databaseConfiguration = 
-                    new ConfigurableRailsAdapter((RailsDatabaseConfiguration) developmentComboBox.getSelectedItem(),
-                    userNameField.getText(), 
-                    String.valueOf(passwordField.getPassword()), 
-                    databaseNameField.getText());
-        }
+        
+        databaseConfiguration =
+                new ConfigurableRailsAdapter((RailsDatabaseConfiguration) developmentComboBox.getSelectedItem(),
+                userNameField.getText(),
+                String.valueOf(passwordField.getPassword()),
+                databaseNameField.getText(),
+                jdbc);
 
         settings.putProperty(NewRailsProjectWizardIterator.RAILS_DEVELOPMENT_DB, databaseConfiguration);
 //        settings.putProperty(NewRailsProjectWizardIterator.RAILS_PRODUCTION_DB, StandardRailsAdapter.get(pr));
@@ -247,7 +250,7 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
             RailsDatabaseConfiguration dbConf = (RailsDatabaseConfiguration) value;
 
-            setText(dbConf.railsGenerationParam());
+            setText(dbConf.getDisplayName());
             setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
 

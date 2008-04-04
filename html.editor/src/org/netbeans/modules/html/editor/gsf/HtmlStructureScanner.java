@@ -41,13 +41,13 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -91,7 +91,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new CSSStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
+        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
         
         return elements;
         
@@ -107,7 +107,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
             final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
             final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
-
+            
             AstNodeVisitor foldsSearch = new AstNodeVisitor() {
 
                 public void visit(AstNode node) {
@@ -123,12 +123,19 @@ public class HtmlStructureScanner implements StructureScanner {
                                 foldRange.add(new OffsetRange(so, eo));
                             }
                         } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
             };
-            AstNodeUtils.visitChildren(root, foldsSearch);
+            
+            //the document is touched during the ast tree visiting, we need to lock it
+            doc.readLock();
+            try {
+                AstNodeUtils.visitChildren(root, foldsSearch);
+            } finally {
+                doc.readUnlock();
+            }
             folds.put("codeblocks", foldRange);
 
             return folds;
@@ -144,12 +151,12 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
-    private static final class CSSStructureItem implements StructureItem {
+    private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
         private HtmlElementHandle handle;
 
-        private CSSStructureItem(HtmlElementHandle handle, TranslatedSource source) {
+        private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
             this.source= source;
 
@@ -157,6 +164,13 @@ public class HtmlStructureScanner implements StructureScanner {
 
         public String getName() {
             return handle.getName();
+        }
+
+        public String getSortText() {
+            //return getName();
+            // Use position-based sorting text instead; alphabetical sorting in the
+            // outline (the default) doesn't really make sense for HTML tag names
+            return Integer.toHexString(10000+(int)getPosition());
         }
 
         public String getHtml() {
@@ -167,6 +181,21 @@ public class HtmlStructureScanner implements StructureScanner {
             return handle;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof HtmlStructureItem)) {
+                return false;
+            }
+            HtmlStructureItem compared = (HtmlStructureItem)o;
+            return compared.handle.signatureEquals(handle);
+        }
+        
+        @Override
+        public int hashCode() {
+            return handle.node().path().toString().hashCode();
+        }
+
+        
         public ElementKind getKind() {
             return ElementKind.TAG;
         }
@@ -176,7 +205,16 @@ public class HtmlStructureScanner implements StructureScanner {
         }
 
         public boolean isLeaf() {
-            return handle.node().children().isEmpty();
+            //potentialy incorrect workaround for ElementNode.updateRecursively(StructureItem) method.
+            //If the StructureItem says it is a leaf then if a new node is created inside
+            //the navigator representation - ElementNode still holds empty children list 
+            //which is not an instance of ElementChildren and then the subnodes are not refreshed.
+            //possible fix would be to modify the ElementNode constructor to always create 
+            //ElementChildren even if the node is a leaf, but I am not sure whether it may 
+            //have some bad influence on other things.
+            return false;
+            
+            //return handle.node().children().isEmpty();
         }
 
         public List<? extends StructureItem> getNestedItems() {
@@ -185,7 +223,7 @@ public class HtmlStructureScanner implements StructureScanner {
                 if(child.type() == AstNode.NodeType.TAG 
                         || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
                     HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
-                    list.add(new CSSStructureItem(childHandle, source));
+                    list.add(new HtmlStructureItem(childHandle, source));
                 }
             }
             return list;
@@ -197,6 +235,10 @@ public class HtmlStructureScanner implements StructureScanner {
 
         public long getEndPosition() {
             return HtmlStructureScanner.documentPosition(handle.node().endOffset(), source);
+        }
+
+        public ImageIcon getCustomIcon() {
+            return null;
         }
 
     }

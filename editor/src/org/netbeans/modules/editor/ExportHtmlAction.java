@@ -387,6 +387,7 @@ public class ExportHtmlAction extends CookieAction {
 
         private void selectFile () {
             JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle(NbBundle.getMessage(ExportHtmlAction.class, "CTL_Browse_Dialog_Title")); // NOI18N
             chooser.setFileFilter (new javax.swing.filechooser.FileFilter () {
                 public boolean accept(File f) {
                     if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {
@@ -397,11 +398,11 @@ public class ExportHtmlAction extends CookieAction {
                 }
 
                 public String getDescription() {
-                    return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType");
+                    return NbBundle.getMessage (ExportHtmlAction.class, "TXT_HTMLFileType"); // NOI18N
                 }
             });
             chooser.setSelectedFile (new File (this.fileName.getText()));
-            if (chooser.showOpenDialog (dlg) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog (dlg, NbBundle.getMessage(ExportHtmlAction.class, "CTL_Approve_Label")) == JFileChooser.APPROVE_OPTION) { // NOI18N
                 this.fileName.setText (chooser.getSelectedFile().getAbsolutePath());
             }
         }

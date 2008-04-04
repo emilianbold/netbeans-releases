@@ -49,26 +49,11 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
  *   &lt;/complexType&gt;
  * </pre>
  */
-public interface Copy extends ExtensibleElements, AssignChild, BpelContainer {
+public interface Copy extends ExtensibleElements, AssignChild, BpelContainer, FromHolder {
     
     String KEEP_SRC_ELEMENT_NAME    = "keepSrcElementName";    // NOI18N
     
     String IGNORE_MISSING_FROM_DATA = "ignoreMissingFromData"; // NOI18N
-
-    /**
-     * Gets the value of the from property.
-     * 
-     * @return possible object is {@link From }
-     */
-    From getFrom();
-
-    /**
-     * Sets the value of the from property.
-     * 
-     * @param value
-     *            allowed object is {@link From }
-     */
-    void setFrom( From value );
 
     /**
      * Gets the value of the to property.

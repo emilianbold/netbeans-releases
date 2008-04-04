@@ -136,7 +136,7 @@ public class WsdlUtil {
             return urlPath.substring(start).replace('.', '-'); // NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return "";
+            return SaasUtil.ensureUniqueServiceDirName(SaasUtil.DEFAULT_SERVICE_NAME); //NOI18N
         }
     }
 

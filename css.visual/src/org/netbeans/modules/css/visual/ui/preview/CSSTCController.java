@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.CssEditorSupport;
-import org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent;
+import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;

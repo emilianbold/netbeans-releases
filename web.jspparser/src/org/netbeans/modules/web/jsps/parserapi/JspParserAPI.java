@@ -51,8 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jspparser.ContextUtil;
 
 /**
- *
- * @author  pj97932
+ * @author  pj97932, Tomas Mysik
  * @version
  */
 public interface JspParserAPI {
@@ -107,6 +106,20 @@ public interface JspParserAPI {
      *    [1] If the location is a jar file, this is the location of the tld.
      */
     Map<String, String[]> getTaglibMap(WebModule wm) throws IOException;
+    
+    /**
+     * Add listener which will be called after TLD, TAG files are changed.
+     * @param listener TLD listener.
+     * @since 3.1
+     */
+    void addTldChangeListener(TldChangeListener listener);
+
+    /**
+     * Remove TLD listener.
+     * @param listener TLD listener.
+     * @since 3.1
+     */
+    void removeTldChangeListener(TldChangeListener listener);
     
     /** This class represents a result of parsing. It indicates either success
      * or failure. In case of success, provides information about the parsed page,

@@ -119,11 +119,18 @@ public class DDTreeWalker {
         if(transInfo != null) {
             Vector<ModElement> modElementsList = new Vector<ModElement>();
             Xmltype type = null;
-            if(currentVersion.equals(SunEjbJar.VERSION_3_0_0)){
-                type = getXmlType(transInfo, "sunEjb211");
+            if(currentVersion.equals(SunEjbJar.VERSION_3_0_1)){
+                type = getXmlType(transInfo, "sunEjb300");
                 modElementsList = updateModElementsList(modElementsList, type);
             }
-            if(this.downgradeVersion.equals(SunEjbJar.VERSION_2_1_0) || this.downgradeVersion.equals(SunEjbJar.VERSION_2_0_0)){
+            if(this.downgradeVersion.equals(SunEjbJar.VERSION_3_0_0) || 
+                    this.downgradeVersion.equals(SunEjbJar.VERSION_2_1_0) || 
+                    this.downgradeVersion.equals(SunEjbJar.VERSION_2_0_0)){
+                type = getXmlType(transInfo, "sunEjb300");
+                modElementsList = updateModElementsList(modElementsList, type);
+            }
+            if(this.downgradeVersion.equals(SunEjbJar.VERSION_2_1_0) || 
+                    this.downgradeVersion.equals(SunEjbJar.VERSION_2_0_0)){
                 type = getXmlType(transInfo, "sunEjb210");
                 modElementsList = updateModElementsList(modElementsList, type);
             }

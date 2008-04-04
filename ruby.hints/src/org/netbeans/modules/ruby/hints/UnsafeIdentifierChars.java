@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -62,13 +62,13 @@ public class UnsafeIdentifierChars implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        Set<Integer> integers = new HashSet<Integer>();
-        integers.add(NodeTypes.LOCALASGNNODE);
-        integers.add(NodeTypes.DEFNNODE);
-        integers.add(NodeTypes.DEFSNODE);
-        integers.add(NodeTypes.CONSTDECLNODE);
-        return integers;
+    public Set<NodeType> getKinds() {
+        Set<NodeType> types = new HashSet<NodeType>();
+        types.add(NodeType.LOCALASGNNODE);
+        types.add(NodeType.DEFNNODE);
+        types.add(NodeType.DEFSNODE);
+        types.add(NodeType.CONSTDECLNODE);
+        return types;
     }
     
     public void run(RuleContext context, List<Description> result) {

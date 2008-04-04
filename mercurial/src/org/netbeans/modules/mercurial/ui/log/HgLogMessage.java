@@ -68,6 +68,8 @@ public class HgLogMessage {
     private String desc;
     private Date date;
     private String id;
+    private String timeZoneOffset;
+    
     public HgLogMessage(String changeset){
     }
     
@@ -139,6 +141,17 @@ public class HgLogMessage {
     public String getRevision() {
         return rev;
     }
+    public long getRevisionAsLong() {
+        long revLong;
+        try{
+            revLong = Long.parseLong(rev);
+        }catch(NumberFormatException ex){
+            // Ignore number format errors
+            return 0;
+        }
+        return revLong;
+    }
+    
     public Date getDate() {
         return date;
     }
@@ -150,6 +163,13 @@ public class HgLogMessage {
     }
     public String getMessage() {
         return desc;
+    }
+    public String getTimeZoneOffset() {
+        return timeZoneOffset;
+    }
+
+    public void setTimeZoneOffset(String timeZoneOffset) {
+        this.timeZoneOffset = timeZoneOffset;
     }
     
     @Override

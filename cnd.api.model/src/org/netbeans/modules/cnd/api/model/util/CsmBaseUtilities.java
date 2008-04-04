@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -264,6 +265,19 @@ public class CsmBaseUtilities {
         return false;
     }
     
+    public static boolean isDeclarationFromUnnamedNamespace(CsmObject obj) {
+        if (CsmKindUtilities.isScopeElement(obj)) {
+            CsmScope scope = ((CsmScopeElement)obj).getScope();
+            if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+                return ((CsmNamespaceDefinition)scope).getName().length() == 0;
+            } else if (CsmKindUtilities.isNamespace(scope)) {
+                CsmNamespace ns = (CsmNamespace)scope;
+                return !ns.isGlobal() && ns.getName().length() == 0;
+            }
+        }
+        return false;
+    }
+    
     public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {
             return null;
@@ -293,7 +307,7 @@ public class CsmBaseUtilities {
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
         // FIXUP: after fixing IZ# the code shold be changed to simple loop
         if (orig == null) {
-            throw new NullPointerException("orig parameter must be not null");
+            throw new NullPointerException("orig parameter must be not null"); // NOI18N
         }
         CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);

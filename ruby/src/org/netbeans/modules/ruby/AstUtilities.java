@@ -71,7 +71,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
@@ -385,7 +385,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     private static void addRequires(Node node, Set<String> requires) {
-        if (node.nodeId == NodeTypes.FCALLNODE) {
+        if (node.nodeId == NodeType.FCALLNODE) {
             // A method call
             String name = ((INameNode)node).getName();
 
@@ -411,8 +411,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     }
                 }
             }
-        } else if (node.nodeId == NodeTypes.MODULENODE || node.nodeId == NodeTypes.CLASSNODE ||
-                node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE) {
+        } else if (node.nodeId == NodeType.MODULENODE || node.nodeId == NodeType.CLASSNODE ||
+                node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
             // Only look for require statements at the top level
             return;
         }
@@ -428,7 +428,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     /** Locate the method of the given name and arity */
     public static MethodDefNode findMethod(Node node, String name, Arity arity) {
         // Recursively search for methods or method calls that match the name and arity
-        if ((node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE) &&
+        if ((node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) &&
             ((MethodDefNode)node).getName().equals(name)) {
             Arity defArity = Arity.getDefArity(node);
 
@@ -489,11 +489,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             while (it.hasNext()) {
                 Node n = it.next();
                 switch (n.nodeId) {
-                case NodeTypes.DEFNNODE:
-                case NodeTypes.DEFSNODE:
-                case NodeTypes.CLASSNODE:
-                case NodeTypes.SCLASSNODE:
-                case NodeTypes.MODULENODE:
+                case DEFNNODE:
+                case DEFSNODE:
+                case CLASSNODE:
+                case SCLASSNODE:
+                case MODULENODE:
                     return n;
                 }
             }
@@ -508,7 +508,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         if (method == null) {
             method = path.leafParent();
 
-            if (method.nodeId == NodeTypes.NEWLINENODE) {
+            if (method.nodeId == NodeType.NEWLINENODE) {
                 method = path.leafGrandParent();
             }
 
@@ -541,15 +541,15 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         Node candidate = null;
         for (Node curr : path) {
             switch (curr.nodeId) {
-            //case NodeTypes.BLOCKNODE:
-            case NodeTypes.ITERNODE:
+            //case BLOCKNODE:
+            case ITERNODE:
                 candidate = curr;
                 break;
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 return candidate;
             }
         }
@@ -560,11 +560,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     public static MethodDefNode findMethod(AstPath path) {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr.nodeId == NodeTypes.DEFNNODE || curr.nodeId == NodeTypes.DEFSNODE) {
+            if (curr.nodeId == NodeType.DEFNNODE || curr.nodeId == NodeType.DEFSNODE) {
                 return (MethodDefNode)curr;
             }
-            if (curr.nodeId == NodeTypes.CLASSNODE || curr.nodeId == NodeTypes.SCLASSNODE ||
-                    curr.nodeId == NodeTypes.MODULENODE) {
+            if (curr.nodeId == NodeType.CLASSNODE || curr.nodeId == NodeType.SCLASSNODE ||
+                    curr.nodeId == NodeType.MODULENODE) {
                 break;
             }
         }
@@ -590,7 +590,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
             // XXX What about SClassNodes?
-            if (curr.nodeId == NodeTypes.CLASSNODE || curr.nodeId == NodeTypes.MODULENODE) {
+            if (curr.nodeId == NodeType.CLASSNODE || curr.nodeId == NodeType.MODULENODE) {
                 return (IScopingNode)curr;
             }
         }
@@ -599,9 +599,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     }
 
     public static boolean isCall(Node node) {
-        return node.nodeId == NodeTypes.FCALLNODE ||
-                node.nodeId == NodeTypes.VCALLNODE ||
-                node.nodeId == NodeTypes.CALLNODE;
+        return node.nodeId == NodeType.FCALLNODE ||
+                node.nodeId == NodeType.VCALLNODE ||
+                node.nodeId == NodeType.CALLNODE;
     }
     
     public static String getCallName(Node node) {
@@ -731,17 +731,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     @SuppressWarnings("unchecked")
     public static int findArgumentIndex(Node node, int offset) {
         switch (node.nodeId) {
-        case NodeTypes.FCALLNODE: {
+        case FCALLNODE: {
             Node argsNode = ((FCallNode)node).getArgsNode();
 
             return findArgumentIndex(argsNode, offset);
         }
-        case NodeTypes.CALLNODE: {
+        case CALLNODE: {
             Node argsNode = ((CallNode)node).getArgsNode();
 
             return findArgumentIndex(argsNode, offset);
         }
-        case NodeTypes.ARGSCATNODE: {
+        case ARGSCATNODE: {
             ArgsCatNode acn = (ArgsCatNode)node;
 
             int index = findArgumentIndex(acn.getFirstNode(), offset);
@@ -763,7 +763,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 return getConstantArgs(acn);
             }
         }
-        case NodeTypes.HASHNODE: 
+        case HASHNODE: 
             // Everything gets glommed into the same hash parameter offset
             return offset;
         default:
@@ -774,7 +774,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
                 for (int index = 0; index < children.size(); index++) {
                     Node child = children.get(index);
-                    if (child.nodeId == NodeTypes.HASHNODE) {
+                    if (child.nodeId == NodeType.HASHNODE) {
                         // Invalid offsets - the hashnode often has the wrong offset
                         OffsetRange range = AstUtilities.getRange(child);
                         if ((offset <= range.getEnd()) &&
@@ -900,7 +900,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
     private static Node findBySignature(Node node, String signature, String name) {
         switch (node.nodeId) {
-        case NodeTypes.INSTASGNNODE:
+        case INSTASGNNODE:
             if (name.charAt(0) == '@') {
                 String n = ((INameNode)node).getName();
                 //if (name.regionMatches(1, n, 0, n.length())) {
@@ -909,8 +909,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 }
             }
             break;
-        case NodeTypes.CLASSVARDECLNODE:
-        case NodeTypes.CLASSVARASGNNODE:
+        case CLASSVARDECLNODE:
+        case CLASSVARASGNNODE:
             if (name.startsWith("@@")) {
                 String n = ((INameNode)node).getName();
                 //if (name.regionMatches(2, n, 0, n.length())) {
@@ -920,8 +920,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             break;
 
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE:
+        case DEFNNODE:
+        case DEFSNODE:
             boolean lookingForMethod = (Character.isLowerCase(name.charAt(0)));
             if (lookingForMethod && name.equals(AstUtilities.getDefName(node))) {
                 // See if the parameter list matches
@@ -965,8 +965,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             }
             break;
             
-        case NodeTypes.CLASSNODE:
-        case NodeTypes.MODULENODE: {
+        case CLASSNODE:
+        case MODULENODE: {
                 Colon3Node c3n = ((IScopingNode)node).getCPath();
 
                 if (c3n instanceof Colon2Node) {
@@ -999,7 +999,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 }
             break;
         }
-        case NodeTypes.SCLASSNODE:
+        case SCLASSNODE:
             Node receiver = ((SClassNode)node).getReceiverNode();
             String rn = null;
 
@@ -1052,20 +1052,20 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      */
     @SuppressWarnings("unchecked")
     public static OffsetRange getRange(Node node) {
-        if (node.nodeId == NodeTypes.NOTNODE) {
+        if (node.nodeId == NodeType.NOTNODE) {
             ISourcePosition pos = node.getPosition();
             // "unless !(x < 5)" gives a not-node with wrong offsets - starts
             // with ! but doesn't include the closing )
             List<Node> list = node.childNodes();
             if (list != null && list.size() > 0) {
                 Node first = list.get(0);
-                if (first.nodeId == NodeTypes.NEWLINENODE) {
+                if (first.nodeId == NodeType.NEWLINENODE) {
                     OffsetRange range = getRange(first);
                     return new OffsetRange(pos.getStartOffset(), range.getEnd());
                 }
             } 
             return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-        } else if (node.nodeId == NodeTypes.HASHNODE) {
+        } else if (node.nodeId == NodeType.HASHNODE) {
             // Workaround for incorrect JRuby AST offsets for hashnodes :
             //   render :action => 'list'
             // has wrong argument offsets, which we want to correct.
@@ -1706,8 +1706,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return result[0];
     }
     
-    /** Collect nodes of the given types (node.nodeId==NodeTypes.x) under the given root */
-    public static void addNodesByType(Node root, int[] nodeIds, List<Node> result) {
+    /** Collect nodes of the given types (node.nodeId==NodeType.x) under the given root */
+    public static void addNodesByType(Node root, NodeType[] nodeIds, List<Node> result) {
         for (int i = 0; i < nodeIds.length; i++) {
             if (root.nodeId == nodeIds[i]) {
                 result.add(root);
@@ -1754,23 +1754,23 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         while (it.hasNext()) {
             Node n = it.next();
             switch (n.nodeId) {
-            //case NodeTypes.BLOCKNODE:
-            case NodeTypes.ITERNODE:
+            //case BLOCKNODE:
+            case ITERNODE:
                 leaf = n;
                 result.add(n);
                 break;
-            case NodeTypes.DEFNNODE:
-            case NodeTypes.DEFSNODE:
-            case NodeTypes.CLASSNODE:
-            case NodeTypes.SCLASSNODE:
-            case NodeTypes.MODULENODE:
+            case DEFNNODE:
+            case DEFSNODE:
+            case CLASSNODE:
+            case SCLASSNODE:
+            case MODULENODE:
                 leaf = n;
                 break while_loop;
             }
         }
 
         if (includeNested) {
-            addNodesByType(leaf, new int[] { /*NodeTypes.BLOCKNODE,*/ NodeTypes.ITERNODE }, result);
+            addNodesByType(leaf, new NodeType[] { /*NodeType.BLOCKNODE,*/ NodeType.ITERNODE }, result);
         }
         
         return result;

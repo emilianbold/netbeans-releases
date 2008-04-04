@@ -208,6 +208,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
      */
     protected InputSource findInputSource( URL u ) throws IOException {
         HttpURLConnection httpCon = (HttpURLConnection) u.openConnection();
+        httpCon.setUseCaches( true );
         httpCon.setRequestProperty( "Accept-Encoding", "gzip, deflate" );     // NOI18N
 
         Preferences prefs = NbPreferences.forModule( RSSFeed.class );
@@ -343,8 +344,9 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             } catch( Exception e ) {
                 if( isContentCached()) {
                     try {
+                        isCached = false;
                         NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
-                        run();
+                        reload();
                         return;
                     } catch( MalformedURLException mE ) {
                         //ignore

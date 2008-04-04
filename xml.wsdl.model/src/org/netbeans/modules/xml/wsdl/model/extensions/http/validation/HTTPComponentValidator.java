@@ -122,11 +122,11 @@ public class HTTPComponentValidator
                             int countUrlEncoded = bindingInput.getExtensibilityElements(HTTPUrlEncoded.class).size();
                             int countUrlReplacement = bindingInput.getExtensibilityElements(HTTPUrlReplacement.class).size();
                             int sum = countUrlEncoded + countUrlReplacement;
-                            if (sum == 0) {
+                            if (sum == 0 && mVerb == Verb.GET) {
                                 results.add(
                                         new Validator.ResultItem(
                                             this,
-                                            Validator.ResultType.ERROR,
+                                            Validator.ResultType.WARNING,
                                             bindingInput,
                                             NbBundle.getMessage(
                                                 HTTPComponentValidator.class,

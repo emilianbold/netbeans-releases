@@ -56,7 +56,7 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
@@ -65,7 +65,7 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=3000;
-        categoryName = "Basic"; // NOI18N
+        categoryName = "Woodstock Basic"; // NOI18N
         componentName = "Listbox"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }

@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.infrastructure.RulesManager;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
 
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {

@@ -69,6 +69,13 @@ public class GNUCCCompiler extends GNUCCCCompiler {
     }
     
     @Override
+    public GNUCCCompiler createCopy() {
+        GNUCCCompiler copy = new GNUCCCompiler(getFlavor(), getKind(), "", getDisplayName(), getPath());
+        copy.setName(getName());
+        return copy;
+    }
+    
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }

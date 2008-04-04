@@ -55,8 +55,6 @@ public class TraceModelBase {
     
     private ModelImpl model;
 
-    // only one of project/projectUID must be used 
-    private ProjectBase project;
     private CsmUID<CsmProject> projectUID;
 
     private List<String> quoteIncludePaths = new ArrayList<String>();
@@ -71,7 +69,7 @@ public class TraceModelBase {
     private boolean pathsRelCurFile = false;
     
     public TraceModelBase() {
-        Logger openideLogger = Logger.getLogger("org.openide.loaders");
+        Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
         openideLogger.setLevel(Level.SEVERE);
 	RepositoryUtils.cleanCashes();
@@ -198,7 +196,6 @@ public class TraceModelBase {
 	    closeProject(aProject, cleanRepository);
 	}
 	projectUID = null;
-	project = null;
 	//getProject();
     }
     

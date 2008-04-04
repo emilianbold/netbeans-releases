@@ -38,7 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 import org.jruby.ast.YieldNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -77,8 +77,8 @@ public class ConvertBlockType implements AstRule {
         return info.getFileObject().getMIMEType().equals("text/x-ruby");
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.ITERNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.ITERNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
@@ -87,7 +87,7 @@ public class ConvertBlockType implements AstRule {
         int caretOffset = context.caretOffset;
         BaseDocument doc = context.doc;
         
-        assert (node.nodeId == NodeTypes.ITERNODE);
+        assert (node.nodeId == NodeType.ITERNODE);
         try {
             int astOffset = node.getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
@@ -400,7 +400,7 @@ public class ConvertBlockType implements AstRule {
         }
 
         private void findLineBreaks(Node node, Set<Integer> offsets) {
-            if (node.nodeId == NodeTypes.NEWLINENODE) {
+            if (node.nodeId == NodeType.NEWLINENODE) {
                 // Doesn't work, need above workaround
                 //int start = node.getPosition().getStartOffset();
                 int start = findRealStart(node);
@@ -411,7 +411,7 @@ public class ConvertBlockType implements AstRule {
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child.nodeId == NodeTypes.EVSTRNODE) {
+                if (child.nodeId == NodeType.EVSTRNODE) {
                     // Don't linebreak inside a #{} expression
                     continue;
                 }
@@ -648,7 +648,7 @@ public class ConvertBlockType implements AstRule {
         private boolean isArgParenNecessary(AstPath path, BaseDocument doc) throws BadLocationException {
             // Look at the surrounding CallNode and see if it has arguments.
             // If so, see if it has parens. If not, return true.
-            assert path.leaf().nodeId == NodeTypes.ITERNODE;
+            assert path.leaf().nodeId == NodeType.ITERNODE;
             Node n = path.leafParent();
             if (n != null && AstUtilities.isCall(n) && n instanceof IArgumentNode && 
                     ((IArgumentNode)n).getArgsNode() != null) {

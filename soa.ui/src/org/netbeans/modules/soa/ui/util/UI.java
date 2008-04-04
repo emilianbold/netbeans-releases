@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -46,6 +46,7 @@ import java.awt.Insets;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Event;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -108,6 +109,10 @@ public final class UI {
     return (modifiers & mask) != 0;
   }
 
+  public static MyComboBox createComboBox(Object [] items) {
+    return new MyComboBox(items);
+  }
+
   public static JLabel createLabel(String message) {
     JLabel label = new JLabel();
     Mnemonics.setLocalizedText(label, message);
@@ -123,7 +128,13 @@ public final class UI {
   }
 
   public static JButton createButton(Action action) {
-    return (JButton) createAbstractButton(new JButton(), action);
+    JButton button = (JButton) createAbstractButton(new JButton(), action);
+    Object name = action.getValue(Action.NAME);
+
+    if (name == null) {
+      setButtonSize(button);
+    }
+    return button;
   }
 
   public static JCheckBox createCheckBox(Action action) {
@@ -349,6 +360,15 @@ public final class UI {
     }
   }
 
+  public static double getDouble(String value) {
+    try {
+      return Double.parseDouble(value);
+    }
+    catch (NumberFormatException e) {
+      return -1.0;
+    }
+  }
+
   public static int round(double value) {
     return (int) Math.ceil(value);
   }
@@ -390,11 +410,10 @@ public final class UI {
     return (DataObject) node.getLookup().lookup(DataObject.class);
   }
 
-  public static void setImageSize(JButton button) {
-    final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
-    button.setMaximumSize(IMAGE_BUTTON_SIZE);
-    button.setMinimumSize(IMAGE_BUTTON_SIZE);
-    button.setPreferredSize(IMAGE_BUTTON_SIZE);
+  private static void setButtonSize(JButton button) {
+    button.setMaximumSize(BUTTON_SIZE);
+    button.setMinimumSize(BUTTON_SIZE);
+    button.setPreferredSize(BUTTON_SIZE);
   }
 
   public static JComponent getResizable(JPanel panel) {
@@ -409,6 +428,22 @@ public final class UI {
     p.add(panel, c);
 
     return p;
+  }
+
+
+  public static String removeHtml(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = replace(value, "<b>", "'"); // NOI18N
+    value = replace(value, "</b>", "'"); // NOI18N
+    value = replace(value, "&nbsp;", " "); // NOI18N
+    
+    return value;
+  }
+
+  public static String getHtml(String value) {
+    return "<html>" + value + "</html>"; // NOI18N
   }
 
   public static void startTimeln() {
@@ -448,6 +483,20 @@ public final class UI {
     }
   }
 
+  public static void stackTrace() {
+    stackTrace(null);
+  }
+
+  public static void stackTrace(Object object) {
+    out();
+    out();
+
+    if (object != null) {
+      out(object);
+    }
+    new Exception("!!!").printStackTrace(); // NOI18N
+  }
+
   public static void out() {
     if (ENABLE_OUT) {
       System.out.println();
@@ -460,6 +509,53 @@ public final class UI {
     }
   }
 
+  // ------------------------------------------------
+  public static class MyComboBox extends JComboBox {
+    public MyComboBox(Object [] items) {
+      super(items);
+      init();
+    }
+
+    @Override
+    public boolean selectWithKeyChar(char key)
+    {
+      processKey(key);
+      setSelectedIndex(myIndex);
+      return true;
+    }
+
+    public void init() {
+//out();
+//out("init");
+      myIndex = 0;
+      myPrefix = ""; // NOI18N
+    }
+
+    private void processKey(char key) {
+//out("select: '" + key);
+      if (((int) key) == Event.BACK_SPACE) {
+        init();
+        return;
+      }
+      myPrefix += key;
+      myPrefix = myPrefix.toLowerCase();
+
+//out("prefix: " + myPrefix);
+      for (int i=myIndex; i < getItemCount(); i++) {
+        String item = getItemAt(i).toString().toLowerCase();
+//out("  see: " + item);
+
+        if (item.startsWith(myPrefix)) {
+          myIndex = i;
+          return;
+        }
+      }
+    }
+
+    private int myIndex;
+    private String myPrefix;
+  }
+
   // -------------------------------------------------------------
   public abstract static class IconAction extends AbstractAction {
 
@@ -467,6 +563,20 @@ public final class UI {
       super(name, icon);
       putValue(SHORT_DESCRIPTION, toolTip);
     }
+
+    protected final Node getLastNode() {
+      Node node = getSelectedNode();
+
+      if (node == null) {
+        node = myLastNode;
+      }
+      else {
+        myLastNode = node;
+      }
+      return node;
+    }
+  
+    private Node myLastNode;
   }
 
   // ---------------------------------------------------------------
@@ -706,11 +816,12 @@ public final class UI {
 
   private static Stack<Long> ourTimes = new Stack<Long>();
 
-  public static final int TINY_INSET = 2;
-  public static final int SMALL_INSET = 7;
-  public static final int MEDIUM_INSET = 11;
+  public static final int TINY_INSET = 2; // the 3-rd Fibonacci number
+  public static final int SMALL_INSET = 8; // the 6-th Fibonacci number
+  public static final int MEDIUM_INSET = 13; // the 7-th Fibonacci number
 
   private static final double MILLIS = 1000.0;
+  private static final Dimension BUTTON_SIZE = new Dimension(24, 24);
 
   public static final String UH = System.getProperty("user.home"); // NOI18N
   public static final String LS = System.getProperty("line.separator"); // NOI18N

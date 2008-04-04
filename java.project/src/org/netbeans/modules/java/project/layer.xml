@@ -159,7 +159,7 @@ made subject to such option by the copyright holder.
             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Main.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/main-class.gif"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/main-class.png"/>
         </file>
         <file name="Empty.java" url="resources/Empty.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>

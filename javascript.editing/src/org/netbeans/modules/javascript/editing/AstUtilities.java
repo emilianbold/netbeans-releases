@@ -64,6 +64,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
 
 /**
@@ -74,7 +75,7 @@ public class AstUtilities {
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -86,7 +87,7 @@ public class AstUtilities {
     }
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -108,7 +109,7 @@ public class AstUtilities {
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
-    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, FunctionNode node) {
+    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
         if (lexOffset == -1) {
@@ -154,11 +155,11 @@ public class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsMimeResolver.JAVASCRIPT_MIME_TYPE);
+        return getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
-        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
+        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
 
         if (result == null) {
             return null;
@@ -308,6 +309,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
     public static OffsetRange getNameRange(Node node) {
         final int type = node.getType();
         switch (type) {
+        case Token.FUNCTION: {
+            if (node.hasChildren()) {
+                for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                    if (child.getType() == Token.FUNCNAME) {
+                        return getNameRange(child);
+                    }
+                }
+            }
+            
+            return getRange(node);
+        }
         case Token.NAME:
         case Token.BINDNAME:
         case Token.FUNCNAME:
@@ -419,7 +431,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         return grandChild.getNext().getString();
                     }
                 } else {
-                    assert false : "Unexpected call firstchild - " + child;
+                    // WARNING: I can have something unexpected here, like a HOOK node in the following
+                    // for the conditional -
+                    //  (this.creator ? this.creator : this.defaultCreator)(item, hint);
+                    // not sure how to handle this.
+                    
+                    //assert false : "Unexpected call firstchild - " + child;
                 }
             }
         }
@@ -559,7 +576,11 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return labelledNode;
     }
     
-    public static String getFunctionFqn(Node node) {
+    public static String getFunctionFqn(Node node, boolean[] isInstance) {
+        if (isInstance != null) {
+            isInstance[0] = true;
+        }
+
         FunctionNode func = (FunctionNode) node;
         //AstElement js = AstElement.getElement(node);
         Node parent = node.getParentNode();
@@ -575,7 +596,31 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         String funcName = func.getFunctionName();
         if (funcName == null || funcName.length() == 0) {
             String name = null;
-            if (parentType == Token.OBJECTLIT) {
+            boolean wasThis = false;
+            if (parentType == Token.CALL && func.getNext() == null && 
+                    parent.getParentNode() != null && parent.getFirstChild() == func) {
+                Node grandParent = parent.getParentNode();
+                int grandParentType = grandParent.getType();
+                if (grandParentType == Token.SETPROP || grandParentType == Token.SETNAME) {
+                    // Looks like there's a call in the middle; for example, Yahoo.util.Event has
+                    // this weird definition:
+                    //    YAHOO.util.Event = function() {
+                    //       ...
+                    //    }();
+                    
+                    // We'll just bypass it
+                    parent = grandParent;
+                    parentType = parent.getType();
+                }
+            }
+            
+            if (parentType == Token.NAME) {
+                // Only accept "class" definitions here, e.g "var Foo = "...
+                String n = parent.getString();
+                if (Character.isUpperCase(n.charAt(0))) {
+                    name = n;
+                }
+            } else if (parentType == Token.OBJECTLIT) {
                 // Foo.Bar = { foo : function() }
                 // We handle object literals but skip the ones
                 // that don't have an associated name. This must
@@ -584,6 +629,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
                 // this.foo = function() { }
                 if (parent.getFirstChild().getType() == Token.THIS) {
+                    wasThis = true;
                     Node method = parent.getFirstChild().getNext();
                     if (method.getType() == Token.STRING) {
                         String methodName = method.getString();
@@ -591,7 +637,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         while (clzNode != null) {
                             if (clzNode.getType() == Token.FUNCTION) {
                                 // Determine function name
-                                String ancestorName = getFunctionFqn(clzNode);
+                                String ancestorName = getFunctionFqn(clzNode, null);
                                 if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
                                     return ancestorName + "." + methodName;
                                 }
@@ -607,7 +653,26 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     name = sb.toString();
                 }
             }
-
+            
+            if (name != null) {
+                // See if we're inside a with-statement
+                String in = getSurroundingWith(parent);
+                if (in != null) {
+                    name = in + "." + name; // NOI18N
+                }
+                
+                // Determine is instance
+                // function Foo() {} is an instance, Foo.Bar = function() is not.
+                boolean instance = wasThis || name.indexOf('.') == -1;
+                if (name.indexOf(DOT_PROTOTYPE) != -1) {
+                    name = name.replace(DOT_PROTOTYPE, ""); // NOI18N
+                    instance = true;
+                }
+                if (isInstance != null) {
+                    isInstance[0] = instance;
+                }
+            }
+            
             return name;
         }
 
@@ -624,6 +689,31 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         String className = null;
         String extendsName = null;
         int parentType = parent != null ? parent.getType() : 0;
+        
+        if (parentType == Token.RETURN) {
+            // The function is returning an object literal containing a function;
+            // this could be something like the syntax used in YAHOO.util.Event:
+            // Locate the surrounding function.
+            Node func = parent.getParentNode();
+            for (; func != null; func = func.getParentNode()) {
+                if (func.getType() == Token.FUNCTION) {
+                    String funcName = getFunctionFqn(func, null);
+                    if (funcName != null) {
+                        if (!Character.isUpperCase(funcName.charAt(0))) {
+                            // Don't treat something like
+                            //   dojo._foo = function() {  foo(); return { x: 50, y:60 }
+                            
+                            return new String[] { null, null};
+                        }
+                        return new String[] { funcName, null };
+                    }
+                    break;
+                } else if (func.getType() == Token.OBJLITNAME) {
+                    return getObjectLitFqn(func);
+                }
+            }
+        }
+        
         if (parentType == Token.NAME) {
             className = parent.getString();
         } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
@@ -698,8 +788,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 }
                             }
                         }
+                    } else if (parentType == Token.CALL && parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) {
+                            className = AstUtilities.getJoinedName(first.getNext());
+                        }
                     }
-
                 }
             }
         } else if (parentType == Token.CALL) {
@@ -725,8 +824,17 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                         extendsName = superName.toString();
                                     }
                                 }
-
                             }
+                        }
+                    } else if (parent.getParentNode() != null &&
+                            (parent.getFirstChild().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext() != null &&
+                            parent.getFirstChild().getNext().getType() == Token.GETPROP &&
+                            parent.getFirstChild().getNext().getNext() == node)) {
+                        Node first = parent.getFirstChild();
+                        String joined = AstUtilities.getJoinedName(first);
+                        if (joined.endsWith(".extend") && joined.indexOf("dojo") != -1) { // NOI18N
+                            className = AstUtilities.getJoinedName(first.getNext());
                         }
                     }
                 }
@@ -740,7 +848,12 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         
         return result;
     }
-    
+
+    public static String getJoinedName(Node node) {
+        StringBuilder sb = new StringBuilder();
+        addName(sb, node);
+        return sb.toString();
+    }
     
     public static boolean addName(StringBuilder sb, Node node) {
         switch (node.getType()) {
@@ -785,28 +898,159 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return true;
     }
     
-    
-    public static String getFqn(AstPath path) {
+    public static String getFqn(AstPath path, boolean[] isInstance, String[] method) {
         Node clzNode = path.leaf();
-        while (clzNode != null) {
-            if (clzNode.getType() == Token.FUNCTION) {
+        return getFqn(clzNode, isInstance, method);
+    }
+    
+    public static String getFqn(Node node, boolean[] isInstance, String[] method) {
+        Node methodNode = null;
+        while (node != null) {
+            if (node.getType() == Token.FUNCTION) {
                 // Determine function name
-                String ancestorName = getFunctionFqn(clzNode);
-                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
-                    return ancestorName;
+                String fqn = getFunctionFqn(node, isInstance);
+                if (fqn != null && methodNode == null) {
+                    methodNode = node;
                 }
-            } else if (clzNode.getType() == Token.OBJECTLIT) {
-                String className = getObjectLitFqn(clzNode)[0];
-                if (className != null) {
-                    if (className.endsWith(DOT_PROTOTYPE)) {
-                        className = className.substring(0, className.length()-DOT_PROTOTYPE.length());
+                if (fqn != null && Character.isUpperCase(fqn.charAt(0))) {
+                    
+                    int lastDot = fqn.lastIndexOf('.');
+                    if (lastDot != -1 && lastDot < fqn.length()-1) {
+                        if (!Character.isUpperCase(fqn.charAt(lastDot+1))) {
+                            if (method != null) {
+                                method[0] = fqn.substring(lastDot+1);
+                            }
+                            fqn = fqn.substring(0, lastDot);
+                        }
                     }
                     
-                    return className;
+                    return fqn;
+                }
+            } else if (node.getType() == Token.OBJECTLIT) {
+                String fqn = getObjectLitFqn(node)[0];
+                if (fqn != null) {
+                    if (fqn.endsWith(DOT_PROTOTYPE)) {
+                        fqn = fqn.substring(0, fqn.length()-DOT_PROTOTYPE.length());
+                    }
+                    
+                    if (method != null && methodNode != null) {
+                        // Find the method
+                        for (Node child = node.getFirstChild(); child != null; child = child.getNext()) {
+                            if (child.getType() == Token.OBJLITNAME) {
+                                Node f = AstUtilities.getLabelledNode(child);
+                                if (f == methodNode) {
+                                    method[0] = child.getString();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    return fqn;
                 }
             }
-            clzNode = clzNode.getParentNode();
+            node = node.getParentNode();
         }
+        return null;
+    }
+    
+    public static String getExpressionType(Node node) {
+        // XXX See also JsTypeAnalyzer.expressionType
+        String type;
+        switch (node.getType()) {
+        case Token.FALSE:
+        case Token.TRUE:
+        case Token.NE:
+        case Token.EQ:
+        case Token.LT:
+        case Token.GT:
+        case Token.LE:
+        case Token.GE:
+        case Token.AND:
+        case Token.OR:
+        case Token.NOT:
+            type = "Boolean"; // NOI18N
+            break;
+        case Token.NUMBER:
+            type = "Number"; // NOI18N
+            break;
+        case Token.STRING:
+            if ("undefined".equals(node.getString())) {
+                type = Node.UNKNOWN_TYPE;
+            } else {
+                type = "String"; // NOI18N
+            }
+            break;
+        case Token.REGEXP:
+            type = "RegExp"; // NOI18N
+            break;
+        case Token.ARRAYLIT:
+            // TODO - iterate over the children to see if I can compute
+            // the type of the children, e.g. Array<Number> for something
+            // like  [0,1,2]
+            type = "Array"; // NOI18N
+            break;
+        case Token.FUNCTION:
+            type = "Function"; // NOI18N
+            break;
+        case Token.UNDEFINED:
+            type = "Undefined";
+            break;
+        case Token.VOID:
+            type = "void"; // NOI18N
+            break;
+        case Token.NEW: {
+            Node first = AstUtilities.getFirstChild(node);
+            if (first != null) {
+                type = AstUtilities.getJoinedName(first);
+            } else {
+                type = Node.UNKNOWN_TYPE;
+            }
+            break;
+        }
+        case Token.GETPROP: {
+            type = AstUtilities.getJoinedName(node);
+            int dot = type.lastIndexOf('.');
+            if (dot != -1) {
+                // "foo.bar" is not a type, but "Foo.Bar" is, as is "foo"
+                // (because many "classes" like jMaki start with a lowercase
+                // letter so I can't just filter on these.)
+                if (!Character.isUpperCase(type.charAt(dot+1))) {
+                    type = null;
+                }
+            }
+            break;
+        }
+        default:
+            type = Node.UNKNOWN_TYPE;
+        }
+        return type;
+    }
+    
+    public static String getSurroundingWith(Node node) {
+        Node n = node;
+        for (; n != null; n = n.getParentNode()) {
+            int t = n.getType();
+            if (t == Token.FUNCTION) {
+                break;
+            }
+            if (t == Token.WITH) {
+                // Find enterwith node
+                Node p = n.getParentNode().getFirstChild();
+                while (p != null && p.getNext() != n) {
+                    p = p.getNext();
+                }
+                if (p != null && p.getType() == Token.ENTERWITH && p.getFirstChild() != null) {
+                    String in = AstUtilities.getJoinedName(p.getFirstChild());
+                    if (in != null && in.length() > 0) {
+                        return in;
+                    }
+                }
+
+                break;
+            }
+        }
+        
         return null;
     }
 }

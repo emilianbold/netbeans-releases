@@ -61,6 +61,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import org.jruby.ast.NodeType;
+import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.openide.cookies.InstanceCookie;
@@ -100,9 +102,9 @@ public class RulesManager {
     private static final String SELECTION = "selection"; // NOI18N
 
     // Maps of registered rules
-    private static Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
-    private static Map<Integer,List<AstRule>> hints = new HashMap<Integer,List<AstRule>>();
-    private static Map<Integer,List<AstRule>> suggestions = new HashMap<Integer, List<AstRule>>();
+    private static Map<ID,List<ErrorRule>> errors = new HashMap<ID, List<ErrorRule>>();
+    private static Map<NodeType,List<AstRule>> hints = new HashMap<NodeType,List<AstRule>>();
+    private static Map<NodeType,List<AstRule>> suggestions = new HashMap<NodeType, List<AstRule>>();
     private static List<SelectionRule> selectionHints = new ArrayList<SelectionRule>();
 
     // Tree models for the settings GUI
@@ -147,11 +149,11 @@ public class RulesManager {
         return NbPreferences.forModule(this.getClass()).node(profile).node(rule.getId());
     }
     
-    public Map<String,List<ErrorRule>> getErrors() {
+    public Map<ID,List<ErrorRule>> getErrors() {
         return errors;
     }
 
-    public Map<Integer,List<AstRule>> getHints() {
+    public Map<NodeType,List<AstRule>> getHints() {
         return hints;
     }
 
@@ -159,10 +161,10 @@ public class RulesManager {
         return selectionHints;
     }
 
-    public Map<Integer,List<AstRule>> getHints(boolean onLine, CompilationInfo info) {
-        Map<Integer, List<AstRule>> result = new HashMap<Integer, List<AstRule>>();
+    public Map<NodeType,List<AstRule>> getHints(boolean onLine, CompilationInfo info) {
+        Map<NodeType, List<AstRule>> result = new HashMap<NodeType, List<AstRule>>();
         
-        for (Entry<Integer, List<AstRule>> e : getHints().entrySet()) {
+        for (Entry<NodeType, List<AstRule>> e : getHints().entrySet()) {
             List<AstRule> nueRules = new LinkedList<AstRule>();
             
             for (AstRule r : e.getValue()) {
@@ -203,7 +205,7 @@ public class RulesManager {
         return result;
     }
     
-    public Map<Integer,List<AstRule>> getSuggestions() {
+    public Map<NodeType,List<AstRule>> getSuggestions() {
         return suggestions;
     }
 
@@ -289,7 +291,7 @@ public class RulesManager {
     }
 
     private static void categorizeErrorRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<String,List<ErrorRule>> dest,
+                                             Map<ID,List<ErrorRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
 
@@ -318,7 +320,7 @@ public class RulesManager {
     }
 
     private static void categorizeAstRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<Integer,List<AstRule>> dest,
+                                             Map<NodeType,List<AstRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
 
@@ -387,9 +389,9 @@ public class RulesManager {
         }
     }
     
-    private static void addRule( AstRule rule, Map<Integer,List<AstRule>> dest ) {
+    private static void addRule( AstRule rule, Map<NodeType,List<AstRule>> dest ) {
 
-        for( Integer kind : rule.getKinds() ) {
+        for(NodeType kind : rule.getKinds() ) {
             List<AstRule> l = dest.get( kind );
             if ( l == null ) {
                 l = new LinkedList<AstRule>();
@@ -400,9 +402,9 @@ public class RulesManager {
     }
 
     @SuppressWarnings("unchecked")
-    private static void addRule( ErrorRule rule, Map<String,List<ErrorRule>> dest ) {
+    private static void addRule( ErrorRule rule, Map<ID,List<ErrorRule>> dest ) {
 
-        for(String code : (Set<String>) rule.getCodes()) {
+        for(ID code : (Set<ID>) rule.getCodes()) {
             List<ErrorRule> l = dest.get( code );
             if ( l == null ) {
                 l = new LinkedList<ErrorRule>();

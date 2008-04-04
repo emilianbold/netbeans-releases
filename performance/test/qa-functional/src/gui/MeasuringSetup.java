@@ -63,6 +63,8 @@ public class MeasuringSetup extends NbTestSuite {
         suite.addTest(new IDESetupTest("closeMemoryToolbar"));
         
         suite.addTest(new IDESetupTest("closeWelcome"));
+
+        suite.addTest(new IDESetupTest("testAddAppServer"));
         
         suite.addTest(new IDESetupTest("openFoldersProject"));
         suite.addTest(new IDESetupTest("openDataProject"));

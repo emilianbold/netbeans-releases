@@ -352,7 +352,10 @@ public class JspFoldManager implements FoldManager {
 
                 //try to find a fold for the fold info
                 Fold fs = FoldUtilities.findNearestFold(fh, fi.startOffset);
-                if (fs != null && fs.getStartOffset() == fi.startOffset && fs.getEndOffset() == fi.endOffset) {
+                if (fs != null 
+                        && fs.getStartOffset() == fi.startOffset 
+                        && fs.getEndOffset() == fi.endOffset
+                        && myFolds.contains(fs)) {
                     //there is a fold with the same boundaries as the FoldInfo
                     if (fi.foldType != fs.getType() || !(fi.description.equals(fs.getDescription()))) {
                         //the fold has different type or/and description => recreate

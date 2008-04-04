@@ -80,6 +80,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -92,7 +93,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author John Baker
  */
 public class DatabaseSettingsImporter {
-    
     private static DatabaseSettingsImporter databaseSettingsImporter;
     public static final String  ROOT_CTX_TAG = "rootContext"; // NOI18N
     public static final String  CTX_TAG      = "context"; // NOI18N
@@ -591,82 +591,109 @@ public class DatabaseSettingsImporter {
      * @param ress
      *
      */
-    public void updateWebXml(Project project, List <RequestedResource> ress) {
-        WebModule wmod = WebModule.getWebModule(project.getProjectDirectory());
-        FileObject deployDescFO = wmod.getDeploymentDescriptor();
-        WebApp webApp = getWebApp(deployDescFO);
-        boolean needWrite = false;
-        
-        ResourceRef[] rscRefs = webApp.getResourceRef();
-        List<RequestedResource> reqList = new LinkedList<RequestedResource>();
-        Iterator itRess = ress.iterator();
-        while (itRess.hasNext()) {
-            reqList.add((RequestedResource)itRess.next());
-        }
-        
-        // Resource Refs
-        if (rscRefs == null) {
-            rscRefs = new ResourceRef[0];
-        } // end of if (refs == null)
-        
-        for (int i = 0; i < rscRefs.length; i++) {
-            boolean found = false;
-            Iterator it = reqList.iterator();
-            
-            while (it.hasNext()) {
-                RequestedResource r = (RequestedResource)it.next();
-                
-                if (rscRefs[i].getResRefName().equals(r.getResourceName())) {
-                    found = true;
-                    it.remove();
-                    
-                    break;
-                } // end of if (refs[i].getResRefName().
-                //    equals(r.getResourceName()))
-            } // end of while (it.hasNext())
-        } // end of for (int i = 0; i < refs.length; i++)
-        
-        // Add the refs to the deployment descriptor
-        Iterator it = reqList.iterator();
-        while (it.hasNext()) {
-            RequestedResource r = (RequestedResource)it.next();
-            
-            if (r instanceof RequestedJdbcResource) {
-                RequestedJdbcResource jr = (RequestedJdbcResource)r;
-                
-                try {
-                    webApp.addBean("ResourceRef", // NOI18N
-                            new String[] {
-                        "ResRefName", // NOI18N
-                        "Description", // NOI18N
-                        "ResType", // NOI18N
-                        "ResAuth" }, // NOI18N
-                        new Object[] {
-                        jr.getResourceName(),
-                        "Visual Web generated DataSource Reference", // NOI18N
-                        "javax.sql.DataSource", // NOI18N
-                        "Container" }, // NOI18N
-                        "ResRefName"); // NOI18N
-                } catch (ClassNotFoundException e) {
-                    // This should really not happen
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                } // end of try-catch
-                catch (NameAlreadyUsedException ne) {
-                    // Why did the code above not find it?
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ne);
-                } // end of catch
-                
-                needWrite = true;
-            } // end of if (r instanceof RequestedJdbcResource)
-        } // end of while (it.hasNext())
-        
-        if (needWrite) {
+    public void updateWebXml(Project project, List<RequestedResource> ress) {
+        UpdateDataSourceReference updateDataSourceReference = new UpdateDataSourceReference(project, ress);
+        FileObject webInf = WebModule.getWebModule(project.getProjectDirectory()).getWebInf();
+        if (webInf != null) {
             try {
-                webApp.write(deployDescFO);
+                FileSystem fs = webInf.getFileSystem();
+                fs.runAtomicAction(updateDataSourceReference);
             } catch (IOException e) {
-                // Do nothing for now.
-                e.printStackTrace();
+                ErrorManager.getDefault().notify(e);
             }
         }
-    }           
+    }
+    
+    private class UpdateDataSourceReference implements FileSystem.AtomicAction {
+        List <RequestedResource> requestedResource = null;
+        Project proj= null;
+        
+        public UpdateDataSourceReference(Project project, List <RequestedResource> ress) {
+            requestedResource = ress;
+            proj = project;
+        }
+
+        
+        public void run() throws IOException {
+            WebModule wmod = WebModule.getWebModule(proj.getProjectDirectory());
+            FileObject deployDescFO = wmod.getDeploymentDescriptor();
+            WebApp webApp = getWebApp(deployDescFO);
+            boolean needWrite = false;
+
+            ResourceRef[] rscRefs = webApp.getResourceRef();
+            List<RequestedResource> reqList = new LinkedList<RequestedResource>();
+            Iterator itRess = requestedResource.iterator();
+            while (itRess.hasNext()) {
+                reqList.add((RequestedResource) itRess.next());
+            }
+
+            // Resource Refs
+            if (rscRefs == null) {
+                rscRefs = new ResourceRef[0];
+            } // end of if (refs == null)
+
+            for (int i = 0; i < rscRefs.length; i++) {
+                boolean found = false;
+                Iterator it = reqList.iterator();
+
+                while (it.hasNext()) {
+                    RequestedResource r = (RequestedResource) it.next();
+
+                    if (rscRefs[i].getResRefName().equals(r.getResourceName())) {
+                        found = true;
+                        it.remove();
+
+                        break;
+                    } // end of if (refs[i].getResRefName().
+                //    equals(r.getResourceName()))
+                } // end of while (it.hasNext())
+            } // end of for (int i = 0; i < refs.length; i++)
+
+            // Add the refs to the deployment descriptor
+            Iterator it = reqList.iterator();
+            while (it.hasNext()) {
+                RequestedResource r = (RequestedResource) it.next();
+
+                if (r instanceof RequestedJdbcResource) {
+                    RequestedJdbcResource jr = (RequestedJdbcResource) r;
+
+                    try {
+                        webApp.addBean("ResourceRef", // NOI18N
+                                new String[]{
+                            "ResRefName", // NOI18N
+                            "Description", // NOI18N
+                            "ResType", // NOI18N
+                            "ResAuth"
+                        }, // NOI18N
+                                new Object[]{
+                            jr.getResourceName(),
+                            "Visual Web generated DataSource Reference", // NOI18N
+                            "javax.sql.DataSource", // NOI18N
+                            "Container"
+                        }, // NOI18N
+                                "ResRefName"); // NOI18N
+                    } catch (ClassNotFoundException e) {
+                        // This should really not happen
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    } // end of try-catch
+                    catch (NameAlreadyUsedException ne) {
+                        // Why did the code above not find it?
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ne);
+                    } // end of catch
+                    
+                    needWrite = true;
+                } // end of if (r instanceof RequestedJdbcResource)
+            } // end of while (it.hasNext())
+
+            if (needWrite) {
+                try {
+                    webApp.write(deployDescFO);
+                } catch (IOException e) {
+                    // Do nothing for now.
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }    
 }

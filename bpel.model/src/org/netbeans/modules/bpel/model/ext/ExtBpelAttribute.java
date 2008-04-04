@@ -36,14 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bpel.model.ext;
 
 import javax.xml.XMLConstants;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
-import org.netbeans.modules.bpel.model.api.support.InvalidNamespaceException;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.InvalidNamespaceException;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.openide.ErrorManager;
@@ -136,5 +135,4 @@ public abstract class ExtBpelAttribute implements Attribute {
             return null;
         }
     }
-
 }

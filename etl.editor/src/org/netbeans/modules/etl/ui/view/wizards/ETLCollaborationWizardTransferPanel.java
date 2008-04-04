@@ -89,7 +89,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
@@ -107,9 +106,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         TableModelListener, PropertyChangeListener {
 
     /* Log4J category string */
-    
     private static final String LOG_CATEGORY = ETLCollaborationWizardTransferPanel.class.getName();
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /**
@@ -263,7 +261,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             try {
                 selectedTableModel.removeRow(rowIndex);
             } catch (ArrayIndexOutOfBoundsException aix) {
-                mLogger.errorNoloc(mLoc.t("PRSR030: Failed to remove row from selected tables{0}", LOG_CATEGORY), aix);
+                mLogger.errorNoloc(mLoc.t("EDIT030: Failed to remove row from selected tables{0}", LOG_CATEGORY), aix);
             }
         }
 
@@ -567,36 +565,36 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     /** Indicates addition of item(s). */
     public static final String LBL_ADD = ">";
     /** Label indicating that all elements should be moved. */
-    public static final String nbBundle1 = mLoc.t("PRSR001: ALL");
-    public static final String LBL_ALL = Localizer.parse(nbBundle1);
+    public static final String nbBundle1 = mLoc.t("BUND067: ALL");
+    public static final String LBL_ALL = nbBundle1.substring(15);
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
     /** Describes destination list */
-    public static final String nbBundle8 = mLoc.t("PRSR001: Schemas:");
-    public static final String LBL_DEST_MSG =Localizer.parse(nbBundle8);
+    public static final String nbBundle8 = mLoc.t("BUND068: Schemas:");
+    public static final String LBL_DEST_MSG = nbBundle8.substring(15);
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
     /** Indicates removal of all destination items. */
     public static final String LBL_REMOVE_ALL = LBL_REMOVE + " " + LBL_ALL;
     /** Describes source list and user task. */
-    public static final String nbBundle2 = mLoc.t("PRSR001: Available Connections:");
-    public static final String LBL_SOURCE_MSG = Localizer.parse(nbBundle2);
+    public static final String nbBundle2 = mLoc.t("BUND069: Available Connections:");
+    public static final String LBL_SOURCE_MSG = nbBundle2.substring(15);
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;
     /** Minimum number of visible items in lists */
     public static final int MINIMUM_VISIBLE = 5;
     /** Tooltip to describe addition of selected item(s). */
-    public static final String nbBundle3 = mLoc.t("PRSR001: Add to selected items");
-    public static final String TIP_ADD =  Localizer.parse(nbBundle3);
+    public static final String nbBundle3 = mLoc.t("BUND070: Add to selected items");
+    public static final String TIP_ADD = nbBundle3.substring(15);
     /** Tooltip to describe addition of all source items. */
-    public static final String nbBundle4 = mLoc.t("PRSR001: Add all items");
-    public static final String TIP_ADD_ALL = Localizer.parse(nbBundle4);
+    public static final String nbBundle4 = mLoc.t("BUND071: Add all items");
+    public static final String TIP_ADD_ALL = nbBundle4.substring(15);
     /** Tooltip to describe addition of selected item(s). */
-    public static final String nbBundle5 = mLoc.t("PRSR001: Remove from selected items");
-    public static final String TIP_REMOVE = Localizer.parse(nbBundle5);
+    public static final String nbBundle5 = mLoc.t("BUND072: Remove from selected items");
+    public static final String TIP_REMOVE = nbBundle5.substring(15);
     /** Tooltip to describe removal of all destination items. */
-    public static final String nbBundle6 = mLoc.t("PRSR001: Remove all items");
-    public static final String TIP_REMOVE_ALL = Localizer.parse(nbBundle6);
+    public static final String nbBundle6 = mLoc.t("BUND073: Remove all items");
+    public static final String TIP_REMOVE_ALL = nbBundle6.substring(15);
 
     /**
      * Indicates whether Databases in the given List have enough selected tables to allow for
@@ -691,9 +689,9 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 return strings[i];
             }
         });
-        String nbBundle20 = mLoc.t("PRSR001: schemaTables");
-        schemaTablesList.setName(Localizer.parse(nbBundle20));
-        schemaTablesList.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle20));
+        String nbBundle20 = mLoc.t("BUND074: schemaTables");
+        schemaTablesList.setName(nbBundle20.substring(15));
+        schemaTablesList.getAccessibleContext().setAccessibleName(nbBundle20.substring(15));
         schemaTablesList.addMouseListener(new java.awt.event.MouseAdapter() {
 
             @Override
@@ -705,32 +703,32 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         });
 
         jScrollPane2.setViewportView(schemaTablesList);
-        String nbBundle9 = mLoc.t("PRSR001: Selected Tables:");
-        jLabel3.setText(Localizer.parse(nbBundle9));
-        jLabel3.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle20));
+        String nbBundle9 = mLoc.t("BUND075: Selected Tables:");
+        jLabel3.setText(nbBundle9.substring(15));
+        jLabel3.getAccessibleContext().setAccessibleName(nbBundle9.substring(15));
         jLabel3.setName("selectedTablesLabel");
-        jLabel3.setDisplayedMnemonic(Localizer.parse(nbBundle9).charAt(0));
+        jLabel3.setDisplayedMnemonic(nbBundle9.substring(15).charAt(0));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
                 new String[]{
-            "Name", "Schema", "User", "Connection"
-        }));
+                    "Name", "Schema", "User", "Connection"
+                }));
         jTable1.setName("selectedTables");
-        jTable1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle9));
+        jTable1.getAccessibleContext().setAccessibleName(nbBundle9.substring(15));
         jScrollPane3.setViewportView(jTable1);
         jScrollPane3.setAutoscrolls(true);
 
-        String nbBundle30 = mLoc.t("PRSR001: Select");
-        selectButton.setText(Localizer.parse(nbBundle30));
-        selectButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle30));
-        selectButton.setMnemonic(Localizer.parse(nbBundle30).charAt(0));
+        String nbBundle30 = mLoc.t("BUND076: Select");
+        selectButton.setText(nbBundle30.substring(15));
+        selectButton.getAccessibleContext().setAccessibleName(nbBundle30.substring(15));
+        selectButton.setMnemonic(nbBundle30.substring(15).charAt(0));
         selectButton.addActionListener(this);
 
-        String nbBundle31 = mLoc.t("PRSR001: Remove");
-        removeButton.setText(Localizer.parse(nbBundle31));
-        removeButton.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle31));
-        removeButton.setMnemonic(Localizer.parse(nbBundle31).charAt(0));
+        String nbBundle31 = mLoc.t("BUND152: Remove");
+        removeButton.setText(nbBundle31.substring(15));
+        removeButton.getAccessibleContext().setAccessibleName(nbBundle31.substring(15));
+        removeButton.setMnemonic(nbBundle31.substring(15).charAt(0));
         removeButton.addActionListener(this);
         removeButton.setEnabled(false);
 
@@ -818,7 +816,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR031: Error retrieving schemas{0}", LOG_CATEGORY), ex);
+                    mLogger.errorNoloc(mLoc.t("EDIT031: Error retrieving schemas{0}", LOG_CATEGORY), ex);
                     throw new RuntimeException(ex.getCause());
                 } finally {
                     meta.disconnectDB();
@@ -896,8 +894,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     meta.getDBType(), conn.getDriverClass(), conn.getDatabaseURL(), conn.getUser(),
                     conn.getPassword(), "Descriptive info here");
         } catch (Exception ex) {
-            // ignore
         }
+
         model.setModelName(conn.getDisplayName());
         model.setConnectionDefinition(def);
         return model;
@@ -939,7 +937,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         DBMetaDataFactory dbMeta = new DBMetaDataFactory();
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                mLogger.infoNoloc(mLoc.t("PRSR032: selectedConn is null{0}", LOG_CATEGORY));
+                mLogger.infoNoloc(mLoc.t("EDIT032: selectedConn is null{0}", LOG_CATEGORY));
             }
 
             if ((selectedConnection != null)) {
@@ -964,7 +962,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 schemaTablesList.setListData(tableNameList);
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR033: Error trying to retrieve tables and views{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT033: Error trying to retrieve tables and views{0}", LOG_CATEGORY), ex);
         } finally {
             dbMeta.disconnectDB();
         }
@@ -1004,7 +1002,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         // add selected tables from the list to table
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                mLogger.infoNoloc(mLoc.t("PRSR034: selectedConn is null{0}", LOG_CATEGORY));
+                mLogger.infoNoloc(mLoc.t("EDIT032: selectedConn is null{0}", LOG_CATEGORY));
             }
 
             Object[] selectedTables = schemaTablesList.getSelectedValues();
@@ -1044,7 +1042,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 this.removeButton.setEnabled(true);
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR035: Error trying to get selected table metadata{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT035: Error trying to get selected table metadata{0}", LOG_CATEGORY), ex);
         }
     }
 
@@ -1163,9 +1161,11 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         }
 
         if (sourceList != null) {
-            SwingUtilities.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new  
 
-                public void run() {
+                  Runnable() {
+
+                       public void run() {
                     if (sourceList != null && sourceList.getModel().getSize() != 0) {
                         sourceList.requestFocusInWindow();
                     } else if (addButton != null) {
@@ -1219,7 +1219,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         wizard.putProperty(ETLCollaborationWizard.TARGET_DB, list);
                     }
                 } catch (Exception e) {
-                    mLogger.errorNoloc(mLoc.t("PRSR036: Error trying to get selected table metadata{0}", LOG_CATEGORY), e);
+                    mLogger.errorNoloc(mLoc.t("EDIT035: Error trying to get selected table metadata{0}", LOG_CATEGORY), e);
                 }
             }
         }

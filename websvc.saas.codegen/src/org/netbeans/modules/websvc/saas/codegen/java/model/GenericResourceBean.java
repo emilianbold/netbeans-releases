@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
+import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean.SaasAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 
 /**
@@ -64,7 +67,7 @@ public class GenericResourceBean {
     public static final HttpMethodType[] ITEM_METHODS = new HttpMethodType[]{HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE};
     public static final HttpMethodType[] STAND_ALONE_METHODS = new HttpMethodType[]{HttpMethodType.GET, HttpMethodType.PUT};
     public static final HttpMethodType[] CLIENT_CONTROL_CONTAINER_METHODS = new HttpMethodType[]{HttpMethodType.GET};
-    private final String name;
+    private String name;
     private String packageName;
     private String uriTemplate;
     private MimeType[] mimeTypes;
@@ -73,6 +76,7 @@ public class GenericResourceBean {
     private boolean privateFieldForQueryParam;
     private boolean generateUriTemplate = true;
     private List<GenericResourceBean> subResources;
+    private HttpMethodType httpMethod;
    
     public GenericResourceBean(String name, String packageName, String uriTemplate) {
         this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
@@ -117,6 +121,10 @@ public class GenericResourceBean {
 
     public String getName() {
         return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getShortName() {
@@ -238,5 +246,36 @@ public class GenericResourceBean {
     
     public static String getGetMethodName(MimeType mime) {
         return "get"+mime.suffix(); //NOI18N
+    }
+    
+    public HttpMethodType getHttpMethod() {
+        return this.httpMethod;
+    }
+    
+    public void setHttpMethod(HttpMethodType httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+    
+    public static String getHttpMethodName(HttpMethodType httpMethod, MimeType mime) {
+        return httpMethod.value().toLowerCase()+mime.suffix(); //NOI18N
+    }
+
+    public SaasAuthenticationType getAuthenticationType() {
+        return SaasAuthenticationType.PLAIN;
+    }
+    
+    public SaasAuthentication getAuthentication() {
+        return null;
+    }
+    
+    public List<ParameterInfo> filterParametersByAuth(List<ParameterInfo> params) {
+        return Util.filterParametersByAuth(getAuthenticationType(), getAuthentication(), params);
+    }
+    
+    public List<ParameterInfo> filterParameters(ParamFilter[] filters) {
+        return filterParameters(getInputParameters(), filters);
+    }
+    public List<ParameterInfo> filterParameters(List<ParameterInfo> params, ParamFilter[] filters) {
+        return Util.filterParameters(params, filters);
     }
 }

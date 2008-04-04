@@ -1,7 +1,7 @@
 package test;
 
-public class UnimplementedMethod implements Runnable {
+public class Test implements Runnable {
     
-    public UnimplementedMethod() {}
+    public Test() {}
     
 }

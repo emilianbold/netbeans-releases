@@ -41,11 +41,10 @@
 
 package org.netbeans.modules.project.libraries.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +53,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -107,12 +109,15 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     
     private void expandTree() {
         // get first library node
-        Node[] n = getExplorerManager().getRootContext().getChildren().getNodes()[0].getChildren().getNodes();
-        if (n.length != 0) {
-            try {
-                getExplorerManager().setSelectedNodes(new Node[]{n[0]});
-            } catch (PropertyVetoException ex) {
-                // OK to ignore - it is just selection initialization
+        Node[] n1 = getExplorerManager().getRootContext().getChildren().getNodes();
+        if (n1.length != 0) { //#130730 in case there are no LibraryTypeProviders in LibraryTypeRegistry.getDefault().getLibraryTypeProviders()
+            Node[] n = n1[0].getChildren().getNodes();
+            if (n.length != 0) {
+                try {
+                    getExplorerManager().setSelectedNodes(new Node[]{n[0]});
+                } catch (PropertyVetoException ex) {
+                    // OK to ignore - it is just selection initialization
+                }
             }
         }
     }
@@ -132,6 +137,8 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         jLabel2.setVisible(false);
         createButton.setVisible(false);
         deleteButton.setVisible(false);
+        jLabel3.setVisible(true);
+        libraryLocation.setVisible(true);
     }
     
     /**
@@ -230,16 +237,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
 
     private void postInitComponents () {
         this.libraries = new LibrariesView ();        
-        GridBagConstraints c = new GridBagConstraints ();
-        c.gridx = GridBagConstraints.RELATIVE;
-        c.gridy = GridBagConstraints.RELATIVE;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.gridheight = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.NORTHWEST;
-        c.weightx = 1.0;
-        c.weighty = 1.0;        
-        ((GridBagLayout)this.libsPanel.getLayout()).setConstraints(this.libraries,c);
+        this.libsPanel.setLayout(new BorderLayout());
         this.libsPanel.add(this.libraries);
         this.libraries.setPreferredSize(new Dimension (200,334));
         this.libraryName.setColumns(25);
@@ -250,6 +248,8 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                         nameChanged();
                     }
                 });                        
+        jLabel3.setVisible(false);
+        libraryLocation.setVisible(false);
     }
 
     private void nameChanged () {
@@ -306,19 +306,22 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         LibraryTypeProvider provider = nodes[0].getLookup().lookup(LibraryTypeProvider.class);
         if (provider == null)
             return;
-        // a library customizer needs to know location of sharable library in order to
-        // relativize paths. that's why object implementing both LibraryImplementation
-        // and LibraryStorageArea is passed to JComponent here:
+        LibraryCustomizerContextWrapper customizerContext;
         LibraryStorageArea area = nodes[0].getLookup().lookup(LibraryStorageArea.class);
         if (area != null && area != LibrariesModel.GLOBAL_AREA) {
-            impl = new LibraryImplementationWrapper(impl, area);
+            customizerContext = new LibraryCustomizerContextWrapper(impl, area);
+            File f = new File(URI.create(area.getLocation().toExternalForm()));
+            this.libraryLocation.setText(f.getPath());
+        } else {
+            customizerContext = new LibraryCustomizerContextWrapper(impl, null);
+            this.libraryLocation.setText(NbBundle.getMessage(LibrariesCustomizer.class,"LABEL_Global_Libraries"));
         }
 
         String[] volumeTypes = provider.getSupportedVolumeTypes();
         for (int i=0; i< volumeTypes.length; i++) {
             Customizer c = provider.getCustomizer (volumeTypes[i]);
             if (c instanceof JComponent) {
-                c.setObject (impl);
+                c.setObject (customizerContext);
                 JComponent component = (JComponent) c;
                 component.setEnabled (editable);
                 String tabName = component.getName();
@@ -337,59 +340,24 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
         libraryName = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        properties = new javax.swing.JTabbedPane();
         createButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         libsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        properties = new javax.swing.JTabbedPane();
+        jLabel3 = new javax.swing.JLabel();
+        libraryLocation = new javax.swing.JTextField();
 
         setMinimumSize(new java.awt.Dimension(642, 395));
-        setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(libraryName);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_CustomizerLibraryName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
-        add(jLabel1, gridBagConstraints);
 
         libraryName.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0.6;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(libraryName, gridBagConstraints);
-        libraryName.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibraryName")); // NOI18N
-
-        jPanel1.setLayout(new java.awt.BorderLayout());
-
-        properties.setPreferredSize(new java.awt.Dimension(400, 300));
-        jPanel1.add(properties, java.awt.BorderLayout.CENTER);
-        properties.getAccessibleContext().setAccessibleName(bundle.getString("AN_LibrariesCustomizerProperties")); // NOI18N
-        properties.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibrariesCustomizerProperties")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
-        add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(createButton, bundle.getString("CTL_NewLibrary")); // NOI18N
         createButton.addActionListener(new java.awt.event.ActionListener() {
@@ -397,13 +365,6 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 createLibrary(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(createButton, gridBagConstraints);
-        createButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_NewLibrary")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(deleteButton, bundle.getString("CTL_DeleteLibrary")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -411,37 +372,87 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 deleteLibrary(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(deleteButton, gridBagConstraints);
-        deleteButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_DeleteLibrary")); // NOI18N
 
         libsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        libsPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
-        add(libsPanel, gridBagConstraints);
-        libsPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_libsPanel")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout libsPanelLayout = new org.jdesktop.layout.GroupLayout(libsPanel);
+        libsPanel.setLayout(libsPanelLayout);
+        libsPanelLayout.setHorizontalGroup(
+            libsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 190, Short.MAX_VALUE)
+        );
+        libsPanelLayout.setVerticalGroup(
+            libsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 342, Short.MAX_VALUE)
+        );
 
         jLabel2.setLabelFor(libsPanel);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("TXT_LibrariesPanel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 12);
-        add(jLabel2, gridBagConstraints);
+
+        properties.setPreferredSize(new java.awt.Dimension(400, 300));
+
+        jLabel3.setLabelFor(libraryLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_CustomizerLibraryLocationName")); // NOI18N
+
+        libraryLocation.setEditable(false);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 103, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(createButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(deleteButton))
+                    .add(layout.createSequentialGroup()
+                        .add(libsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jLabel3)
+                                    .add(jLabel1))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(libraryLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                                    .add(libraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)))
+                            .add(properties, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel1)
+                            .add(libraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel3)
+                            .add(libraryLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(properties, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                    .add(libsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(createButton)
+                    .add(deleteButton)))
+        );
+
+        libraryName.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibraryName")); // NOI18N
+        createButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_NewLibrary")); // NOI18N
+        deleteButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_DeleteLibrary")); // NOI18N
+        libsPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_libsPanel")); // NOI18N
+        properties.getAccessibleContext().setAccessibleName(bundle.getString("AN_LibrariesCustomizerProperties")); // NOI18N
+        properties.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibrariesCustomizerProperties")); // NOI18N
+        libraryLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibraryLocation")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibrariesCustomizer")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -578,7 +589,8 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private javax.swing.JButton deleteButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JTextField libraryLocation;
     private javax.swing.JTextField libraryName;
     private javax.swing.JPanel libsPanel;
     private javax.swing.JTabbedPane properties;
@@ -698,11 +710,13 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             this.area = area;
         }
 
+        @Override
         public void addNotify () {
             // Could also filter by area (would then need to listen to model too)
             this.setKeys(LibraryTypeRegistry.getDefault().getLibraryTypeProviders());
         }
         
+        @Override
         public void removeNotify () {
             this.setKeys(new LibraryTypeProvider[0]);
         }
@@ -808,67 +822,60 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private Node buildTree() {
         return new AbstractNode(new TypeChildren(libraryStorageArea));
     }
-
-    private static class LibraryImplementationWrapper implements LibraryImplementation, LibraryStorageArea {
+    
+    /**
+     * This is backward compatible wrapper which can be passed to libraries customizer
+     * via JComponent.setObject and which provides to customizer both LibraryImplementation
+     * (old contract) and LibraryCustomizerContext (new contract).
+     */
+    private static class LibraryCustomizerContextWrapper extends LibraryCustomizerContext implements LibraryImplementation {
         
-        private LibraryImplementation lib;
-        private LibraryStorageArea area;
-        
-        public LibraryImplementationWrapper(LibraryImplementation lib, LibraryStorageArea area) {
-            this.lib =  lib;
-            this.area = area;
+        public LibraryCustomizerContextWrapper(LibraryImplementation lib, LibraryStorageArea area) {
+            super(lib, area);
         }
 
         public String getType() {
-            return lib.getType();
+            return getLibraryImplementation().getType();
         }
 
         public String getName() {
-            return lib.getName();
+            return getLibraryImplementation().getName();
         }
 
         public String getDescription() {
-            return lib.getDescription();
+            return getLibraryImplementation().getDescription();
         }
 
         public String getLocalizingBundle() {
-            return lib.getLocalizingBundle();
+            return getLibraryImplementation().getLocalizingBundle();
         }
 
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            return lib.getContent(volumeType);
+            return getLibraryImplementation().getContent(volumeType);
         }
 
         public void setName(String name) {
-            lib.setName(name);
+            getLibraryImplementation().setName(name);
         }
 
         public void setDescription(String text) {
-            lib.setDescription(text);
+            getLibraryImplementation().setDescription(text);
         }
 
         public void setLocalizingBundle(String resourceName) {
-            lib.setLocalizingBundle(resourceName);
+            getLibraryImplementation().setLocalizingBundle(resourceName);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
-            lib.addPropertyChangeListener(l);
+            getLibraryImplementation().addPropertyChangeListener(l);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            lib.removePropertyChangeListener(l);
+            getLibraryImplementation().removePropertyChangeListener(l);
         }
 
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
-            lib.setContent(volumeType, path);
-        }
-
-        public URL getLocation() {
-            return area.getLocation();
-        }
-
-        public String getDisplayName() {
-            return area.getDisplayName();
+            getLibraryImplementation().setContent(volumeType, path);
         }
     }
     

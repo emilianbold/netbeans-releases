@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 public class FunctionBreakpointImpl extends BreakpointImpl {
     
     private FunctionBreakpoint  breakpoint;
-    private FunctionBreakpoint  latestBreakpoint = null;
     private String              functionName;
     private BreakpointsReader   reader;
     
@@ -70,6 +69,7 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
         String st = getState();
         if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
+            setRunWhenValidated(true);
         }
         if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
             if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
@@ -94,6 +94,10 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
                 } else {
                     getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
                 }
+            }
+            if (isRunWhenValidated()) {
+                getDebugger().setRunning();
+                setRunWhenValidated(false);
             }
         }
     }

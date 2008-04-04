@@ -128,14 +128,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getItemPath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getItemPath().startsWith(s)){
                             continue;
                         }
                     }
                     p = getProperty(RESTRICT_COMPILE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getCompilePath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getCompilePath().startsWith(s)){
                             continue;
                         }
                     }
@@ -151,6 +151,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                                 map.put(name,f);
                             }
                         }
+                    } else {
+                        if (FULL_TRACE) System.out.println("Not Exist "+name); //NOI18N
                     }
                 }
             }
@@ -202,7 +204,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return res;
     }
     
-    private List<SourceFileProperties> getSourceFileProperties(String objFileName, HashMap<String,SourceFileProperties> map){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map){
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
@@ -220,7 +222,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName);  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());  // NOI18N
                         continue;
                     }
                     DwarfSource source = null;
@@ -243,6 +245,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                         source.process(cu);
+                        if (source.getCompilePath() == null){
+                            if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has NULL compile path in file "+objFileName);  // NOI18N
+                            continue;
+                        }
                         list.add(source);
                     }
                 }
@@ -254,12 +260,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (WrongFileFormatException ex) {
             if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
-            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
-            String root = "";
-            if (p != null) {
-                root = (String)p.getValue();
-            }
-            list = new LogReader(objFileName, root).getResults();
+            // XXX: OpenSolaris trick not needed due to opening AnalyzeMakeLog to public
+//            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
+//            String root = "";
+//            if (p != null) {
+//                root = (String)p.getValue();
+//            }
+//            list = AnalyzeMakeLog.runLogReader(objFileName, root);
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS){
                 System.err.println("Exception in file "+objFileName);  // NOI18N

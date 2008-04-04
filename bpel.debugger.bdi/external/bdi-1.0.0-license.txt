@@ -5,6 +5,7 @@ License: CDDL-1.0
 Files: bdi-1.0.0.jar
 Source: https://open-jbi-components.dev.java.net/
 Origin: https://open-jbi-components.dev.java.net/
+OSR: 8467
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

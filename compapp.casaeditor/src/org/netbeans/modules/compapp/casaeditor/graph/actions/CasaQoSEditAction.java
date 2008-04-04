@@ -40,6 +40,7 @@ package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -51,15 +52,15 @@ import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.ConnectionNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheetView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -80,9 +81,11 @@ public class CasaQoSEditAction extends WidgetAction.Adapter {
             return State.REJECTED;
         }
 
-        ((ImageWidget) widget).setPaintAsDisabled(true);
-
-        return State.CONSUMED;
+        ((ImageWidget) widget).setPaintAsDisabled(true); 
+        
+        // make sure the underlying connection gets selected
+        event.setPoint(new Point(8, 5));
+        return State.REJECTED;
     }
 
     @Override
@@ -93,52 +96,44 @@ public class CasaQoSEditAction extends WidgetAction.Adapter {
         if (event.getButton() != MouseEvent.BUTTON1) {
             return State.REJECTED;
         }
-
-        CasaConnection casaConnection = (CasaConnection) mScene.findObject(widget);
-        final CasaNode node = mScene.getNodeFactory().createNodeFor(casaConnection);
         
-        final PropertySheetView propertySheetView = new PropertySheetView();
+        Node[] selectedNodes = TopComponent.getRegistry().getActivatedNodes();
+        
+        if (selectedNodes != null && selectedNodes.length > 0 &&
+                selectedNodes[0] instanceof CasaNode) {
+            final CasaNode connectionNode = (CasaNode) selectedNodes[0];
 
+            final PropertySheetView propertySheetView = new PropertySheetView();
 
-        // create a property sheet and add JBI extensions on connection
-        final Sheet sheet = new Sheet();
+            Object[] options = new Object[]{Constants.CLOSE};
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    propertySheetView,
+                    NbBundle.getMessage(getClass(), "STR_CONFIG_QOS_PROPERTIES"),
+                    true,
+                    options,
+                    null,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            descriptor.setClosingOptions(options);
 
-        ExtensionPropertyHelper.setupExtensionPropertySheet(node,
-                casaConnection, sheet, "connection", "all"); // NOI18N
+            final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
 
-        Node fakeNode = new AbstractNode(Children.LEAF) {
+            // set nodes after PropertySheetView.addNotify() getting called
+            propertySheetView.setNodes(new Node[]{selectedNodes[0]}); 
 
-            @Override
-            public Node.PropertySet[] getPropertySets() {
-                return sheet.toArray();
-            }
-        };
+            // The dialog is modal, allow the action chain to continue while
+            // we open the dialog later.
+            SwingUtilities.invokeLater(new Runnable() {
 
-        Object[] options = new Object[]{Constants.CLOSE};
-        DialogDescriptor descriptor = new DialogDescriptor(
-                propertySheetView,
-                NbBundle.getMessage(getClass(), "STR_CONFIG_QOS_PROPERTIES"),
-                true,
-                options,
-                null,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-        descriptor.setClosingOptions(options);
+                public void run() {
+                    dlg.setVisible(true);                
 
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-
-        // set nodes after PropertySheetView.addNotify() getting called
-        propertySheetView.setNodes(new Node[]{fakeNode});
-
-        // The dialog is modal, allow the action chain to continue while
-        // we open the dialog later.
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                dlg.setVisible(true);
-            }
-        });
+                    // refresh to update the main property sheet
+                    connectionNode.refresh(); 
+                }
+            });
+        }
 
         return State.CONSUMED;
     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.common.project.ui;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
@@ -57,9 +58,9 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -127,8 +128,15 @@ public final class ProjectProperties {
      * <br>
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
+     * 
+     * Note: method does not save changes.
+     * 
+     * @param classpath list of classpath items to go through and create special properties for
+     * @param projProps project properties
+     * @param privateProps private properties
+     * @param projectFolder project folder
      */
-    public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties props, FileObject projectFolder) {
+    public static void storeLibrariesLocations (AntProjectHelper antHelper, Iterator<ClassPathSupport.Item> classpath, EditableProperties props) {
         ArrayList exLibs = new ArrayList ();
         Iterator propKeys = props.keySet().iterator();
         while (propKeys.hasNext()) {
@@ -142,7 +150,7 @@ public final class ProjectProperties {
             ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
             ArrayList<String> files = new ArrayList<String>();
             ArrayList<String> dirs = new ArrayList<String>();
-            getFilesForItem (item, files, dirs, projectFolder);
+            getFilesForItem (antHelper, item, files, dirs);
             String key;
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
@@ -169,19 +177,75 @@ public final class ProjectProperties {
         }
     }
     
+    /**
+     * Refresh total number of jars being used in project.xml.
+     * 
+     * @param projProps project properties
+     * @param cs classpath support
+     * @param property Ant property to update; e.g. for web project classpath or additional jar content
+     * @param element project.xml element corresponding to Ant property and keeping additional classpath information
+     */
+    public static void refreshLibraryTotals(EditableProperties projProps,
+            ClassPathSupport cs, String property, String element) {
+        List wmLibs = cs.itemsList(projProps.getProperty(property),  element);
+        cs.encodeToStrings(wmLibs, element);
+    }
+    
+    /**
+     * Remove obsolete properties from private properties.
+     * @param privateProps private properties
+     */
+    public static void removeObsoleteLibraryLocations(EditableProperties privateProps) {
+        // remove special properties from private.properties:
+        Iterator<String> propKeys = privateProps.keySet().iterator();
+        while (propKeys.hasNext()) {
+            String key = propKeys.next();
+            if (key.endsWith(".libdirs") || key.endsWith(".libfiles") || //NOI18N
+                    (key.indexOf(".libdir.") > 0) || (key.indexOf(".libfile.") > 0)) { //NOI18N
+                propKeys.remove();
+            }
+        }
+    }
+            
+    
+    /**
+     * See {@link storeLibrariesLocations(Iterator<ClassPathSupport.Item>, 
+     * EditableProperties, EditableProperties, FileObject)} for more details.
+     * This method perform changes under project write lock and saves them.
+     * 
+     * @param project project
+     * @param helper Ant project helper
+     * @param cs classpath support
+     * @param properties array of project properties to go through and generate
+     *  special properties for; for example for web project it would be classpath ("javac.classpath")
+     *  and additional WAR content ("war.content.additional")
+     * @param elements array of project.xml element names to use to store additional classpath information;
+     *  items in this array pair with items from properties array; can be null if refreshLibraryTotals is false;
+     *  for example for web project it would be two project.xml tags: "web-module-libraries" 
+     *  and "web-module-additional-libraries"
+     * @param refreshLibraryTotals update project.xml or not; that is should total number
+     *  of library jars be updated or not
+     */
     public static void storeLibrariesLocations (final Project project, final AntProjectHelper helper,
-            final ClassPathSupport cs, final String[] libUpdaterProperties) {
+            final ClassPathSupport cs, final String[] properties, 
+            final String[] elements, final boolean refreshLibraryTotals) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
-                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 // intentionally pass null to itemsList() - we do not need additional info to be read
                 HashSet set = new HashSet();
-                for (String property : libUpdaterProperties) {
-                    List wmLibs = cs.itemsList(props.getProperty(property),  null);
+                for (String property : properties) {
+                    List wmLibs = cs.itemsList(projectProps.getProperty(property),  null);
                     set.addAll(wmLibs);
                 }
-                ProjectProperties.storeLibrariesLocations(set.iterator(), props, project.getProjectDirectory());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                ProjectProperties.storeLibrariesLocations(helper, set.iterator(), projectProps);
+                if (refreshLibraryTotals) {
+                    // see issue #129316 for more details
+                    for (int i = 0; i < properties.length; i++) {
+                        refreshLibraryTotals(projectProps, cs, properties[i], elements[i]);
+                    }
+                }
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
@@ -191,14 +255,20 @@ public final class ProjectProperties {
         });
     }
     
-    public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {
+    public static final void getFilesForItem (AntProjectHelper antHelper, ClassPathSupport.Item item, List<String> files, List<String> dirs) {
         if (item.isBroken()) {
             return ;
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
             List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
+            Iterator<URI> uriIterator = item.getLibrary().getURIContent("classpath").iterator();  //NOI18N
             for (URL rootUrl : roots) {
-                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
+                FileObject root = URLMapper.findFileObject(rootUrl);
+                URI u = uriIterator.next();
+                URI rootUri = LibrariesSupport.getArchiveFile(u);
+                if (rootUri == null) {
+                    rootUri = u;
+                }
                 
                 //file inside library is broken
                 if (root == null)
@@ -213,7 +283,7 @@ public final class ProjectProperties {
                 if (item.getLibrary().getManager().getLocation() == null) {
                     path = f.getPath();
                 } else {
-                    path = PropertyUtils.relativizeFile(FileUtil.toFile(projectFolder), FileUtil.toFile(root));
+                    path = getLibraryEntryPath(antHelper.getLibrariesLocation(), rootUri);
                 }
                 if (f != null) {
                     if (f.isFile()) {
@@ -246,6 +316,17 @@ public final class ProjectProperties {
                 }
             }
         }
+    }
+    
+    private static String getLibraryEntryPath(String librariesLocation, URI libraryEntryURI) {
+        URI u;
+        if (libraryEntryURI.isAbsolute()) {
+            u = libraryEntryURI;
+        } else {
+            URI libLocation = LibrariesSupport.convertFilePathToURI(librariesLocation);
+            u = libLocation.resolve(libraryEntryURI.getPath());
+        }
+        return LibrariesSupport.convertURIToFilePath(u).replace('\\', '/');
     }
 
     public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {

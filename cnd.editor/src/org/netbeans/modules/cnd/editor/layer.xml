@@ -37,6 +37,8 @@
                 <file name="Settings.settings" url="resources/CCOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
@@ -116,9 +118,11 @@
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 
-                <file name="Settings.settings" url="resources/COptions.settings"/>
-                <file name="EditorKit.instance">
+                 <file name="Settings.settings" url="resources/COptions.settings"/>
+                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 
                 <folder name="FontsColors">
@@ -212,7 +216,7 @@
         </folder> <!-- IndentEngine -->
     </folder>	<!-- Services -->
 
-    <!--folder name="Editors">
+    <folder name="Editors">
         <folder name="text">
             <folder name="x-c">
                 <file name="Reformatter.instance">
@@ -225,6 +229,6 @@
                 </file>
             </folder>
         </folder>
-    </folder-->
+    </folder>
 
 </filesystem>

@@ -51,6 +51,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Test create projects
@@ -72,7 +74,7 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     public CreateNBProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=10000;
     }
     
     /**
@@ -83,7 +85,7 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     public CreateNBProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN=10000;
     }
     
     public void testCreateModuleProject(){
@@ -134,10 +136,18 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
         new EventTool().waitNoEvent(1000);
         return null;
     }
-    
+  
+    public void testInitGC() {
+        org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"),null, Level.FINEST);
+    }
+
+    public void testGC() {
+        org.netbeans.junit.Log.assertInstances("GC:"); 
+    }
+  
     public void close(){
         ProjectSupport.closeProject(project_name);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /** Test could be executed internaly in IDE without XTest

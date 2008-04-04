@@ -7,13 +7,14 @@
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,2,6"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-81,0,0,2,6"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
@@ -46,28 +47,30 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel1" min="-2" pref="395" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="1">
-                              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-                              <Component id="lServletName" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                              <Component id="tServletName" pref="363" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lURLPattern" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbValidate" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbVerify" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="365" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cbPackageJars" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="lURLPattern" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="cbValidate" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                                      <Component id="lServletName" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="tServletName" alignment="0" pref="361" max="32767" attributes="0"/>
+                                  <Component id="cbVerify" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="361" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -94,8 +97,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbPackageJars" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
-                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -201,15 +203,6 @@
                 </Property>
               </AccessibilityProperties>
             </Component>
-            <Container class="javax.swing.JPanel" name="jPanel1">
-              <Properties>
-                <Property name="enabled" type="boolean" value="false"/>
-                <Property name="focusable" type="boolean" value="false"/>
-                <Property name="requestFocusEnabled" type="boolean" value="false"/>
-              </Properties>
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="libPanel">
@@ -237,35 +230,28 @@
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="350" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="338" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="263" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="263" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="244" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="244" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
+                          <Component id="rbNewLibrary" alignment="1" pref="491" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" alignment="0" pref="491" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="19" pref="19" max="19" attributes="0"/>
+                              <EmptySpace min="22" pref="22" max="22" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lDirectory" alignment="0" pref="472" max="32767" attributes="0"/>
-                                  <Component id="lVersion" alignment="0" pref="472" max="32767" attributes="0"/>
+                                  <Component id="lVersion" alignment="1" pref="469" max="32767" attributes="0"/>
+                                  <Component id="lDirectory" alignment="0" pref="469" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="rbNewLibrary" pref="404" max="32767" attributes="0"/>
-                              <EmptySpace min="99" pref="99" max="99" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="rbNoneLibrary" pref="490" max="32767" attributes="0"/>
-                              <EmptySpace pref="13" max="32767" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -279,20 +265,18 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="rbNewLibrary" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="lDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jbBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jtFolder" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="lVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jtNewLibraryName" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="lVersion" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="140" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

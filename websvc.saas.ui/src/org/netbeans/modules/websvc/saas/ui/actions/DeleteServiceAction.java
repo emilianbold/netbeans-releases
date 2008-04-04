@@ -83,9 +83,9 @@ public class DeleteServiceAction extends NodeAction {
     }
 
     protected void performAction(Node[] nodes) {
-        final List<WsdlSaas> saases = new ArrayList<WsdlSaas>();
+        final List<Saas> saases = new ArrayList<Saas>();
         for (Node n : nodes) {
-            WsdlSaas saas = n.getLookup().lookup(WsdlSaas.class);
+            Saas saas = n.getLookup().lookup(Saas.class);
             if (saas == null || !saas.isUserDefined()) {
                 throw new IllegalArgumentException("Some nodes have no associated Saas");
             }
@@ -98,7 +98,7 @@ public class DeleteServiceAction extends NodeAction {
         if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    for (WsdlSaas saas : saases) {
+                    for (Saas saas : saases) {
                         SaasServicesModel.getInstance().removeService(saas);
                     }
                 }

@@ -250,14 +250,19 @@ public final class JsLexer implements Lexer<JsTokenId> {
             return JsTokenId.WHILE;
         case Token.ELSE:
             return JsTokenId.ELSE;
+        case Token.CASE:
+            return JsTokenId.CASE;
+        case Token.DEFAULT:
+            return JsTokenId.DEFAULT;
+        case Token.BREAK:
+            return JsTokenId.BREAK;
+        case Token.SWITCH:
+            return JsTokenId.SWITCH;
         case Token.DO:
         case Token.WITH:
-        case Token.BREAK:
-        case Token.CASE:
         case Token.CATCH:
         case Token.CONST:
         case Token.CONTINUE:
-        case Token.DEFAULT:
         case Token.DELPROP:
         case Token.EXPORT:
         case Token.FALSE:
@@ -268,7 +273,6 @@ public final class JsLexer implements Lexer<JsTokenId> {
         case Token.NULL:
         case Token.RESERVED:
         case Token.RETURN:
-        case Token.SWITCH:
         case Token.THROW:
         case Token.TRUE:
         case Token.TRY:
@@ -334,8 +338,8 @@ public final class JsLexer implements Lexer<JsTokenId> {
         case Token.AND://            = 101, // logical and (&&)
         case Token.HOOK://           = 98, // conditional (?:)
             return JsTokenId.NONUNARY_OP;
-            // Arguably a non unary operator but not always - for example in case labels
         case Token.COLON://          = 99,
+            return JsTokenId.COLON;
             // I don't want to treat it as a nonunary operator since formatting doesn't
             // handle it well yet
         case Token.COMMA://          = 85,  // comma operator

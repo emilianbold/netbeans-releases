@@ -148,9 +148,11 @@ public interface Completable {
      * Compute parameter info for the given offset - parameters surrounding the given
      * offset, which particular parameter in that list we're currently on, and so on.
      * @param info The compilation info to pick an AST from
-     * @param caretOFfset The caret offset for the completion request
+     * @param caretOffset The caret offset for the completion request
      * @param proposal May be null, but if not, provide the specific completion proposal
      *   that the parameter list is requested for
+     * @return A ParameterInfo object, or ParameterInfo.NONE if parameter completion is not supported.
      */
+    @NonNull
     ParameterInfo parameters(@NonNull CompilationInfo info, int caretOffset, CompletionProposal proposal);
 }

@@ -43,8 +43,10 @@ package org.netbeans.modules.xml.schema.model.impl;
 
 import org.netbeans.modules.xml.schema.model.All;
 import org.netbeans.modules.xml.schema.model.ElementReference;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.visitor.SchemaVisitor;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
 /**
@@ -76,4 +78,16 @@ public class ElementReferenceImpl extends LocalElementBaseImpl
 	return !(getParent() instanceof All);
     }
     
+    @Override
+    public String toString() {
+        NamedComponentReference<GlobalElement> gElementRef = this.getRef();
+        if (gElementRef != null) {
+            GlobalElement gElement = gElementRef.get();
+            if (gElement != null) {
+                String name = gElement.getName();
+                return "-> " + name; // NOI18N
+            }
+        }
+        return null;
+    }
 }

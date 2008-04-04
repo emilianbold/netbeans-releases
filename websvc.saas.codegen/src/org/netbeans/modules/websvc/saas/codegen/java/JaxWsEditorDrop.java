@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
@@ -115,32 +116,30 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
                         JaxWsCodeGeneratorFactory.create(targetComponent, targetFO, method);
                 
                     WsdlSaasBean bean = codegen.getBean();
-                    boolean showParams = codegen.canShowParam();
                     List<ParameterInfo> allParams = new ArrayList<ParameterInfo>(bean.getHeaderParameters());
-                    if (showParams && bean.getInputParameters() != null) {
+                    if (bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    JaxWsCodeSetupPanel panel = new JaxWsCodeSetupPanel(
-                            codegen.getSubresourceLocatorUriTemplate(),
-                            bean.getQualifiedClassName(), 
-                            allParams,
-                            codegen.canShowResourceInfo(), showParams);
+                    if(!allParams.isEmpty()) {
+                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, 
-                            NbBundle.getMessage(JaxWsEditorDrop.class,
-                            "LBL_CustomizeSaasService", displayName));
-                    Object response = DialogDisplayer.getDefault().notify(desc);
-                    
-                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
-                        codegen.setSubresourceLocatorName(panel.getMethodName());
-                    } else {
-                        // cancel
-                        return;
+                        DialogDescriptor desc = new DialogDescriptor(panel, 
+                                NbBundle.getMessage(JaxWsEditorDrop.class,
+                                "LBL_CustomizeSaasService", displayName));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+
+                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
+                            // cancel
+                            return;
+                        }
                     }
 
-                    codegen.generate(dialog.getProgressHandle());
-                    Util.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                    try {
+                        codegen.generate(dialog.getProgressHandle());
+                    } catch(IOException ex) {
+                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
+                            errors.add(ex);
+                    }
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

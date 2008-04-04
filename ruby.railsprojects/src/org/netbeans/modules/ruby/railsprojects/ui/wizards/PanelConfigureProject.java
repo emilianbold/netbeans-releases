@@ -132,7 +132,6 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
         d.putProperty ("NewProjectWizard_Title", null); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.TRUE); // NOI18N
     }
 
     public boolean isFinishPanel() {

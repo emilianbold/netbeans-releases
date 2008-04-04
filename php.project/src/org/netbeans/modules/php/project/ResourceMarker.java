@@ -48,13 +48,13 @@ package org.netbeans.modules.php.project;
  */
 public final class ResourceMarker {
 
-    public static final String PROJECT_ICON = "php_project.png";      // NOI18N
+    public static final String PROJECT_ICON = "phpProject.png";      // NOI18N
     
     public static final String OPTIONS_ICON = "php-icon_32.png";      // NOI18N
 
     private ResourceMarker () {}    
 
     public static String getLocation() {
-        return ResourceMarker.class.getPackage().getName().replace( ".", "/") +"/resources/";
+        return ResourceMarker.class.getPackage().getName().replace( ".", "/") +"/ui/resources/";
     }
 }

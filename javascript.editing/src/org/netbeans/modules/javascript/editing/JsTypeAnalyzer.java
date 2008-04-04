@@ -51,6 +51,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 
 
@@ -87,12 +89,21 @@ import org.openide.filesystems.FileObject;
  * 
  * @todo Handle type unions (of the form Foo|Bar|Baz) - queries need to look at all.
  * @todo Document should be of type HTMLDocument
- * 
- * 
+ * @todo "return this" -> should set the type of the current type (and make sure "return;" makes it void.)
+ * @todo Handle type unions (String|Number|RegExp) - and make sure you remove void from these 
+ * @todo For arrays, change {@code Array<String>} into String[] in the display name
+ * @todo Handle type-parameters for arrays (strip out {@code <>}'s from Array when going to compute types
+ * @todo Make sure I can handle common document.create() operations
+ *    Nope! document.createElement("faen").
+ * @todo If you call  jQuery.html(). and ask for the type of this expression, I sometimes don't get it
+ *   right - because I have both jQuery.html(value) with no known return value, and jQuery.html() with
+ *   a known return value. IF I pick the first html function to look up the type for, this fails.
+ *   I need to consider the function arity and do a better job looking up the type in this case!
  *
  * @author Tor Norbye
  */
 public class JsTypeAnalyzer {
+
     private JsIndex index;
     /** Map from variable or field(etc) name to type. */
     private Map<String, String> types;
@@ -104,12 +115,13 @@ public class JsTypeAnalyzer {
     private final BaseDocument doc;
     private final FileObject fileObject;
     private final CompilationInfo info;
-    private static volatile boolean usingIndex;
+    private long startTime;
     
     // Generated with
     //  /bin/grep "^var" *.js  | grep new | awk '{print "BROWSER_BUILTINS.put(\"" $2 "\",\"" $5 "\");"}'
     private static Map<String,String> BROWSER_BUILTINS = new HashMap<String,String>();
     static {
+        // Is this obsolete now?
         BROWSER_BUILTINS.put("java","Java");
         BROWSER_BUILTINS.put("netscape","Netscape");
         BROWSER_BUILTINS.put("sun","Sun");
@@ -117,14 +129,14 @@ public class JsTypeAnalyzer {
         BROWSER_BUILTINS.put("document","HTMLDocument");
         BROWSER_BUILTINS.put("element","HTMLElement");
         BROWSER_BUILTINS.put("event","Event");
-        BROWSER_BUILTINS.put("form","Form");
+        //BROWSER_BUILTINS.put("form","Form");
         BROWSER_BUILTINS.put("navigator","Navigator");
-        BROWSER_BUILTINS.put("range","Range");
-        BROWSER_BUILTINS.put("screen","Screen");
+        //BROWSER_BUILTINS.put("range","Range");
+        //BROWSER_BUILTINS.put("screen","Screen");
         BROWSER_BUILTINS.put("style","Style");
         BROWSER_BUILTINS.put("stylesheet","Stylesheet");
         BROWSER_BUILTINS.put("table","Table");
-        BROWSER_BUILTINS.put("tableRow","TableRow");
+        //BROWSER_BUILTINS.put("tableRow","TableRow");
         BROWSER_BUILTINS.put("treeWalker","TreeWalker");
         BROWSER_BUILTINS.put("window","Window");
     }
@@ -140,6 +152,57 @@ public class JsTypeAnalyzer {
         this.lexOffset = lexOffset;
         this.doc = doc;
         this.fileObject = fileObject;
+    }
+    
+    /**
+     * Determine if the given expression depends on local variables.
+     * If it does not, we can skip tracking variables through the functon
+     * and only compute the current expression.
+     */
+    private boolean dependsOnLocals() {
+        // Find current expression
+        Node n = target;
+        Node prev = null;
+        while (n != null) {
+            int type = n.getType();
+            if (type == Token.EXPR_RESULT ||
+                type == Token.EXPR_VOID ||
+                type == Token.CALL ||
+                type == Token.FUNCTION) {
+                break;
+            }
+            
+            prev = n;
+            n = n.getParentNode();
+        }
+        
+        if (n == null) {
+            n = prev;
+        }
+        
+        // See if the tree contain any local-variable references
+        return hasLocalRefs(n, n.getParentNode());
+    }
+    
+    private boolean hasLocalRefs(Node n, Node p) {
+        if (n.getType() == Token.NAME) {
+            if (p == null) {
+                return true;
+            } else if (p.getType() != Token.GETPROP || Character.isLowerCase(n.getString().charAt(0))) {
+                return true;
+            }
+        }
+        
+        if (root.hasChildren()) {
+            for (Node child = n.getFirstChild(); child != null; child = child.getNext()) {
+                boolean result = hasLocalRefs(child, n);
+                if (result) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -195,23 +258,52 @@ public class JsTypeAnalyzer {
     }
 
     /** Called on AsgnNodes to compute RHS 
-     * XXX See also GlobalAstNode.expressionType!
+     * XXX See also AstUtilities.getExpressionType
      */
     private String expressionType(Node node) {
         switch (node.getType()) {
         case Token.NUMBER:
-            return "Number";
+            return "Number"; // NOI18N
         case Token.STRING:
-            return "String";
+            // If I try to compute the type of an expression involving a property lookup
+            // where the second node is a String this isn't really a String type...
+            if (node.getParentNode() == null || node.getParentNode().getType() != Token.GETPROP ||
+                    node == node.getParentNode().getFirstChild()) {
+                return "String"; // NOI18N
+            } else {
+                // String node used as name in property lookup
+                return null;
+            }
+        case Token.GETELEM: {
+            String lhs = expressionType(node.getFirstChild());
+            if (lhs != null) {
+                if (lhs.startsWith("Array<")) { // NOI18N
+                    int end = lhs.lastIndexOf('>');
+                    if (end != -1) {
+                        return lhs.substring("Array<".length(), end); // NOI18N
+                    }
+                } else if ("HTMLCollection".equals(lhs)) { // NOI18N
+                    return "Node"; // NOI18N
+                }
+            }
+            
+            return null;
+        }
         case Token.REGEXP:
-            return "RegExp";
+            return "RegExp"; // NOI18N
+        case Token.NE:
+        case Token.EQ:
+        case Token.LT:
+        case Token.GT:
+        case Token.LE:
+        case Token.GE:
         case Token.TRUE:
         case Token.FALSE:
-            return "Boolean";
+            return "Boolean"; // NOI18N
         case Token.ARRAYLIT:
-            return "Array";
+            return "Array"; // NOI18N
         case Token.FUNCTION:
-            return "Function";
+            return "Function"; // NOI18N
         case Token.NEW: {
             Node first = AstUtilities.getFirstChild(node);
             if (first.getType() == Token.NAME) {
@@ -220,45 +312,256 @@ public class JsTypeAnalyzer {
                 return expressionType(first);
             }
         }
+        case Token.CALL: {
+            Node first = node.getFirstChild();
+            if (first.getType() == Token.NAME) {
+                String s = first.getString();
+                // TODO - check whether we're using prototype or jquery here
+                if ("$".equals(s)) { // NOI18N
+                    // Determine if we're using jquery or prototype
+                    JsParseResult js = AstUtilities.getParseResult(info);
+                    boolean jQuery = false;
+                    for (String imp : js.getStructure().getImports()) {
+                        if (imp.indexOf("jquery") != -1) { // NOI18N
+                            jQuery = true;
+                        }
+                    }
+                    if (!jQuery && index != null) {
+                        jQuery = index.getType("jQuery") != null;
+                    }
+                    if (jQuery) {
+                        return "jQuery"; // NOI18N
+                    } else {
+                        return "Element"; // NOI18N
+                    }
+                }
+                
+                return FunctionCache.INSTANCE.getType(s, index);
+            } else if (first.getType() == Token.GETPROP) {
+                // Chained - figure out the type of this call before
+                // continuing
+                Node grandChild = first.getFirstChild();
+                if (grandChild.getType() == Token.CALL) {
+                    String lhs = expressionType(grandChild);
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return FunctionCache.INSTANCE.getType(fqn, index);
+                        }
+                    }
+                } else if (grandChild.getType() == Token.NAME) {
+                    String name = grandChild.getString();
+                    //String lhs = types.get(name);
+                    String lhs = getTypeInternal(name);
+                    if (lhs == null) {
+                        lhs = FunctionCache.INSTANCE.getType(name, index);
+                        if (lhs == null) {
+                            lhs = name;
+                        }
+                    }
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return FunctionCache.INSTANCE.getType(fqn, index);
+                        }
+                    }
+                } else {
+                    String type = expressionType(grandChild);
+                    if (type != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = type + "." + method; // NOI18N
+                            return FunctionCache.INSTANCE.getType(fqn, index);
+                        }
+                    }
+                }
+            } else {
+                if (System.currentTimeMillis() > startTime+2000) {
+                    // Don't do a huge amount of computation here
+                    return null;
+                }
+                String s = AstUtilities.getCallName(node, true);
+                if (s != null) {
+                    return FunctionCache.INSTANCE.getType(s, index);
+                }
+            }
+            break;
+        }
         case Token.NAME: {
-            String name = node.getString();
-            return types.get(name);
+            //String name = node.getString();
+            return getTypeInternal(node.getString());
+            //return types.get(name);
         }
         case Token.GETPROP: {
             Node first = AstUtilities.getFirstChild(node);
-            String secondStr = AstUtilities.getSecondChild(node).getString();
-            if (first.getType() == Token.NAME) {
-               return first.getString()+"."+secondStr; // NOI18N
-            } else {
-                String lhsType = expressionType(first);
-                if (lhsType != null) {
-                    return lhsType+"."+secondStr; // NOI18N
-                } else {
+            Node second = AstUtilities.getSecondChild(node);
+            if (second.getType() == Token.MISSING_DOT) {
+                String type = expressionType(first);
+                if (type != null) {
+                    if (!Character.isUpperCase(type.charAt(0))) {
+                        String s = FunctionCache.INSTANCE.getType(type, index);
+                        if (s != null) {
+                            type = s;
+                        }
+                    }
+                }
+                
+                return type;
+            }
+            String firstType = expressionType(first);
+            if (firstType == null) {
+                if (!(first instanceof Node.StringNode)) {
+                    // I'm not sure why this happens... 
+                    // but see http://statistics.netbeans.org/analytics/detail.do?id=39154
+                    // Investigate this
                     return null;
                 }
+                firstType = first.getString();
+            }
+            String secondStr = second.getString();
+            assert second.getType() == Token.STRING;
+            String fqn = firstType + "." + secondStr;
+            String type = FunctionCache.INSTANCE.getType(fqn, index);
+            if (type != null) {
+                return type;
+            } else {
+                return fqn;
             }
         }
-        default:
-            return null;
         }
+        
+        return null;
     }
+    
+    /** Return the type of the given expression node */
+    public String getType(Node node) {
+        if (dependsOnLocals()) {
+            init();
+        }
+        
+        String type = expressionType(node);
 
-    public String getType(String symbol) {
+        if (type != null && type.startsWith("Array<")) { // NOI18N
+            return "Array"; // NOI18N
+        }
+        
+        return type;
+    }
+    
+    public static String getCallFqn(CompilationInfo info, Node callNode, boolean resolveLocals) {
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+        Node methodNode = callNode.getParentNode();
+        while (methodNode != null) {
+            if (methodNode.getType() == Token.FUNCTION) {
+                break;
+            }
+            methodNode = methodNode.getParentNode();
+        }
+        if (methodNode == null) {
+            methodNode = AstUtilities.getRoot(info);
+        }
+        JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, index, methodNode, callNode, 0, 0, LexUtilities.getDocument(info, false), info.getFileObject());
+        if (resolveLocals && analyzer.dependsOnLocals()) {
+            analyzer.init();
+        }
+
+        String type = analyzer.getCallExpressionType(callNode);
+
+        return type;
+    }
+    
+    private String getCallExpressionType(Node node) {
+        switch (node.getType()) {
+        case Token.CALL: {
+            Node first = node.getFirstChild();
+            if (first.getType() == Token.NAME) {
+                String s = first.getString();
+                return s;
+            } else if (first.getType() == Token.GETPROP) {
+                // Chained - figure out the type of this call before
+                // continuing
+                Node grandChild = first.getFirstChild();
+                if (grandChild.getType() == Token.CALL) {
+                    String lhs = expressionType(grandChild);
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                } else if (grandChild.getType() == Token.NAME) {
+                    String name = grandChild.getString();
+                    //String lhs = types.get(name);
+                    String lhs = getTypeInternal(name);
+                    if (lhs == null) {
+                        lhs = FunctionCache.INSTANCE.getType(name, index);
+                        if (lhs == null) {
+                            lhs = name;
+                        }
+                    }
+                    if (lhs != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = lhs + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                } else {
+                    String type = expressionType(grandChild);
+                    if (type != null) {
+                        Node methodNode = grandChild.getNext();
+                        if (methodNode.getType() == Token.STRING) {
+                            String method = methodNode.getString();
+                            String fqn = type + "." + method; // NOI18N
+                            return fqn;
+                        }
+                    }
+                }
+            } else {
+                if (System.currentTimeMillis() > startTime+2000) {
+                    // Don't do a huge amount of computation here
+                    return null;
+                }
+                String s = AstUtilities.getCallName(node, true);
+                if (s != null) {
+                    return s;
+                }
+            }
+            break;
+        }
+        }
+        
+        return null;
+    }
+    
+    private void init() {
         if (types == null) {
+            startTime = System.currentTimeMillis();
             types = new HashMap<String, String>();
 
-//            if (fileObject != null) {
-//                initFileTypeVars();
-//            }
-//            
             if (doc != null) {
                 initTypeAssertions();
             }
 
             analyze(root);
         }
+    }
 
-        String type = types.get(symbol);
+    /** Like getType(), but doesn't strip off array type parameters etc. */
+    private String getTypeInternal(String symbol) {
+        String type = null;
+        
+        if (types != null) {
+            type = types.get(symbol);
+        }
     
         if (type == null) {
             // Look for builtins
@@ -266,11 +569,22 @@ public class JsTypeAnalyzer {
             
             // Look in the index to see if this is a known type
             if (type == null && index != null) {
-                // TODO - only do this if the symbol is a global variable (and on the index side,
-                // limit FQN matches to globals)
-                type = index.getType(symbol);
+                type = FunctionCache.INSTANCE.getType(symbol, index);
+//                // TODO - only do this if the symbol is a global variable (and on the index side,
+//                // limit FQN matches to globals)
+//                type = index.getType(symbol);
             }
         }
+        
+        return type;
+    }
+
+    /** Return the type of the given symbol */
+    public String getType(String symbol) {
+        init();
+
+        String type = getTypeInternal(symbol);
+
         // We keep track of the types contained within Arrays
         // internally (and probably hashes as well, TODO)
         // such that we can do the right thing when you operate

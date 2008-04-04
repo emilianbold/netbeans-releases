@@ -42,18 +42,129 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.text.JTextComponent;
+import javax.xml.namespace.QName;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.model.WadlSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
  * Code generator for Accessing Saas services.
  *
- * @author nam
+ * @author ayubskhan
  */
 public class JaxRsServletCodeGenerator extends JaxRsJavaClientCodeGenerator {
-
+    
     public JaxRsServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
-        super(targetComponent, targetFile, m);
+        super(targetComponent, targetFile, new WadlSaasBean(m, true));
+        getBean().setIsDropTargetWeb(true);
+    }
+    
+    @Override
+    protected String getCustomMethodBody() throws IOException {
+        String paramUse = "";
+        String paramDecl = "";
+        String indent2 = "                 ";
+                
+        //Evaluate parameters (query(not fixed or apikey), header, template,...)
+        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        paramUse += Util.getHeaderOrParameterUsage(filterParams);
+        filterParams = super.getServiceMethodParameters();
+        paramDecl += getHeaderOrParameterDeclaration(filterParams);      
+        return getCustomMethodBody(paramDecl, paramUse, indent2);
+    }
+    
+    protected String getCustomMethodBody(String paramDecl, String paramUse, String indent2) {
+        String indent = "             ";
+        String methodBody = "";
+        methodBody += indent+"try {\n";
+        methodBody += paramDecl + "\n";
+        methodBody +=indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
+        return methodBody;
+    }
+    
+    @Override
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getAuthenticatorMethodParametersForWeb();
+        else
+            return super.getAuthenticatorMethodParameters();
+    }
+    
+    @Override
+    protected List<ParameterInfo> getServiceMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getServiceMethodParametersForWeb(getBean());
+        else
+            return super.getServiceMethodParameters();
+    }
+    
+    @Override
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
+    }
+    
+    @Override
+    protected void addJaxbLib() throws IOException {}
+    
+    @Override
+    protected void addImportsToTargetFile() throws IOException {
+        super.addImportsToTargetFile();
+        if(getDropFileType() == Constants.DropFileType.RESOURCE) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.JAVA_ANNOTATION_PACKAGE+Constants.JAVA_ANNOTATION_RESOURCE);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getTargetSource(), imports);
+            
+            //Also add injection member variables
+            Map<String, String> fieldsMap = new HashMap<String, String>();
+            JavaSourceHelper.getAvailableFieldSignature(getTargetSource(), fieldsMap);
+            String[] annotations = new String[] { Constants.JAVA_ANNOTATION_RESOURCE };
+            Object[] annotationAttrs = new Object[] {null};
+            List<ParameterInfo> injectionParams = Util.getAuthenticatorMethodParametersForWeb();
+            for(ParameterInfo p: injectionParams) {
+                String sign = JavaSourceHelper.createFieldSignature(p.getTypeName(), 
+                    getParameterName(p, true, true, true));
+                if(!fieldsMap.containsKey(sign)) {
+                    Util.addInputParamField(getTargetSource(), p, annotations, annotationAttrs);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addImportsToSaasService() throws IOException {
+        super.addImportsToSaasService();
+        
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC) {
+            List<String> imports = new ArrayList<String>();
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_REQUEST_CLASS);
+            imports.add(Constants.HTTP_SERVLET_PACKAGE+Constants.HTTP_SERVLET_RESPONSE_CLASS);
+            Util.addImportsToSource(getSaasServiceSource(), imports);
+        }
     }
 }

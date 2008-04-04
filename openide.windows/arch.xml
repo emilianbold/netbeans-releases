@@ -539,6 +539,16 @@ Yes. Component can control its persistence and way how they are displayed in con
     Note that in next releases usage of this client property will be removed and replaced 
     by API, see issue #55955 in Issuezilla on www.netbeans.org.
 </api>
+<api type="export" group="property" name="KeepNonPersistentTCInModelWhenClosed" category="private">
+    Client property "KeepNonPersistentTCInModelWhenClosed" of TopComponent controls behavior of winsys
+    when TopComponent with persistence type "Never" or "OnlyOpened" is closed. As some TopComponent wants
+    to keep their position in winsys ie. be able to reopen at the same place and some TopComponent wants
+    to be removed from winsys model.
+    If property is not set nonpersistent TopComponent is removed from model when closed - it is original
+    behavior before fix of issue #101700.
+    If property is set (to Boolean.TRUE) then TopComponent is kept in model. It means that
+    client must explicitly set this client property to get behavior requested by issue #101700.
+</api>
 
 <!--<api group="property" name="NamingType" type="export" category="private">
     Valid values are "BothOnlyCompName", "SDIOnlyCompName", "MDIOnlyCompName". 

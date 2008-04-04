@@ -41,14 +41,13 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
-import org.netbeans.modules.j2ee.common.project.ui.RemoveClassPathRootAction;
-import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import java.util.Map;
 import javax.swing.Action;
 
 import org.openide.actions.EditAction;
@@ -74,6 +73,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.nodes.FilterNode.Children;
 import org.openide.util.Exceptions;
 
@@ -106,13 +106,13 @@ class ActionFilterNode extends FilterNode {
      * @return ActionFilterNode
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
-            ClassPathSupport cs, String[] libUpdaterProperties) {
+            ClassPathSupport cs, String[] libUpdaterProperties, ReferenceHelper rh) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties),
+            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId, webModuleElementName, cs, libUpdaterProperties, rh),
             new JavadocProvider(root,root)})});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -259,7 +259,7 @@ class ActionFilterNode extends FilterNode {
         }
     }
 
-   private static class Removable implements RemoveClassPathRootAction.Removable {
+   static class Removable implements RemoveClassPathRootAction.Removable {
 
        private final UpdateHelper helper;
        private final String classPathId;
@@ -267,15 +267,17 @@ class ActionFilterNode extends FilterNode {
        private final String webModuleElementName;
        private final ClassPathSupport cs;
        private String[] libUpdaterProperties;
+       private ReferenceHelper rh;
 
        Removable (UpdateHelper helper, String classPathId, String entryId, 
-               String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties) {
+               String webModuleElementName, ClassPathSupport cs, String[] libUpdaterProperties, ReferenceHelper rh) {
            this.helper = helper;
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            this.cs = cs;
            this.libUpdaterProperties = libUpdaterProperties;
+           this.rh = rh;
        }
 
 
@@ -300,6 +302,9 @@ class ActionFilterNode extends FilterNode {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
                     i.remove();
+                    if (isLastReference(entryId, props, classPathId)) {
+                        destroyReference(rh, helper, item);
+                    }
                     removed = true;
                 }
             }
@@ -315,7 +320,7 @@ class ActionFilterNode extends FilterNode {
                         List wmLibs = cs.itemsList(props.getProperty(property),  null);
                         set.addAll(wmLibs);
                     }
-                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
+                    ProjectProperties.storeLibrariesLocations(helper.getAntProjectHelper(), set.iterator(), props);
                 }
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -324,5 +329,43 @@ class ActionFilterNode extends FilterNode {
                return null;
            }
        }
+
+        /**
+         * Check whether given property is referenced by other properties.
+         * 
+         * @param property property which presence it going to be tested
+         * @param props properties
+         * @param ignoreProperty a property to ignore
+         */
+        private static boolean isLastReference(String property, EditableProperties props, String ignoreProperty) {
+            for (Map.Entry<String,String> entry : props.entrySet()) {
+                if (ignoreProperty.equals(entry.getKey())) {
+                    continue;
+                }
+                if (entry.getValue().contains(property)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        private static void destroyReference(ReferenceHelper rh, UpdateHelper uh, ClassPathSupport.Item item) {
+            if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
+                    item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
+                rh.destroyReference(item.getReference());
+                if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                    //oh well, how do I do this otherwise??
+                    EditableProperties ep = uh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (item.getJavadocProperty() != null) {
+                        ep.remove(item.getJavadocProperty());
+                    }
+                    if (item.getSourceProperty() != null) {
+                        ep.remove(item.getSourceProperty());
+                    }
+                    uh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                }
+            }
+        }
+        
    }
 }

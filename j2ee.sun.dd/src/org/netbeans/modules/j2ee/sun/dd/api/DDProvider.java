@@ -944,9 +944,6 @@ public final class DDProvider {
     
     /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
      */
-    
-    /* Maps DOCTYPE to { version, proxy class, impl class, dtd path } info.
-     */
     private static Map<String, DocTypeInfo> publicIdToInfoMap = new HashMap<String, DocTypeInfo>(37);
     
     static {
@@ -962,6 +959,10 @@ public final class DDProvider {
                 SunEjbJar.VERSION_3_0_0, SunEjbJarProxy.class, SunEjbJar.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_301_DTD_PUBLIC_ID, new DocTypeInfo(
+                SunEjbJar.VERSION_3_0_1, SunEjbJarProxy.class, SunEjbJar.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-1.dtd")); // NOI18N
         publicIdToInfoMap.put(DTDRegistry.SUN_EJBJAR_210beta_DTD_PUBLIC_ID, new DocTypeInfo(
                 SunEjbJar.VERSION_2_1_0, SunEjbJarProxy.class, SunEjbJar.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar.class,

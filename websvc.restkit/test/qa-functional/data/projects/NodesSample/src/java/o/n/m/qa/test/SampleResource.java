@@ -9,7 +9,7 @@
 
 package o.n.m.qa.test;
 
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
@@ -25,7 +25,7 @@ import javax.ws.rs.GET;
 
 @Path("sample")
 public class SampleResource {
-    @HttpContext
+    @Context
     private UriInfo context;
 
     /** Creates a new instance of SampleResource */

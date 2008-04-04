@@ -387,7 +387,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
                 contextRoot = contextRoot.substring(1);
             }
         } else if(J2eeModule.EJB.equals(moduleType)) {
-            contextRoot = "webservice";//NO18N for now, we need to find the real value (see bug...57034 and 52265)
+            contextRoot = "";//NO18N for now, we need to find the real value (see bug...57034 and 52265)
         }
         
         return "http://"+hostName+":" + portNumber +"/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI + "?WSDL";

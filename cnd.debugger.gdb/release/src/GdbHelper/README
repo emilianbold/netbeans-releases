@@ -1,0 +1,39 @@
+GdbHelper 
+
+The shared libraries in this directory are designed to overcome a
+problem when debugging with console type set to output window. In
+that specific instance, stdout is not buffered and stopping at a
+breakpoint won't guarantee previously written output will be displayed.
+To overcome this problem, these shared libraries have a single function
+which sets line buffering on stdout.
+
+If the shared library is installed in either <userdir>/bin or
+<netbeans-install-dir>/cnd2/bin, the shared library will be auto-loaded
+and the call to setup line buffering will be made. If sucessful, you
+will be guaranteed that output to stdout will be flushed prior to
+stopping at a breakpoint.
+
+Prebuilt versions:
+    Solaris 10, both x86 and sparc
+    Linux Ubuntu 7.10 for x86
+    Windows XP SP2 for x86
+    MacOS 10.5 (Leopard) for x86
+
+Building Your Own:
+    The included Makefile is intended to manage the build on a wide
+    variety of platforms. On Solaris, you'll need to use GNU make
+    (shipped as gmake in /usr/sfw/bin and optionally in /opt/sfw/gmake).
+
+    There is a potential problem that the shared library you build will
+    not have the name the gdb module looks for. The module will put
+    together the name string by concatenating "GdbHelper", the response
+    from System.getProperty("os.arch"), the response from
+    System.getProperty("os.name") with the expected extension on your
+    platform. If Java returns "i386" or "i686" for "os.arch", the value
+    is changed to "x86".
+
+Known Problems:
+    On Windows XP, the dll is sucessfully loaded and its function called.
+    However, it still doesn't line buffer. This appears to be a problem
+    in the Cygwin dll and will hopefully be fixed in a future update to
+    Cygwin.

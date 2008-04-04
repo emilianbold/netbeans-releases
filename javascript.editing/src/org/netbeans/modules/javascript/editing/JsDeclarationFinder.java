@@ -114,7 +114,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
     IndexedFunction findMethodDeclaration(CompilationInfo info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
         String prefix = AstUtilities.getCallName(call, false);
         JsParseResult parseResult = AstUtilities.getParseResult(info);
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         Set<IndexedElement> functions = index.getAllNames(prefix,
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
@@ -241,7 +241,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
                 Set<IndexedElement> elements = index.getAllNames(prefix,
                         NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
@@ -262,7 +262,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
 
     DeclarationLocation findLinkedMethod(CompilationInfo info, String url) {
-        JsIndex index = JsIndex.get(info.getIndex(JsMimeResolver.JAVASCRIPT_MIME_TYPE));
+        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url,
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
@@ -283,7 +283,13 @@ public class JsDeclarationFinder implements DeclarationFinder {
         // -- other methods called which can help disambiguate
         // -- documentation?
         if (elements.size() > 0) {
-            return elements.iterator().next();
+            IndexedElement e = elements.iterator().next();
+            IndexedElement r = e.findRealFileElement();
+            if (r != null) {
+                return r;
+            }
+            
+            return e;
         }
         
         return null;
@@ -298,7 +304,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             if (candidate != null) {
                 boolean invalid = false;
-                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1) {
+                if (candidate.getFilenameUrl() != null && candidate.getFilenameUrl().indexOf("jsstubs") != -1 &&
+                        // If it's in my sdocs.zip, I've gotta try to find the corresponding element
+                        candidate.getFilenameUrl().indexOf("sdocs.zip") == -1) {
                     invalid = true;
                 }
                 IndexedElement com = candidate;
@@ -314,7 +322,11 @@ public class JsDeclarationFinder implements DeclarationFinder {
                        node.getSourceStart(), com);
                 }
                 if (invalid) {
-                    loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    if (candidate.isDocOnly()) {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "NoSourceDocOnly", candidate.getName()));
+                    } else {
+                        loc.setInvalidMessage(NbBundle.getMessage(JsDeclarationFinder.class, "InvalidJsMethod", candidate.getName()));
+                    }
                 }
 
                 if (!CHOOSE_ONE_DECLARATION && elements.size() > 1) {

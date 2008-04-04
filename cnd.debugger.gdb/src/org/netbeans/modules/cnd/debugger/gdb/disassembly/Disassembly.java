@@ -41,12 +41,19 @@ package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,12 +66,16 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,10 +86,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private CallStackFrame lastFrame = null;
+    private boolean withSource = true;
+    private boolean opened = false;
+    private boolean opening = false;
+    private int disLength = 0;
     
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
+    private final Set<Integer> regModified = new  HashSet<Integer>();
 
     private static final String ADDRESS_HEADER="address"; // NOI18N
     private static final String FUNCTION_HEADER="func-name"; // NOI18N
@@ -91,6 +106,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
     public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
+    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers=["; // NOI18N
     public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
@@ -103,81 +119,80 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
+
         synchronized (lines) {
             lines.clear();
-            int pos = RESPONSE_HEADER.length();
+            disLength = 0;
 
-            OutputStreamWriter writer = null;
-
+            DataObject dobj;
             try {
-                DataObject dobj = DataObject.find(getFileObject());
-                functionName = debugger.getCurrentCallStackFrame().getFunctionName();
-                dobj.getNodeDelegate().setDisplayName(getHeader());
-                Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
-                if (doc != null) {
-                    doc.removeDocumentListener(this);
-                    doc.addDocumentListener(this);
-                }
-
-                writer = new OutputStreamWriter(getFileObject().getOutputStream());
-
-                // Dis is opened - write to document
-                //if (doc != null) {
-                    //doc.remove(0, doc.getLength());
-                    //doc.insertString(doc.getLength(), debugger.getCurrentCallStackFrame().getFunctionName() + "()\n", null);
-                    writer.write(functionName + "()\n");
-                    int idx = 2;
-
-                    /*int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
-                    while (combinedPos != -1) {
-                        int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, pos));
-                        String fileStr = readValue(FILE_HEADER, msg, pos);
-                        doc.insertString(doc.getLength(), "// file:" + fileStr + ", line " + lineIdx + "\n", null);
-                        idx++;
-                        /*FileObject fobj = URLMapper.findFileObject(new URL(fileStr));
-                        DataObject srcdobj = DataObject.find(fobj);
-                        org.openide.text.Line srcLine = srcdobj.getCookie(LineCookie.class).getLineSet().getOriginal(lineIdx);
-                        doc.insertString(doc.getLength(), "//" + srcLine.getText() + "\n", null);*/
-
-                        //combinedPos = msg.indexOf(COMBINED_HEADER, combinedPos + COMBINED_HEADER.length());
-                        int combinedPos = -1;
-
-                        // read instructions in this line
-                        int start = msg.indexOf(ADDRESS_HEADER, pos);
-                        while (start != -1 && (combinedPos == -1 || start < combinedPos)) {
-                            pos = start;
-                            Line line = new Line(msg, start, idx++);
-                            if (functionName.equals(line.function)) {
-                                lines.add(line);
-                                writer.write(line + "\n");
-                            }
-                            //doc.insertString(doc.getLength(), line.toString() + "\n", null);
-                            start = msg.indexOf(ADDRESS_HEADER, start+1);
-                        }
-                    //}
-            //}
-                 /*else {
-                    // Dis is not opened - write to file
-                    OutputStreamWriter writer = new OutputStreamWriter(getFileObject().getOutputStream());
-                    int start = msg.indexOf(ONLY_HEADER, pos);
-                    while (start != -1) {
-                        Line line = new Line(msg, start);
-                        lines.add(line);
-                        writer.write(line + "\n");
-                        start = msg.indexOf(ONLY_HEADER, start+1);
-                    }
-                    writer.close();
-                }*/
-            } catch (Exception ioe) {
-                ioe.printStackTrace();
+                dobj = DataObject.find(getFileObject());
+            } catch (DataObjectNotFoundException doe) {
+                // we failed, no need to do anything else
+                doe.printStackTrace();
+                return;
             }
-            try {
-                if (writer != null) {
-                    writer.close();
+            Document doc = ((DataEditorSupport)dobj.getCookie(OpenCookie.class)).getDocument();
+            if (doc != null) {
+                doc.removeDocumentListener(this);
+                doc.addDocumentListener(this);
+            }
+
+            DisText text = new DisText();
+
+            int pos = RESPONSE_HEADER.length();
+            boolean nameSet = false;
+            for (;;) {
+                int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
+                int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
+
+                if (addressPos == -1) {
+                    break;
                 }
+
+                if (combinedPos != -1 && combinedPos < addressPos) {
+                    int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                    String path = debugger.getRunDirectory();
+                    String fileStr = readValue(FILE_HEADER, msg, combinedPos);
+                    File file = new File(path, fileStr);
+                    FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    if (src_fo != null) {
+                        try {
+                            text.addLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                        } catch (DataObjectNotFoundException doe) {
+                            // do nothing
+                        }
+                    } else {
+                        text.addLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                    }
+                    pos = combinedPos+1;
+                } else {
+                    // read instruction in this line
+                    int idx = text.getLineNo();
+                    Line line = new Line(msg, addressPos, nameSet ? idx : idx+1);
+                    if (!nameSet) {
+                        functionName = line.function;
+                        dobj.getNodeDelegate().setDisplayName(getHeader());
+                        text.addLine(functionName + "()\n"); // NOI18N
+                        nameSet = true;
+                    }
+                    if (functionName.equals(line.function)) {
+                        lines.add(line);
+                        text.addLine(line + "\n"); // NOI18N
+                    }
+                    pos = addressPos+1;
+                }
+            }
+            disLength = text.getLength();
+            try {
+                text.save(getFileObject().getOutputStream());
             } catch (IOException ioe) {
                 // do nothing
             }
+        }
+        // If we got empty dis try to reload without source line info
+        if (lines.isEmpty() && withSource) {
+            reloadDis(false, true);
         }
     }
     
@@ -197,6 +212,26 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
+    public void updateRegModified(String msg) {
+        assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
+        regModified.clear();
+        int pos = REGISTER_MODIFIED_HEADER.length();
+        while (pos != -1) {
+            int end = msg.indexOf("\"", pos+1); // NOI18N
+            if (end == -1) {
+                break;
+            }
+            String index = msg.substring(pos+1, end);
+            try {
+                regModified.add(Integer.valueOf(index));
+            } catch (NumberFormatException nfe) {
+                //do nothing
+            }
+            pos = msg.indexOf("\"", end+1); // NOI18N
+        }
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+    }
+    
     public void updateRegValues(String msg) {
         assert msg.startsWith(REGISTER_VALUES_HEADER) : "Invalid asm response message"; // NOI18N
         regValues.clear();
@@ -211,13 +246,14 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             pos = msg.indexOf(NUMBER_HEADER, pos+1);
         }
-        RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
+        // Todo: we know that updated registers will fire the update, but better make it updated at one piece
+        //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
 
-    public Map<String, String> getRegisterValues() {
-        Map<String,String> res = new HashMap<String,String>();
+    public Collection<RegisterValue> getRegisterValues() {
+        Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.put(regNames.get(idx), regValues.get(idx));
+            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -226,15 +262,20 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateAnnotations();
-            }
-        });
+        // update anything on full load only
+        if (e.getOffset() + e.getLength() >= disLength) {
+            final boolean dis = opening;
+            opening = false;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateAnnotations(dis);
+                }
+            });
+        }
     }
     
-    private void updateAnnotations() {
-        debugger.fireDisUpdate();
+    private void updateAnnotations(boolean open) {
+        debugger.fireDisUpdate(open);
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         Breakpoint[] bs = dm.getBreakpoints();
         for (int i = 0; i < bs.length; i++) {
@@ -249,18 +290,27 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
-            // stack is updated, reload disassembler if needed
-            // TODO: there may be functions with the same name called one from the other, we need to check that too
-            CallStackFrame frame = debugger.getCurrentCallStackFrame();
-            if (lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
-                String filename = frame.getFileName();
-                if (filename != null && filename.length() > 0) {
-                    debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber());
-                } else {
-                    // if filename is not known - just disassemble using address
-                    debugger.getGdbProxy().data_disassemble(1000);
-                }
-                lastFrame = frame;
+            reloadDis(true, false);
+        }
+    }
+    
+    private void reloadDis(boolean withSource, boolean force) {
+        this.withSource = withSource;
+        if (!opened) {
+            return;
+        }
+        // reload disassembler if needed
+        CallStackFrame frame = debugger.getCurrentCallStackFrame();
+        if (frame == null) {
+            return;
+        }
+        if (force || getAddressLine(frame.getAddr()) == -1) {
+            String filename = frame.getFileName();
+            if (filename != null && filename.length() > 0) {
+                debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
+            } else {
+                // if filename is not known - just disassemble using address
+                debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
         }
     }
@@ -308,6 +358,24 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
+    public String getNextAddress(String address) {
+        //TODO : can use binary search
+        synchronized (lines) {
+            for (Iterator<Line> iter = lines.iterator(); iter.hasNext();) {
+                Line line = iter.next();
+                if (line.address.equals(address)) {
+                    // Fix for IZ:131372 (Step Over doesn't work in Disasm)
+                    // return next address only for call instructions
+                    if (line.instruction.startsWith("call") && iter.hasNext()) { // NOI18N
+                        return iter.next().address;
+                    }
+                    return "";
+                }
+            }
+            return "";
+        }
+    }
+    
     public int getAddressLine(String address) {
         //TODO : can use binary search
         synchronized (lines) {
@@ -333,11 +401,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
      * in this case readValue("param") will return "value"
      */
     private static String readValue(String name, String msg, int pos) {
-        String paramHeader = name + "=\"";
+        String paramHeader = name + "=\""; // NOI18N
         int start = msg.indexOf(paramHeader, pos);
         if (start != -1) {
             start += paramHeader.length();
-            int end = msg.indexOf("\"", start + 1);
+            int end = msg.indexOf("\"", start + 1); // NOI18N
             if (end != -1) {
                 return msg.substring(start, end);
             }
@@ -369,7 +437,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         @Override
         public String toString() {
             //return function + "+" + offset + ": (" + address + ") " + instruction; // NOI18N
-            return function + "+" + offset + ": 00 00 " + instruction + " // " + address; // NOI18N
+            return function + "+" + offset + ": " + instruction; // NOI18N
         }
     }
     
@@ -387,14 +455,42 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         return false;
     }
     
+    public static boolean isDisasm(String url) {
+        //TODO: optimize
+        try {
+            return getFileObject().getURL().toString().equals(url);
+        } catch (FileStateInvalidException fsi) {
+            fsi.printStackTrace();
+        }
+        return false;
+    }
+    
     public static void open() {
         try {
             DataObject dobj = DataObject.find(getFileObject());
-            dobj.getNodeDelegate().setDisplayName(getHeader());
+            dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
+            final EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable)editorCookie).addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                            if (editorCookie.getOpenedPanes() == null) {
+                                Disassembly dis = getCurrent();
+                                if (dis != null) {
+                                    dis.opened = false;
+                                }
+                                ((EditorCookie.Observable)editorCookie).removePropertyChangeListener(this);
+                            }
+                        }
+                    }
+                });
+            }
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {
-                dis.updateAnnotations();
+                dis.opening = true;
+                dis.opened = true;
+                dis.reloadDis(true, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -402,9 +498,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     }
     
     private static String getHeader() {
-        String res = "Disassembly";
+        String res = NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window"); // NOI18N
         if (functionName.length() > 0) {
-            res += "(" + functionName + ")";
+            res += "(" + functionName + ")"; // NOI18N
         }
         return res;
     }
@@ -413,8 +509,39 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getCookie(CloseCookie.class).close();
+            // TODO: check for correct close on debug close
+            Disassembly dis = getCurrent();
+            if (dis != null) {
+                dis.opened = false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private static class DisText {
+        private int lineNo = 1;
+        private int length = 0;
+        private final StringBuffer data = new StringBuffer();
+
+        public int getLineNo() {
+            return lineNo;
+        }
+        
+        public int getLength() {
+            return length;
+        }
+        
+        public void addLine(String line) {
+            data.append(line);
+            lineNo++;
+            length += line.length();
+        }
+        
+        public void save(OutputStream out) throws IOException {
+            Writer writer = new OutputStreamWriter(out);
+            writer.write(data.toString());
+            writer.close();
         }
     }
 }

@@ -136,19 +136,19 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     };
 
     private static final String[] KEYSTORE_LOCATION = new String[] {
-        "xws-security/etc/server-keystore.jks"  //NOI18N
+        "certs/server-keystore.jks"  //NOI18N
     };
     
     private static final String[] TRUSTSTORE_LOCATION = new String[] {
-        "xws-security/etc/server-truststore.jks"  //NOI18N
+        "certs/server-truststore.jks"  //NOI18N
     };
     
     private static final String[] KEYSTORE_CLIENT_LOCATION = new String[] {
-        "xws-security/etc/client-keystore.jks"  //NOI18N
+        "certs/client-keystore.jks"  //NOI18N
     };
     
     private static final String[] TRUSTSTORE_CLIENT_LOCATION = new String[] {
-        "xws-security/etc/client-truststore.jks"  //NOI18N
+        "certs/client-truststore.jks"  //NOI18N
     };
     
     private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N

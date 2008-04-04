@@ -192,7 +192,7 @@ public class ElementGripFactory {
 
         @Override
         public String toString() {
-            return "" + from + "-" + to + " :" + item;
+            return "" + from + "-" + to + " :" + item; // NOI18N
         }
     }
 }

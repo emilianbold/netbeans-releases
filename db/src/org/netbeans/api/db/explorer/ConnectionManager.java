@@ -140,6 +140,22 @@ public final class ConnectionManager {
     }
     
     /**
+     * Remove an existing connection from the Database Explorer.  This method 
+     * unregisters the connection from the the explorer so it will
+     * no longer appear as a connection in the UI.  This method also closes
+     * the underlying JDBC connection if it is open.
+     * 
+     * @param dbconn the connection to be removed
+     */
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        ((RootNodeInfo)RootNode.getInstance().getInfo()).removeConnection(dbconn.getDelegate());
+    }
+    
+    /**
      * Shows the dialog for adding a new connection. The specified driver will be
      * selected by default in the New Database Connection dialog.
      *

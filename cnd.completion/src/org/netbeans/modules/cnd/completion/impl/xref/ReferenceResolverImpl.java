@@ -119,25 +119,5 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     @Override
     public Scope fastCheckScope(CsmReference ref) {
         return ReferencesSupport.fastCheckScope(ref);
-    }
-    
-    @Override
-    public CsmReferenceKind getReferenceKind(CsmReference ref) {
-        CsmReferenceKind kind = ReferencesSupport.getReferenceKind(ref);
-        if (kind == CsmReferenceKind.UNKNOWN) {
-            kind = super.getReferenceKind(ref);
-        }
-        return kind;
-    }
-
-    @Override
-    public CsmReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
-        // default implementation
-        assert targetDecl != null;
-        CsmReferenceKind kind = super.getReferenceKind(ref, targetDecl, targetDef);
-        if (kind == CsmReferenceKind.DIRECT_USAGE) {
-            kind = ReferencesSupport.getReferenceUsageKind(ref);
-        }
-        return kind;
     }    
 }

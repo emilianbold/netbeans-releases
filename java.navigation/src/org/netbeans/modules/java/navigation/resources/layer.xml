@@ -152,6 +152,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Window">
             <folder name="Other">
+            <attr name="position" intvalue="1700"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>
                 <file name="DeclarationAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>

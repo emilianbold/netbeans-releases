@@ -337,8 +337,7 @@ public final class Util {
                 }
             });
         } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
-            ErrorManager.getDefault().notify(ex);
+          return;
         }
     }
 
@@ -441,6 +440,9 @@ public final class Util {
             return;
           }
           if (cookie instanceof ShowCookie) {
+//System.out.println();
+//System.out.println("========: " + cookie.getClass().getName());
+//System.out.println();
             ((ShowCookie) cookie).show(new ResultItem(null, null, component, null));
             return;
           }
@@ -483,7 +485,7 @@ public final class Util {
                 }
             });
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
+          return;
         }
     }
 
@@ -524,7 +526,7 @@ public final class Util {
         try {
             dobj = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
+            return null;
         }
 
 
@@ -675,14 +677,12 @@ public final class Util {
 
     }
 
-
     public static void goToReferenceSource(Reference<Referenceable> reference) {
         Referenceable referenceable = reference.get();
         if (referenceable == null) return;
         if (!(referenceable instanceof DocumentComponent)) return;
         goToDocumentComponentSource((DocumentComponent<DocumentComponent>) referenceable);
     }
-
 
     public static boolean canGoToDocumentComponentSource(
             DocumentComponent<DocumentComponent> component)
@@ -734,8 +734,6 @@ public final class Util {
 
         return true;
     }
-
-
 
     public static void goToDocumentComponentSource(
             DocumentComponent<DocumentComponent> component)
@@ -914,5 +912,4 @@ public final class Util {
         //
         return null;
     }
-
 }

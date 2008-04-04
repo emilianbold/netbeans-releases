@@ -71,6 +71,14 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
+    <testbag testattribs="customization" executor="ide" name="qa-functional tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/modules/ws/qaf/customization/CustomizationTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="from-wsdl,full-validation" executor="ide" name="qa-functional tests">
         <testset dir="qa-functional/src">
             <patternset>

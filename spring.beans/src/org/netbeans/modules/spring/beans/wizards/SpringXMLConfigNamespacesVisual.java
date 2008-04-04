@@ -48,7 +48,6 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -67,9 +66,6 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         initComponents();
         // set the color of the table's JViewport
         includesTable.getParent().setBackground(includesTable.getBackground());
-        ((DefaultTableModel)includesTable.getModel()).setColumnIdentifiers(new String[] {
-            "Include", "Namespace"
-        }); // NOI18N
         TableColumn col1 = includesTable.getColumnModel().getColumn(0);
         col1.setMaxWidth(0);
         includesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

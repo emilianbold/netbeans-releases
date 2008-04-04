@@ -11,71 +11,71 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Outer<> (Outer ) [1:1/0-7:3/81] lcurly=30
+CLASS Outer2<> (Outer2 ) [1:1/0-7:3/81] lcurly=30
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer::Inner ) [2:9/33-5:11/77] lcurly=46
+        STRUCT Inner (Outer2::Inner ) [2:9/33-5:11/77] lcurly=46
             BASE CLASSES:
             MEMBERS:
                 FUNCTION ~Inner [3:17/50-3:26/59] DestructorImpl
                     DEFINITION: ~Inner  [9:19/101-10:2/130]
                     SIGNATURE ~Inner()
-                    UNIQUE NAME FUNCTION:Outer::Inner::~Inner()
+                    UNIQUE NAME FUNCTION:Outer2::Inner::~Inner()
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
                 FUNCTION foo [4:17/62-4:28/73] MethodImpl
                     DEFINITION: foo  [12:1/132-13:2/181]
                     SIGNATURE foo()
-                    UNIQUE NAME FUNCTION:Outer::Inner::foo()
+                    UNIQUE NAME FUNCTION:Outer2::Inner::foo()
                     PARAMETERS:
                     RETURNS void TEXT=void  [4:17/62-4:21/66]
 FUNCTION DEFINITION ~Inner  [9:19/101-10:2/130] DestructorDefinitionImpl
     SIGNATURE ~Inner()
-    UNIQUE NAME FUNCTION_DEFINITION:Outer::Inner::~Inner()
+    UNIQUE NAME FUNCTION_DEFINITION:Outer2::Inner::~Inner()
     DECLARATION: ~Inner  [3:17/50-3:26/59]
     PARAMETERS:
     RETURNS <*no_classifier*> TEXT=  [null-null]
     STATEMENT Compound  [9:45/127-10:2/130]
 FUNCTION DEFINITION foo  [12:1/132-13:2/181] FunctionDefinitionImpl
     SIGNATURE foo()
-    UNIQUE NAME FUNCTION_DEFINITION:Outer::Inner::foo()
+    UNIQUE NAME FUNCTION_DEFINITION:Outer2::Inner::foo()
     DECLARATION: foo  [4:17/62-4:28/73]
     PARAMETERS:
     RETURNS void TEXT=void  [12:19/150-12:23/154]
     STATEMENT Compound  [12:47/178-13:2/181]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Outer<> (Outer ) [1:1/0-7:3/81] lcurly=30
+CLASS Outer2<> (Outer2 ) [1:1/0-7:3/81] lcurly=30
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer::Inner ) [2:9/33-5:11/77] lcurly=46
+        STRUCT Inner (Outer2::Inner ) [2:9/33-5:11/77] lcurly=46
             BASE CLASSES:
             MEMBERS:
                 FUNCTION ~Inner [3:17/50-3:26/59] DestructorImpl
                     DEFINITION: ~Inner  [9:19/101-10:2/130]
                     SIGNATURE ~Inner()
-                    UNIQUE NAME FUNCTION:Outer::Inner::~Inner()
+                    UNIQUE NAME FUNCTION:Outer2::Inner::~Inner()
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
                 FUNCTION foo [4:17/62-4:28/73] MethodImpl
                     DEFINITION: foo  [12:1/132-13:2/181]
                     SIGNATURE foo()
-                    UNIQUE NAME FUNCTION:Outer::Inner::foo()
+                    UNIQUE NAME FUNCTION:Outer2::Inner::foo()
                     PARAMETERS:
                     RETURNS void TEXT=void  [4:17/62-4:21/66]
-STRUCT Inner (Outer::Inner ) [2:9/33-5:11/77] lcurly=46
+STRUCT Inner (Outer2::Inner ) [2:9/33-5:11/77] lcurly=46
     BASE CLASSES:
     MEMBERS:
         FUNCTION ~Inner [3:17/50-3:26/59] DestructorImpl
             DEFINITION: ~Inner  [9:19/101-10:2/130]
             SIGNATURE ~Inner()
-            UNIQUE NAME FUNCTION:Outer::Inner::~Inner()
+            UNIQUE NAME FUNCTION:Outer2::Inner::~Inner()
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION foo [4:17/62-4:28/73] MethodImpl
             DEFINITION: foo  [12:1/132-13:2/181]
             SIGNATURE foo()
-            UNIQUE NAME FUNCTION:Outer::Inner::foo()
+            UNIQUE NAME FUNCTION:Outer2::Inner::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [4:17/62-4:21/66]
 

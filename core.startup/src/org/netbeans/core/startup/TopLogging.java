@@ -206,9 +206,14 @@ public final class TopLogging {
         ps.println("  Operating System        = " + System.getProperty("os.name", "unknown")
                    + " version " + System.getProperty("os.version", "unknown")
                    + " running on " +  System.getProperty("os.arch", "unknown"));
-        ps.println("  Java; VM; Vendor        = " + System.getProperty("java.version", "unknown") + "; " +
-                   System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "") + "; " +
-                   System.getProperty("java.vendor", "unknown"));
+        ps.println("  Java; VM; Vendor        = "
+                + System.getProperty("java.version", "unknown") + "; "
+                + System.getProperty("java.vm.name", "unknown") + " "
+                + System.getProperty("java.vm.version", "") + "; "
+                + System.getProperty("java.vendor", "unknown"));
+        ps.println("  Runtime                 = "
+                + System.getProperty("java.runtime.name", "unknown") + " "
+                + System.getProperty("java.runtime.version", ""));
         ps.println("  Java Home               = " + System.getProperty("java.home", "unknown"));
         ps.print(  "  System Locale; Encoding = " + Locale.getDefault()); // NOI18N
         String branding = NbBundle.getBranding ();
@@ -676,7 +681,33 @@ public final class TopLogging {
         
         
         private void checkFlush() {
-            flush.schedule(100);
+            try {
+                flush.schedule(100);
+            } catch (IllegalStateException ex) {
+                /* can happen during shutdown:
+                    Nested Exception is:
+                    java.lang.IllegalStateException: Timer already cancelled.
+                            at java.util.Timer.sched(Timer.java:354)
+                            at java.util.Timer.schedule(Timer.java:170)
+                            at org.openide.util.RequestProcessor$Task.schedule(RequestProcessor.java:621)
+                            at org.netbeans.core.startup.TopLogging$LgStream.checkFlush(TopLogging.java:679)
+                            at org.netbeans.core.startup.TopLogging$LgStream.write(TopLogging.java:650)
+                            at sun.nio.cs.StreamEncoder.writeBytes(StreamEncoder.java:202)
+                            at sun.nio.cs.StreamEncoder.implWrite(StreamEncoder.java:263)
+                            at sun.nio.cs.StreamEncoder.write(StreamEncoder.java:106)
+                            at java.io.OutputStreamWriter.write(OutputStreamWriter.java:190)
+                            at java.io.BufferedWriter.flushBuffer(BufferedWriter.java:111)
+                            at java.io.PrintStream.write(PrintStream.java:476)
+                            at java.io.PrintStream.print(PrintStream.java:619)
+                            at java.io.PrintStream.println(PrintStream.java:773)
+                            at java.lang.Throwable.printStackTrace(Throwable.java:461)
+                            at java.lang.Throwable.printStackTrace(Throwable.java:451)
+                            at org.netbeans.insane.impl.LiveEngine.trace(LiveEngine.java:180)
+                            at org.netbeans.insane.live.LiveReferences.fromRoots(LiveReferences.java:110)
+
+                 * just ignore it, we cannot print it at this situation anyway...                
+                 */
+            }
         }
         
         public void run() {

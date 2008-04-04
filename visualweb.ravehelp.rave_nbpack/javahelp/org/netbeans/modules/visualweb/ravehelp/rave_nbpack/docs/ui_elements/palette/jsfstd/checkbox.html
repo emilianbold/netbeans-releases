@@ -13,7 +13,7 @@
 <body>
 
 <h2>JSF Standard Checkbox Component</h2>
-<p><small><a href="#seealso">See Also  </a></small><small><a href="#tutorials"></a></small></p>
+<p><small><a href="#seealso">See Also  </a></small></p>
 
 <p>You can drag the Standard JavaServer Faces Checkbox component <img src="../../../images/jsf_checkbox_icon.gif" alt="checkbox component icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a single checkbox.The HTML equivalent for this component is <code>&lt;input type=&quot;checkbox&quot;&gt;</code>. The Checkbox component is just the checkbox itself. You have to add a <a href="component_label.html">Component Label</a> element to provide a descriptive label for the checkbox.</p>
 <p>If you want a set of checkboxes that is preformatted with labels in a group, you can use a <a href="../bh/checkbox_group.html">Checkbox Group component</a> from the Basic category of the Palette instead.</p>
@@ -43,7 +43,12 @@
               <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>
 			</li>
 			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>
-		</ul></li>
+		<li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li></ul></li>
 </ul>
 
 <dl>
@@ -52,16 +57,7 @@
 	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
 	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
 </dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
 
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
-</dl>
 
 <hr>
 <!-- Start Customer Feedback Link -->

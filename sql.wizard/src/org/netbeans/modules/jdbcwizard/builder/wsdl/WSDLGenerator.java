@@ -364,8 +364,8 @@ public class WSDLGenerator {
             this.dbDataAccessObject = this.getQueryGenerator();
             this.dbDataAccessObject.init(this.mTable);
 
-            this.mTableName = this.mTable.getSchema()+"."+this.mTable.getName();
-
+            //this.mTableName = this.mTable.getSchema()+"."+this.mTable.getName();
+            this.mTableName = this.mTable.getName();
             // Generate Queries
             insertQuery = this.dbDataAccessObject.createInsertQuery();
             updateQuery = this.dbDataAccessObject.createUpdateQuery();

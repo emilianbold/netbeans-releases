@@ -193,7 +193,7 @@ public class QNameExtensionProperty extends ExtensionProperty<QName> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new NamespaceEditor(this, getModel(),
-                getValue(), getDisplayName());
+        return new NamespaceEditor(getModel(),
+                getValue(), getDisplayName(), canWrite());
     }
 }

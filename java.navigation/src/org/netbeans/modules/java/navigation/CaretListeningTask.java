@@ -402,7 +402,10 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    ClassMemberPanel.getInstance().selectElement(eh);
+                    final ClassMemberPanel cmp = ClassMemberPanel.getInstance();
+                    if (cmp != null) {
+                        cmp.selectElement(eh);
+                    }                    
                 }                
             });
         }

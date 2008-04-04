@@ -82,8 +82,10 @@ public class APTGnuCppFilter extends APTBaseLanguageFilter {
         filter("mutable", APTTokenTypes.LITERAL_mutable); // NOI18N
         filter("const", APTTokenTypes.LITERAL_const); // NOI18N
         filter("__const", APTTokenTypes.LITERAL___const); // NOI18N
+        filter("__const__", APTTokenTypes.LITERAL___const__); // NOI18N
         filter("const_cast", APTTokenTypes.LITERAL_const_cast); // NOI18N
         filter("volatile", APTTokenTypes.LITERAL_volatile); // NOI18N
+        filter("__volatile", APTTokenTypes.LITERAL___volatile); // NOI18N
         filter("__volatile__", APTTokenTypes.LITERAL___volatile__); // NOI18N
         filter("char", APTTokenTypes.LITERAL_char); // NOI18N
         filter("wchar_t", APTTokenTypes.LITERAL_wchar_t); // NOI18N
@@ -92,6 +94,7 @@ public class APTGnuCppFilter extends APTBaseLanguageFilter {
         filter("int", APTTokenTypes.LITERAL_int); // NOI18N
         filter("long", APTTokenTypes.LITERAL_long); // NOI18N
         filter("signed", APTTokenTypes.LITERAL_signed); // NOI18N
+        filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
         filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
         filter("unsigned", APTTokenTypes.LITERAL_unsigned); // NOI18N
         filter("__unsigned__", APTTokenTypes.LITERAL___unsigned__); // NOI18N

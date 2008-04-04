@@ -881,7 +881,7 @@ public class Installer implements FinishHandler {
     }
     
     private void initializeMacOS() {
-        if (SystemUtils.isMacOS()) {
+        if (SystemUtils.isMacOS() && UiMode.getCurrentUiMode() == UiMode.SWING) {
             final Application application = Application.getApplication();
             
             application.removeAboutMenuItem();

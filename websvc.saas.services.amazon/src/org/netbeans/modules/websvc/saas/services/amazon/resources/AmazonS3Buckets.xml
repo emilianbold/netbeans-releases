@@ -47,26 +47,24 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://developer.amazonwebservices.com/connect/kbcategory.jspa?categoryID=46"
+               api-doc="http://docs.amazonwebservices.com/AmazonS3/2006-03-01/RESTAPI.html"
                url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3BucketsWadl.xml">
 
     <description>AmazonS3 Buckets Service</description>
     
-    <display-name>AmazonS3 Buckets</display-name>
+    <display-name>S3 Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
 
-        <group name="Amazon">
-            <group name="AmazonS3"/>
-        </group>
+        <group name="Amazon"/>
 
-        <authentication profile="SaaSServices/AmazonS3/profile.properties">
-            <signed-url>
-                <sign>
+        <authentication profile="Templates/SaaSServices/apikey.properties">
+            <signed-url sig-id="Authorization">
+                <sign id="authorization">
                     <params>
-                        <param name="HTTP-Verb" type="string" required="true" default="GET" />
+                        <param name="HTTP-Verb" type="httpMethod" required="true"/>
                         <param name="Date" type="date" required="true"/>
                         <param name="HTTP-Request-URI" type="string"/>
                         <param name="Bucket" type="string" required="true" default=""/>
@@ -77,8 +75,7 @@
 
     </saas-metadata>
 
-    <methods>
-        <method name="getBuckets" href="#amazons3.getBuckets"/>
-    </methods>
-
+    <!-- Process all methods in the wadl !-->
+    <methods/>
+    
 </saas-services>

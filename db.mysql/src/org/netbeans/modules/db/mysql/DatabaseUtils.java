@@ -90,8 +90,11 @@ public class DatabaseUtils {
         CONNECT_SUCCEEDED
 
     }
-    
-    
+     
+    public static boolean isEmpty(String val) {
+        return (val == null || val.length() == 0);
+    }
+     
     public static JDBCDriver getJDBCDriver() {
         JDBCDriver[]  drivers = JDBCDriverManager.getDefault().
                 getDrivers(MySQLOptions.getDriverClass());
@@ -168,13 +171,16 @@ public class DatabaseUtils {
      */
     public static Connection connect(String url, String user, String password)
             throws DatabaseException {
-        Driver driver = getDriver();
+        Driver theDriver = getDriver();
         Properties props = new Properties();
         props.put("user", user == null ? "" : user);                
         props.put("password", password == null ? "" : password);
-
+        
+        props.put("connectTimeout", 
+                MySQLOptions.getDefault().getConnectTimeout()); 
+        
         try {
-            return driver.connect(url, props);
+            return theDriver.connect(url, props);
         } catch ( SQLException sqle ) {
             if ( DatabaseUtils.SQLSTATE_COMM_ERROR.equals(sqle.getSQLState())) {
                 // On a communications failure (e.g. the server's not running)

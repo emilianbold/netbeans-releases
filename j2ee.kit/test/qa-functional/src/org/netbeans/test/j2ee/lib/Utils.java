@@ -52,6 +52,7 @@ import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import javax.swing.JComboBox;
 import junit.framework.AssertionFailedError;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -70,6 +71,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -336,7 +338,7 @@ public class Utils {
         new ActionNoBlock("Window|Output", null).performMenu();
     }
     
-    public static void checkMissingServer(String projectName) {
+    public static boolean checkMissingServer(String projectName) {
         // check missing target server dialog is shown    
         // "Open Project"
         String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
@@ -354,11 +356,13 @@ public class Utils {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         if(needToSetServer) {
             // set default server
-            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
+            JComboBox comboBox = (JComboBox) new JLabelOperator(propertiesDialogOper, "Server").getLabelFor();
+            new JComboBoxOperator(comboBox).setSelectedIndex(0);
         }
         // confirm properties dialog
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
         ProjectSupport.waitScanFinished();
+        return needToSetServer;
     }
 }

@@ -129,8 +129,71 @@ public
 
     protected Decompiler createDecompiler(CompilerEnvirons compilerEnv)
     {
-        return new Decompiler();
+        // <netbeans>
+        // We don't need the decompiler - wen're not going to run the code
+        //return new Decompiler();
+        return new NoOpDecompiler();
+        // </netbeans>
     }
+    
+    // <netbeans>
+    private class NoOpDecompiler extends Decompiler {
+        @Override
+        String getEncodedSource()
+        {
+            return null;
+        }
+        
+        
+        @Override
+        int getCurrentOffset()
+        {
+            return 0;
+        }
+
+        @Override
+        int markFunctionStart(int functionType)
+        {
+            return 0;
+        }
+
+        @Override
+        int markFunctionEnd(int functionStart)
+        {
+            return 0;
+        }
+
+        @Override
+        void addToken(int token)
+        {
+        }
+
+        @Override
+        void addEOL(int token)
+        {
+        }
+
+        @Override
+        void addName(String str)
+        {
+        }
+
+        @Override
+        void addString(String str)
+        {
+        }
+
+        @Override
+        void addRegexp(String regexp, String flags)
+        {
+        }
+
+        @Override
+        void addNumber(double n)
+        {
+        }
+    }
+    // </netbeans>
 
     void addStrictWarning(String messageId, String messageArg
             // <netbeans>
@@ -361,11 +424,6 @@ public
     private Node enterSwitch(Node switchSelector, int lineno)
     {
         Node switchNode = nf.createSwitch(switchSelector, lineno);
-        // <netbeans>
-        int startOffset = getStartOffset();
-        // TODO: Compute end position, perhaps in exitSwitch??
-        switchNode.setSourceBounds( startOffset, startOffset);
-        // </netbeans>
         if (loopAndSwitchSet == null) {
             loopAndSwitchSet = new ObjArray();
         }
@@ -954,6 +1012,10 @@ return null;
                 switchLoop: for (;;) {
                     tt = nextToken();
                     Node caseExpression;
+                    // <netbeans>
+                    // We need to correct the AST offsets of the case blocks
+                    int caseStart = peekedTokenStart;                    
+                    // </netbeans>                    
                     switch (tt) {
                       case Token.RC:
                         break switchLoop;
@@ -996,7 +1058,10 @@ return null;
                     }
 
                     // caseExpression == null => add default lable
-                    nf.addSwitchCase(pn, caseExpression, block);
+                    // <netbeans>
+                    //nf.addSwitchCase(pn, caseExpression, block);
+                    nf.addSwitchCase(pn, caseExpression, block, caseStart);
+                    // </netbeans>
                 }
                 decompiler.addEOL(Token.RC);
                 nf.closeSwitch(pn);
@@ -1004,7 +1069,8 @@ return null;
                 exitSwitch();
             }
             // <netbeans>
-            setSourceOffsets(pn, startOffset);
+            int endOffset = matchedTokenEnd;
+            pn.setSourceBounds(startOffset, endOffset);
             // </netbeans>
             return pn;
           }
@@ -2348,7 +2414,21 @@ return null;
                         break;
 
                       default:
-                        reportError("msg.no.name.after.dot");
+                          // <netbeans>
+                        //reportError("msg.no.name.after.dot");
+                        //addWarning("msg.no.name.after.dot");
+                        String message = ScriptRuntime.getMessage0("msg.no.name.after.dot");
+                        errorReporter.error(message, sourceURI, ts.getLineno(),
+                                              ts.getLine(), getStartOffset()/*ts.getOffset()*/
+                                            // <netbeans>
+                                            , "msg.no.name.after.dot", null
+                                            // </netbeans>
+                                              );
+                        pn = propertyName(pn, "@", memberTypeFlags); // NOI18N
+                        pn.getFirstChild().getNext().setType(Token.MISSING_DOT);
+                        setSourceOffsets(pn.getLastChild(), getStartOffset());
+                        break;
+                          // </netbeans>
                     }
                 }
                 break;
@@ -2574,6 +2654,10 @@ return null;
                 do {
                     Object property;
 
+                    // <netbeans>
+                    int trailingCommaOffset = getStartOffset();
+                    // </netbeans>
+                            
                     if (!first)
                         decompiler.addToken(Token.COMMA);
                     else
@@ -2646,6 +2730,25 @@ return null;
 
                       case Token.RC:
                         // trailing comma is OK.
+                        // <netbeans>
+                        // ...but not on all browsers - IE for example doesn't like it
+                        if (compilerEnv.isStrictMode()) {
+//                            addStrictWarning("msg.trailing.comma", ""
+//                                    // <netbeans> - pass in additional parameters for the error
+//                                    , Integer.valueOf(trailingCommaOffset)
+//                                    // </netbeans>
+//                                    );
+                            String message = ScriptRuntime.getMessage0("msg.trailing.comma");
+                            errorReporter.warning(message, sourceURI, ts.getLineno(),
+                                                  ts.getLine(), trailingCommaOffset/*ts.getOffset()*/
+                                                // <netbeans>
+                                                , "msg.trailing.comma", Integer.valueOf(trailingCommaOffset)
+                                                // </netbeans>
+                                                  );
+                            
+                        }
+                        // </netbeans>
+                          
                         break commaloop;
                     default:
                         reportError("msg.bad.prop");

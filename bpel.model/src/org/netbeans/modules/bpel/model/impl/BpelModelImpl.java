@@ -75,9 +75,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
-public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements
-    BpelModel
-{
+public class BpelModelImpl extends AbstractDocumentModel<BpelEntity> implements BpelModel {
     
     public BpelModelImpl( Document doc, Lookup lookup  ) {
         // TODO this is temporary constructor and this will be removed later.

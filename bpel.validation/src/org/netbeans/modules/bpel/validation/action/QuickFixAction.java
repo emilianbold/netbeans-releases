@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.core.QuickFix;
-import org.netbeans.modules.bpel.validation.core.Outcome;
+import org.netbeans.modules.bpel.validation.core.QuickFixable;
 import org.netbeans.modules.bpel.validation.core.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -112,7 +112,7 @@ public final class QuickFixAction extends IconAction {
       out.println(i18n(QuickFixAction.class, "MSG_Quick_Fix", quickFix.getDescription())); // NOI18N
     }
   }
-/*              todo r
+/* todo r
   private BpelModel getBpelModel(Node node) {
     DataObject data = getDataObject(node);
 
@@ -133,10 +133,10 @@ public final class QuickFixAction extends IconAction {
     List<ResultItem> result = validation.getValidationResult();
 
     for (ResultItem item : result) {
-      if ( !(item instanceof Outcome)) {
+      if ( !(item instanceof QuickFixable)) {
         continue;
       }
-      QuickFix quickFix = ((Outcome) item).getQuickFix();
+      QuickFix quickFix = ((QuickFixable) item).getQuickFix();
 
       if (quickFix != null) {
         quickFixes.add(quickFix);
@@ -163,10 +163,10 @@ public final class QuickFixAction extends IconAction {
     List<ResultItem> result = myValidationController.getValidationResult();
 
     for (ResultItem item : result) {
-      if ( !(item instanceof Outcome)) {
+      if ( !(item instanceof QuickFixable)) {
         continue;
       }
-      QuickFix quickFix = ((Outcome) item).getQuickFix();
+      QuickFix quickFix = ((QuickFixable) item).getQuickFix();
 
       if (quickFix != null) {
         quickFixes.add(quickFix);

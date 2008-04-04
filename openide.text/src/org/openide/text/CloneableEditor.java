@@ -43,11 +43,15 @@ package org.openide.text;
 
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -81,6 +85,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @see NbDocument.CustomEditor#createEditor */
     private Component customComponent;
     private JToolBar customToolbar;
+    private DoInitialize doInitialize;
 
     /** For externalization of subclasses only  */
     public CloneableEditor() {
@@ -157,103 +162,249 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         if (initialized || discard()) {
             return;
         }
+        final QuietEditorPane tmp = new QuietEditorPane();
 
-        initialized = true;
-
-        Task prepareTask = support.prepareDocument();
-
-        // load the doc synchronously
-        prepareTask.waitFinished();
-
-        Document doc = support.getDocument();
-
-        setLayout(new BorderLayout());
-
-        final QuietEditorPane pane = new QuietEditorPane();
-
-        pane.getAccessibleContext().setAccessibleName(
+        tmp.getAccessibleContext().setAccessibleName(
             NbBundle.getMessage(CloneableEditor.class, "ACS_CloneableEditor_QuietEditorPane", this.getName())
         );
-        pane.getAccessibleContext().setAccessibleDescription(
+        tmp.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(
                 CloneableEditor.class, "ACSD_CloneableEditor_QuietEditorPane",
                 this.getAccessibleContext().getAccessibleDescription()
             )
         );
 
-        this.pane = pane;
-
-        // Init action map: cut,copy,delete,paste actions.
-        javax.swing.ActionMap am = getActionMap();
-
-        //#43157 - editor actions need to be accessible from outside using the TopComponent.getLookup(ActionMap.class) call.
-        // used in main menu enabling/disabling logic.
-        javax.swing.ActionMap paneMap = pane.getActionMap();
-        am.setParent(paneMap);
-
-        //#41223 set the defaults befor the custom editor + kit get initialized, giving them opportunity to
-        // override defaults..
-        paneMap.put(DefaultEditorKit.cutAction, getAction(DefaultEditorKit.cutAction));
-        paneMap.put(DefaultEditorKit.copyAction, getAction(DefaultEditorKit.copyAction));
-        paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
-        paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
-
-        pane.setEditorKit(support.cesKit());
-
-        pane.setDocument(doc);
-
-        if (doc instanceof NbDocument.CustomEditor) {
-            NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
-            customComponent = ce.createEditor(pane);
-
-            if (customComponent == null) {
-                throw new IllegalStateException(
-                    "Document:" + doc // NOI18N
-                     +" implementing NbDocument.CustomEditor may not" // NOI18N
-                     +" return null component"
-                ); // NOI18N
-            }
-
-            add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
-        } else { // not custom editor
-
-            // remove default JScrollPane border, borders are provided by window system
-            JScrollPane noBorderPane = new JScrollPane(pane);
-            pane.setBorder(null);
-            add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
-        }
-
-        if (doc instanceof NbDocument.CustomToolbar) {
-            NbDocument.CustomToolbar ce = (NbDocument.CustomToolbar) doc;
-            customToolbar = ce.createToolbar(pane);
-
-            if (customToolbar == null) {
-                throw new IllegalStateException(
-                    "Document:" + doc // NOI18N
-                     +" implementing NbDocument.CustomToolbar may not" // NOI18N
-                     +" return null toolbar"
-                ); // NOI18N
-            }
-
-            Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
-            customToolbar.setBorder(b);
-            add(customToolbar, BorderLayout.NORTH);
-        }
-
-        pane.setWorking(QuietEditorPane.ALL);
-
-        // set the caret to right possition if this component was deserialized
-        if (cursorPosition != -1) {
-            Caret caret = pane.getCaret();
-
-            if (caret != null) {
-                caret.setDot(cursorPosition);
-            }
-        }
-
-        support.ensureAnnotationsLoaded();
+        this.pane = tmp;
+        this.initialized = true;
+        
+        this.doInitialize = new DoInitialize(tmp);
     }
 
+    
+    final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
+    
+    final boolean newInitialize() {
+        if (Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize")) { // NOI18N
+            return false;
+        }
+        return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
+    }
+
+    class DoInitialize implements Runnable, ActionListener {
+        private final QuietEditorPane tmp;
+        private Document doc;
+        private RequestProcessor.Task task;
+        private int phase;
+        private EditorKit kit;
+        private JComponent tmpComp;
+
+        public DoInitialize(QuietEditorPane tmp) {
+            this.tmp = tmp;
+            this.tmpComp = initLoading();
+            new Timer(1000, this).start();
+            if (newInitialize()) {
+                task = CloneableEditorSupport.RP.create(this);
+                task.setPriority(Thread.MIN_PRIORITY + 2);
+                task.schedule(0);
+            } else {
+                run();
+            }
+        }
+        
+        private JComponent initLoading() {
+            setLayout(new BorderLayout());
+
+            JLabel loadingLbl = new JLabel(NbBundle.getMessage(CloneableEditor.class, "LBL_EditorLoading")); // NOI18N
+            loadingLbl.setOpaque(true);
+            loadingLbl.setHorizontalAlignment(SwingConstants.CENTER);
+            loadingLbl.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
+            loadingLbl.setVisible(false);
+            add(loadingLbl, BorderLayout.CENTER);
+            
+            return loadingLbl;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            tmpComp.setVisible(true);
+            Timer t = (Timer)e.getSource();
+            t.stop();
+        }
+        
+        @SuppressWarnings("fallthrough")
+        public void run() {
+            long now = System.currentTimeMillis();
+            
+            int phaseNow = phase;
+            switch (phase++) {
+            case 0: 
+                initNonVisual();
+                if (newInitialize()) {
+                    WindowManager.getDefault().invokeWhenUIReady(this);
+                    break;
+                }
+            case 1:
+                initVisual();
+                if (newInitialize()) {
+                    task.schedule(1000);
+                    break;
+                }
+            case 2:
+                initRest();
+                break;
+            default:
+                throw new IllegalStateException("Wrong phase: " + phase + " for " + support);
+            }
+            
+            long howLong = System.currentTimeMillis() - now;
+            if (TIMER.isLoggable(Level.FINE)) {
+                String thread = SwingUtilities.isEventDispatchThread() ? "AWT" : "RP"; // NOI18N
+                Object who = doc.getProperty(Document.StreamDescriptionProperty);
+                if (who == null) {
+                    who = support.messageName();
+                }
+                TIMER.log(Level.FINE,  
+                    "Open Editor, phase " + phaseNow + ", " + thread + " [ms]",
+                    new Object[] { who, howLong}
+                );
+            }
+        }
+            
+        private void initNonVisual() {
+            Task prepareTask = support.prepareDocument();
+
+            // load the doc synchronously
+            prepareTask.waitFinished();
+
+            // Init action map: cut,copy,delete,paste actions.
+            javax.swing.ActionMap am = getActionMap();
+
+            //#43157 - editor actions need to be accessible from outside using the TopComponent.getLookup(ActionMap.class) call.
+            // used in main menu enabling/disabling logic.
+            javax.swing.ActionMap paneMap = tmp.getActionMap();
+            am.setParent(paneMap);
+
+            //#41223 set the defaults befor the custom editor + kit get initialized, giving them opportunity to
+            // override defaults..
+            paneMap.put(DefaultEditorKit.cutAction, getAction(DefaultEditorKit.cutAction));
+            paneMap.put(DefaultEditorKit.copyAction, getAction(DefaultEditorKit.copyAction));
+            paneMap.put("delete", getAction(DefaultEditorKit.deleteNextCharAction)); // NOI18N
+            paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
+            
+            
+            EditorKit k = support.cesKit();
+            if (newInitialize() && k instanceof Callable) {
+                try {
+                    ((Callable) k).call();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            
+            synchronized (this) {
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
+            }
+        }
+        
+        private void initCustomEditor() {
+            if (doc instanceof NbDocument.CustomEditor) {
+                NbDocument.CustomEditor ce = (NbDocument.CustomEditor) doc;
+                customComponent = ce.createEditor(tmp);
+
+                if (customComponent == null) {
+                    throw new IllegalStateException(
+                        "Document:" + doc // NOI18N
+                         +" implementing NbDocument.CustomEditor may not" // NOI18N
+                         +" return null component"
+                    ); // NOI18N
+                }
+            }            
+        }
+
+        private void initDecoration() {
+            if (doc instanceof NbDocument.CustomToolbar) {
+                NbDocument.CustomToolbar ce = (NbDocument.CustomToolbar) doc;
+                customToolbar = ce.createToolbar(tmp);
+
+                if (customToolbar == null) {
+                    throw new IllegalStateException(
+                        "Document:" + doc // NOI18N
+                         +" implementing NbDocument.CustomToolbar may not" // NOI18N
+                         +" return null toolbar"
+                    ); // NOI18N
+                }
+            }            
+        }
+        
+        private boolean initDocument() {
+            EditorKit k;
+            Document d;
+            synchronized (this) {
+                for (;;) {
+                    d = doc;
+                    k = kit;
+                    if (d != null && k != null) {
+                        break;
+                    }
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            if (tmp.getDocument() == doc) {
+                return false;
+            }
+            tmp.setEditorKit(kit);
+            tmp.setDocument(doc);
+            return true;
+        }
+        
+        final void initVisual() {
+            // wait for document and init it
+            if (!initDocument()) {
+                return;
+            }
+            
+            initCustomEditor();
+            if (customComponent != null) {
+                add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
+            } else { // not custom editor
+
+                // remove default JScrollPane border, borders are provided by window system
+                JScrollPane noBorderPane = new JScrollPane(tmp);
+                tmp.setBorder(null);
+                add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
+            }
+
+            initDecoration();
+            if (customToolbar != null) {
+                Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+                customToolbar.setBorder(b);
+                add(customToolbar, BorderLayout.NORTH);
+            }
+            remove(tmpComp);
+
+            tmp.setWorking(QuietEditorPane.ALL);
+
+            // set the caret to right possition if this component was deserialized
+            if (cursorPosition != -1) {
+                Caret caret = tmp.getCaret();
+
+                if (caret != null) {
+                    caret.setDot(cursorPosition);
+                }
+            }
+
+            requestFocusInWindow();
+        }
+        
+        private void initRest() {
+            support.ensureAnnotationsLoaded();
+        }
+    } // end of DoInitialize
     protected CloneableTopComponent createClonedObject() {
         return support.createCloneableTopComponent();
     }
@@ -386,10 +537,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public void requestFocus() {
         super.requestFocus();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            customComponent.requestFocus();
-        } else if (pane != null) {
-            pane.requestFocus();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                customComponent.requestFocus();
+            } else {
+                pane.requestFocus();
+            }
         }
     }
 
@@ -399,10 +552,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            return customComponent.requestFocusInWindow();
-        } else if (pane != null) {
-            return pane.requestFocusInWindow();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                return customComponent.requestFocusInWindow();
+            } else {
+                return pane.requestFocusInWindow();
+            }
         }
 
         return false;
@@ -650,8 +805,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     }
 
     public JEditorPane getEditorPane() {
+        assert SwingUtilities.isEventDispatchThread();
         initialize();
-
+        DoInitialize d = doInitialize;
+        if (d != null && !Thread.holdsLock(support.getLock())) {
+            d.initVisual();
+        }
         return pane;
     }
 

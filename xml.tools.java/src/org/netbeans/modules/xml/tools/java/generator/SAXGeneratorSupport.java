@@ -302,9 +302,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
             //DataObject stubDataObject = FileUtilities.createDataObject(folder, model.getStub(), JAVA_EXT, true);
             FileObject fObj = GenerationUtils.createClass(folder, model.getStub(), null); 
-            FileObject interfaceImplfObj = GenerationUtils.createClass( folder, model.getHandlerImpl(), null);
             FileObject interfacefObj = GenerationUtils.createInterface( folder, model.getHandler(), null);
-
+            FileObject interfaceImplfObj = GenerationUtils.createClass( folder, model.getHandlerImpl(), null);
+           
             
               FileObject parsletsImplFileObj = null;
               FileObject parseltSrcFileObj = null;
@@ -314,15 +314,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                   parsletsImplFileObj = GenerationUtils.createClass( folder, model.getParsletImpl(), null);
                   
                   parseltSrcFileObj = GenerationUtils.createInterface( folder, model.getParslet(), null);
-//
-//                parsletsImplDataObject = FileUtilities.createDataObject( folder, model.getParsletImpl(), JAVA_EXT, false);
-//                parsletsImplSrc = openSource(parsletsImplDataObject);
-//
-//                parsletsDataObject = FileUtilities.createDataObject( folder, model.getParslet(), JAVA_EXT, true);
-//                parsletsSrc = openSource(parsletsDataObject);
-//
+
             }
-//
+
             // generate code by a model
 
             GuiUtil.setStatusText(NbBundle.getMessage (SAXGeneratorSupport.class,"MSG_sax_progress_1_5"));
@@ -700,7 +694,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                                 Collections.emptyList(),
                                 varTree,
                                 Collections.singletonList(saxException),
-                                make.Block(Collections.emptyList(), false),
+                                (BlockTree)null,
                                 null
                             
                             );
@@ -837,6 +831,8 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
                                   sb.append("\nif (DEBUG) System.err.println(\"" + methodName + ": \" + meta\n");
                                   sb.append("}\n");        
                                   varTree = new ArrayList();
+                                  var = make.Variable(mods, "meta", tree, null);
+                                  varTree.add(var);
                                   method = createInterfaceMethod(make, methodName, varTree, saxException, sb.toString());
                                   modifiedClass = make.addClassMember(modifiedClass, method);
                             }

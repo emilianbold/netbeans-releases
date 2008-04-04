@@ -214,7 +214,7 @@ public class LayerUtils {
     public static LayerHandle layerForProject(Project project) {
         LayerHandle handle = layerHandleCache.get(project);
         if (handle == null) {
-            handle = new LayerHandle(project);
+            handle = new LayerHandle(project, null);
             layerHandleCache.put(project, handle);
         }
         return handle;
@@ -422,13 +422,15 @@ public class LayerUtils {
     public static final class LayerHandle {
         
         private final Project project;
+        private final FileObject layerXML;
         private FileSystem fs;
         private SavableTreeEditorCookie cookie;
         private boolean autosave;
         
-        LayerHandle(Project project) {
+        LayerHandle(Project project, FileObject layerXML) {
             //System.err.println("new LayerHandle for " + project);
             this.project = project;
+            this.layerXML = layerXML;
         }
         
         /**
@@ -502,6 +504,9 @@ public class LayerUtils {
          * @return the layer, or null
          */
         public FileObject getLayerFile() {
+            if (layerXML != null) {
+                return layerXML;
+            }
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
             if (module == null) { // #126939: other project type
                 return null;

@@ -42,8 +42,6 @@ package org.netbeans.modules.cnd.editor.api;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.openide.util.NbBundle;
@@ -85,11 +83,8 @@ public final class CodeStyle {
 
     public synchronized static CodeStyle getDefault(Document doc) {
         if (doc instanceof BaseDocument) {
-            Formatter f = ((BaseDocument)doc).getFormatter();
-            if (f instanceof ExtFormatter) {
-                if (CKit.class.equals(f.getKitClass())) {
-                    return getDefault(Language.C);
-                }
+            if (CKit.class.equals(((BaseDocument)doc).getKitClass())) {
+                return getDefault(Language.C);
             }
         }
         return getDefault(Language.CPP);
@@ -100,16 +95,48 @@ public final class CodeStyle {
     }
     
 
-    public int getGlobalIndentSize() {
-        return EditorOptions.getGlobalIndentSize(language);
+    // General indents ------------------------------------------------
+    
+    public int indentSize() {
+        return getOption(EditorOptions.indentSize,
+                         EditorOptions.indentSizeDefault);
+    }
+
+    public int getFormatStatementContinuationIndent() {
+        return getOption(EditorOptions.statementContinuationIndent,
+                         EditorOptions.statementContinuationIndentDefault);
+    }
+
+    public PreprocessorIndent indentPreprocessorDirectives(){
+        return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
+                                      EditorOptions.indentPreprocessorDirectivesDefault));
+    }
+    
+    public boolean indentNamespace() {
+        return getOption(EditorOptions.indentNamespace,
+                         EditorOptions.indentNamespaceDefault);
+    }
+
+    public boolean indentCasesFromSwitch() {
+        return getOption(EditorOptions.indentCasesFromSwitch,
+                         EditorOptions.indentCasesFromSwitchDefault);
+    }
+
+    public boolean absoluteLabelIndent() {
+        return getOption(EditorOptions.absoluteLabelIndent,
+                         EditorOptions.absoluteLabelIndentDefault);
+    }
+
+    public boolean sharpAtStartLine(){
+        return getOption(EditorOptions.sharpAtStartLine,
+                         EditorOptions.sharpAtStartLineDefault);
     }
 
     public int getGlobalTabSize() {
         return EditorOptions.getGlobalTabSize(language);
     }
 
-    
-    // General tabs and indents ------------------------------------------------
+    // indents ------------------------------------------------
     public boolean spaceBeforeMethodDeclParen() {
         return getOption(EditorOptions.spaceBeforeMethodDeclParen,
                          EditorOptions.spaceBeforeMethodDeclParenDefault);
@@ -138,6 +165,10 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceBeforeSwitchParen,
                          EditorOptions.spaceBeforeSwitchParenDefault);
     }
+    public boolean spaceBeforeKeywordParen() {
+        return getOption(EditorOptions.spaceBeforeKeywordParen,
+                         EditorOptions.spaceBeforeKeywordParenDefault);
+    }
 
     public BracePlacement getFormatNewlineBeforeBraceNamespace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceNamespace,
@@ -153,28 +184,22 @@ public final class CodeStyle {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceDeclaration,
                                       EditorOptions.newLineBeforeBraceDeclarationDefault));
     }
+    public boolean ignoreEmptyFunctionBody(){
+        return getOption(EditorOptions.ignoreEmptyFunctionBody,
+                         EditorOptions.ignoreEmptyFunctionBodyDefault);
+    }
+
+    public BracePlacement getFormatNewLineBeforeBraceSwitch() {
+        return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBraceSwitch,
+                                      EditorOptions.newLineBeforeBraceSwitchDefault));
+    }
 
     public BracePlacement getFormatNewlineBeforeBrace() {
         return BracePlacement.valueOf(getOption(EditorOptions.newLineBeforeBrace,
                                       EditorOptions.newLineBeforeBraceDefault));
     }
 
-
-    public PreprocessorIndent indentPreprocessorDirectives(){
-        return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
-                                      EditorOptions.indentPreprocessorDirectivesDefault));
-    }
-    
-    public boolean indentCasesFromSwitch() {
-        return getOption(EditorOptions.indentCasesFromSwitch,
-                         EditorOptions.indentCasesFromSwitchDefault);
-    }
-
-    public boolean sharpAtStartLine(){
-        return getOption(EditorOptions.sharpAtStartLine,
-                         EditorOptions.sharpAtStartLineDefault);
-    }
-       //NewLine
+    //NewLine
     public boolean newLineCatch(){
         return getOption(EditorOptions.newLineCatch,
                          EditorOptions.newLineCatchDefault);
@@ -187,17 +212,17 @@ public final class CodeStyle {
         return getOption(EditorOptions.newLineWhile,
                          EditorOptions.newLineWhileDefault);
     }
-         
+    public boolean newLineFunctionDefinitionName(){
+        return getOption(EditorOptions.newLineFunctionDefinitionName,
+                         EditorOptions.newLineFunctionDefinitionNameDefault);
+    }
+    
     public boolean getFormatLeadingStarInComment() {
         return getOption(EditorOptions.addLeadingStarInComment,
                          EditorOptions.addLeadingStarInCommentDefault);
     }
 
-    public int getFormatStatementContinuationIndent() {
-        return getOption(EditorOptions.statementContinuationIndent,
-                         EditorOptions.statementContinuationIndentDefault);
-    }
-
+    //MultilineAlignment
     public boolean alignMultilineCallArgs() {
         return getOption(EditorOptions.alignMultilineCallArgs,
                          EditorOptions.alignMultilineCallArgsDefault);
@@ -208,21 +233,45 @@ public final class CodeStyle {
                          EditorOptions.alignMultilineMethodParamsDefault);
     }
 
+    public boolean alignMultilineFor() {
+        return getOption(EditorOptions.alignMultilineFor,
+                         EditorOptions.alignMultilineForDefault);
+    }
+    public boolean alignMultilineIfCondition() {
+        return getOption(EditorOptions.alignMultilineIfCondition,
+                         EditorOptions.alignMultilineIfConditionDefault);
+    }
+    public boolean alignMultilineWhileCondition() {
+        return getOption(EditorOptions.alignMultilineWhileCondition,
+                         EditorOptions.alignMultilineWhileConditionDefault);
+    }
+    public boolean alignMultilineParen() {
+        return getOption(EditorOptions.alignMultilineParen,
+                         EditorOptions.alignMultilineParenDefault);
+    }
+    public boolean alignMultilineArrayInit() {
+        return getOption(EditorOptions.alignMultilineArrayInit,
+                         EditorOptions.alignMultilineArrayInitDefault);
+    }
+
+    //SpacesAroundOperators
     public boolean spaceAroundUnaryOps() {
         return getOption(EditorOptions.spaceAroundUnaryOps,
                          EditorOptions.spaceAroundUnaryOpsDefault);
     }
-
     public boolean spaceAroundBinaryOps() {
         return getOption(EditorOptions.spaceAroundBinaryOps,
                          EditorOptions.spaceAroundBinaryOpsDefault);
     }
-
     public boolean spaceAroundAssignOps() {
         return getOption(EditorOptions.spaceAroundAssignOps,
                          EditorOptions.spaceAroundAssignOpsDefault);
     }
-    
+    public boolean spaceAroundTernaryOps() {
+        return getOption(EditorOptions.spaceAroundTernaryOps,
+                         EditorOptions.spaceAroundTernaryOpsDefault);
+    }
+            
     public boolean spaceBeforeWhile() {
         return getOption(EditorOptions.spaceBeforeWhile,
                          EditorOptions.spaceBeforeWhileDefault);
@@ -360,20 +409,48 @@ public final class CodeStyle {
         return getOption(EditorOptions.spaceWithinBraces,
                          EditorOptions.spaceWithinBracesDefault);
     }
-    public boolean spaceWithinArrayInitBrackets(){
-        return getOption(EditorOptions.spaceWithinArrayInitBrackets,
-                         EditorOptions.spaceWithinArrayInitBracketsDefault);
+
+    public int blankLinesBeforeClass(){
+        return getOption(EditorOptions.blankLinesBeforeClass,
+                         EditorOptions.blankLinesBeforeClassDefault);
     }
-    
+//    public int blankLinesAfterClass(){
+//        return getOption(EditorOptions.blankLinesAfterClass,
+//                         EditorOptions.blankLinesAfterClassDefault);
+//    }
+    public int blankLinesAfterClassHeader(){
+        return getOption(EditorOptions.blankLinesAfterClassHeader,
+                         EditorOptions.blankLinesAfterClassHeaderDefault);
+    }
+//    public int blankLinesBeforeFields(){
+//        return getOption(EditorOptions.blankLinesBeforeFields,
+//                         EditorOptions.blankLinesBeforeFieldsDefault);
+//    }
+//    public int blankLinesAfterFields(){
+//        return getOption(EditorOptions.blankLinesAfterFields,
+//                         EditorOptions.blankLinesAfterFieldsDefault);
+//    }
+    public int blankLinesBeforeMethods(){
+        return getOption(EditorOptions.blankLinesBeforeMethods,
+                         EditorOptions.blankLinesBeforeMethodsDefault);
+    }
+//    public int blankLinesAfterMethods(){
+//        return getOption(EditorOptions.blankLinesAfterMethods,
+//                         EditorOptions.blankLinesAfterMethodsDefault);
+//    }
+
     private boolean getOption(String key, boolean defaultValue) {
+        defaultValue = (Boolean)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getBoolean(key, defaultValue);
     }
 
     private int getOption(String key, int defaultValue) {
+        defaultValue = (Integer)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().getInt(key, defaultValue);
     }
 
     private String getOption(String key, String defaultValue) {
+        defaultValue = (String)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
         return getPreferences().get(key, defaultValue);
     }
 
@@ -398,7 +475,8 @@ public final class CodeStyle {
 
     public enum BracePlacement {
         SAME_LINE,
-        NEW_LINE;
+        NEW_LINE,
+        NEW_LINE_HALF_INDENTED;
         
         @Override
         public String toString() {

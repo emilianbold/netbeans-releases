@@ -43,12 +43,14 @@ package org.netbeans.modules.xml.text.indent;
 
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.xml.text.syntax.UniKit;
 import org.openide.util.HelpCtx;
 
 /**
+ * Old XML indenter. This has been replaced by XMLLexerFormatter.
  * @author  Libor Kramolis
  * @version 0.1
+ * @deprecated
+ * @see XMLLexerFormatter
  */
 public class XMLIndentEngine extends FormatterIndentEngine {
 

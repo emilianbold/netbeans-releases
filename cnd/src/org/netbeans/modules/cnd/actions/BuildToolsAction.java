@@ -123,7 +123,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         JPanel panel = new JPanel();
         tp.addPropertyChangeListener(this);
         jOK = new JButton(NbBundle.getMessage(BuildToolsAction.class, "BTN_OK")); // NOI18N
-        tp.setPreferredSize(new Dimension(500, 365));
+        tp.setPreferredSize(new Dimension(900, 550));
         tp.update();
         DialogDescriptor dd = new DialogDescriptor((Object) constructOuterPanel(tp), getTitle(), true, 
                 new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},
@@ -144,7 +144,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(16, 16, 16, 16);
         panel.add(innerPanel, gridBagConstraints);
         return panel;
     }

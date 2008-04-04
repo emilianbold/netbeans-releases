@@ -87,147 +87,6 @@ public class Profile extends AbstractPageBean {
         passwordLengthValidator.setMaximum(10);
         passwordLengthValidator.setMinimum(6);
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
-    
-    private Form form1 = new Form();
-    
-    public Form getForm1() {
-        return form1;
-    }
-    
-    public void setForm1(Form f) {
-        this.form1 = f;
-    }
-    private HtmlPanelGrid content = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getContent() {
-        return content;
-    }
-
-    public void setContent(HtmlPanelGrid hpg) {
-        this.content = hpg;
-    }
-    private HtmlPanelGrid contentGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getContentGrid() {
-        return contentGrid;
-    }
-
-    public void setContentGrid(HtmlPanelGrid hpg) {
-        this.contentGrid = hpg;
-    }
-    private HtmlPanelGrid messageGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMessageGrid() {
-        return messageGrid;
-    }
-
-    public void setMessageGrid(HtmlPanelGrid hpg) {
-        this.messageGrid = hpg;
-    }
-    private HtmlPanelGrid paddingPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getPaddingPanel() {
-        return paddingPanel;
-    }
-
-    public void setPaddingPanel(HtmlPanelGrid hpg) {
-        this.paddingPanel = hpg;
-    }
-    private HtmlPanelGrid dataGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getDataGrid() {
-        return dataGrid;
-    }
-
-    public void setDataGrid(HtmlPanelGrid hpg) {
-        this.dataGrid = hpg;
-    }
-    private MessageGroup messageGroup1 = new MessageGroup();
-
-    public MessageGroup getMessageGroup1() {
-        return messageGroup1;
-    }
-
-    public void setMessageGroup1(MessageGroup mg) {
-        this.messageGroup1 = mg;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
-    private Message message1 = new Message();
-
-    public Message getMessage1() {
-        return message1;
-    }
-
-    public void setMessage1(Message m) {
-        this.message1 = m;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
     private TextField firstName = new TextField();
 
     public TextField getFirstName() {
@@ -236,24 +95,6 @@ public class Profile extends AbstractPageBean {
 
     public void setFirstName(TextField tf) {
         this.firstName = tf;
-    }
-    private Message message2 = new Message();
-
-    public Message getMessage2() {
-        return message2;
-    }
-
-    public void setMessage2(Message m) {
-        this.message2 = m;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
     }
     private TextField lastName = new TextField();
 
@@ -264,24 +105,6 @@ public class Profile extends AbstractPageBean {
     public void setLastName(TextField tf) {
         this.lastName = tf;
     }
-    private Message message3 = new Message();
-
-    public Message getMessage3() {
-        return message3;
-    }
-
-    public void setMessage3(Message m) {
-        this.message3 = m;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
-    }
     private TextField emailAddress = new TextField();
 
     public TextField getEmailAddress() {
@@ -290,24 +113,6 @@ public class Profile extends AbstractPageBean {
 
     public void setEmailAddress(TextField tf) {
         this.emailAddress = tf;
-    }
-    private Message message4 = new Message();
-
-    public Message getMessage4() {
-        return message4;
-    }
-
-    public void setMessage4(Message m) {
-        this.message4 = m;
-    }
-    private Label label5 = new Label();
-
-    public Label getLabel5() {
-        return label5;
-    }
-
-    public void setLabel5(Label l) {
-        this.label5 = l;
     }
     private PasswordField newPassword = new PasswordField();
 
@@ -318,24 +123,6 @@ public class Profile extends AbstractPageBean {
     public void setNewPassword(PasswordField pf) {
         this.newPassword = pf;
     }
-    private Message message5 = new Message();
-
-    public Message getMessage5() {
-        return message5;
-    }
-
-    public void setMessage5(Message m) {
-        this.message5 = m;
-    }
-    private Label label6 = new Label();
-
-    public Label getLabel6() {
-        return label6;
-    }
-
-    public void setLabel6(Label l) {
-        this.label6 = l;
-    }
     private PasswordField retypeNewPassword = new PasswordField();
 
     public PasswordField getRetypeNewPassword() {
@@ -344,24 +131,6 @@ public class Profile extends AbstractPageBean {
 
     public void setRetypeNewPassword(PasswordField pf) {
         this.retypeNewPassword = pf;
-    }
-    private Message message6 = new Message();
-
-    public Message getMessage6() {
-        return message6;
-    }
-
-    public void setMessage6(Message m) {
-        this.message6 = m;
-    }
-    private StaticText userId = new StaticText();
-
-    public StaticText getUserId() {
-        return userId;
-    }
-
-    public void setUserId(StaticText st) {
-        this.userId = st;
     }
     private CachedRowSetDataProvider employeeDataProvider = new CachedRowSetDataProvider();
 
@@ -381,15 +150,6 @@ public class Profile extends AbstractPageBean {
     public void setPasswordDataProvider(CachedRowSetDataProvider crsdp) {
         this.passwordDataProvider = crsdp;
     }
-    private Label label7 = new Label();
-
-    public Label getLabel7() {
-        return label7;
-    }
-
-    public void setLabel7(Label l) {
-        this.label7 = l;
-    }
     private PasswordField currentPassword = new PasswordField();
 
     public PasswordField getCurrentPassword() {
@@ -398,24 +158,6 @@ public class Profile extends AbstractPageBean {
 
     public void setCurrentPassword(PasswordField pf) {
         this.currentPassword = pf;
-    }
-    private Message message7 = new Message();
-
-    public Message getMessage7() {
-        return message7;
-    }
-
-    public void setMessage7(Message m) {
-        this.message7 = m;
-    }
-    private Button update = new Button();
-
-    public Button getUpdate() {
-        return update;
-    }
-
-    public void setUpdate(Button b) {
-        this.update = b;
     }
     private LengthValidator passwordLengthValidator = new LengthValidator();
 

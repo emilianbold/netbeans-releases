@@ -2,6 +2,8 @@ Version: nb-7.0-b07
 Name: Javac Compiler API
 License: CDDL-GPL-2-CP
 Description: Javac Compiler API
+OSR: 6273
+Origin: https://jdk7.dev.java.net/
 
 Use of JAVA(TM) DEVELOPMENT TOOLS JAVAC COMPILER is governed by the terms of
 the license below:

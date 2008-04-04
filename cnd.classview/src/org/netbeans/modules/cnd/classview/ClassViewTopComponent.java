@@ -77,7 +77,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     public static transient ClassViewTopComponent DEFAULT;
     
-    public static final String OPENED_PREFERENCE = "ClassViewWasOpened";
+    public static final String OPENED_PREFERENCE = "ClassViewWasOpened"; // NOI18N
 
     private transient ClassView view;
 

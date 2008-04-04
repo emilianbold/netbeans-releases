@@ -5,6 +5,7 @@
 package org.netbeans.modules.bpel.design.actions;
 
 import org.netbeans.modules.bpel.design.DesignView;
+import org.netbeans.modules.bpel.design.model.DiagramModel;
 
 /**
  *
@@ -19,9 +20,8 @@ public abstract class DesignModeAction extends DesignViewAction {
     }
 
     @Override
-        public boolean isEnabled() {
+    public boolean isEnabled() {
         return super.isEnabled() && 
-                !getDesignView().getModel().isReadOnly() && 
-                getDesignView().isDesignMode();
+               !getDesignView().getCopyPasteHandler().isActive();
     }
 }

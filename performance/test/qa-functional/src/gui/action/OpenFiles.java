@@ -52,6 +52,11 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 /**
  * Test of opening files.
  *
@@ -98,9 +103,31 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+        class PhaseHandler extends Handler {
+            
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
     
     public void testOpening20kBJavaFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
         setJavaEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -110,7 +137,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void testOpening20kBTxtFile(){
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 1000;
         setPlainTextEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -120,7 +147,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     public void testOpening20kBXmlFile(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
@@ -131,10 +158,11 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     
     protected void initialize(){
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         this.openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -147,6 +175,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
         log("------------------------- after popup invocation ------------");
         
         try {
+            repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
             popup.pushMenu(this.menuItem);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             tee.printStackTrace(getLog());
@@ -166,6 +195,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     }
     
     protected void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();

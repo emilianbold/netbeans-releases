@@ -67,6 +67,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
     /**
      *
      */
+    @Override
     protected void prepareQuery(JTextComponent component) {
         this.component = component;
     }
@@ -75,7 +76,12 @@ public class CompletionQuery extends AsyncCompletionQuery {
      *
      */
     protected void query(CompletionResultSet resultSet,
-            Document doc, int caretOffset) {                
+            Document doc, int caretOffset) {
+        if(CompletionUtil.isDTDBasedDocument(doc)) {
+            resultSet.finish();
+            return;
+        }
+                
         List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
         if(items != null) resultSet.addAllItems(items);
         resultSet.finish();

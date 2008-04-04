@@ -52,92 +52,92 @@ public class JavaCompletionProviderElementCreatingTest extends CompletionTestBas
     }
 
     public void testUnimplementedMethod() throws Exception {
-        performTest("UnimplementedMethod", 115, "", "UnimplementedMethod.pass");
+        performTest("UnimplementedMethod", 85, "", "UnimplementedMethod.pass");
     }
     
     public void testOverrideAbstractList() throws Exception {
-        performTest("OverrideAbstractList", 146, "", "OverrideAbstractList.pass");
+        performTest("OverrideAbstractList", 118, "", "OverrideAbstractList.pass");
     }
     
     /** CC should not offer overriding private method from superclass */
     public void testOverridePrivateMethod() throws Exception {
-        performTest("OverridePrivateMethod", 123, "cl", "OverridePrivateMethod.pass");
+        performTest("OverridePrivateMethod", 89, "cl", "OverridePrivateMethod.pass");
     }
     
     /** CC should not offer overriding package private method from superclass in a different package */
     public void testOverridePackagePrivateMethod() throws Exception {
-        performTest("OverridePackagePrivateMethod", 156, "add", "OverridePackagePrivateMethod.pass");
+        performTest("OverridePackagePrivateMethod", 108, "add", "OverridePackagePrivateMethod.pass");
     }
 
     public void testOverrideAbstractListWithPrefix() throws Exception {
-        performTest("OverrideAbstractList", 146, "to", "OverrideAbstractListWithPrefix.pass", "toSt.*override", "OverrideAbstractListWithPrefix.pass2");
+        performTest("OverrideAbstractList", 118, "to", "OverrideAbstractListWithPrefix.pass", "toSt.*override", "OverrideAbstractListWithPrefix.pass2");
     }
     
     public void testOverrideFinalize() throws Exception {
-        performTest("OverrideAbstractList", 146, "fin", "OverrideFinalize.pass", "finali.*override", "OverrideFinalize.pass2");
+        performTest("OverrideAbstractList", 118, "fin", "OverrideFinalize.pass", "finali.*override", "OverrideFinalize.pass2");
     }
     
     public void testOverrideAbstractList2a() throws Exception {
-        performTest("OverrideAbstractList2", 169, "ad", "OverrideAbstractList2a.pass", "add.*override", "OverrideAbstractList2a.pass2");
+        performTest("OverrideAbstractList2", 139, "ad", "OverrideAbstractList2a.pass", "add.*override", "OverrideAbstractList2a.pass2");
     }
     
     public void testOverrideAbstractList2b() throws Exception {
-        performTest("OverrideAbstractList2", 169, "ge", "OverrideAbstractList2b.pass", "ge.*implement", "OverrideAbstractList2b.pass2");
+        performTest("OverrideAbstractList2", 139, "ge", "OverrideAbstractList2b.pass", "ge.*implement", "OverrideAbstractList2b.pass2");
     }
     
     public void testOverrideAbstractList3a() throws Exception {
-        performTest("OverrideAbstractList3", 156, "ad", "OverrideAbstractList3a.pass", "add.*override", "OverrideAbstractList3a.pass2");
+        performTest("OverrideAbstractList3", 126, "ad", "OverrideAbstractList3a.pass", "add.*override", "OverrideAbstractList3a.pass2");
     }
     
     public void testOverrideAbstractList3b() throws Exception {
-        performTest("OverrideAbstractList3", 156, "ge", "OverrideAbstractList3b.pass", "ge.*implement", "OverrideAbstractList3b.pass2");
+        performTest("OverrideAbstractList3", 126, "ge", "OverrideAbstractList3b.pass", "ge.*implement", "OverrideAbstractList3b.pass2");
     }
     
     public void testOverrideTypedException1() throws Exception {
-        performTest("OverrideTypedException", 237, "tes", "OverrideTypedException1.pass", "tes.*override", "OverrideTypedException1.pass2");
+        performTest("OverrideTypedException", 209, "tes", "OverrideTypedException1.pass", "tes.*override", "OverrideTypedException1.pass2");
     }
     
     public void testOverrideTypedException2() throws Exception {
-        performTest("OverrideTypedException", 351, "tes", "OverrideTypedException2.pass", "tes.*override", "OverrideTypedException2.pass2");
+        performTest("OverrideTypedException", 305, "tes", "OverrideTypedException2.pass", "tes.*override", "OverrideTypedException2.pass2");
     }
     
     public void testOverrideInInnerClass() throws Exception {
-        performTest("OverrideInInnerClass", 217, "pai", "OverrideInInnerClass.pass", "paint\\(.*override", "OverrideInInnerClass.pass2");
+        performTest("OverrideInInnerClass", 185, "pai", "OverrideInInnerClass.pass", "paint\\(.*override", "OverrideInInnerClass.pass2");
     }
     
     public void testOverrideInInnerClassUnresolvable() throws Exception {
-        performTest("OverrideInInnerClassUnresolvable", 213, "pai", "empty.pass");
+        performTest("OverrideInInnerClassUnresolvable", 157, "pai", "empty.pass");
     }
     
     public void testCreateConstructorTest() throws Exception {
-        performTest("CreateConstructorTest", 266, "", "CreateConstructorTest.pass");
+        performTest("CreateConstructorTest", 249, "", "CreateConstructorTest.pass");
     }
 
     public void testCreateConstructorTestInnerClass() throws Exception {
-        performTest("CreateConstructorTest", 451, "", "CreateConstructorTestInnerClass.pass");
+        performTest("CreateConstructorTest", 434, "", "CreateConstructorTestInnerClass.pass");
     }
 
     public void testCreateConstructorWithConstructors() throws Exception {
-        performTest("CreateConstructorWithConstructors", 487, "", "CreateConstructorWithConstructors.pass");
+        performTest("CreateConstructorWithConstructors", 400, "", "CreateConstructorWithConstructors.pass");
     }
 
     public void testCreateConstructorWithConstructorsInnerClass() throws Exception {
-        performTest("CreateConstructorWithConstructors", 672, "", "CreateConstructorWithConstructorsInnerClass.pass");
+        performTest("CreateConstructorWithConstructors", 667, "", "CreateConstructorWithConstructorsInnerClass.pass");
     }
 
     public void testCreateConstructorWithDefaultConstructor() throws Exception {
-        performTest("CreateConstructorWithDefaultConstructor", 365, "", "CreateConstructorWithDefaultConstructor.pass");
+        performTest("CreateConstructorWithDefaultConstructor", 352, "", "CreateConstructorWithDefaultConstructor.pass");
     }
 
     public void testCreateConstructorWithDefaultConstructorInnerClass() throws Exception {
-        performTest("CreateConstructorWithDefaultConstructor", 607, "", "CreateConstructorWithDefaultConstructorInnerClass.pass");
+        performTest("CreateConstructorWithDefaultConstructor", 560, "", "CreateConstructorWithDefaultConstructorInnerClass.pass");
     }
 
     public void testCreateConstructorNonDefaultConstructor() throws Exception {
-        performTest("CreateConstructorNonDefaultConstructor", 364, "", "CreateConstructorNonDefaultConstructor.pass");
+        performTest("CreateConstructorNonDefaultConstructor", 379, "", "CreateConstructorNonDefaultConstructor.pass");
     }
 
     public void testCreateConstructorNonDefaultConstructorInnerClass() throws Exception {
-        performTest("CreateConstructorNonDefaultConstructor", 632, "", "CreateConstructorNonDefaultConstructorInnerClass.pass");
+        performTest("CreateConstructorNonDefaultConstructor", 624, "", "CreateConstructorNonDefaultConstructorInnerClass.pass");
     }
 }

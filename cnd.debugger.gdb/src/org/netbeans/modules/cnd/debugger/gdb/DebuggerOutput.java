@@ -76,7 +76,7 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
 
     public DebuggerOutput(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = contextProvider.lookupFirst(null, GdbDebugger.class);
+        this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager().getSessions().length == 1) {

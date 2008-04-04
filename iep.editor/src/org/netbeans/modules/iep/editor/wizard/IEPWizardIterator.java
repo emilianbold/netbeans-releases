@@ -45,7 +45,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor.Panel[] panels;
 
     private IEPWizardPanel1 panel1;
-    private IEPWizardPanel2 panel2;
+//    private IEPWizardPanel2 panel2;
     private IEPWizardPanel2EmptyIEPFile panel2EmptyIEPFile;
     private IEPWizardPanel3 panel3;
     
@@ -60,7 +60,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{
                 panel2EmptyIEPFile,
-                panel2,
+//                panel2,
                 panel3
             };
         
@@ -137,6 +137,14 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         IEPModel model = createdObject.getPlanEditorSupport().getModel();
         IEPWizardHelper.processUsingExistingSchema(model, wizard);
         
+        //set targetNamespace on iepfile
+        String tns = Utility.generateTargetNamespace(createdObject);
+        
+        model.startTransaction();
+        model.getPlanComponent().setName(createdObject.getName());
+        model.getPlanComponent().setTargetNamespace(tns);
+        model.endTransaction();
+        
         Set set = new HashSet(1);                
         set.add(createdObject.getPrimaryFile());
         return set;
@@ -154,9 +162,9 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
 //        panel1 = new IEPWizardPanel1();
         FileObject dir = Templates.getTargetFolder( this.wizard );
         Project project = FileOwnerQuery.getOwner(dir);
-        panel2 = new IEPWizardPanel2(project);
+//        panel2 = new IEPWizardPanel2(project);
         panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
-        panel3 = new IEPWizardPanel3();
+        panel3 = new IEPWizardPanel3(project);
         
         Object prop = wizard.getProperty("WizardPanel_contentData");
         if (prop != null && prop instanceof String[]) {

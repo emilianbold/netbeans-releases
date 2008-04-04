@@ -28,12 +28,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.RubyTestBase;
-import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,6 +39,8 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeType;
+import org.jruby.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.ruby.platform.TestUtil;
@@ -255,10 +252,10 @@ public abstract class HintTestBase extends RubyTestBase {
             // It's an error!
             // Create a hint registry which contains ONLY our hint (so other registered
             // hints don't interfere with the test)
-            Map<String, List<ErrorRule>> testHints = new HashMap<String, List<ErrorRule>>();
+            Map<ID, List<ErrorRule>> testHints = new HashMap<ID, List<ErrorRule>>();
             if (hint.appliesTo(info)) {
                 ErrorRule errorRule = (ErrorRule)hint;
-                for (String key : errorRule.getCodes()) {
+                for (ID key : errorRule.getCodes()) {
                     testHints.put(key, Collections.singletonList(errorRule));
                 }
             }
@@ -281,9 +278,9 @@ public abstract class HintTestBase extends RubyTestBase {
             AstRule astRule = (AstRule)hint;
             // Create a hint registry which contains ONLY our hint (so other registered
             // hints don't interfere with the test)
-            Map<Integer, List<AstRule>> testHints = new HashMap<Integer, List<AstRule>>();
+            Map<NodeType, List<AstRule>> testHints = new HashMap<NodeType, List<AstRule>>();
             if (hint.appliesTo(info)) {
-                for (int nodeId : astRule.getKinds()) {
+                for (NodeType nodeId : astRule.getKinds()) {
                     testHints.put(nodeId, Collections.singletonList(astRule));
                 }
             }
@@ -311,12 +308,12 @@ public abstract class HintTestBase extends RubyTestBase {
             int caretOffset = r.caretOffset;
             if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof AstRule) {
                 result = new ArrayList<ErrorDescription>(result);
-                Set<Integer> nodeTypes = ((AstRule)hint).getKinds();
+                Set<NodeType> nodeTypes = ((AstRule)hint).getKinds();
                 Node root = AstUtilities.getRoot(info);
                 List<Node> nodes = new ArrayList<Node>();
-                int[] nodeIds = new int[nodeTypes.size()];
+                NodeType[] nodeIds = new NodeType[nodeTypes.size()];
                 int index = 0;
-                for (int id : nodeTypes) {
+                for (NodeType id : nodeTypes) {
                     nodeIds[index++] = id;
                 }
                 AstUtilities.addNodesByType(root, nodeIds, nodes);
@@ -456,9 +453,9 @@ public abstract class HintTestBase extends RubyTestBase {
     }
     
     public void ensureRegistered(AstRule hint) throws Exception {
-        Map<Integer, List<AstRule>> hints = RulesManager.getInstance().getHints();
-        Set<Integer> kinds = hint.getKinds();
-        for (int nodeType : kinds) {
+        Map<NodeType, List<AstRule>> hints = RulesManager.getInstance().getHints();
+        Set<NodeType> kinds = hint.getKinds();
+        for (NodeType nodeType : kinds) {
             List<AstRule> rules = hints.get(nodeType);
             assertNotNull(rules);
             boolean found = false;

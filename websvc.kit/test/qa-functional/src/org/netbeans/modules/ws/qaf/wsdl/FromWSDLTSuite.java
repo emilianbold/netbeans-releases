@@ -41,6 +41,7 @@ package org.netbeans.modules.ws.qaf.wsdl;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -94,9 +95,11 @@ public class FromWSDLTSuite extends WsValidation {
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
         suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
+        suite.addTest(new FromWSDLTSuite("testRefreshService"));
+        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
         return suite;
     }
     
@@ -147,6 +150,16 @@ public class FromWSDLTSuite extends WsValidation {
         jtfo.waitText("#"); //NOI18N
         op.finish();
         waitForWsImport("(wsimport-service-" + name); //NOI18N
+    }
+    
+    @Override
+     public void testRefreshService() {
+        refreshWSDL("service","AddNumbersService[AddNumbersPort]",false);
+    }
+    
+    @Override
+    public void testRefreshServiceAndReplaceWSDL() {
+        refreshWSDL("service","AddNumbersService[AddNumbersPort]",true);
     }
 
 }

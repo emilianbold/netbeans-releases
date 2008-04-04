@@ -42,6 +42,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
+import javax.swing.JOptionPane;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -139,10 +140,14 @@ public class HgCommand {
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
-    private static final String HG_LOG_DEBUG_CMD = "--debug";
+    private static final String HG_LOG_DEBUG_CMD = "--debug";  
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
+            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
+            "\\nendCS:\\n"; // NOI18N
+    private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
@@ -876,9 +881,40 @@ public class HgCommand {
         
         return messages.toArray(new HgLogMessage[0]);
     }       
-   
     public static HgLogMessage[] getLogMessages(final String rootUrl, 
-            final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges,  OutputLogger logger) {
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, fromRevision, toRevision, 
+                                bShowMerges, true, -1, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, limit, logger);
+    }
+
+    public static HgLogMessage[] getLogMessagesNoFileInfo(final String rootUrl, final Set<File> files, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, false, -1, logger);
+    }
+
+    public static HgLogMessage[] getLogMessages(final String rootUrl, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, null, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, int limit, OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, limit, logger);
+    }
+    
+    public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files,  OutputLogger logger) {
+         return getLogMessages(rootUrl, files, null, null, true, true, -1, logger);
+    }
+
+     public static HgLogMessage[] getLogMessages(final String rootUrl, 
+            final Set<File> files, String fromRevision, String toRevision, 
+            boolean bShowMerges,  boolean bGetFileInfo, int limit, OutputLogger logger) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
         
@@ -891,9 +927,8 @@ public class HgCommand {
             List<String> list = new LinkedList<String>();
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, logger);
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
             processLogMessages(list, messages);
-            
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1132,7 +1167,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doLogForHistory(File repository, List<File> files, 
-            String from, String to, String headRev, boolean bShowMerges, OutputLogger logger) throws HgException {
+            String from, String to, String headRev, boolean bShowMerges, boolean bGetFileInfo, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         if (files != null && files.isEmpty()) return null;
         
@@ -1141,6 +1176,10 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        if (limit >= 0) {
+                command.add(HG_LOG_LIMIT_CMD);
+                command.add(Integer.toString(limit));
+        }
         boolean doFollow = true;
         if( files != null){
             for (File f : files) {
@@ -1158,7 +1197,9 @@ public class HgCommand {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_DEBUG_CMD);
+        if(bGetFileInfo){
+            command.add(HG_LOG_DEBUG_CMD);
+        }
         
         String dateStr = handleRevDates(from, to);
         if(dateStr != null){
@@ -1169,8 +1210,19 @@ public class HgCommand {
         if(dateStr == null && revStr != null){
             command.add(HG_FLAG_REV_CMD);
             command.add(revStr);
-        }        
-        command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }    
+        
+        // Make sure revsions listed from "tip" down to "tip - limit"
+        if(limit >= 0 && dateStr == null && revStr == null){
+            command.add(HG_FLAG_REV_CMD);
+            command.add(HG_LOG_REV_TIP_RANGE);
+        }    
+        
+        if(bGetFileInfo){
+            command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+        }else{
+            command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);            
+        }
 
         if( files != null){
             for (File f : files) {
@@ -1592,9 +1644,11 @@ public class HgCommand {
         command.add(HG_COMMIT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgConfigFiles.getInstance().getUserName();
+        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
         String username = null;
         if(projectUserName != null && projectUserName.length() > 0)
             username = projectUserName;
@@ -1623,8 +1677,33 @@ public class HgCommand {
             command.add(HG_COMMIT_OPT_LOGFILE_CMD);
             command.add(tempfile.getAbsolutePath());
 
+            List<String> saveCommand = null;
+            if(Utilities.isWindows()) {
+                saveCommand = new ArrayList<String>(command);
+            }
             for(File f: commitFiles){
-                command.add(f.getAbsolutePath());
+                command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
+            }
+            if(Utilities.isWindows()) {   
+                // Count size of command
+                int size = 0;
+                for (String line : command) {
+                    size += line.length();
+                }
+                int maxSize = 32767; // Assume CreateProcess is used
+                if (size > maxSize) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_QUERY")); // NOI18N
+                    descriptor.setTitle(NbBundle.getMessage(HgCommand.class, "MSG_LONG_COMMAND_TITLE")); // NOI18N
+                    descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+                    descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+                    Object res = DialogDisplayer.getDefault().notify(descriptor)
+;
+                    if (res == NotifyDescriptor.NO_OPTION) {
+                        return;
+                    }
+                    command = saveCommand;
+                }
             }
             List<String> list = exec(command);
             
@@ -2780,10 +2859,15 @@ public class HgCommand {
     
     private static String getHgCommand() {
         String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath();
-        if (defaultPath == null || defaultPath.length() == 0) 
+        if (defaultPath == null || defaultPath.length() == 0){
             return HG_COMMAND;
-        else
-            return defaultPath + File.separatorChar + HG_COMMAND;
+        }else{
+            if(Utilities.isWindows()){
+                return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
+            }else{
+                return defaultPath + File.separatorChar + HG_COMMAND;                
+            }
+        }
     }
 
     private static void handleError(List<String> command, List<String> list, String message, OutputLogger logger) throws HgException{

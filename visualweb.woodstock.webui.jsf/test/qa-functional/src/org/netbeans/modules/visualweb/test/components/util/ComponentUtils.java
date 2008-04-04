@@ -121,6 +121,21 @@ public class ComponentUtils {
     }
     
     /**
+     * Types multi-line text into a JTextComponent.
+     * @param text the lines
+     * @param comp the component operator
+     */
+    public static void typeLines(String text, JTextComponentOperator comp) {
+        String[] lines = text.split("\n", -1);
+        for (String line : lines) {
+            if (!"".equals(line)) {
+                comp.typeText(line);
+            }
+            comp.pressKey(KeyEvent.VK_ENTER);
+        }
+    }
+    
+    /**
      * Selects a component in the Navigator view specified by string <code>path</code>
      * @param path string path delimited by |
      */

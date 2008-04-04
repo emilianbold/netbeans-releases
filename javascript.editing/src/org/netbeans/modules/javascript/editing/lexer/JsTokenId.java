@@ -50,8 +50,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.javascript.editing.JsMimeResolver;
-import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -103,7 +101,13 @@ public enum JsTokenId implements TokenId {
     IF("if", "keyword"),
     ELSE("else", "keyword"),
     WHILE("while", "keyword"),
+    CASE("case", "keyword"),
+    DEFAULT("default", "keyword"),
+    BREAK("break", "keyword"),
+    SWITCH("switch", "keyword"),
 
+    COLON(":", "operator"),
+    
     SEMI(";", "operator"),
     FUNCTION("function", "keyword"),
     
@@ -129,7 +133,7 @@ public enum JsTokenId implements TokenId {
     private static final Language<JsTokenId> language =
         new LanguageHierarchy<JsTokenId>() {
                 protected String mimeType() {
-                    return JsMimeResolver.JAVASCRIPT_MIME_TYPE;
+                    return JsTokenId.JAVASCRIPT_MIME_TYPE;
                 }
 
                 protected Collection<JsTokenId> createTokenIds() {
@@ -165,4 +169,11 @@ public enum JsTokenId implements TokenId {
     public static Language<JsTokenId> language() {
         return language;
     }
+
+    /**
+     * MIME type for JavaScript. Don't change this without also consulting the various XML files
+     * that cannot reference this value directly.
+     */
+    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+    
 }

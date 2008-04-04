@@ -1,0 +1,20 @@
+Results for specified. with queryType=COMPLETION and nameKind=PREFIX
+METHOD     toSource() : void                          Boolean
+METHOD     toString() : String                        Boolean
+METHOD     valueOf() : void                           Boolean
+METHOD     watch(prop, handler) : void                Boolean
+PROPERTY   constructor                                Boolean
+PROPERTY   prototype                                  Boolean
+------------------------------------
+METHOD     eval(string) : void                        Object
+METHOD     hasOwnProperty(prop) : Boolean             Object
+METHOD     isPrototypeOf(object) : Boolea             Object
+METHOD     propertyIsEnumerable(prop) : B             Object
+METHOD     toLocaleString() : String                  Object
+METHOD     toSource() : void                          Object
+METHOD     toString() : String                        Object
+METHOD     unwatch(prop) : void                       Object
+METHOD     valueOf() : void                           Object
+METHOD     watch(prop, handler) : void                Object
+PROPERTY   constructor                                Object
+PROPERTY   prototype                                  Object

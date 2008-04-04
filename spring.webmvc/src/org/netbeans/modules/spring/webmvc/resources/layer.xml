@@ -92,4 +92,20 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="SpringFramework">
+        <folder name="Templates">
+            <file name="applicationContext.xml" url="templates/applicationContext.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <file name="dispatcher-servlet.xml" url="templates/dispatcher-servlet.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <file name="index.jsp" url="templates/index.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

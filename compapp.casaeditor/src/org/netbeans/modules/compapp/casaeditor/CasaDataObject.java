@@ -88,7 +88,7 @@ public class CasaDataObject extends MultiDataObject {
         set.add(editorSupport);
         getCookieSet().add(mBuildCookie);
     }
-           
+               
     public CasaDataEditorSupport getEditorSupport() {
         return editorSupport;
     }

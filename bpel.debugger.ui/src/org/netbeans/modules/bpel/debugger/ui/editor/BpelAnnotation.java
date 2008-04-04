@@ -200,7 +200,7 @@ class BpelAnnotation {
     
     // Private /////////////////////////////////////////////////////////////////
     private void updateDiagramAnnotation() {
-        if (!myAnnotationType.isForDiagram()) {
+        if (!myAnnotationType.isForDiagram() || (myBpelEntityId == null)) {
             return;
         }
         
@@ -223,7 +223,7 @@ class BpelAnnotation {
     }
     
     private void removeDiagramAnnotation() {
-        if (!myAnnotationType.isForDiagram()) {
+        if (!myAnnotationType.isForDiagram() || (myBpelEntityId == null)) {
             return;
         }
         
@@ -239,7 +239,7 @@ class BpelAnnotation {
     }
     
     private void updateLineAnnotation() {
-        if (!myAnnotationType.isForSourceEditor()) {
+        if (!myAnnotationType.isForSourceEditor() || (myLineNumber == -1)) {
             return;
         }
         
@@ -263,6 +263,10 @@ class BpelAnnotation {
     }
     
     private void removeLineAnnotation() {
+        if (!myAnnotationType.isForSourceEditor() || (myLineNumber == -1)) {
+            return;
+        }
+        
         if (myLineAnnotation != null) {
             myLineAnnotation.detach();
             myLineAnnotation = null;

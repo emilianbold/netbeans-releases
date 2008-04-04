@@ -44,6 +44,7 @@ package org.netbeans.modules.identity.server.manager.ui;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.Collection;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
@@ -121,6 +122,13 @@ public class ProfilesNode extends AbstractNode {
         Image image = ((ImageIcon)icon).getImage();
         image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
         return image;
+    }
+    
+    public Action[] getActions(boolean context) {
+        Action[] actions = new Action[] {
+        };
+        
+        return actions;
     }
     
     private static class ProfilesNodeChildren extends Children.Keys {

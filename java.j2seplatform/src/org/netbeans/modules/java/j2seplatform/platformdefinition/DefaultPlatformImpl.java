@@ -69,13 +69,14 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
 
     private ClassPath standardLibs;
     
-    static JavaPlatform create(Map properties, List sources, List javadoc) {
+    @SuppressWarnings("unchecked")  //Properties cast to Map<String,String>
+    static JavaPlatform create(Map<String,String> properties, List<URL> sources, List<URL> javadoc) {
         if (properties == null) {
-            properties = new HashMap ();
+            properties = new HashMap<String,String> ();
         }
         // XXX java.home??
         File javaHome = FileUtil.normalizeFile(new File(System.getProperty("jdk.home")));       //NOI18N
-        List installFolders = new ArrayList ();
+        List<URL> installFolders = new ArrayList<URL> ();
         try {
             installFolders.add (javaHome.toURI().toURL());
         } catch (MalformedURLException mue) {
@@ -90,7 +91,8 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         return new DefaultPlatformImpl(installFolders, properties, new HashMap(System.getProperties()), sources,javadoc);
     }
     
-    private DefaultPlatformImpl(List installFolders, Map platformProperties, Map systemProperties, List sources, List javadoc) {
+    private DefaultPlatformImpl(List<URL> installFolders, Map<String,String> platformProperties,
+        Map<String,String> systemProperties, List<URL> sources, List<URL> javadoc) {
         super(null,DEFAULT_PLATFORM_ANT_NAME,
               installFolders, platformProperties, systemProperties, sources, javadoc);
     }
@@ -122,7 +124,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         return standardLibs = Util.createClassPath (s);
     }
 
-    static List getSources (File javaHome) {
+    static List<URL> getSources (File javaHome) {
         if (javaHome != null) {
             try {
                 File f;
@@ -170,7 +172,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     }
     
     
-    static List getJavadoc (File javaHome) {
+    static List<URL> getJavadoc (File javaHome) {
         if (javaHome != null ) {
             File f = new File (javaHome,"docs"); //NOI18N
             if (f.isDirectory() && f.canRead()) {

@@ -129,6 +129,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -260,6 +261,15 @@ public class JsfProjectUtils {
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
+                        setJsfProjectDir(dirs, Boolean.TRUE);
+                        return true;
+                    }
+                }
+
+                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                // Found the project root directory and got the Maven nb-configuration.xml file
+                if (projMaven != null) {
+                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
                         setJsfProjectDir(dirs, Boolean.TRUE);
                         return true;
                     }
@@ -1937,4 +1947,14 @@ public class JsfProjectUtils {
         return LibraryManager.getDefault();
     }
     
+    public static String[] getJ2eeClasspathEntries(Project project) {
+        WebPropertyEvaluator webPropertyEvaluator = (WebPropertyEvaluator)project.getLookup().lookup(WebPropertyEvaluator.class);
+        if(webPropertyEvaluator != null) {
+            String property = webPropertyEvaluator.evaluator().getProperty("j2ee.platform.classpath");    //NOI18N
+            if (property != null) {
+                return PropertyUtils.tokenizePath(property);
+            }
+        }
+        return new String[0];
+    }
 }

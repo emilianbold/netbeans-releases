@@ -132,27 +132,36 @@ public class ETGenericNodeUI extends TSEDefaultNodeUI implements IETNodeUI {
         return retVal;
     }
     
-    
-    
+    // lvv - 128186 TS StackOverflow fix
+    boolean inDraw = false;
     public void draw(TSEGraphics graphics) {
-        IDrawEngine de = getDrawEngine();
-        if (de != null) {
-            RenderingHints prevHint = graphics.getRenderingHints();
-            qualityHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            
-            graphics.setRenderingHints(qualityHints);
-            IDrawInfo drawInfo = getDrawInfo(graphics);
-            // TODO: Determine what the DrawinToMainDrawingArea and AlwaysSetFont
-            //       Should be set to.
-            
-            if (drawInfo != null) {
-                Rectangle clipRect = drawInfo.clip();
-                de.doDraw(drawInfo);
-                graphics.setClip(clipRect);
-            } else {
-                GDISupport.frameRectangle(graphics.getGraphics(), ETBaseUI.getDeviceBounds(graphics, this),DrawEngineLineKindEnum.DELK_DOT, 1, Color.BLACK);
+        if (inDraw) 
+        {
+            return;
+        }
+        try {
+            inDraw = true;
+            IDrawEngine de = getDrawEngine();
+            if (de != null) {
+                RenderingHints prevHint = graphics.getRenderingHints();
+                qualityHints.put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                graphics.setRenderingHints(qualityHints);
+                IDrawInfo drawInfo = getDrawInfo(graphics);
+                // TODO: Determine what the DrawinToMainDrawingArea and AlwaysSetFont
+                //       Should be set to.
+                
+                if (drawInfo != null) {
+                    Rectangle clipRect = drawInfo.clip();
+                    de.doDraw(drawInfo);
+                    graphics.setClip(clipRect);
+                } else {
+                    GDISupport.frameRectangle(graphics.getGraphics(), ETBaseUI.getDeviceBounds(graphics, this),DrawEngineLineKindEnum.DELK_DOT, 1, Color.BLACK);
+                }
+                graphics.setRenderingHints(prevHint);
             }
-            graphics.setRenderingHints(prevHint);
+        } finally {
+            inDraw = false;
         }
     }
     

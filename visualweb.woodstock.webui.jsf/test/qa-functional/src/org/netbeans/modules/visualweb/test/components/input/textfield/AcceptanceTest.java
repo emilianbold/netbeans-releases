@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,33 +50,37 @@
 
 package org.netbeans.modules.visualweb.test.components.input.textfield;
 
+import java.awt.Point;
+import java.io.File;
+import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
-
-import org.netbeans.jemmy.operators.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.awt.Point;
-
-import org.netbeans.modules.visualweb.gravy.*;
+import org.netbeans.jemmy.drivers.text.SwingTextKeyboardDriver;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.visualweb.gravy.Bundle;
+import org.netbeans.modules.visualweb.gravy.DeploymentDialogOperator;
+import org.netbeans.modules.visualweb.gravy.DocumentOutlineOperator;
+import org.netbeans.modules.visualweb.gravy.EditorOperator;
+import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
+import org.netbeans.modules.visualweb.gravy.RaveTestCase;
+import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
+import org.netbeans.modules.visualweb.gravy.TestUtils;
+import org.netbeans.modules.visualweb.gravy.Util;
+import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
-import org.netbeans.modules.visualweb.gravy.DocumentOutlineOperator;
-import org.netbeans.modules.visualweb.gravy.EditorOperator;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
-
-import java.util.Hashtable;
-
-import org.netbeans.jemmy.drivers.text.SwingTextKeyboardDriver;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  *
@@ -486,7 +490,7 @@ public class AcceptanceTest extends RaveTestCase {
         EditorOperator editor = new EditorOperator(Util.getMainWindow(), _page1);
         editor.requestFocus();
         editor.pushDownArrowKey();
-        editor.txtEditorPane().typeText("log(\"Action Performed\");\n");
+        typeLines("log(\"Action Performed\");\n", editor.txtEditorPane());
         try { Thread.sleep(2000); } catch(Exception e) {}
         designer.switchToDesignerPane();
 

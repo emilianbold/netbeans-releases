@@ -55,7 +55,6 @@ import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerExplorerOperator;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 
 import java.io.File;
@@ -159,8 +158,7 @@ public class AcceptanceTest extends RaveTestCase {
             ComponentUtils.createNewProject(_projectName);
         } catch(Exception e) {
             log(">> Project Creation Failed");
-            e.printStackTrace();
-            log(e.toString());
+            e.printStackTrace(getLog());
             fail();
         }
         log("**Done");

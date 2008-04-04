@@ -261,8 +261,8 @@ implements Executor {
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
-        removeStepRequests (tr);
         setLastOperation(tr);
+        removeStepRequests (tr);
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
@@ -311,11 +311,6 @@ implements Executor {
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
                 ) {
                     // YES!
-                    Session session = lookupProvider.lookupFirst(null, Session.class);
-                    if (session != null) {
-                        DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                    }
-                    getDebuggerImpl ().setStoppedState (tr);
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     return false; // do not resume
                 }
