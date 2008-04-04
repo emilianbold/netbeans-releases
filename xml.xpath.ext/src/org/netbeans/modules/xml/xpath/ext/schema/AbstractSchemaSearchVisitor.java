@@ -259,5 +259,18 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
         String packageName = domElement.getClass().getPackage().getName();
         return "org.netbeans.modules.xml.xdm.nodes".equals(packageName); // NOI18N
     }
+ 
+    protected String fastGetRefName(NamedComponentReference ref) {
+        String refString = ref.getRefString();
+        String[] splitRefString = refString.split(":", 2);
+        String result = null;
+        //
+        if (splitRefString.length == 1) {
+            result = splitRefString[0];
+        } else if (splitRefString.length == 2) {
+            result = splitRefString[1];
+        }
+        return result;
+    }
     
 }
