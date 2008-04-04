@@ -58,5 +58,5 @@ public interface PositionManager {
      * if the ComObject is not found
      */
     @NonNull
-    OffsetRange getOffsetRange(CompilationInfo info, ElementHandle object);
+    OffsetRange getOffsetRange(@NonNull CompilationInfo info, @NonNull ElementHandle object);
 }
