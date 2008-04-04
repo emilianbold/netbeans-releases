@@ -255,6 +255,7 @@ public final class VCSContext {
             SourceGroup sourceGroup = sourceGroups[j];
             FileObject srcRootFo = sourceGroup.getRootFolder();
             File rootFile = FileUtil.toFile(srcRootFo);
+            if (rootFile == null) continue;
             VersioningSystem owner = VersioningManager.getInstance().getOwner(rootFile);
             if (owner == null) {
                 unversionedFiles.add(rootFile);
