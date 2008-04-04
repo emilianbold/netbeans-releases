@@ -74,18 +74,18 @@ made subject to such option by the copyright holder.
 
     </folder>
 
-    <!--folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="ActionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.ActionsOptionsContainerPanel"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpAdvancedOption"/>
             </file>
         </folder>
     </folder>
-    <folder name="org.netbeans.modules.php">
+    <!--folder name="org.netbeans.modules.php">
         <folder name="ActionsOptions">
             <file name="CommandLine.instance">
-                <attr name="position" intvalue="200"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.options.CommandLineOption"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.CommandLineOption"/>
             </file>
             <file name="ProjectActionsOptions.instance">
                 <attr name="position" intvalue="150"/>
