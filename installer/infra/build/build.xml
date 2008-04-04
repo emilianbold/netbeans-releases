@@ -2303,7 +2303,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="mysql-connector" version="5.1.6.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="mysql"/>
         </create-bundle>
-
+	<!--
 	<create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip">
@@ -2345,6 +2345,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<include name="${nb.bundle.files.prefix}-mysql-macosx*zip"/>
             </fileset>
         </delete>
+	-->
     </target>
 
     <target name="get-bundled-jvms" if="do.build.jdk">
