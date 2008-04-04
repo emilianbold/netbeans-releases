@@ -140,7 +140,18 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.gsf</friend>
+                <friend>org.netbeans.modules.javascript.refactoring</friend>
+                <friend> org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.ruby.project</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.ruby.refactoring</friend>
+                <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.scala.project</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.gsf.tools</friend>
                 <package>org.netbeans.modules.gsfpath.api.classpath</package>
                 <package>org.netbeans.modules.gsfpath.api.platform</package>
                 <package>org.netbeans.modules.gsfpath.api.queries</package>
@@ -149,7 +160,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.gsfpath.spi.classpath.support</package>
                 <package>org.netbeans.modules.gsfpath.spi.platform</package>
                 <package>org.netbeans.modules.gsfpath.spi.queries</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
