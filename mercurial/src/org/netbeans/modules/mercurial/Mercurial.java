@@ -399,4 +399,8 @@ public class Mercurial {
     public OutputLogger getLogger(String repositoryRoot) {
         return OutputLogger.getLogger(repositoryRoot);
     }
+
+    public Boolean isRefreshScheduled(File file) {
+        return mercurialInterceptor.isRefreshScheduled(file);
+    }
 }

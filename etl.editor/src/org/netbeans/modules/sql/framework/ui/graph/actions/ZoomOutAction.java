@@ -60,7 +60,7 @@ public class ZoomOutAction extends GraphAction {
 
     public ZoomOutAction() {
         //action name
-        String nbBundle = mLoc.t("BUND323: Zoom Out...");
+        String nbBundle = mLoc.t("BUND323: Zoom Out");
         this.putValue(Action.NAME, nbBundle.substring(15));
 
         //action icon

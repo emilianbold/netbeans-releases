@@ -193,6 +193,10 @@ public interface XPathSchemaContext {
          * @return
          */
         public static SchemaComponent getSchemaComp(XPathSchemaContext context) {
+            if (context == null)  {
+                return null;
+            }
+            //
             Set<SchemaCompPair> scPairSet = context.getUsedSchemaCompPairs();
             if (scPairSet != null && scPairSet.size() == 1) {
                 SchemaCompPair scPair = scPairSet.iterator().next();
