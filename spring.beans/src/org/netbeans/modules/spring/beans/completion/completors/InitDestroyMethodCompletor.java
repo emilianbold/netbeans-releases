@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.beans.completion.completors;
 
-package org.netbeans.modules.j2ee.common.source;
-
-import java.util.Enumeration;
-import org.netbeans.modules.java.JavaDataLoader;
-import org.openide.loaders.DataLoader;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.util.Enumerations;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.w3c.dom.Node;
 
 /**
  *
- * @author Andrei Badea
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class FakeJavaDataLoaderPool extends DataLoaderPool {
+public class InitDestroyMethodCompletor extends JavaMethodCompletor {
 
-    public Enumeration<? extends DataLoader> loaders() {
-        return Enumerations.singleton(new JavaDataLoader());
+    public InitDestroyMethodCompletor() {
+    }
+
+    @Override
+    protected Public getPublicFlag(CompletionContext context) {
+        return Public.DONT_CARE;
+    }
+
+    @Override
+    protected Static getStaticFlag(CompletionContext context) {
+        return Static.NO;
+    }
+
+    @Override
+    protected int getArgCount(CompletionContext context) {
+        return 0;
+    }
+
+    @Override
+    protected String getTypeName(CompletionContext context) {
+        Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
+        return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
+                context.getFileObject()).findImplementationClass();
     }
 }

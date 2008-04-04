@@ -279,8 +279,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
 
                 if (!finished) {
-                    throw new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
-                        threadDump());
+                    throw Log.wrapWithMessages(new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
+                        threadDump())
+                    );
                 }
             }
         }

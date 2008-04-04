@@ -69,9 +69,9 @@ made subject to such option by the copyright holder.
             
             <!-- java2wsdl targets - one for each axis2:service -->
             <xsl:for-each select="/axis2:axis2/axis2:service">
+                <xsl:variable name="wsname" select="@name"/>
+                <xsl:variable name="service_class" select="axis2:service-class"/>
                 <xsl:if test="axis2:generate-wsdl">
-                    <xsl:variable name="wsname" select="@name"/>               
-                    <xsl:variable name="service_class" select="axis2:service-class"/>
                     <xsl:variable name="target_namespace" select="axis2:generate-wsdl/@targetNamespace"/>
                     <xsl:variable name="schema_namespace" select="axis2:generate-wsdl/@schemaNamespace"/>
                     
@@ -98,9 +98,7 @@ made subject to such option by the copyright holder.
                     </target>
                 </xsl:if>
                 <xsl:if test="axis2:java-generator">
-                    <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="wsdlUrl" select="axis2:wsdl-url"/>
-                    <xsl:variable name="service_class" select="axis2:service-class"/>
                     <xsl:variable name="serviceName" select="axis2:java-generator/@serviceName"/>
                     <xsl:variable name="portName" select="axis2:java-generator/@portName"/>
                     <xsl:variable name="packageName" select="axis2:java-generator/@packageName"/>
@@ -120,7 +118,7 @@ made subject to such option by the copyright holder.
                             <arg line="-p {$packageName}"/>
                             <arg line="-d {$databindingName}"/>
                             <arg line="-o ${{build.dir}}/axis2"/>
-                            <classpath path="${{libs.axis2.classpath}}"/>
+                            <classpath path="${{javac.classpath}}"/>
                         </java>
                         <copy toDir="${{src.dir}}" overwrite="true">
                             <fileset dir="${{build.dir}}/axis2/src">
@@ -148,14 +146,16 @@ made subject to such option by the copyright holder.
                             <arg line="-p {$packageName}"/>
                             <arg line="-d {$databindingName}"/>
                             <arg line="-o ${{build.dir}}/axis2"/>
-                            <classpath path="${{libs.axis2.classpath}}"/>
+                            <classpath path="${{javac.classpath}}"/>
                         </java>
                         <copy toDir="${{src.dir}}" overwrite="true">
                             <fileset dir="${{build.dir}}/axis2/src">
                                 <include name="**/*.java"/>
                             </fileset>
                         </copy>
-                    </target>
+                    </target>          
+                </xsl:if>
+                <xsl:if test="axis2:wsdl-url">
                     <target name="wsdl2java-clean-{$wsname}" depends="init" >
                         <delete file="${{basedir}}/xml-resources/axis2/META-INF/{$wsname}.wsdl"/>
                     </target>

@@ -39,65 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.junit;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.TestResult;
+
 
 /**
- * Copied from java/source TestUtilities. To be removed when SourceUtils
- * is moved to java/source.
- *
- * @author Andrei Badea
+ * @author Jaroslav Tulach
  */
-public class TestUtilities {
-
-    private TestUtilities() {
+public class LogAndTimeOutTest extends NbTestCase {
+    public LogAndTimeOutTest(String name) {
+        super(name);
     }
-
-    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
-        OutputStream os = fo.getOutputStream();
-        try {
-            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
-            FileUtil.copy(is, os);
-            return fo;
-        } finally {
-            os.close();
+    
+    
+    public void testLoggingAndTimeOut() throws Exception {
+        TestResult result = new TestResult();
+        
+        T t = new T("testLoadFromSubdirTheSFS");
+        t.run(result);
+        
+        assertEquals("No error", 0, result.errorCount());
+        assertEquals("One failure", 1, result.failureCount());
+        
+        Object o = result.failures().nextElement();
+        
+        String output = o.toString();
+        if (output.indexOf("LogAndTimeOutTest$T") == -1) {
+            fail("There should be a stacktrace:\n" + output);
         }
-    }
-
-    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
-        int s = (int)FileUtil.toFile(fo).length();
-        byte[] data = new byte[s];
-        InputStream stream = fo.getInputStream();
-        try {
-            int len = stream.read(data);
-            if (len != s) {
-                throw new EOFException("truncated file");
-            }
-            return new String (data);
-        } finally {
-            stream.close();
+        if (output.indexOf("Adding 5") == -1) {
+            fail("There should be a 'Adding 5' message:\n" + output);
         }
     }
     
-    /**
-     * Creates a cache folder for the Java infrastructure.
-     * 
-     * @param folder the parent folder for the cache folder, 
-     * typically the working dir.
-     */ 
-    public static void setCacheFolder(File folder) throws Exception {
-        File cacheFolder = new File(folder,"cache");
-        FileUtil.createFolder(cacheFolder);
-        IndexUtil.setCacheFolder(cacheFolder);
-    }
+    
+    public static class T extends NbTestCase {
+        
+        
+        public T(String name) {
+            super(name);
+        }
+
+        @Override
+        protected Level logLevel() {
+            return Level.FINE;
+        }
+
+        @Override
+        protected int timeOut() {
+            return 1000;
+        }
+
+        public void testLoadFromSubdirTheSFS() throws Exception {
+            Logger log = Logger.getLogger(T.class.getName());
+            for (int i = 0; i < 100; i++) {
+                log.fine("Adding " + i);
+                Thread.sleep(100);
+            }
+        }
+    } // end of T
     
 }

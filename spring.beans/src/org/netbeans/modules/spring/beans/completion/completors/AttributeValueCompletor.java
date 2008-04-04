@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.spring.beans.completion.completors;
 
-
-package org.netbeans.modules.defaults;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.spring.beans.completion.CompletionContext;
+import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 
 /**
+ * A simple completor for general attribute value items
  * 
- * @author S.Aubrecht
+ * Takes an array of strings, the even elements being the display text of the items
+ * and the odd ones being the corresponding documentation of the items
+ *
+ * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class ShortcutsBuilder {
+public class AttributeValueCompletor extends Completor {
 
-    private static final boolean isMac = Utilities.isMac();
-    
-    public static String buildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
-        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+    private String[] itemTextAndDocs;
+
+    public AttributeValueCompletor(String[] itemTextAndDocs) {
+        this.itemTextAndDocs = itemTextAndDocs;
     }
-    
-    public static String rebuildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
-        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
+
+    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
+        List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+        int caretOffset = context.getCaretOffset();
+        String typedChars = context.getTypedPrefix();
+
+        for (int i = 0; i < itemTextAndDocs.length; i += 2) {
+            if (itemTextAndDocs[i].startsWith(typedChars)) {
+                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                        itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                results.add(item);
+            }
         }
+
+        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+        return results;
     }
-    
-    public static String compileSingle( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
-        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
-    }
-    
-    
 }

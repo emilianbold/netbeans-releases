@@ -39,49 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.modules.j2ee.common.test;
 
-import org.openide.filesystems.FileSystem;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
 
 /**
  *
- * @author Andrei Badae
+ * @author Andrei Badea
  */
-public class RepositoryImpl extends Repository {
+public class TestUtilities {
 
-    private XMLFileSystem system;
-
-    public RepositoryImpl() {
-        super(new MultiFileSystemImpl());
+    private TestUtilities() {
     }
 
-    public static final class MultiFileSystemImpl extends MultiFileSystem {
-
-        public MultiFileSystemImpl() {
-            super(createFileSystems());
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
         }
+    }
 
-        public void reset() {
-            setDelegates(createFileSystems());
-        }
-
-        private static FileSystem[] createFileSystems() {
-            try {
-                FileSystem writeFs = FileUtil.createMemoryFileSystem();
-                FileSystem utilitiesFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("layer.xml"));
-                FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
-                FileSystem javaProjectFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/java/project/layer.xml"));
-                return new FileSystem[] { writeFs, utilitiesFs, j2eeserverFs, javaProjectFs };
-            } catch (SAXException e) {
-                AssertionError ae = new AssertionError(e.getMessage());
-                ae.initCause(e);
-                throw ae;
+    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
+        int s = (int)FileUtil.toFile(fo).length();
+        byte[] data = new byte[s];
+        InputStream stream = fo.getInputStream();
+        try {
+            int len = stream.read(data);
+            if (len != s) {
+                throw new EOFException("truncated file");
             }
+            return new String (data);
+        } finally {
+            stream.close();
         }
     }
+    
+    /**
+     * Creates a cache folder for the Java infrastructure.
+     * 
+     * @param folder the parent folder for the cache folder, 
+     * typically the working dir.
+     */ 
+    public static void setCacheFolder(File folder) throws Exception {
+        File cacheFolder = new File(folder,"cache");
+        FileUtil.createFolder(cacheFolder);
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
+    
 }
