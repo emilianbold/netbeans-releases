@@ -46,13 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.api.JavacTaskImpl.Filter;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.Env;
-import com.sun.tools.javac.comp.TransTypes;
-import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
@@ -101,7 +95,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -110,7 +103,6 @@ import javax.tools.DiagnosticListener;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -2183,10 +2175,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
                         }
                         jt.analyze ();
-                        dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
-                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                                TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
                         boolean[] main = new boolean[1];
                         sa.analyse(trees, jt, fm, active, added, main);
                         
@@ -2843,11 +2831,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                        dumpClasses (listener.getEnteredTypes(),fileManager,
-                                rootFo.getURL().toExternalForm(), dirtyFiles,
-                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                                TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
                         
                         String expectedTopLevelClassName = activeFile.getName();
 
@@ -2890,11 +2873,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         jt.analyze(types);
-                        dumpClasses (listener.getEnteredTypes(), fileManager,
-                                rootFo.getURL().toExternalForm(), dirtyFiles,
-                                com.sun.tools.javac.code.Types.instance(jt.getContext()),
-                                TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()),cpInfo);
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -3042,111 +3020,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         return toRefresh;
-    }
-    
-    private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager,
-        final String currentRoot, final Set<URI> dirtyFiles, final com.sun.tools.javac.code.Types javacTypes,
-        final TransTypes trans,
-        final com.sun.tools.javac.util.Name.Table nameTable,
-        final ClasspathInfo cpInfo) throws IOException {
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.finest("Dump classes: " + entered);      //NOI18N
-        }
-        for (ClassSymbol classSym : entered) {
-            JavaFileObject source = classSym.sourcefile;            
-            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, trans, nameTable, cpInfo);
-        }
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.finest("Class dump finished.");              //NOI18N
-        }
-    }
-    
-    private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, 
-        final JavaFileObject source, final String currentRootURL, final Set<URI> dirtyFiles,
-        final com.sun.tools.javac.code.Types types,
-        final TransTypes trans,
-        final com.sun.tools.javac.util.Name.Table nameTable,
-        final ClasspathInfo cpInfo) throws IOException {
-        assert source != null;
-        if (classSym.getSimpleName() != nameTable.error && classSym.getEnclosingElement().getSimpleName() != nameTable.error) {
-            URI uri = source.toUri();
-            if (dirtyFiles != null && !uri.toURL().toExternalForm().startsWith(currentRootURL)) {
-                dirtyFiles.add (uri);
-            }
-            final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
-            if (sourceName == null && !(new File (source.toUri()).exists())) {
-                return;
-            }       
-            if (sourceName == null) {
-                throw new AssertionError ("Cannot infer file: " + uri.toString() + " " + cpInfo);   //NOI18N
-            }
-            final StringBuilder classNameBuilder = new StringBuilder ();
-            ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
-            final String binaryName = classNameBuilder.toString();
-            Set<String> rsList = null;
-            if (!sourceName.equals(binaryName)) {            
-                rsList = new HashSet<String>();
-            }
-            final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
-            if ((classSym.asType() instanceof ErrorType) && ((FileObjects.FileBase)fobj).getFile().exists()) {
-                return;
-            }
-            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
-            try {               
-                SymbolDumper.dump(out,types,trans,classSym,null);
-            } finally {
-                out.close();
-            }
-            if (rsList != null) {
-                rsList.add(binaryName);
-            }
-            final List<Symbol> enclosedElements = classSym.getEnclosedElements();
-            for (Symbol ee : enclosedElements) {
-                if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                    dumpClass ((ClassSymbol)ee,fileManager, source, types, trans, nameTable, rsList);
-                }
-            }
-            if (rsList != null) {
-                final int index = sourceName.lastIndexOf('.');              //NOI18N
-                final String pkg = index == -1 ? "" : sourceName.substring(0,index);    //NOI18N
-                final String rsName = (index == -1 ? sourceName : sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
-                javax.tools.FileObject fo = fileManager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, source);
-                assert fo != null;
-                PrintWriter rsOut = new PrintWriter(new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
-                try {
-                    for (String sig : rsList) {
-                        rsOut.println(sig);                    
-                    }
-                } finally {
-                    rsOut.close();
-                }
-            }
-        }
-    }
-            
-    private static void dumpClass (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
-            final TransTypes trans, final com.sun.tools.javac.util.Name.Table nameTable, final Set<? super String> rsList) throws IOException {
-        if (classSym.getSimpleName() != nameTable.error) {
-            final StringBuilder classNameBuilder = new StringBuilder ();
-            ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
-            final String binaryName = classNameBuilder.toString();
-            final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
-            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
-            try {               
-                SymbolDumper.dump(out,types,trans,classSym,null);
-            } finally {
-                out.close();
-            }
-            if (rsList != null) {
-                rsList.add(binaryName);
-            }
-            final List<Symbol> enclosedElements = classSym.getEnclosedElements();
-            for (Symbol ee : enclosedElements) {
-                if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                    dumpClass ((ClassSymbol)ee,fileManager, source, types, trans, nameTable, rsList);
-                }
-            }
-        }
     }
     
     private static Set<String> parseSet(String propertyName, String defaultValue) {
