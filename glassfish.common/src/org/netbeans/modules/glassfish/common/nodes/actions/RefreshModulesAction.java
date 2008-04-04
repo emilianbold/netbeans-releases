@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.util.Collection;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,6 +50,7 @@ import org.openide.util.actions.NodeAction;
 /**
  *
  * @author Michal Mocnak
+ * @author Peter Williams
  */
 public class RefreshModulesAction extends NodeAction {
     
@@ -72,8 +74,13 @@ public class RefreshModulesAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
         for(Node node:nodes) {
-            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
+//            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
+//            if (cookie != null) {
+//                cookie.refresh();
+//            }
+            Collection<? extends RefreshModulesCookie> cookies = 
+                    node.getLookup().lookupAll(RefreshModulesCookie.class);
+            for(RefreshModulesCookie cookie: cookies) {
                 cookie.refresh();
             }
         }
