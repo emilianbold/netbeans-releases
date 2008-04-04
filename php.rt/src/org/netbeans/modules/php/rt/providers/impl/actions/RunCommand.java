@@ -114,7 +114,18 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
     {
         super( project , provider );
     }
-    
+
+    @Override
+    public void setActionFiles(FileObject[] files) {
+	if (getId().equals(RUN)) {
+	    if (getProject() != null) {
+		super.setActionFiles(new FileObject[]{getProject().getProjectDirectory()});
+	    }
+	} else {
+	    super.setActionFiles(files);
+	}	
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
@@ -140,14 +151,14 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
         }
         
         String serverBaseUrl = getServerBaseUrl(host);
-        boolean uploadEnabled = true;
+        boolean uploadEnabled = false;
         
-        if ("defaultHost".equals(host.getId())) {//NOI18N
+        /*if ("defaultHost".equals(host.getId())) {//NOI18N
             String copySrcFiles = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(COPY_SRC_FILES);    
             if (copySrcFiles != null && copySrcFiles.trim().length() > 0) {
                 uploadEnabled = Boolean.parseBoolean(copySrcFiles);
             }            
-        }
+        }*/
         
         if (uploadEnabled && !uploadFiles()){
             return;
@@ -333,7 +344,7 @@ public class RunCommand extends AbstractCommand implements Command, Cloneable {
     private UploadFilesCommand getUploadCommand() {        
         CommandProvider provider = getProvider().getCommandProvider();        
         List<Command> commands = new ArrayList<Command>();
-        commands.addAll(Arrays.asList(provider.getCommands(getProject())));        
+        commands.addAll(Arrays.asList(provider.getEnabledCommands(getProject())));        
         if (provider instanceof AbstractCommandProvider) {
             commands.addAll(Arrays.asList(((AbstractCommandProvider)provider).getAdditionalCommands(getProject())));
         }
