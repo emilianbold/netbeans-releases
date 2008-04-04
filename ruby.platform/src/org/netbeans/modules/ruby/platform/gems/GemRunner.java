@@ -391,7 +391,8 @@ final class GemRunner {
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
-        
+
+        LOGGER.finest("Process finished with exit code: " + exitCode);
         boolean succeeded = exitCode == 0;
         
         return succeeded;
