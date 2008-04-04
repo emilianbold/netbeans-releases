@@ -245,47 +245,55 @@ public abstract class ServerCommand {
                 return false;
             }
             
-            String containerDesc = list.getMainAttributes().getValue("children"); // NOI18N
-            if(containerDesc == null || containerDesc.length() == 0) {
-                // no containers running...
+            String appsList = list.getMainAttributes().getValue("children"); // NOI18N
+            if(appsList == null || appsList.length() == 0) {
+                // no applications deployed...
                 return true;
             }
 
-            String [] containers = containerDesc.split(","); // NOI18N
-            for(String c: containers) {
-                if(skipContainer(c)) {
+            String [] apps = appsList.split("[,;]"); // NOI18N
+            for(String appKey: apps) {
+                if("null".equals(appKey)) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, 
+                            "list-applications contains an invalid result.  " +
+                            "Check server log for possible exceptions.");
                     continue;
                 }
                 
-                // get container attributes
-                Attributes contAttr = list.getAttributes(c);
-                String appDesc = contAttr.getValue("children"); // NOI18N
+                Attributes appAttrs = list.getAttributes(appKey);
+                if(appAttrs == null) {
+                    continue;
+                }
+                
+                String engine = appAttrs.getValue("nb-engine_value");
+                if(skipContainer(engine)) {
+                    continue;
+                }
+                
+                String name = appAttrs.getValue("nb-name_value");
+                if(name == null || name.length() == 0) {
+                    Logger.getLogger("glassfish").log(Level.FINE, "Skipping application with no name..."); // FIXME better log message.
+                    continue;
+                }
+                
+                String path = appAttrs.getValue("nb-location_value");
+                if(path.startsWith("file:")) {
+                    path = path.substring(5);
+                }
 
-                // !PW XXX Do we want/need to show empty containers?
-                if(appDesc == null) {
-                    // no apps currently deployed in this container
-                    continue;
-                }
-                
-                String [] apps = appDesc.split(","); // NOI18N
-                List<AppDesc> appList = new ArrayList<AppDesc>(apps.length);
-                for(String app: apps) {
-                    Attributes appAttr = list.getAttributes(app);
-                    String name = appAttr.getValue("message"); // NOI18N
-                    String path = appAttr.getValue("Source_value"); // NOI18N
-                    if(path.startsWith("file:")) {
-                        path = new String(path.substring(5));
-                    }
-                    appList.add(new AppDesc(name, path));
-                }
-                
+                // Add app to proper list in result map
                 if(appMap == null) {
                     appMap = new HashMap<String, List<AppDesc>>();
                 }
+                List<AppDesc> appList = appMap.get(engine);
+                if(appList == null) {
+                    appList = new ArrayList<AppDesc>();
+                    appMap.put(engine, appList);
+                }
                 
-                appMap.put(c, appList);
+                appList.add(new AppDesc(name, path));
             }
-            
+
             return true;
         }
     
@@ -345,7 +353,7 @@ public abstract class ServerCommand {
                 return true;
             }
 
-            String [] resources = resourceList.split(","); // NOI18N
+            String [] resources = resourceList.split("[,;]"); // NOI18N
             for(String r: resources) {
                 if(skipResource(r)) {
                     continue;
@@ -353,14 +361,18 @@ public abstract class ServerCommand {
 
                 // get container attributes
                 Attributes resourceAttr = list.getAttributes(r);
-                String name = resourceAttr.getValue("message"); // NOI18N
+                if(resourceAttr != null) {
+                    String name = resourceAttr.getValue("message"); // NOI18N
 
-                if(name != null && name.length() > 0) {
-                    if(resList == null) {
-                        resList = new ArrayList<ResourceDesc>();
+                    if(name != null && name.length() > 0) {
+                        if(resList == null) {
+                            resList = new ArrayList<ResourceDesc>();
+                        }
+
+                        resList.add(new ResourceDesc(name));
                     }
-
-                    resList.add(new ResourceDesc(name));
+                } else {
+                    Logger.getLogger("glassfish").log(Level.FINE, "No resource attributes returned for " + r);
                 }
             }
             

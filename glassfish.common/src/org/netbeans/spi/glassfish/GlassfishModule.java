@@ -71,8 +71,8 @@ public interface GlassfishModule {
     public static final String PROFILE_MODE = "profileMode"; // NOI18N
     
     // Contract provider constants (identify the different containers in V3)
-    public static final String WEB_CONTAINER = "web_ContractProvider"; // NOI18N
-    public static final String JRUBY_CONTAINER = "jruby_ContractProvider"; // NOI18N
+    public static final String WEB_CONTAINER = "web"; // NOI18N
+    public static final String JRUBY_CONTAINER = "jruby"; // NOI18N
 
     // Resource types
     public static final String JDBC_RESOURCE = "jdbc-resource"; // NOI18N
