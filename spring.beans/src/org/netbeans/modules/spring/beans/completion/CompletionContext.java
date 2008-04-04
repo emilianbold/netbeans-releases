@@ -237,8 +237,9 @@ public class CompletionContext {
                 if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
                     typedChars = prev.getImage();
                     completionType = CompletionType.ATTRIBUTE;
-                } else if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
-                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
+                } else if (((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID))
+                        && !tokenBoundary) {
                     completionType = CompletionType.ATTRIBUTE;
                 }
                 break;
