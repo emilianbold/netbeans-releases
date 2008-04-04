@@ -120,7 +120,7 @@ made subject to such option by the copyright holder.
                             <arg line="-p {$packageName}"/>
                             <arg line="-d {$databindingName}"/>
                             <arg line="-o ${{build.dir}}/axis2"/>
-                            <classpath path="${{libs.axis2.classpath}}"/>
+                            <classpath path="${{javac.classpath}}"/>
                         </java>
                         <copy toDir="${{src.dir}}" overwrite="true">
                             <fileset dir="${{build.dir}}/axis2/src">
@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
                             <arg line="-p {$packageName}"/>
                             <arg line="-d {$databindingName}"/>
                             <arg line="-o ${{build.dir}}/axis2"/>
-                            <classpath path="${{libs.axis2.classpath}}"/>
+                            <classpath path="${{javac.classpath}}"/>
                         </java>
                         <copy toDir="${{src.dir}}" overwrite="true">
                             <fileset dir="${{build.dir}}/axis2/src">

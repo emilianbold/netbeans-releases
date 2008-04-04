@@ -330,6 +330,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                     jTextArea2.setEditable(true);
                     changeOption("-d", db);
                 }
+                wizardPanel.fireChange();
             } else if (jCheckBox1 == source) {
                 boolean selected = jCheckBox1.isSelected();
                 changeOption("-ssi", Boolean.valueOf(selected)); //NOI18N
