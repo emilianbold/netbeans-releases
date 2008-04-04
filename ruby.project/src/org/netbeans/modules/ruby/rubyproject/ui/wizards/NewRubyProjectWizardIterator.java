@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectGenerator;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -68,7 +69,6 @@ import org.openide.util.NbBundle;
 public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     static final int TYPE_APP = 0;
-    //static final int TYPE_LIB = 1;
     static final int TYPE_EXT = 2;
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
@@ -86,10 +86,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         this.type = type;
     }
         
-//    public static NewRubyProjectWizardIterator library() {
-//        return new NewRubyProjectWizardIterator( TYPE_LIB );
-//    }
-    
     public static NewRubyProjectWizardIterator existing () {
         return new NewRubyProjectWizardIterator( TYPE_EXT );
     }
@@ -149,11 +145,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
             RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass, platform);
             handle.progress(2);
-            // BEGIN SEMPLICE MODIFICATIONS
-            // Update since format is customized
-            //mainClass = (String)wiz.getProperty("mainClass");
-            // END SEMPLICE MODIFICATIONS
-            
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "lib"; //(String)j2seProperties.get (RubyProjectProperties.SRC_DIR);
@@ -166,10 +157,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
                     ErrorManager.getDefault().notify(x);
                 }
             }
-            // if ( type == TYPE_LIB ) {
-                // resultSet.add( h.getProjectDirectory ().getFileObject ("lib") );        //NOI18N 
-                // resultSet.add( h.getProjectDirectory() ); // Only expand the project directory
-            // }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
         handle.progress (3);
@@ -181,9 +168,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             case TYPE_APP:
                 FoldersListSettings.getDefault().setNewApplicationCount(index.intValue());
                 break;
-//            case TYPE_LIB:
-//                FoldersListSettings.getDefault().setNewLibraryCount(index.intValue());
-//                break;
             case TYPE_EXT:
                 FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
                 break;
@@ -220,7 +204,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -246,8 +230,7 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
     
     public String name() {
-        return MessageFormat.format (NbBundle.getMessage(NewRubyProjectWizardIterator.class,"LAB_IteratorName"),
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });                                
+        return MessageFormat.format(NbBundle.getMessage(NewRubyProjectWizardIterator.class, "LAB_IteratorName"), index + 1, panels.length);
     }
     
     public boolean hasNext() {
@@ -276,15 +259,10 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    // helper methods, finds mainclass's FileObject
-    private FileObject getMainClassFO (FileObject sourcesRoot, String mainClass) {
-        // replace '.' with '/'
-//        mainClass = mainClass.replace ('.', '/'); // NOI18N
-//        
-//        // ignore unvalid mainClass ???
-//        
-//        return sourcesRoot.getFileObject (mainClass+ ".java"); // NOI18N
-        return sourcesRoot.getFileObject(mainClass);        
+    // Helper methods, finds mainclass's FileObject
+    private FileObject getMainClassFO(FileObject sourcesRoot, String mainClass) {
+        // currently the project generator always creates main class with .rb extension
+        return sourcesRoot.getFileObject(Util.stripExtension(mainClass, ".rb") + ".rb");
     }
 
     static String getPackageName (String displayName) {
