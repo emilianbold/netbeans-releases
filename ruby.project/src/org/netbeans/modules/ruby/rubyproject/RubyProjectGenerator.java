@@ -105,9 +105,8 @@ public final class RubyProjectGenerator {
         
         createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
         
-        // README
-        FileObject readme = dirFO.createData("README"); // NOI18N
-        writeLines(readme, NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
+        createFileWithContent(dirFO, "README", "TXT_README_Content", name); // NOI18N
+        createFileWithContent(dirFO, "LICENSE", "TXT_LICENSE_Content", name); // NOI18N
         
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
@@ -351,6 +350,12 @@ public final class RubyProjectGenerator {
         }
     }
 
+    private static void createFileWithContent(final FileObject dirFO, final String fileName,
+            final String contentKey, final String prjName) throws IOException {
+        FileObject newFile = dirFO.createData(fileName); // NOI18N
+        writeLines(newFile, NbBundle.getMessage(RubyProjectGenerator.class, contentKey, prjName));
+    }
+
     // TODO: use FileUtils when #118087 is fixed
     private static void writeLines(final FileObject readme, final String... lines) throws FileAlreadyLockedException, IOException {
         PrintWriter readmeW = new PrintWriter(new OutputStreamWriter(readme.getOutputStream(), "UTF-8")); // NOI18N
@@ -359,5 +364,4 @@ public final class RubyProjectGenerator {
         }
         readmeW.close();
     }
-    
 }

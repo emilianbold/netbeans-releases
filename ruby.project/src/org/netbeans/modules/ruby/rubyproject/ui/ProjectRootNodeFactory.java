@@ -241,6 +241,10 @@ public class ProjectRootNodeFactory implements NodeFactory {
                         (thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName));
             }
         }
+
+        public @Override String toString() {
+            return "ProjectRootNodeFactory[fileObject: " + fileObject + ", group: " + group + "]"; // NOI18N
+        }
         
     }
     

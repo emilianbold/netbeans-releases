@@ -72,6 +72,8 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
             assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
 
             assertNotNull("has README", prjDirFO.getFileObject("README"));
+            assertNotNull("has LICENSE", prjDirFO.getFileObject("LICENSE"));
+            
             Project p = ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
             List<?> targets = RakeTargetsAction.getRakeTargets(p);
