@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -49,7 +50,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.classpath.ClassPathSupport;
+import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -76,7 +77,7 @@ public class PhpProjectProperties {
     public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
 
     private final PhpProject project;
-    private final ClassPathSupport classPathSupport;
+    private final IncludePathSupport classPathSupport;
 
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
@@ -90,7 +91,7 @@ public class PhpProjectProperties {
     private DefaultListModel includePathListModel = null;
     private ListCellRenderer includePathListRenderer = null;
 
-    public PhpProjectProperties(PhpProject project, ClassPathSupport classPathSupport) {
+    public PhpProjectProperties(PhpProject project, IncludePathSupport classPathSupport) {
         assert project != null;
         assert classPathSupport != null;
 
@@ -156,7 +157,7 @@ public class PhpProjectProperties {
     public DefaultListModel getIncludePathListModel() {
         if (includePathListModel == null) {
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            includePathListModel = ClassPathUiSupport.createListModel(classPathSupport.itemsIterator(
+            includePathListModel = IncludePathUiSupport.createListModel(classPathSupport.itemsIterator(
                     properties.getProperty(INCLUDE_PATH)));
         }
         return includePathListModel;
@@ -164,7 +165,7 @@ public class PhpProjectProperties {
 
     public ListCellRenderer getIncludePathListRenderer() {
         if (includePathListRenderer == null) {
-            includePathListRenderer = new ClassPathUiSupport.ClassPathListCellRenderer(project.getEvaluator(),
+            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(project.getEvaluator(),
                 project.getProjectDirectory());
         }
         return includePathListRenderer;
@@ -193,7 +194,7 @@ public class PhpProjectProperties {
         // encode include path
         String[] includePath = null;
         if (includePathListModel != null) {
-            includePath = classPathSupport.encodeToStrings(ClassPathUiSupport.getIterator(includePathListModel));
+            includePath = classPathSupport.encodeToStrings(IncludePathUiSupport.getIterator(includePathListModel));
         }
 
         // get properties
