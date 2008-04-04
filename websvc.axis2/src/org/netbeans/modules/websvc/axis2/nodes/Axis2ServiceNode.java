@@ -216,7 +216,7 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             if (service.getGenerateWsdl() != null) {
                 String targets[] = new String[] {"java2wsdl-clean-"+serviceName};
                 AxisUtils.runTargets(prj.getProjectDirectory(), targets);
-            } else if (service.getWsdlUrl() != null) {
+            } else if (service.getJavaGenerator() != null) {
                 String targets[] = new String[] {"wsdl2java-clean-"+serviceName};
                 AxisUtils.runTargets(prj.getProjectDirectory(), targets);
             }

@@ -111,13 +111,13 @@ final class GemRunner {
         return installLocal(gem, rdoc, ri, asyncCompletionTask, parent);
     }
 
-    boolean update(final List<String> gemNames, boolean rdoc, boolean ri) {
-        return update(gemNames, rdoc, ri, null, null);
+    boolean update(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDependencies) {
+        return update(gemNames, rdoc, ri, includeDependencies, null, null);
     }
 
-    boolean updateAsynchronously(List<String> gemNames, boolean rdoc, boolean ri,
+    boolean updateAsynchronously(List<String> gemNames, boolean rdoc, boolean ri, boolean includeDependencies,
             Runnable asyncCompletionTask, Component parent) {
-        return update(gemNames, rdoc, ri, asyncCompletionTask, parent);
+        return update(gemNames, rdoc, ri, includeDependencies, asyncCompletionTask, parent);
     }
 
     boolean uninstall(final List<String> gemNames) {
@@ -183,8 +183,9 @@ final class GemRunner {
         return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent);
     }
 
-    private boolean update(final List<String> gemNames, boolean rdoc, boolean ri,
-            Runnable asyncCompletionTask, Component parent) {
+    private boolean update(final List<String> gemNames, boolean rdoc, boolean ri, 
+            boolean includeDependencies, Runnable asyncCompletionTask, Component parent) {
+
         List<String> argList = new ArrayList<String>();
 
         if (gemNames != null) {
@@ -202,6 +203,10 @@ final class GemRunner {
             argList.add("--no-ri"); // NOI18N
         }
         
+        if (includeDependencies) {
+            argList.add("--include-dependencies"); //NOI18N
+        }
+        
         includeDeps(argList);
 
         String[] args = argList.toArray(new String[argList.size()]);
@@ -217,7 +222,7 @@ final class GemRunner {
             return gemRunner(gemCmd, null, null, args);
         }
     }
-
+    
     private boolean uninstall(final List<String> gemNames, Runnable asyncCompletionTask, Component parent) {
         List<String> argList = new ArrayList<String>();
 

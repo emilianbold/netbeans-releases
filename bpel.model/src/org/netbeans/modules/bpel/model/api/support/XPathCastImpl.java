@@ -71,9 +71,12 @@ public class XPathCastImpl implements XPathCast {
         return xPathExpr;
     }
 
-    public XPathCastImpl(Cast cast) {
+    public XPathCastImpl(Cast cast) throws Exception {
         mCast = cast;
         mCastTo = getType(cast);
+        if (mCastTo == null) {
+            throw new Exception("Unresolved castTo type"); // NOI18N
+        }
         myPathText = cast.getPath();
     }
 

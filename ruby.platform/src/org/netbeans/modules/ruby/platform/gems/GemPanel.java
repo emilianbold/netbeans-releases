@@ -1022,7 +1022,7 @@ public final class GemPanel extends JPanel implements Runnable {
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
         Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
-        gemManager.update(null, this, false, false, true, completionTask);
+        gemManager.update(null, this, false, false, false, true, completionTask);
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
@@ -1042,7 +1042,7 @@ public final class GemPanel extends JPanel implements Runnable {
         }
         if (!gems.isEmpty()) {
             Runnable completionTask = new GemListRefresher(updatedList, TabIndex.INSTALLED);
-            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, true, completionTask);
+            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, false, true, completionTask);
         }
     }//GEN-LAST:event_updateButtonActionPerformed
 

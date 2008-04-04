@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
                         <delete file="${{basedir}}/xml-resources/axis2/META-INF/{$wsname}.wsdl"/>
                     </target>
                 </xsl:if>
-                <xsl:if test="axis2:wsdl-url">
+                <xsl:if test="axis2:java-generator">
                     <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="wsdlUrl" select="axis2:wsdl-url"/>
                     <xsl:variable name="service_class" select="axis2:service-class"/>

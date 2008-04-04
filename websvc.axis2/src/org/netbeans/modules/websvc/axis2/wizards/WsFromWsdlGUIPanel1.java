@@ -274,7 +274,7 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
         if (WizardProperties.BINDING_ADB.equals(databindingName)) return "adb"; //NOI18N
         else if (WizardProperties.BINDING_XML_BEANS.equals(databindingName)) return "xmlbeans"; //NOI18N
         else if (WizardProperties.BINDING_JIBX.equals(databindingName)) return "jibx"; //NOI18N
-        return "adb"; //NOI18N
+        return "axiom"; //NOI18N
     }
     
     boolean isSEI() {
@@ -312,17 +312,27 @@ public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
                     Collection<Port> ports = WSDLUtils.getPortsForService(services, serviceName);
                     setPorts(ports);
                 }
-                changeOption("-sn", (String)serviceName);
+                changeOption("-sn", (String)serviceName); //NOI18N
             } else if (jComboBox2 == source) {
                 String portName = (String)jComboBox2.getSelectedItem();
-                changeOption("-pn", portName);
+                changeOption("-pn", portName); //NOI18N
             } else if (jComboBox3 == source) {
-                String databindingName = (String)jComboBox3.getSelectedItem();
                 String db = getDatabindingName();
-                changeOption("-d", db);
+                if ("axiom".equals(db)) { //NOI18N
+                    tfPackageName.setEditable(false);
+                    jCheckBox1.setEnabled(false);
+                    jTextArea2.setOpaque(false);
+                    jTextArea2.setEditable(false);
+                } else {
+                    tfPackageName.setEditable(true);
+                    jCheckBox1.setEnabled(true);
+                    jTextArea2.setOpaque(true);
+                    jTextArea2.setEditable(true);
+                    changeOption("-d", db);
+                }
             } else if (jCheckBox1 == source) {
                 boolean selected = jCheckBox1.isSelected();
-                changeOption("-ssi", Boolean.valueOf(selected));
+                changeOption("-ssi", Boolean.valueOf(selected)); //NOI18N
                 
             }
         }

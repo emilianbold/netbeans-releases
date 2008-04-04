@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
@@ -237,6 +238,12 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
         protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
         	return new MySelectPanel(model, component);
         }
+
+        @Override
+        protected boolean isShowFromClause() {
+            return false;
+        }
+        
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             super.validateContent(evt);
@@ -249,12 +256,30 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
                 mStatusLbl.setIcon(GuiConstants.ERROR_ICON);
                 throw new PropertyVetoException(msg, evt);
             }
+            
+            //validate for atleast one input and that input should be used
+            //in from clause and expressions are columns from input
         }
         
         public void setValue() {
             super.setValue();
             mAttributePanel.store();
             mSizePanel.store();
+            
+            //store from clause
+            List<OperatorComponent> inputs = mComponent.getInputOperatorList();
+            if(inputs.size() == 1) {
+                OperatorComponent comp = inputs.get(0);
+                String displayName = comp.getDisplayName();
+                if(displayName != null) {
+                    Property fromProp = mComponent.getProperty(FROM_CLAUSE_KEY);
+                    if(fromProp != null) {
+                        mComponent.getModel().startTransaction();
+                        fromProp.setValue(displayName);
+                        mComponent.getModel().endTransaction();
+                    }
+                }
+            }
         }
         
         class SelectIEPProcessOperatorActionListener implements ActionListener {
@@ -331,7 +356,13 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
 		protected boolean isAddEmptyRow() {
 			return false;
 		}
+
+                @Override
+                protected boolean isShowButtons() {
+                    return false;
+                }
 		
+                
 		@Override
 		protected DefaultMoveableRowTableModel createTableModel() {
 			return new MyTableModel();

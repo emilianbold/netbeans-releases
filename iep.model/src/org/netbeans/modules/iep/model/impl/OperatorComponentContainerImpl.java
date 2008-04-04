@@ -8,6 +8,7 @@ import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.InvokeStreamOperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.w3c.dom.Element;
@@ -125,4 +126,22 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
 		
 		return outputOperatorList;
 	}
+
+    public List<InvokeStreamOperatorComponent> getInvokeStreamOperatorComponent() {
+        List<InvokeStreamOperatorComponent> invokeOps = new ArrayList<InvokeStreamOperatorComponent>();
+        List<OperatorComponent> ops =  getAllOperatorComponent();
+        Iterator<OperatorComponent> it = ops.iterator();
+        while(it.hasNext()) {
+            OperatorComponent op = it.next();
+            
+            if(op instanceof InvokeStreamOperatorComponent) {
+                invokeOps.add((InvokeStreamOperatorComponent) op);
+            }
+        }
+        
+        return invokeOps;
+        
+    }
+        
+        
 }

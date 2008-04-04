@@ -911,16 +911,9 @@ class JavaCodeGenerator extends CodeGenerator {
         if (EventQueue.isDispatchThread()) {
             return shouldExpandInitComponentsInAWT(initComponentsOffset);
         } else {
-            final boolean[] expand = new boolean[1];
-            try {
-                EventQueue.invokeAndWait(new Runnable() {
-                    public void run() {
-                        expand[0] = shouldExpandInitComponentsInAWT(initComponentsOffset);
-                    }
-                });
-            } catch (InterruptedException iex) {
-            } catch (InvocationTargetException itex) {}
-            return expand[0];
+            // We cannot use EQ.invokeAndWait here, see issue 131841
+            // Hence, using a simple fallback
+            return false;
         }
     }
 

@@ -64,7 +64,7 @@ public class __NAME__ {
                     "    <div id='map' style='width: 500px; height: 300px'></div>\n"+
                     getMapScript(address, zoom, code.getLatitude(), code.getLongitude(), key)+
                     "    <script type='text/javascript'>\n"+
-                    "       loadMap();\n"+
+                    "       loadScript();\n"+
                     "    </script>\n";
             } else {
                 mapRep = 
@@ -76,7 +76,7 @@ public class __NAME__ {
                     "    <title>Google Maps JavaScript API Example</title>\n"+
                     getMapScript(address, zoom, code.getLatitude(), code.getLongitude(), key)+
                     "  </head>\n"+
-                    "  <body onload='loadMap()' onunload='GUnload()'>\n"+
+                    "  <body onload='loadScript()' onunload='GUnload()'>\n"+
                     "    <div id='map' style='width: 500px; height: 300px'></div>\n"+
                     "  </body>\n"+
                     "</html>";
@@ -90,8 +90,6 @@ public class __NAME__ {
     public static String getMapScript(String address, Integer zoom, 
             double latitude, double longitude, String key) {
         String mapRep = 
-                    "    <script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key="+key+"'\n"+
-                    "      type='text/javascript'></script>\n"+
                     "    <script type='text/javascript'>\n"+
                     "    //<![CDATA[\n"+
                     "    function loadMap() {\n"+
@@ -112,6 +110,12 @@ public class __NAME__ {
                     "         marker.openInfoWindowHtml(\"" + address + "\");\n"+
                     "      });\n"+
                     "      return marker;\n"+
+                    "    }\n"+
+                    "    function loadScript() {\n"+
+                    "      var script = document.createElement(\"script\");\n"+
+                    "      script.setAttribute(\"src\", \"http://maps.google.com/maps?file=api&v=2.x&key="+key+"&async=2&callback=loadMap\");\n"+
+                    "      script.setAttribute(\"type\", \"text/javascript\");\n"+
+                    "      document.documentElement.firstChild.appendChild(script);\n"+
                     "    }\n"+
                     "    //]]>\n"+
                     "    </script>\n";
