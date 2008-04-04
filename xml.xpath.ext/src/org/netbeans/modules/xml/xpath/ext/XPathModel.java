@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.CachingSchemaSearchVisitor;
 import org.netbeans.modules.xml.xpath.ext.spi.ExtensionFunctionResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.xml.xpath.ext.spi.VariableResolver;
@@ -163,4 +164,13 @@ public interface XPathModel extends XPathSchemaContextHolder {
     void setXPathCastResolver(XPathCastResolver xpathCastResolver);
         
     SchemaComponent getLastSchemaComponent();
+    
+    /**
+     * It is intended for performance optimisation. 
+     * The assigned visitor caching the schema models. 
+     * And it allows resolving inter schema references much faster.
+     *  
+     * @param visitor
+     */
+    void setCachingSchemaSearchVisitor(CachingSchemaSearchVisitor visitor);
 }
