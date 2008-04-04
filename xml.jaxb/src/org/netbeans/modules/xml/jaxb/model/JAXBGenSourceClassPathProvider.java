@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.xml.jaxb.model;
 
+import java.io.File;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -42,19 +43,22 @@ import org.openide.filesystems.FileUtil;
  * @author gpatil
  */
 public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
-    private static final String JAXB_GEN_SRC_ROOT= 
-            "build/generated/addons/jaxb" ;//NOI18N
-    
+    private static final String JAXB_GEN_SRC_ROOT = "/generated/addons/jaxb"; //NOI18N
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP;
-    
+    private String buildDir = "build" ; //NOI18N
+    private String jaxbSrcGenDir = buildDir + JAXB_GEN_SRC_ROOT; 
     JAXBGenSourceClassPathProvider(Project project) {
         this.project = project;
+        //TODO get/update buildDir, JAXB_SRC_GEN_DIR
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
+        project.getProjectDirectory().refresh(true);
+                
         FileObject clientArtifactsFolder = 
-                project.getProjectDirectory().getFileObject(JAXB_GEN_SRC_ROOT);
+                project.getProjectDirectory().getFileObject(jaxbSrcGenDir);
+        
         if (clientArtifactsFolder != null && 
                 (file.equals(clientArtifactsFolder) || FileUtil.isParentOf(
                 clientArtifactsFolder, file))) {
