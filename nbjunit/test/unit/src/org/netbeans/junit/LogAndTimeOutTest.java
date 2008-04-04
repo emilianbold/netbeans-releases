@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,46 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.junit;
 
-package org.netbeans.modules.defaults;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.TestResult;
 
-import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 
 /**
- * 
- * @author S.Aubrecht
+ * @author Jaroslav Tulach
  */
-public class ShortcutsBuilder {
+public class LogAndTimeOutTest extends NbTestCase {
+    public LogAndTimeOutTest(String name) {
+        super(name);
+    }
+    
+    
+    public void testLoggingAndTimeOut() throws Exception {
+        TestResult result = new TestResult();
+        
+        T t = new T("testLoadFromSubdirTheSFS");
+        t.run(result);
+        
+        assertEquals("No error", 0, result.errorCount());
+        assertEquals("One failure", 1, result.failureCount());
+        
+        Object o = result.failures().nextElement();
+        
+        String output = o.toString();
+        if (output.indexOf("LogAndTimeOutTest$T") == -1) {
+            fail("There should be a stacktrace:\n" + output);
+        }
+        if (output.indexOf("Adding 5") == -1) {
+            fail("There should be a 'Adding 5' message:\n" + output);
+        }
+    }
+    
+    
+    public static class T extends NbTestCase {
+        
+        
+        public T(String name) {
+            super(name);
+        }
 
-    private static final boolean isMac = Utilities.isMac();
-    
-    public static String buildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
-        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
+        @Override
+        protected Level logLevel() {
+            return Level.FINE;
         }
-    }
-    
-    public static String rebuildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
-        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
+
+        @Override
+        protected int timeOut() {
+            return 1000;
         }
-    }
-    
-    public static String compileSingle( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
-        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
+
+        public void testLoadFromSubdirTheSFS() throws Exception {
+            Logger log = Logger.getLogger(T.class.getName());
+            for (int i = 0; i < 100; i++) {
+                log.fine("Adding " + i);
+                Thread.sleep(100);
+            }
         }
-    }
-    
+    } // end of T
     
 }
