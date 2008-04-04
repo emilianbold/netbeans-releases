@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.gsf.api.Indexer;
@@ -52,7 +51,6 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
-import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -129,7 +127,7 @@ public class PHPIndexer implements Indexer {
         // Since the mime resolver for PHP is simple -- it's just based on the file extension,
         // we perform the same check here:
         //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-        if (file != null && file.getFileObject() != null && "php".equals(file.getExtension())) { // NOI18N
+        if ("php".equals(file.getExtension())) { // NOI18N
             return true;
         }
         
@@ -160,7 +158,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.2.4"; // NOI18N
+        return "0.2.5"; // NOI18N
     }
 
     public String getIndexerName() {
