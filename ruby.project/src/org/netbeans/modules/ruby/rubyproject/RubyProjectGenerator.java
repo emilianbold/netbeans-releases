@@ -90,7 +90,7 @@ public final class RubyProjectGenerator {
      */
     public static RakeProjectHelper createProject(File dir, String name, String mainClass, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(dir);
-        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false, platform); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, platform); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
@@ -118,8 +118,7 @@ public final class RubyProjectGenerator {
             final File[] sourceFolders, final File[] testFolders, final RubyPlatform platform) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
-        // this constructor creates only java application type
-        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false, platform);
+        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, platform);
         final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -197,7 +196,7 @@ public final class RubyProjectGenerator {
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, String name,
-            String srcRoot, String testRoot, String mainClass, boolean isLibrary,
+            String srcRoot, String testRoot, String mainClass,
             final RubyPlatform platform) throws IOException {
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -205,9 +204,6 @@ public final class RubyProjectGenerator {
         Element nameEl = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-//        Element minant = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-//        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
-//        data.appendChild(minant);
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
@@ -228,78 +224,9 @@ public final class RubyProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());        
-//        ep.setProperty("dist.dir", "dist"); // NOI18N
-//        ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-//        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
-//        ep.setProperty("javac.classpath", new String[0]); // NOI18N
-//        ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
-//        ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
-//        ep.setProperty("run.classpath", new String[] { // NOI18N
-//            "${javac.classpath}:", // NOI18N
-//            "${build.classes.dir}", // NOI18N
-//        });
-//        ep.setProperty("debug.classpath", new String[] { // NOI18N
-//            "${run.classpath}", // NOI18N
-//        });        
-//        ep.setProperty("jar.compress", "false"); // NOI18N
-        if (!isLibrary) {
-            ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
-        }
-        
-//        ep.setProperty("javac.compilerargs", ""); // NOI18N
-//        ep.setComment("javac.compilerargs", new String[] {
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
-//        }, false);
-//        SpecificationVersion sourceLevel = getDefaultSourceLevel();
-//        ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
-//        ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
-//        ep.setProperty("javac.deprecation", "false"); // NOI18N
-//        ep.setProperty("javac.test.classpath", new String[] { // NOI18N
-//            "${javac.classpath}:", // NOI18N
-//            "${build.classes.dir}:", // NOI18N
-//            "${libs.junit.classpath}", // NOI18N
-//        });
-//        ep.setProperty("run.test.classpath", new String[] { // NOI18N
-//            "${javac.test.classpath}:", // NOI18N
-//            "${build.test.classes.dir}", // NOI18N
-//        });
-//        ep.setProperty("debug.test.classpath", new String[] { // NOI18N
-//            "${run.test.classpath}", // NOI18N
-//        });
-//
-//        ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
-//        ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
-//        
-//        ep.setProperty("build.dir", "build"); // NOI18N
-//        ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
-//        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
-//        ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
-//        ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
-//        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
-//        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
+        ep.setProperty(RubyProjectProperties.SOURCE_ENCODING, enc.name());
+        ep.setProperty(RubyProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass); // NOI18N
         RubyProjectProperties.storePlatform(ep, platform);
-
-//
-//        ep.setProperty("run.jvmargs", ""); // NOI18N
-//        ep.setComment("run.jvmargs", new String[] {
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
-//            "# " + NbBundle.getMessage(RubyProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
-//        }, false);
-
-//        ep.setProperty(RubyProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_USE, "true"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
-//        ep.setProperty(RubyProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
-        
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
