@@ -97,6 +97,8 @@ public final class ClasspathInfo {
     private final boolean ignoreExcludes;
     private final JavaFileFilterImplementation filter;
     private JavaFileManager fileManager;
+    //@GuardedBy (this)
+    private OutputFileManager outFileManager;
     private EventListenerList listenerList =  null;
     private ClassIndex usagesQuery;
     
@@ -262,10 +264,15 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (backgroundCompilation ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath) : null
+                hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath) : null
             );
         }
         return this.fileManager;
+    }
+    
+    synchronized OutputFileManager getOutputFileManager () {        
+        getFileManager();   //Side effect: initializes outFileManager
+        return this.outFileManager;
     }
     
     // Private methods ---------------------------------------------------------

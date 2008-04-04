@@ -186,14 +186,14 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
 
     /** Set breakpoint.
      * - open index.jsp
-     * - select <h2> in editor
+     * - select <h1> in editor
      * - toggle breakpoint at selected line
      */
     public void testSetBreakpoint() throws Exception {
         new OpenAction().performAPI(new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "index.jsp")); // NOI18N
         // find sample file in Editor
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
-        Utils.setBreakpoint(eo, "<h2>"); // NOI18N
+        Utils.setBreakpoint(eo, "<h1>"); // NOI18N
     }
 
     /** Debug project.
@@ -388,7 +388,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new OpenAction().performAPI(pageNode);
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
         final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
-        new DebugAction().perform(pageNode);
+        // "Debug File"
+        new Action(null, new DebugAction().getPopupPath()).perform(pageNode);
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N
