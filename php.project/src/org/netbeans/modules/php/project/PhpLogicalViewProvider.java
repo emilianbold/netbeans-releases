@@ -888,7 +888,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider, AntProjectListener 
         if (provider != null) {
             CommandProvider commandProvider = provider.getCommandProvider();
             
-            commands = commandProvider.getCommands(getProject());
+            commands = commandProvider.getEnabledCommands(getProject());
         }
         if (commands == null){
             commands = new Command[]{};
