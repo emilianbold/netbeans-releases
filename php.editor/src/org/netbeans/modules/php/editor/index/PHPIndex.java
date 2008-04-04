@@ -335,7 +335,9 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     
                     for (String incl : signature.split(";")){
-                        includes.add(incl);
+                        if (incl.length() > 0) {
+                            includes.add(incl);
+                        }
                     }
                 }
             }
@@ -350,7 +352,7 @@ public class PHPIndex {
 
     private Collection<String>getAllIncludes(String fileURL, Collection<String> alreadyProcessed){
         Collection<String> includes = new TreeSet<String>();
-        includes.add(fileURL);
+        includes.add(fileURL.substring("file:".length())); //NOI18N
         includes.addAll(alreadyProcessed);
         Collection<String> directIncludes = getDirectIncludes(fileURL);
         
