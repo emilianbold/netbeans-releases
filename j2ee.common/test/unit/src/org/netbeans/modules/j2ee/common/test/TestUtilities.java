@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,46 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.j2ee.common.test;
 
-package org.netbeans.modules.defaults;
-
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
+import org.openide.filesystems.FileUtil;
 
 /**
- * 
- * @author S.Aubrecht
+ *
+ * @author Andrei Badea
  */
-public class ShortcutsBuilder {
+public class TestUtilities {
 
-    private static final boolean isMac = Utilities.isMac();
-    
-    public static String buildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"; //NOI18N
-        if( "F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
+    private TestUtilities() {
+    }
+
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
+    }
+
+    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
+        int s = (int)FileUtil.toFile(fo).length();
+        byte[] data = new byte[s];
+        InputStream stream = fo.getInputStream();
+        try {
+            int len = stream.read(data);
+            if (len != s) {
+                throw new EOFException("truncated file");
+            }
+            return new String (data);
+        } finally {
+            stream.close();
         }
     }
     
-    public static String rebuildMainProject( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"; //NOI18N
-        if( "S-F11.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
+    /**
+     * Creates a cache folder for the Java infrastructure.
+     * 
+     * @param folder the parent folder for the cache folder, 
+     * typically the working dir.
+     */ 
+    public static void setCacheFolder(File folder) throws Exception {
+        File cacheFolder = new File(folder,"cache");
+        FileUtil.createFolder(cacheFolder);
+        IndexUtil.setCacheFolder(cacheFolder);
     }
-    
-    public static String compileSingle( FileObject origFile ) {
-        String actionPath = "Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"; //NOI18N
-        if( "F9.shadow".equals(origFile.getName()) ) { //NOI18N
-            return isMac ? "" : actionPath; //NOI18N
-        } else {
-            return isMac ? actionPath : ""; //NOI18N
-        }
-    }
-    
     
 }

@@ -39,31 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.source;
+package org.netbeans.junit;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.TestResult;
+
 
 /**
- * A ClassPathProvider impl for tests. 
- * 
- * @author Erno Mononen
+ * @author Jaroslav Tulach
  */
-public class ClassPathProviderImpl implements ClassPathProvider {
-    
-    private final ClassPath classPath;
-
-    public ClassPathProviderImpl(FileObject[] sources) {
-        this.classPath = ClassPathSupport.createClassPath(sources);
+public class LogAndTimeOutTest extends NbTestCase {
+    public LogAndTimeOutTest(String name) {
+        super(name);
     }
     
-    public ClassPath findClassPath(FileObject file, String type) {
-        if (ClassPath.SOURCE.equals(type)){
-            return classPath;
+    
+    public void testLoggingAndTimeOut() throws Exception {
+        TestResult result = new TestResult();
+        
+        T t = new T("testLoadFromSubdirTheSFS");
+        t.run(result);
+        
+        assertEquals("No error", 0, result.errorCount());
+        assertEquals("One failure", 1, result.failureCount());
+        
+        Object o = result.failures().nextElement();
+        
+        String output = o.toString();
+        if (output.indexOf("LogAndTimeOutTest$T") == -1) {
+            fail("There should be a stacktrace:\n" + output);
         }
-        return null;
+        if (output.indexOf("Adding 5") == -1) {
+            fail("There should be a 'Adding 5' message:\n" + output);
+        }
     }
+    
+    
+    public static class T extends NbTestCase {
+        
+        
+        public T(String name) {
+            super(name);
+        }
+
+        @Override
+        protected Level logLevel() {
+            return Level.FINE;
+        }
+
+        @Override
+        protected int timeOut() {
+            return 1000;
+        }
+
+        public void testLoadFromSubdirTheSFS() throws Exception {
+            Logger log = Logger.getLogger(T.class.getName());
+            for (int i = 0; i < 100; i++) {
+                log.fine("Adding " + i);
+                Thread.sleep(100);
+            }
+        }
+    } // end of T
     
 }
