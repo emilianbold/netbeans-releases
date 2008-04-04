@@ -81,6 +81,7 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 
 /**
@@ -94,22 +95,16 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private SourceCategory category = SourceCategory.NONE;
     private final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
     GrailsProject project;
-    
     private static DataObject[] templates;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
         
         this.project = project;
+
         String pathName = g.getName();
+        String dirName = getDirName(g);
 
-        // Source Groups always use a slash as file-separator, no matter
-        // whether we are dealing with unix or windows:
-        int lastSlash = pathName.lastIndexOf("/");
-        String dirName = pathName.substring(lastSlash + 1);
-
-        // LOG.log(Level.WARNING, "dirName: " + dirName);
-        
         if (dirName.startsWith("conf")) {
             category = SourceCategory.CONFIGURATION;
         } else if (dirName.startsWith("controllers")) {
@@ -132,16 +127,32 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }
 
+    static String getDirName(SourceGroup g){
+        // Source Groups always use a slash as file-separator, no matter
+        // whether we are dealing with unix or windows:
+        
+        String pathName = g.getName();
+        int lastSlash = pathName.lastIndexOf("/");
+        String dirName = pathName.substring(lastSlash + 1);
+        return dirName;
+    }
+    
+    
     private TreeRootNode(DataFolder folder, SourceGroup g) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g);
     }
 
     private TreeRootNode(Node originalNode, SourceGroup g) {
         super(originalNode, new PackageFilterChildren(originalNode),
-                new ProxyLookup(
-                originalNode.getLookup(),
-                Lookups.singleton(new PathFinder(g)) // no need for explicit search info
-                ));
+//                new ProxyLookup(
+//                originalNode.getLookup(),
+                Lookups.fixed(  new PathFinder(g),  // no need for explicit search info
+                                // Adding TemplatesImpl to Node's lookup to narrow-down
+                                // number of displayed templates with the NewFile action.
+                                // see # 122942
+                                new TemplatesImpl(g)
+                                ) 
+                );
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
@@ -212,7 +223,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 // result.add(new NewMessageAction());
                 // result.add(new org.openide.actions.NewTemplateAction());
                 
-                getTemplates();
+                // getTemplates();
               
                 result.add(org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction());
                 break;

@@ -41,30 +41,57 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.api.project.SourceGroup;
 
 /**
  *
  * @author schmidtm
  */
-public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
+public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplates  {
 
+    SourceGroup g;
+    String dirName;
+    
+    // this constructor is to keep track which Node displays
+    // which SourceGroup to provide different "New File..." templates. 
+    
+    public TemplatesImpl(SourceGroup g) {
+        this.g = g;
+        this.dirName =  TreeRootNode.getDirName(g);
+    }
+    
     private static final String[] PRIVILEGED_NAMES = new String[] {
-        "Templates/Other/properties.properties",
-        "Templates/Other/properties"
+        "Templates/Other/Properties File",
+        "Templates/Other/properties.properties"
     };
 
+    public String[] getPrivilegedTemplates() {
+        
+        return PRIVILEGED_NAMES;
+    }
+    
     // List of primarily supported templates categories
+    private static final String[] ALL_TYPES = new String[] { 
+        "java-classes",         
+        "java-main-class",      
+        "java-forms",           
+        "gui-java-application", 
+        "java-beans",           
+        "oasis-XML-catalogs",   
+        "XML",                  
+        "ant-script",           
+        "ant-task",             
+        "junit",                
+        "simple-files"          
+    };
+    
+    
     private static final String[] TYPES = new String[] { 
         "simple-files"
         };
-
-    public String[] getPrivilegedTemplates() {
-        return PRIVILEGED_NAMES;
-    }
-
     
     public String[] getRecommendedTypes() {
-        return TYPES;
+        return ALL_TYPES;
     }
     
     
