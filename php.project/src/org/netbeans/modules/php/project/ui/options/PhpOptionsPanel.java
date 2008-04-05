@@ -39,18 +39,21 @@
 
 package org.netbeans.modules.php.project.ui.options;
 
-import java.awt.Color;
 import java.io.File;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,11 +61,11 @@ import org.openide.util.NbBundle;
  */
 public class PhpOptionsPanel extends JPanel {
     private static final long serialVersionUID = 1092136352492432078L;
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public PhpOptionsPanel() {
         initComponents();
-        errorLabel.setForeground(Color.RED);
 
         initPhpGlobalIncludePath();
 
@@ -149,6 +152,14 @@ public class PhpOptionsPanel extends JPanel {
     }
 
     public void setError(String message) {
+        errorLabel.setText(" "); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorLabel.setText(message);
+    }
+
+    public void setWarning(String message) {
+        errorLabel.setText(" "); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
         errorLabel.setText(message);
     }
 
@@ -390,7 +401,12 @@ public class PhpOptionsPanel extends JPanel {
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        // TODO add your handling code here:
+        SelectPhpInterpreterPanel panel = new SelectPhpInterpreterPanel();
+        if (panel.open()) {
+            if (panel.getSelectedPhpInterpreter() != null) {
+                phpInterpreterTextField.setText(panel.getSelectedPhpInterpreter());
+            }
+        }
     }//GEN-LAST:event_searchButtonActionPerformed
 
 
