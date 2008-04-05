@@ -94,6 +94,7 @@ import org.netbeans.modules.web.jspparser.ContextUtil;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
 import org.netbeans.modules.web.jspparser.ParserServletContext;
 import org.netbeans.modules.web.jspparser.WebAppParseProxy;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
@@ -533,8 +534,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         while (ex instanceof JasperException) {
             last = ex;
             ex = ((JasperException) ex).getRootCause();
-            if (ex != null && last.getCause() == null) {
-                last.initCause(ex);
+            if (ex != null) {
+                ErrorManager.getDefault().annotate(last, ex);
             }
         }
 
