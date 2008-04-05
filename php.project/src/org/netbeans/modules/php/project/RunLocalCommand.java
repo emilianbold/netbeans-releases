@@ -47,6 +47,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.options.CommandLinePreferences;
 import org.netbeans.modules.php.project.options.ProjectActionsPreferences;
 import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
@@ -361,7 +362,7 @@ public class RunLocalCommand extends AbstractCommand implements Cancellable{
             }
         });
         if (path == null) {
-            path = CommandLinePreferences.getInstance().getPhpInterpreter();
+            path = PhpOptions.getInstance().getPhpInterpreter();
         }
         if (path != null){
             path = path.trim();
