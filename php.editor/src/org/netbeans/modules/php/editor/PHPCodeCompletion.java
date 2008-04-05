@@ -98,6 +98,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -489,8 +490,7 @@ public class PHPCodeCompletion implements Completable {
             if (phpDoc.length() > 0){
                 builder.append(phpDoc);
             } else {
-                //TODO localize me
-                builder.append("PHPDoc not found");
+                builder.append(NbBundle.getMessage(PHPCodeCompletion.class, "PHPDocNotFound"));
             }
 
             return builder.toString();
