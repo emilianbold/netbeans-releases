@@ -213,6 +213,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         configureSources(helper, properties);
         configureEncoding(properties);
         configureCopyFiles(properties);
+        configureIncludePath(properties);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -262,6 +263,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         properties.setProperty(PhpProjectProperties.COPY_SRC_FILES, copyFilesString);
         properties.setProperty(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
+    }
+
+    private void configureIncludePath(EditableProperties properties) {
+        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
     private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
