@@ -568,6 +568,11 @@ made subject to such option by the copyright holder.
         Set this property to <q>true</q> to workaround the bug #50423 which
         appears on some linuxes on JDK 1.5.
    </api>
+   <api name="netbeans.close.no.exit" category="friend" group="property" type="export">
+        Set this property to <q>true</q> if you do want to cleanup the module system,
+        but not call System.exit at the end. Used from <code>NbModuleSuite</code> from
+        nbjunit library.
+   </api>
   </p>
         <api name="java.net.useSystemProxies" category="private" group="property" type="import">
             Get this property to determine when use JDK's <code>java.net.ProxySelector</code> or core's 

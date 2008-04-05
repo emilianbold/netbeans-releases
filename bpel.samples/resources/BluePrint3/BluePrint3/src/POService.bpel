@@ -34,6 +34,8 @@
          xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:pos="http://manufacturing.org/wsdl/purchase/bp3"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:invs="http://manufacturing.org/wsdl/inventory/bp3"
          xmlns:po="http://manufacturing.org/xsd/purchase">
     

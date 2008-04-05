@@ -52,10 +52,10 @@ public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
     }            
 
     public void testCreateNodes() throws Exception {
-        Project p = createTestProject("rubyprj", "README");
+        Project p = createTestProject("rubyprj");
         ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
         NodeList result = instance.createNodes(p);
-        assertSame("three children (lib, test, README)", 3, result.keys().size());
+        assertSame("four children (lib, test, README, LICENSE), but was: " + result.keys(), 4, result.keys().size());
     }
 
 }

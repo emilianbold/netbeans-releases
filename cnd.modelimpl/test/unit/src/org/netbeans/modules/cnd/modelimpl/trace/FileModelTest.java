@@ -64,6 +64,11 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testTemplateFunctionInTemplateClass() throws Exception {
+        // IZ#
+        performTest("template_fun_in_template_class.cc");
+    }
+    
     public void testIncludeMacroExpansion() throws Exception {
         // IZ#124635
         performTest("include_macro_expanding.cc");

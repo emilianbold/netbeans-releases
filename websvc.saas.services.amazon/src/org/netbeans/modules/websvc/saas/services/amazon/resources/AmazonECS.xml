@@ -61,7 +61,7 @@
         <group name="Amazon">
         </group>
 
-        <authentication>
+        <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="AWSAccessKeyId"/>
         </authentication>
 

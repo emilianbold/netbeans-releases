@@ -728,7 +728,7 @@ public final class RequestProcessor {
 
                     if (lastThread != Thread.currentThread()) {
                         if (loggable) {
-                            em.fine("    ## waiting for it to be finished"); // NOI18N
+                            em.fine("    ## waiting for it to be finished: " + lastThread + " now: " + Thread.currentThread()); // NOI18N
                         }
                         super.waitFinished();
                     }
