@@ -77,7 +77,7 @@ public class PhpProjectProperties {
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
 
     private final PhpProject project;
-    private final IncludePathSupport classPathSupport;
+    private final IncludePathSupport includePathSupport;
 
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
@@ -91,12 +91,12 @@ public class PhpProjectProperties {
     private DefaultListModel includePathListModel = null;
     private ListCellRenderer includePathListRenderer = null;
 
-    public PhpProjectProperties(PhpProject project, IncludePathSupport classPathSupport) {
+    public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport) {
         assert project != null;
-        assert classPathSupport != null;
+        assert includePathSupport != null;
 
         this.project = project;
-        this.classPathSupport = classPathSupport;
+        this.includePathSupport = includePathSupport;
     }
 
     public String getCopySrcFiles() {
@@ -157,7 +157,7 @@ public class PhpProjectProperties {
     public DefaultListModel getIncludePathListModel() {
         if (includePathListModel == null) {
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            includePathListModel = IncludePathUiSupport.createListModel(classPathSupport.itemsIterator(
+            includePathListModel = IncludePathUiSupport.createListModel(includePathSupport.itemsIterator(
                     properties.getProperty(INCLUDE_PATH)));
         }
         return includePathListModel;
@@ -194,7 +194,7 @@ public class PhpProjectProperties {
         // encode include path
         String[] includePath = null;
         if (includePathListModel != null) {
-            includePath = classPathSupport.encodeToStrings(IncludePathUiSupport.getIterator(includePathListModel));
+            includePath = includePathSupport.encodeToStrings(IncludePathUiSupport.getIterator(includePathListModel));
         }
 
         // get properties

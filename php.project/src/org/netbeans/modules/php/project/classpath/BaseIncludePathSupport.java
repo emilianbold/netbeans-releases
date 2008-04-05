@@ -104,7 +104,7 @@ public abstract class BaseIncludePathSupport {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(200);
-            sb.append("ClassPathSupport.Item[ type: ");
+            sb.append("BaseIncludePathSupport.Item[ type: ");
             sb.append(type.name());
             sb.append(", filePath: ");
             sb.append(filePath);

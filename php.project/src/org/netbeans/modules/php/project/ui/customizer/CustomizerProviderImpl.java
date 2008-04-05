@@ -82,9 +82,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         }
-        IncludePathSupport classPathSupport = new IncludePathSupport(project.getEvaluator(), project.getRefHelper(),
+        IncludePathSupport includePathSupport = new IncludePathSupport(project.getEvaluator(), project.getRefHelper(),
                 project.getHelper());
-        PhpProjectProperties uiProperties = new PhpProjectProperties(project, classPathSupport);
+        PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
         Lookup context = Lookups.fixed(project, uiProperties);
 
         OptionListener optionListener = new OptionListener(project);
