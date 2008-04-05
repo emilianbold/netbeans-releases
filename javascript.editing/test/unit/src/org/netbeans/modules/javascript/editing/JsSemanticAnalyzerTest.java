@@ -163,11 +163,11 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/tryblocks.js");
     }
 
-//    public void testSemanticPrototype() throws Exception {
-//        checkSemantic("testfiles/prototype.js");
-//    }
-//
-//    public void testSemanticPrototypeNew() throws Exception {
-//        checkSemantic("testfiles/prototype-new.js");
-//    }
+    public void testSemanticPrototype() throws Exception {
+        checkSemantic("testfiles/prototype.js");
+    }
+
+    public void testSemanticPrototypeNew() throws Exception {
+        checkSemantic("testfiles/prototype-new.js");
+    }
 }
