@@ -223,8 +223,10 @@ public class MercurialAnnotator extends VCSAnnotator {
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
-                folderToScan = parentFile;
-                reScheduleScan(1000);
+                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
+                    folderToScan = parentFile;
+                    reScheduleScan(1000);
+                }
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
             int status = info.getStatus();
@@ -656,8 +658,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     private void reScheduleScan(int delayMillis) {
-        File dirToScan = dirsToScan.peek();
-        if (!folderToScan.equals(dirToScan)) {
+        if (!dirsToScan.contains(folderToScan)) {
             if (!dirsToScan.offer(folderToScan)) {
                 Mercurial.LOG.log(Level.FINE, "reScheduleScan failed to add to dirsToScan queue: {0} ", folderToScan);
             }

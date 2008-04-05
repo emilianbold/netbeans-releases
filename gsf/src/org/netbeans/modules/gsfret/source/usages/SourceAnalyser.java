@@ -52,7 +52,6 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -110,18 +109,16 @@ public class SourceAnalyser implements IndexDocumentFactory {
         index.store(fileUrl, documents);
     }
     
-    public void delete (final ParserFile parserFile) throws IOException {
+    public void delete (final ParserFile parserFile, Language language) throws IOException {
         if (!this.index.isValid(false)) {
             return;
         }
         //this.toDelete.add(className);
 
-        for (Language language : LanguageRegistry.getInstance()) {
-            Indexer indexer = language.getIndexer();
-            if (indexer != null && indexer.isIndexable(parserFile)) {
-                String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
-                index.store(fileUrl, null);
-            }
+        Indexer indexer = language.getIndexer();
+        if (indexer != null && indexer.isIndexable(parserFile)) {
+            String fileUrl = indexer.getPersistentUrl(parserFile.getFile());
+            index.store(fileUrl, null);
         }
     }
 

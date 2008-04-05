@@ -59,9 +59,10 @@ public class XPathCastResolverImpl implements XPathCastResolver {
         myXPathCasts = new ArrayList<XPathCast>();
 
         for (Cast cast : casts) {
-            try {
-                myXPathCasts.add(new XPathCastImpl(cast));
-            } catch(Throwable ex) {
+            XPathCastImpl xPathCast = XPathCastImpl.convert(cast);
+            if (xPathCast != null) {
+                myXPathCasts.add(xPathCast);
+            } else {
                 String msg = "An error while processing the cast: path=\"" + 
                         cast.getPath() + "\" castTo=\"" + 
                         cast.getType() + "\"";

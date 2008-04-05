@@ -57,6 +57,7 @@ public class JsParserTest extends JsTestBase {
     }
 
     private void checkParseTree(String file, String caretLine, int nodeType) throws Exception {
+        JsParser.runtimeException = null;
         CompilationInfo info = getInfo(file);
         
         String text = info.getText();
@@ -90,8 +91,17 @@ public class JsParserTest extends JsTestBase {
             leafName = leafName.substring(leafName.lastIndexOf('.')+1);
             assertEquals(Token.fullName(nodeType) + " != " + Token.fullName(closest.getType()), nodeType, closest.getType());
         }
+        assertNull(JsParser.runtimeException);
     }
+
+    private void checkNoParseAbort(String file) throws Exception {
+        JsParser.runtimeException = null;
+        CompilationInfo info = getInfo(file);
+        Node root = AstUtilities.getRoot(info);
+        assertNull(JsParser.runtimeException);
         
+    }
+    
     public void testPartial1() throws Exception {
         checkParseTree("testfiles/broken1.js", "\"str\".^", Token.GETPROP);
     }
@@ -130,5 +140,13 @@ public class JsParserTest extends JsTestBase {
 
     public void testPartial10() throws Exception {
         checkParseTree("testfiles/broken10.js", "xy^", Token.OBJECTLIT);
+    }
+
+    public void testPartial11() throws Exception {
+        checkNoParseAbort("testfiles/broken11.js");
+    }
+
+    public void testPartial12() throws Exception {
+        checkNoParseAbort("testfiles/broken12.js");
     }
 }

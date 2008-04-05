@@ -174,13 +174,20 @@ public final class GemManager {
         return null;
     }
 
+    boolean isGemHomeWritable() {
+        return getGemHomeF().canWrite();
+    }
+    
     private boolean checkGemHomePermissions() {
-        if (!getGemHomeF().canWrite()) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
+        if (!isGemHomeWritable()) {
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            if (gksu == null) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+                return false;
+            }
         }
         return true;
     }

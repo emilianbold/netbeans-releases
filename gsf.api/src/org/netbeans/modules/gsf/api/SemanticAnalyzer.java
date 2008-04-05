@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Map;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * A CancellableTask which should analyze the given CompilationInfo
@@ -54,5 +55,5 @@ public interface SemanticAnalyzer extends CancellableTask<CompilationInfo> {
      * Return a set of highlights computed by the last call to
      * {@link #run}.
      */
-    Map<OffsetRange, ColoringAttributes> getHighlights();
+    @NonNull Map<OffsetRange, ColoringAttributes> getHighlights();
 }
