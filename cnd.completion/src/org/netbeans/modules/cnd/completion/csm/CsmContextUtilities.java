@@ -357,12 +357,16 @@ public class CsmContextUtilities {
         return isInContext(fullContext, elem);
     }
     
-    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ decls, List/*<CsmDeclaration>*/ newList) {
-        // XXX: now just add all
-        if (newList != null && newList.size() > 0) {
-            decls.addAll(newList);
+    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ prevScopeDecls, List/*<CsmDeclaration>*/ newScopeDecls) {
+        // new scope elements have priority 
+        List res = new ArrayList();
+        if (newScopeDecls != null && newScopeDecls.size() > 0) {
+            res.addAll(newScopeDecls);
         }
-        return decls;
+        if (prevScopeDecls != null && prevScopeDecls.size() > 0) {
+            res.addAll(prevScopeDecls);
+        }
+        return res;
     }
 
 //    public static void updateContextObject(CsmObject obj, CsmContext context) {
